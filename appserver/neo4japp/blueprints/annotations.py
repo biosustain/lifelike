@@ -531,12 +531,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                             # loses the comma
                             #
                             # if prev_index != -1:
-                                # # only do this for subsequent cells b/c
-                                # # first cell will always have the correct index
-                                # # update index offset to be relative to the cell again
-                                # # since they're relative to the combined text
-                                # anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
-                                # anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
+                            # # only do this for subsequent cells b/c
+                            # # first cell will always have the correct index
+                            # # update index offset to be relative to the cell again
+                            # # since they're relative to the combined text
+                            # anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
+                            # anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
 
                             # imported should come first for each row
                             if cell_text.get('imported'):
