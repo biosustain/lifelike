@@ -156,7 +156,7 @@ class TextHighlight implements NodeTextRange {
       // TODO: Because we are merging each rect, we may not need this filter. The downside to removing it is that we might have rects that
       // have a space at the end.
       (rect) => rect.width >= 3.6
-    ).forEach((rect) => {
+    ).forEach((rect: DOMRect) => {
       if (joinRect === null) {
         joinRect = {x: rect.x, y: rect.y, width: rect.width, height: rect.height};
       } else if (Math.abs(joinRect.y - rect.y) > tolerance) {
