@@ -6,7 +6,6 @@
  * @param width width of the rect
  * @param height the height of the rect
  */
-
 function createDOMRect(x: number, y: number, width: number, height: number): DOMRect {
   return {
     x,
@@ -31,7 +30,7 @@ function createDOMRect(x: number, y: number, width: number, height: number): DOM
  */
 export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | undefined = null): DOMRect | ClientRect {
   if (rect == null) {
-    rect = element.getBoundingClientRect();
+    rect = element.getBoundingClientRect() as DOMRect;
   }
   let offsetX = window.scrollX;
   let offsetY = window.scrollY;
@@ -117,20 +116,20 @@ export const nonStaticPositionPredicate = (element: Element): boolean => {
 };
 
 export function* walkElementVisibility(owner: Element, ownerRect: DOMRect | undefined): Iterable<ElementVisibility> {
-  ownerRect = ownerRect || owner.getBoundingClientRect();
+  ownerRect = (ownerRect || owner.getBoundingClientRect()) as DOMRect;
 
   // TODO: NOT QUITE RIGHT - not sure it gets the right parent container that the scrollbar is from
 
   let index = 0;
   for (const {target, viewport} of walkOverflowElementPairs(owner)) {
-    const viewportRect = viewport.getBoundingClientRect();
+    const viewportRect = viewport.getBoundingClientRect() as DOMRect;
     const viewportLeft = viewport.scrollLeft;
     const viewportRight = viewport.scrollLeft + viewportRect.width;
     const viewportTop = viewport.scrollTop;
     const viewportBottom = viewport.scrollTop + viewportRect.height;
 
     const relativeRect = getBoundingClientRectRelativeToContainer(
-      index === 0 ? ownerRect : target.getBoundingClientRect(), viewport,
+      index === 0 ? ownerRect : target.getBoundingClientRect() as DOMRect, viewport,
     );
 
     // Check if the element is viewable so we can decide if we need to scroll
