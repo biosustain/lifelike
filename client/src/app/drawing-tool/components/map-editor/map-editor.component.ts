@@ -212,9 +212,11 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     if (event.dataTransfer.types.includes('application/lifelike-node')) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
-      this.ngZone.run(() => {
-        this.dropTargeted = true;
-      });
+      if (!this.dropTargeted) {
+        this.ngZone.run(() => {
+          this.dropTargeted = true;
+        });
+      }
     }
   }
 
