@@ -292,7 +292,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
     while (true) {
       const node = queue.shift();
-      if (node == null) {
+      if (node === undefined) {
         break;
       }
 
@@ -310,15 +310,21 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               break;
             }
 
-            // If there is a match, go ahead and find all the descendant text nodes
-            const descendants = Array.from(el.getElementsByTagName('*'));
             const textNodes: Node[] = [];
-            for (const descendant of descendants) {
-              for (const child of Array.from(descendant.childNodes)) {
-                if (child.nodeType === 3) {
-                  textNodes.push(child);
+
+            // If there is a match, find all the descendant text nodes
+            const descendants = Array.from(el.getElementsByTagName('*'));
+            if (descendants.length !== 0) {
+              for (const descendant of descendants) {
+                for (const child of Array.from(descendant.childNodes)) {
+                  if (child.nodeType === 3) {
+                    textNodes.push(child);
+                  }
                 }
               }
+            } else {
+              // If `getElementsByTagName` didn't find any descendants, `el` must have direct TextNode children
+              textNodes.push(...Array.from(el.childNodes).filter(child => child.nodeType === 3));
             }
 
             // Create a map of the root text content indices to the descendant text node corresponding to that index
@@ -345,9 +351,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             }
             break;
           }
-          for (let child = node.firstChild; child; child = child.nextSibling) {
-            queue.push(child);
-          }
+          queue.push(...Array.from(node.childNodes));
           break;
       }
     }
