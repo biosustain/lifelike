@@ -38,7 +38,7 @@
       </fieldset>
     </ng-container>
 
-    <div *ngIf="name || selected.entity.data?.search">
+    <div *ngIf="(name || selected.entity.data?.search) && isNode">
       <fieldset class="fieldset-properties mt-4">
         <legend>Search Internal <i class="fas fa-external-link-alt ml-1"></i></legend>
 
