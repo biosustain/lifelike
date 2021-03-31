@@ -17,7 +17,7 @@
 
     <!-- Types field -->
     <div class="form-group row">
-      <label class="col-sm-4 col-form-label">Types:</label>
+      <label class="col-sm-4 col-form-label">File Types:</label>
       <div class="col-sm-8">
         <app-select formId="types" [choices]="typeChoices"
                 [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
