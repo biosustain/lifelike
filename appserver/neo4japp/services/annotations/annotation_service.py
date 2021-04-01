@@ -1,3 +1,4 @@
+import itertools
 import time
 
 from math import inf
@@ -7,6 +8,7 @@ from uuid import uuid4
 from flask import current_app
 from pdfminer.layout import LTAnno, LTChar
 
+from neo4japp.constants import LogEventType
 from neo4japp.services.annotations import (
     AnnotationDBService,
     AnnotationGraphService,
@@ -368,7 +370,7 @@ class AnnotationService:
             except KeyError:
                 current_app.logger.error(
                     f'Organism ID {organism} does not exist in {self.organism_locations}.',
-                    extra=EventLog(event_type='annotations').to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 
         if curr_closest_organism is None:
@@ -430,7 +432,7 @@ class AnnotationService:
             )
             current_app.logger.info(
                 f'Gene organism KG query time {time.time() - gene_match_time}',
-                extra=EventLog(event_type='annotations').to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
         # any genes not matched in KG fall back to specified organism
@@ -447,7 +449,7 @@ class AnnotationService:
                 )
             current_app.logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
-                extra=EventLog(event_type='annotations').to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
@@ -634,7 +636,7 @@ class AnnotationService:
             )
             current_app.logger.info(
                 f'Protein organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type='annotations').to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
         # any proteins not matched in KG fall back to specified organism
@@ -649,7 +651,7 @@ class AnnotationService:
                 )
             current_app.logger.info(
                 f'Protein fallback organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type='annotations').to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
@@ -1062,12 +1064,9 @@ class AnnotationService:
                         split[i].append(anno)
                         break
 
-            combined: List[Annotation] = []
-            for _, v in split.items():
-                combined += self.fix_conflicting_annotations(
-                    unified_annotations=v)
-
-            fixed_unified_annotations = combined
+            fixed_unified_annotations = list(itertools.chain.from_iterable(
+                [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
+            ))
         else:
             fixed_unified_annotations = self.fix_conflicting_annotations(
                 unified_annotations=fixed_unified_annotations)

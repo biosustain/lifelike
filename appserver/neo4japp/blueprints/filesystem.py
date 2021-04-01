@@ -17,7 +17,7 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager, defer
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -83,7 +83,8 @@ class FilesystemBaseView(MethodView):
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
                            '(KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
-    def get_nondeleted_recycled_file(self, filter, lazy_load_content=False) -> Files:
+    def get_nondeleted_recycled_file(
+            self, filter, lazy_load_content=False, attr_excl: List[str] = None) -> Files:
         """
         Returns a file that is guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -91,9 +92,10 @@ class FilesystemBaseView(MethodView):
 
         :param filter: the SQL Alchemy filter
         :param lazy_load_content: whether to load the file's content into memory
+        :param attr_excl: list of file attributes to exclude from the query
         :return: a non-null file
         """
-        files = self.get_nondeleted_recycled_files(filter, lazy_load_content)
+        files = self.get_nondeleted_recycled_files(filter, lazy_load_content, attr_excl=attr_excl)
         if not len(files):
             raise RecordNotFound(
                 title='Failed to Get File(s)',
@@ -103,7 +105,7 @@ class FilesystemBaseView(MethodView):
 
     def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
                                       require_hash_ids: List[str] = None,
-                                      sort=None) -> List[Files]:
+                                      sort=None, attr_excl: List[str] = None) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -112,6 +114,7 @@ class FilesystemBaseView(MethodView):
         :param filter: the SQL Alchemy filter
         :param lazy_load_content: whether to load the file's content into memory
         :param require_hash_ids: a list of file hash IDs that must be in the result
+        :param attr_excl: list of file attributes to exclude from the query
         :return: the result, which may be an empty list
         """
         current_user = g.current_user
@@ -136,7 +139,7 @@ class FilesystemBaseView(MethodView):
         query = build_file_hierarchy_query(and_(
             filter,
             Files.deletion_date.is_(None)
-        ), t_project, t_file) \
+        ), t_project, t_file, file_attr_excl=attr_excl) \
             .options(raiseload('*'),
                      joinedload(t_file.user),
                      joinedload(t_file.fallback_organism)) \
@@ -449,15 +452,20 @@ class FilesystemBaseView(MethodView):
         :param user: the user to check permissions for
         :return: the response
         """
-        return_file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
+        # TODO: Potentially move these annotations into a separate table
+        EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+
+        return_file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id,
+            attr_excl=EXCLUDE_FIELDS
+        )
         self.check_file_permissions([return_file], user, ['readable'], permit_recycled=True)
 
         children = self.get_nondeleted_recycled_files(and_(
             Files.parent_id == return_file.id,
             Files.recycling_date.is_(None),
-        ))
+        ), attr_excl=EXCLUDE_FIELDS)
         # Note: We don't check permissions here, but there are no negate permissions
-
         return_file.calculated_children = children
 
         return jsonify(FileResponseSchema(context={
