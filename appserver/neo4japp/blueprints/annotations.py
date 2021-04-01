@@ -30,7 +30,7 @@ from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.permissions import requires_role
-from neo4japp.constants import TIMEZONE
+from neo4japp.constants import LogEventType, TIMEZONE
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
@@ -65,7 +65,6 @@ from neo4japp.services.annotations.sorted_annotation_service import (
     default_sorted_annotation,
     sorted_annotations_dict
 )
-from neo4japp.services.redis import delcache
 from neo4japp.schemas.annotations import (
     AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
@@ -742,7 +741,6 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
                 'enrichment_annotations': None
             }
             updated_files.append(update)
-            delcache(uid=f'{file.hash_id}_enrichment_cache')
         db.session.bulk_update_mappings(Files, updated_files)
         db.session.commit()
         return jsonify({'results': 'Success'})
@@ -948,7 +946,8 @@ def delete_global_annotations(pids):
         current_app.logger.info(
             f'Deleted {len(pids)} global annotations',
             UserEventLog(
-                username=g.current_user.username, event_type='global annotation delete').to_dict()
+                username=g.current_user.username,
+                event_type=LogEventType.ANNOTATION.value).to_dict()
         )
     yield jsonify(dict(result='success'))
 
