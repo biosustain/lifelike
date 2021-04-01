@@ -25,11 +25,18 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
 
-  @ViewChild('searchInput', { static: false }) searchElement: ElementRef;
+  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {
       this.changeCallback(this.value);
+    }
+  }
+
+  private setValue(value: string) {
+    if (value !== this.value) {
+      this.value = value;
+      this.changed();
     }
   }
 
@@ -47,14 +54,14 @@ export class SearchControlComponent implements ControlValueAccessor {
   }
 
   blurred() {
+    this.setValue(this.searchElement.nativeElement.value);
     if (this.touchCallback) {
       this.touchCallback();
     }
   }
 
   clear() {
-    this.value = '';
-    this.changed();
+    this.setValue('');
     this.focus();
   }
 
@@ -78,4 +85,15 @@ export class SearchControlComponent implements ControlValueAccessor {
     this.searchElement.nativeElement.select();
   }
 
+  inputKeyUp(event: KeyboardEvent) {
+    const newValue = this.searchElement.nativeElement.value;
+    if (event.key === 'Enter') {
+      this.enterPress.next();
+      if (newValue === this.value) {
+        this.next.next();
+      } else {
+        this.setValue(newValue);
+      }
+    }
+  }
 }
