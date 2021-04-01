@@ -44,7 +44,6 @@ import { ResultsSummaryComponent } from './components/results-summary.component'
 import { QuickSearchComponent } from './components/quick-search.component';
 import { CollapsibleWindowComponent } from './components/collapsible-window.component';
 import { GenericFileUploadComponent } from './components/generic-file-upload/generic-file-upload.component';
-import { SourcesComponent } from './components/sources/sources.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
 import { ShareDialogComponent } from './components/dialog/share-dialog.component';
@@ -66,8 +65,18 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
-import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService } from './services/data-transfer-data.service';
+import {
+  DATA_TRANSFER_DATA_PROVIDER,
+  DataTransferDataService,
+} from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
+import {
+  HighlightTextService,
+  HIGHLIGHT_TEXT_TAG_HANDLER,
+
+} from './services/highlight-text.service';
+import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
+import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 
 const components = [
   VisJsNetworkComponent,
@@ -98,7 +107,6 @@ const components = [
   QuickSearchComponent,
   CollapsibleWindowComponent,
   GenericFileUploadComponent,
-  SourcesComponent,
   ModuleErrorComponent,
   ModuleProgressComponent,
   ShareDialogComponent,
@@ -154,6 +162,17 @@ const components = [
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: GenericDataProvider,
+      multi: true,
+    },
+    HighlightTextService,
+    {
+      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+      useClass: AnnotationTagHandler,
+      multi: true,
+    },
+    {
+      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+      useClass: HighlightTagHandler,
       multi: true,
     },
   ],

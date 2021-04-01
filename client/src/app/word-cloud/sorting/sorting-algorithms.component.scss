@@ -1,24 +1,26 @@
-button {
-  position: relative;
-  align-items: center;
-}
+.sorting-algorithm-container {
+  button {
+    position: relative;
+    align-items: center;
+  }
 
-.popover {
-  left: auto !important;
-  right: 0;
-  transform: translateY(-100%) !important;
-  width: max-content;
-
-  .arrow {
+  .popover {
     left: auto !important;
-    right: calc(1.5rem - 0.5em);
-  }
+    right: 0;
+    transform: translateY(-100%) !important;
+    width: max-content;
 
-  .popover-header {
-    color: black;
-  }
+    .arrow {
+      left: auto !important;
+      right: calc(1.5rem - 0.5em);
+    }
 
-  .popover-body {
-    text-align: justify;
+    .popover-header {
+      color: black;
+    }
+
+    .popover-body {
+      text-align: justify;
+    }
   }
 }
