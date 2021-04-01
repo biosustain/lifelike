@@ -17,6 +17,7 @@ from neo4japp.models import (
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
+    LogEventType,
     TYPE_CHEMICAL,
     TYPE_GENE,
     TYPE_DISEASE,
@@ -42,7 +43,7 @@ class KgService(HybridDBDao):
         if entity_id is None:
             current_app.logger.warning(
                 f'Node with ID {node.identity} does not have a URI.',
-                extra=EventLog(event_type='node does not have a URI').to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             return None
 
@@ -69,7 +70,7 @@ class KgService(HybridDBDao):
                 f'\tLabel: {label}\n' +
                 f'\tURI: {entity_id}\n'
                 'There may be something wrong in the database.',
-                extra=EventLog(event_type='node domain does not exist in postgres').to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
         finally:
             return url

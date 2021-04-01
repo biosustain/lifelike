@@ -101,6 +101,14 @@
                 Open in Navigator
               </button>
             </div>
+
+            <div class="ml-auto">
+              <app-search-control [(ngModel)]="findController.query" (ngModelChange)="findController.nextOrStart()"
+                                  [resultIndex]="findController.getResultIndex()"
+                                  [resultCount]="findController.getResultCount()"
+                                  (previous)="findController.previous()" (next)="findController.next()">
+              </app-search-control>
+            </div>
           </div>
 
           <div class="text-warning mt-2" *ngIf="result.document?.duplicateGenes?.length">
@@ -126,12 +134,13 @@
 
         <ng-container *ngIf="result.table.value">
           <div class="flex-fill d-flex position-relative overflow-hidden">
-            <div class="flex-fill overflow-auto"
+            <div class="flex-fill overflow-auto position-relative"
                  (scroll)="onTableScroll($event)"
-                 [scrollTop]="scrollTopAmount">
-              <div class="table-container">
+                 [scrollTop]="scrollTopAmount" #tableScroll>
+              <div class="table-container" #findTarget>
                 <app-generic-table [header]="result.table.value.tableHeader"
-                                   [entries]="result.table.value.tableCells">
+                                   [entries]="result.table.value.tableCells"
+                                   [object]="result.object.value">
                 </app-generic-table>
               </div>
             </div>
