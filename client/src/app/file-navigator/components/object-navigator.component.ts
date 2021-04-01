@@ -70,19 +70,18 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
         },
       );
     } else if (this.object.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
-      const query = useKeyword ? annotation.keyword : annotation.primaryName;
       const url = this.object.getURL();
+      const encodedId = encodeURIComponent(annotation.id);
+      const encodedText = encodeURIComponent(annotation.id);
+      const encodedColor = encodeURIComponent(annotation.id);
       this.workspaceManager.navigateByUrl(
-        `${url}#query=${encodeURIComponent(query)}`, {
+        `${url}#id=${encodedId}&text=${encodedText}&color=${encodedColor}`, {
           newTab: true,
           sideBySide: true,
           matchExistingTab: `^/*${escapeRegExp(url)}.*`,
           shouldReplaceTab: component => {
             const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
-            enrichmentTableViewerComponent.findController.query = query;
-            // If the tab is already open and loaded, execute the find. If it's not loaded, the enrichment table viewer will need to figure
-            // out when to actually start the find.
-            enrichmentTableViewerComponent.findController.nextOrStart();
+            enrichmentTableViewerComponent.startAnnotationFind(annotation.id, annotation.text, annotation.color);
             return false;
           },
         },
