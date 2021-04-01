@@ -7,6 +7,7 @@ from flask import current_app
 from typing import Dict, List, Set, Tuple
 from string import punctuation
 
+from neo4japp.constants import LogEventType
 from neo4japp.database import (
     get_annotation_service,
     get_bioc_document_service,
@@ -95,7 +96,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
 
     current_app.logger.info(
         f'Total NLP time {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
     for model in models:
@@ -220,7 +221,7 @@ def _create_annotations(
     )
     current_app.logger.info(
         f'Total LMDB lookup time {time.time() - start_lmdb_time}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
     entity_synonym = ''
@@ -238,7 +239,7 @@ def _create_annotations(
             # could not get data from lmdb
             current_app.logger.info(
                 f'Failed to get category for fallback organism "{specified_organism_synonym}".',
-                extra=EventLog(event_type='annotations').to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             entity_category = 'Uncategorized'
 
@@ -256,7 +257,7 @@ def _create_annotations(
 
     current_app.logger.info(
         f'Time to create annotations {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
     return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
@@ -289,7 +290,7 @@ def create_annotations_from_pdf(
 
     current_app.logger.info(
         f'Time to parse PDF {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
     annotations = _create_annotations(
@@ -332,7 +333,7 @@ def create_annotations_from_text(
 
     current_app.logger.info(
         f'Time to parse text {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
     annotations = _create_annotations(
@@ -376,7 +377,7 @@ def create_annotations_from_enrichment_table(
 
     current_app.logger.info(
         f'Time to parse text {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
     annotations = _create_annotations(
         annotation_method=annotation_configs['annotation_methods'],
