@@ -1,6 +1,7 @@
 import attr
 import json
 import os
+import time
 
 from typing import Dict, List
 
@@ -17,6 +18,7 @@ from neo4japp.models import (
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
+    LogEventType,
     TYPE_CHEMICAL,
     TYPE_GENE,
     TYPE_DISEASE,
@@ -24,10 +26,7 @@ from neo4japp.constants import (
 from neo4japp.util import get_first_known_label_from_node
 from neo4japp.utils.logger import EventLog
 
-from py2neo import (
-    Node,
-    Relationship,
-)
+from py2neo import Node, Relationship
 
 
 class KgService(HybridDBDao):
@@ -45,7 +44,7 @@ class KgService(HybridDBDao):
         if entity_id is None:
             current_app.logger.warning(
                 f'Node with ID {node.identity} does not have a URI.',
-                extra=EventLog(event_type='node does not have a URI').to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             return None
 
@@ -72,7 +71,7 @@ class KgService(HybridDBDao):
                 f'\tLabel: {label}\n' +
                 f'\tURI: {entity_id}\n'
                 'There may be something wrong in the database.',
-                extra=EventLog(event_type='node domain does not exist in postgres').to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
         finally:
             return url
@@ -193,12 +192,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_uniprot_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get uniprot genes {time.time() - start}')
+
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'uniprot').one()
@@ -218,12 +220,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_string_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get string genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}
@@ -313,12 +318,15 @@ class KgService(HybridDBDao):
         taxID: str
     ):
         query = self.get_biocyc_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get biocyc genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}
@@ -342,12 +350,15 @@ class KgService(HybridDBDao):
         query = self.get_go_genes_query()
         numbers = range(0, len(ncbi_gene_ids))
         gene_tuples = list(zip(ncbi_gene_ids, numbers))
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'gene_tuples': gene_tuples
             }
         ).data()
+        print(f'Time to get GO genes {time.time() - start}')
+
         result_list = []
         domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
         for meta_result in result:
@@ -363,12 +374,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_regulon_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get regulon genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}

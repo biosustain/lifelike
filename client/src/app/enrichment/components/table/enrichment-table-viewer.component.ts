@@ -276,7 +276,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
       });
-      this.refreshData();
+      this.save();
     }, () => {
     });
   }

@@ -110,6 +110,10 @@ Separation of concerns/Single responsibility.
 Better to selectively inherit the connection needed,
 through different services. Separating graph service
 from the postgres service.
+
+It also helps avoid circular dependencies if these
+get_*() functions are moved elsewhere. This problem does
+not apply to the AnnotationServices (except manual and sorted).
 """
 
 
