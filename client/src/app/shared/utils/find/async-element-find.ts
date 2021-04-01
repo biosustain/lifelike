@@ -242,20 +242,20 @@ class AsyncElementTextFinder {
       root,
     ];
 
-    while (true) {
+    while (queue.length !== 0) {
       const node = queue.shift();
       if (node == null) {
         break;
       }
 
       switch (node.nodeType) {
-        case 1:
+        case Node.ELEMENT_NODE:
           for (let child = node.firstChild; child; child = child.nextSibling) {
             queue.push(child);
           }
           break;
 
-        case 3:
+        case Node.TEXT_NODE:
           const regex = new RegExp(escapeRegExp(query), 'ig');
           while (true) {
             const match = regex.exec(node.nodeValue);
