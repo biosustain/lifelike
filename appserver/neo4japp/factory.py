@@ -27,6 +27,7 @@ from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
 
+from neo4japp.constants import LogEventType
 from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
@@ -208,7 +209,7 @@ def handle_error(ex: ServerException):
             **ErrorLog(
                 error_name=f'{type(ex)}',
                 expected=True,
-                event_type='handled exception',
+                event_type=LogEventType.SENTRY_HANDLED.value,
                 transaction_id=transaction_id,
                 username=current_user,
             ).to_dict()
@@ -239,7 +240,7 @@ def handle_generic_error(code: int, ex: Exception):
             **ErrorLog(
                 error_name=f'{type(ex)}',
                 expected=True,
-                event_type='unhandled exception',
+                event_type=LogEventType.SENTRY_UNHANDLED.value,
                 transaction_id=transaction_id,
                 username=current_user,
             ).to_dict()

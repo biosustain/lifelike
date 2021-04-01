@@ -3,6 +3,7 @@ import re
 from typing import Any, Dict, List
 from flask import current_app
 
+from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
     FTSReferenceRecord,
@@ -114,7 +115,7 @@ class SearchService(GraphBaseDao):
             else:
                 current_app.logger.info(
                     f'Found an unexpected value in `domains` list: {domain}',
-                    extra=EventLog(event_type='visualizer_search').to_dict()
+                    extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
                 )
 
         for entity in entities:
@@ -124,7 +125,7 @@ class SearchService(GraphBaseDao):
             else:
                 current_app.logger.info(
                     f'Found an unexpected value in `entities` list: {entity}',
-                    extra=EventLog(event_type='visualizer_search').to_dict()
+                    extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
                 )
 
         # If the domain list or entity list provided by the user is empty, then assume ALL
