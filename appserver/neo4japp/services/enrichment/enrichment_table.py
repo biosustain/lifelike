@@ -1,11 +1,14 @@
 from typing import List
 
-from neo4japp.constants import EnrichmentDomain
+from flask import current_app
+
+from neo4japp.constants import EnrichmentDomain, LogEventType
 from neo4japp.exceptions import ServerException
 from neo4japp.models import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.utils.logger import EventLog
 
 
 class EnrichmentTableService(KgService):
@@ -18,12 +21,14 @@ class EnrichmentTableService(KgService):
         # got here so passed validation
         data = enrichment['result']
 
-        # need to combine cell text together into one
         total_index = 0
         cell_texts = []
         text_index_map = {}
         combined_text = ''
 
+        # need to combine cell text together into one
+        # the idea is to create a mapping to later identify
+        # what row/column each text is originally in
         for i, gene in enumerate(data['genes']):
             # matched genes will have domains
             if gene.get('domains'):
@@ -43,7 +48,11 @@ class EnrichmentTableService(KgService):
                         elif k == EnrichmentDomain.UNIPROT.value:
                             cell_texts.append({'text': v['Function']['text'], 'index': i, 'domain': k, 'label': 'Function'})  # noqa
                 except KeyError:
-                    continue  # maybe raise?
+                    current_app.logger.error(
+                        f'Missing key when creating enrichment table text row/column mapping.',
+                        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                    )
+                    continue
 
         for text in cell_texts:
             if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
