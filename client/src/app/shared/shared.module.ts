@@ -70,13 +70,6 @@ import {
   DataTransferDataService,
 } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-
-} from './services/highlight-text.service';
-import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
-import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 
 const components = [
   VisJsNetworkComponent,
@@ -162,17 +155,6 @@ const components = [
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: GenericDataProvider,
-      multi: true,
-    },
-    HighlightTextService,
-    {
-      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useClass: AnnotationTagHandler,
-      multi: true,
-    },
-    {
-      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useClass: HighlightTagHandler,
       multi: true,
     },
   ],
