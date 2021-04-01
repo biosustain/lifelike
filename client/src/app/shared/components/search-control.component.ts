@@ -24,6 +24,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Output() previous = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
+  @Output() valueClear = new EventEmitter();
 
   @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
 
@@ -63,6 +64,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   clear() {
     this.setValue('');
     this.focus();
+    this.valueClear.emit();
   }
 
   registerOnChange(fn): void {
