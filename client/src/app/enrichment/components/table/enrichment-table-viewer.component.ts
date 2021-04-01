@@ -215,7 +215,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     const observable = combineLatest(
       this.object$,
       this.document$.pipe(
-        mergeMap(document => document.save()),
+        // need to use updateParameters instead of save
+        // because save only update the import genes list
+        // not the matched results
+        // so a new version of the file will not get created
+        // the newly added gene matched
+        mergeMap(document => document.updateParameters()),
       ),
     ).pipe(
       take(1),
