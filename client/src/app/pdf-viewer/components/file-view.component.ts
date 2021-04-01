@@ -383,7 +383,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
     const sources = [{
-      domain: 'File Source',
+      domain: this.object.filename,
       url: source,
     }];
 
@@ -402,6 +402,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     const hyperlink = meta.idHyperlink || '';
+    let hyperlinkText = 'Annotation URL';
+    try {
+      hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
+    } catch (e) {
+    }
 
     const search = Object.keys(meta.links || []).map(k => {
       return {
@@ -433,7 +438,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           url: hyperlink,
         }],
         hyperlinks: [{
-          domain: 'Annotation URL',
+          domain: hyperlinkText,
           url: hyperlink,
         }],
         detail: meta.type === 'link' ? meta.allText : '',
@@ -672,7 +677,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           id: this.object.hashId + '',
         }],
         sources: [{
-          domain: 'File Source',
+          domain: this.object.filename,
           url: ['/projects', encodeURIComponent(this.object.project.name),
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
