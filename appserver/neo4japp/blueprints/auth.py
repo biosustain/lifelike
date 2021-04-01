@@ -8,6 +8,8 @@ from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
+
+from neo4japp.constants import LogEventType
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
@@ -115,7 +117,7 @@ def verify_token(token):
         if token is None:
             current_app.logger.error(
                 f'No authorization header found <{request.headers}>.',
-                extra=EventLog(event_type='token authorization').to_dict()
+                extra=EventLog(event_type=LogEventType.AUTHENTICATION.value).to_dict()
             )
             # default to generic error message
             # NOTE: is this better than avoiding to
@@ -203,7 +205,9 @@ def login():
     else:
         if user.check_password(data.get('password')):
             current_app.logger.info(
-                UserEventLog(username=user.username, event_type='user login').to_dict())
+                UserEventLog(
+                    username=user.username,
+                    event_type=LogEventType.AUTHENTICATION.value).to_dict())
             token_service = TokenService(current_app.config['SECRET_KEY'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)

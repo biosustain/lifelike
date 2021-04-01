@@ -10,7 +10,7 @@ from flask import request
 from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
-from neo4japp.constants import TIMEZONE
+from neo4japp.constants import LogEventType, TIMEZONE
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
@@ -37,7 +37,7 @@ def request_navigator_log():
         scope.set_tag(
             'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
-        EventLog(event_type='user navigate').to_dict())
+        EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
 
 @app.cli.command("seed")
