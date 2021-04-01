@@ -11,8 +11,8 @@ from sqlalchemy.orm import aliased
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
 from neo4japp.database import (
@@ -61,7 +61,8 @@ def visualizer_search(
     current_app.logger.info(
         f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
-            username=g.current_user.username, event_type='search temp').to_dict()
+            username=g.current_user.username,
+            event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
     )
 
     results = search_dao.visualizer_search(
@@ -199,7 +200,8 @@ class ContentSearchView(FilesystemBaseView):
         current_app.logger.info(
             f'Term: {params["q"]}',
             extra=UserEventLog(
-                username=g.current_user.username, event_type='search contentsearch').to_dict()
+                username=g.current_user.username,
+                event_type=LogEventType.CONTENT_SEARCH.value).to_dict()
         )
 
         current_user = g.current_user
