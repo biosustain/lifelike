@@ -5,7 +5,8 @@ import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
-  KnowledgeMap, Source,
+  KnowledgeMap,
+  Source,
   UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
@@ -444,9 +445,34 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   getURL(forEditing = true): string {
     // TODO: Move this method to ObjectTypeProvider
-    return this.getCommands(forEditing).map(item => {
+    return '/' + this.getCommands(forEditing).map(item => {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
+  }
+
+  getGraphEntitySources(): Source[] {
+    const sources = [];
+
+    sources.push({
+      domain: this.filename,
+      url: this.getURL(false),
+    });
+
+    if (this.doi != null) {
+      sources.push({
+        domain: 'DOI',
+        url: this.doi,
+      });
+    }
+
+    if (this.uploadUrl != null) {
+      sources.push({
+        domain: 'External URL',
+        url: this.uploadUrl,
+      });
+    }
+
+    return sources;
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
@@ -458,24 +484,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       privileges: this.privileges,
     };
 
-    const sources: Source[] = [{
-      domain: this.filename,
-      url: this.getCommands().join('/'),
-    }];
-
-    if (this.doi) {
-      sources.push({
-        domain: 'DOI',
-        url: this.doi,
-      });
-    }
-
-    if (this.uploadUrl) {
-      sources.push({
-        domain: 'Upload URL',
-        url: this.uploadUrl,
-      });
-    }
+    const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
