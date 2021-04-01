@@ -290,14 +290,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       ***ARANGO_USERNAME***,
     ];
 
-    while (true) {
+    while (queue.length !== 0) {
       const node = queue.shift();
       if (node === undefined) {
         break;
       }
 
       switch (node.nodeType) {
-        case 1:
+        case Node.ELEMENT_NODE:
           const el = node as HTMLElement;
           const style = window.getComputedStyle(el);
           // Should be true when we find the top-level container for the table cell
@@ -310,21 +310,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               break;
             }
 
+            // Since there was a match, get all the descendant text nodes
+            const treeWalker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
             const textNodes: Node[] = [];
-
-            // If there is a match, find all the descendant text nodes
-            const descendants = Array.from(el.getElementsByTagName('*'));
-            if (descendants.length !== 0) {
-              for (const descendant of descendants) {
-                for (const child of Array.from(descendant.childNodes)) {
-                  if (child.nodeType === 3) {
-                    textNodes.push(child);
-                  }
-                }
-              }
-            } else {
-              // If `getElementsByTagName` didn't find any descendants, `el` must have direct TextNode children
-              textNodes.push(...Array.from(el.childNodes).filter(child => child.nodeType === 3));
+            let currentNode = treeWalker.nextNode(); // Using `nextNode` here skips the ***ARANGO_USERNAME*** node, which is intended
+            while (currentNode) {
+              textNodes.push(currentNode);
+              currentNode = treeWalker.nextNode();
             }
 
             // Create a map of the ***ARANGO_USERNAME*** text content indices to the descendant text node corresponding to that index
