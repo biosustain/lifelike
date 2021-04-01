@@ -1,21 +1,41 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { escapeRegExp } from 'lodash';
+
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+
+import { isNullOrUndefined } from 'util';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ObjectVersion } from 'app/file-browser/models/object-version';
+import { ObjectUpdateRequest } from 'app/file-browser/schema';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { NodeTextRange } from 'app/shared/utils/dom';
+import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
+
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
-import { ObjectUpdateRequest } from '../../../file-browser/schema';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import {
   EnrichmentTableEditDialogComponent,
@@ -27,15 +47,20 @@ import {
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
+  @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
+  findController = new AsyncElementFind(null, this.generateFindQueue);
+  findTargetChangesSub: Subscription;
+  private tickAnimationFrameId: number;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -50,8 +75,10 @@ export class EnrichmentTableViewerComponent implements OnInit {
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog,
-              protected readonly changeDetectorRef: ChangeDetectorRef) {
+              protected readonly changeDetectorRef: ChangeDetectorRef,
+              protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
+    this.findController.query = this.parseQueryFromUrl(this.route.snapshot.fragment);
   }
 
   ngOnInit() {
@@ -84,6 +111,46 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
+  }
+
+  ngAfterViewInit() {
+    this.findTargetChangesSub = this.findTarget.changes.subscribe({
+      next: () => {
+        if (this.findTarget.first) {
+          this.findController.target = this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0];
+          // This may seem like an anti-pattern -- and it probably is -- but there is seemingingly no other way around Angular's
+          // `ExpressionChangedAfterItHasBeenCheckedError` here. Even Angular seems to think so, as they use this exact pattern in their
+          // own example: https://angular.io/api/core/ViewChildren#another-example
+          setTimeout(() => {
+            // TODO: Need to have a brief background color animation when the table is loaded and the first match is rendered. (?)
+            // Actually not sure if this the desired behavior.
+            this.findController.nextOrStart();
+          }, 0);
+        } else {
+          this.findController.target = null;
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    cancelAnimationFrame(this.tickAnimationFrameId);
+    if (!isNullOrUndefined(this.findTargetChangesSub)) {
+      this.findTargetChangesSub.unsubscribe();
+    }
+    // Give the findController a chance to teardown any listeners/callbacks/subscriptions etc.
+    this.findController.stop();
+  }
+
+  parseQueryFromUrl(fragment: string): string {
+    const params = new URLSearchParams(fragment);
+    return params.get('query') || '';
+  }
+
+  tick() {
+    this.findController.tick();
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
   }
 
   restore(version: ObjectVersion) {
@@ -216,5 +283,69 @@ export class EnrichmentTableViewerComponent implements OnInit {
   objectUpdate() {
     this.emitModuleProperties();
     this.load();
+  }
+
+  private* generateFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [
+      root,
+    ];
+
+    while (queue.length !== 0) {
+      const node = queue.shift();
+      if (node === undefined) {
+        break;
+      }
+
+      switch (node.nodeType) {
+        case Node.ELEMENT_NODE:
+          const el = node as HTMLElement;
+          const style = window.getComputedStyle(el);
+          // Should be true when we find the top-level container for the table cell
+          if (style.display === 'block') {
+            const regex = new RegExp(escapeRegExp(query), 'ig');
+            let match = regex.exec(node.textContent);
+
+            // If there's no match in the root, then there's no reason to continue
+            if (match === null) {
+              break;
+            }
+
+            // Since there was a match, get all the descendant text nodes
+            const treeWalker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            const textNodes: Node[] = [];
+            let currentNode = treeWalker.nextNode(); // Using `nextNode` here skips the root node, which is intended
+            while (currentNode) {
+              textNodes.push(currentNode);
+              currentNode = treeWalker.nextNode();
+            }
+
+            // Create a map of the root text content indices to the descendant text node corresponding to that index
+            let index = 0;
+            const textNodeMap = new Map<number, [Node, number]>();
+            for (const textNode of textNodes) {
+              for (let i = 0; i < textNode.textContent.length; i++) {
+                textNodeMap.set(index++, [textNode, i]);
+              }
+            }
+
+            while (match !== null) {
+              // Need to catch the case where regex.lastIndex returns a value greater than the last index of the text
+              const lastIndexIsEOS = regex.lastIndex === node.textContent.length;
+              const endOfMatch = lastIndexIsEOS ? regex.lastIndex - 1 : regex.lastIndex;
+
+              yield {
+                startNode: textNodeMap.get(match.index)[0],
+                endNode: textNodeMap.get(endOfMatch)[0],
+                start: textNodeMap.get(match.index)[1],
+                end: textNodeMap.get(endOfMatch)[1] + (lastIndexIsEOS ? 1 : 0), // IMPORTANT: `end` is EXCLUSIVE!
+              };
+              match = regex.exec(node.textContent);
+            }
+            break;
+          }
+          queue.push(...Array.from(node.childNodes));
+          break;
+      }
+    }
   }
 }
