@@ -622,18 +622,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 # anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
                 # anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
 
-                # imported should come first for each row
-                if cell_text.get('imported'):
-                    enriched_gene = cell_text['text']
-                    anno['enrichmentGene'] = enriched_gene
-                    anno['enrichmentDomain']['domain'] = cell_text['domain']
-                elif cell_text.get('matched'):
-                    anno['enrichmentGene'] = enriched_gene
-                    anno['enrichmentDomain']['domain'] = cell_text['domain']
-                elif cell_text.get('fullName'):
-                    anno['enrichmentGene'] = enriched_gene
-                    anno['enrichmentDomain']['domain'] = cell_text['domain']
-                elif 'domain' in cell_text:
+                if 'domain' in cell_text:
+                    # imported should come first for each row
+                    if cell_text['domain'] == 'Imported':
+                        enriched_gene = cell_text['text']
                     anno['enrichmentGene'] = enriched_gene
                     if cell_text['domain'] == 'Regulon':
                         anno['enrichmentDomain']['domain'] = cell_text['domain']
