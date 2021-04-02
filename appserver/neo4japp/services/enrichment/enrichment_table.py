@@ -3,7 +3,7 @@ from typing import List
 from flask import current_app
 
 from neo4japp.constants import EnrichmentDomain, LogEventType
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import AnnotationError, ServerException
 from neo4japp.models import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
@@ -16,7 +16,12 @@ class EnrichmentTableService(KgService):
         super().__init__(graph=graph, session=session)
 
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
-        validate_enrichment_table(enrichment)
+        try:
+            validate_enrichment_table(enrichment)
+        except Exception:
+            raise AnnotationError(
+                title='Could not create enrichment table',
+                message='Could not annotate enrichment table, there was a problem validating the format.')  # noqa
 
         # got here so passed validation
         data = enrichment['result']
