@@ -42,6 +42,13 @@ import {
   EnrichmentTableEditDialogValue,
 } from './dialog/enrichment-table-edit-dialog.component';
 
+// TODO: Is there an existing interface we could use here?
+interface AnnotationData {
+  id: string;
+  text: string;
+  color: string;
+}
+
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
@@ -53,12 +60,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
   @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
 
+  annotation: AnnotationData;
+
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
-  findController = new AsyncElementFind(null, this.generateFindQueue);
+  findController: AsyncElementFind;
   findTargetChangesSub: Subscription;
   private tickAnimationFrameId: number;
 
@@ -78,7 +87,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly changeDetectorRef: ChangeDetectorRef,
               protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
-    this.findController.query = this.parseQueryFromUrl(this.route.snapshot.fragment);
+    this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
+    this.findController = new AsyncElementFind(
+      null, // We'll update this later, once the table is rendered
+      this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
+    );
   }
 
   ngOnInit() {
@@ -125,7 +138,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
           setTimeout(() => {
             // TODO: Need to have a brief background color animation when the table is loaded and the first match is rendered. (?)
             // Actually not sure if this the desired behavior.
-            this.findController.nextOrStart();
+            this.findController.start();
           }, 0);
         } else {
           this.findController.target = null;
@@ -143,9 +156,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.findController.stop();
   }
 
-  parseQueryFromUrl(fragment: string): string {
+  parseAnnotationFromUrl(fragment: string): AnnotationData {
     const params = new URLSearchParams(fragment);
-    return params.get('query') || '';
+    return {
+      id: params.get('id') || '',
+      text: params.get('text') || '',
+      color: params.get('color') || ''
+    };
   }
 
   tick() {
@@ -198,7 +215,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     const observable = combineLatest(
       this.object$,
       this.document$.pipe(
-        mergeMap(document => document.save()),
+        // need to use updateParameters instead of save
+        // because save only update the import genes list
+        // not the matched results
+        // so a new version of the file will not get created
+        // the newly added gene matched
+        mergeMap(document => document.updateParameters()),
       ),
     ).pipe(
       take(1),
@@ -285,7 +307,48 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.load();
   }
 
-  private* generateFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
+  switchToTextFind() {
+    this.annotation = {id: '', text: '', color: ''};
+    this.findController.stop();
+    this.findController = new AsyncElementFind(
+      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.generateTextFindQueue
+    );
+  }
+
+  switchToAnnotationFind(id: string, text: string, color: string) {
+    this.annotation = {id, text, color};
+    this.findController.stop();
+    this.findController = new AsyncElementFind(
+      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.generateAnnotationFindQueue
+    );
+  }
+
+  startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
+    this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
+    this.findController.query = annotationId;
+    this.findController.start();
+  }
+
+  private* generateAnnotationFindQueue(root: Node, query: string) {
+    const annotations = Array.from((root as Element).querySelectorAll('[data-annotation-meta]')) as HTMLElement[];
+    for (const annoEl of annotations) {
+      const data = JSON.parse(annoEl.getAttribute('data-annotation-meta'));
+
+      if (data.id === query) {
+        yield {
+          // The elements with `data-annotation-meta` should have exactly one child: the TextNode representing the annotated text
+          startNode: annoEl.firstChild,
+          endNode: annoEl.firstChild,
+          start: 0,
+          end: annoEl.textContent.length, // IMPORTANT: `end` is EXCLUSIVE!
+        };
+      }
+    }
+  }
+
+  private* generateTextFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
     const queue: Node[] = [
       root,
     ];
