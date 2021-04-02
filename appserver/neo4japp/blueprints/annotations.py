@@ -19,6 +19,7 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
+from json import JSONDecodeError
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import use_args
@@ -481,12 +482,21 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         'success': True,
                     }
             elif file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
-                enrichment = json.loads(file.content.raw_file_utf8)
-
+                try:
+                    enrichment = json.loads(file.content.raw_file_utf8)
+                except JSONDecodeError:
+                    current_app.logger.error(
+                        f'Cannot annotate file with invalid content: {file.hash_id}, {file.filename}')  # noqa
+                    results[file.hash_id] = {
+                        'attempted': False,
+                        'success': False,
+                    }
+                    continue
                 enrich_service = get_enrichment_table_service()
-                enriched = enrich_service.create_annotation_mappings(enrichment)
 
                 try:
+                    enriched = enrich_service.create_annotation_mappings(enrichment)
+
                     annotations, version = self._annotate_enrichment_texts(
                         file=file,
                         enriched=enriched,
