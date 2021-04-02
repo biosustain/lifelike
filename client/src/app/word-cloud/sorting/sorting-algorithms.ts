@@ -81,7 +81,7 @@ over similar counts collected from a single source.<br/>
         valueDescription: 'Count per row',
         min: 0,
         step: 1,
-        default: 0,
+        default: 1,
       },
 //       {
 //         ...mwu,
