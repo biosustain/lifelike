@@ -103,11 +103,24 @@
             </div>
 
             <div class="ml-auto">
-              <app-search-control [(ngModel)]="findController.query" (ngModelChange)="findController.nextOrStart()"
-                                  [resultIndex]="findController.getResultIndex()"
-                                  [resultCount]="findController.getResultCount()"
-                                  (previous)="findController.previous()" (next)="findController.next()">
-              </app-search-control>
+              <ng-container *ngIf="annotation.id; else textSearchControl">
+                <app-result-control [value]="annotation.text"
+                                    [annotationColor]="annotation.color"
+                                    [resultIndex]="findController.getResultIndex()"
+                                    [resultCount]="findController.getResultCount()"
+                                    (previous)="findController.previous()" (next)="findController.next()"
+                                    (enterPress)="findController.next()"
+                                    (valueClear)="switchToTextFind()">
+                </app-result-control>
+              </ng-container>
+              <ng-template #textSearchControl>
+                <app-search-control [(ngModel)]="findController.query" (ngModelChange)="findController.nextOrStart()"
+                                    [resultIndex]="findController.getResultIndex()"
+                                    [resultCount]="findController.getResultCount()"
+                                    (previous)="findController.previous()" (next)="findController.next()"
+                                    (valueClear)="findController.stop()">
+                </app-search-control>
+              </ng-template>
             </div>
           </div>
 
