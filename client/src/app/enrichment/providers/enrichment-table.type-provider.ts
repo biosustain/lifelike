@@ -140,8 +140,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             })),
           });
 
-          return value.document.refreshData().pipe(
-            mergeMap(doc => doc.save()),
+          // old files can have outdated or corrupted data/schema
+          // so instead of refreshing, update and save
+          // this will trigger recreating the enrichment JSON
+          return value.document.updateParameters().pipe(
             mergeMap(newBlob => this.filesystemService.save([target.hashId], {
               contentValue: newBlob,
               ...value.request,
