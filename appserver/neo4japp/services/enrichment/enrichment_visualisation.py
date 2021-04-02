@@ -3,23 +3,38 @@ import logging
 from functools import partial
 from typing import List
 
+import pandas as pd
+import numpy as np
+
 from neo4japp.exceptions import ServerException
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.enrich_methods import fisher
-from neo4japp.services.redis import redis_cached
+from neo4japp.services.redis import redis_cached, redis_server
 
 # Excessive logging noticeably slows down execution
 logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 
 
 class EnrichmentVisualisationService(KgService):
+
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
-            return fisher(gene_names, self.get_go_terms(organism, gene_names),
-                          self.get_go_term_count(organism))
+            GO_terms = redis_server.get(f"GO_for_{organism.id}")
+            if GO_terms:
+                df = pd.read_json(GO_terms)
+                df = df.explode('geneNames')
+                mask = np.in1d(df['geneNames'], gene_names)
+                df = df[mask]
+                go = df.groupby('goId').agg(dict(goTerm='first', goLabel='first',
+                                                 geneNames=list)).reset_index()
+                go_count = len(GO_terms)
+            else:
+                go = self.get_go_terms(organism, gene_names)
+                go_count = self.get_go_term_count(organism)
+            return fisher(gene_names, go, go_count)
         raise NotImplementedError
 
     def query_go_term(self, organism_id, gene_names):
@@ -38,7 +53,7 @@ return go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 'db_GO'
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
-                message=f'Could not find related GO terms for organism id: {organism_id}')
+                    message=f'Could not find related GO terms for organism id: {organism_id}')
         return r
 
     def get_go_terms(self, organism, gene_names):
@@ -62,7 +77,7 @@ return count(go)
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
-                message=f'Could not find related GO terms for organism id: {organism_id}')
+                    message=f'Could not find related GO terms for organism id: {organism_id}')
         return r[0]['count(go)']
 
     def get_go_term_count(self, organism):
