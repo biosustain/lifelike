@@ -32,13 +32,13 @@ export class EnrichmentTableService {
    * @param nodeIds list of node ids to match to enrichment domains
    * @param taxID tax id of organism
    */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
-    return this.http.post<{ result: EnrichmentWrapper[] }>(
+  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper> {
+    return this.http.post<{result: EnrichmentWrapper}>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
       {nodeIds, taxID},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result),
+      map(resp => resp.result),
     );
   }
 
@@ -83,10 +83,6 @@ export interface Worksheet {
   contentID: number;
 }
 
-export interface Synonym {
-  name: string;
-}
-
 export interface NCBINode {
   full_name: string;
   id: string;
@@ -96,9 +92,9 @@ export interface NCBINode {
 
 export interface NCBIWrapper {
   neo4jID: number;
-  x: NCBINode;
+  gene: NCBINode;
   link: string;
-  s: Synonym;
+  synonyms: string[];
 }
 
 interface BiocycWrapper {
@@ -170,11 +166,15 @@ export interface UniprotNode {
   pathway: string;
 }
 
-export interface EnrichmentWrapper {
-  biocyc: BiocycWrapper;
-  go: GoWrapper;
-  regulon: RegulonWrapper;
-  string: StringWrapper;
-  uniprot: UniprotWrapper;
+export interface DomainWrapper {
+  biocyc: BiocycWrapper | null;
+  go: GoWrapper | null;
+  regulon: RegulonWrapper | null;
+  string: StringWrapper | null;
+  uniprot: UniprotWrapper | null;
   node_id: number;
+}
+
+export interface EnrichmentWrapper {
+  [id: number]: DomainWrapper;
 }

@@ -69,14 +69,14 @@ class EnrichmentTableService(KgService):
             ID of given organism. Input order is maintained in result.
         """
         query = self.match_ncbi_genes_query()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
             {
                 'geneNames': geneNames,
                 'organism': organism
             }
         ).data()
-        result_list = []
+
         domain = self.session.query(DomainURLsMap).filter(
             DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
 
@@ -85,17 +85,18 @@ class EnrichmentTableService(KgService):
                 title='Could not create enrichment table',
                 message='There was a problem finding NCBI domain URLs.')
 
-        for meta_result in result:
-            item = {'x': meta_result['gene'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['synonym']}  # noqa
-            if meta_result['gene'] is not None:
-                item['link'] = domain.base_URL.format(meta_result['gene']['id'])
-            result_list.append(item)
-        return result_list
+        return [{
+            'gene': result['gene'],
+            'synonyms': result['synonyms'],
+            'neo4jID': result['neo4j_id'],
+            'link': domain.base_URL.format(
+                result['gene_id']) if result['gene_id'] else ''} for result in results]
 
     def match_ncbi_genes_query(self):
         return """
         WITH $geneNames AS genes UNWIND genes AS gene
         MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
             [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-        RETURN s AS synonym, g AS gene, id(g) AS neo4jID
+        RETURN collect(s.name) AS synonyms, g AS gene, g.id AS gene_id, \
+            id(g) AS neo4j_id
         """
