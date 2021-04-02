@@ -5,7 +5,7 @@ from typing import Set, Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect, literal
-from sqlalchemy.orm import contains_eager, aliased, Query
+from sqlalchemy.orm import contains_eager, aliased, Query, defer
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects
@@ -171,7 +171,8 @@ def join_projects_to_parents_cte(q_hierarchy: Query):
 
 def build_file_hierarchy_query(condition, projects_table, files_table,
                                include_deleted_projects=False,
-                               include_deleted_files=False):
+                               include_deleted_files=False,
+                               file_attr_excl=None):
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -180,6 +181,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     :param projects_table: a reference to the projects table used in the query
     :param files_table: a reference to the files table used in the query
     :param include_deleted_projects: whether to include deleted projects
+    :param file_attr_excl: list of file attributes to exclude from the query
     :return: a query
     """
 
@@ -201,6 +203,12 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
 
     t_parent_files = aliased(files_table)
 
+    # By default, we query for all columns within the File table.
+    if file_attr_excl:
+        col_defer = [defer(attr) for attr in file_attr_excl]
+    else:
+        col_defer = []
+
     # Main query
     query = db.session.query(files_table,  # Warning: Do not change this order, but you can add
                              q_hierarchy.c.initial_id,
@@ -210,7 +218,10 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
         .join(q_hierarchy_project, q_hierarchy_project.c.initial_id == q_hierarchy.c.initial_id) \
         .join(projects_table, projects_table.id == q_hierarchy_project.c.project_id) \
         .outerjoin(t_parent_files, t_parent_files.id == files_table.parent_id) \
-        .options(contains_eager(files_table.parent, alias=t_parent_files)) \
+        .options(
+            contains_eager(files_table.parent, alias=t_parent_files).options(*col_defer),
+            *col_defer,
+        ) \
         .order_by(q_hierarchy.c.level)
 
     if not include_deleted_projects:
@@ -224,7 +235,7 @@ def add_file_user_role_columns(query, file_table, user_id, role_names=None, colu
                                access_override=False):
     """
     Add columns to a query for fetching the value of the provided roles for the
-    provided user ID for files in the provided fi;e table.
+    provided user ID for files in the provided file table.
 
     :param query: the query to modify
     :param file_table: the file table
