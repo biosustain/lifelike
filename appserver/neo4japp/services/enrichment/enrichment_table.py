@@ -20,7 +20,7 @@ class EnrichmentTableService(KgService):
             validate_enrichment_table(enrichment)
         except Exception:
             raise AnnotationError(
-                title='Could not create enrichment table',
+                title='Could not annotate enrichment table',
                 message='Could not annotate enrichment table, there was a problem validating the format.')  # noqa
 
         # got here so passed validation
