@@ -207,16 +207,11 @@ class KgService(HybridDBDao):
                 title='Could not create enrichment table',
                 message='There was a problem finding UniProt domain URLs.')
 
-        result_list = []
-        for result in results:
-            node = result['node']
-            node_id = result['node_id']
-            link = 'https://www.uniprot.org/'
-
-            if node_id:
-                link = domain.base_URL.format(node_id)
-            result_list.append({'result': node, 'link': link})
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['node'],
+                'link': domain.base_URL.format(result['uniprot_id'])}
+            for result in results}
 
     def get_string_genes(self, ncbi_gene_ids: List[int]):
         query = self.get_string_genes_query()
@@ -231,14 +226,11 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
-        result_list = []
-
-        for result in results:
-            item = {'result': result['node']}
-            if result['node']:
-                item['link'] = 'https://string-db.org/cgi/network?identifiers='
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['node'],
+                'link': 'https://string-db.org/cgi/network?identifiers='}
+            for result in results}
 
     def get_biocyc_genes(
         self,
@@ -257,31 +249,22 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
-        result_list = []
-        for result in results:
-            node = result['node']
-            biocyc_id = result['biocyc_id']
-            link = 'https://biocyc.org/'
-
-            if biocyc_id:
-                link = f'https://biocyc.org/gene?id={biocyc_id}'
-                if tax_id in BIOCYC_ORG_ID_DICT:
-                    org_id = BIOCYC_ORG_ID_DICT[tax_id]
-                    link = f'https://biocyc.org/gene?orgid={org_id}&id={biocyc_id}'
-
-            result_list.append({'result': node, 'link': link})
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['node'],
+                'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
+                    if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"}  # noqa
+            for result in results}
 
     def get_go_genes(
         self,
         ncbi_gene_ids: List[int],
     ):
-        node_ids = list(zip(ncbi_gene_ids, range(0, len(ncbi_gene_ids))))
         query = self.get_go_genes_query()
         start = time.time()
         results = self.graph.run(
             query,
-            {'node_ids': node_ids}
+            {'node_ids': ncbi_gene_ids}
         ).data()
 
         current_app.logger.info(
@@ -289,9 +272,11 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
-        return [{
-            'result': result['go_terms'],
-            'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='} for result in results]  # noqa
+        return {
+            result['node_id']: {
+                'result': result['go_terms'],
+                'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='}
+            for result in results}
 
     def get_regulon_genes(
         self,
@@ -309,16 +294,11 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
-        result_list = []
-        for result in results:
-            node = result['node']
-            link = 'http://regulondb.ccg.unam.mx/'
-            regulondb_id = result['regulondb_id']
-            if regulondb_id:
-                link = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
-                        '&organism=ECK12&format=jsp&type=gene'
-            result_list.append({'result': node, 'link': link})
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['node'],
+                'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"}  # noqa
+            for result in results}
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
@@ -458,42 +438,42 @@ class KgService(HybridDBDao):
 
     def get_uniprot_genes_query(self):
         return """
-        MATCH (g)
-        WHERE id(g) IN $node_ids
-        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
-        RETURN x AS node, x.id AS node_id
+        UNWIND $node_ids AS node_id
+        MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
+        WHERE id(g)=node_id
+        RETURN node_id, x AS node, x.id AS uniprot_id
         """
 
     def get_string_genes_query(self):
         return """
-        MATCH (g)
-        WHERE id(g) IN $node_ids
-        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_STRING)
-        RETURN x AS node
+        UNWIND $node_ids AS node_id
+        MATCH (g)-[:HAS_GENE]-(x:db_STRING)
+        WHERE id(g)=node_id
+        RETURN node_id, x AS node
         """
 
     def get_go_genes_query(self):
         return """
         UNWIND $node_ids AS node_id
-        OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
-        WHERE id(g)=node_id[0]
-        RETURN node_id[1] AS index, collect(x) AS go_terms
+        MATCH (g)-[:GO_LINK]-(x:db_GO)
+        WHERE id(g)=node_id
+        RETURN node_id, collect(x) AS go_terms
         """
 
     def get_biocyc_genes_query(self):
         return """
-        MATCH (g)
-        WHERE id(g) IN $node_ids
-        OPTIONAL MATCH (g)-[:IS]-(x:db_BioCyc)
-        RETURN x AS node, x.biocyc_id AS biocyc_id
+        UNWIND $node_ids AS node_id
+        MATCH (g)-[:IS]-(x:db_BioCyc)
+        WHERE id(g)=node_id
+        RETURN node_id, x AS node, x.biocyc_id AS biocyc_id
         """
 
     def get_regulon_genes_query(self):
         return """
-        MATCH (g)
-        WHERE id(g) IN $node_ids
-        OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
-        RETURN x AS node, x.regulondb_id AS regulondb_id
+        UNWIND $node_ids AS node_id
+        MATCH (g)-[:IS]-(x:db_RegulonDB)
+        WHERE id(g)=node_id
+        RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
         """
 
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self):

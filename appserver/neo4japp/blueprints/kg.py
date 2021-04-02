@@ -19,6 +19,9 @@ def get_ncbi_enrichment_domains():
     data = request.get_json()
     node_ids = data.get('nodeIds')
     tax_id = data.get('taxID')
+
+    nodes = {}
+
     if node_ids is not None and tax_id is not None:
         kg = get_kg_service()
 
@@ -30,16 +33,16 @@ def get_ncbi_enrichment_domains():
         string = kg.get_string_genes(node_ids)
         uniprot = kg.get_uniprot_genes(node_ids)
 
-        nodes = [{
-            'regulon': regulon[i],
-            'uniprot': uniprot[i],
-            'string': string[i],
-            'go': go[i],
-            'biocyc': biocyc[i],
-            'node_id': node_id
-        } for i, node_id in enumerate(node_ids)]
-    else:
-        nodes = []
+        nodes = {
+            node_id: {
+                'regulon': regulon[node_id] if regulon.get(node_id) else None,
+                'uniprot': uniprot[node_id] if uniprot.get(node_id) else None,
+                'string': string[node_id] if string.get(node_id) else None,
+                'go': go[node_id] if go.get(node_id) else None,
+                'biocyc': biocyc[node_id] if biocyc.get(node_id) else None,
+                'node_id': node_id
+            } for node_id in node_ids}
+
     return jsonify({'result': nodes}), 200
 
 
