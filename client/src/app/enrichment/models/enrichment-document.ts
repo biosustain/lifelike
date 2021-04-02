@@ -175,6 +175,18 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
     }
   }
 
+  updateParameters(): Observable<Blob> {
+    return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
+      mergeMap((result: EnrichmentResult) => {
+        const importGenes = this.importGenes;
+        const taxID = this.taxID;
+        const organism = this.organism;
+        const domains = this.domains;
+        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, result});
+        return of(new Blob([JSON.stringify(data)]));
+      }));
+  }
+
   private annotate(): Observable<this> {
     // retrieve annotated enrichment snippets if they exist
     return this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
