@@ -12,7 +12,6 @@ from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
-from unidecode import unidecode
 
 from flask import json, jsonify, request
 
