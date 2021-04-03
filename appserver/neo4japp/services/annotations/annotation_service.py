@@ -6,7 +6,6 @@ from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
 
 from flask import current_app
-from pdfminer.layout import LTAnno, LTChar
 
 from neo4japp.constants import LogEventType
 from neo4japp.services.annotations import (

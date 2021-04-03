@@ -58,6 +58,7 @@ def connect_to_neo4j():
         g.neo4j = Graph(
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
+            scheme='bolt+ssc'
         )
     return g.neo4j
 

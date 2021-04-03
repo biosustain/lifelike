@@ -346,8 +346,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
               wrapper.string.result.annotation : '',
             annotatedText: wrapper.string.result.annotation !== 'annotation not available' ?
               wrapper.string.result.annotation : '',
-            link: wrapper.string.result.id ? wrapper.string.link + wrapper.string.result.id :
-              wrapper.string.link + wrapper.biocyc.result.biocyc_id,
+            link: wrapper.string.link + wrapper.string.result.id,
           },
         };
       }
@@ -383,17 +382,15 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
     return results;
   }
 
-  private processGoWrapper(nodeArray: GoNode[]): string {
-    if (nodeArray.length > 5) {
+  private processGoWrapper(goTerms: string[]): string {
+    if (goTerms.length > 5) {
       return (
-        nodeArray
-          .map((node) => node.name)
+        goTerms
           .slice(0, 5)
           .join('; ') + '...'
       );
     } else {
-      return nodeArray
-        .map((node) => node.name)
+      return goTerms
         .slice(0, 5)
         .join('; ');
     }
