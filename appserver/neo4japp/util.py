@@ -21,12 +21,6 @@ from py2neo import Node
 from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
 
 
-def clean_char(c) -> str:
-    # pdfminer does not correctly convert
-    # convert all unicode characters to nearest ascii
-    return unidecode(c)
-
-
 def normalize_str(s) -> str:
     normalized = s.lower()
     normalized = normalized.translate(str.maketrans('', '', punctuation))
