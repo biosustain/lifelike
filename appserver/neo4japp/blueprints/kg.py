@@ -25,8 +25,6 @@ def get_ncbi_enrichment_domains():
     if node_ids is not None and tax_id is not None:
         kg = get_kg_service()
 
-        # NOTE: these queries use OPTIONAL
-        # to make sure the index align below
         regulon = kg.get_regulon_genes(node_ids)
         biocyc = kg.get_biocyc_genes(node_ids, tax_id)
         go = kg.get_go_genes(node_ids)

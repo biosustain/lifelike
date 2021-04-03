@@ -12,11 +12,12 @@ bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
 def match_ncbi_nodes():
     # TODO: Validate incoming data using webargs + Marshmallow and move to class-based view
     data = request.get_json()
-    geneNames = data.get('geneNames')
+    gene_names = data.get('geneNames')
     organism = data.get('organism')
-    if organism is not None and geneNames is not None:
+    nodes = []
+
+    if organism is not None and gene_names is not None:
         enrichment_table = get_enrichment_table_service()
-        nodes = enrichment_table.match_ncbi_genes(geneNames, organism)
-    else:
-        nodes = []
+        nodes = enrichment_table.match_ncbi_genes(list(set(gene_names)), organism)
+
     return jsonify({'result': nodes}), 200

@@ -85,8 +85,6 @@ export interface Worksheet {
 
 export interface NCBINode {
   full_name: string;
-  id: string;
-  locus_tag: string;
   name: string;
 }
 
@@ -103,24 +101,13 @@ interface BiocycWrapper {
 }
 
 export interface BiocycNode {
-  accession: string;
   biocyc_id: string;
-  left_end_position: string;
-  name: string;
-  right_end_position: string;
-  strand: string;
   pathways: string[];
 }
 
 interface GoWrapper {
   link: string;
-  result: GoNode[];
-}
-
-export interface GoNode {
-  description: string;
-  id: string;
-  name: string;
+  result: string[];
 }
 
 interface RegulonWrapper {
@@ -147,10 +134,6 @@ interface StringWrapper {
 export interface StringNode {
   annotation: string;
   id: string;
-  name: string;
-  protein_size: number;
-  refseq: string;
-  tax_id: string;
 }
 
 interface UniprotWrapper {
@@ -160,10 +143,7 @@ interface UniprotWrapper {
 
 export interface UniprotNode {
   function: string;
-  gene_name: string;
   id: string;
-  name: string;
-  pathway: string;
 }
 
 export interface DomainWrapper {

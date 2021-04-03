@@ -209,7 +209,7 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': result['node'],
+                'result': {'id': result['uniprot_id'], 'function': result['function']},
                 'link': domain.base_URL.format(result['uniprot_id'])}
             for result in results}
 
@@ -228,7 +228,7 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': result['node'],
+                'result': {'id': result['string_id'], 'annotation': result['annotation']},
                 'link': 'https://string-db.org/cgi/network?identifiers='}
             for result in results}
 
@@ -251,7 +251,7 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': result['node'],
+                'result': {'id': result['biocyc_id'], 'pathways': result['pathways']},
                 'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
                     if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"}  # noqa
             for result in results}
@@ -441,7 +441,7 @@ class KgService(HybridDBDao):
         UNWIND $node_ids AS node_id
         MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
         WHERE id(g)=node_id
-        RETURN node_id, x AS node, x.id AS uniprot_id
+        RETURN node_id, x.function AS function, x.id AS uniprot_id
         """
 
     def get_string_genes_query(self):
@@ -449,7 +449,7 @@ class KgService(HybridDBDao):
         UNWIND $node_ids AS node_id
         MATCH (g)-[:HAS_GENE]-(x:db_STRING)
         WHERE id(g)=node_id
-        RETURN node_id, x AS node
+        RETURN node_id, x.id AS string_id, x.annotation AS annotation
         """
 
     def get_go_genes_query(self):
@@ -457,7 +457,7 @@ class KgService(HybridDBDao):
         UNWIND $node_ids AS node_id
         MATCH (g)-[:GO_LINK]-(x:db_GO)
         WHERE id(g)=node_id
-        RETURN node_id, collect(x) AS go_terms
+        RETURN node_id, collect(x.name) AS go_terms
         """
 
     def get_biocyc_genes_query(self):
@@ -465,7 +465,7 @@ class KgService(HybridDBDao):
         UNWIND $node_ids AS node_id
         MATCH (g)-[:IS]-(x:db_BioCyc)
         WHERE id(g)=node_id
-        RETURN node_id, x AS node, x.biocyc_id AS biocyc_id
+        RETURN node_id, x.pathways AS pathways, x.biocyc_id AS biocyc_id
         """
 
     def get_regulon_genes_query(self):

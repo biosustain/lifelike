@@ -69,7 +69,7 @@ class EnrichmentTableService(KgService):
         return EnrichmentCellTextMapping(
             text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
 
-    def match_ncbi_genes(self, geneNames: List[str], organism: str):
+    def match_ncbi_genes(self, gene_names: List[str], organism: str):
         """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
             ID of given organism. Input order is maintained in result.
         """
@@ -77,7 +77,7 @@ class EnrichmentTableService(KgService):
         results = self.graph.run(
             query,
             {
-                'geneNames': geneNames,
+                'gene_names': gene_names,
                 'organism': organism
             }
         ).data()
@@ -91,7 +91,10 @@ class EnrichmentTableService(KgService):
                 message='There was a problem finding NCBI domain URLs.')
 
         return [{
-            'gene': result['gene'],
+            'gene': {
+                'name': result['gene_name'],
+                'full_name': result['gene_full_name']
+            },
             'synonyms': result['synonyms'],
             'neo4jID': result['neo4j_id'],
             'link': domain.base_URL.format(
@@ -99,9 +102,9 @@ class EnrichmentTableService(KgService):
 
     def match_ncbi_genes_query(self):
         return """
-        WITH $geneNames AS genes UNWIND genes AS gene
+        UNWIND $gene_names AS gene
         MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
             [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-        RETURN collect(s.name) AS synonyms, g AS gene, g.id AS gene_id, \
-            id(g) AS neo4j_id
+        RETURN collect(s.name) AS synonyms, id(g) AS neo4j_id, \
+            g.id AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
         """
