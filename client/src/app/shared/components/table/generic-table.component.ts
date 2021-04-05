@@ -1,18 +1,30 @@
-import { Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { HighlightTextService } from '../../services/highlight-text.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-generic-table',
   templateUrl: './generic-table.component.html',
-  styleUrls: ['./generic-table.component.scss']
+  styleUrls: ['./generic-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GenericTableComponent {
+export class GenericTableComponent implements OnInit, OnDestroy {
   HEADER: TableHeader[][];
 
   // Number of columns can be inferred from the headers
   numColumns: number[];
 
-  constructor() {}
+  protected readonly subscriptions = new Subscription();
 
+  @Input() object: FilesystemObject | undefined;
   // Probably don't need setters for all of these
   @Input()
   set header(header: TableHeader[][]) {
@@ -21,6 +33,20 @@ export class GenericTableComponent {
     this.numColumns = new Array(num);
   }
   @Input() entries: TableCell[][];
+
+  constructor(protected readonly highlightTextService: HighlightTextService,
+              protected readonly elementRef: ElementRef) {
+  }
+
+  ngOnInit() {
+    this.subscriptions.add(this.highlightTextService.addEventListeners(this.elementRef.nativeElement, {
+      object: this.object,
+    }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 }
 
 export interface TableCell {

@@ -1,5 +1,8 @@
 import os
+
 from datetime import timezone
+from enum import Enum
+
 
 TIMEZONE = timezone.utc
 
@@ -23,12 +26,37 @@ PROP_COMMON_NAME = 'common_name'
 
 NODE_SPECIES = 'Species'
 
+# KG labels
 DB_REGULONDB = 'RegulonDB'
 DB_BIOCYC = 'BioCyc'
 DB_NCBI = 'NCBI'
 DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
+
+
+# enrichment labels
+class EnrichmentDomain(Enum):
+    UNIPROT = 'UniProt'
+    REGULON = 'Regulon'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'Biocyc'
+
+
+class LogEventType(Enum):
+    ANNOTATION = 'annotations'
+    AUTHENTICATION = 'authentication'
+    CONTENT_SEARCH = 'content_search'
+    ELASTIC = 'elastic'
+    ENRICHMENT = 'enrichment_table'
+    KNOWLEDGE_GRAPH = 'knowledge_graph'
+    SENTRY_HANDLED = 'handled_exception'
+    SENTRY_UNHANDLED = 'unhandled_exception'
+    SYSTEM = 'system'
+    VISUALIZER = 'visualizer'
+    VISUALIZER_SEARCH = 'visualizer_search'
+
 
 DOMAIN_LABELS = [
     'db_CHEBI',

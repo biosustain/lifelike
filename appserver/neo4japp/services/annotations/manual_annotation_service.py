@@ -278,6 +278,9 @@ class ManualAnnotationService:
             return file.custom_annotations
         annotations = file.annotations
         # for some reason enrichment table returns list in here
+        # should no longer trigger JIRA LL-2820
+        # leaving for backward compatibility
+        # new tables or re-annotated tables will not have a list
         if isinstance(file.annotations, list):
             annotations = annotations[0]
         annotations = annotations['documents'][0]['passages'][0]['annotations']

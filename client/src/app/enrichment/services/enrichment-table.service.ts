@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
-import { EnrichmentResult } from '../models/enrichment-document';
+import { EnrichmentParsedData } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentTableService {
@@ -19,7 +19,7 @@ export class EnrichmentTableService {
    */
   matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
     return this.http.post<{ result: NCBIWrapper[] }>(
-      `/api/enrichment-table/match-ncbi-nodes`,
+      '/api/enrichment-table/match-ncbi-nodes',
       {geneNames, organism},
       this.apiService.getHttpOptions(true),
     ).pipe(
@@ -52,22 +52,22 @@ export class EnrichmentTableService {
     );
   }
 
-  refreshEnrichmentAnnotations(hashIds: string[], refresh: boolean): Observable<any> {
+  refreshEnrichmentAnnotations(hashIds: string[]): Observable<any> {
     return this.http.post(
       `/api/filesystem/annotations/refresh`,
-      {hashIds, refresh},
+      {hashIds},
       this.apiService.getHttpOptions(true)
     ).pipe(
       map((resp: any) => resp.results)
     );
   }
 
-  getAnnotatedEnrichment(hashId: string): Observable<EnrichmentResult> {
-    return this.http.get(
+  getAnnotatedEnrichment(hashId: string): Observable<EnrichmentParsedData> {
+    return this.http.get<{results: EnrichmentParsedData}>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.results),
+      map(resp => resp.results),
     );
   }
 }

@@ -103,7 +103,11 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                 from(this.objectCreationService.executePutWithProgressDialog({
                   ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
                   contentValue: blob,
-                }))),
+                }, {
+                  organism: {
+                    organism_name: document.organism,
+                    synonym: document.organism,
+                    tax_id: document.taxID}}))),
               finalize(() => progressDialogRef.close()),
             ).toPromise();
           });
@@ -136,8 +140,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             })),
           });
 
-          return value.document.refreshData().pipe(
-            mergeMap(doc => doc.save()),
+          // old files can have outdated or corrupted data/schema
+          // so instead of refreshing, update and save
+          // this will trigger recreating the enrichment JSON
+          return value.document.updateParameters().pipe(
             mergeMap(newBlob => this.filesystemService.save([target.hashId], {
               contentValue: newBlob,
               ...value.request,

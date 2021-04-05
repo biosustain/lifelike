@@ -1,41 +1,75 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { escapeRegExp } from 'lodash';
+
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+
+import { isNullOrUndefined } from 'util';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ObjectVersion } from 'app/file-browser/models/object-version';
+import { ObjectUpdateRequest } from 'app/file-browser/schema';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { NodeTextRange } from 'app/shared/utils/dom';
+import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
+
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
-import { ObjectUpdateRequest } from '../../../file-browser/schema';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
 } from './dialog/enrichment-table-edit-dialog.component';
 
+// TODO: Is there an existing interface we could use here?
+interface AnnotationData {
+  id: string;
+  text: string;
+  color: string;
+}
+
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
+  @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
+
+  annotation: AnnotationData;
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
+  findController: AsyncElementFind;
+  findTargetChangesSub: Subscription;
+  private tickAnimationFrameId: number;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -50,8 +84,14 @@ export class EnrichmentTableViewerComponent implements OnInit {
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog,
-              protected readonly changeDetectorRef: ChangeDetectorRef) {
+              protected readonly changeDetectorRef: ChangeDetectorRef,
+              protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
+    this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
+    this.findController = new AsyncElementFind(
+      null, // We'll update this later, once the table is rendered
+      this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
+    );
   }
 
   ngOnInit() {
@@ -84,6 +124,50 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
+  }
+
+  ngAfterViewInit() {
+    this.findTargetChangesSub = this.findTarget.changes.subscribe({
+      next: () => {
+        if (this.findTarget.first) {
+          this.findController.target = this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0];
+          // This may seem like an anti-pattern -- and it probably is -- but there is seemingingly no other way around Angular's
+          // `ExpressionChangedAfterItHasBeenCheckedError` here. Even Angular seems to think so, as they use this exact pattern in their
+          // own example: https://angular.io/api/core/ViewChildren#another-example
+          setTimeout(() => {
+            // TODO: Need to have a brief background color animation when the table is loaded and the first match is rendered. (?)
+            // Actually not sure if this the desired behavior.
+            this.findController.start();
+          }, 0);
+        } else {
+          this.findController.target = null;
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    cancelAnimationFrame(this.tickAnimationFrameId);
+    if (!isNullOrUndefined(this.findTargetChangesSub)) {
+      this.findTargetChangesSub.unsubscribe();
+    }
+    // Give the findController a chance to teardown any listeners/callbacks/subscriptions etc.
+    this.findController.stop();
+  }
+
+  parseAnnotationFromUrl(fragment: string): AnnotationData {
+    const params = new URLSearchParams(fragment);
+    return {
+      id: params.get('id') || '',
+      text: params.get('text') || '',
+      color: params.get('color') || ''
+    };
+  }
+
+  tick() {
+    this.findController.tick();
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
   }
 
   restore(version: ObjectVersion) {
@@ -131,7 +215,12 @@ export class EnrichmentTableViewerComponent implements OnInit {
     const observable = combineLatest(
       this.object$,
       this.document$.pipe(
-        mergeMap(document => document.save()),
+        // need to use updateParameters instead of save
+        // because save only update the import genes list
+        // not the matched results
+        // so a new version of the file will not get created
+        // the newly added gene matched
+        mergeMap(document => document.updateParameters()),
       ),
     ).pipe(
       take(1),
@@ -192,7 +281,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
       });
-      this.refreshData();
+      this.save();
     }, () => {
     });
   }
@@ -216,5 +305,110 @@ export class EnrichmentTableViewerComponent implements OnInit {
   objectUpdate() {
     this.emitModuleProperties();
     this.load();
+  }
+
+  switchToTextFind() {
+    this.annotation = {id: '', text: '', color: ''};
+    this.findController.stop();
+    this.findController = new AsyncElementFind(
+      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.generateTextFindQueue
+    );
+  }
+
+  switchToAnnotationFind(id: string, text: string, color: string) {
+    this.annotation = {id, text, color};
+    this.findController.stop();
+    this.findController = new AsyncElementFind(
+      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.generateAnnotationFindQueue
+    );
+  }
+
+  startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
+    this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
+    this.findController.query = annotationId;
+    this.findController.start();
+  }
+
+  private* generateAnnotationFindQueue(***ARANGO_USERNAME***: Node, query: string) {
+    const annotations = Array.from((***ARANGO_USERNAME*** as Element).querySelectorAll('[data-annotation-meta]')) as HTMLElement[];
+    for (const annoEl of annotations) {
+      const data = JSON.parse(annoEl.getAttribute('data-annotation-meta'));
+
+      if (data.id === query) {
+        yield {
+          // The elements with `data-annotation-meta` should have exactly one child: the TextNode representing the annotated text
+          startNode: annoEl.firstChild,
+          endNode: annoEl.firstChild,
+          start: 0,
+          end: annoEl.textContent.length, // IMPORTANT: `end` is EXCLUSIVE!
+        };
+      }
+    }
+  }
+
+  private* generateTextFindQueue(***ARANGO_USERNAME***: Node, query: string): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [
+      ***ARANGO_USERNAME***,
+    ];
+
+    while (queue.length !== 0) {
+      const node = queue.shift();
+      if (node === undefined) {
+        break;
+      }
+
+      switch (node.nodeType) {
+        case Node.ELEMENT_NODE:
+          const el = node as HTMLElement;
+          const style = window.getComputedStyle(el);
+          // Should be true when we find the top-level container for the table cell
+          if (style.display === 'block') {
+            const regex = new RegExp(escapeRegExp(query), 'ig');
+            let match = regex.exec(node.textContent);
+
+            // If there's no match in the ***ARANGO_USERNAME***, then there's no reason to continue
+            if (match === null) {
+              break;
+            }
+
+            // Since there was a match, get all the descendant text nodes
+            const treeWalker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            const textNodes: Node[] = [];
+            let currentNode = treeWalker.nextNode(); // Using `nextNode` here skips the ***ARANGO_USERNAME*** node, which is intended
+            while (currentNode) {
+              textNodes.push(currentNode);
+              currentNode = treeWalker.nextNode();
+            }
+
+            // Create a map of the ***ARANGO_USERNAME*** text content indices to the descendant text node corresponding to that index
+            let index = 0;
+            const textNodeMap = new Map<number, [Node, number]>();
+            for (const textNode of textNodes) {
+              for (let i = 0; i < textNode.textContent.length; i++) {
+                textNodeMap.set(index++, [textNode, i]);
+              }
+            }
+
+            while (match !== null) {
+              // Need to catch the case where regex.lastIndex returns a value greater than the last index of the text
+              const lastIndexIsEOS = regex.lastIndex === node.textContent.length;
+              const endOfMatch = lastIndexIsEOS ? regex.lastIndex - 1 : regex.lastIndex;
+
+              yield {
+                startNode: textNodeMap.get(match.index)[0],
+                endNode: textNodeMap.get(endOfMatch)[0],
+                start: textNodeMap.get(match.index)[1],
+                end: textNodeMap.get(endOfMatch)[1] + (lastIndexIsEOS ? 1 : 0), // IMPORTANT: `end` is EXCLUSIVE!
+              };
+              match = regex.exec(node.textContent);
+            }
+            break;
+          }
+          queue.push(...Array.from(node.childNodes));
+          break;
+      }
+    }
   }
 }
