@@ -2,11 +2,17 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, forkJoin, throwError, defer, zip, of, EMPTY } from 'rxjs';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { StorageService } from 'app/shared/services/storage.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+
+// TODO: Deprecate after LL-2840
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
+import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
+import { tap, concatMap, mergeMap, catchError, delay, retry } from 'rxjs/operators';
 
 @Component({
     selector: 'app-admin-settings-view',
@@ -23,6 +29,8 @@ export class AdminSettingsComponent {
         private readonly errorHandler: ErrorHandler,
         private readonly snackBar: MatSnackBar,
         private storage: StorageService,
+        private filesystemService: FilesystemService,
+        private worksheetViewerService: EnrichmentTableService,
     ) {}
 
     fileChanged(event) {
@@ -32,6 +40,29 @@ export class AdminSettingsComponent {
         } else {
             this.form.get('files').setValue(null);
         }
+    }
+
+    // TODO: Deprecate after LL-2840
+    updateEnrichment() {
+      this.filesystemService.getAllEnrichmentTables().pipe(
+        mergeMap(hashId => hashId, 5),
+        concatMap(
+          hashId => zip(of(hashId), this.filesystemService.getContent(hashId).pipe(
+            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+          ),
+        concatMap(
+          ([hashId, blob]) => zip(of(hashId), new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, hashId).pipe(
+            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+          ),
+        concatMap(
+          ([hashId, document]) => zip(of(hashId), document.updateParameters().pipe(
+            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+          ),
+        concatMap(
+          ([hashId, newBlob]) => this.filesystemService.save([hashId], {contentValue: newBlob}).pipe(
+            delay(1000), catchError((err) => {console.log(err); return EMPTY;}))
+          ),
+      ).subscribe((x) => console.log(x), (err) => console.log(err));
     }
 
     submit() {
