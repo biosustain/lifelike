@@ -123,7 +123,9 @@ export class FilesystemService {
         ...this.apiService.getHttpOptions(true),
         responseType: 'json',
       }
-    ).pipe(map(data => from(data.result)))
+    ).pipe(
+      map(data => from(data.result))
+    );
   }
 
   generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
