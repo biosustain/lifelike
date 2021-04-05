@@ -33,11 +33,11 @@ def get_ncbi_enrichment_domains():
 
         nodes = {
             node_id: {
-                'regulon': regulon[node_id] if regulon.get(node_id) else None,
-                'uniprot': uniprot[node_id] if uniprot.get(node_id) else None,
-                'string': string[node_id] if string.get(node_id) else None,
-                'go': go[node_id] if go.get(node_id) else None,
-                'biocyc': biocyc[node_id] if biocyc.get(node_id) else None,
+                'regulon': regulon.get(node_id, None),
+                'uniprot': uniprot.get(node_id, None),
+                'string': string.get(node_id, None),
+                'go': go.get(node_id, None),
+                'biocyc': biocyc.get(node_id, None),
                 'node_id': node_id
             } for node_id in node_ids}
 

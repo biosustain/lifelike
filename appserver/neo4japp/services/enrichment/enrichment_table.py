@@ -101,6 +101,10 @@ class EnrichmentTableService(KgService):
                 result['gene_id']) if result['gene_id'] else ''} for result in results]
 
     def match_ncbi_genes_query(self):
+        """Need to collect synonyms because a gene node can have multiple
+        synonyms. So it is possible to send duplicate internal node ids to
+        a later query."""
+
         return """
         UNWIND $gene_names AS gene
         MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
