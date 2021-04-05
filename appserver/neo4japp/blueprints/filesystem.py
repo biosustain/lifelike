@@ -17,12 +17,12 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager, defer
+from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
-from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
+from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
 from neo4japp.models import (
     Projects,
     Files,
@@ -70,6 +70,23 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 # - They may be recycled
 # - They may be deleted
 # - The project that the files are in may be recycled
+
+
+# TODO: Deprecate me after LL-2840
+@bp.route('/enrichment-tables', methods=['GET'])
+@auth.login_required
+def get_all_enrichment_tables():
+    is_admin = g.current_user.has_role('admin')
+    if is_admin is False:
+        raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
+
+    query = db.session.query(Files.hash_id).filter(
+        and_(
+            Files.mime_type == 'vnd.lifelike.document/enrichment-table',
+            Files.annotation_configs.is_(None)),
+        )
+    results = [hash_id[0] for hash_id in query.all()]
+    return jsonify(dict(result=results)), 200
 
 
 class FilesystemBaseView(MethodView):
