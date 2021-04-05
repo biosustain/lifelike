@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, forkJoin, throwError, defer, zip, of, EMPTY } from 'rxjs';
+import { BehaviorSubject, throwError, zip, of, EMPTY } from 'rxjs';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { StorageService } from 'app/shared/services/storage.service';
@@ -12,7 +12,7 @@ import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
-import { tap, concatMap, mergeMap, catchError, delay, retry } from 'rxjs/operators';
+import { mergeAll, concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
 
 @Component({
     selector: 'app-admin-settings-view',
@@ -102,10 +102,10 @@ export class AdminSettingsComponent {
                   return EMPTY;
                 })
               )
-          )
+          ),
         )
         .subscribe(
-          (x) => console.log(x),
+          (x) => console.log(`Updated enrichment table: ${x}`),
           (err) => console.log(err)
         );
     }
