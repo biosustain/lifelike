@@ -6,8 +6,13 @@ import { nullCoalesce } from '../../shared/utils/types';
 
 export class EnrichmentTable {
 
+  protected readonly usePlainText: boolean;
   tableHeader: TableHeader[][] = [];
   tableCells: TableCell[][] = [];
+
+  constructor(options: { usePlainText?: boolean } = {}) {
+    this.usePlainText = options.usePlainText || false;
+  }
 
   load(document: EnrichmentDocument): Observable<this> {
     const tableCells: TableCell[][] = [];
@@ -68,17 +73,17 @@ export class EnrichmentTable {
       // that's why can set text properties like this
       for (const resultGene of result.genes) {
         const row: TableCell[] = [{
-          text: resultGene.annotatedImported || resultGene.imported,
+          text: this.usePlainText ? resultGene.imported : resultGene.annotatedImported || resultGene.imported,
         }];
 
         if (resultGene.domains) {
           // There was a match
           row.push({
-            text: resultGene.annotatedMatched,
+            text: this.usePlainText ? resultGene.matched : resultGene.annotatedMatched,
           });
 
           row.push({
-            text: resultGene.annotatedFullName,
+            text: this.usePlainText ? resultGene.fullName : resultGene.annotatedFullName,
             singleLink: {
               link: resultGene.link,
               linkText: 'NCBI Link',
@@ -91,7 +96,7 @@ export class EnrichmentTable {
               const geneDomainResult = resultGene.domains[domainId] && resultGene.domains[domainId][label];
               if (geneDomainResult) {
                 row.push({
-                  text: geneDomainResult.annotatedText,
+                  text: this.usePlainText ? geneDomainResult.text : geneDomainResult.annotatedText,
                   singleLink: {
                     link: geneDomainResult.link,
                     linkText: `${domainId} Link`,
