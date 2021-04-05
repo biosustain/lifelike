@@ -1,7 +1,12 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+} from '../../../../drawing-tool/services/interfaces';
 import { EdgeDeletion, NodeDeletion } from '../../../actions/nodes';
+import { GraphAction } from '../../../actions/actions';
 
 /**
  * Implements the 'delete' key.
@@ -13,13 +18,17 @@ export class DeleteKeyboardShortcut extends AbstractCanvasBehavior {
 
   keyDown(event: KeyboardEvent): BehaviorResult {
     if (event.key === 'Delete') {
+      const actions0: GraphAction[] = [];
+      const actions1: GraphAction[] = [];
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
-          this.graphView.execute(new NodeDeletion('Delete node', entity.entity as UniversalGraphNode));
+          actions1.push(new NodeDeletion('Delete node', entity.entity as UniversalGraphNode));
         } else if (entity.type === GraphEntityType.Edge) {
-          this.graphView.execute(new EdgeDeletion('Delete edge', entity.entity as UniversalGraphEdge));
+          actions0.push(new EdgeDeletion('Delete edge', entity.entity as UniversalGraphEdge));
         }
       }
+      this.graphView.execute(...actions0);
+      this.graphView.execute(...actions1);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;

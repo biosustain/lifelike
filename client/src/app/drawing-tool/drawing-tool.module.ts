@@ -15,6 +15,10 @@ import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { MapTypeProvider } from './providers/map.type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
+import { LinksPanelComponent } from './components/links-panel.component';
+import { DATA_TRANSFER_DATA_PROVIDER } from '../shared/services/data-transfer-data.service';
+import { GraphEntityDataProvider } from './providers/data-transfer-data/graph-entity-data.provider';
+import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
 
 @NgModule({
   declarations: [
@@ -27,22 +31,33 @@ import { InfoViewPanelComponent } from './components/info-view-panel.component';
     EdgeFormComponent,
     MapRestoreDialogComponent,
     InfoViewPanelComponent,
+    LinksPanelComponent,
+    LinkEditDialogComponent,
   ],
   entryComponents: [
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
     MapComponent,
     InfoViewPanelComponent,
+    LinksPanelComponent,
+    LinkEditDialogComponent,
   ],
   imports: [
     SharedModule,
     FileBrowserModule,
   ],
-  providers: [{
-    provide: TYPE_PROVIDER,
-    useClass: MapTypeProvider,
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: TYPE_PROVIDER,
+      useClass: MapTypeProvider,
+      multi: true,
+    },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: GraphEntityDataProvider,
+      multi: true,
+    },
+  ],
   exports: [
     RouterModule,
     MapComponent,

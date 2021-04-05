@@ -26,7 +26,7 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <div class="module-title-bar mr-4">
                         <h1 class="module-title text-truncate" draggable="true">
-                            Enrichment Visualisation
+                            Statistical Enrichment
                         </h1>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                 <ng-container *ngIf="status.running">
                     <div class="d-flex flex-fill align-items-center justify-content-center">
                         <app-module-progress>
-                            Loading enrichment visualisation...
+                            Loading Statistical Enrichment...
                         </app-module-progress>
                     </div>
                 </ng-container>
@@ -55,6 +55,22 @@
                         >
 
                         </app-group>
+                        <div class="card">
+                            <div class="card-header">Significance legend
+                            </div>
+                            <dl class="card-body legend">
+                                <dt>' '</dt>
+                                <dd><i>q-value</i> <= 1</dd>
+                                <dt>.</dt>
+                                <dd><i>q-value</i> <= 0.1</dd>
+                                <dt>*</dt>
+                                <dd><i>q-value</i> <= 0.05</dd>
+                                <dt>**</dt>
+                                <dd><i>q-value</i> <= 0.01</dd>
+                                <dt>***</dt>
+                                <dd><i>q-value</i> <= 0.001</dd>
+                            </dl>
+                        </div>
                     </div>
                 </ng-container>
             </ng-container>

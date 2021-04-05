@@ -826,23 +826,29 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Execute an action and store the action to the history stack, while also resetting the
    * history pointer.
-   * @param action the action to execute
+   * @param actions the actions to execute (could be an empty array)
    */
-  execute(action: GraphAction): void {
-    // We have unsaved changes
-    // this.saveState = false;  // TODO: remove this
+  execute(...actions: GraphAction[]): void {
+    const length = actions.length;
+    try {
+      for (const action of actions) {
+        // We have unsaved changes
+        // this.saveState = false;  // TODO: remove this
 
-    // Drop all changes after this one
-    this.history = this.history.slice(0, this.nextHistoryIndex);
-    this.history.push(action);
-    this.nextHistoryIndex++;
+        // Drop all changes after this one
+        this.history = this.history.slice(0, this.nextHistoryIndex);
+        this.history.push(action);
+        this.nextHistoryIndex++;
 
-    // Apply the change
-    action.apply(this);
-
-    this.historyChanges$.next();
-
-    this.requestRender();
+        // Apply the change
+        action.apply(this);
+      }
+    } finally {
+      if (length) {
+        this.historyChanges$.next();
+        this.requestRender();
+      }
+    }
   }
 
   // ========================================
