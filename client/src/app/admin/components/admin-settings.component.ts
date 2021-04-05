@@ -44,25 +44,70 @@ export class AdminSettingsComponent {
 
     // TODO: Deprecate after LL-2840
     updateEnrichment() {
-      this.filesystemService.getAllEnrichmentTables().pipe(
-        mergeMap(hashId => hashId, 5),
-        concatMap(
-          hashId => zip(of(hashId), this.filesystemService.getContent(hashId).pipe(
-            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+      this.filesystemService
+        .getAllEnrichmentTables()
+        .pipe(
+          mergeMap((hashId) => hashId, 5),
+          concatMap((hashId) =>
+            zip(
+              of(hashId),
+              this.filesystemService.getContent(hashId).pipe(
+                delay(1000),
+                catchError((err) => {
+                  console.log(err);
+                  return EMPTY;
+                })
+              )
+            )
           ),
-        concatMap(
-          ([hashId, blob]) => zip(of(hashId), new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, hashId).pipe(
-            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+          concatMap(([hashId, blob]) =>
+            zip(
+              of(hashId),
+              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, hashId).pipe(
+                delay(1000),
+                catchError((err) => {
+                  console.log(err);
+                  return EMPTY;
+                })
+              )
+            )
           ),
-        concatMap(
-          ([hashId, document]) => zip(of(hashId), document.updateParameters().pipe(
-            delay(1000), catchError((err) => {console.log(err); return EMPTY;})))
+          concatMap(([hashId, document]) =>
+            zip(
+              of(document),
+              of(hashId),
+              document.updateParameters().pipe(
+                delay(1000),
+                catchError((err) => {
+                  console.log(err);
+                  return EMPTY;
+                })
+              )
+            )
           ),
-        concatMap(
-          ([hashId, newBlob]) => this.filesystemService.save([hashId], {contentValue: newBlob}).pipe(
-            delay(1000), catchError((err) => {console.log(err); return EMPTY;}))
-          ),
-      ).subscribe((x) => console.log(x), (err) => console.log(err));
+          concatMap(([document, hashId, newBlob]) =>
+            this.filesystemService
+              .save([hashId], {
+                contentValue: newBlob,
+                fallbackOrganism: {
+                  organism_name: document.organism,
+                  synonym: document.organism,
+                  tax_id: document.taxID,
+                },
+              })
+              .pipe(
+                delay(1000),
+                catchError((err) => {
+                  console.log(err);
+                  return EMPTY;
+                })
+              )
+          )
+        )
+        .subscribe(
+          (x) => console.log(x),
+          (err) => console.log(err)
+        );
     }
 
     submit() {
