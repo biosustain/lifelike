@@ -83,8 +83,12 @@ def get_all_enrichment_tables():
     query = db.session.query(Files.hash_id).filter(
         and_(
             Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
-            Files.annotation_configs.is_(None)),
+            or_(
+                Files.annotation_configs.is_(None),
+                Files.fallback_organism_id.is_(None)
+            )
         )
+    )
     results = [hash_id[0] for hash_id in query.all()]
     return jsonify(dict(result=results)), 200
 
