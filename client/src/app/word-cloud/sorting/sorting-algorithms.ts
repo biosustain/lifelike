@@ -62,7 +62,7 @@ over similar counts collected from a single source.<br/>
         step: 0.1,
         default: 0,
       },
-      mwu
+      // mwu <Temporarily disabled>
     ]
   },
   'application/pdf': {
@@ -81,19 +81,19 @@ over similar counts collected from a single source.<br/>
         valueDescription: 'Count per row',
         min: 0,
         step: 1,
-        default: 0,
+        default: 1,
       },
-      {
-        ...mwu,
-        description: `
-Each word are weighted according to a one-sided MWU test that assesses whether a count
-for that specific term tends to be larger than a count from any other term.<br/>
-<p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
-Normally one would simply sum occurrences of the gene within the row, however,
-since some columns might be highly correlated (duplicated text)
-the number of maximum mentions per column is used as an sample for that row.
-        `,
-      }
+//       {
+//         ...mwu,
+//         description: `
+// Each word are weighted according to a one-sided MWU test that assesses whether a count
+// for that specific term tends to be larger than a count from any other term.<br/>
+// <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
+// Normally one would simply sum occurrences of the gene within the row, however,
+// since some columns might be highly correlated (duplicated text)
+// the number of maximum mentions per column is used as an sample for that row.
+//         `,
+//       }
     ]
   }
 };

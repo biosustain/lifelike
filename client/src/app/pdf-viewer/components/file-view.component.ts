@@ -35,6 +35,7 @@ import { AnnotationsService } from '../../file-browser/services/annotations.serv
 import { SearchControlComponent } from '../../shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -382,7 +383,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
     const sources = [{
-      domain: 'File Source',
+      domain: this.object.filename,
       url: source,
     }];
 
@@ -401,6 +402,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     const hyperlink = meta.idHyperlink || '';
+    let hyperlinkText = 'Annotation URL';
+    try {
+      hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
+    } catch (e) {
+    }
 
     const search = Object.keys(meta.links || []).map(k => {
       return {
@@ -412,7 +418,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const text = meta.type === 'link' ? 'Link' : meta.allText;
 
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', text);
+    dataTransfer.setData('text/plain', meta.allText);
+    GenericDataProvider.setURIs(dataTransfer, [{
+      title: text,
+      uri: new URL(source, window.location.href).href,
+    }]);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: text,
       label: meta.type.toLowerCase(),
@@ -428,7 +438,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           url: hyperlink,
         }],
         hyperlinks: [{
-          domain: 'Annotation URL',
+          domain: hyperlinkText,
           url: hyperlink,
         }],
         detail: meta.type === 'link' ? meta.allText : '',
@@ -667,7 +677,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           id: this.object.hashId + '',
         }],
         sources: [{
-          domain: 'File Source',
+          domain: this.object.filename,
           url: ['/projects', encodeURIComponent(this.object.project.name),
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],

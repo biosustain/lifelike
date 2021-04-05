@@ -44,12 +44,14 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         excludeReferences: new FormControl(true),
         annotationMethods: new FormGroup(
           this.annotationModels.reduce(
-            (obj, key) => ({...obj, [key]: new FormGroup(
-              {
-                nlp: new FormControl(false),
-                rulesBased: new FormControl(true)
-              })}), {})
-        )
+            (obj, key) => ({
+              ...obj, [key]: new FormGroup(
+                {
+                  nlp: new FormControl(false),
+                  rulesBased: new FormControl(true),
+                }),
+            }), {}),
+        ),
       }, [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
@@ -108,25 +110,28 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       mimeType: value.mimeType,
       organism: value.fallbackOrganism,
     });
+
     if (!value.parent) {
       this.promptParent = true;
     }
-  }
 
-  @Input()
-  set configs(value: AnnotationConfigurations) {
-    if (value) {
+    const annotationConfigs = value.annotationConfigs;
+    if (annotationConfigs != null) {
       let ctrl = (
         (this.form.get('annotationConfigs') as FormGroup).get('annotationMethods') as FormControl);
-      for (const [modelName, config] of Object.entries(value.annotationMethods)) {
-        if (ctrl.get(modelName)) {
-          ctrl.get(modelName).patchValue(config);
+      if (annotationConfigs.annotationMethods != null) {
+        for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
+          if (ctrl.get(modelName)) {
+            ctrl.get(modelName).patchValue(config);
+          }
         }
       }
 
-      ctrl = (
-        (this.form.get('annotationConfigs') as FormGroup).get('excludeReferences') as FormControl);
-      ctrl.patchValue(value.excludeReferences);
+      if (annotationConfigs.excludeReferences != null) {
+        ctrl = (
+          (this.form.get('annotationConfigs') as FormGroup).get('excludeReferences') as FormControl);
+        ctrl.patchValue(annotationConfigs.excludeReferences);
+      }
     }
   }
 
@@ -167,7 +172,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       public: value.public,
       mimeType: value.mimeType,
       fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs
+      annotationConfigs: value.annotationConfigs,
     };
 
     const request: ObjectCreateRequest = {

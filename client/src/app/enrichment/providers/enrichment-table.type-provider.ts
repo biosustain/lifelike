@@ -1,5 +1,6 @@
 import {
   AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
@@ -13,7 +14,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchType } from '../../search/shared';
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { finalize, map, mergeMap, tap } from 'rxjs/operators';
+import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
@@ -23,24 +24,30 @@ import { EnrichmentTable } from '../models/enrichment-table';
 import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
 import {
   EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue
+  EnrichmentTableEditDialogValue,
 } from '../components/table/dialog/enrichment-table-edit-dialog.component';
 import { ObjectContentSource, ObjectCreateRequest } from '../../file-browser/schema';
+import { AnnotationsService } from '../../file-browser/services/annotations.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { openModal } from '../../shared/utils/modals';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
 
-  constructor(protected readonly objectCreationService: ObjectCreationService,
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
               protected readonly modalService: NgbModal,
-              protected readonly worksheetViewerService: EnrichmentTableService,
               protected readonly progressDialog: ProgressDialog,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly annotationsService: AnnotationsService,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly objectCreationService: ObjectCreationService,
+              protected readonly worksheetViewerService: EnrichmentTableService,
               protected readonly componentFactoryResolver: ComponentFactoryResolver,
               protected readonly injector: Injector,
-              protected readonly filesystemService: FilesystemService,
               protected readonly worksheetService: EnrichmentTableService) {
-    super();
+    super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -96,7 +103,11 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                 from(this.objectCreationService.executePutWithProgressDialog({
                   ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
                   contentValue: blob,
-                }))),
+                }, {
+                  organism: {
+                    organism_name: document.organism,
+                    synonym: document.organism,
+                    tax_id: document.taxID}}))),
               finalize(() => progressDialogRef.close()),
             ).toPromise();
           });
@@ -105,9 +116,62 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     }];
   }
 
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+    const progressDialogRef = this.progressDialog.display({
+      title: 'Edit Enrichment Table',
+      progressObservable: new BehaviorSubject<Progress>(new Progress({
+        status: 'Getting table information for editing...',
+      })),
+    });
+
+    return this.filesystemService.getContent(target.hashId).pipe(
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, target.hashId)),
+      tap(() => progressDialogRef.close()),
+      mergeMap(document => {
+        const dialogRef = openModal(this.modalService, EnrichmentTableEditDialogComponent);
+        dialogRef.componentInstance.object = target;
+        dialogRef.componentInstance.document = document;
+        dialogRef.componentInstance.fileId = target.hashId;
+        dialogRef.componentInstance.accept = (value: EnrichmentTableEditDialogValue) => {
+          const progressDialog2Ref = this.progressDialog.display({
+            title: 'Working...',
+            progressObservable: new BehaviorSubject<Progress>(new Progress({
+              status: 'Updating enrichment table...',
+            })),
+          });
+
+          // old files can have outdated or corrupted data/schema
+          // so instead of refreshing, update and save
+          // this will trigger recreating the enrichment JSON
+          return value.document.updateParameters().pipe(
+            mergeMap(newBlob => this.filesystemService.save([target.hashId], {
+              contentValue: newBlob,
+              ...value.request,
+            })),
+            map(() => value),
+            // Errors are lost below with the catch() so we need to handle errors here too
+            this.errorHandler.create(),
+            finalize(() => progressDialog2Ref.close()),
+          ).toPromise();
+        };
+
+        return from(dialogRef.result.catch(() => {
+          // A cancel should not be converted to an error
+        }));
+      }),
+      take(1),
+      this.errorHandler.create(),
+      finalize(() => progressDialogRef.close()),
+    ).toPromise();
+  }
+
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, shorthand: 'enrichment-table', name: 'Enrichment Tables'}),
+      Object.freeze({
+        id: ENRICHMENT_TABLE_MIMETYPE,
+        shorthand: 'enrichment-table',
+        name: 'Enrichment Tables',
+      }),
     ];
   }
 

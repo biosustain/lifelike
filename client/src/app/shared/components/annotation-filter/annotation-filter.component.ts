@@ -1,18 +1,5 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, } from '@angular/core';
+import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 
 import { uniqueId } from 'lodash';
 
@@ -28,7 +15,7 @@ import {
   DefaultOrderByOptions,
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
-import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
+import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
 
 @Component({
   selector: 'app-annotation-filter',
@@ -38,32 +25,8 @@ import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
 export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
   id = uniqueId('AnnotationFilterComponent-');
 
+  _sortingAlgorithm: SortingAlgorithm;
   _annotationData: T[];
-  @Input() set annotationData(data: T[]) {
-    this._annotationData = data;
-    // Get all the annotation types to populate the legend
-    data.forEach((annotation) => {
-      this.legend.set(annotation.type, annotation.color);
-    });
-
-    // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
-    // visibility.
-    this.legend.forEach((_, type) => {
-      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
-    });
-
-    // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
-    // need to apply the filters and output to the parent.
-    if (this.initialized) {
-      this.applyFilters();
-      this.outputSubject.next();
-    }
-  }
-  get annotationData() {
-    return this._annotationData;
-  }
-  @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
-  @Input() sortingAlgorithm: SortingAlgorithm;
 
   outputSubject: Subject<boolean>;
   outputSubjectSub: Subscription;
@@ -92,6 +55,42 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
   initialized = false;
 
+  @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
+
+  @Input() set annotationData(data: T[]) {
+    this._annotationData = data;
+    // Get all the annotation types to populate the legend
+    data.forEach((annotation) => {
+      this.legend.set(annotation.type, annotation.color);
+    });
+
+    // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
+    // visibility.
+    this.legend.forEach((_, type) => {
+      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
+    });
+
+    // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
+    // need to apply the filters and output to the parent.
+    if (this.initialized) {
+      this.applyFilters();
+      this.outputSubject.next();
+    }
+  }
+
+  get annotationData() {
+    return this._annotationData;
+  }
+
+  @Input() set sortingAlgorithm(sa: SortingAlgorithm) {
+    this._sortingAlgorithm = sa;
+    this.setDefaultFrequency();
+  }
+
+  get sortingAlgorithm() {
+    return this._sortingAlgorithm;
+  }
+
   constructor() {
     this.outputSubject = new Subject<boolean>();
 
@@ -118,8 +117,12 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     const validators = [
       Validators.required
     ];
-    if (this.sortingAlgorithm.hasOwnProperty('min')) { validators.push(Validators.min(this.sortingAlgorithm.min)); }
-    if (this.sortingAlgorithm.step === 1) { validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/)); }
+    if (this.sortingAlgorithm.hasOwnProperty('min')) {
+      validators.push(Validators.min(this.sortingAlgorithm.min));
+    }
+    if (this.sortingAlgorithm.step === 1) {
+      validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/));
+    }
     this.filtersForm = new FormGroup(
       // Form controls
       {
@@ -135,7 +138,9 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     );
 
     // The very first time we get the annotationData, set the default values for the frequency filters
-    if (this.sortingAlgorithm.hasOwnProperty('default')) { this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default); }
+    if (this.sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    }
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
 
@@ -162,6 +167,13 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.applyFilters();
     this.outputSubject.next();
     this.initialized = true;
+  }
+
+  setDefaultFrequency() {
+    const {filtersForm, sortingAlgorithm} = this;
+    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    }
   }
 
   updateVisibility() {
@@ -473,8 +485,8 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
       const maxFreqControl = fg.get('maximumValue');
 
       if (minFreqControl.value > maxFreqControl.value) {
-        minFreqControl.setErrors({ ...minFreqControl.errors, badMinMax: true });
-        maxFreqControl.setErrors({ ...maxFreqControl.errors, badMinMax: true });
+        minFreqControl.setErrors({...minFreqControl.errors, badMinMax: true});
+        maxFreqControl.setErrors({...maxFreqControl.errors, badMinMax: true});
       } else {
         let minFreqControlErrors = minFreqControl.errors;
         let maxFreqControlErrors = maxFreqControl.errors;

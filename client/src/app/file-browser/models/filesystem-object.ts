@@ -5,16 +5,20 @@ import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
-  KnowledgeMap, Source,
+  KnowledgeMap,
+  Source,
   UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
+import {
+  FILESYSTEM_OBJECT_TRANSFER_TYPE,
+  FilesystemObjectTransferData,
+} from '../providers/data-transfer-data/filesystem-object-data.provider';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -133,7 +137,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
-  annotationConfigs: AnnotationConfigurations;
+  annotationConfigs?: AnnotationConfigurations;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -441,12 +445,38 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   getURL(forEditing = true): string {
     // TODO: Move this method to ObjectTypeProvider
-    return this.getCommands(forEditing).map(item => {
+    return '/' + this.getCommands(forEditing).map(item => {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
   }
 
+  getGraphEntitySources(): Source[] {
+    const sources = [];
+
+    sources.push({
+      domain: this.filename,
+      url: this.getURL(false),
+    });
+
+    if (this.doi != null) {
+      sources.push({
+        domain: 'DOI',
+        url: this.doi,
+      });
+    }
+
+    if (this.uploadUrl != null) {
+      sources.push({
+        domain: 'External URL',
+        url: this.uploadUrl,
+      });
+    }
+
+    return sources;
+  }
+
   addDataTransferData(dataTransfer: DataTransfer) {
+    // TODO: Move to DataTransferData framework
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
@@ -454,24 +484,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       privileges: this.privileges,
     };
 
-    const sources: Source[] = [{
-      domain: 'File Source',
-      url: this.getCommands().join('/'),
-    }];
-
-    if (this.doi) {
-      sources.push({
-        domain: 'DOI',
-        url: this.doi,
-      });
-    }
-
-    if (this.uploadUrl) {
-      sources.push({
-        domain: 'Upload URL',
-        url: this.uploadUrl,
-      });
-    }
+    const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
