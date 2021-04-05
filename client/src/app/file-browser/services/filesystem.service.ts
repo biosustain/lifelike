@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
@@ -114,6 +114,16 @@ export class FilesystemService {
         responseType: 'blob',
       },
     );
+  }
+
+  // TODO: Deprecate after LL-2840
+  getAllEnrichmentTables() {
+    return this.http.get<{result: string[]}>(
+      `/api/filesystem/enrichment-tables`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'json',
+      }
+    ).pipe(map(data => from(data.result)))
   }
 
   generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
