@@ -80,7 +80,6 @@ def get_all_enrichment_tables():
     if is_admin is False:
         raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
 
-    # TODO: Add admin check
     query = db.session.query(Files.hash_id).filter(
         and_(
             Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
