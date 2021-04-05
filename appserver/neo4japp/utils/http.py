@@ -16,6 +16,6 @@ def make_cacheable_file_response(request, content, etag: str, filename: str, mim
         if mime_type:
             response.headers['Content-Type'] = mime_type
         response.headers['Content-Length'] = len(content)
-        response.headers['Content-Disposition'] = f"attachment; filename={filename}"
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.headers['ETag'] = f'"{etag}"'
         return response
