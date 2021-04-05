@@ -16,6 +16,19 @@ def main():
     next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
     while True:
         try:
+            precalculateGO()
+
+            next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
+            time.sleep(SUCCESSFUL_SLEEP_TIME)
+
+        except Exception as err:
+            print(f"Error occured, will try again in {next_error_sleep_time} seconds: {err}")
+
+            time.sleep(next_error_sleep_time)
+
+            next_error_sleep_time = min(ERROR_MAX_SLEEP_TIME, next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER)
+
+        try:
             statistics = get_kg_statistics()
             cache_data("kg_statistics", statistics)
 
@@ -47,6 +60,37 @@ def get_kg_statistics():
             if count > 0:
                 statistics[db.replace("db_", "", 1)][entity] = count
     return statistics
+
+
+def precalculateGO():
+    graph = Graph(
+            host=os.environ['NEO4J_HOST'],
+            auth=os.environ['NEO4J_AUTH'].split('/'),
+    )
+
+    def fetchOrganismGO(organism):
+        print(f"Precomputing GO for {organism['name']} ({organism['id']})")
+        return graph.run(
+                """
+                MATCH (:Taxonomy {id:$id})-
+                       [:HAS_TAXONOMY]-(g:Gene)-[:GO_LINK]-(go:db_GO)
+                WITH go, collect(distinct g) as genes
+                RETURN go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 
+                    'db_GO'] as goLabel,
+                    [g in genes |g.name] as geneNames
+                """,
+                id=organism['id']
+        ).data()
+
+    for organism in graph.run(
+            """
+            MATCH (t:Taxonomy)-[:HAS_TAXONOMY]-(:Gene)-[:GO_LINK]-(go:db_GO)
+            with t, count(go) as c
+            where c > 0
+            RETURN t.id as id, t.name as name
+            """
+    ).data():
+        cache_data(f"GO_for_{organism['id']}", fetchOrganismGO(organism))
 
 
 def cache_data(key, value):

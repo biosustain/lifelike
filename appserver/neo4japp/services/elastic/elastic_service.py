@@ -14,7 +14,7 @@ from flask import current_app
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, raiseload
 
-from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.constants import FILE_INDEX_ID, LogEventType
 from neo4japp.database import db, get_file_type_service
 from neo4japp.models import (
     Files, Projects,
@@ -51,13 +51,13 @@ class ElasticService():
                 self.elastic_client.indices.delete(index=index_id)
                 current_app.logger.info(
                     f'Deleted ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic').to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
             except Exception as e:
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
                 return
 
@@ -65,13 +65,13 @@ class ElasticService():
             self.elastic_client.indices.create(index=index_id, body=index_definition)
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
-                extra=EventLog(event_type='elastic').to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
         except Exception as e:
             current_app.logger.error(
                 f'Failed to create ElasticSearch index {index_id}',
                 exc_info=e,
-                extra=EventLog(event_type='elastic').to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
             return
 
@@ -93,13 +93,13 @@ class ElasticService():
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type='elastic').to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
             return
 
         current_app.logger.info(
             f'Created or updated ElasticSearch pipeline {pipeline_id}',
-            extra=EventLog(event_type='elastic').to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
 
     def recreate_indices_and_pipelines(self):
@@ -127,12 +127,12 @@ class ElasticService():
             if success:
                 current_app.logger.info(
                     f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type='elastic').to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type='elastic').to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
 
     def delete_documents(self, document_ids: List[str], index_id: str):
@@ -228,7 +228,7 @@ class ElasticService():
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
                 exc_info=e,
-                extra=EventLog(event_type='elastic').to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
 
         return {

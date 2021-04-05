@@ -1,17 +1,10 @@
-import { Observable, of, concat, merge } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { mapBlobToBuffer } from '../../shared/utils/files';
-import { concatMap, first, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
 import { nullCoalesce } from '../../shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
-enum Domain {
-  Uniprot = 'UniProt',
-  Regulon = 'Regulon',
-  String = 'String',
-  GO = 'GO',
-  Biocyc = 'Biocyc'
-}
 
 export class BaseEnrichmentDocument {
   taxID = '';
@@ -139,6 +132,11 @@ export class BaseEnrichmentDocument {
   }
 }
 
+/****************************************
+ * EnrichmentDocument subclass
+ *
+ * Easier to find w/ this comment block
+ */
 export class EnrichmentDocument extends BaseEnrichmentDocument {
   constructor(protected readonly worksheetViewerService: EnrichmentTableService) {
     super();
@@ -149,9 +147,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
     return super.load(blob)
       .pipe(
         mergeMap(() => this.annotate()),
-        map(r => {
-          return r;
-        })
+        map(() => this)
       );
   }
 
@@ -166,115 +162,47 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         }),
       );
     } else {
-      return this.annotate(true);
+      return this.worksheetViewerService.refreshEnrichmentAnnotations([this.fileId]).pipe(
+        mergeMap(_ => this.annotate())
+      );
     }
   }
 
-  private annotate(refresh = false): Observable<this> {
+  updateParameters(): Observable<Blob> {
+    return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
+      mergeMap((result: EnrichmentResult) => {
+        const importGenes = this.importGenes;
+        const taxID = this.taxID;
+        const organism = this.organism;
+        const domains = this.domains;
+        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, result});
+        return of(new Blob([JSON.stringify(data)]));
+      }));
+  }
+
+  private annotate(): Observable<this> {
     // retrieve annotated enrichment snippets if they exist
     return this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
-      mergeMap((enriched: EnrichmentResult) => {
-        if (Object.keys(enriched).length > 0 && refresh === false) {
-          this.result = enriched;
+      mergeMap((enriched: EnrichmentParsedData) => {
+        if (Object.keys(enriched).length > 0) {
+          this.result = enriched.result;
           return of(this);
         } else {
-          return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID)
-            .pipe(
-              mergeMap((newResult: EnrichmentResult) => {
-                const annotationRequests = [];
-                if (refresh) {
-                  annotationRequests.push(
-                    this.worksheetViewerService.refreshEnrichmentAnnotations([this.fileId], refresh));
-                }
-                let rowCounter = 0;
-                const texts: EnrichmentTextMapping[] = [];
-                for (const gene of newResult.genes) {
-                  // genes that did not match will not have domains
-                  if (gene.hasOwnProperty('domains')) {
-                    texts.push({text: gene.imported, row: rowCounter, imported: true});
-                    texts.push({text: gene.matched, row: rowCounter, matched: true});
-                    texts.push({text: gene.fullName, row: rowCounter, fullName: true});
-                    for (const [entryDomain, entryData] of Object.entries(gene.domains)) {
-                      switch (entryDomain) {
-                        case (Domain.Regulon):
-                          for (const [regulonLabel, regulonData] of Object.entries(entryData)) {
-                            texts.push({
-                              text: regulonData.text,
-                              row: rowCounter,
-                              domain: entryDomain,
-                              label: regulonLabel
-                            });
-                          }
-                          break;
-                        case (Domain.Biocyc):
-                          texts.push({
-                            text: entryData.Pathways.text,
-                            row: rowCounter,
-                            domain: entryDomain,
-                            label: 'Pathways'
-                          });
-                          break;
-                        case (Domain.GO):
-                          texts.push({
-                            text: entryData.Annotation.text,
-                            row: rowCounter,
-                            domain: entryDomain,
-                            label: 'Annotation'
-                          });
-                          break;
-                        case (Domain.String):
-                          texts.push({
-                            text: entryData.Annotation.text,
-                            row: rowCounter,
-                            domain: entryDomain,
-                            label: 'Annotation'
-                          });
-                          break;
-                        case (Domain.Uniprot):
-                          texts.push({
-                            text: entryData.Function.text,
-                            row: rowCounter,
-                            domain: entryDomain,
-                            label: 'Function'
-                          });
-                          break;
-                      }
-                    }
-                    rowCounter += 1;
-                  }
-                }
-
-                annotationRequests.push(
-                  this.worksheetViewerService.annotateEnrichment(
-                    [this.fileId],
-                    {
-                      texts,
-                      organism: {
-                        organism_name: this.organism,
-                        synonym: this.organism,
-                        tax_id: this.taxID
-                      },
-                      enrichment: newResult
-                    } as TextAnnotationGenerationRequest
-                  )
-                );
-
-                const annotated$ = concat(annotationRequests).pipe(
-                  concatMap(res => merge(res)),
-                  toArray(),
-                );
-                return annotated$.pipe(
-                  first(),
-                  map(res => res),
-                  switchMap(_ => this.worksheetViewerService.getAnnotatedEnrichment(
-                    this.fileId)),
-                  map(finalResult => {
-                    this.result = finalResult;
-                    return this;
-                  }),
-                );
-              }),
-            );
+          const params = {
+            organism: {
+              organism_name: this.organism,
+              synonym: this.organism,
+              tax_id: this.taxID
+            },
+          } as TextAnnotationGenerationRequest;
+          return this.worksheetViewerService.annotateEnrichment([this.fileId], params).pipe(
+            mergeMap(() => this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
+              map((annotated: EnrichmentParsedData) => {
+                this.result = annotated.result;
+                return this;
+              })
+            ))
+          );
         }
       })
     );
@@ -444,19 +372,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         .join('; ');
     }
   }
-}
-
-export interface EnrichmentTextMapping {
-  text: string;
-  row: number;
-  domain?: string;
-  // this is the Biocyc: Pathways
-  // UniProt: Function
-  // etc
-  label?: string;
-  matched?: boolean;
-  imported?: boolean;
-  fullName?: boolean;
 }
 
 export interface DomainInfo {

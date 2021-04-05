@@ -27,28 +27,4 @@ export class ProjectMenuComponent {
   openShareDialog(project: ProjectImpl) {
     this.projectActions.openShareDialog(project);
   }
-
-  copyAsMapNode(project: ProjectImpl) {
-    const clipboardData = JSON.stringify({
-      type: TYPE_STRING,
-      selection: [{
-        type: 'node',
-        entity: {
-          display_name: project.name,
-          label: 'link',
-          sub_labels: [],
-          data: {
-            sources: [{
-              domain: 'File Source',
-              url: project.getURL(),
-            }],
-          },
-        },
-      }],
-    } as GraphClipboardData);
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(clipboardData);
-    }
-  }
 }
