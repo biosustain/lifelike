@@ -53,28 +53,16 @@
             </div>
           </div>
 
-          <label class='d-table w-100'>
-            <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
-            <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
-          </label>
-          <div class="mb-2">
-            <app-sources (executeFileSource)="goToSource($event)" [links]="node.data?.sources"></app-sources>
+          <div class="mt-4">
+            <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
+                             [(ngModel)]="node.data.sources"
+                             (ngModelChange)="doSave()"></app-links-panel>
           </div>
-          <div *ngFor='let h of hyperlinks; let i = index;'>
-            <div class="input-group mb-2">
-              <div class="input-group-prepend">
-                <button (click)='goToLink(h.url)' class="btn btn-secondary btn-sm" type="button">
-                  <i class="fa fa-external-link-alt"></i>
-                </button>
-              </div>
-              <input [(ngModel)]="node.data.hyperlinks[i].url" (change)='doSave()' placeholder="URL" type="text"
-                     class="form-control" aria-label="Text input with segmented dropdown button">
-              <div class="input-group-append">
-                <button (click)='removeHyperlink(i)' class="btn btn-outline-danger btn-sm" type="button">
-                  <i class="fa fa-trash"></i>
-                </button>
-              </div>
-            </div>
+
+          <div class="mt-4">
+            <app-links-panel title="Hyperlinks" singularTitle="Hyperlink"
+                             [(ngModel)]="node.data.hyperlinks"
+                             (ngModelChange)="doSave()"></app-links-panel>
           </div>
 
           <fieldset class="fieldset-properties mt-4"
@@ -89,7 +77,7 @@
               </li>
               <li class="text-truncate">
                 <div class="btn btn-link p-0" (click)="searchMapNodeInContent(node, '')">
-                  All Content
+                  File Content
                 </div>
               </li>
               <li class="text-truncate">

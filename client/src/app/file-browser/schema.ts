@@ -6,7 +6,6 @@ import {
 } from '../pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
-import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment/models/enrichment-document';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
@@ -204,10 +203,6 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
   object: FilesystemObjectData;
 }
 
-export interface AnnotationSelectionResponse {
-  annotationConfigs: AnnotationConfigurations;
-}
-
 // ========================================
 // Locks
 // ========================================
@@ -229,10 +224,6 @@ export interface AnnotationGenerationResultData {
 // Requests
 // ----------------------------------------
 
-export interface AnnotationGenerationRequest {
-  refresh?: boolean;
-}
-
 export interface AnnotationMethods {
   [model: string]: {
     nlp: boolean;
@@ -241,18 +232,18 @@ export interface AnnotationMethods {
 }
 
 export interface AnnotationConfigurations {
-  excludeReferences: boolean;
-  annotationMethods: AnnotationMethods;
+  excludeReferences?: boolean;
+  annotationMethods?: AnnotationMethods;
 }
 
-export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
+export interface PDFAnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationConfigs?: AnnotationConfigurations;
 }
 
+/* tslint:disable-next-line */
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
-  texts?: EnrichmentTextMapping[];
-  enrichment?: EnrichmentResult;
+  //
 }
 
 // ========================================

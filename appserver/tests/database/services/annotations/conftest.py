@@ -546,23 +546,87 @@ def abbreviation_lmdb_setup(app, request):
         synonym='Pentose Phosphate Pathway',
     )
 
-    ppp = lmdb_chemical_factory(
-        chemical_id='CHEBI:73647',
-        id_type=DatabaseType.CHEBI.value,
-        name='Pro-Pro-Pro',
+    hypertension = lmdb_disease_factory(
+        disease_id='MESH:D000081029',
+        id_type=DatabaseType.MESH.value,
+        name='Pulmonary Arterial Hypertension',
+        synonym='Pulmonary Arterial Hypertension',
+    )
+
+    ppp = lmdb_gene_factory(
+        gene_id='101099627',
+        id_type=DatabaseType.NCBI.value,
+        name='PPP',
         synonym='PPP',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    pah = lmdb_gene_factory(
+        gene_id='245623',
+        id_type=DatabaseType.NCBI.value,
+        name='PAH',
+        synonym='PAH',
+        category=OrganismCategory.EUKARYOTA.value,
     )
 
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [ppp]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
-        (DISEASES_MESH_LMDB, 'diseases', []),
+        (DISEASES_MESH_LMDB, 'diseases', [hypertension]),
         (FOODS_MESH_LMDB, 'foods', []),
-        (GENES_NCBI_LMDB, 'genes', []),
+        (GENES_NCBI_LMDB, 'genes', [ppp, pah]),
         (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [pathway]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def global_inclusion_normalized_already_in_lmdb_setup(app, request):
+    il8_gene = lmdb_gene_factory(
+        gene_id='gene-IL8',
+        id_type=DatabaseType.NCBI.value,
+        name='CXCL8',
+        synonym='IL8',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    il8_protein = lmdb_protein_factory(
+        protein_id='protein-IL8',
+        id_type=DatabaseType.UNIPROT.value,
+        name='CXCL8',
+        synonym='IL8',
+    )
+
+    homosapiens = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Homo Sapiens',
+        synonym='Human',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', [il8_gene]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [il8_protein]),
+        (SPECIES_NCBI_LMDB, 'species', [homosapiens]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -1074,6 +1138,18 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 
 
 @pytest.fixture(scope='function')
+def mock_gene_to_organism_il8_human_gene(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'CXCL8': {'CXCL8': {'9606': '3576'}}}
+
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'AMPK': {'AMPK': {'9606': '5564'}}}
@@ -1106,6 +1182,21 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
             'purC': {'purC': {'562': '946957'}},
             'purD': {'purD': {'562': '948504'}},
             'purF': {'purF': {'562': '946794'}},
+        }
+
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_gene_organism_abbrev_test(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {
+            'PPP': {'PPP': {'9606': '80267'}},
+            'PAH': {'PAH': {'9606': '289085'}}
         }
 
     monkeypatch.setattr(
@@ -1169,6 +1260,18 @@ def mock_species_exclusion():
 def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
         return {'59272': 'ACE2'}
+
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_genes_from_gene_ids',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_IL8_CXCL8_for_global_gene_inclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'3576': 'CXCL8'}
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1275,6 +1378,16 @@ def mock_global_gene_inclusion(session):
         }
     }
 
+    annotation2 = {
+        'meta': {
+            'id': '3576',
+            'type': EntityType.GENE.value,
+            'allText': 'IL-8',
+            'idType': '',
+            'idHyperlink': ''
+        }
+    }
+
     file_content = FileContent(raw_file=b'', checksum_sha256=b'')
     session.add(file_content)
     session.flush()
@@ -1288,6 +1401,17 @@ def mock_global_gene_inclusion(session):
     )
 
     session.add(inclusion)
+    session.flush()
+
+    inclusion2 = GlobalList(
+        annotation=annotation2,
+        type=ManualAnnotationType.INCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion2)
     session.flush()
 
 

@@ -4,14 +4,16 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import {
-    EdgeConnectionData,
-    DuplicateEdgeConnectionData,
-    NewClusterSnippetsPageRequest,
-    NewEdgeSnippetsPageRequest,
-    SidenavSnippetData,
-    NewNodePairSnippetsPageRequest,
+  EdgeConnectionData,
+  DuplicateEdgeConnectionData,
+  NewClusterSnippetsPageRequest,
+  NewEdgeSnippetsPageRequest,
+  SidenavSnippetData,
+  NewNodePairSnippetsPageRequest,
+  AssociationSnippet,
 } from 'app/interfaces';
 import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
+import { GenericDataProvider } from '../../../shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
     selector: 'app-snippet-display',
@@ -149,5 +151,16 @@ export class SnippetDisplayComponent implements OnDestroy {
             page: this.page,
             limit: this.pageLimit,
         } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | NewNodePairSnippetsPageRequest);
+    }
+
+    snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
+        const dataTransfer: DataTransfer = event.dataTransfer;
+        dataTransfer.setData('text/plain', snippet.publication.displayName);
+        GenericDataProvider.setURIs(dataTransfer, [{
+            title: snippet.publication.displayName,
+            uri: snippet.publication.data.pmid ?
+                'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid :
+                snippet.publication.entityUrl,
+        }]);
     }
 }

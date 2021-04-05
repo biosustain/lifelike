@@ -18,14 +18,6 @@ export class InfoViewPanelComponent {
     return this.selected.type === GraphEntityType.Node;
   }
 
-  goToLink(url) {
-    openPotentialInternalLink(this.workspaceManager, url, true);
-  }
-
-  goToSource(url): void {
-    openPotentialInternalLink(this.workspaceManager, url, false);
-  }
-
   get name(): string {
     if (this.selected.type === GraphEntityType.Node) {
       const node = this.selected.entity as UniversalGraphNode;

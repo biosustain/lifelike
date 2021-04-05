@@ -29,24 +29,24 @@
         "width": 612
       },
       "pageNo": 1,
-      "pageText": "  pentose phosphate pathway (PPP) pentose-phosphate pathway (PPP) ",
+      "pageText": "  pentose phosphate pathway (PPP) pentose-phosphate pathway (PPP) Pulmonary arterial hypertension (PAH) ",
       "tokens": [
         {
           "pgIdx": 2,
           "possibleAbbrev": false,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
                 "x": 76.89540100097656,
-                "y": 707.709228515625
+                "y": 706.2301025390625
               },
               "pivotPt": {
                 "x": 76.89540100097656,
-                "y": 710.209228515625
+                "y": 709.2301025390625
               },
               "rotation": 0,
-              "width": 29.908920288085938
+              "width": 41.80982971191406
             }
           ],
           "shapes": [],
@@ -57,17 +57,17 @@
           "possibleAbbrev": false,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
-                "x": 109.25006103515625,
-                "y": 707.709228515625
+                "x": 121.971435546875,
+                "y": 706.2301025390625
               },
               "pivotPt": {
-                "x": 109.25006103515625,
-                "y": 710.209228515625
+                "x": 121.971435546875,
+                "y": 709.2301025390625
               },
               "rotation": 0,
-              "width": 39.69972229003906
+              "width": 54.879364013671875
             }
           ],
           "shapes": [],
@@ -78,17 +78,17 @@
           "possibleAbbrev": false,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
-                "x": 151.39552307128906,
-                "y": 707.709228515625
+                "x": 180.11700439453125,
+                "y": 706.2301025390625
               },
               "pivotPt": {
-                "x": 151.39552307128906,
-                "y": 710.209228515625
+                "x": 180.11700439453125,
+                "y": 709.2301025390625
               },
               "rotation": 0,
-              "width": 33.16731262207031
+              "width": 43.762481689453125
             }
           ],
           "shapes": [],
@@ -99,17 +99,17 @@
           "possibleAbbrev": true,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
-                "x": 190.2708740234375,
-                "y": 707.709228515625
+                "x": 231.0557403564453,
+                "y": 706.2301025390625
               },
               "pivotPt": {
-                "x": 190.2708740234375,
-                "y": 710.209228515625
+                "x": 231.0557403564453,
+                "y": 709.2301025390625
               },
               "rotation": 0,
-              "width": 16.334945678710938
+              "width": 23.509658813476562
             }
           ],
           "shapes": [],
@@ -120,17 +120,17 @@
           "possibleAbbrev": false,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
                 "x": 76.89540100097656,
-                "y": 694.981201171875
+                "y": 692.5230102539062
               },
               "pivotPt": {
                 "x": 76.89540100097656,
-                "y": 697.481201171875
+                "y": 695.5230102539062
               },
               "rotation": 0,
-              "width": 72.86701965332031
+              "width": 100.60392761230469
             }
           ],
           "shapes": [],
@@ -141,17 +141,17 @@
           "possibleAbbrev": false,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
-                "x": 152.20816040039062,
-                "y": 694.981201171875
+                "x": 180.76553344726562,
+                "y": 692.5230102539062
               },
               "pivotPt": {
-                "x": 152.20816040039062,
-                "y": 697.481201171875
+                "x": 180.76553344726562,
+                "y": 695.5230102539062
               },
               "rotation": 0,
-              "width": 33.16729736328125
+              "width": 43.762481689453125
             }
           ],
           "shapes": [],
@@ -162,24 +162,108 @@
           "possibleAbbrev": true,
           "rects": [
             {
-              "height": 10,
+              "height": 12,
               "lowerLeftPt": {
-                "x": 191.08349609375,
-                "y": 694.981201171875
+                "x": 231.70428466796875,
+                "y": 692.5230102539062
               },
               "pivotPt": {
-                "x": 191.08349609375,
-                "y": 697.481201171875
+                "x": 231.70428466796875,
+                "y": 695.5230102539062
               },
               "rotation": 0,
-              "width": 16.3349609375
+              "width": 23.509658813476562
             }
           ],
           "shapes": [],
           "text": "PPP"
+        },
+        {
+          "pgIdx": 66,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 12,
+              "lowerLeftPt": {
+                "x": 76.89540100097656,
+                "y": 678.81591796875
+              },
+              "pivotPt": {
+                "x": 76.89540100097656,
+                "y": 681.81591796875
+              },
+              "rotation": 0,
+              "width": 56.15998840332031
+            }
+          ],
+          "shapes": [],
+          "text": "Pulmonary"
+        },
+        {
+          "pgIdx": 76,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 12,
+              "lowerLeftPt": {
+                "x": 136.31924438476562,
+                "y": 678.81591796875
+              },
+              "pivotPt": {
+                "x": 136.31924438476562,
+                "y": 681.81591796875
+              },
+              "rotation": 0,
+              "width": 35.911865234375
+            }
+          ],
+          "shapes": [],
+          "text": "arterial"
+        },
+        {
+          "pgIdx": 85,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 12,
+              "lowerLeftPt": {
+                "x": 175.497314453125,
+                "y": 678.81591796875
+              },
+              "pivotPt": {
+                "x": 175.497314453125,
+                "y": 681.81591796875
+              },
+              "rotation": 0,
+              "width": 67.27684020996094
+            }
+          ],
+          "shapes": [],
+          "text": "hypertension"
+        },
+        {
+          "pgIdx": 99,
+          "possibleAbbrev": true,
+          "rects": [
+            {
+              "height": 12,
+              "lowerLeftPt": {
+                "x": 249.9527587890625,
+                "y": 678.81591796875
+              },
+              "pivotPt": {
+                "x": 249.9527587890625,
+                "y": 681.81591796875
+              },
+              "rotation": 0,
+              "width": 23.289947509765625
+            }
+          ],
+          "shapes": [],
+          "text": "PAH"
         }
       ]
     }
   ],
-  "processedDate": "2021-01-14 13:27:03"
+  "processedDate": "2021-03-24 08:54:18"
 }

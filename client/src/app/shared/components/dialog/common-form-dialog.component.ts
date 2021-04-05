@@ -6,7 +6,7 @@ import { MessageArguments } from 'app/shared/services/message-dialog.service';
 /**
  * An abstract component for dialogs that use forms.
  */
-export abstract class CommonFormDialogComponent<T = any, V = any> extends CommonDialogComponent<T, V> {
+export abstract class CommonFormDialogComponent<T = any, V = T> extends CommonDialogComponent<T, V> {
   form: AbstractControl;
 
   submit(): void {

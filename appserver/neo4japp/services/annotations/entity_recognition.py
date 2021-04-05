@@ -7,6 +7,7 @@ from typing import Dict, List, Set, Tuple
 from flask import current_app
 from sqlalchemy import and_
 
+from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 from neo4japp.models import GlobalList
@@ -216,7 +217,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_anatomy:
             # current_app.logger.info(
             #     f'Found a match in anatomy entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -226,7 +227,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_chemical:
             # current_app.logger.info(
             #     f'Found a match in chemicals entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -236,7 +237,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_compound:
             # current_app.logger.info(
             #     f'Found a match in compounds entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -246,7 +247,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_disease:
             # current_app.logger.info(
             #     f'Found a match in diseases entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -256,7 +257,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_food:
             # current_app.logger.info(
             #     f'Found a match in foods entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -266,7 +267,7 @@ class EntityRecognitionService:
         if word in self.exclusion_type_gene or lowered in self.type_gene_case_insensitive_exclusion:
             # current_app.logger.info(
             #     f'Found a match in genes entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -276,7 +277,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_phenomena:
             # current_app.logger.info(
             #     f'Found a match in phenomenas entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -286,7 +287,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_phenotype:
             # current_app.logger.info(
             #         f'Found a match in phenotypes entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -296,7 +297,7 @@ class EntityRecognitionService:
         if word in self.exclusion_type_protein or lowered in self.type_protein_case_insensitive_exclusion:  # noqa
             # current_app.logger.info(
             #     f'Found a match in proteins entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -306,13 +307,13 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_species:
             # current_app.logger.info(
             #     f'Found a match in species entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         elif lowered in SPECIES_EXCLUSION:
             # current_app.logger.info(
             #     f'Found a match in species entity lookup but token "{word}" is a stop word.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -322,7 +323,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_company:
             # current_app.logger.info(
             #     f'Found a match in company entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -332,7 +333,7 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_entity:
             # current_app.logger.info(
             #     f'Found a match in entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type='annotations').to_dict()
+            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
         return False
@@ -399,7 +400,7 @@ class EntityRecognitionService:
             except KeyError:
                 current_app.logger.info(
                     f'Error creating annotation inclusion {inclusion} for entity type {entity_type}',  # noqa
-                    extra=EventLog(event_type='annotations').to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
             else:
                 normalized_entity_name = normalize_str(entity_name)
@@ -476,7 +477,7 @@ class EntityRecognitionService:
 
         current_app.logger.info(
             f'Failed to find a gene match in the knowledge graph for gene ids {set(gene_ids) - set(gene_names)}.',  # noqa
-            extra=EventLog(event_type='annotations').to_dict()
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
 
         for (gene_id, entity_id_type, entity_id_hyperlink, entity_name, normalized_name) in self.gene_collection:  # noqa
@@ -558,37 +559,45 @@ class EntityRecognitionService:
 
         Start from closest word to abbreviation, and check the first character.
         """
-        if not token.previous_words:
-            return False
+        if token.keyword in self.abbreviations:
+            return True
 
         if len(token.keyword) not in ABBREVIATION_WORD_LENGTH:
             return False
 
-        if token.keyword not in self.abbreviations:
-            abbrev = ''
-            len_of_word = len(token.keyword)
-            previous_words = token.previous_words.split(' ')
-            for w in previous_words:
-                if '-' in w:
-                    split = w.split('-')
-                    for w2 in split:
-                        if w2:
-                            abbrev += w2[0].upper()
-                elif '/' in w:
-                    split = w.split('/')
-                    for w2 in split:
-                        if w2:
-                            abbrev += w2[0].upper()
-                else:
-                    abbrev += w[0].upper()
-            abbrev = abbrev[-len_of_word:]
+        # a token will only have previous words
+        # if it is a possible abbreviation
+        # the assumption here is, if an abbreviation
+        # is used the *first time*, it will have previous
+        # words that it is an abbreviation of
+        # any subsequent uses of the abbreviation
+        # will not have the word it is abbreviated from
+        # as a previous word in the document
+        if not token.previous_words:
+            return False
 
-            if abbrev == token.keyword:
-                self.abbreviations.add(token.keyword)
+        abbrev = ''
+        len_of_word = len(token.keyword)
+        previous_words = token.previous_words.split(' ')
+        for w in reversed(previous_words):
+            if '-' in w:
+                split = w.split('-')
+                for w2 in reversed(split):
+                    if w2:
+                        abbrev = w2[0].upper() + abbrev
+            elif '/' in w:
+                split = w.split('/')
+                for w2 in reversed(split):
+                    if w2:
+                        abbrev = w2[0].upper() + abbrev
+            else:
+                abbrev = w[0].upper() + abbrev
+        abbrev = abbrev[-len_of_word:]
 
-            return True if abbrev == token.keyword else False
-        else:
+        if abbrev == token.keyword:
+            self.abbreviations.add(token.keyword)
             return True
+        return False
 
     def generate_tokens(self, token: PDFWord, max_words) -> List[PDFWord]:
         num_words = 0
@@ -708,7 +717,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -745,7 +754,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -796,7 +805,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -847,7 +856,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -895,7 +904,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -932,7 +941,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -940,14 +949,17 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_gene.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+
+        found = self.inclusion_type_gene.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # need to concatenate and not do either LMDB or global inclusion
+            # because a global could normalize to something already in
+            # LMDB, e.g IL-8 is a global inclusion, but il8 is already
+            # normalized in LMDB from IL8
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
@@ -980,7 +992,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1014,7 +1026,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1048,7 +1060,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1086,7 +1098,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1126,7 +1138,7 @@ class EntityRecognitionService:
             except KeyError:
                 current_app.logger.info(
                     f'Missing key attribute for local species inclusion.',
-                    extra=EventLog(event_type='annotations').to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 
     def identify(
