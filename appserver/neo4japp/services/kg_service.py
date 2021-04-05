@@ -229,7 +229,7 @@ class KgService(HybridDBDao):
         return {
             result['node_id']: {
                 'result': {'id': result['string_id'], 'annotation': result['annotation']},
-                'link': 'https://string-db.org/cgi/network?identifiers='}
+                'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}"}
             for result in results}
 
     def get_biocyc_genes(

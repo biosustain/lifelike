@@ -220,49 +220,43 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       .matchNCBINodes(importGenes, taxID)
       .pipe(
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
-          const ncbiIds = ncbiNodesData.map((wrapper) => wrapper.neo4jID);
+          const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.neo4jID);
           return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(ncbiIds, taxID)
+            .getNCBIEnrichmentDomains(neo4jIds, taxID)
             .pipe(
               map((domainResults: EnrichmentWrapper): EnrichmentResult => {
-                const synonyms = ncbiNodesData.map(wrapper => wrapper.synonyms).reduce(
-                  (prev, syns) => [...prev, ...syns], []);
-
                 const neo4jIdSynonymMap: Map<number, string[]> = new Map();
                 const neo4jIdNodeMap: Map<number, NCBINode> = new Map();
                 const neo4jIdLinkMap: Map<number, string> = new Map();
+                const geneMap: Map<string, EnrichedGene> = new Map();
+                const synonymsSet: Set<string> = new Set();
 
                 ncbiNodesData.forEach(wrapper => {
                   neo4jIdSynonymMap.set(wrapper.neo4jID, wrapper.synonyms);
                   neo4jIdNodeMap.set(wrapper.neo4jID, wrapper.gene);
                   neo4jIdLinkMap.set(wrapper.neo4jID, wrapper.link);
+                  wrapper.synonyms.forEach(synonym => synonymsSet.add(synonym));
                 });
 
-                const synonymsSet = new Set<string>(synonyms);
-                const geneMap: Map<string, EnrichedGene> = new Map();
+                for (const id of neo4jIds) {
+                  const synsList = neo4jIdSynonymMap.get(id);
+                  const node = neo4jIdNodeMap.get(id);
+                  const link = neo4jIdLinkMap.get(id);
 
-                // Add ncbi and imported gene name columns to relevant columns (left of domains)
-                for (const id of ncbiIds) {
-                  if (neo4jIdSynonymMap.has(id) && neo4jIdNodeMap.has(id) && neo4jIdLinkMap.has(id)) {
-                    const synsList = neo4jIdSynonymMap.get(id);
-                    const node = neo4jIdNodeMap.get(id);
-                    const link = neo4jIdLinkMap.get(id);
+                  const domainWrapper = domainResults[id] || null;
 
-                    const domainWrapper = domainResults[id] || null;
-
-                    if (domainWrapper != null) {
-                      for (const synonym of synsList) {
-                        geneMap.set(synonym, {
-                          imported: synonym,
-                          annotatedImported: synonym,
-                          matched: node.name,
-                          annotatedMatched: node.name,
-                          fullName: node.full_name,
-                          annotatedFullName: node.full_name,
-                          link,
-                          domains: this.generateGeneDomainResults(domains, domainWrapper, node)
-                        });
-                      }
+                  if (domainWrapper != null) {
+                    for (const synonym of synsList) {
+                      geneMap.set(synonym, {
+                        imported: synonym,
+                        annotatedImported: synonym,
+                        matched: node.name,
+                        annotatedMatched: node.name,
+                        fullName: node.full_name,
+                        annotatedFullName: node.full_name,
+                        link,
+                        domains: this.generateGeneDomainResults(domains, domainWrapper, node)
+                      });
                     }
                   }
                 }
@@ -351,7 +345,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
               wrapper.string.result.annotation : '',
             annotatedText: wrapper.string.result.annotation !== 'annotation not available' ?
               wrapper.string.result.annotation : '',
-            link: wrapper.string.link + wrapper.string.result.id,
+            link: wrapper.string.link
           },
         };
       }
