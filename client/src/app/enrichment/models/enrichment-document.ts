@@ -5,7 +5,6 @@ import {
   DomainWrapper,
   EnrichmentTableService,
   EnrichmentWrapper,
-  GoNode,
   NCBINode,
   NCBIWrapper
 } from '../services/enrichment-table.service';
