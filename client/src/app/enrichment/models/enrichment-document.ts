@@ -244,21 +244,27 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
                 // Add ncbi and imported gene name columns to relevant columns (left of domains)
                 for (const id of ncbiIds) {
-                  const synsList = neo4jIdSynonymMap.get(id);
-                  const node = neo4jIdNodeMap.get(id);
-                  const link = neo4jIdLinkMap.get(id);
+                  if (neo4jIdSynonymMap.has(id) && neo4jIdNodeMap.has(id) && neo4jIdLinkMap.has(id)) {
+                    const synsList = neo4jIdSynonymMap.get(id);
+                    const node = neo4jIdNodeMap.get(id);
+                    const link = neo4jIdLinkMap.get(id);
 
-                  for (const synonym of synsList) {
-                    geneMap.set(synonym, {
-                      imported: synonym,
-                      annotatedImported: synonym,
-                      matched: node.name,
-                      annotatedMatched: node.name,
-                      fullName: node.full_name,
-                      annotatedFullName: node.full_name,
-                      link,
-                      domains: this.generateGeneDomainResults(domains, domainResults[id], node)
-                    });
+                    const domainWrapper = domainResults[id] || null;
+
+                    if (domainWrapper != null) {
+                      for (const synonym of synsList) {
+                        geneMap.set(synonym, {
+                          imported: synonym,
+                          annotatedImported: synonym,
+                          matched: node.name,
+                          annotatedMatched: node.name,
+                          fullName: node.full_name,
+                          annotatedFullName: node.full_name,
+                          link,
+                          domains: this.generateGeneDomainResults(domains, domainWrapper, node)
+                        });
+                      }
+                    }
                   }
                 }
 
