@@ -401,11 +401,19 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       });
     }
 
+    const hyperlinks = [];
+
     const hyperlink = meta.idHyperlink || '';
-    let hyperlinkText = 'Annotation URL';
-    try {
-      hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
-    } catch (e) {
+    if (hyperlink.length) {
+      let hyperlinkText = 'Annotation URL';
+      try {
+        hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
+      } catch (e) {
+      }
+      hyperlinks.push({
+        domain: hyperlinkText,
+        url: hyperlink,
+      });
     }
 
     const search = Object.keys(meta.links || []).map(k => {
@@ -437,10 +445,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           type: 'DATABASE',
           url: hyperlink,
         }],
-        hyperlinks: [{
-          domain: hyperlinkText,
-          url: hyperlink,
-        }],
+        hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',
       },
       style: {
