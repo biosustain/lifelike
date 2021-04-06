@@ -41,6 +41,7 @@ export class ErrorHandler {
         return of(httpErrorResponse.error).pipe(
           mapBlobToBuffer(),
           mapBufferToJson<ErrorResponse | undefined>(),
+          catchError(() => of(null)), // If JSON parsing fails, just go back to default behavior
         );
       } else if (typeof httpErrorResponse.error === 'object') {
         return of(httpErrorResponse.error);
