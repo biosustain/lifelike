@@ -51,15 +51,3 @@
   outline: 4px solid red;
   position: relative;
 }
-
-.frictionless-annotation-preview {
-  display: inline-block;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &:before, &:after {
-    content: '"';
-  }
-}
