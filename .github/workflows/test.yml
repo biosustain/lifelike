@@ -69,6 +69,17 @@ jobs:
           dockerfile: ./Dockerfile
           build_extra_args: "--build-arg=CONFIG_FILE=filebeat.prod.yml"
 
+      - name: Build Cache Invalidator
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: kg-cache-invalidator
+          image_tag: ${{ github.sha }},latest
+          context: ./cache-invalidator
+          dockerfile: ./Dockerfile
+
   deploy:
     name: Deploy
     needs: build

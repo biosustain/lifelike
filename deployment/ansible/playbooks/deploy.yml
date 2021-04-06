@@ -1,4 +1,3 @@
-- include: cronjobs.yml
 - hosts: "{{ webserver }}"
   become: true
   vars:
@@ -186,6 +185,35 @@
       when: not (webserver == "prod" or webserver == "staging")
       tags:
         - deploy
+
+    - name: Cache Invalidator Deployment
+      docker_container:
+        name: cache-invalidator
+        state: started
+        pull: yes
+        restart_policy: on-failure
+        restart_retries: 3
+        image: "{{ container_registry }}/kg-cache-invalidator:{{ docker_img_hash }}"
+        env:
+          NEO4J_HOST: "{{ NEO4J_HOST }}"
+          NEO4J_AUTH: "{{ NEO4J_AUTH }}"
+          NEO4J_SCHEME: "{{ NEO4J_SCHEME }}"
+          NEO4J_PORT: "{{ NEO4J_PORT|quote }}"
+          NEO4J_DATABASE: "{{ NEO4J_DATABASE }}"
+          REDIS_HOST: "{{ REDIS_HOST }}"
+          REDIS_PORT: "{{ REDIS_PORT|quote }}"
+          REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
+          REDIS_SSL: "{{ REDIS_SSL }}"
+        memory: 1G
+        comparisons:
+          image: strict
+          env: strict
+        networks:
+          - name: backend
+            aliases:
+              - cache-invalidator
+        tags:
+          - deploy
 
     - name: Prune unused images
       shell: "docker image prune -a -f"
