@@ -18,7 +18,7 @@ import { AnnotationType } from 'app/shared/constants';
 export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() pageNumber: number;
   @Input() keywords: string[];
-  @Input() coords: number[];
+  @Input() coords: number[][];
   @Input() set allText(allText: string) {
     this.form.patchValue({
       text: allText
