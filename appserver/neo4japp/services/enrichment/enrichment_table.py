@@ -35,13 +35,16 @@ class EnrichmentTableService(KgService):
         # the idea is to create a mapping to later identify
         # what row/column each text is originally in
         for i, gene in enumerate(data['genes']):
-            # matched genes will have domains
-            if gene.get('domains'):
-                try:
-                    cell_texts.append({'text': gene['imported'], 'index': i, 'domain': 'Imported', 'label': 'Imported'})  # noqa
-                    cell_texts.append({'text': gene['matched'], 'index': i, 'domain': 'Matched', 'label': 'Matched'})  # noqa
-                    cell_texts.append({'text': gene['fullName'], 'index': i, 'domain': 'Full Name', 'label': 'Full Name'})  # noqa
+            if gene.get('matched', None) is None:
+                # gene did not match so ignore and don't annotate
+                continue
 
+            try:
+                cell_texts.append({'text': gene['imported'], 'index': i, 'domain': 'Imported', 'label': 'Imported'})  # noqa
+                cell_texts.append({'text': gene['matched'], 'index': i, 'domain': 'Matched', 'label': 'Matched'})  # noqa
+                cell_texts.append({'text': gene['fullName'], 'index': i, 'domain': 'Full Name', 'label': 'Full Name'})  # noqa
+
+                if gene.get('domains'):
                     for k, v in gene['domains'].items():
                         if k == EnrichmentDomain.REGULON.value:
                             for k2, v2 in v.items():
@@ -52,12 +55,12 @@ class EnrichmentTableService(KgService):
                             cell_texts.append({'text': v['Annotation']['text'], 'index': i, 'domain': k, 'label': 'Annotation'})  # noqa
                         elif k == EnrichmentDomain.UNIPROT.value:
                             cell_texts.append({'text': v['Function']['text'], 'index': i, 'domain': k, 'label': 'Function'})  # noqa
-                except KeyError:
-                    current_app.logger.error(
-                        f'Missing key when creating enrichment table text row/column mapping.',
-                        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-                    )
-                    continue
+            except KeyError:
+                current_app.logger.error(
+                    f'Missing key when creating enrichment table text row/column mapping.',
+                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                )
+                continue
 
         for text in cell_texts:
             if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
