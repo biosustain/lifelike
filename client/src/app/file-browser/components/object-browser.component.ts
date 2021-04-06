@@ -219,4 +219,30 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
+  isSelectionAnnotatable(selection: FilesystemObject[]) {
+    for (const object of selection) {
+      if (object.isAnnotatable) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isSelectionMovable(selection: FilesystemObject[]) {
+    for (const object of selection) {
+      if (object.isMovable) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isSelectionDeletable(selection: FilesystemObject[]) {
+    for (const object of selection) {
+      if (object.isDeletable) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
