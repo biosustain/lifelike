@@ -95,7 +95,8 @@ class ManualAnnotationService:
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
                 tokens_list=list(itertools.chain.from_iterable(
-                    [recognition.generate_tokens(token, max_words) for token in parsed]))
+                    [recognition.generate_tokens(
+                        parsed[idx:max_words + idx]) for idx, token in enumerate(parsed)]))
             )
 
             def add_annotation(new_annotation, primary_name=None):
