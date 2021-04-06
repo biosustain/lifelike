@@ -1,8 +1,10 @@
-<div class="pdf-viewer-container" [class.debugmode]="debugMode" (mouseup)="mouseUp($event)">
+<div class="pdf-viewer-container position-relative" [class.debugmode]="debugMode" #container>
   <div class="pdf-viewer-document">
-    <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation" [original-size]="originalSize"
+    <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation"
+                        [original-size]="originalSize"
                         [fit-to-page]="fitToPage"
-                        (after-load-complete)="afterLoadComplete($event)" [zoom]="zoom" [show-all]="showAll"
+                        (after-load-complete)="afterLoadComplete($event)" [zoom]="zoom"
+                        [show-all]="showAll"
                         [stick-to-page]="stickToPage"
                         [render-text]="renderText"
                         [render-text-mode]="renderTextMode"
@@ -12,5 +14,18 @@
                         (matches-count-updated)="matchesCountUpdated.emit($event)"
                         (find-control-state-updated)="findControlStateUpdated($event)">
     </app-pdf-viewer-lib>
+  </div>
+  <div class="popover d-none" #frictionlessAnnotationToolbar>
+    <div class="popover-body">
+      <button type="button" class="btn btn-secondary btn-sm" ngbTooltip="Copy text to clipboard"
+              container="body" (click)="copySelectionText()">
+        <i class="fa fa-fw fa-copy"></i>
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm ml-1"
+              ngbTooltip="Create an annotation over your selection" container="body"
+              (click)="openAnnotationPanel()" [disabled]="!isSelectionAnnotatable()">
+        <span><i class="fa fa-fw fa-money-check-edit"></i> Annotate</span>
+      </button>
+    </div>
   </div>
 </div>
