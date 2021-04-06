@@ -12,3 +12,6 @@ services:
 
     filebeat:
         image: ${REGISTRY:-lifelike.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+
+    cache-invalidator:
+        image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
