@@ -25,7 +25,11 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { AnnotationHighlightResult, PdfViewerLibComponent } from '../pdf-viewer-lib.component';
+import {
+  AnnotationDragEvent,
+  AnnotationHighlightResult,
+  PdfViewerLibComponent,
+} from '../pdf-viewer-lib.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { map } from 'rxjs/operators';
@@ -369,14 +373,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
    * of the pdf-viewer
    * @param event represents a drop event
    */
-  addAnnotationDragData(event: DragEvent) {
-    const nodeDom = event.target as HTMLElement;
-
-    // everything that graphbuilder might need is under meta
-    const meta: Meta = JSON.parse(nodeDom.getAttribute('meta')) as Meta;
-
-    // use location object to scroll in the pdf.
-    const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
+  addAnnotationDragData(event: AnnotationDragEvent) {
+    const loc = event.location;
+    const meta = event.meta;
 
     const source = `/projects/${encodeURIComponent(this.object.project.name)}`
       + `/files/${encodeURIComponent(this.currentFileId)}`
@@ -417,7 +416,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     const text = meta.type === 'link' ? 'Link' : meta.allText;
 
-    const dataTransfer: DataTransfer = event.dataTransfer;
+    const dataTransfer: DataTransfer = event.event.dataTransfer;
     dataTransfer.setData('text/plain', meta.allText);
     GenericDataProvider.setURIs(dataTransfer, [{
       title: text,
