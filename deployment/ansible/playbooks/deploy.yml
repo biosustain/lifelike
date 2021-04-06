@@ -212,8 +212,8 @@
           - name: backend
             aliases:
               - cache-invalidator
-        tags:
-          - deploy
+      tags:
+        - deploy
 
     - name: Prune unused images
       shell: "docker image prune -a -f"
