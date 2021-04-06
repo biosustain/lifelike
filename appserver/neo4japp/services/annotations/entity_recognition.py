@@ -123,7 +123,7 @@ class EntityRecognitionService:
         # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.COMPOUND.value:
-                self.exclusion_type_chemical.add(exclusion.get('text').lower())  # type: ignore
+                self.exclusion_type_compound.add(exclusion.get('text').lower())  # type: ignore
 
     def _get_annotation_type_disease_to_exclude(
         self,
@@ -599,18 +599,7 @@ class EntityRecognitionService:
             return True
         return False
 
-    def generate_tokens(self, token: PDFWord, max_words) -> List[PDFWord]:
-        num_words = 0
-        current_token = token
-        tokens_list = []
-        while num_words < max_words:
-            tokens_list.append(current_token)
-            if not current_token.next:
-                # reached end of text
-                break
-            current_token = current_token.next
-            num_words += 1
-
+    def generate_tokens(self, tokens_list: List[PDFWord]) -> List[PDFWord]:
         prev_token = None
         new_tokens = []
 
@@ -1180,8 +1169,8 @@ class EntityRecognitionService:
 
         regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
-        for token in tokens:
-            for current_token in self.generate_tokens(token, self.gene_max_words):
+        for i, token in enumerate(tokens):
+            for current_token in self.generate_tokens(tokens[i:self.entity_max_words + i]):
                 if (current_token.keyword.lower() in COMMON_WORDS or
                     regex.match(current_token.keyword) or
                     current_token.keyword in ascii_letters or
@@ -1191,38 +1180,24 @@ class EntityRecognitionService:
                 ):  # noqa
                     continue
 
-                if not self.is_gene_exclusion(current_token.keyword):
-                    self.identify_gene(
-                        token=current_token,
-                        genes_found=genes_found,
-                        nlp_genes=nlp_results.genes,
-                        used_nlp=annotation_method.get(
-                            EntityType.GENE.value, {}).get('nlp', False),
-                        cursor=genes_cur)
+                num_words = len(current_token.keyword.split(' '))
 
-            for current_token in self.generate_tokens(token, self.food_max_words):
-                if (current_token.keyword.lower() in COMMON_WORDS or
-                    regex.match(current_token.keyword) or
-                    current_token.keyword in ascii_letters or
-                    current_token.keyword in digits or
-                    len(current_token.normalized_keyword) <= 2 or
-                    self.is_abbrev(current_token)
-                ):  # noqa
-                    continue
+                if num_words <= self.gene_max_words:
+                    if not self.is_gene_exclusion(current_token.keyword):
+                        self.identify_gene(
+                            token=current_token,
+                            genes_found=genes_found,
+                            nlp_genes=nlp_results.genes,
+                            used_nlp=annotation_method.get(
+                                EntityType.GENE.value, {}).get('nlp', False),
+                            cursor=genes_cur)
 
-                if not self.is_food_exclusion(current_token.keyword):
-                    self.identify_food(
-                        token=current_token, foods_found=foods_found, cursor=foods_cur)
-
-            for current_token in self.generate_tokens(token, self.entity_max_words):
-                if (current_token.keyword.lower() in COMMON_WORDS or
-                    regex.match(current_token.keyword) or
-                    current_token.keyword in ascii_letters or
-                    current_token.keyword in digits or
-                    len(current_token.normalized_keyword) <= 2 or
-                    self.is_abbrev(current_token)
-                ):  # noqa
-                    continue
+                if num_words <= self.food_max_words:
+                    if not self.is_food_exclusion(current_token.keyword):
+                        self.identify_food(
+                            token=current_token,
+                            foods_found=foods_found,
+                            cursor=foods_cur)
 
                 if not self.is_anatomy_exclusion(current_token.keyword):
                     self.identify_anatomy(
