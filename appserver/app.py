@@ -289,26 +289,3 @@ def upload_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.root_path, 'services/annotations/lmdb')
     manager.upload_all(lmdb_dir_path)
-
-
-@app.cli.command('kg-stats')
-@click.option('--force', default=False, help='Force refresh although data already exists')
-def refresh_kg_statistics(force):
-    """
-    Used for pulling in data about our neo4j database
-    and adding it to a redis cache. This cache is viewable
-    via the kg-statistics visualizer.
-    NOTE: This command bogs down neo4j pretty heavily,
-    so we only want to run this sparingly. """
-    from neo4japp.database import get_kg_statistics_service
-    stat_service = get_kg_statistics_service()
-    try:
-        stat_service.get_kg_statistics()
-        if force:
-            stat_service.get_kg_statistics(force_refresh=True)
-            app.logger.info(f'Finish loading the statistics data into redis.')
-        else:
-            app.logger.info(
-                f'Skipping refresh, data already exists. Run --force=True to force refresh.')
-    except Exception as err:
-        app.logger.error(f'Kg statistics refresh failure: {err}')
