@@ -12,3 +12,6 @@ services:
 
     filebeat:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+
+    cache-invalidator:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}

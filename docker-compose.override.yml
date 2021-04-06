@@ -83,6 +83,29 @@ services:
             - redis
             - pdfparser
 
+    cache-invalidator:
+        container_name: cache-invalidator
+        build: ./cache-invalidator
+        environment:
+            - LOG_LEVEL=debug
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=n4j-database
+            - NEO4J_PORT=7687
+            - NEO4J_AUTH=neo4j/password
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
+        volumes:
+            - ./cache-invalidator:/app
+        networks:
+            - backend
+        depends_on:
+            - redis
+            - database
+
     client:
         container_name: client
         build:

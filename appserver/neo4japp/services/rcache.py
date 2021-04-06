@@ -19,27 +19,53 @@ redis_server = redis.Redis(
     connection_pool=redis.BlockingConnectionPool.from_url(connection_url))
 
 
+# Helper method to use redis cache
+#   If:
+#       load and dump defined - returns result_provider() results as is
+#       only dump defined - returns dump(result_provider())
+#       only load defined - returns load(result_provider()) if cached,
+#                           but result_provider() otherwise!
+#                           use with caution!!!
+#
+#
+# TODO: switch to the three functions below
 def redis_cached(
         uid: str,
+        # TODO: why is this a function? Better if it's a data type...
+        # Needs refactor to be generic for other uses
         result_provider,
         cache_setting=DEFAULT_CACHE_SETTINGS,
-        load=lambda x: x,
-        dump=lambda x: x,
+        load=None,
+        dump=None
 ):
-    """
-    Helper method to use redis cache
-    If:
-        load and dump defined - returns result_provider() results as is
-        only dump defined - returns dump(result_provider())
-        only load defined - returns load(result_provider()) if cached,
-                            but result_provider() otherwise!
-                            use with caution!!!
-    """
     cached_result = redis_server.get(uid)
-    if cached_result is not None:
-        return load(cached_result)
+    if cached_result:
+        return load(cached_result) if load else cached_result
     else:
         result = result_provider()
-        dumped_result = dump(result)
+        dumped_result = dump(result) if dump else result
         redis_server.set(uid, dumped_result, **cache_setting)
-        return dumped_result
+        if load is None:
+            return dumped_result
+        return result
+
+
+def getcache(uid: str):
+    return redis_server.get(uid)
+
+
+def delcache(uid: str):
+    if redis_server.get(uid):
+        redis_server.delete(uid)
+
+
+def setcache(
+    uid: str,
+    data,
+    load=None,
+    dump=None,
+    cache_setting=DEFAULT_CACHE_SETTINGS,
+):
+    dumped_data = dump(data) if dump else data
+    redis_server.set(uid, dumped_data, **cache_setting)
+    return load(dumped_data) if load else dumped_data
