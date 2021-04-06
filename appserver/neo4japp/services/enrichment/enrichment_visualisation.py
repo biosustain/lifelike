@@ -25,12 +25,9 @@ class EnrichmentVisualisationService(KgService):
             GO_terms = redis_server.get(f"GO_for_{organism.id}")
             if GO_terms:
                 df = pd.read_json(GO_terms)
-                df = df.explode('geneNames')
-                mask = np.in1d(df['geneNames'], gene_names)
-                df = df[mask]
-                go = df.groupby('goId').agg(dict(goTerm='first', goLabel='first',
-                                                 geneNames=list)).reset_index()
-                go_count = len(GO_terms)
+                go_count = len(df)
+                mask = ~df.geneNames.map(set(gene_names).isdisjoint)
+                go = df[mask]
             else:
                 go = self.get_go_terms(organism, gene_names)
                 go_count = self.get_go_term_count(organism)
