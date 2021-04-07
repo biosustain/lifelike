@@ -2,13 +2,10 @@ import itertools
 import uuid
 
 from datetime import datetime
+from typing import List
 
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import (
-    db,
-    get_annotation_service,
-    get_entity_recognition
-)
+from neo4japp.database import db
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
@@ -17,14 +14,17 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType
 )
+from neo4japp.services.annotations.data_transfer_objects import PDFWord
+from neo4japp.services.annotations.initializer import get_entity_recognition
 from neo4japp.services.annotations.util import has_center_point
 from neo4japp.services.annotations.pipeline import parse_pdf
+from neo4japp.util import standardize_str
 
 
 class ManualAnnotationService:
     def __init__(
         self,
-        graph: AnnotationGraphService,
+        graph: AnnotationGraphService
     ) -> None:
         self.graph = graph
 
@@ -82,7 +82,6 @@ class ManualAnnotationService:
         if annotate_all:
             recognition = get_entity_recognition()
             _, parsed = parse_pdf(file.id, False)
-            annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
 
             if custom_annotation['meta']['type'] == EntityType.GENE.value:
@@ -91,7 +90,7 @@ class ManualAnnotationService:
                 max_words = recognition.food_max_words
             else:
                 max_words = recognition.entity_max_words
-            matches = annotator.get_matching_manual_annotations(
+            matches = self.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
                 tokens_list=list(itertools.chain.from_iterable(
@@ -332,3 +331,28 @@ class ManualAnnotationService:
         if is_case_insensitive:
             return term1.lower().rstrip() == term2.lower().rstrip()
         return term1 == term2
+
+    def get_matching_manual_annotations(
+        self,
+        keyword: str,
+        is_case_insensitive: bool,
+        tokens_list: List[PDFWord]
+    ):
+        """Returns coordinate positions and page numbers
+        for all matching terms in the document
+        """
+        matches = []
+        for token in tokens_list:
+            if not is_case_insensitive:
+                if token.keyword != keyword:
+                    continue
+            elif standardize_str(token.keyword).lower() != standardize_str(keyword).lower():
+                continue
+            rects = token.coordinates
+            keywords = [token.keyword]
+            matches.append({
+                'pageNumber': token.page_number,
+                'rects': rects,
+                'keywords': keywords
+            })
+        return matches

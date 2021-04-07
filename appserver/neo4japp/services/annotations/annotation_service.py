@@ -1278,28 +1278,3 @@ class AnnotationService:
                 return anno1
             else:
                 return anno2
-
-    def get_matching_manual_annotations(
-        self,
-        keyword: str,
-        is_case_insensitive: bool,
-        tokens_list: List[PDFWord]
-    ):
-        """Returns coordinate positions and page numbers
-        for all matching terms in the document
-        """
-        matches = []
-        for token in tokens_list:
-            if not is_case_insensitive:
-                if token.keyword != keyword:
-                    continue
-            elif standardize_str(token.keyword).lower() != standardize_str(keyword).lower():
-                continue
-            rects = token.coordinates
-            keywords = [token.keyword]
-            matches.append({
-                'pageNumber': token.page_number,
-                'rects': rects,
-                'keywords': keywords
-            })
-        return matches
