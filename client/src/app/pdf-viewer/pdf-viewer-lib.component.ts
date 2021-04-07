@@ -209,7 +209,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         if (sub.pageNumber != null) {
           this.scrollToPage(sub.pageNumber, sub.rect);
         } else if (sub.jumpText != null) {
-          const simplified = sub.jumpText.replace(/[\s\r\n]+/g, ' ').trim();
+          const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
           this.showNextFindFeedback = true;

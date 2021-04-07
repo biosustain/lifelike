@@ -203,11 +203,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  fileSearch(object: FilesystemObject) {
-    if (!this.resultQuery) return '';
-    return `jump=${encodeURIComponent(this.resultQuery.phrases.join(' '))}`;
-  }
-
   highlightClicked(object: FilesystemObject, highlight: string) {
     const parser = new DOMParser();
     const text = parser.parseFromString(highlight, 'application/xml').documentElement.textContent;
