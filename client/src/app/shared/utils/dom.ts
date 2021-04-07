@@ -57,7 +57,7 @@ export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | 
  * @param rect the rect to make relative
  * @param container the container (may be scrollable)
  */
-export function getBoundingClientRectRelativeToContainer(rect: DOMRect, container: Element): DOMRect {
+export function getBoundingClientRectRelativeToContainer(rect: (DOMRect | ClientRect), container: Element): DOMRect {
   const containerRect = getAbsoluteBoundingClientRect(container);
   return createDOMRect(
     rect.left - containerRect.left + container.scrollLeft,

@@ -147,6 +147,11 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   historyChanges$ = new Subject<any>();
 
+  /**
+   * Stream of events when a graph entity needs to be focused.
+   */
+  editorPanelFocus$ = new Subject<any>();
+
   constructor() {
     this.cola = cola
       .d3adaptor(d3)
@@ -640,6 +645,11 @@ export abstract class GraphView implements GraphActionReceiver {
    * Focus on the element.
    */
   abstract focus(): void;
+
+  /**
+   * Focus the selected entity (aka focus on the related sidebar for the selection).
+   */
+  abstract focusEditorPanel(): void;
 
   /**
    * Get the current transform object that is based on the current
