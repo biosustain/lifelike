@@ -203,17 +203,12 @@ def _create_annotations(
         text=pdf_text,
         entities=set(k for k, v in annotation_method.items() if v['nlp']))
 
-    # if chemical used NLP then set compound too
-    if annotation_method[EntityType.CHEMICAL.value]['nlp']:
-        annotation_method[EntityType.COMPOUND.value] = annotation_method[EntityType.CHEMICAL.value]
-
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
         tokens=parsed,
-        nlp_results=nlp_results,
-        annotation_method=annotation_method
+        nlp_results=nlp_results
     )
     current_app.logger.info(
         f'Total LMDB lookup time {time.time() - start_lmdb_time}',
