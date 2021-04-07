@@ -227,32 +227,6 @@ def get_elastic_service():
     return g.elastic_service
 
 
-def get_annotation_service():
-    from neo4japp.services.annotations import (
-        AnnotationService,
-        AnnotationDBService,
-        AnnotationGraphService
-    )
-    return AnnotationService(
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService()
-    )
-
-
-def get_entity_recognition():
-    from neo4japp.services.annotations import (
-        AnnotationDBService,
-        AnnotationGraphService,
-        EntityRecognitionService,
-        LMDBService
-    )
-    return EntityRecognitionService(
-        lmdb=LMDBService(),
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService()
-    )
-
-
 def get_manual_annotation_service():
     from neo4japp.services.annotations import (
         AnnotationGraphService,
@@ -283,11 +257,6 @@ def get_sorted_annotation_service(sort_id, *, mime_type=None):
                     graph=AnnotationGraphService()
             )
     )
-
-
-def get_bioc_document_service():
-    from neo4japp.services.annotations import BiocDocumentService
-    return BiocDocumentService()
 
 
 def get_excel_export_service():

@@ -8,11 +8,6 @@ from typing import Dict, List, Set, Tuple
 from string import punctuation
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import (
-    get_annotation_service,
-    get_bioc_document_service,
-    get_entity_recognition
-)
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
@@ -22,6 +17,11 @@ from neo4japp.services.annotations.data_transfer_objects import (
     NLPResults,
     PDFWord,
     SpecifiedOrganismStrain
+)
+from neo4japp.services.annotations.initializer import (
+    get_annotation_service,
+    get_bioc_document_service,
+    get_entity_recognition
 )
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
