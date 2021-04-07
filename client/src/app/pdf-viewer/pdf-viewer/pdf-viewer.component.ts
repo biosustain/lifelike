@@ -433,7 +433,7 @@ export class PdfViewerComponent
     });
 
     eventBus.on('pagesinit', e => {
-      this.afterLoadComplete.emit(e);
+      this.afterLoadComplete.emit(this.internalPdf);
     });
 
     eventBus.on('pagechanging', e => {
@@ -512,7 +512,7 @@ export class PdfViewerComponent
     });
 
     eventBus.on('pagesinit', e => {
-      this.afterLoadComplete.emit(e);
+      this.afterLoadComplete.emit(this.internalPdf);
     });
 
     eventBus.on('pagerendered', e => {
