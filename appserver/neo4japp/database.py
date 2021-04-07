@@ -55,10 +55,15 @@ db = SQLAlchemy(
 # TODO: how to close connection? Py2neo doesn't seem to do this...
 def connect_to_neo4j():
     if 'neo4j' not in g:
+        protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
+        secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
         g.neo4j = Graph(
+            name=current_app.config.get('NEO4J_DATABASE'),
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
-            scheme='bolt+ssc'
+            secure=secure in protocols,
+            port=current_app.config.get('NEO4J_PORT'),
+            scheme=current_app.config.get('NEO4J_SCHEME')
         )
     return g.neo4j
 
@@ -293,6 +298,14 @@ def get_bioc_document_service():
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
     return ExcelExportService()
+
+
+def get_kg_statistics_service():
+    if 'kg_statistics_service' not in g:
+        from neo4japp.services.kg_statistics import KgStatisticsService
+        graph = connect_to_neo4j()
+        g.kg_statistics_service = KgStatisticsService(graph=graph)
+    return g.kg_statistics_service
 
 
 def reset_dao():
