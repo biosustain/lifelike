@@ -1,14 +1,14 @@
 http:
   routers:
-    # lifelike-qa:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`qa.lifelike.bio`)"
-    #   service: lifelike-qa-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "qa.lifelike.bio"
+    lifelike-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`qa.lifelike.bio`)"
+      service: lifelike-qa-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "qa.lifelike.bio"
     # lifelike-staging:
     #   entryPoints:
     #     - websecure
@@ -47,10 +47,10 @@ http:
           - main: "test.lifelike.bio"
 
   services:
-    # lifelike-qa-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.5"
+    lifelike-qa-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.5"
     # lifelike-staging-service:
     #   loadBalancer:
     #     servers:
