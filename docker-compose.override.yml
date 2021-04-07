@@ -34,6 +34,9 @@ services:
         build: ./appserver
         ports:
             - "5000:5000"
+        env_file:
+            # File found in Azure File Store
+            - azure-secrets.env
         environment:
             # Log Services
             - FORMAT_AS_JSON=false
@@ -52,15 +55,17 @@ services:
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
+            - NEO4J_SCHEME=bolt
             - NEO4J_HOST=n4j-database
+            - NEO4J_PORT=7687
             - NEO4J_AUTH=neo4j/password
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
             # Other
             - DOMAIN=http://localhost
-            # Fetch this using "gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver"
-            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
         # Allow debugging w/ IPython or pdb
         stdin_open: true
@@ -78,26 +83,28 @@ services:
             - redis
             - pdfparser
 
-    nlpapi:
-        container_name: nlpapi
-        build:
-            context: ./nlp
-            dockerfile: Dockerfile
+    cache-invalidator:
+        container_name: cache-invalidator
+        build: ./cache-invalidator
         environment:
-            - FLASK_DEBUG=1
-            - FLASK_APP_CONFIG=Development
-            - FLASK_ENV=development
-        # Allow debugging w/ IPython or pdb
-        stdin_open: true
-        tty: true
-        # End debugging section
-        ports:
-            - "5001:5001"
+            - LOG_LEVEL=debug
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=n4j-database
+            - NEO4J_PORT=7687
+            - NEO4J_AUTH=neo4j/password
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
         volumes:
-            - ./nlp:/home/nlp-api-user
-            - ./nlp/models:/models
+            - ./cache-invalidator:/app
         networks:
             - backend
+        depends_on:
+            - redis
+            - database
 
     client:
         container_name: client
@@ -117,7 +124,8 @@ services:
             - frontend
 
     redis:
-        container_name: redis
+        image: redis:6.0.3-alpine
+        command: redis-server --requirepass password
         networks:
             - backend
 
@@ -128,22 +136,6 @@ services:
         # tty: true - this is a hack for grizzly as it expects input;
         # without it, container will exit right away due to docker not accepting input by default
         tty: true
-        networks:
-            - backend
-
-    cache-invalidator:
-        container_name: cache-invalidator
-        build: ./cache-invalidator
-        volumes:
-            - ./cache-invalidator:/app
-        environment:
-            - NEO4J_HOST=n4j-database
-            - NEO4J_AUTH=neo4j/password
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-        depends_on:
-            - database
-            - redis
         networks:
             - backend
 
@@ -166,57 +158,6 @@ services:
         ports:
             - "9200:9200"
             - "9300:9300"
-        networks:
-            - backend
-
-    kibana:
-        container_name: kibana
-        image: docker.elastic.co/kibana/kibana:7.10.1
-        ports:
-            - "5601:5601"
-        environment:
-            SERVER_NAME: localhost
-            ELASTICSEARCH_URL: http://elasticsearch:9200
-        networks:
-            - backend
-        depends_on:
-            - elasticsearch
-
-    logstash:
-        container_name: logstash
-        build:
-            context: logstash/
-        volumes:
-            - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-            - ./logstash/pipeline:/usr/share/logstash/pipeline
-        ports:
-            - "5044:5044"
-            - "9600:9600"
-        environment:
-            LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-        networks:
-            - backend
-        depends_on:
-            - elasticsearch
-
-    filebeat:
-        container_name: filebeat
-        user: ***ARANGO_USERNAME***
-        build:
-            context: filebeat/
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            # This is needed for filebeat to load container log path as specified in filebeat.yml
-            - /var/lib/docker/containers:/var/lib/docker/containers:ro
-        environment:
-            - ELASTICSEARCH_HOST="http://elasticsearch:9200"
-            - KIBANA_HOST="http://kibana:5601"
-            - ELASTICSEARCH_USERNAME="elastic"
-            - ELASTICSEARCH_PASSWORD="changeme"
-        command: ["--strict.perms=false"]
-        depends_on:
-            - elasticsearch
-            - logstash
         networks:
             - backend
 

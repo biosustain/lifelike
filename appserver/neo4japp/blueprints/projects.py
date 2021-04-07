@@ -100,7 +100,7 @@ class ProjectBaseView(MethodView):
         files, *_ = self.get_nondeleted_projects(filter)
         if not len(files):
             raise RecordNotFound(
-                title='Failed to Get File(s)',
+                title='File Not Found',
                 message='The requested project could not be found.',
                 code=404)
         return files[0]
@@ -152,7 +152,7 @@ class ProjectBaseView(MethodView):
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
-                    title='Failed to Get File(s)',
+                    title='File Not Found',
                     message=f"The request specified one or more projects "
                     f"({', '.join(missing_hash_ids)}) that could not be found.",
                     code=404)

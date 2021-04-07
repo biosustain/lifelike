@@ -51,6 +51,8 @@ timeflake = "==0.3.3"
 scipy = "==1.6.1"
 statsmodels = "==0.12.2"
 sqlalchemy = "==1.3.23"
+azure-storage-file = "==2.1.0"
+azure-storage-blob = "==12.8.0"
 
 [requires]
 python_version = "3.8.2"

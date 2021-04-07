@@ -1,4 +1,3 @@
-import base64
 import logging
 import hashlib
 import json
@@ -6,41 +5,50 @@ import os
 import sqlalchemy
 from dataclasses import dataclass
 from datetime import datetime
-from google.cloud import storage as gcp_storage
-from typing import Any, List, Dict, Optional
+from azure.common import AzureMissingResourceHttpError
+from azure.storage.file import FileService, ContentSettings
+from typing import List, Dict, Optional
+from neo4japp.exceptions import RecordNotFound
 from sqlalchemy import Column, String
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
-logging.basicConfig(level=logging.DEBUG)
+
 log = logging.getLogger(__name__)
+logging.getLogger('azure').setLevel(logging.WARNING)
 
 
 class BaseCloudStorageProvider:
     """ Used to provide methods for interacting with cloud
     storages. (e.g. Azure, GCP, AWS) """
 
-    def __init__(self, client: Any):
+    def upload(self, storage_object: str, remote_object_path: str, source_path: str):
+        """Uploads from local destination to remote source.
+
+        :param storage_object: represents what cloud providers call
+        the top level directory (e.g. all files will reside in a particular bucket).
+        :type storage_object: str
+        :param remote_object_path: represents the path to the remote object.
+        :type remote_object_path: str
+        :param source_path: path string where local files are located.
+        :type source_path: str
+        :raises NotImplementedError:
         """
-        Attributes:
-            client (object): represents an object that sets up the
-            connection to the cloud. Usually cloud providers provide
-            a library that will have the connection and pass back an
-            object representing a connection.
-        """
-        self.client = client
+        raise NotImplementedError()
 
     def download(self, storage_object: str, remote_object_path: str, dest_path: str):
-        """
-        Downloads a remote object to a local destination. Directories
+        """Downloads a remote object to a local destination. Directories
         will be created if they do not exists in the local path.
 
-        Args:
-            storage_object (str): represents what cloud providers call
-            the top level directory (e.g. all files will reside in a particular bucket).
-            remote_object_path (str): represents the path to the remote object.
-            dest_path (str): path string to save the file on local.
+        :param storage_object: represents what cloud providers call
+        the top level directory (e.g. all files will reside in a particular bucket).
+        :type storage_object: str
+        :param remote_object_path: represents the path to the remote object.
+        :type remote_object_path: str
+        :param dest_path: path string to save the file on local.
+        :type dest_path: str
+        :raises NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -48,15 +56,19 @@ class BaseCloudStorageProvider:
         """ Returns the date of a remote object. """
         raise NotImplementedError()
 
-    def get_hash(self, local_path: str, hashlib_fn=hashlib.md5, base64encode=True) -> str:
-        """
-        Gets a file hash using the specified algorithm and encoding.
+    def get_remote_hash(self, storage_object: str, remote_object_path: str) -> str:
+        """ Returns the file hash on the remote store """
+        raise NotImplementedError()
 
-        Args:
-            local_path (str): path to the local file.
-            checksum_fn (obj): the callback used to determine
-            the file's checksum.
-            base64 (bool): return the hash in base64 encoding or not.
+    def get_hash(self, local_path: str, hashlib_fn) -> str:
+        """Gets a file hash using the specified algorithm and encoding.
+
+        :param local_path: path to the local file.
+        :type local_path: str
+        :param hashlib_fn: the callback used to determine the file's checksum.
+        :type hashlib_fn: bool
+        :return: the hashed value
+        :rtype: str
         """
         log.debug(f'Generating checksum for {local_path}...')
 
@@ -64,48 +76,88 @@ class BaseCloudStorageProvider:
         with open(local_path, 'rb') as fi:
             for chunk in iter(lambda: fi.read(8192), b''):
                 hash_.update(chunk)
-        if base64encode:
-            hash_ = base64.b64encode(hash_.digest()).decode('utf-8')
-        return hash_
+        return hash_.hexdigest()
 
 
 class AzureStorageProvider(BaseCloudStorageProvider):
-    # TODO: Imlpement azure provider
-    def __init__(self):
-        raise NotImplementedError()
-
-
-class GCPStorageProvider(BaseCloudStorageProvider):
 
     def __init__(self):
-        super().__init__(gcp_storage.Client())
+        account_name = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
+        account_key = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
+        self.client = FileService(account_name=account_name, account_key=account_key)
+        super().__init__()
 
-    def download(self, storage_object: str, remote_object_path: str, dest_path: str):
+    def get_remote_hash(self, storage_name: str, remote_object_path: str) -> str:
+        try:
+            remote_fi = self.client.get_file_properties(
+                storage_name,
+                os.path.dirname(remote_object_path),
+                os.path.basename(remote_object_path),
+            )
+        except AzureMissingResourceHttpError:
+            raise RecordNotFound('Missing Resource', 'File not found.')
+        else:
+            return remote_fi.properties.content_settings.content_md5
+
+    def create_remote_dir(self, storage_name: str, remote_object_dir: str) -> str:
+        """ Creates the directories in azure storage if they do not exist """
+        if self.client.exists(storage_name, remote_object_dir):
+            return remote_object_dir
+        else:
+            try:
+                self.client.create_directory(storage_name, remote_object_dir)
+            except AzureMissingResourceHttpError as err:
+                if err.error_code == 'ParentNotFound':
+                    return self.create_remote_dir(storage_name, os.path.dirname(remote_object_dir))
+                else:
+                    raise
+            finally:
+                self.create_remote_dir(storage_name, remote_object_dir)
+                return remote_object_dir
+
+    def upload(self, storage_name: str, remote_object_path: str, source_path: str):
+        local_src_hash = self.get_hash(source_path, hashlib.md5)
+        self.create_remote_dir(storage_name, os.path.dirname(remote_object_path))
+        self.client.create_file_from_path(
+            storage_name,
+            os.path.dirname(remote_object_path),
+            os.path.basename(remote_object_path),
+            source_path,
+            content_settings=ContentSettings(content_md5=local_src_hash),
+            progress_callback=lambda c, t: log.debug(
+                f'Uploading {os.path.dirname(source_path)} - {c/t * 100}'
+            )
+        )
+
+    def download(self, storage_name: str, remote_object_path: str, dest_path: str):
         existing_checksum = None
         # Calculate file checksum if it exists
         if os.path.exists(dest_path):
-            existing_checksum = self.get_hash(dest_path)
+            existing_checksum = self.get_hash(dest_path, hashlib.md5)
         else:
             base_dir = os.path.dirname(dest_path)
             # Checks to see if there's an existing directory
             if not os.path.exists(base_dir) and base_dir != '':
                 os.makedirs(base_dir)
+        remote_fi_md5 = self.get_remote_hash(storage_name, remote_object_path)
+        if not remote_fi_md5 == existing_checksum:
+            self.client.get_file_to_path(
+                storage_name,
+                os.path.dirname(remote_object_path),
+                os.path.basename(remote_object_path),
+                dest_path,
+                progress_callback=lambda c, t: log.debug(
+                    f'Downloading {os.path.dirname(dest_path)} - {c/t * 100}')
+            )
+            log.debug(f'Saving file "{remote_object_path}" to "{dest_path}"')
 
-        bucket = self.client.bucket(storage_object)
-        blob = bucket.blob(remote_object_path)
-        # Necessary to fetch metadata of blob (i.e. checksum)
-        blob.reload()
-        # Only download the file if theres a difference in the checksum
-        if not blob.md5_hash == existing_checksum:
-            with open(dest_path, 'wb') as fi:
-                blob.download_to_file(fi, checksum='md5')
-                log.debug(f'Saving file "{remote_object_path}" to "{dest_path}"')
-
-    def get_file_date(self, storage_object: str, remote_object_path: str):
-        bucket = self.client.bucket(storage_object)
-        blob = bucket.blob(remote_object_path)
-        blob.reload()
-        return blob.updated
+    def get_file_date(self, storage_name: str, remote_object_path: str):
+        remote_fi = self.client.get_file_properties(
+            storage_name,
+            os.path.dirname(remote_object_path),
+            os.path.basename(remote_object_path),
+        )
+        return remote_fi.properties.last_modified
 
 
 @dataclass
@@ -199,6 +251,32 @@ class LMDBManager:
     def generate_paths(self) -> List[LMDBFile]:
         """ Generates paths for all categories from the config """
         return [self.generate_path(category) for category in self.lmdb_versions.keys()]
+
+    def upload_all(self, source_dir):
+        paths = self.generate_paths()
+        for lmdb_file in paths:
+            upload_file = True
+            data_mdb_path = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
+            data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, hashlib.md5)
+            try:
+                remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
+                    'lmdb', lmdb_file.data_mdb_path)
+            except RecordNotFound:
+                pass
+            else:
+                if data_mdb_md5 == remote_data_mdb_md5:
+                    upload_file = False
+            finally:
+                if upload_file:
+                    log.debug(f'Uploading {lmdb_file.category}...')
+                    src_data_mdb = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
+                    src_lock_mdb = os.path.join(source_dir, lmdb_file.category, 'lock.mdb')
+                    self.cloud_provider.upload(
+                        self.storage_object, lmdb_file.data_mdb_path, src_data_mdb)
+                    self.cloud_provider.upload(
+                        self.storage_object, lmdb_file.lock_mdb_path, src_lock_mdb)
+                else:
+                    log.debug(f'{lmdb_file.category} already up to date. Skipping upload...')
 
     def download_all(self, save_dir):
         paths = self.generate_paths()
