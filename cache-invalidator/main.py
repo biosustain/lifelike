@@ -72,11 +72,11 @@ def precalculateGO():
         print(f"Precomputing GO for {organism['name']} ({organism['id']})")
         return graph.run(
                 """
-                MATCH (:Taxonomy {id:$id})-
-                       [:HAS_TAXONOMY]-(g:Gene)-[:GO_LINK]-(go:db_GO)
+                MATCH (g:Gene)-[:GO_LINK {tax_id:$id}]-(go:db_GO)
                 WITH go, collect(distinct g) as genes
-                RETURN go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 
-                    'db_GO'] as goLabel,
+                RETURN go.id as goId,
+                    go.name as goTerm,
+                    [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
                     [g in genes |g.name] as geneNames
                 """,
                 id=organism['id']

@@ -33,7 +33,6 @@ if (!isSSR()) {
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
 
-
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
@@ -156,12 +155,6 @@ export class PdfViewerComponent
     }
 
     (PDFJS as any).GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
-  }
-
-  get pdfLinkService(): any {
-    return this.internalShowAll
-      ? this.pdfMultiPageLinkService
-      : this.pdfSinglePageLinkService;
   }
 
   get pdfViewer(): any {
@@ -448,7 +441,10 @@ export class PdfViewerComponent
       }
     });
 
-    this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({eventBus});
+    this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({
+      eventBus,
+      externalLinkTarget: PDFJS.LinkTarget.BLANK
+    });
     this.pdfMultiPageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfMultiPageLinkService,
       eventBus
@@ -503,7 +499,8 @@ export class PdfViewerComponent
     });
 
     this.pdfSinglePageLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus
+      eventBus,
+      externalLinkTarget: PDFJS.LinkTarget.BLANK
     });
     this.pdfSinglePageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfSinglePageLinkService,
