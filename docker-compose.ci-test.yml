@@ -16,12 +16,14 @@ services:
 
     appserver:
         container_name: appserver
-        image: gcr.io/able-goods-221820/kg-appserver:${GITHUB_HASH}
+        image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
         ports:
             - "5000:5000"
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
+            - NEO4J_SCHEME=bolt
+            - NEO4J_PORT=7687
             - FLASK_DEBUG=1
             - FLASK_ENV=development
             - FLASK_APP=app
@@ -34,10 +36,12 @@ services:
             - POSTGRES_DB=postgres
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_ci
-            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
             - LMDB_HOME_FOLDER=/home/n4j/tests/database/services/annotations
         volumes:
-            - ./appserver/ansible_service_account.json:/home/n4j/ansible_service_account.json
             - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:
             - frontend

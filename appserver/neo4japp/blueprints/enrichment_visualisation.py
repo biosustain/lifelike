@@ -10,7 +10,7 @@ from marshmallow import fields, ValidationError
 from marshmallow.validate import Regexp, OneOf
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_enrichment_visualisation_service
-from neo4japp.services.redis import redis_cached
+from neo4japp.services.rcache import redis_cached
 from webargs.flaskparser import use_args
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
