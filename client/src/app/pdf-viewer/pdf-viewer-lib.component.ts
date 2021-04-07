@@ -1246,8 +1246,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @HostListener('keydown.control.c')
   @HostListener('keydown.meta.c')
-  @HostListener('keydown.control.x')
-  @HostListener('keydown.meta.x')
   copySelectedText() {
     let listener = (e: ClipboardEvent) => {
       let clipboard = e.clipboardData || window['clipboardData'];
