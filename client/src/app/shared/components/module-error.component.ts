@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { UserError } from '../exceptions';
 import { ErrorHandler } from '../services/error-handler.service';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-module-error',
@@ -10,12 +11,15 @@ import { ErrorHandler } from '../services/error-handler.service';
   ],
 })
 export class ModuleErrorComponent {
-  @Input() error: any;
+  userError$: Observable<UserError>;
 
   constructor(protected readonly errorHandler: ErrorHandler) {
   }
 
-  get userError(): UserError {
-    return this.error != null ? this.errorHandler.createUserError(this.error) : null;
+  @Input()
+  set error(error: any) {
+    this.userError$ = error != null ? this.errorHandler.createUserError(error, {
+      transactionId: '', // This error is not logged so we don't have a transaction ID
+    }) : of(null);
   }
 }

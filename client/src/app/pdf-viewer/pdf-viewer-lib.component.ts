@@ -26,14 +26,7 @@ import { isNullOrUndefined } from 'util';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
 
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  Location,
-  Meta,
-  Rect,
-  RemovedAnnotationExclusion,
-} from './annotation-type';
+import { AddedAnnotationExclusion, Annotation, Location, Meta, Rect, RemovedAnnotationExclusion, } from './annotation-type';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
@@ -259,7 +252,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     });
 
     // Register task for moving the annotation toolbar around if needed
-    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this))
+    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this));
   }
 
   ngOnDestroy(): void {
@@ -278,7 +271,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   private requestAnimationFrame() {
-    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this))
+    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this));
 
     this.placeFrictionlessAnnotationToolbar();
   }
@@ -535,7 +528,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this._focusedTextLayer = textLayer;
       this.frictionlessAnnotationToolbarRef.nativeElement.style.pointerEvents = 'none';
     } else {
-      if (this._focusedTextLayer) this._focusedTextLayer.style.zIndex = null;
+      if (this._focusedTextLayer) {
+        this._focusedTextLayer.style.zIndex = null;
+      }
       this._focusedTextLayer = undefined;
       this.frictionlessAnnotationToolbarRef.nativeElement.style.pointerEvents = '';
     }
@@ -1249,6 +1244,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('keydown.control.c')
+  @HostListener('keydown.meta.c')
   copySelectedText() {
     let listener = (e: ClipboardEvent) => {
       let clipboard = e.clipboardData || window['clipboardData'];

@@ -15,15 +15,6 @@ class ServerException(Exception):
         if not message:
             message = 'Looks like something went wrong!'
 
-        if not additional_msgs:
-            additional_msgs = [
-                'We track these errors, but if the problem persists, ' +
-                'feel free to contact us with the transaction id.']
-        else:
-            additional_msgs += [
-                'We track these errors, but if the problem persists, ' +
-                'feel free to contact us with the transaction id.']
-
         self.title = title
         self.message = message
         self.additional_msgs = additional_msgs
