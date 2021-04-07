@@ -952,10 +952,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return text.trim() != '' && text.length <= 200;
   }
 
-  @HostListener('keydown.control.c')
-  @HostListener('keydown.meta.c')
-  @HostListener('keydown.control.x')
-  @HostListener('keydown.meta.x')
   copySelectionText() {
     navigator.clipboard.writeText(window.getSelection().toString()).then(() => {
       this.snackBar.open('Copied text to clipboard.', null, {
