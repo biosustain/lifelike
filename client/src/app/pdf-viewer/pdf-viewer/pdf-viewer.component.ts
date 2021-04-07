@@ -9,8 +9,7 @@ import {
   OnInit,
   HostListener,
   OnDestroy,
-  ViewChild,
-  AfterViewChecked
+  ViewChild
 } from '@angular/core';
 import { PDFDocumentProxy, PDFViewerParams, PDFPageProxy, PDFPageViewport, PDFSource, PDFProgressData, PDFPromise } from 'pdfjs-dist';
 
@@ -30,7 +29,6 @@ function isSSR() {
 if (!isSSR()) {
   PDFJS = require('pdfjs-dist/build/pdf');
   pdfjsViewer = viewerx;
-  // require('pdfjs-dist/web/pdf_viewer');
 
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
@@ -46,7 +44,7 @@ if (!isSSR()) {
   styleUrls: ['./pdf-viewer.component.scss']
 })
 export class PdfViewerComponent
-  implements OnChanges, OnInit, OnDestroy, AfterViewChecked {
+  implements OnChanges, OnInit, OnDestroy {
 
   @Input('c-maps-url')
   set cMapsUrl(cMapsUrl: string) {
@@ -257,28 +255,8 @@ export class PdfViewerComponent
     }
   }
 
-  ngAfterViewChecked(): void {
-    // if (this.isInitialized) {
-    //   return;
-    // }
-    //
-    // const offset = this.pdfViewerContainer.nativeElement.offsetParent;
-    //
-    // if (this.isVisible === true && offset == null) {
-    //   this.isVisible = false;
-    //   return;
-    // }
-    //
-    // if (this.isVisible === false && offset != null) {
-    this.isVisible = true;
-
-    //   this.ngOnInit();
-    //   this.ngOnChanges({src: this.src} as any);
-    // }
-  }
-
   ngOnInit() {
-    if (!isSSR() && this.isVisible) {
+    if (!isSSR()) {
       this.isInitialized = true;
       this.setupMultiPageViewer();
       this.setupSinglePageViewer();
@@ -358,9 +336,6 @@ export class PdfViewerComponent
             width,
             height
           });
-          // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
-          // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
-          // resolve([x,y,width,height]);
         });
     });
 
@@ -415,9 +390,6 @@ export class PdfViewerComponent
 
       this.pdfMultiPageLinkService.setDocument(null, null);
       this.pdfSinglePageLinkService.setDocument(null, null);
-
-      // this.pdfMultiPageFindController.setDocument(null);
-      // this.pdfSinglePageFindController.setDocument(null);
     }
   }
 
@@ -495,7 +467,6 @@ export class PdfViewerComponent
 
     this.pdfMultiPageViewer = new pdfjsViewer.PDFViewer(pdfOptions);
     this.pdfMultiPageLinkService.setViewer(this.pdfMultiPageViewer);
-    // this.pdfMultiPageFindController.setDocument(this.internalPdf);
   }
 
   private setupSinglePageViewer() {
@@ -552,7 +523,6 @@ export class PdfViewerComponent
 
     this.pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer(pdfOptions);
     this.pdfSinglePageLinkService.setViewer(this.pdfSinglePageViewer);
-    // this.pdfSinglePageFindController.setDocument(this.internalPdf);
 
     this.pdfSinglePageViewer._currentPageNumber = this.internalPage;
   }
@@ -625,11 +595,7 @@ export class PdfViewerComponent
 
         this.resetPdfDocument();
 
-        return this.update()
-          .then(_ => {
-            console.log(this);
-            // this.afterLoadComplete.emit(pdf);
-          });
+        return this.update();
       },
       this.onError.emit
     );
@@ -679,8 +645,6 @@ export class PdfViewerComponent
   }
 
   private resetPdfDocument() {
-    // this.pdfFindController.setDocument(this.internalPdf);
-
     if (this.internalShowAll) {
       this.pdfSinglePageViewer.setDocument(null);
       this.pdfSinglePageLinkService.setDocument(null);
