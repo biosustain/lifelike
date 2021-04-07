@@ -5,6 +5,7 @@ providers:
   file:
     filename: "{{ traefik_service_yml }}"
     watch: true
+  docker: {}
 
 api:
   insecure: false

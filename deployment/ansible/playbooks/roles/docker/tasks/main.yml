@@ -22,6 +22,10 @@
       - python3-setuptools
       - python3-pip
       - python-pip
+      # For docker login
+      # https://forums.docker.com/t/docker-login-fails-with-error-message-error-saving-credentials-cannot-autolaunch-d-bus-without-x11-display/77789
+      - gnupg2
+      - pass
 
 - name: Install Python dependencies
   pip:

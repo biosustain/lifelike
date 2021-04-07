@@ -1,5 +1,0 @@
-- hosts: "{{ webserver }}"
-  become: true
-  roles:
-    - role: filebeat
-      tags: ["filebeat"]
