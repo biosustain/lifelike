@@ -78,7 +78,6 @@
             </ng-container>
             <ng-template #textSearchControl>
               <app-search-control [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
-                                  (enterPress)="findNext()"
                                   [searching]="searching || false"
                                   [resultIndex]="(matchesCount.current || 1) - 1"
                                   [resultCount]="matchesCount.total || 0"
