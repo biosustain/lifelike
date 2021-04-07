@@ -1,7 +1,0 @@
-Dockerfile
-**/__pycache__
-**/*.pyc
-**/.cache
-**/*.env
-*.git*
-models/

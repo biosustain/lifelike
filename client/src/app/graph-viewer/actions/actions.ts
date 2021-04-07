@@ -51,6 +51,11 @@ export interface GraphActionReceiver {
    * @param edge the node
    */
   updateEdge(edge: UniversalGraphEdge): void;
+
+  /**
+   * Focus the selected entity (aka focus on the related sidebar for the selection).
+   */
+  focusEditorPanel(): void;
 }
 
 /**

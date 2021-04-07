@@ -214,15 +214,18 @@
                   Actions
                 </button>
                 <div ngbDropdownMenu>
-                  <button ngbDropdownItem (click)="reannotate(result.value.children.selection)">
+                  <button ngbDropdownItem (click)="reannotate(result.value.children.selection)"
+                    [disabled]="!isSelectionAnnotatable(result.value.children.selection)">
                     Re-annotate
                   </button>
                   <div class="dropdown-divider"></div>
-                  <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)">
+                  <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)"
+                          [disabled]="!isSelectionMovable(result.value.children.selection)">
                     Move to...
                   </button>
                   <button ngbDropdownItem
-                          (click)="openDeleteDialog(result.value.children.selection)">Delete...
+                          (click)="openDeleteDialog(result.value.children.selection)"
+                          [disabled]="!isSelectionDeletable(result.value.children.selection)">Delete...
                   </button>
                 </div>
               </div>
