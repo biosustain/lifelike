@@ -181,7 +181,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
-          mergeMap(document => new EnrichmentTable().load(document)),
+          mergeMap(document => new EnrichmentTable({
+            usePlainText: true,
+          }).load(document)),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {
             return new File([blob], object.filename + '.csv');
