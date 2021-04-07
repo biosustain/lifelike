@@ -1,4 +1,5 @@
 - hosts: traefik
   become: yes
   roles:
+    - docker
     - traefik
