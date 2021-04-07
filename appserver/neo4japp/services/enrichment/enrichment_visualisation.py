@@ -9,7 +9,7 @@ import numpy as np
 from neo4japp.exceptions import ServerException
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.enrich_methods import fisher
-from neo4japp.services.redis import redis_cached, redis_server
+from neo4japp.services.rcache import redis_cached, redis_server
 
 # Excessive logging noticeably slows down execution
 logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
