@@ -45,15 +45,6 @@ http:
         certResolver: "le"
         domains:
           - main: "test.***ARANGO_DB_NAME***.bio"
-    ***ARANGO_DB_NAME***-elk:
-      entryPoints:
-        - websecure
-      rule: "Host(`elk.***ARANGO_DB_NAME***.bio`)"
-      service: ***ARANGO_DB_NAME***-elk-service
-      tls:
-        certResolver: "le"
-        domains:
-          - main: "elk.***ARANGO_DB_NAME***.bio"
 
   services:
     # ***ARANGO_DB_NAME***-qa-service:
@@ -76,7 +67,4 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.9"
-    ***ARANGO_DB_NAME***-elk-service:
-      loadBalancer:
-        servers:
-          - url: "http://10.0.100.13"
+
