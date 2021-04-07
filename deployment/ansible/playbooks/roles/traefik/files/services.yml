@@ -1,14 +1,14 @@
 http:
   routers:
-    # ***ARANGO_DB_NAME***-qa:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`qa.***ARANGO_DB_NAME***.bio`)"
-    #   service: ***ARANGO_DB_NAME***-qa-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "qa.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`qa.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-qa-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "qa.***ARANGO_DB_NAME***.bio"
     # ***ARANGO_DB_NAME***-staging:
     #   entryPoints:
     #     - websecure
@@ -47,10 +47,10 @@ http:
           - main: "test.***ARANGO_DB_NAME***.bio"
 
   services:
-    # ***ARANGO_DB_NAME***-qa-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.5"
+    ***ARANGO_DB_NAME***-qa-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.5"
     # ***ARANGO_DB_NAME***-staging-service:
     #   loadBalancer:
     #     servers:
