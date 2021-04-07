@@ -12,7 +12,6 @@ function parameters into one object.
 
 @attr.s(frozen=True)
 class RecognitionParams():
-    annotation_method: Dict[str, dict] = attr.ib()
     custom_annotations: List[dict] = attr.ib()
     excluded_annotations: List[dict] = attr.ib()
     nlp_results: NLPResults = attr.ib()
