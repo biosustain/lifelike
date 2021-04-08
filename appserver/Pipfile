@@ -49,7 +49,9 @@ marshmallow-dataclass = "*"
 marshmallow-enum = "*"
 deepdiff = "*"
 timeflake = "*"
+azure-storage-file = "*"
 scipy = "*"
+azure-storage-blob = "*"
 statsmodels = "*"
 
 [requires]

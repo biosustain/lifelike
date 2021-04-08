@@ -9,7 +9,7 @@ import numpy as np
 from neo4japp.exceptions import ServerException
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.enrich_methods import fisher
-from neo4japp.services.redis import redis_cached, redis_server
+from neo4japp.services.rcache import redis_cached, redis_server
 
 # Excessive logging noticeably slows down execution
 logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
@@ -36,16 +36,20 @@ class EnrichmentVisualisationService(KgService):
 
     def query_go_term(self, organism_id, gene_names):
         r = self.graph.run(
-                """
-match(n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) where n.name in $gene_names
-with n match (n)-[:GO_LINK]-(go) with distinct go
-match (go)-[:GO_LINK]-(g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId})
-with go, collect(distinct g) as genes
-return go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
-[g in genes |g.name] as geneNames
-                """,
-                taxId=organism_id,
-                gene_names=gene_names
+            """
+            UNWIND $gene_names AS geneName
+            MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) WHERE g.name=geneName
+            WITH g MATCH (g)-[:GO_LINK]-(go)
+            WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
+            WITH go, collect(DISTINCT g2) AS genes
+            RETURN
+                go.id AS goId,
+                go.name AS goTerm,
+                [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
+                [g IN genes |g.name] AS geneNames
+            """,
+            taxId=organism_id,
+            gene_names=gene_names
         ).data()
         # raise if empty - should never happen so fail fast
         if not r:

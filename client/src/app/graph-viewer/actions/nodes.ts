@@ -17,6 +17,7 @@ export class NodeCreation implements GraphAction {
         type: GraphEntityType.Node,
         entity: this.node,
       }]);
+      component.focusEditorPanel();
     }
   }
 

@@ -15,33 +15,20 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2
 
-            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-              with:
-                version: '286.0.0'
-                service_account_key: ${{ secrets.GCE_SA_KEY }}
-                project_id: ${{ secrets.GCE_PROJECT }}
-
-            - run: |-
-                gcloud --quiet auth configure-docker
-
             - name: Build appserver image
               uses: whoan/docker-build-with-cache-action@v5
               with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-                image_tag: ${{ github.sha }}
+                username: ${{ secrets.AZURE_CR_USERNAME }}
+                password: ${{ secrets.AZURE_CR_PASSWORD }}
+                registry: ***ARANGO_DB_NAME***.azurecr.io
+                image_name: kg-appserver
+                image_tag: ${{ github.sha }},latest
                 context: ./appserver
                 dockerfile: ./Dockerfile
 
             - name: Create environmental variable to pass in GitHub hash for Docker Compose
               run: |-
                 echo "GITHUB_HASH=${{ github.sha }}" >> .env
-
-            - name: Copy service account file
-              run: |-
-                gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver
 
             - name: Start docker
               run: |-
