@@ -1,0 +1,3 @@
+app_environment: test
+elastic_file_content_index_id: file_test
+container_registry: "lifelike.azurecr.io"

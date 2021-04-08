@@ -20,7 +20,14 @@ class Base():
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
     NEO4J_HOST = os.environ.get('NEO4J_HOST')
+    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME')
     NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
+    NEO4J_PORT = os.environ.get('NEO4J_PORT')
+    NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
+
+    AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
+    AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
+    AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
