@@ -77,7 +77,7 @@
         comparisons:
           image: strict
           env: strict
-        # memory: 10G
+        memory: 10G
         volumes:
           - "{{ deploy_dir }}/lmdb:/home/n4j/neo4japp/services/annotations/lmdb"
         networks:
