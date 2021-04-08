@@ -11,8 +11,11 @@ function parameters into one object.
 
 
 @attr.s(frozen=True)
-class RecognitionParams():
-    custom_annotations: List[dict] = attr.ib()
-    excluded_annotations: List[dict] = attr.ib()
-    nlp_results: NLPResults = attr.ib()
-    tokens: List[PDFWord] = attr.ib()
+class CreateAnnotationObjParams():
+    entity: dict = attr.ib()
+    entity_category: str = attr.ib()
+    entity_id: str = attr.ib()
+    entity_id_type: str = attr.ib()
+    entity_id_hyperlink: str = attr.ib()
+    token: PDFWord = attr.ib()
+    token_type: str = attr.ib()
