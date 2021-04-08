@@ -483,7 +483,7 @@ export class PdfViewerComponent
      */
     eventBus.on('updatefindcontrolstate', e => {
       this.findControlStateUpdated.emit(e);
-      if (e.state === FindState.FOUND) {
+      if (e.state === FindState.FOUND || e.state === FindState.WRAPPED) {
         this.matchesCountUpdated.emit({ matchesCount: e.matchesCount });
       }
     });
