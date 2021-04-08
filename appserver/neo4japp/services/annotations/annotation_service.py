@@ -30,6 +30,7 @@ from neo4japp.services.annotations.constants import (
 from neo4japp.services.annotations.util import has_center_point
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
+    CreateAnnotationObjParams,
     EntityResults,
     GeneAnnotation,
     LMDBMatch,
@@ -126,117 +127,123 @@ class AnnotationService:
 
     def _create_annotation_object(
         self,
-        token: PDFWord,
-        token_type: str,
-        entity: dict,
-        entity_id: str,
-        entity_id_type: str,
-        entity_category: str,
-        entity_id_hyperlink: str
-    ) -> Annotation:
-        keyword_starting_idx = token.lo_location_offset
-        keyword_ending_idx = token.hi_location_offset
-        link_search_term = token.keyword
+        params: List[CreateAnnotationObjParams]
+    ) -> List[Annotation]:
+        created_annotations: List[Annotation] = []
 
-        # entity here is data structure from LMDB
-        # see services/annotations/util.py for definition
-        if not entity_id_hyperlink:
-            if entity['id_type'] != DatabaseType.NCBI.value:
-                hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+        for param in params:
+            keyword_starting_idx = param.token.lo_location_offset
+            keyword_ending_idx = param.token.hi_location_offset
+            link_search_term = param.token.keyword
+
+            # entity here is data structure from LMDB
+            # see services/annotations/util.py for definition
+            if not param.entity_id_hyperlink:
+                # assign to avoid line being too long
+                # can't use multi pycode ignore/noqa...
+                link = ENTITY_HYPERLINKS
+                if param.entity['id_type'] != DatabaseType.NCBI.value:
+                    hyperlink = link[param.entity['id_type']]
+                else:
+                    # type ignore, see https://github.com/python/mypy/issues/8277
+                    hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+
+                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in param.entity_id:  # noqa
+                    hyperlink += param.entity_id[5:]  # type: ignore
+                else:
+                    hyperlink += param.entity_id  # type: ignore
             else:
-                # type ignore, see https://github.com/python/mypy/issues/8277
-                hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
+                hyperlink = param.entity_id_hyperlink
 
-            if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
-                hyperlink += entity_id[5:]  # type: ignore
+            id_type = param.entity_id_type or param.entity['id_type']
+            synonym = param.entity['synonym']
+            primary_name = param.entity['name']
+
+            if param.token_type == EntityType.SPECIES.value:
+                organism_meta = OrganismAnnotation.OrganismMeta(
+                    category=param.entity_category,
+                    type=param.token_type,
+                    id=param.entity_id,
+                    id_type=id_type,
+                    id_hyperlink=cast(str, hyperlink),
+                    links=OrganismAnnotation.OrganismMeta.Links(
+                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                    ),
+                    all_text=synonym,
+                )
+                # the `keywords` property here is to allow us to know
+                # what coordinates map to what text in the PDF
+                # we want to actually use the real name inside LMDB
+                # for the `keyword` property
+                created_annotations.append(
+                    OrganismAnnotation(
+                        page_number=param.token.page_number,
+                        rects=param.token.coordinates,
+                        keywords=[param.token.keyword],
+                        keyword=synonym,
+                        primary_name=primary_name,
+                        text_in_document=param.token.keyword,
+                        keyword_length=len(param.token.keyword),
+                        lo_location_offset=keyword_starting_idx,
+                        hi_location_offset=keyword_ending_idx,
+                        meta=organism_meta,
+                        uuid=str(uuid4())
+                    )
+                )
+            elif param.token_type == EntityType.GENE.value:
+                gene_meta = GeneAnnotation.GeneMeta(
+                    category=param.entity_category,
+                    type=param.token_type,
+                    id=param.entity_id,
+                    id_type=id_type,
+                    id_hyperlink=cast(str, hyperlink),
+                    links=GeneAnnotation.GeneMeta.Links(
+                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                    ),
+                    all_text=synonym,
+                )
+                created_annotations.append(
+                    GeneAnnotation(
+                        page_number=param.token.page_number,
+                        rects=param.token.coordinates,
+                        keywords=[param.token.keyword],
+                        keyword=synonym,
+                        primary_name=primary_name,
+                        text_in_document=param.token.keyword,
+                        keyword_length=len(param.token.keyword),
+                        lo_location_offset=keyword_starting_idx,
+                        hi_location_offset=keyword_ending_idx,
+                        meta=gene_meta,
+                        uuid=str(uuid4())
+                    )
+                )
             else:
-                hyperlink += entity_id  # type: ignore
-        else:
-            hyperlink = entity_id_hyperlink
-
-        id_type = entity_id_type or entity['id_type']
-        synonym = entity['synonym']
-        primary_name = entity['name']
-
-        if token_type == EntityType.SPECIES.value:
-            organism_meta = OrganismAnnotation.OrganismMeta(
-                category=entity_category,
-                type=token_type,
-                id=entity_id,
-                id_type=id_type,
-                id_hyperlink=cast(str, hyperlink),
-                links=OrganismAnnotation.OrganismMeta.Links(
-                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
-                ),
-                all_text=synonym,
-            )
-            # the `keywords` property here is to allow us to know
-            # what coordinates map to what text in the PDF
-            # we want to actually use the real name inside LMDB
-            # for the `keyword` property
-            annotation = OrganismAnnotation(
-                page_number=token.page_number,
-                rects=token.coordinates,
-                keywords=[token.keyword],
-                keyword=synonym,
-                primary_name=primary_name,
-                text_in_document=token.keyword,
-                keyword_length=len(token.keyword),
-                lo_location_offset=keyword_starting_idx,
-                hi_location_offset=keyword_ending_idx,
-                meta=organism_meta,
-                uuid=str(uuid4()),
-            )
-        elif token_type == EntityType.GENE.value:
-            gene_meta = GeneAnnotation.GeneMeta(
-                category=entity_category,
-                type=token_type,
-                id=entity_id,
-                id_type=id_type,
-                id_hyperlink=cast(str, hyperlink),
-                links=GeneAnnotation.GeneMeta.Links(
-                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
-                ),
-                all_text=synonym,
-            )
-            annotation = GeneAnnotation(
-                page_number=token.page_number,
-                rects=token.coordinates,
-                keywords=[token.keyword],
-                keyword=synonym,
-                primary_name=primary_name,
-                text_in_document=token.keyword,
-                keyword_length=len(token.keyword),
-                lo_location_offset=keyword_starting_idx,
-                hi_location_offset=keyword_ending_idx,
-                meta=gene_meta,
-                uuid=str(uuid4()),
-            )  # type: ignore
-        else:
-            meta = Annotation.Meta(
-                type=token_type,
-                id=entity_id,
-                id_type=id_type,
-                id_hyperlink=cast(str, hyperlink),
-                links=Annotation.Meta.Links(
-                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
-                ),
-                all_text=synonym,
-            )
-            annotation = Annotation(
-                page_number=token.page_number,
-                rects=token.coordinates,
-                keywords=[token.keyword],
-                keyword=synonym,
-                primary_name=primary_name,
-                text_in_document=token.keyword,
-                keyword_length=len(token.keyword),
-                lo_location_offset=keyword_starting_idx,
-                hi_location_offset=keyword_ending_idx,
-                meta=meta,
-                uuid=str(uuid4()),
-            )  # type: ignore
-        return annotation
+                meta = Annotation.Meta(
+                    type=param.token_type,
+                    id=param.entity_id,
+                    id_type=id_type,
+                    id_hyperlink=cast(str, hyperlink),
+                    links=Annotation.Meta.Links(
+                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                    ),
+                    all_text=synonym,
+                )
+                created_annotations.append(
+                    Annotation(
+                        page_number=param.token.page_number,
+                        rects=param.token.coordinates,
+                        keywords=[param.token.keyword],
+                        keyword=synonym,
+                        primary_name=primary_name,
+                        text_in_document=param.token.keyword,
+                        keyword_length=len(param.token.keyword),
+                        lo_location_offset=keyword_starting_idx,
+                        hi_location_offset=keyword_ending_idx,
+                        meta=meta,
+                        uuid=str(uuid4())
+                    )
+                )
+        return created_annotations
 
     def _get_annotation(
         self,
@@ -270,6 +277,8 @@ class AnnotationService:
         tokens_lowercased = set([match.token.normalized_keyword for match in matches_list])  # noqa
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
+        entities_to_create: List[CreateAnnotationObjParams] = []
+
         for match in matches_list:
             for entity in match.entities:
                 entity_synonym = entity['synonym']
@@ -295,20 +304,20 @@ class AnnotationService:
                         continue
 
                 try:
-                    annotation = self._create_annotation_object(
-                        token=match.token,
-                        token_type=token_type,
-                        entity=entity,
-                        entity_id=entity[id_str],
-                        entity_id_type=match.id_type,
-                        entity_id_hyperlink=match.id_hyperlink,
-                        entity_category=entity.get('category', '')
+                    entities_to_create.append(
+                        CreateAnnotationObjParams(
+                            token=match.token,
+                            token_type=token_type,
+                            entity=entity,
+                            entity_id=entity[id_str],
+                            entity_id_type=match.id_type,
+                            entity_id_hyperlink=match.id_hyperlink,
+                            entity_category=entity.get('category', '')
+                        )
                     )
                 except KeyError:
                     continue
-                else:
-                    matches.append(annotation)
-        return matches
+        return self._create_annotation_object(entities_to_create)
 
     def _get_closest_entity_organism_pair(
         self,
@@ -407,7 +416,7 @@ class AnnotationService:
         """
         matches_list: List[LMDBMatch] = self.matched_type_gene
 
-        matches: List[Annotation] = []
+        entities_to_create: List[CreateAnnotationObjParams] = []
 
         entity_token_pairs = []
         gene_names: Set[str] = set()
@@ -522,87 +531,18 @@ class AnnotationService:
                         continue
 
                 if gene_id and category:
-                    annotation = self._create_annotation_object(
-                        token=token,
-                        token_type=EntityType.GENE.value,
-                        entity=entity,
-                        entity_id=gene_id,
-                        entity_id_type=entity_id_type,
-                        entity_id_hyperlink=entity_id_hyperlink,
-                        entity_category=category
+                    entities_to_create.append(
+                        CreateAnnotationObjParams(
+                            token=token,
+                            token_type=EntityType.GENE.value,
+                            entity=entity,
+                            entity_id=gene_id,
+                            entity_id_type=entity_id_type,
+                            entity_id_hyperlink=entity_id_hyperlink,
+                            entity_category=category
+                        )
                     )
-                    matches.append(annotation)
-        return matches
-
-    def _annotate_anatomy(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_anatomy,
-            token_type=EntityType.ANATOMY.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_chemical(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_chemical,
-            token_type=EntityType.CHEMICAL.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_compound(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_compound,
-            token_type=EntityType.COMPOUND.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_disease(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_disease,
-            token_type=EntityType.DISEASE.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_food(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_food,
-            token_type=EntityType.FOOD.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_phenotype(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_phenotype,
-            token_type=EntityType.PHENOTYPE.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_phenomena(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_phenomena,
-            token_type=EntityType.PHENOMENA.value,
-            id_str=entity_id_str
-        )
+        return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_protein(
         self,
@@ -615,7 +555,7 @@ class AnnotationService:
         """
         matches_list: List[LMDBMatch] = self.matched_type_protein
 
-        matches: List[Annotation] = []
+        entities_to_create: List[CreateAnnotationObjParams] = []
 
         entity_token_pairs = []
         protein_names: Set[str] = set()
@@ -686,17 +626,18 @@ class AnnotationService:
                     except KeyError:
                         continue
 
-                annotation = self._create_annotation_object(
-                    token=token,
-                    token_type=EntityType.PROTEIN.value,
-                    entity=entity,
-                    entity_id=protein_id,
-                    entity_id_type=entity_id_type,
-                    entity_id_hyperlink=entity_id_hyperlink,
-                    entity_category=category
+                entities_to_create.append(
+                    CreateAnnotationObjParams(
+                        token=token,
+                        token_type=EntityType.PROTEIN.value,
+                        entity=entity,
+                        entity_id=protein_id,
+                        entity_id_type=entity_id_type,
+                        entity_id_hyperlink=entity_id_hyperlink,
+                        entity_category=category
+                    )
                 )
-                matches.append(annotation)
-        return matches
+        return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_species_local(self) -> List[Annotation]:
         """Similar to self._get_annotation() but for creating
@@ -708,25 +649,25 @@ class AnnotationService:
         """
         matches = self.matched_type_species_local
 
-        custom_annotations: List[Annotation] = []
+        entities_to_create: List[CreateAnnotationObjParams] = []
 
         for match in matches:
             for entity in match.entities:
                 try:
-                    annotation = self._create_annotation_object(
-                        token=match.token,
-                        token_type=EntityType.SPECIES.value,
-                        entity=entity,
-                        entity_id=entity[EntityIdStr.SPECIES.value],
-                        entity_id_type=match.id_type,
-                        entity_id_hyperlink=match.id_hyperlink,
-                        entity_category=entity.get('category', '')
+                    entities_to_create.append(
+                        CreateAnnotationObjParams(
+                            token=match.token,
+                            token_type=EntityType.SPECIES.value,
+                            entity=entity,
+                            entity_id=entity[EntityIdStr.SPECIES.value],
+                            entity_id_type=match.id_type,
+                            entity_id_hyperlink=match.id_hyperlink,
+                            entity_category=entity.get('category', '')
+                        )
                     )
                 except KeyError:
                     continue
-                else:
-                    custom_annotations.append(annotation)
-        return custom_annotations
+        return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_species(
         self,
@@ -810,23 +751,6 @@ class AnnotationService:
                 annotations=filtered_species_annotations)
 
         return species_annotations
-
-    def _annotate_type_company(self, entity_id_str: str) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_company,
-            token_type=EntityType.COMPANY.value,
-            id_str=entity_id_str
-        )
-
-    def _annotate_type_entity(
-        self,
-        entity_id_str: str
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            matches_list=self.matched_type_entity,
-            token_type=EntityType.ENTITY.value,
-            id_str=entity_id_str
-        )
 
     def _update_entity_frequency_map(
         self,
@@ -972,33 +896,35 @@ class AnnotationService:
         """
         unified_annotations: List[Annotation] = []
 
-        funcs = {
-            EntityType.ANATOMY.value: self._annotate_anatomy,
-            EntityType.CHEMICAL.value: self._annotate_type_chemical,
-            EntityType.COMPOUND.value: self._annotate_type_compound,
-            EntityType.DISEASE.value: self._annotate_type_disease,
-            EntityType.FOOD.value: self._annotate_type_food,
-            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
-            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
-            EntityType.SPECIES.value: self._annotate_type_species,
-            EntityType.PROTEIN.value: self._annotate_type_protein,
-            EntityType.GENE.value: self._annotate_type_gene,
-            EntityType.COMPANY.value: self._annotate_type_company,
-            EntityType.ENTITY.value: self._annotate_type_entity
+        matched_data = {
+            EntityType.ANATOMY.value: self.matched_type_anatomy,
+            EntityType.CHEMICAL.value: self.matched_type_chemical,
+            EntityType.COMPOUND.value: self.matched_type_compound,
+            EntityType.DISEASE.value: self.matched_type_disease,
+            EntityType.FOOD.value: self.matched_type_food,
+            EntityType.PHENOMENA.value: self.matched_type_phenomena,
+            EntityType.PHENOTYPE.value: self.matched_type_phenotype,
+            EntityType.COMPANY.value: self.matched_type_company,
+            EntityType.ENTITY.value: self.matched_type_entity
         }
 
         for entity_type, entity_id_str in types_to_annotate:
-            annotate_entities = funcs[entity_type]
             if entity_type == EntityType.SPECIES.value:
-                annotations = annotate_entities(
+                unified_annotations += self._annotate_type_species(
                     entity_id_str=entity_id_str,
                     custom_annotations=custom_annotations,
                     excluded_annotations=excluded_annotations
-                )  # type: ignore
-                unified_annotations.extend(annotations)
+                )
+            elif entity_type == EntityType.GENE.value:
+                unified_annotations += self._annotate_type_gene(entity_id_str)
+            elif entity_type == EntityType.PROTEIN.value:
+                unified_annotations += self._annotate_type_protein(entity_id_str)
             else:
-                annotations = annotate_entities(entity_id_str=entity_id_str)  # type: ignore
-                unified_annotations.extend(annotations)
+                unified_annotations += self._get_annotation(
+                    matches_list=matched_data[entity_type],
+                    token_type=entity_type,
+                    id_str=entity_id_str
+                )
 
         return unified_annotations
 
@@ -1038,7 +964,11 @@ class AnnotationService:
         cleaned = self._clean_annotations(
             annotations=annotations,
             enrichment_mappings=self.enrichment_mappings)
-        print(f'Time to clean annotations {time.time() - start}')
+
+        current_app.logger.info(
+            f'Time to clean and run annotation interval tree {time.time() - start}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
         # update the annotations with the common primary name
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
