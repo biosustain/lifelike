@@ -4,8 +4,6 @@ deploy_dir: /home/ansible
 
 lmdb_path: /home/ansible/lmdb
 
-container_registry: "gcr.io/able-goods-221820"
-
 log_driver: "json-file"
 log_max_size: "10m"
 log_max_file: "3"
