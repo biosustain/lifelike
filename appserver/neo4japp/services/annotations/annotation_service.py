@@ -1,5 +1,7 @@
 import itertools
 import time
+import pandas as pd
+import numpy as np
 
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
@@ -1032,9 +1034,11 @@ class AnnotationService:
             excluded_annotations=excluded_annotations
         )
 
+        start = time.time()
         cleaned = self._clean_annotations(
             annotations=annotations,
             enrichment_mappings=self.enrichment_mappings)
+        print(f'Time to clean annotations {time.time() - start}')
         # update the annotations with the common primary name
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
@@ -1120,7 +1124,6 @@ class AnnotationService:
             another annotation.
         - it has same intervals.
         """
-        updated_unified_annotations: List[Annotation] = []
         annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
         annotation_interval_set: Set[Tuple[int, int]] = set()
 
@@ -1141,110 +1144,105 @@ class AnnotationService:
                 end=hi
             ) for lo, hi in annotation_interval_set)
 
-        # first clean all annotations with equal intervals
-        # this means the same keyword was mapped to multiple entities
-        for intervals, annotations in annotation_interval_dict.items():
-            if len(annotations) > 1:
-                chosen_annotation = None
-                for annotation in annotations:
-                    if chosen_annotation:
-                        chosen_annotation = self.determine_entity_precedence(
-                            anno1=chosen_annotation, anno2=annotation)
-                    else:
-                        chosen_annotation = annotation
-                annotation_interval_dict[intervals] = [chosen_annotation]  # type: ignore
-
         overlap_ranges = tree.merge_overlaps()
+
+        annotations_to_fix = []
 
         for lo, hi in overlap_ranges:
             overlaps = tree.overlap(lo, hi)
+            annotations_to_fix.append(
+                [anno for overlap in overlaps for anno in annotation_interval_dict[(overlap.begin, overlap.end)]])  # noqa
 
-            annotations_to_fix: List[Annotation] = []
-
-            for overlap in overlaps:
-                annotations_to_fix += [anno for anno in annotation_interval_dict[(overlap.begin, overlap.end)]]  # noqa
-
-            chosen_annotation = None
-
-            for annotation in annotations_to_fix:
-                if chosen_annotation:
-                    chosen_annotation = self.determine_entity_precedence(
-                        anno1=chosen_annotation, anno2=annotation)
-                else:
-                    chosen_annotation = annotation
-            updated_unified_annotations.append(chosen_annotation)  # type: ignore
+        matrix = pd.DataFrame(((x,) for x in annotations_to_fix), columns=['annotations'])
+        updated_unified_annotations = self.determine_entity_precedence(matrix.annotations)
 
         return updated_unified_annotations
 
-    def determine_entity_precedence(
-        self,
-        anno1: Annotation,
-        anno2: Annotation,
-    ) -> Annotation:
-        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
-        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
+    def determine_entity_precedence(self, annotations_vector) -> List[Annotation]:
+        fixed_annotations = []
 
-        # only do special gene vs protein comparison if they have
-        # exact intervals
-        # because that means the same normalized text was matched
-        # to both
-        if ((anno1.meta.type == EntityType.PROTEIN.value or
-                anno1.meta.type == EntityType.GENE.value) and
-            (anno2.meta.type == EntityType.PROTEIN.value or
-                anno2.meta.type == EntityType.GENE.value) and
-            (anno1.lo_location_offset == anno2.lo_location_offset and
-                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
-            if anno1.meta.type != anno2.meta.type:
-                # protein vs gene
-                # protein has capital first letter: CysB
-                # gene has lowercase: cysB
-                # also cases like gene SerpinA1 vs protein Serpin A1
-
-                """First check for exact match
-                if no exact match then check substrings
-                e.g `Serpin A1` matched to `serpin A1`
-                e.g `SerpinA1` matched to `serpin A1`
-
-                We take the first case will not count hyphens separated
-                because hard to infer if it was used as a space
-                need to consider precedence in case gene and protein
-                have the exact spelling correct annotated word
-                """
-                gene_protein_precedence_result = None
-                if key1 > key2:
-                    if anno1.text_in_document == anno1.keyword:
-                        gene_protein_precedence_result = anno1
-                    elif anno2.text_in_document == anno2.keyword:
-                        gene_protein_precedence_result = anno2
-
-                    # no match so far
-                    if gene_protein_precedence_result is None:
-                        if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                            gene_protein_precedence_result = anno1
-                        elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
-                            gene_protein_precedence_result = anno2
-                else:
-                    if anno2.text_in_document == anno2.keyword:
-                        gene_protein_precedence_result = anno2
-                    elif anno1.text_in_document == anno1.keyword:
-                        gene_protein_precedence_result = anno1
-
-                    # no match so far
-                    if gene_protein_precedence_result is None:
-                        if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                            gene_protein_precedence_result = anno2
-                        elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
-                            gene_protein_precedence_result = anno1
-
-                if gene_protein_precedence_result is not None:
-                    return gene_protein_precedence_result
-
-        if key1 > key2:
-            return anno1
-        elif key2 > key1:
-            return anno2
-        else:
-            if anno1.keyword_length > anno2.keyword_length:
-                return anno1
+        for annotations in annotations_vector:
+            if len(annotations) == 0:
+                continue
+            elif len(annotations) == 1:
+                fixed_annotations.append(annotations[0])
+                continue
             else:
-                return anno2
+                chosen_annotation = None
+
+                for annotation in annotations:
+                    if chosen_annotation is None:
+                        chosen_annotation = annotation
+                    else:
+                        anno1 = chosen_annotation
+                        anno2 = annotation
+
+                        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
+                        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
+
+                        # only do special gene vs protein comparison if they have
+                        # exact intervals
+                        # because that means the same normalized text was matched
+                        # to both
+                        if ((anno1.meta.type == EntityType.PROTEIN.value or
+                                anno1.meta.type == EntityType.GENE.value) and
+                            (anno2.meta.type == EntityType.PROTEIN.value or
+                                anno2.meta.type == EntityType.GENE.value) and
+                            (anno1.lo_location_offset == anno2.lo_location_offset and
+                                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
+                            if anno1.meta.type != anno2.meta.type:
+                                # protein vs gene
+                                # protein has capital first letter: CysB
+                                # gene has lowercase: cysB
+                                # also cases like gene SerpinA1 vs protein Serpin A1
+
+                                """First check for exact match
+                                if no exact match then check substrings
+                                e.g `Serpin A1` matched to `serpin A1`
+                                e.g `SerpinA1` matched to `serpin A1`
+
+                                We take the first case will not count hyphens separated
+                                because hard to infer if it was used as a space
+                                need to consider precedence in case gene and protein
+                                have the exact spelling correct annotated word
+                                """
+                                gene_protein_precedence_result = None
+                                if key1 > key2:
+                                    if anno1.text_in_document == anno1.keyword:
+                                        gene_protein_precedence_result = anno1
+                                    elif anno2.text_in_document == anno2.keyword:
+                                        gene_protein_precedence_result = anno2
+
+                                    # no match so far
+                                    if gene_protein_precedence_result is None:
+                                        if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
+                                            gene_protein_precedence_result = anno1
+                                        elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
+                                            gene_protein_precedence_result = anno2
+                                else:
+                                    if anno2.text_in_document == anno2.keyword:
+                                        gene_protein_precedence_result = anno2
+                                    elif anno1.text_in_document == anno1.keyword:
+                                        gene_protein_precedence_result = anno1
+
+                                    # no match so far
+                                    if gene_protein_precedence_result is None:
+                                        if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
+                                            gene_protein_precedence_result = anno2
+                                        elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
+                                            gene_protein_precedence_result = anno1
+
+                                if gene_protein_precedence_result is not None:
+                                    chosen_annotation = gene_protein_precedence_result
+
+                        if key1 > key2:
+                            chosen_annotation = anno1
+                        elif key2 > key1:
+                            chosen_annotation = anno2
+                        else:
+                            if anno1.keyword_length > anno2.keyword_length:
+                                chosen_annotation = anno1
+                            else:
+                                chosen_annotation = anno2
+                fixed_annotations.append(chosen_annotation)
+        return fixed_annotations
