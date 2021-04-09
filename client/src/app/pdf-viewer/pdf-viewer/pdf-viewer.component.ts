@@ -473,8 +473,8 @@ export class PdfViewerComponent
      */
     eventBus.on('updatefindcontrolstate', e => {
       this.findControlStateUpdated.emit(e);
-      if (e.state === FindState.FOUND || e.state === FindState.WRAPPED) {
-        this.matchesCountUpdated.emit({ matchesCount: e.matchesCount });
+      if (e.state !== FindState.NOT_FOUND) {
+        this.matchesCountUpdated.emit({matchesCount: e.matchesCount});
       }
     });
 
