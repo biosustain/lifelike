@@ -1,14 +1,14 @@
-- name: Assure old docker isn't installed
-  apt:
-    name: "{{ packages }}"
-    update_cache: yes
-    state: absent
-  vars:
-    packages:
-      - docker
-      - docker-engine
-      - docker.io
-      - containerd
+# - name: Assure old docker isn't installed
+#   apt:
+#     name: "{{ packages }}"
+#     update_cache: yes
+#     state: absent
+#   vars:
+#     packages:
+#       - docker
+#       - docker-engine
+#       - docker.io
+#       - containerd
 
 - name: Install dependencies
   apt:
