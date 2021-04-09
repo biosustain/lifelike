@@ -158,6 +158,7 @@ class AnnotationService:
             id_type = param.entity_id_type or param.entity['id_type']
             synonym = param.entity['synonym']
             primary_name = param.entity['name']
+            keyword_length = keyword_ending_idx - keyword_starting_idx + 1
 
             if param.token_type == EntityType.SPECIES.value:
                 organism_meta = OrganismAnnotation.OrganismMeta(
@@ -183,7 +184,7 @@ class AnnotationService:
                         keyword=synonym,
                         primary_name=primary_name,
                         text_in_document=param.token.keyword,
-                        keyword_length=len(param.token.keyword),
+                        keyword_length=keyword_length,
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=organism_meta,
@@ -210,7 +211,7 @@ class AnnotationService:
                         keyword=synonym,
                         primary_name=primary_name,
                         text_in_document=param.token.keyword,
-                        keyword_length=len(param.token.keyword),
+                        keyword_length=keyword_length,
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=gene_meta,
@@ -236,7 +237,7 @@ class AnnotationService:
                         keyword=synonym,
                         primary_name=primary_name,
                         text_in_document=param.token.keyword,
-                        keyword_length=len(param.token.keyword),
+                        keyword_length=keyword_length,
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=meta,
