@@ -99,6 +99,10 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
         this.unsavedChanges$.next(true);
       }));
+
+      this.subscriptions.add(this.graphCanvas.editorPanelFocus$.subscribe(() => {
+        this.focusSidebar();
+      }));
     });
   }
 
@@ -241,16 +245,18 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         }, true,
       ));
       this.graphCanvas.focus();
-
-      // Focus the input on the sidebar
-      setTimeout(() => {
-        const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector('.map-editor-initial-focus');
-        if (initialFocusElement) {
-          initialFocusElement.focus();
-          initialFocusElement.select();
-        }
-      }, 100);
     }
+  }
+
+  private focusSidebar() {
+    // Focus the input on the sidebar
+    setTimeout(() => {
+      const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector('.map-editor-initial-focus');
+      if (initialFocusElement) {
+        initialFocusElement.focus();
+        initialFocusElement.select();
+      }
+    }, 100);
   }
 
   get lockCheckingActive(): boolean {
