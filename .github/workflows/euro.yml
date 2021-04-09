@@ -1,4 +1,4 @@
-name: Azure QA Deployment
+name: Azure Euro Deployment
 
 on:
   push:
