@@ -13,6 +13,7 @@ export class CloudViewerComponent implements OnChanges {
   geneColor = annotationTypesMap.get('gene').color;
 
   slicedData: WordCloudNode[];
+  @Input() timeInterval = Infinity;
 
   ngOnChanges() {
     const color = this.geneColor;
