@@ -78,7 +78,6 @@
             </ng-container>
             <ng-template #textSearchControl>
               <app-search-control [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
-                                  (enterPress)="findNext()"
                                   [searching]="searching || false"
                                   [resultIndex]="(matchesCount.current || 1) - 1"
                                   [resultCount]="matchesCount.total || 0"
@@ -177,6 +176,7 @@
               [pdfSrc]="pdfData"
               [annotations]="annotations"
               [goToPosition]="goToPosition"
+              (goToPositionVisit)="goToPositionVisit($event)"
               [highlightAnnotations]="highlightAnnotationIds"
               [addedAnnotations]="addedAnnotations"
               [removedAnnotationIds]="removedAnnotationIds"
