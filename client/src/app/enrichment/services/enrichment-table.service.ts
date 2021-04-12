@@ -32,13 +32,13 @@ export class EnrichmentTableService {
    * @param nodeIds list of node ids to match to enrichment domains
    * @param taxID tax id of organism
    */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
-    return this.http.post<{ result: EnrichmentWrapper[] }>(
+  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper> {
+    return this.http.post<{result: EnrichmentWrapper}>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
       {nodeIds, taxID},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result),
+      map(resp => resp.result),
     );
   }
 
@@ -83,22 +83,16 @@ export interface Worksheet {
   contentID: number;
 }
 
-export interface Synonym {
-  name: string;
-}
-
 export interface NCBINode {
   full_name: string;
-  id: string;
-  locus_tag: string;
   name: string;
 }
 
 export interface NCBIWrapper {
   neo4jID: number;
-  x: NCBINode;
+  gene: NCBINode;
   link: string;
-  s: Synonym;
+  synonyms: string[];
 }
 
 interface BiocycWrapper {
@@ -107,24 +101,13 @@ interface BiocycWrapper {
 }
 
 export interface BiocycNode {
-  accession: string;
   biocyc_id: string;
-  left_end_position: string;
-  name: string;
-  right_end_position: string;
-  strand: string;
   pathways: string[];
 }
 
 interface GoWrapper {
   link: string;
-  result: GoNode[];
-}
-
-export interface GoNode {
-  description: string;
-  id: string;
-  name: string;
+  result: string[];
 }
 
 interface RegulonWrapper {
@@ -151,10 +134,6 @@ interface StringWrapper {
 export interface StringNode {
   annotation: string;
   id: string;
-  name: string;
-  protein_size: number;
-  refseq: string;
-  tax_id: string;
 }
 
 interface UniprotWrapper {
@@ -164,17 +143,18 @@ interface UniprotWrapper {
 
 export interface UniprotNode {
   function: string;
-  gene_name: string;
   id: string;
-  name: string;
-  pathway: string;
+}
+
+export interface DomainWrapper {
+  biocyc: BiocycWrapper | null;
+  go: GoWrapper | null;
+  regulon: RegulonWrapper | null;
+  string: StringWrapper | null;
+  uniprot: UniprotWrapper | null;
+  node_id: number;
 }
 
 export interface EnrichmentWrapper {
-  biocyc: BiocycWrapper;
-  go: GoWrapper;
-  regulon: RegulonWrapper;
-  string: StringWrapper;
-  uniprot: UniprotWrapper;
-  node_id: number;
+  [id: number]: DomainWrapper;
 }
