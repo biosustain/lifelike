@@ -55,7 +55,6 @@ services:
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
-            - NEO4J_DATABASE=***ARANGO_DB_NAME***-stg
             - NEO4J_SCHEME=bolt
             - NEO4J_HOST=n4j-database
             - NEO4J_PORT=7687
@@ -90,7 +89,6 @@ services:
         environment:
             - LOG_LEVEL=debug
             # Neo4j
-            - NEO4J_DATABASE=***ARANGO_DB_NAME***-stg
             - NEO4J_SCHEME=bolt
             - NEO4J_HOST=n4j-database
             - NEO4J_PORT=7687
