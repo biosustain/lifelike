@@ -617,12 +617,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
             # update JSON to have enrichment row and domain...
             for anno in annotation_chunk:
-                # NOTE: this is not consistent
-                # because the PDF parser can parse out commas, semicolons, etc
-                # that is actually part of a word
-                # e.g Adenylate kinase 2, mitochondrial
-                # loses the comma
-                #
                 if prev_index != -1:
                     # only do this for subsequent cells b/c
                     # first cell will always have the correct index
