@@ -12,19 +12,12 @@ from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
-from unidecode import unidecode
 
 from flask import json, jsonify, request
 
 from py2neo import Node
 
 from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
-
-
-def clean_char(c) -> str:
-    # pdfminer does not correctly convert
-    # convert all unicode characters to nearest ascii
-    return unidecode(c)
 
 
 def normalize_str(s) -> str:
