@@ -558,7 +558,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
+  @HostListener('mouseup', ['$event'])
   mouseUp(event) {
     this.focusedTextLayer = null;
 
