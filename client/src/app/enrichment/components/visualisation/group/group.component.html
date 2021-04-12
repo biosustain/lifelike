@@ -6,6 +6,7 @@
 
                 <ul ngbNav #nav="ngbNav"
                     [destroyOnHide]="false"
+                     (navChange)="tabstatus[$event.nextId]=true"
                     class="nav-tabs">
                     <li ngbNavItem="table">
                         <a ngbNavLink>Table</a>
@@ -21,7 +22,7 @@
                     <li ngbNavItem="graph">
                         <a ngbNavLink>Graph</a>
                         <ng-template ngbNavContent>
-                            <app-chart
+                            <app-chart *ngIf="tabstatus['graph'] === true"
                                     [style.display]="'block'"
                                     [data]="data"
                                     [showMore]="showMore"
@@ -32,7 +33,7 @@
                     <li ngbNavItem="clustergram">
                         <a ngbNavLink>Clustergram</a>
                         <ng-template ngbNavContent>
-                            <app-clustergram
+                            <app-clustergram *ngIf="tabstatus['clustergram'] === true"
                                     [data]="data"
                                     [showMore]="showMore"
                             >
@@ -43,6 +44,7 @@
                         <a ngbNavLink>Cloud</a>
                         <ng-template ngbNavContent>
                             <app-cloud-viewer
+                                    [timeInterval]="tabstatus['cloud'] ? Infinity : 15"
                                     [data]="data"
                                     [showMore]="showMore"
                             >
