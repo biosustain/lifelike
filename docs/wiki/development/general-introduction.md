@@ -5,9 +5,9 @@
   * Windows users: Get Docker for Windows, not the older Docker Toolbox
 * docker-compose
 * Git
-* Google Cloud account with access to our files
-* [Google Cloud SDK](https://cloud.google.com/sdk)
-  * Configured locally with your login
+* Azure account with access to our files
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+  * Configured locally with your login: ```az login```
 * The source code, preferably downloaded to a directory named `kg-prototypes`
 * Windows users:
   * Symbolic link support
@@ -48,8 +48,8 @@ make init
 The makefile will:
 
 1. Setup Ansible secrets.
-2. Set up the Google Cloud account.
-3. Download the data necessary from Google Cloud to run the app.
+2. Set up the Azure credentials (for container registry and blob access).
+3. Download the data necessary from Azure cloud to run the app.
 4. Build the docker containers.
 
 ## Running
