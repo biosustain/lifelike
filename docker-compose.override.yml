@@ -54,15 +54,12 @@ services:
             # ElasticSearch
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_dev
+            # Neo4j
             - NEO4J_DATABASE=lifelike-stg
-            - NEO4J_HOST=neo4j.lifelike.bio
-            - NEO4J_AUTH=lifelikeapp/Q4DTXyoEU2JN6zaCr
-            - NEO4J_SCHEME=bolts
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=n4j-database
             - NEO4J_PORT=7687
-            # - NEO4J_SCHEME=bolt
-            # - NEO4J_HOST=n4j-database
-            # - NEO4J_PORT=7687
-            # - NEO4J_AUTH=neo4j/password
+            - NEO4J_AUTH=neo4j/password
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -93,6 +90,7 @@ services:
         environment:
             - LOG_LEVEL=debug
             # Neo4j
+            - NEO4J_DATABASE=lifelike-stg
             - NEO4J_SCHEME=bolt
             - NEO4J_HOST=n4j-database
             - NEO4J_PORT=7687
