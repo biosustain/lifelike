@@ -233,7 +233,7 @@ def _create_annotations(
         entity_id = specified_organism_tax_id
         try:
             entity_category = json.loads(
-                entity_recog.lmdb_session.species_txn.get(
+                entity_recog.lmdb.session.species_txn.get(
                     entity_synonym.encode('utf-8')))['category']
         except (TypeError, Exception):
             # could not get data from lmdb
