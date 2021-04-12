@@ -175,32 +175,32 @@ def test_fix_conflicting_annotations_same_types(
 @pytest.mark.parametrize(
     'index, annotations',
     [
-        # (1, [
-        #     ('Test', 'test', 5, 8, EntityType.GENE.value),
-        #     ('Test', 'test', 5, 20, EntityType.CHEMICAL.value)
-        # ]),
-        # (2, [
-        #     ('Test', 'test', 35, 38, EntityType.GENE.value),
-        #     ('Test a long word', 'word', 5, 20, EntityType.CHEMICAL.value),
-        # ]),
-        # (3, [
-        #     ('word', 'word', 17, 20, EntityType.GENE.value),
-        #     ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value)
-        # ]),
-        # (4, [
-        #     ('word', 'word', 17, 20, EntityType.GENE.value),
-        #     ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value),
-        #     ('long word', 'long word', 55, 63, EntityType.CHEMICAL.value)
-        # ]),
-        # # adjacent intervals
-        # (5, [
-        #     ('word a', 'word a', 17, 22, EntityType.GENE.value),
-        #     ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value)
-        # ]),
-        # (6, [
-        #     ('IL7', 'IL-7', 5, 8, EntityType.GENE.value),
-        #     ('IL-7', 'IL-7', 5, 8, EntityType.PROTEIN.value)
-        # ]),
+        (1, [
+            ('Test', 'test', 5, 8, EntityType.GENE.value),
+            ('Test', 'test', 5, 20, EntityType.CHEMICAL.value)
+        ]),
+        (2, [
+            ('Test', 'test', 35, 38, EntityType.GENE.value),
+            ('Test a long word', 'word', 5, 20, EntityType.CHEMICAL.value),
+        ]),
+        (3, [
+            ('word', 'word', 17, 20, EntityType.GENE.value),
+            ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value)
+        ]),
+        (4, [
+            ('word', 'word', 17, 20, EntityType.GENE.value),
+            ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value),
+            ('long word', 'long word', 55, 63, EntityType.CHEMICAL.value)
+        ]),
+        # adjacent intervals
+        (5, [
+            ('word a', 'word a', 17, 22, EntityType.GENE.value),
+            ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value)
+        ]),
+        (6, [
+            ('IL7', 'IL-7', 5, 8, EntityType.GENE.value),
+            ('IL-7', 'IL-7', 5, 8, EntityType.PROTEIN.value)
+        ]),
         (7, [
             ('IL7', 'il-7', 5, 8, EntityType.GENE.value),
             ('IL-7', 'il-7', 5, 8, EntityType.PROTEIN.value)
