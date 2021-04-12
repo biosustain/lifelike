@@ -738,7 +738,7 @@ class EntityRecognitionService:
             if found:
                 match_list = key_results.get(key, [])
                 match_list += found.entities
-                key_results[decoded_key] = match_list
+                key_results[key] = match_list
                 key_id_type[key] = found.entity_id_type
                 key_id_hyperlink[key] = found.entity_id_hyperlink
 

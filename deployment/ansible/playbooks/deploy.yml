@@ -204,6 +204,7 @@
           REDIS_PORT: "{{ REDIS_PORT|quote }}"
           REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
           REDIS_SSL: "{{ REDIS_SSL }}"
+          LOG_LEVEL: "{{ REDIS_LOG_LEVEL | default('warning') }}"
         memory: 1G
         comparisons:
           image: strict

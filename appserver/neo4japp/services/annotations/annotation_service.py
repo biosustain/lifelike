@@ -1165,6 +1165,7 @@ class AnnotationService:
 
                                 if gene_protein_precedence_result is not None:
                                     chosen_annotation = gene_protein_precedence_result
+                                    continue
 
                         if key1 > key2:
                             chosen_annotation = anno1
