@@ -58,7 +58,6 @@ def connect_to_neo4j():
         protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
         secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
         g.neo4j = Graph(
-            name=current_app.config.get('NEO4J_DATABASE'),
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
             secure=secure in protocols,
