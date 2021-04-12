@@ -436,16 +436,16 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                                                    lazy_load_content=True)
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
-        organism = None
-        annotation_configs = params.get('annotation_configs')
+        override_organism = None
+        override_annotation_configs = None
 
         if params.get('organism'):
-            organism = params['organism']
-            db.session.add(organism)
+            override_organism = params['organism']
+            db.session.add(override_organism)
             db.session.flush()
 
-        if not annotation_configs:
-            annotation_configs = DEFAULT_ANNOTATION_CONFIGS
+        if params.get('annotation_configs'):
+            override_annotation_configs = params['annotation_configs']
 
         updated_files = []
         versions = []
@@ -453,16 +453,25 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         for file in files:
-            if not file.annotation_configs:
-                file.annotation_configs = annotation_configs
+            if override_organism is not None:
+                effective_organism = override_organism
+            else:
+                effective_organism = file.fallback_organism
+
+            if override_annotation_configs is not None:
+                effective_annotation_configs = override_annotation_configs
+            elif file.annotation_configs is not None:
+                effective_annotation_configs = file.annotation_configs
+            else:
+                effective_annotation_configs = DEFAULT_ANNOTATION_CONFIGS
 
             if file.mime_type == 'application/pdf':
                 try:
                     annotations, version = self._annotate(
                         file=file,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        configs=annotation_configs,
-                        organism=organism or file.fallback_organism,
+                        configs=effective_annotation_configs,
+                        organism=effective_organism,
                         user_id=current_user.id,
                     )
                 except AnnotationError as e:
@@ -501,8 +510,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         file=file,
                         enriched=enriched,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        configs=annotation_configs,
-                        organism=organism,
+                        configs=effective_annotation_configs,
+                        organism=effective_organism,
                         user_id=current_user.id,
                         enrichment=enrichment
                     )
