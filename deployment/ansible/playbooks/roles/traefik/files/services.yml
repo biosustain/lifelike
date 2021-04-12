@@ -1,32 +1,5 @@
 http:
   routers:
-    lifelike-qa:
-      entryPoints:
-        - websecure
-      rule: "Host(`qa.lifelike.bio`)"
-      service: lifelike-qa-service
-      tls:
-        certResolver: "le"
-        domains:
-          - main: "qa.lifelike.bio"
-    # lifelike-staging:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`staging.lifelike.bio`)"
-    #   service: lifelike-staging-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "staging.lifelike.bio"
-    # lifelike-prod:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`lifelike.bio`)"
-    #   service: lifelike-prod-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "lifelike.bio"
     lifelike-euro:
       entryPoints:
         - websecure
@@ -36,34 +9,10 @@ http:
         certResolver: "le"
         domains:
           - main: "euro.lifelike.bio"
-    lifelike-test:
-      entryPoints:
-        - websecure
-      rule: "Host(`test.lifelike.bio`)"
-      service: lifelike-test-service
-      tls:
-        certResolver: "le"
-        domains:
-          - main: "test.lifelike.bio"
+
 
   services:
-    lifelike-qa-service:
-      loadBalancer:
-        servers:
-          - url: "http://10.0.100.5"
-    # lifelike-staging-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.7"
-    # lifelike-prod-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.8"
     lifelike-euro-service:
       loadBalancer:
         servers:
           - url: "http://10.1.0.6"
-    lifelike-test-service:
-      loadBalancer:
-        servers:
-          - url: "http://10.0.100.9"

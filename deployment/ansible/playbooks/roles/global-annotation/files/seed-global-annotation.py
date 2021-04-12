@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--db',
     help='database environment',
-    choices=['qa', 'staging', 'production', 'test', 'demo'],
+    choices=['qa', 'staging', 'production', 'test', 'demo', 'euro'],
     required=True,
 )
 args = parser.parse_args()
