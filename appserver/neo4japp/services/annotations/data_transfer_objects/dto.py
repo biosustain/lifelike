@@ -53,8 +53,6 @@ class PDFWord(PDFBase):
     heights: List[float] = attr.ib(default=attr.Factory(list))
     widths: List[float] = attr.ib(default=attr.Factory(list))
     coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
-    # type is itself, not sure how that works so set to Any for now
-    next: Optional[Any] = attr.ib(default=None)
 
 
 @attr.s(frozen=False)
@@ -126,22 +124,22 @@ class LMDBMatch():
     id_hyperlink: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class EntityResults():
-    matched_type_anatomy: List[LMDBMatch] = attr.ib()
-    matched_type_chemical: List[LMDBMatch] = attr.ib()
-    matched_type_compound: List[LMDBMatch] = attr.ib()
-    matched_type_disease: List[LMDBMatch] = attr.ib()
-    matched_type_food: List[LMDBMatch] = attr.ib()
-    matched_type_gene: List[LMDBMatch] = attr.ib()
-    matched_type_phenomena: List[LMDBMatch] = attr.ib()
-    matched_type_phenotype: List[LMDBMatch] = attr.ib()
-    matched_type_protein: List[LMDBMatch] = attr.ib()
-    matched_type_species: List[LMDBMatch] = attr.ib()
-    matched_type_species_local: List[LMDBMatch] = attr.ib()
+    matched_type_anatomy: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_chemical: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_compound: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_disease: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_food: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_gene: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_phenomena: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_phenotype: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_protein: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_species: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_species_local: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     # non LMDB entity types
-    matched_type_company: List[LMDBMatch] = attr.ib()
-    matched_type_entity: List[LMDBMatch] = attr.ib()
+    matched_type_company: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    matched_type_entity: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
