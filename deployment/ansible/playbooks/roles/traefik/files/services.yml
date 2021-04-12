@@ -27,15 +27,15 @@ http:
     #     certResolver: "le"
     #     domains:
     #       - main: "lifelike.bio"
-    lifelike-demo:
+    lifelike-euro:
       entryPoints:
         - websecure
-      rule: "Host(`demo.lifelike.bio`)"
-      service: lifelike-demo-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "demo.lifelike.bio"
+      rule: "Host(`euro.lifelike.bio`)"
+      service: lifelike-euro-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "euro.lifelike.bio"
     lifelike-test:
       entryPoints:
         - websecure
@@ -59,12 +59,11 @@ http:
     #   loadBalancer:
     #     servers:
     #       - url: "http://10.0.100.8"
-    lifelike-demo-service:
+    lifelike-euro-service:
       loadBalancer:
         servers:
-          - url: "http://10.0.100.10"
+          - url: "http://10.1.0.6"
     lifelike-test-service:
       loadBalancer:
         servers:
           - url: "http://10.0.100.9"
-
