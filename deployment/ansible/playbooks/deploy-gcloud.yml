@@ -79,6 +79,7 @@
           LMDB_HOME_FOLDER={{ LMDB_HOME_FOLDER }}
           AZURE_ACCOUNT_STORAGE_NAME={{ AZURE_ACCOUNT_STORAGE_NAME }}
           AZURE_ACCOUNT_STORAGE_KEY={{ AZURE_ACCOUNT_STORAGE_KEY }}
+          LOG_LEVEL="{{ REDIS_LOG_LEVEL | default('warning') }}"
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"
