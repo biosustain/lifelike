@@ -478,6 +478,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
    * @param annotationHighlightId - the ID of an annotation to highlight, if any
    */
   openPdf(hashId: string, loc: Location = null, annotationHighlightId: string = null) {
+    this.pendingScroll = loc;
     if (this.object != null && this.currentFileId === this.object.hashId) {
       if (loc) {
         this.scrollInPdf(loc);
@@ -487,7 +488,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       }
       return;
     }
-    this.pendingScroll = loc;
     this.pendingAnnotationHighlightId = annotationHighlightId;
     this.pdfFileLoaded = false;
     this.ready = false;
@@ -517,12 +517,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   scrollInPdf(loc: Location) {
+    this.pendingScroll = loc;
     if (!this.pdfFileLoaded) {
       console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
-      this.pendingScroll = loc;
       return;
     }
     this.goToPosition.next(loc);
+  }
+
+  goToPositionVisit(loc: Location) {
+    this.pendingScroll = null;
   }
 
   highlightAnnotation(annotationId: string) {
@@ -551,7 +555,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.pdfFileLoaded = status;
     if (this.pendingScroll) {
       this.scrollInPdf(this.pendingScroll);
-      this.pendingScroll = null;
     }
     if (this.pendingAnnotationHighlightId) {
       this.highlightAnnotation(this.pendingAnnotationHighlightId);
