@@ -3,15 +3,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { from, Observable, Subscription, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { ModuleProperties } from '../../shared/modules';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { ModuleProperties } from 'app/shared/modules';
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
-import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ProjectsService } from '../services/projects.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -20,7 +20,7 @@ import {
   CreateDialogAction,
   ObjectTypeService,
 } from '../services/object-type.service';
-import { RankedItem } from '../../shared/schemas/common';
+import { RankedItem } from 'app/shared/schemas/common';
 
 @Component({
   selector: 'app-object-browser',
