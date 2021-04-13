@@ -1,6 +1,6 @@
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { GraphEntity } from '../../../../drawing-tool/services/interfaces';
+import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 import { GraphClipboardData, TYPE_STRING } from './paste-keyboard-shortcut';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 
