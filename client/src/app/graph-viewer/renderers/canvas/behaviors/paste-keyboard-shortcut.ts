@@ -5,7 +5,7 @@ import {
   GraphEntity,
   GraphEntityType,
   UniversalGraphNode,
-} from '../../../../drawing-tool/services/interfaces';
+} from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
 import { makeid } from 'app/shared/utils/identifiers';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';

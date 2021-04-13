@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { DataService } from 'app/shared/services/table.service';
 import { SortableTableHeaderDirective, SortEvent } from 'app/shared/directives/table-sortable-header.directive';
-import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 
 @Component({
