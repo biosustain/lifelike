@@ -2,8 +2,8 @@ import { DecimalPipe } from '@angular/common';
 import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { DataService } from '../../../../../shared/services/table.service';
-import { SortableTableHeaderDirective, SortEvent } from '../../../../../shared/directives/table-sortable-header.directive';
+import { DataService } from 'app/shared/services/table.service';
+import { SortableTableHeaderDirective, SortEvent } from 'app/shared/directives/table-sortable-header.directive';
 import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 
 

@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { SortableTableHeaderDirective } from '../../../../../shared/directives/table-sortable-header.directive';
+import { SortableTableHeaderDirective } from 'app/shared/directives/table-sortable-header.directive';
 import { TableCompleteComponent } from './table-complete.component';
 import { LinkModule } from '../../components/link/link.module';
 

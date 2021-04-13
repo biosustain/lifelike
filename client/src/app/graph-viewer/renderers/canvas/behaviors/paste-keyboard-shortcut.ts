@@ -7,8 +7,8 @@ import {
   UniversalGraphNode,
 } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { makeid } from '../../../../shared/utils/identifiers';
-import { isClipboardEventNativelyHandled } from '../../../../shared/utils/clipboard';
+import { makeid } from 'app/shared/utils/identifiers';
+import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 
 /**
  * We use this string to know that it's our own JSON.

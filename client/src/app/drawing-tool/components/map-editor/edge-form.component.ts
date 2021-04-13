@@ -4,11 +4,11 @@ import { cloneDeep } from 'lodash';
 import { UniversalGraphEdge } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
-import { RecursivePartial } from '../../../shared/utils/types';
-import { openPotentialInternalLink } from '../../../shared/utils/browser';
+import { RecursivePartial } from 'app/shared/utils/types';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({

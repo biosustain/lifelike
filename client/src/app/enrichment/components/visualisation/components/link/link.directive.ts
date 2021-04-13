@@ -1,7 +1,7 @@
 import { Directive, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { WorkspaceManager } from '../../../../../shared/workspace-manager';
-import { LinkWithoutHrefDirective } from '../../../../../shared/directives/link.directive';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
 
 /**
  * Implements a version of [LinkWithoutHrefDirective] that automatically resolves path to related

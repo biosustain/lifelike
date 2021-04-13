@@ -28,8 +28,8 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { createSearchParamsFromQuery, getQueryParams } from '../../../search/utils/search';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { MessageArguments, MessageDialog } from '../../../shared/services/message-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { GraphSearchParameters } from '../../../search/graph-search';
