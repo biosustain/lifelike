@@ -22,7 +22,7 @@
                     <li ngbNavItem="graph">
                         <a ngbNavLink>Graph</a>
                         <ng-template ngbNavContent>
-                            <app-chart *ngIf="tabstatus['graph'] === true"
+                            <app-chart *ngIf="tabstatus['graph']"
                                     [style.display]="'block'"
                                     [data]="data"
                                     [showMore]="showMore"
@@ -33,7 +33,7 @@
                     <li ngbNavItem="clustergram">
                         <a ngbNavLink>Clustergram</a>
                         <ng-template ngbNavContent>
-                            <app-clustergram *ngIf="tabstatus['clustergram'] === true"
+                            <app-clustergram *ngIf="tabstatus['clustergram']"
                                     [data]="data"
                                     [showMore]="showMore"
                             >
@@ -43,8 +43,8 @@
                     <li ngbNavItem="cloud">
                         <a ngbNavLink>Cloud</a>
                         <ng-template ngbNavContent>
-                            <app-cloud-viewer
-                                    [timeInterval]="tabstatus['cloud'] ? Infinity : 15"
+                            <app-cloud-viewer *ngIf="tabstatus['cloud']"
+                                    [timeInterval]="30"
                                     [data]="data"
                                     [showMore]="showMore"
                             >
