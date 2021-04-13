@@ -20,7 +20,7 @@
             </thead>
             <tbody>
             <tr *ngFor="let entry of genes | keyvalue: rowOrder">
-                <th scope="row">{{ entry.key }}</th>
+                <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>
                 <td *ngFor="let value of entry.value"
                     [ngClass]="{match:value}"
                     [style.backgroundColor]="value && geneColor"
