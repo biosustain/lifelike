@@ -37,6 +37,7 @@ services:
             - backend
 
     redis:
+        command: redis-server --requirepass ${REDIS_PASSWORD}
         networks:
             - backend
 
