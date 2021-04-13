@@ -3,7 +3,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { from, Observable } from 'rxjs';
 import { FilesystemService } from '../services/filesystem.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { map } from 'rxjs/operators';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 

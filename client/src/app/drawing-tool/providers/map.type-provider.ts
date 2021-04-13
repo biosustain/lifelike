@@ -24,11 +24,11 @@ import { RankedItem } from 'app/shared/schemas/common';
 
 import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 export const MAP_SHORTHAND = 'map';

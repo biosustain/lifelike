@@ -1,7 +1,7 @@
 import { Component, OnChanges, Input } from '@angular/core';
-import { annotationTypesMap } from '../../../../../shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
-import { WordCloudNode } from '../../../../../shared/components/word-cloud/word-cloud.component';
+import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
 
 @Component({
   selector: 'app-cloud-viewer',
