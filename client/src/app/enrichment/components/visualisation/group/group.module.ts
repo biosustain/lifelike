@@ -7,6 +7,7 @@ import { TableCompleteComponentModule } from './table/table-complete.module';
 import { ClustergramModule } from './clustergram/clustergram.module';
 import { CommonModule } from '@angular/common';
 import { CloudViewerModule } from './word-cloud/cloud-viewer.module';
+import { LinkModule } from '../components/link/link.module';
 
 @NgModule({
   declarations: [
