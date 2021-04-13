@@ -617,19 +617,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
             # update JSON to have enrichment row and domain...
             for anno in annotation_chunk:
-                # NOTE: this is not consistent
-                # because the PDF parser can parse out commas, semicolons, etc
-                # that is actually part of a word
-                # e.g Adenylate kinase 2, mitochondrial
-                # loses the comma
-                #
-                # if prev_index != -1:
-                # # only do this for subsequent cells b/c
-                # # first cell will always have the correct index
-                # # update index offset to be relative to the cell again
-                # # since they're relative to the combined text
-                # anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
-                # anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
+                if prev_index != -1:
+                    # only do this for subsequent cells b/c
+                    # first cell will always have the correct index
+                    # update index offset to be relative to the cell again
+                    # since they're relative to the combined text
+                    anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
+                    anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
 
                 if 'domain' in cell_text:
                     # imported should come first for each row
@@ -692,33 +686,39 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         # If done right, we would parse the XML but the built-in XML libraries in Python
         # are susceptible to some security vulns, but because this is an internal API,
         # we can accept that it can be janky
-        container_tag_re = re.compile('^<snippet>(.*)</snippet>$', re.DOTALL | re.IGNORECASE)
-        highlight_strip_tag_re = re.compile('^<highlight>([^<]+)</highlight>$', re.IGNORECASE)
-        highlight_add_tag_re = re.compile('^%%%%%-(.+)-%%%%%$', re.IGNORECASE)
 
-        # Remove the outer document tag
-        text = container_tag_re.sub('\\1', original_text)
-        # Remove the highlight tags to help the annotation parser
-        text = highlight_strip_tag_re.sub('%%%%%-\\1-%%%%%', text)
+        texts = []
+        prev_ending_index = -1
 
-        # sort by longest length because the regex is eager
-        # and will take the first occurrence it finds
-        annotations = sorted(annotations, key=lambda x: x['keywordLength'], reverse=True)
+        # sort by lo_location_offset to go from beginning to end
+        annotations = sorted(annotations, key=lambda x: x['loLocationOffset'])
         for annotation in annotations:
-            keyword = annotation['textInDocument']
-            text = re.sub(
-                # Replace but outside tags (shh @ regex)
-                f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
-                f'<annotation type="{annotation["meta"]["type"]}" '
-                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                f'>\\1</annotation>',
-                text,
-                flags=re.IGNORECASE)
+            meta = annotation['meta']
+            meta_type = annotation['meta']['type']
+            term = annotation['textInDocument']
+            lo_location_offset = annotation['loLocationOffset']
+            hi_location_offset = annotation['hiLocationOffset']
 
-        # Re-add the highlight tags
-        text = highlight_add_tag_re.sub('<highlight>\\1</highlight>', text)
-        # Re-wrap with document tags
-        return f'<snippet>{text}</snippet>'
+            text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">{term}</annotation>'  # noqa
+
+            if lo_location_offset == 0:
+                prev_ending_index = hi_location_offset
+                texts.append(text)
+            else:
+                if not texts:
+                    texts.append(original_text[:lo_location_offset])
+                    prev_ending_index = hi_location_offset
+                    texts.append(text)
+                else:
+                    # TODO: would lo_location_offset == prev_ending_index ever happen?
+                    # if yes, need to handle it
+                    texts.append(original_text[prev_ending_index + 1:lo_location_offset])
+                    prev_ending_index = hi_location_offset
+                    texts.append(text)
+
+        texts.append(original_text[prev_ending_index + 1:])
+        final_text = ''.join(texts)
+        return f'<snippet>{final_text}</snippet>'
 
 
 class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
