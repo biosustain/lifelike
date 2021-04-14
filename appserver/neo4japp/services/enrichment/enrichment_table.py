@@ -93,15 +93,13 @@ class EnrichmentTableService(KgService):
                 title='Could not create enrichment table',
                 message='There was a problem finding NCBI domain URLs.')
 
-        return [{
-            'gene': {
-                'name': result['gene_name'],
-                'full_name': result['gene_full_name']
-            },
-            'synonyms': result['synonyms'],
-            'neo4jID': result['neo4j_id'],
-            'link': domain.base_URL.format(
-                result['gene_id']) if result['gene_id'] else ''} for result in results]
+        result_list = []
+        for meta_result in results:
+            item = {'x': meta_result['gene'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['synonym']}  # noqa
+            if meta_result['gene'] is not None:
+                item['link'] = domain.base_URL.format(meta_result['gene']['id'])
+            result_list.append(item)
+        return result_list
 
     def match_ncbi_genes_query(self):
         """Need to collect synonyms because a gene node can have multiple
@@ -112,6 +110,5 @@ class EnrichmentTableService(KgService):
         UNWIND $gene_names AS gene
         MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
             [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-        RETURN collect(s.name) AS synonyms, id(g) AS neo4j_id, \
-            g.id AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
+        RETURN s AS synonym, g AS gene, id(g) AS neo4jID
         """
