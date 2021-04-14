@@ -58,18 +58,18 @@
       overflow: auto;
     }
   }
-}
 
-.gene-list > * {
-  display: inline;
+  .gene-list > * {
+    display: inline;
 
-  &:after {
-    content: ', ';
-    cursor: text;
-    pointer-events: none;
-  }
+    &:after {
+      content: ', ';
+      cursor: text;
+      pointer-events: none;
+    }
 
-  &:last-child:after {
-    content: '';
+    &:last-child:after {
+      content: '';
+    }
   }
 }
