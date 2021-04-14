@@ -34,7 +34,6 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   ngAfterViewInit() {
     this.workspaceManager.initialLoad();
   }
-
   ngOnChanges() {
     this.workspaceManager.save();
   }
