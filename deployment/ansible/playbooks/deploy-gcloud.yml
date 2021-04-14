@@ -118,7 +118,7 @@
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
       tags:
-        - delpoy
+        - deploy
 
     - name: Create LMDB directory
       file:
