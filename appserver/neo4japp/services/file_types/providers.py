@@ -282,3 +282,6 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
+
+    def handle_content_update(self, file: Files):
+        file.enrichment_annotations = None
