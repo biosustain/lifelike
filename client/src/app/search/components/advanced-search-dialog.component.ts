@@ -6,7 +6,7 @@ import { ProjectData } from 'app/file-browser/schema';
 
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { SearchType } from 'app/shared';
+import { SearchType } from '../shared';
 
 @Component({
   selector: 'app-advanced-search-dialog',
