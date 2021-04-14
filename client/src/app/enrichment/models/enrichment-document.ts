@@ -223,11 +223,13 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 const synonymsSet = new Set<string>(synonyms);
                 const ncbiNodes = ncbiNodesData.map((wrapper) => wrapper.x);
                 const ncbiLinks = ncbiNodesData.map((wrapper) => wrapper.link);
-                const geneMap: Map<string, EnrichedGene> = new Map();
+                const geneMap: Set<string> = new Set();
+                const genesList: EnrichedGene[] = [];
 
                 // Add ncbi and imported gene name columns to relevant columns (left of domains)
                 for (let i = 0; i < ncbiNodes.length; i++) {
-                  geneMap.set(synonyms[i], {
+                  geneMap.add(synonyms[i]);
+                  genesList.push({
                     imported: synonyms[i],
                     annotatedImported: synonyms[i],
                     matched: ncbiNodes[i].name,
@@ -241,7 +243,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
                 for (const gene of importGenes) {
                   if (!synonymsSet.has(gene)) {
-                    geneMap.set(gene, {
+                    geneMap.add(gene);
+                    genesList.push({
                       imported: gene,
                     });
                   }
@@ -258,7 +261,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     GO: {labels: ['Annotation']},
                     Biocyc: {labels: ['Pathways']},
                   },
-                  genes: [...geneMap.values()],
+                  genes: genesList,
                 };
               }),
             );
