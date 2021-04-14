@@ -2,6 +2,10 @@ import { Component, OnChanges, Input } from '@angular/core';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
+import { WorkspaceManager } from '../../../../../shared/workspace-manager';
+import { ActivatedRoute } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { paramsToEnrichmentTableLink } from '../../components/link/link.directive';
 
 @Component({
   selector: 'app-cloud-viewer',
@@ -13,6 +17,34 @@ export class CloudViewerComponent implements OnChanges {
   geneColor = annotationTypesMap.get('gene').color;
 
   slicedData: WordCloudNode[];
+  link;
+
+  constructor(
+    private workspaceManager: WorkspaceManager,
+    private route: ActivatedRoute
+  ) {
+    route.params.pipe(
+      map(paramsToEnrichmentTableLink)
+    ).subscribe(
+      link => {
+        this.link = link;
+      }
+    );
+  }
+
+  onClick(d) {
+    this.workspaceManager.navigateByUrl(this.link.appLink.join('/'), {
+      fragment: d.text,
+      sideBySide: true,
+      newTab: true,
+      matchExistingTab: this.link.matchExistingTab
+    });
+  }
+
+  enter(selection) {
+    selection.on('click', this.onClick.bind(this))
+      .style('cursor', 'pointer');
+  }
 
   ngOnChanges() {
     const color = this.geneColor;

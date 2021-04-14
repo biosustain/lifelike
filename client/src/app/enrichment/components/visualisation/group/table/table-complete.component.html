@@ -46,11 +46,13 @@
                 <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight>
             </th>
             <td>
-                <ngb-highlight *ngFor="let gene of row['geneNames']"
-                               [result]="gene"
-                               [term]="service.searchTerm"
-                               [appSELink]="gene"
-                ></ngb-highlight>
+                <span [className]="'gene-list'">
+                    <ngb-highlight *ngFor="let gene of row['geneNames']"
+                                   [appSELink]="gene"
+                                   [result]="gene"
+                                   [term]="service.searchTerm"
+                    ></ngb-highlight>
+                </span>
             </td>
             <td>
                 <ngb-highlight [result]="row['p-value']"
