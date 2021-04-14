@@ -37,7 +37,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { SearchType } from 'app/shared';
+import { SearchType } from '../shared';
 
 
 @Component({
