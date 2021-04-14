@@ -10,7 +10,7 @@
     name:
       - boto
       - elasticsearch
-      - sqlalchemy
+      - sqlalchemy==1.3.23
       - psycopg2-binary
       - six>1.13.0
     umask: "0022"
