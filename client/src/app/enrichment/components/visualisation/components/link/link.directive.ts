@@ -1,4 +1,4 @@
-import { Directive, Input } from '@angular/core';
+import { Directive, Input, HostBinding } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
@@ -21,12 +21,11 @@ export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
  * enrichment table.
  */
 @Directive({
-  selector: ':not(a):not(area)[appSELink]',
-  host: {
-    '[style.cursor]': '"pointer"',
-  }
+  selector: ':not(a):not(area)[appSELink]'
 })
 export class SELinkDirective extends LinkWithoutHrefDirective {
+  @HostBinding('style.cursor') cursor = 'pointer';
+
   constructor(workspaceManager: WorkspaceManager, router: Router, route: ActivatedRoute) {
     super(workspaceManager, router, route);
     route.params.pipe(
