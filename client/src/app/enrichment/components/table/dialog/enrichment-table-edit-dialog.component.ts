@@ -39,7 +39,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
-    this.form.addControl('domainsList', new FormArray([]));
+    this.form.addControl('domainsList', new FormArray([], Validators.required));
     this.form.get('organism').setValidators([Validators.required]);
   }
 
