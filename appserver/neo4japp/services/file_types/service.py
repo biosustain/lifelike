@@ -132,6 +132,13 @@ class BaseFileTypeProvider:
         """
         raise ExportFormatError()
 
+    def handle_content_update(self, file: Files):
+        """
+        Do something after a file content update.
+
+        :param file: the file
+        """
+
 
 class DefaultFileTypeProvider(BaseFileTypeProvider):
     """
