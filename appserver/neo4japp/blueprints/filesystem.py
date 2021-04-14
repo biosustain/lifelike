@@ -449,6 +449,7 @@ class FilesystemBaseView(MethodView):
                         db.session.add(version)
 
                         file.content_id = new_content_id
+                        provider.handle_content_update(file)
                         changed_fields.add('content_value')
 
             file.modified_date = datetime.now()
