@@ -119,8 +119,12 @@ export class BaseEnrichmentDocument {
     const importGenes = resultArray[0].split(',');
     const taxID = resultArray[1];
     const organism = resultArray[2];
-    const domains = resultArray.length > 3 ? resultArray[3].split(',') : null;
-
+    let domains = [];
+    // Ensure we aren't saving any empty strings to the `domains` list
+    if (resultArray.length > 3 && resultArray[3].length) {
+      // ...or, if we already have, filter out the empty values to avoid issues in the enrichment viewer
+      domains = resultArray[3].split(',').filter(domain => domain.length);
+    }
     return {
       importGenes, taxID, organism, domains, ...rest
     };
