@@ -339,7 +339,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot != null ? wrapper.go.link + wrapper.uniprot.result.id :
+            link: wrapper.uniprot.result ? wrapper.go.link + wrapper.uniprot.result.id :
               'http://amigo.geneontology.org/amigo/search/annotation?q=' +
               encodeURIComponent(ncbiNodes[ncbiIds.indexOf(wrapper.node_id)].name),
           },
