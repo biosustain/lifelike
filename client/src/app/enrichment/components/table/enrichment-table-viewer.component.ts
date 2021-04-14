@@ -19,7 +19,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escapeRegExp } from 'lodash';
 
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -41,6 +41,7 @@ import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
 } from './dialog/enrichment-table-edit-dialog.component';
+import { Progress } from '../../../interfaces/common-dialog.interface';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -199,12 +200,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             {duration: 5000},
           );
         }),
-        mergeMap(newTable => {
-          this.queuedChanges$.next(this.queuedChanges$.value || {});
-          return this.save().pipe(
-            map(() => newTable),
-          );
-        }),
       )),
       shareReplay(),
       this.errorHandler.create({label: 'Load enrichment table'}),
@@ -212,6 +207,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   }
 
   save() {
+    const progressDialogRef = this.progressDialog.display({
+      title: 'Working...',
+      progressObservable: new BehaviorSubject<Progress>(new Progress({
+        status: 'Saving enrichment table...',
+      })),
+    });
     const observable = combineLatest(
       this.object$,
       this.document$.pipe(
@@ -229,9 +230,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
           contentValue: blob,
           ...this.queuedChanges$.value,
         })),
+      map(() => {
+        this.refreshData();
+      }),
       tap(() => this.queuedChanges$.next(null)),
       this.errorHandler.create({label: 'Save enrichment table'}),
       shareReplay(),
+      finalize(() => progressDialogRef.close()),
     );
 
     observable.subscribe(() => {
