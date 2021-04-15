@@ -18,6 +18,6 @@ def match_ncbi_nodes():
 
     if organism is not None and gene_names is not None:
         enrichment_table = get_enrichment_table_service()
-        nodes = enrichment_table.match_ncbi_genes(list(set(gene_names)), organism)
+        nodes = enrichment_table.match_ncbi_genes(gene_names, organism)
 
     return jsonify({'result': nodes}), 200
