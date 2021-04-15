@@ -8,11 +8,6 @@ from typing import Dict, List, Set, Tuple
 from string import punctuation
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import (
-    get_annotation_service,
-    get_bioc_document_service,
-    get_entity_recognition
-)
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
@@ -22,6 +17,11 @@ from neo4japp.services.annotations.data_transfer_objects import (
     NLPResults,
     PDFWord,
     SpecifiedOrganismStrain
+)
+from neo4japp.services.annotations.initializer import (
+    get_annotation_service,
+    get_bioc_document_service,
+    get_entity_recognition
 )
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
@@ -203,17 +203,12 @@ def _create_annotations(
         text=pdf_text,
         entities=set(k for k, v in annotation_method.items() if v['nlp']))
 
-    # if chemical used NLP then set compound too
-    if annotation_method[EntityType.CHEMICAL.value]['nlp']:
-        annotation_method[EntityType.COMPOUND.value] = annotation_method[EntityType.CHEMICAL.value]
-
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
         tokens=parsed,
-        nlp_results=nlp_results,
-        annotation_method=annotation_method
+        nlp_results=nlp_results
     )
     current_app.logger.info(
         f'Total LMDB lookup time {time.time() - start_lmdb_time}',

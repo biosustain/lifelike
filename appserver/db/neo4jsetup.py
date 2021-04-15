@@ -1,5 +1,5 @@
 """ Configuration for NEO4J Database """
-from py2neo import GraphError
+from py2neo.database.work import ClientError
 from neo4japp.constants import *
 
 
@@ -14,7 +14,7 @@ def setup():
         drop_fts_index_query = 'CALL db.index.fulltext.drop("namesEvidenceAndId")'
         try:
             graph.evaluate(drop_fts_index_query)
-        except GraphError:
+        except ClientError:
             print('WARNING: No previous indexes found. Continuing...')
 
         labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL, TYPE_SNIPPET]
@@ -32,7 +32,7 @@ def setup():
         print('Setting up full text search indexes.')
         try:
             graph.evaluate(create_fts_index_query)
-        except GraphError:
+        except ClientError:
             print('WARNING: Fulltext indexing failed.')
         tx.commit()
         print('Fulltext search index setup complete.')
