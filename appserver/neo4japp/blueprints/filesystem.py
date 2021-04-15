@@ -17,12 +17,12 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager, defer
+from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
-from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
+from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
 from neo4japp.models import (
     Projects,
     Files,
@@ -72,6 +72,27 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 # - The project that the files are in may be recycled
 
 
+# TODO: Deprecate me after LL-2840
+@bp.route('/enrichment-tables', methods=['GET'])
+@auth.login_required
+def get_all_enrichment_tables():
+    is_admin = g.current_user.has_role('admin')
+    if is_admin is False:
+        raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
+
+    query = db.session.query(Files.hash_id).filter(
+        and_(
+            Files.mime_type == 'vnd.lifelike.document/enrichment-table',
+            or_(
+                Files.annotation_configs.is_(None),
+                Files.fallback_organism_id.is_(None)
+            )
+        )
+    )
+    results = [hash_id[0] for hash_id in query.all()]
+    return jsonify(dict(result=results)), 200
+
+
 class FilesystemBaseView(MethodView):
     """
     Base view for filesystem endpoints with reusable methods for getting files
@@ -98,7 +119,7 @@ class FilesystemBaseView(MethodView):
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content, attr_excl=attr_excl)
         if not len(files):
             raise RecordNotFound(
-                title='Failed to Get File(s)',
+                title='File Not Found',
                 message='The requested file object could not be found.',
                 code=404)
         return files[0]
@@ -192,7 +213,7 @@ class FilesystemBaseView(MethodView):
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
-                    title='Failed to Get File(s)',
+                    title='File Not Found',
                     message=f"The request specified one or more file or directory "
                     f"({', '.join(missing_hash_ids)}) that could not be found.",
                     code=404)
@@ -428,6 +449,7 @@ class FilesystemBaseView(MethodView):
                         db.session.add(version)
 
                         file.content_id = new_content_id
+                        provider.handle_content_update(file)
                         changed_fields.add('content_value')
 
             file.modified_date = datetime.now()

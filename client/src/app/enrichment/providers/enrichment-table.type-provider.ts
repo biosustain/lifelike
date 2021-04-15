@@ -148,6 +148,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               contentValue: newBlob,
               ...value.request,
             })),
+            mergeMap(o => document.refreshData().pipe(
+              map(() => o),
+            )),
             map(() => value),
             // Errors are lost below with the catch() so we need to handle errors here too
             this.errorHandler.create(),
@@ -181,7 +184,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
-          mergeMap(document => new EnrichmentTable().load(document)),
+          mergeMap(document => new EnrichmentTable({
+            usePlainText: true,
+          }).load(document)),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {
             return new File([blob], object.filename + '.csv');

@@ -6,7 +6,7 @@ filebeat.autodiscover:
             contains:
               docker.container.image: kg-webserver
           config:
-            - type: docker
+            - type: container
               containers.ids:
                 - "${data.docker.container.id}"
             - module: nginx

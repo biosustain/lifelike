@@ -17,6 +17,7 @@ export class EdgeCreation implements GraphAction {
         type: GraphEntityType.Edge,
         entity: this.edge,
       }]);
+      component.focusEditorPanel();
     }
   }
 

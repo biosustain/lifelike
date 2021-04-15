@@ -33,12 +33,12 @@ export class EnrichmentTableService {
    * @param taxID tax id of organism
    */
   getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
-    return this.http.post<{ result: EnrichmentWrapper[] }>(
+    return this.http.post<{result: EnrichmentWrapper[]}>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
       {nodeIds, taxID},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result),
+      map(resp => resp.result),
     );
   }
 
