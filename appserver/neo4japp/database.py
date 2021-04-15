@@ -6,6 +6,7 @@ from flask import g, current_app
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from neo4j import GraphDatabase, basic_auth
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
@@ -47,6 +48,21 @@ db = SQLAlchemy(
         'executemany_values_page_size': 10000
     }
 )
+
+host = os.getenv('NEO4J_HOST', '0.0.0.0')
+scheme = os.getenv('NEO4J_SCHEME', 'bolt')
+port = os.getenv('NEO4J_PORT', '7687')
+url = f'{scheme}://{host}:{port}'
+auth = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+username = auth[0]
+password = auth[1]
+driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
+
+
+def get_neo4j_db():
+    if not hasattr(g, 'neo4j_db'):
+        g.neo4j_db = driver.session()
+    return g.neo4j_db
 
 
 # NOTE: local network connection to cloud seems to be causing issues
@@ -97,6 +113,7 @@ class DBConnection:
 class GraphConnection:
     def __init__(self):
         super().__init__()
+        # TODO LL-2916 replace with neo4j driver
         self.graph = connect_to_neo4j()
 
 
@@ -126,6 +143,7 @@ not apply to the AnnotationServices (except manual and sorted).
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
+        # TODO LL-2916 replace with neo4j driver
         graph = connect_to_neo4j()
         g.kg_service = KgService(
             graph=graph,
@@ -137,6 +155,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
+        # TODO LL-2916 replace with neo4j driver
         graph = connect_to_neo4j()
         g.visualizer_service = VisualizerService(
             graph=graph,
@@ -168,7 +187,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.enrichment_table_service = EnrichmentTableService(
             graph=graph,
             session=db.session,
@@ -179,6 +198,7 @@ def get_enrichment_table_service():
 def get_enrichment_visualisation_service():
     if 'enrichment_visualisation_service' not in g:
         from neo4japp.services import EnrichmentVisualisationService
+        # TODO LL-2916 replace with neo4j driver
         graph = connect_to_neo4j()
         g.enrichment_visualisation_service = EnrichmentVisualisationService(
             graph=graph,
@@ -190,6 +210,7 @@ def get_enrichment_visualisation_service():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
+        # TODO LL-2916 replace with neo4j driver
         graph = connect_to_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
@@ -198,6 +219,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
+        # TODO LL-2916 replace with neo4j driver
         graph = connect_to_neo4j()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
@@ -267,14 +289,6 @@ def get_sorted_annotation_service(sort_id, *, mime_type=None):
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
     return ExcelExportService()
-
-
-def get_kg_statistics_service():
-    if 'kg_statistics_service' not in g:
-        from neo4japp.services.kg_statistics import KgStatisticsService
-        graph = connect_to_neo4j()
-        g.kg_statistics_service = KgStatisticsService(graph=graph)
-    return g.kg_statistics_service
 
 
 def reset_dao():

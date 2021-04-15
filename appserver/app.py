@@ -4,7 +4,7 @@ import logging
 import os
 import click
 import sentry_sdk
-from flask import request
+from flask import g, request
 
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text
@@ -32,6 +32,12 @@ def request_navigator_log():
             'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'neo4j_db'):
+        g.neo4j_db.close()
 
 
 @app.cli.command("seed")
