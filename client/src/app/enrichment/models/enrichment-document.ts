@@ -119,8 +119,12 @@ export class BaseEnrichmentDocument {
     const importGenes = resultArray[0].split(',');
     const taxID = resultArray[1];
     const organism = resultArray[2];
-    const domains = resultArray.length > 3 ? resultArray[3].split(',') : null;
-
+    let domains = [];
+    // Ensure we aren't saving any empty strings to the `domains` list
+    if (resultArray.length > 3 && resultArray[3].length) {
+      // ...or, if we already have, filter out the empty values to avoid issues in the enrichment viewer
+      domains = resultArray[3].split(',').filter(domain => domain.length);
+    }
     return {
       importGenes, taxID, organism, domains, ...rest
     };
@@ -223,12 +227,13 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 const synonymsSet = new Set<string>(synonyms);
                 const ncbiNodes = ncbiNodesData.map((wrapper) => wrapper.x);
                 const ncbiLinks = ncbiNodesData.map((wrapper) => wrapper.link);
-
-                const geneMap: Map<string, EnrichedGene> = new Map();
+                const geneMap: Set<string> = new Set();
+                const genesList: EnrichedGene[] = [];
 
                 // Add ncbi and imported gene name columns to relevant columns (left of domains)
                 for (let i = 0; i < ncbiNodes.length; i++) {
-                  geneMap.set(synonyms[i], {
+                  geneMap.add(synonyms[i]);
+                  genesList.push({
                     imported: synonyms[i],
                     annotatedImported: synonyms[i],
                     matched: ncbiNodes[i].name,
@@ -242,7 +247,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
                 for (const gene of importGenes) {
                   if (!synonymsSet.has(gene)) {
-                    geneMap.set(gene, {
+                    geneMap.add(gene);
+                    genesList.push({
                       imported: gene,
                     });
                   }
@@ -259,7 +265,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     GO: {labels: ['Annotation']},
                     Biocyc: {labels: ['Pathways']},
                   },
-                  genes: [...geneMap.values()],
+                  genes: genesList,
                 };
               }),
             );
@@ -275,6 +281,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
    * @param wrapper data returned from get domains request
    * @param ncbiNodes matched ncbi data
    * @param ncbiIds matched ncbi ids
+   * @param ncbiNode matched ncbi data
    * @returns table entries
    */
   private generateGeneDomainResults(domains: string[], wrapper: EnrichmentWrapper,
@@ -283,19 +290,23 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('Regulon')) {
       if (wrapper.regulon.result != null) {
+        const regulatorText = nullCoalesce(wrapper.regulon.result.regulator_family, '');
+        const activatedText = wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : '';
+        const repressedText = wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : '';
+
         results.Regulon = {
           'Regulator Family': {
-            text: nullCoalesce(wrapper.regulon.result.regulator_family, ''),
+            text: regulatorText,
             link: wrapper.regulon.link,
-            annotatedText: nullCoalesce(wrapper.regulon.result.regulator_family, '')
+            annotatedText: regulatorText
           }, 'Activated By': {
-            text: wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : '',
+            text: activatedText,
             link: wrapper.regulon.link,
-            annotatedText: wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : ''
+            annotatedText: activatedText
           }, 'Repressed By': {
-            text: wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : '',
+            text: repressedText,
             link: wrapper.regulon.link,
-            annotatedText: wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : ''
+            annotatedText: repressedText
           },
         };
       }
@@ -322,7 +333,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
             annotatedText: wrapper.string.result.annotation !== 'annotation not available' ?
               wrapper.string.result.annotation : '',
             link: wrapper.string.result.id ? wrapper.string.link + wrapper.string.result.id :
-              wrapper.string.link + wrapper.biocyc.result.biocyc_id,
+            wrapper.string.link + wrapper.biocyc.result.biocyc_id
           },
         };
       }
@@ -330,10 +341,11 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('GO')) {
       if (wrapper.go.result != null) {
+        const text = this.processGoWrapper(wrapper.go.result);
         results.GO = {
           Annotation: {
-            text: this.processGoWrapper(wrapper.go.result),
-            annotatedText: this.processGoWrapper(wrapper.go.result),
+            text,
+            annotatedText: text,
             link: wrapper.uniprot.result ? wrapper.go.link + wrapper.uniprot.result.id :
               'http://amigo.geneontology.org/amigo/search/annotation?q=' +
               encodeURIComponent(ncbiNodes[ncbiIds.indexOf(wrapper.node_id)].name),
@@ -367,7 +379,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       );
     } else {
       return nodeArray
-        .map((node) => node.name)
         .slice(0, 5)
         .join('; ');
     }

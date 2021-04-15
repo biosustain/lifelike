@@ -16,7 +16,7 @@
       <div class="module-header">
         <!-- Breadcrumbs -->
         <div class="module-breadcrumb-bar mb-1">
-          <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
+          <app-object-path [object]="object?.parent" [newTab]="true"></app-object-path>
         </div>
 
         <div class="module-title-bar">
@@ -32,7 +32,7 @@
               <i class="fas fa-chevron-down fa-fw text-icon"></i>
             </a>
             <div ngbDropdownMenu>
-              <app-object-menu [object]="object" [forEditing]="true"
+              <app-object-menu *ngIf="object" [object]="object" [forEditing]="true"
                                [showOpen]="false" [showDelete]="false"
                                (objectRefresh)="requestRefresh()">
               </app-object-menu>
@@ -78,7 +78,6 @@
             </ng-container>
             <ng-template #textSearchControl>
               <app-search-control [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
-                                  (enterPress)="findNext()"
                                   [searching]="searching || false"
                                   [resultIndex]="(matchesCount.current || 1) - 1"
                                   [resultCount]="matchesCount.total || 0"
@@ -171,11 +170,13 @@
           <div *ngIf="ready">
             <!-- PDF Viewer -->
             <lib-pdf-viewer-lib
+              tabindex=0
               id='pdf-viewer'
               appPdfViewer
               [pdfSrc]="pdfData"
               [annotations]="annotations"
               [goToPosition]="goToPosition"
+              (goToPositionVisit)="goToPositionVisit($event)"
               [highlightAnnotations]="highlightAnnotationIds"
               [addedAnnotations]="addedAnnotations"
               [removedAnnotationIds]="removedAnnotationIds"
