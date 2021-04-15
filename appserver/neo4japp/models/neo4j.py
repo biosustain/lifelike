@@ -1,5 +1,5 @@
 from flask import json
-from neo4j.graph import Node as N4jDriverNode
+from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 from py2neo import Node, Relationship
 
 from neo4japp.models.common import NEO4JBase
@@ -102,6 +102,18 @@ class GraphRelationship(NEO4JBase):
             data=dict(rel),
             to=rel.end_node.identity,
             _from=rel.start_node.identity,
+            to_label=list(rel.end_node.labels)[0],
+            from_label=list(rel.start_node.labels)[0]
+        )
+
+    @classmethod
+    def from_neo4j_driver(cls, rel: N4jDriverRelationship):
+        return cls(
+            id=rel.id,
+            label=type(rel).__name__,
+            data=dict(rel),
+            to=rel.end_node.id,
+            _from=rel.start_node.id,
             to_label=list(rel.end_node.labels)[0],
             from_label=list(rel.start_node.labels)[0]
         )
