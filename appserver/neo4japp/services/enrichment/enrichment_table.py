@@ -1,10 +1,10 @@
 from flask import current_app
 from neo4j import (
     Session as Neo4jSession,
-    Transaction as Neo4jTransaction
+    Transaction as Neo4jTx
 )
 from sqlalchemy.orm import Session as SQLAlchemySession
-from typing import List
+from typing import Dict, List
 
 from neo4japp.constants import EnrichmentDomain, LogEventType
 from neo4japp.exceptions import AnnotationError, ServerException
@@ -100,7 +100,12 @@ class EnrichmentTableService(KgService):
             'link': domain.base_URL.format(
                 result['gene_id']) if result['gene_id'] else ''} for result in results]
 
-    def match_ncbi_genes_query(self, tx: Neo4jTransaction, gene_names: List[str], organism: str):
+    def match_ncbi_genes_query(
+        self,
+        tx: Neo4jTx,
+        gene_names: List[str],
+        organism: str
+    ) -> List[Dict]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
         a later query."""
@@ -114,5 +119,5 @@ class EnrichmentTableService(KgService):
                     g.id AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
                 """,
                 gene_names=gene_names, organism=organism
-            )
+            ).data()
         ]

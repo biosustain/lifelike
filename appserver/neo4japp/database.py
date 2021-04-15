@@ -219,8 +219,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        # TODO LL-2916 replace with neo4j driver
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
