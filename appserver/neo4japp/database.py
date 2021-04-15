@@ -159,8 +159,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
-        # TODO LL-2916 replace with neo4j driver
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.visualizer_service = VisualizerService(
             graph=graph,
             session=db.session,

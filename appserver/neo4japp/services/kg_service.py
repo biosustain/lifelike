@@ -3,8 +3,10 @@ import json
 import os
 import time
 
-from typing import Dict, List
 from flask import current_app
+from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
+from py2neo import Node, Relationship
+from typing import Dict, List
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
 from neo4japp.exceptions import ServerException
@@ -22,27 +24,32 @@ from neo4japp.constants import (
     TYPE_GENE,
     TYPE_DISEASE,
 )
-from neo4japp.util import get_first_known_label_from_node
+from neo4japp.util import (
+    get_first_known_label_from_node,
+    get_first_known_label_from_node_n4j_driver
+)
 from neo4japp.utils.logger import EventLog
-
-from py2neo import Node, Relationship
 
 
 class KgService(HybridDBDao):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
-    def _get_uri_of_node_entity(self, node: Node, url_map: Dict[str, str]):
+    def _get_uri_of_node_entity(self, node: N4jDriverNode, url_map: Dict[str, str]):
         """Given a node and a map of domains -> URLs, returns the appropriate
         URL formatted with the node entity identifier.
         """
-        label = get_first_known_label_from_node(node)
+        label = get_first_known_label_from_node_n4j_driver(node)
         entity_id = node.get('id')
+
+        # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
+        # is DISTINCT from the `id` property a given node might have, which represents the node
+        # entity! I.e. ID(n) = 123456789 vs. (n: {id: 'CHEBI:0000'})}
 
         # Can't get the URI of the node if there is no 'id' property, so return None
         if entity_id is None:
             current_app.logger.warning(
-                f'Node with ID {node.identity} does not have a URI.',
+                f'Node with ID {node.id} does not have a URI.',
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             return None
@@ -66,7 +73,7 @@ class KgService(HybridDBDao):
         except KeyError:
             current_app.logger.warning(
                 f'url_map did not contain the expected key value for node with:\n' +
-                f'\tID: {node.identity}\n'
+                f'\tID: {node.id}\n'
                 f'\tLabel: {label}\n' +
                 f'\tURI: {entity_id}\n'
                 'There may be something wrong in the database.',
@@ -75,7 +82,11 @@ class KgService(HybridDBDao):
         finally:
             return url
 
-    def _neo4j_objs_to_graph_objs(self, nodes: List[Node], relationships: List[Relationship]):
+    def _neo4j_objs_to_graph_objs(
+        self,
+        nodes: List[N4jDriverNode],
+        relationships: List[N4jDriverRelationship]
+    ):
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
         # different type of nodes/edges being converted.
@@ -95,16 +106,16 @@ class KgService(HybridDBDao):
         }
 
         for node in nodes:
-            graph_node = GraphNode.from_py2neo(
+            graph_node = GraphNode.from_neo4j_driver(
                 node,
                 url_fn=lambda x: self._get_uri_of_node_entity(x, url_map),
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label_from_node,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(x)]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label_from_node_n4j_driver,
             )
             node_dict[graph_node.id] = graph_node
 
         for rel in relationships:
-            graph_rel = GraphRelationship.from_py2neo(rel)
+            graph_rel = GraphRelationship.from_neo4j_driver(rel)
             rel_dict[graph_rel.id] = graph_rel
         return {
             'nodes': [n.to_dict() for n in node_dict.values()],
@@ -130,15 +141,14 @@ class KgService(HybridDBDao):
         split_data_query = data_query.split('&')
 
         if len(split_data_query) == 1 and split_data_query[0].find(',') == -1:
-            query = """
-                MATCH (n) WHERE ID(n)=$node_id RETURN n AS node
-            """
-            result = self.graph.run(
-                query,
-                {
-                    'node_id': int(split_data_query.pop())
-                }
-            ).data()
+            result = self.graph.read_transaction(
+                lambda tx: list(
+                    tx.run(
+                        'MATCH (n) WHERE ID(n)=$node_id RETURN n AS node',
+                        node_id=int(split_data_query.pop())
+                    )
+                )
+            )
 
             node = []
             if len(result) > 0:
@@ -147,21 +157,22 @@ class KgService(HybridDBDao):
             return self._neo4j_objs_to_graph_objs(node, [])
         else:
             data = [x.split(',') for x in split_data_query]
-            query = """
-                UNWIND $data as node_pair
-                WITH node_pair[0] as from_id, node_pair[1] as to_id
-                MATCH (a)-[relationship]->(b)
-                WHERE ID(a)=from_id AND ID(b)=to_id
-                RETURN
-                    apoc.convert.toSet(collect(a) + collect(b)) as nodes,
-                    apoc.convert.toSet(collect(relationship)) as relationships
-            """
-            result = self.graph.run(
-                query,
-                {
-                    'data': data
-                }
-            ).data()
+            result = self.graph.read_transaction(
+                lambda tx: list(
+                    tx.run(
+                        """
+                        UNWIND $data as node_pair
+                        WITH node_pair[0] as from_id, node_pair[1] as to_id
+                        MATCH (a)-[relationship]->(b)
+                        WHERE ID(a)=from_id AND ID(b)=to_id
+                        RETURN
+                            apoc.convert.toSet(collect(a) + collect(b)) as nodes,
+                            apoc.convert.toSet(collect(relationship)) as relationships
+                        """,
+                        data=data
+                    )
+                )
+            )
 
             nodes = []
             relationships = []
