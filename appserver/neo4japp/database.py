@@ -65,6 +65,12 @@ def get_neo4j_db():
     return g.neo4j_db
 
 
+def close_neo4j_db(e=None):
+    neo4j_db = g.pop('neo4j_db', None)
+    if neo4j_db:
+        neo4j_db.close()
+
+
 # NOTE: local network connection to cloud seems to be causing issues
 # Neo4j Lead Dev/Py2neo creator: https://stackoverflow.com/a/63592570
 # https://github.com/technige/py2neo

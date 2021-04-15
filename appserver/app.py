@@ -34,12 +34,6 @@ def request_navigator_log():
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
 
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'neo4j_db'):
-        g.neo4j_db.close()
-
-
 @app.cli.command("seed")
 def seed():
     def find_existing_row(model, value):
