@@ -370,18 +370,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   private processGoWrapper(nodeArray: GoNode[]): string {
-    if (nodeArray.length > 5) {
-      return (
-        nodeArray
-          .map((node) => node.name)
-          .slice(0, 5)
-          .join('; ') + '...'
-      );
-    } else {
-      return nodeArray
-        .slice(0, 5)
-        .join('; ');
-    }
+    return nodeArray
+      .map((node) => node.name)
+      .slice(0, 5)
+      .join('; ') + (nodeArray.length > 5 ? '...' : '');
   }
 }
 

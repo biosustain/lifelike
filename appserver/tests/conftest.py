@@ -79,6 +79,7 @@ def graph(request, app):
     IMPORTANT: Tests may not behave as expected if the
     Neo4J database is not cleared before running tests!
     """
+    # TODO LL-2916 replace with neo4j driver
     graph = Graph(
         host=os.environ.get('NEO4J_HOST'),
         auth=os.environ.get('NEO4J_AUTH').split('/'),
