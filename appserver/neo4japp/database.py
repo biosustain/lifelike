@@ -117,8 +117,7 @@ class DBConnection:
 class GraphConnection:
     def __init__(self):
         super().__init__()
-        # TODO LL-2916 replace with neo4j driver
-        self.graph = connect_to_neo4j()
+        self.graph = get_neo4j_db()
 
 
 def _connect_to_elastic():
@@ -211,7 +210,7 @@ def get_enrichment_visualisation_service():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        # TODO LL-2916 replace with neo4j driver
+        # TODO Replace with neo4j driver
         graph = connect_to_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
