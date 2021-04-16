@@ -147,8 +147,7 @@ not apply to the AnnotationServices (except manual and sorted).
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
-        # TODO LL-2916 replace with neo4j driver
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.kg_service = KgService(
             graph=graph,
             session=db.session,
