@@ -288,10 +288,15 @@ class KgService(HybridDBDao):
         self,
         ncbi_gene_ids: List[int],
     ):
+        gene_tuples = [
+            [ncbi_gene_ids[i], i]
+            for i in range(len(ncbi_gene_ids))
+        ]
+
         start = time.time()
         results = self.graph.read_transaction(
             self.get_go_genes_query,
-            ncbi_gene_ids
+            gene_tuples,
         )
 
         current_app.logger.info(
@@ -299,17 +304,12 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
-        ncbi_node_to_go_term_map = dict()
         result_list = []
         domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
         for meta_result in results:
             xArray = meta_result['xArray']
-            ncbi_node_to_go_term_map[meta_result['gene']] = xArray
-
-        for ncbi_id in ncbi_gene_ids:
-            go_terms = ncbi_node_to_go_term_map[ncbi_id]
-            item = {'result': go_terms}
-            if (go_terms is not None):
+            item = {'result': xArray}
+            if (xArray is not None):
                 item['link'] = domain
             result_list.append(item)
         return result_list
@@ -503,16 +503,16 @@ class KgService(HybridDBDao):
             ).data()
         )
 
-    def get_go_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[List[int]]) -> List[Neo4jRecord]:
+    def get_go_genes_query(self, tx: Neo4jTx, gene_tuples: List[List[int]]) -> List[Neo4jRecord]:
         return list(
             tx.run(
                 """
-                UNWIND $ncbi_gene_ids as gene
+                UNWIND $gene_tuples as genes
                 OPTIONAL MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:db_GO)
-                WHERE ID(g)=gene
-                RETURN gene, collect(x) as xArray
+                WHERE ID(g)=genes[0]
+                RETURN genes[1], collect(x) as xArray
                 """,
-                ncbi_gene_ids=ncbi_gene_ids
+                gene_tuples=gene_tuples
             ).data()
         )
 
