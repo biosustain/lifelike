@@ -148,6 +148,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               contentValue: newBlob,
               ...value.request,
             })),
+            mergeMap(o => document.refreshData().pipe(
+              map(() => o),
+            )),
             map(() => value),
             // Errors are lost below with the catch() so we need to handle errors here too
             this.errorHandler.create(),
