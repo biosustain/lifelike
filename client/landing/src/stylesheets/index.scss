@@ -125,6 +125,22 @@ body {
   padding: ($spacer * 2.5) 0;
 }
 
+.section-title {
+  font-family: $font-intro;
+  font-size: 210%;
+  text-align: center;
+  margin: 0 0 ($spacer * 2) 0;
+}
+
+.section-divider {
+  font-family: $font-intro;
+  font-size: 210%;
+  text-align: center;
+  padding: ($spacer * 0.75) 0;
+  background: #c96e2a;
+  color: #fff;
+}
+
 // ========================================
 // Spotlight
 // ========================================
@@ -287,13 +303,6 @@ body {
   background: #F7FBFC;
 }
 
-.section-title {
-  font-family: $font-intro;
-  font-size: 210%;
-  text-align: center;
-  margin: 0 0 ($spacer * 2) 0;
-}
-
 .catcher-subtitle {
   color: $gray-500;
   font-size: 140%;
@@ -367,10 +376,16 @@ body {
 
 .site-footer {
   background: #FEF7F1;
-  color: $gray-600;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(254, 215, 181, 1) 100%);
   font-size: $font-size-sm;
   margin-top: $spacer * 2;
-  padding: ($spacer * 3.5) 0 ($spacer * 2) 0;
+  padding: ($spacer * 2) 0 ($spacer * 2) 0;
+}
+
+.footer-title {
+  font-family: $font-intro;
+  font-size: 280%;
+  text-align: center;
 }
 
 .footer-logos {
