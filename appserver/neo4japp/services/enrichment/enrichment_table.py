@@ -35,13 +35,16 @@ class EnrichmentTableService(KgService):
         # the idea is to create a mapping to later identify
         # what row/column each text is originally in
         for i, gene in enumerate(data['genes']):
-            # matched genes will have domains
-            if gene.get('domains'):
-                try:
-                    cell_texts.append({'text': gene['imported'], 'index': i, 'domain': 'Imported', 'label': 'Imported'})  # noqa
-                    cell_texts.append({'text': gene['matched'], 'index': i, 'domain': 'Matched', 'label': 'Matched'})  # noqa
-                    cell_texts.append({'text': gene['fullName'], 'index': i, 'domain': 'Full Name', 'label': 'Full Name'})  # noqa
+            if gene.get('matched', None) is None:
+                # gene did not match so ignore and don't annotate
+                continue
 
+            try:
+                cell_texts.append({'text': gene['imported'], 'index': i, 'domain': 'Imported', 'label': 'Imported'})  # noqa
+                cell_texts.append({'text': gene['matched'], 'index': i, 'domain': 'Matched', 'label': 'Matched'})  # noqa
+                cell_texts.append({'text': gene['fullName'], 'index': i, 'domain': 'Full Name', 'label': 'Full Name'})  # noqa
+
+                if gene.get('domains'):
                     for k, v in gene['domains'].items():
                         if k == EnrichmentDomain.REGULON.value:
                             for k2, v2 in v.items():
@@ -52,12 +55,12 @@ class EnrichmentTableService(KgService):
                             cell_texts.append({'text': v['Annotation']['text'], 'index': i, 'domain': k, 'label': 'Annotation'})  # noqa
                         elif k == EnrichmentDomain.UNIPROT.value:
                             cell_texts.append({'text': v['Function']['text'], 'index': i, 'domain': k, 'label': 'Function'})  # noqa
-                except KeyError:
-                    current_app.logger.error(
-                        f'Missing key when creating enrichment table text row/column mapping.',
-                        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-                    )
-                    continue
+            except KeyError:
+                current_app.logger.error(
+                    f'Missing key when creating enrichment table text row/column mapping.',
+                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                )
+                continue
 
         for text in cell_texts:
             if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
@@ -69,19 +72,19 @@ class EnrichmentTableService(KgService):
         return EnrichmentCellTextMapping(
             text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
 
-    def match_ncbi_genes(self, geneNames: List[str], organism: str):
+    def match_ncbi_genes(self, gene_names: List[str], organism: str):
         """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
             ID of given organism. Input order is maintained in result.
         """
         query = self.match_ncbi_genes_query()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
             {
-                'geneNames': geneNames,
+                'gene_names': gene_names,
                 'organism': organism
             }
         ).data()
-        result_list = []
+
         domain = self.session.query(DomainURLsMap).filter(
             DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
 
@@ -90,7 +93,8 @@ class EnrichmentTableService(KgService):
                 title='Could not create enrichment table',
                 message='There was a problem finding NCBI domain URLs.')
 
-        for meta_result in result:
+        result_list = []
+        for meta_result in results:
             item = {'x': meta_result['gene'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['synonym']}  # noqa
             if meta_result['gene'] is not None:
                 item['link'] = domain.base_URL.format(meta_result['gene']['id'])
@@ -98,9 +102,13 @@ class EnrichmentTableService(KgService):
         return result_list
 
     def match_ncbi_genes_query(self):
+        """Need to collect synonyms because a gene node can have multiple
+        synonyms. So it is possible to send duplicate internal node ids to
+        a later query."""
+
         return """
-        WITH $geneNames AS genes UNWIND genes AS gene
+        UNWIND $gene_names AS gene
         MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
             [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-        RETURN s AS synonym, g AS gene, ID(g) AS neo4jID
+        RETURN s AS synonym, g AS gene, id(g) AS neo4jID
         """

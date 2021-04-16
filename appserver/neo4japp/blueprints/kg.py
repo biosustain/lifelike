@@ -8,76 +8,6 @@ from neo4japp.database import get_kg_service
 bp = Blueprint('kg-api', __name__, url_prefix='/knowledge-graph')
 
 
-@bp.route('/get-ncbi-nodes/uniprot', methods=['POST'])
-@auth.login_required
-def get_ncbi_uniprot_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_uniprot_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/string', methods=['POST'])
-@auth.login_required
-def get_ncbi_string_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_string_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/molecular-go', methods=['POST'])
-@auth.login_required
-def get_ncbi_molecular_go_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_molecular_go_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/biological-go', methods=['POST'])
-@auth.login_required
-def get_ncbi_biological_go_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_biological_go_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/cellular-go', methods=['POST'])
-@auth.login_required
-def get_ncbi_cellular_go_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_cellular_go_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/biocyc', methods=['POST'])
-@auth.login_required
-def get_ncbi_biocyc_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_biocyc_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
-@bp.route('/get-ncbi-nodes/regulon', methods=['POST'])
-@auth.login_required
-def get_ncbi_regulon_nodes():
-    data = request.get_json()
-    node_ids = data['nodeIds']
-    kg = get_kg_service()
-    nodes = kg.get_regulon_genes(node_ids)
-    return jsonify({'result': nodes}), 200
-
-
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
 @auth.login_required
 def get_ncbi_enrichment_domains():
@@ -88,14 +18,19 @@ def get_ncbi_enrichment_domains():
     # TODO: Validate incoming data using webargs + Marshmallow
     data = request.get_json()
     node_ids = data.get('nodeIds')
-    taxID = data.get('taxID')
-    if node_ids is not None and taxID is not None:
+    tax_id = data.get('taxID')
+
+    nodes = {}
+
+    if node_ids is not None and tax_id is not None:
         kg = get_kg_service()
+
         regulon = kg.get_regulon_genes(node_ids)
-        biocyc = kg.get_biocyc_genes(node_ids, taxID)
+        biocyc = kg.get_biocyc_genes(node_ids, tax_id)
         go = kg.get_go_genes(node_ids)
         string = kg.get_string_genes(node_ids)
         uniprot = kg.get_uniprot_genes(node_ids)
+
         nodes = [{
             'regulon': regulon[i],
             'uniprot': uniprot[i],
@@ -104,8 +39,7 @@ def get_ncbi_enrichment_domains():
             'biocyc': biocyc[i],
             'node_id': node_id
         } for i, node_id in enumerate(node_ids)]
-    else:
-        nodes = []
+
     return jsonify({'result': nodes}), 200
 
 

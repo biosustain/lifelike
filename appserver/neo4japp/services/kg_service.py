@@ -4,11 +4,10 @@ import os
 import time
 
 from typing import Dict, List
-
 from flask import current_app
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
-
+from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
     DomainURLsMap,
@@ -187,24 +186,29 @@ class KgService(HybridDBDao):
         props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
         return {node_label: [prop['key'] for prop in props]}
 
-    def get_uniprot_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
+    def get_uniprot_genes(self, ncbi_gene_ids: List[int]):
         query = self.get_uniprot_genes_query()
         start = time.time()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
+            {'ncbi_gene_ids': ncbi_gene_ids}
         ).data()
-        print(f'Time to get uniprot genes {time.time() - start}')
+
+        current_app.logger.info(
+            f'Enrichment UniProt KG query time {time.time() - start}',
+            extra=EventLog(event_type='enrichment-table').to_dict()
+        )
+
+        domain = self.session.query(DomainURLsMap).filter(
+            DomainURLsMap.domain == 'uniprot').one_or_none()
+
+        if domain is None:
+            raise ServerException(
+                title='Could not create enrichment table',
+                message='There was a problem finding UniProt domain URLs.')
 
         result_list = []
-        domain = self.session.query(DomainURLsMap).filter(
-                                        DomainURLsMap.domain == 'uniprot').one()
-        for meta_result in result:
+        for meta_result in results:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 meta_id = meta_result['x']['id']
@@ -215,100 +219,24 @@ class KgService(HybridDBDao):
             result_list.append(item)
         return result_list
 
-    def get_string_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
+    def get_string_genes(self, ncbi_gene_ids: List[int]):
         query = self.get_string_genes_query()
         start = time.time()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
+            {'ncbi_gene_ids': ncbi_gene_ids}
         ).data()
-        print(f'Time to get string genes {time.time() - start}')
+
+        current_app.logger.info(
+            f'Enrichment String KG query time {time.time() - start}',
+            extra=EventLog(event_type='enrichment-table').to_dict()
+        )
 
         result_list = []
-        for meta_result in result:
+        for meta_result in results:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 item['link'] = f'https://string-db.org/cgi/network?identifiers='
-            result_list.append(item)
-        return result_list
-
-    def get_molecular_go_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
-        query = self.get_molecular_go_genes_query()
-        result = self.graph.run(
-            query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
-        ).data()
-        result_list = []
-        domain = self.session.query(DomainURLsMap).filter(
-                                        DomainURLsMap.domain == 'go').one()
-        for meta_result in result:
-            xArray = meta_result['xArray']
-            item = {'result': xArray}
-            if (xArray is not None):
-                link_list = []
-                for go in xArray:
-                    link_list.append(domain.base_URL.format(go['id']))
-                item['linkList'] = link_list
-            result_list.append(item)
-        return result_list
-
-    def get_biological_go_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
-        query = self.get_biological_go_genes_query()
-        result = self.graph.run(
-            query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
-        ).data()
-        result_list = []
-        domain = self.session.query(DomainURLsMap).filter(
-                                        DomainURLsMap.domain == 'go').one()
-        for meta_result in result:
-            xArray = meta_result['xArray']
-            item = {'result': xArray}
-            if (xArray is not None):
-                link_list = []
-                for go in xArray:
-                    link_list.append(domain.base_URL.format(go['id']))
-                item['linkList'] = link_list
-            result_list.append(item)
-        return result_list
-
-    def get_cellular_go_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
-        query = self.get_cellular_go_genes_query()
-        result = self.graph.run(
-            query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
-        ).data()
-        result_list = []
-        domain = self.session.query(DomainURLsMap).filter(
-                                        DomainURLsMap.domain == 'go').one()
-        for meta_result in result:
-            xArray = meta_result['xArray']
-            item = {'result': xArray}
-            if (xArray is not None):
-                link_list = []
-                for go in xArray:
-                    link_list.append(domain.base_URL.format(go['id']))
-                item['linkList'] = link_list
             result_list.append(item)
         return result_list
 
@@ -319,16 +247,18 @@ class KgService(HybridDBDao):
     ):
         query = self.get_biocyc_genes_query()
         start = time.time()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
+            {'ncbi_gene_ids': ncbi_gene_ids}
         ).data()
-        print(f'Time to get biocyc genes {time.time() - start}')
+
+        current_app.logger.info(
+            f'Enrichment Biocyc KG query time {time.time() - start}',
+            extra=EventLog(event_type='enrichment-table').to_dict()
+        )
 
         result_list = []
-        for meta_result in result:
+        for meta_result in results:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
@@ -351,17 +281,19 @@ class KgService(HybridDBDao):
         numbers = range(0, len(ncbi_gene_ids))
         gene_tuples = list(zip(ncbi_gene_ids, numbers))
         start = time.time()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
-            {
-                'gene_tuples': gene_tuples
-            }
+            {'gene_tuples': gene_tuples}
         ).data()
-        print(f'Time to get GO genes {time.time() - start}')
+
+        current_app.logger.info(
+            f'Enrichment GO KG query time {time.time() - start}',
+            extra=EventLog(event_type='enrichment-table').to_dict()
+        )
 
         result_list = []
         domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
-        for meta_result in result:
+        for meta_result in results:
             xArray = meta_result['xArray']
             item = {'result': xArray}
             if (xArray is not None):
@@ -375,16 +307,18 @@ class KgService(HybridDBDao):
     ):
         query = self.get_regulon_genes_query()
         start = time.time()
-        result = self.graph.run(
+        results = self.graph.run(
             query,
-            {
-                'ncbi_gene_ids': ncbi_gene_ids,
-            }
+            {'ncbi_gene_ids': ncbi_gene_ids}
         ).data()
-        print(f'Time to get regulon genes {time.time() - start}')
+
+        current_app.logger.info(
+            f'Enrichment Regulon KG query time {time.time() - start}',
+            extra=EventLog(event_type='enrichment-table').to_dict()
+        )
 
         result_list = []
-        for meta_result in result:
+        for meta_result in results:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 regulondb_id = meta_result['x']['regulondb_id']
@@ -546,30 +480,6 @@ class KgService(HybridDBDao):
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_STRING)
         RETURN x
-        """
-
-    def get_molecular_go_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:GO_LINK]-(x:MolecularFunction:db_GO)
-        RETURN g, collect(x) AS xArray
-        """
-
-    def get_biological_go_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:GO_LINK]-(x:BiologicalProcess:db_GO)
-        RETURN g, collect(x) AS xArray
-        """
-
-    def get_cellular_go_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
-        RETURN g, collect(x) AS xArray
         """
 
     def get_go_genes_query(self):
