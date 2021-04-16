@@ -46,14 +46,40 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
+class NotPDFError(AssertionError):
+    pass
 
 class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/pdf'
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
+    def convert_to_pdf(self, buffer):
+        # if not pdf try to covert to pdf
+        import shutil
+        import os
+        f = open("tmp", "wb")
+        shutil.copyfileobj(buffer.stream, f)
+        f.close()
+        # adjust spreadsheets print areas (do not slice vertically)
+        os.system("/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp  macro:///Standard.Module1.FitToPage")
+        # convert to pdf
+        assert(~os.system("/bin/libreoffice* --convert-to pdf tmp"))
+        f = open("tmp.pdf", "rb")
+        buffer.stream = f
+        # f.close()
+
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         # We don't even validate PDF content yet, but we need to detect them, so we'll
+        try:
+            self.validate_content(buffer)
+        except NotPDFError:
+            try:
+                self.convert_to_pdf(buffer)
+                return 0
+            except Exception:
+                pass
+
         # just return -1 so PDF becomes the fallback file type
         return -1
 
@@ -61,8 +87,12 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # TODO: Actually validate PDF content
-        pass
+        try:
+            assert buffer.stream.readline(4) == b'%PDF'
+        except AssertionError:
+            raise NotPDFError
+        finally:
+            buffer.stream.seek(0)
 
     def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
