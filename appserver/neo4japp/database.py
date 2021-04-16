@@ -200,8 +200,7 @@ def get_enrichment_table_service():
 def get_enrichment_visualisation_service():
     if 'enrichment_visualisation_service' not in g:
         from neo4japp.services import EnrichmentVisualisationService
-        # TODO LL-2916 replace with neo4j driver
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.enrichment_visualisation_service = EnrichmentVisualisationService(
             graph=graph,
             session=db.session,
