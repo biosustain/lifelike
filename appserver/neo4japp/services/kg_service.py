@@ -4,6 +4,7 @@ import os
 import time
 
 from flask import current_app
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 from py2neo import Node, Relationship
 from typing import Dict, List
@@ -184,26 +185,25 @@ class KgService(HybridDBDao):
 
     def get_db_labels(self) -> List[str]:
         """Get all labels from database."""
-        labels = self.graph.run('call db.labels()').data()
+        labels = self.graph.read_transaction(lambda tx: list(tx.run('call db.labels()')))
         return [label['label'] for label in labels]
 
     def get_db_relationship_types(self) -> List[str]:
         """Get all relationship types from database."""
-        relationship_types = self.graph.run('call db.relationshipTypes()').data()
+        relationship_types = self.graph.read_transaction(lambda tx: list(tx.run('call db.relationshipTypes()')))
         return [rt['relationshipType'] for rt in relationship_types]
 
     def get_node_properties(self, node_label) -> Dict[str, List[str]]:
         """Get all properties of a label."""
-        props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
+        props = self.graph.read_transaction(lambda tx: list(tx.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key')))  # noqa
         return {node_label: [prop['key'] for prop in props]}
 
     def get_uniprot_genes(self, ncbi_gene_ids: List[int]):
-        query = self.get_uniprot_genes_query()
         start = time.time()
-        results = self.graph.run(
-            query,
-            {'ncbi_gene_ids': ncbi_gene_ids}
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_uniprot_genes_query,
+            ncbi_gene_ids
+        )
 
         current_app.logger.info(
             f'Enrichment UniProt KG query time {time.time() - start}',
@@ -231,12 +231,11 @@ class KgService(HybridDBDao):
         return result_list
 
     def get_string_genes(self, ncbi_gene_ids: List[int]):
-        query = self.get_string_genes_query()
         start = time.time()
-        results = self.graph.run(
-            query,
-            {'ncbi_gene_ids': ncbi_gene_ids}
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_string_genes_query,
+            ncbi_gene_ids
+        )
 
         current_app.logger.info(
             f'Enrichment String KG query time {time.time() - start}',
@@ -256,12 +255,11 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
         taxID: str
     ):
-        query = self.get_biocyc_genes_query()
         start = time.time()
-        results = self.graph.run(
-            query,
-            {'ncbi_gene_ids': ncbi_gene_ids}
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_biocyc_genes_query,
+            ncbi_gene_ids
+        )
 
         current_app.logger.info(
             f'Enrichment Biocyc KG query time {time.time() - start}',
@@ -288,14 +286,11 @@ class KgService(HybridDBDao):
         self,
         ncbi_gene_ids: List[int],
     ):
-        query = self.get_go_genes_query()
-        numbers = range(0, len(ncbi_gene_ids))
-        gene_tuples = list(zip(ncbi_gene_ids, numbers))
         start = time.time()
-        results = self.graph.run(
-            query,
-            {'gene_tuples': gene_tuples}
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_go_genes_query,
+            ncbi_gene_ids
+        )
 
         current_app.logger.info(
             f'Enrichment GO KG query time {time.time() - start}',
@@ -316,12 +311,11 @@ class KgService(HybridDBDao):
         self,
         ncbi_gene_ids: List[int],
     ):
-        query = self.get_regulon_genes_query()
         start = time.time()
-        results = self.graph.run(
-            query,
-            {'ncbi_gene_ids': ncbi_gene_ids}
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_regulon_genes_query,
+            ncbi_gene_ids
+        )
 
         current_app.logger.info(
             f'Enrichment Regulon KG query time {time.time() - start}',
@@ -477,45 +471,70 @@ class KgService(HybridDBDao):
         with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
-    def get_uniprot_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
-        RETURN x
-        """
+    def get_uniprot_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (g:Gene:db_NCBI)
+                WHERE ID(g) IN $ncbi_gene_ids
+                OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
+                RETURN x
+                """,
+                ncbi_gene_ids=ncbi_gene_ids
+            ).data()
+        )
 
-    def get_string_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_STRING)
-        RETURN x
-        """
+    def get_string_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (g:Gene:db_NCBI)
+                WHERE ID(g) IN $ncbi_gene_ids
+                OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_STRING)
+                RETURN x
+                """,
+                ncbi_gene_ids=ncbi_gene_ids
+            ).data()
+        )
 
-    def get_go_genes_query(self):
-        return """
-        UNWIND $gene_tuples as genes
-        OPTIONAL MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:db_GO)
-        WHERE ID(g)=genes[0]
-        RETURN genes[1], collect(x) as xArray
-        """
+    def get_go_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[List[int]]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                UNWIND $ncbi_gene_ids as gene
+                OPTIONAL MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:db_GO)
+                WHERE ID(g)=gene
+                RETURN gene, collect(x) as xArray
+                """,
+                ncbi_gene_ids=ncbi_gene_ids
+            ).data()
+        )
 
-    def get_biocyc_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:IS]-(x:db_BioCyc)
-        RETURN x
-        """
+    def get_biocyc_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (g:Gene:db_NCBI)
+                WHERE ID(g) IN $ncbi_gene_ids
+                OPTIONAL MATCH (g)-[:IS]-(x:db_BioCyc)
+                RETURN x
+                """,
+                ncbi_gene_ids=ncbi_gene_ids
+            ).data()
+        )
 
-    def get_regulon_genes_query(self):
-        return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
-        RETURN x
-        """
+    def get_regulon_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (g:Gene:db_NCBI)
+                WHERE ID(g) IN $ncbi_gene_ids
+                OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
+                RETURN x
+                """,
+                ncbi_gene_ids=ncbi_gene_ids
+            ).data()
+        )
 
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self):
         return """
