@@ -60,7 +60,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  legacySelectionMode = false;
+  legacySelectionMode = true;
   renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
   foundHighlightAnnotations: Annotation[] = [];
@@ -590,6 +590,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         // coming not from pdf-viewer
         return false;
       }
+      const range = selection.getRangeAt(0);
+      const selectionBounds = range.getBoundingClientRect();
       const selectedRects = selection.getRangeAt(0).getClientRects();
       if (selectedRects.length === 0) {
         this.clearSelection();
