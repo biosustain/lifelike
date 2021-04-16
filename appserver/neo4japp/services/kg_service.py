@@ -190,7 +190,9 @@ class KgService(HybridDBDao):
 
     def get_db_relationship_types(self) -> List[str]:
         """Get all relationship types from database."""
-        relationship_types = self.graph.read_transaction(lambda tx: list(tx.run('call db.relationshipTypes()')))
+        relationship_types = self.graph.read_transaction(
+            lambda tx: list(tx.run('call db.relationshipTypes()'))
+        )
         return [rt['relationshipType'] for rt in relationship_types]
 
     def get_node_properties(self, node_label) -> Dict[str, List[str]]:
