@@ -345,7 +345,7 @@ class KgService(HybridDBDao):
         for path in paths:
             if path.get('nodes', None) is not None:
                 for node in path['nodes']:
-                    if node.identity not in node_ids:
+                    if node.id not in node_ids:
                         node_as_dict = dict(node)
 
                         node_display_name = 'Node Display Name Unknown'
@@ -355,14 +355,14 @@ class KgService(HybridDBDao):
                             node_display_name = node_as_dict['name']
 
                         try:
-                            node_label = get_first_known_label_from_node(node)
+                            node_label = get_first_known_label_from_node_n4j_driver(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
                         except ValueError:
                             node_label = 'Unknown'
                             node_color = '#000000'
 
                         node_data = {
-                            'id': node.identity,
+                            'id': node.id,
                             'label': node_display_name,
                             'databaseLabel': node_label,
                             'font': {
@@ -383,16 +383,16 @@ class KgService(HybridDBDao):
                         }
 
                         nodes.append(node_data)
-                        node_ids.add(node.identity)
+                        node_ids.add(node.id)
 
             if path.get('edges', None) is not None:
                 for edge in path['edges']:
-                    if edge.identity not in edge_ids:
+                    if edge.id not in edge_ids:
                         edge_data = {
-                            'id': edge.identity,
-                            'label': type(edge).__name__,
-                            'from': edge.start_node.identity,
-                            'to': edge.end_node.identity,
+                            'id': edge.id,
+                            'label': edge.type,
+                            'from': edge.start_node.id,
+                            'to': edge.end_node.id,
                             'color': {
                                 'color': '#0c8caa',
                             },
@@ -400,7 +400,7 @@ class KgService(HybridDBDao):
                         }
 
                         edges.append(edge_data)
-                        edge_ids.add(edge.identity)
+                        edge_ids.add(edge.id)
         return {'nodes': nodes, 'edges': edges}
 
     def get_shortest_path_query_list(self):
@@ -464,8 +464,7 @@ class KgService(HybridDBDao):
         return func(arg)
 
     def get_data_from_query(self, query_func):
-        query = query_func()
-        result = self.graph.run(query).data()
+        result = self.graph.read_transaction(query_func)
         return self.get_nodes_and_edges_from_paths(result)
 
     def get_data_from_file(self, filename):
@@ -538,8 +537,8 @@ class KgService(HybridDBDao):
             ).data()
         )
 
-    def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self):
-        return """
+    def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH (chem:db_CHEBI:Chemical) WHERE chem.id IN ['CHEBI:18064']
             WITH chem
             MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
@@ -553,10 +552,10 @@ class KgService(HybridDBDao):
                 'GO_LINK'
             ])
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+            """))
 
-    def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self):
-        return """
+    def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
             MATCH p=allShortestPaths((c)-[*]-(g))
             WHERE none(r IN relationships(p)
@@ -569,46 +568,46 @@ class KgService(HybridDBDao):
                 'TYPE_OF'
             ])
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+        """))
 
-    def get_icd_to_rhse_query(self):
-        return """
+    def get_icd_to_rhse_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH p=allShortestPaths(
                 (gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'})
             )
             WHERE none(r IN relationships(p) WHERE type(r) IN ['HAS_TAXONOMY'])
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+        """))
 
-    def get_sirt5_to_nfe2l2_literature_query(self):
-        return """
+    def get_sirt5_to_nfe2l2_literature_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'}),
             (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
             MATCH p=allShortestPaths((g)-[*]-(g2))
             WHERE all(rel IN relationships(p) WHERE type(rel) = 'ASSOCIATED')
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+        """))
 
-    def get_ctnnb1_to_diarrhea_literature_query(self):
-        return """
+    def get_ctnnb1_to_diarrhea_literature_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})
             MATCH p=allShortestPaths((g)-[*]-(d))
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+        """))
 
-    def get_two_pathways_biocyc_query(self):
-        return """
+    def get_two_pathways_biocyc_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH (p1:Pathway {biocyc_id:'PWY-6151'}), (p2:Pathway {biocyc_id: 'PWY-6123'})
             WITH p1, p2
             MATCH p=allShortestPaths((p1)-[*]-(p2))
             WHERE NONE (r IN relationships(p) WHERE type(r) IN ['TYPE_OF'])
                 AND NONE (n IN nodes(p) WHERE n.biocyc_id IN ['WATER','PROTON','Pi','ATP', 'ADP'])
             RETURN nodes(p) AS nodes, relationships(p) AS edges
-        """
+        """))
 
-    def get_glycolisis_regulon_query(self):
-        return """
+    def get_glycolisis_regulon_query(self, tx: Neo4jTx):
+        return list(tx.run("""
             MATCH path=
                 (:Pathway {biocyc_id: 'GLYCOLYSIS'})--(r:Reaction)--
                 (e:EnzReaction:db_EcoCyc)-[:CATALYZES]-
@@ -623,4 +622,4 @@ class KgService(HybridDBDao):
             RETURN
                 nodes(path) + nodes(p1) + nodes(p2) AS nodes,
                 relationships(path) + relationships(p1) + relationships(p2) AS edges
-        """
+        """))
