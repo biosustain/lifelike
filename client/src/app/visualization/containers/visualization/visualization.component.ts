@@ -225,6 +225,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       progressObservable: new BehaviorSubject<Progress>(new Progress({
         status: 'Loading clusters...',
       })),
+      onCancel: () => {},
     });
 
   }

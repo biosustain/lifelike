@@ -16,4 +16,12 @@
   <div>
     {{lastProgress.status}}
   </div>
+
+  <ng-container *ngIf="cancellable">
+    <div class="mt-4">
+      <button class="btn btn-secondary" type="button" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+  </ng-container>
 </div>
