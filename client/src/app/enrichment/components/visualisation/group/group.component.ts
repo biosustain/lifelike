@@ -11,11 +11,11 @@ export class GroupComponent {
   @Input() title;
 
   showMore = false;
-  tabstatus;
+  tabStatus;
   Infinity = Infinity;
 
   constructor() {
-    this.tabstatus = {};
+    this.tabStatus = {};
   }
 
   showMoreToggle() {
