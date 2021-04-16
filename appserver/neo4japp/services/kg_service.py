@@ -299,12 +299,17 @@ class KgService(HybridDBDao):
             extra=EventLog(event_type='enrichment-table').to_dict()
         )
 
+        ncbi_node_to_go_term_map = dict()
         result_list = []
         domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
         for meta_result in results:
             xArray = meta_result['xArray']
-            item = {'result': xArray}
-            if (xArray is not None):
+            ncbi_node_to_go_term_map[meta_result['gene']] = xArray
+
+        for ncbi_id in ncbi_gene_ids:
+            go_terms = ncbi_node_to_go_term_map[ncbi_id]
+            item = {'result': go_terms}
+            if (go_terms is not None):
                 item['link'] = domain
             result_list.append(item)
         return result_list
