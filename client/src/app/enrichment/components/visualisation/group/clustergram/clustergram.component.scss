@@ -7,33 +7,49 @@ $tooltip-arrow-height: 0.4rem;
 $tooltip-arrow-width: 2*$tooltip-arrow-height;
 $background-color: white;
 
-.clustergram-wrapper {
+:host {
   position: relative;
+  height: 100%;
+  display: block;
+
+
+  @keyframes forceScroll {
+    0% {
+      scroll-snap-type: y mandatory;
+    }
+    100% {
+      scroll-snap-type: y proximity;
+    }
+  }
 
   &:after {
     content: "";
     position: absolute;
+    top: 0;
     left: 0;
     right: 0;
-    top: 0;
     bottom: 0;
     pointer-events: none;
-    background-image: linear-gradient(
-                    180deg, $background-color 0, transparent 1.5em), linear-gradient(
-                    270deg, $background-color 0, transparent 1.5em);
+    background-image: linear-gradient(180deg, $background-color 0, transparent 1.5em),
+    linear-gradient(270deg, $background-color 0, transparent 1.5em);
+    z-index: 1;
   }
 
-  .inner-wrapper {
+  .clustergram-wrapper {
     position: relative;
-    overflow: scroll;
-    scroll-snap-type: y mandatory;
+    overflow: auto;
+    scroll-padding-top: $first-column-width;
+    // force scroll only on load
+    animation: 0.01s 0s 1 forceScroll;
     min-height: 300px;
+    max-height: 100%;
+
+
 
     table {
       margin-top: $tilted-text-estimate-space;
       table-layout: fixed;
       scroll-snap-align: start;
-
 
       thead tr {
         th {
@@ -250,6 +266,11 @@ $background-color: white;
         }
       }
 
+      .others {
+        width: 3ch;
+        white-space: pre;
+      }
+
       tbody td.match {
         border-left: 1px solid white;
         opacity: 0.3;
@@ -260,11 +281,6 @@ $background-color: white;
 
 
 }
-
-
-
-
-
 
 
 
