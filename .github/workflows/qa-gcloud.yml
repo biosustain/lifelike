@@ -1,9 +1,11 @@
-name: Azure QA Deployment
+name: GCP QA Deployment
 
 on:
   push:
+    branches:
+      - master
     tags:
-      - qa-azure
+      - qa-gcp
 
 jobs:
   build:
@@ -75,7 +77,7 @@ jobs:
           username: ${{ secrets.AZURE_CR_USERNAME }}
           password: ${{ secrets.AZURE_CR_PASSWORD }}
           registry: ***ARANGO_DB_NAME***.azurecr.io
-          image_name: kg-cache-invalidator
+          image_name: kg-cache-service
           image_tag: ${{ github.sha }},latest
           context: ./cache-invalidator
           dockerfile: ./Dockerfile
@@ -84,7 +86,7 @@ jobs:
     name: Deploy
     needs: build
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -95,14 +97,15 @@ jobs:
         uses: ./.github/actions/ansible
         with:
           workspace_dir: 'deployment/ansible'
-          playbook_file_path: 'playbooks/deploy.yml'
+          playbook_file_path: 'playbooks/deploy-gcloud.yml'
           inventory_file_path: 'inventories/hosts.yml'
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           options: |
-            --extra-vars webserver=qa
+            --extra-vars webserver=qa-gcp
             --extra-vars set_docker_img_hash=${{ github.sha }}
             --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
             --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
             --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
             --user ansible
+            --verbose
