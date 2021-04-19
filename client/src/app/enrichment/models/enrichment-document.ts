@@ -41,11 +41,11 @@ export class BaseEnrichmentDocument {
       domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
     }
 
-    const [uniqueImportGenes, duplicateGenes] = this.removeDuplicates(rawImportGenes);
+    const duplicateGenes = this.getDuplicates(rawImportGenes);
 
     // We set these all at the end to be thread/async-safe
     return {
-      importGenes: uniqueImportGenes,
+      importGenes: rawImportGenes,
       taxID,
       organism,
       domains,
@@ -65,7 +65,7 @@ export class BaseEnrichmentDocument {
    * Remove any duplicates from the import gene list and populate duplicate list
    * @param arr string of gene names
    */
-  private removeDuplicates(arr: string[]): [string[], string[]] {
+  private getDuplicates(arr: string[]): string[] {
     const duplicateArray = new Set<string>();
     const uniqueArray = new Set<string>();
     for (const item of arr) {
@@ -75,7 +75,7 @@ export class BaseEnrichmentDocument {
         uniqueArray.add(item);
       }
     }
-    return [Array.from(uniqueArray), Array.from(duplicateArray)];
+    return Array.from(duplicateArray);
   }
 
   load(blob: Blob): Observable<EnrichmentParsedData> {
@@ -215,7 +215,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   private generateEnrichmentResults(domains: string[], importGenes: string[],
                                     taxID: string): Observable<EnrichmentResult> {
     return this.worksheetViewerService
-      .matchNCBINodes(importGenes, taxID)
+      .matchNCBINodes(Array.from(new Set(importGenes)), taxID)
       .pipe(
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
           const ncbiIds = ncbiNodesData.map((wrapper) => wrapper.neo4jID);
