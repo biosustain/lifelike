@@ -1,12 +1,15 @@
 import io
 import json
 import re
-import typing
 from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import graphviz
+<<<<<<< HEAD
 import requests
+=======
+import typing
+>>>>>>> 87fc83c11 (cleanup)
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -15,6 +18,9 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+
+import requests
+import urllib
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -82,6 +88,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return doi
 
     def _is_valid_doi(self, doi):
+<<<<<<< HEAD
         try:
             # not [bad request, not found] but yes to 403 - no access
             return requests.get(doi,
@@ -95,6 +102,15 @@ class PDFTypeProvider(BaseFileTypeProvider):
                                 ).status_code not in [400, 404]
         except Exception as e:
             return False
+=======
+        return requests.get(doi).status_code != 404
+
+    def _try_doi(self, doi):
+        if self._is_valid_doi(doi):
+            return doi
+        doi = doi[:6] + urllib.parse.quote(doi[6:])
+        return doi if self._is_valid_doi(doi) else False
+>>>>>>> 87fc83c11 (cleanup)
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
@@ -272,11 +288,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '300'))
 
         graph = graphviz.Digraph(
-                file.filename,
-                comment=file.description,
-                engine='neato',
-                graph_attr=graph_attr,
-                format=format)
+            file.filename,
+            comment=file.description,
+            engine='neato',
+            graph_attr=graph_attr,
+            format=format)
 
         for node in json_graph['nodes']:
             params = {
@@ -301,11 +317,11 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 params['color'] = ANNOTATION_STYLES_DICT.get(
-                        node['label'],
-                        {'color': 'black'})['color']
+                    node['label'],
+                    {'color': 'black'})['color']
                 params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                        node['label'],
-                        {'color': 'black'})['color']
+                    node['label'],
+                    {'color': 'black'})['color']
                 params['fontcolor'] = 'black'
                 params['style'] = 'rounded,filled'
 
@@ -318,18 +334,18 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for edge in json_graph['edges']:
             graph.edge(
-                    edge['from'],
-                    edge['to'],
-                    edge['label'],
-                    color='#2B7CE9'
+                edge['from'],
+                edge['to'],
+                edge['label'],
+                color='#2B7CE9'
             )
 
         ext = f".{format}"
 
         return FileExport(
-                content=io.BytesIO(graph.pipe()),
-                mime_type=extension_mime_types[ext],
-                filename=f"{file.filename}{ext}"
+            content=io.BytesIO(graph.pipe()),
+            mime_type=extension_mime_types[ext],
+            filename=f"{file.filename}{ext}"
         )
 
 
