@@ -1,11 +1,11 @@
 import io
 import json
 import re
+import typing
 from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import graphviz
-import typing
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -80,21 +80,62 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         return doi
 
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        # ref: https://stackoverflow.com/a/10324802
-        # Has a good breakdown of the DOI specifications,
-        # in case need to play around with the regex in the future
-        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
-        match = re.search(doi_re, content)
+    def _is_valid_doi(self, doi):
+        import requests
+        r = requests.get(doi)
+        return r.status_code != 404
 
-        if match is None:
-            return None
-        doi = match.group(1).decode('utf-8').replace('%2F', '/')
-        # Make sure that the match does not contain undesired characters at the end.
-        # E.g. when the match is at the end of a line, and there is a full stop.
-        while doi and doi[-1] in './%':
-            doi = doi[:-1]
-        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+    def _try_doi(self, doi):
+        if self._is_valid_doi(doi):
+            return doi
+        import urllib
+        doi = doi[:6] + urllib.parse.quote(doi[6:])
+        return doi if self._is_valid_doi(doi) else False
+
+    # ref: https://stackoverflow.com/a/10324802
+    # Has a good breakdown of the DOI specifications,
+    # in case need to play around with the regex in the future
+    doi_re = re.compile(
+            # match label pointing that it is DOI
+            rb'(doi[\W]*)?'
+            # match url to doi.org
+            # doi might contain subdomain or 'www' etc.
+            rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+            # match folder (10) and register name
+            rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+            # try match commonly used DOI format
+            rb'([-A-z0-9]*)'
+            # match up to 50 characters in the same line
+            rb'(.{1,50})',
+            flags=re.IGNORECASE
+    )  # noqa
+
+    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
+        for match in self.doi_re.finditer(content):
+            label, url, folderRegistrant, likelyDOIName, DOISuffix = \
+                [s.decode('utf-8') if s else '' for s in match.groups()]
+            if not url:
+                url = 'https://doi.org/'
+            elif not re.match(r'https?:\/\/'):
+                url = 'https://' + url
+            # is whole match a DOI?
+            doi = self._try_doi(url + folderRegistrant + likelyDOIName + DOISuffix)
+            if doi:
+                return doi
+            # is it a DOI in common format?
+            doi = self._try_doi(url + folderRegistrant + likelyDOIName)
+            if doi:
+                return doi
+            # if we iteratively start cutting off suffix on each unusual
+            # character will it become DOI?
+            reversedDOISuffix = DOISuffix[::-1]
+            while reversedDOISuffix:
+                _, _, reversedDOISuffix = re.split(r'([^-A-z0-9])', reversedDOISuffix, 1)
+                doi = self._try_doi(url + folderRegistrant + likelyDOIName +
+                                         reversedDOISuffix[::-1])
+                if doi:
+                    return doi
+        return None
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
@@ -161,11 +202,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '300'))
 
         graph = graphviz.Digraph(
-            file.filename,
-            comment=file.description,
-            engine='neato',
-            graph_attr=graph_attr,
-            format=format)
+                file.filename,
+                comment=file.description,
+                engine='neato',
+                graph_attr=graph_attr,
+                format=format)
 
         for node in json_graph['nodes']:
             params = {
@@ -190,11 +231,11 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 params['color'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['fontcolor'] = 'black'
                 params['style'] = 'rounded,filled'
 
@@ -207,18 +248,18 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for edge in json_graph['edges']:
             graph.edge(
-                edge['from'],
-                edge['to'],
-                edge['label'],
-                color='#2B7CE9'
+                    edge['from'],
+                    edge['to'],
+                    edge['label'],
+                    color='#2B7CE9'
             )
 
         ext = f".{format}"
 
         return FileExport(
-            content=io.BytesIO(graph.pipe()),
-            mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
+                content=io.BytesIO(graph.pipe()),
+                mime_type=extension_mime_types[ext],
+                filename=f"{file.filename}{ext}"
         )
 
 
