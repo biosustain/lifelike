@@ -28,13 +28,13 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
   object: FilesystemObject;
   groups = [
     'Biological Process',
-    'Molecular Function',
-    'Cellular Component'
+    // 'Molecular Function',
+    // 'Cellular Component'
   ];
   data = new Map<string, undefined | EnrichWithGOTermsResult[]>([
     ['BiologicalProcess', undefined],
-    ['MolecularFunction', undefined],
-    ['CellularComponent', undefined]
+    // ['MolecularFunction', undefined],
+    // ['CellularComponent', undefined]
   ]);
 
   loadingData: boolean;
