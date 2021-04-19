@@ -109,6 +109,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
             rb'(.{1,50})',
             flags=re.IGNORECASE
     )  # noqa
+    protocol_re = re.compile(r'https?:\/\/')
+    doi_unusual_characters_re = re.compile(r'([^-A-z0-9])')
 
     def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
         for match in self.doi_re.finditer(content):
@@ -116,7 +118,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 [s.decode('utf-8') if s else '' for s in match.groups()]
             if not url:
                 url = 'https://doi.org/'
-            elif not re.match(r'https?:\/\/'):
+            elif not self.protocol_re.match(url):
                 url = 'https://' + url
             # is whole match a DOI?
             doi = self._try_doi(url + folderRegistrant + likelyDOIName + DOISuffix)
@@ -130,9 +132,10 @@ class PDFTypeProvider(BaseFileTypeProvider):
             # character will it become DOI?
             reversedDOISuffix = DOISuffix[::-1]
             while reversedDOISuffix:
-                _, _, reversedDOISuffix = re.split(r'([^-A-z0-9])', reversedDOISuffix, 1)
-                doi = self._try_doi(url + folderRegistrant + likelyDOIName +
-                                         reversedDOISuffix[::-1])
+                _, _, reversedDOISuffix = self.doi_unusual_characters_re.split(reversedDOISuffix, 1)
+                doi = self._try_doi(
+                        url + folderRegistrant + likelyDOIName + reversedDOISuffix[::-1]
+                )
                 if doi:
                     return doi
         return None
