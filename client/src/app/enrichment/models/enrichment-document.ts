@@ -1,8 +1,8 @@
 import { Observable, of } from 'rxjs';
-import { mapBlobToBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { map, mergeMap } from 'rxjs/operators';
 import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
-import { nullCoalesce } from '../../shared/utils/types';
+import { nullCoalesce } from 'app/shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 

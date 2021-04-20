@@ -13,7 +13,7 @@ import {
   AssociationSnippet,
 } from 'app/interfaces';
 import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
-import { GenericDataProvider } from '../../../shared/providers/data-transfer-data/generic-data.provider';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
     selector: 'app-snippet-display',

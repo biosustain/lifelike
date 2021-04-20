@@ -8,7 +8,7 @@ import { SnackbarActions } from 'app/shared/store';
 
 import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { from } from 'rxjs';
-import { ErrorResponse } from '../../shared/schemas/common';
+import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Injectable()
 export class UserEffects {

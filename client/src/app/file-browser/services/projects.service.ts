@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiService } from '../../shared/services/api.service';
+import { ApiService } from 'app/shared/services/api.service';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { ProjectList } from '../models/project-list';
@@ -19,10 +19,10 @@ import {
   ResultList,
   ResultMapping,
   SingleResult,
-} from '../../shared/schemas/common';
-import { ModelList } from '../../shared/models';
+} from 'app/shared/schemas/common';
+import { ModelList } from 'app/shared/models';
 import { Collaborator } from '../models/collaborator';
-import { serializePaginatedParams } from '../../shared/utils/params';
+import { serializePaginatedParams } from 'app/shared/utils/params';
 
 @Injectable()
 export class ProjectsService {
