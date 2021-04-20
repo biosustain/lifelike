@@ -3,15 +3,15 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AccountService } from 'app/users/services/account.service';
 import { AppUser, PrivateAppUser, UserCreationRequest } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 
 @Component({

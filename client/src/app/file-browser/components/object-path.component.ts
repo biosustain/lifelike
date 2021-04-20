@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-object-path',

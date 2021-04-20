@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Annotation } from '../../pdf-viewer/annotation-type';
-import { ApiService } from '../../shared/services/api.service';
+import { ApiService } from 'app/shared/services/api.service';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
@@ -14,7 +14,7 @@ import {
   CustomAnnotationDeleteRequest,
 } from '../schema';
 import { map } from 'rxjs/operators';
-import { ResultList, ResultMapping } from '../../shared/schemas/common';
+import { ResultList, ResultMapping } from 'app/shared/schemas/common';
 import {
   SortingAlgorithmId
 } from '../../word-cloud/sorting/sorting-algorithms';

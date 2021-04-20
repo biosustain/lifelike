@@ -3,16 +3,16 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { DirectoryObject } from '../../interfaces/projects.interface';
-import { nullCoalesce } from '../../shared/utils/types';
+import { nullCoalesce } from 'app/shared/utils/types';
 import { uniqueId } from 'lodash';
-import { CollectionModel } from '../../shared/utils/collection-model';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-object-list',
