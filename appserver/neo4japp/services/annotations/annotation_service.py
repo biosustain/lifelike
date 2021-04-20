@@ -429,7 +429,7 @@ class AnnotationService:
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
-        organism_ids = list(self.organism_frequency.keys())
+        organism_ids = list(self.organism_frequency)
         gene_organism_matches = {}
 
         if not self.enrichment_mappings:
@@ -573,7 +573,7 @@ class AnnotationService:
             protein_match_time = time.time()
             protein_organism_matches = self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
-                organisms=list(self.organism_frequency.keys()),
+                organisms=list(self.organism_frequency),
             )
             current_app.logger.info(
                 f'Protein organism KG query time {time.time() - protein_match_time}',
@@ -988,9 +988,8 @@ class AnnotationService:
             # a text in a cell could be removed due to
             # overlapping with an adjacent cell
             split = defaultdict(list)
-            indices = {i for i, _ in enrichment_mappings}
             for anno in fixed_unified_annotations:
-                for i in indices:
+                for i, _ in enrichment_mappings:
                     # append annotation to list that is greater
                     # than hi_location_offset
                     # this means the annotation is part of that sublist
