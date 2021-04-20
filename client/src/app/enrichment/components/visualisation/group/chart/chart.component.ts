@@ -22,24 +22,24 @@ export class ChartComponent implements OnChanges {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      xAxes: [
-        {
-          ticks: {
-            suggestedMin: 0,
-            stepSize: 1,
-            // callback: value => value
-          },
-          gridLines: {
-            drawOnChartArea: false
-          },
-          offset: true,
-          type: 'logarithmic',
-          scaleLabel: {
-            display: true,
-            labelString: '-log10 p-value'
-          }
+    xAxes: [
+      {
+        ticks: {
+          suggestedMin: 0,
+          stepSize: 1,
+          // callback: value => value
+        },
+        gridLines: {
+          drawOnChartArea: false
+        },
+        offset: true,
+        type: 'logarithmic',
+        scaleLabel: {
+          display: true,
+          labelString: '1 / q-value'
         }
-      ],
+      }
+    ],
     },
     plugins: {
       // Change options for ALL labels of THIS CHART
@@ -53,7 +53,7 @@ export class ChartComponent implements OnChanges {
       intersect: false,
       callbacks: {
         title: mapSingularOfTootipItems(({gene}) => gene),
-        label: mapTootipItem(d => `p-value: ${d['p-value']}`)
+        label: mapTootipItem(d => `q-value: ${d['q-value'].toExponential(2)}`)
       }
     }
   };
@@ -72,7 +72,7 @@ export class ChartComponent implements OnChanges {
       const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
       this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
         ...d,
-        x: -Math.log10(d['p-value'])
+        x: 1 / d['q-value']
       }));
       this.labels = slicedNotFormatedData.map(({gene}) => gene);
     }
