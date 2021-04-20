@@ -609,7 +609,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         enriched_gene = ''
 
         start = time.time()
-        for index, cell_text in enriched.text_index_map.items():
+        for index, cell_text in enriched.text_index_map:
             annotation_chunk = [anno for anno in annotations_list if anno.get(
                 'hiLocationOffset', None) and anno.get(
                     'loLocationOffset') > prev_index and anno.get(

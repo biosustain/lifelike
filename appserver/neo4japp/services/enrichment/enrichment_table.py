@@ -32,7 +32,7 @@ class EnrichmentTableService(KgService):
 
         total_index = 0
         cell_texts = []
-        text_index_map = {}
+        text_index_map = []
         combined_text = ''
 
         # need to combine cell text together into one
@@ -70,7 +70,7 @@ class EnrichmentTableService(KgService):
             if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
                 combined_text += text['text']
                 total_index = len(combined_text)
-                text_index_map[total_index - 1] = text
+                text_index_map.append((total_index - 1, text))
                 combined_text += ' '  # to separate prev text
 
         return EnrichmentCellTextMapping(
