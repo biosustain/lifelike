@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CloudViewerComponent } from './cloud-viewer.component';
-import { WordCloudModule } from '../../../../../shared/components/word-cloud/word-cloud.module';
+import { WordCloudModule } from 'app/shared/components/word-cloud/word-cloud.module';
 
 const components = [
   CloudViewerComponent

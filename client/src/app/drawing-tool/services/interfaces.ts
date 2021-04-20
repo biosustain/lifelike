@@ -1,4 +1,4 @@
-import { ReferenceType } from '../../shared/references';
+import { ReferenceType } from 'app/shared/references';
 
 export interface UniversalEntityData {
   references?: Reference[];

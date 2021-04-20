@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, combineLatest } from 'rxjs';
-import { ApiService } from '../../shared/services/api.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { ApiService } from 'app/shared/services/api.service';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { map, mergeMap } from 'rxjs/operators';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 
 export interface EnrichWithGOTermsResult {

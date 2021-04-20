@@ -1,7 +1,8 @@
 //$tilted-text-shown-space: 6em;
-$tilted-text-estimate-space: 36em;
 $cell-size: 1.5em;
 $first-column-width: 6em;
+$tilted-text-estimate-y-space: 36em;
+$tilted-text-estimate-x-space: $first-column-width;
 $column-header-angle: 45deg;
 $tooltip-arrow-height: 0.4rem;
 $tooltip-arrow-width: 2*$tooltip-arrow-height;
@@ -47,9 +48,12 @@ $background-color: white;
 
 
     table {
-      margin-top: $tilted-text-estimate-space;
+      margin-top: $tilted-text-estimate-y-space;
       table-layout: fixed;
       scroll-snap-align: start;
+      // if there is enough space show tilted text clipped on the right
+      // rather than expanding columns
+      width: calc(100% - #{$tilted-text-estimate-x-space});
 
       thead tr {
         th {
@@ -59,6 +63,7 @@ $background-color: white;
 
           &:first-child {
             width: $first-column-width;
+            max-width: $first-column-width;
           }
 
           &[scope="col"] {

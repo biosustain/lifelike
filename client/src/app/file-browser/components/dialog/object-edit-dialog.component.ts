@@ -1,9 +1,9 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
-import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
