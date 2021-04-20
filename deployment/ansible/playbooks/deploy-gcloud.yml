@@ -8,16 +8,19 @@
   roles:
     - role: docker
       tags: ["docker"]
-    - role: gcloud-auth
-      tags: ["gcloud-auth"]
 
   tasks:
-    - name: Allow Docker to access Google Cloud Registry
-      shell: gcloud --quiet auth configure-docker
+    - name: Log into Docker Registry
+      docker_login:
+        registry_url: lifelike.azurecr.io
+        username: "{{ AZURE_CR_USERNAME }}"
+        password: "{{ AZURE_CR_PASSWORD }}"
+      tags:
+        - deploy
 
     - name: Pull Docker Images
       docker_image:
-        name: "gcr.io/able-goods-221820/{{ item }}:{{ docker_img_hash }}"
+        name: "lifelike.azurecr.io/{{ item }}:{{ docker_img_hash }}"
         source: pull
       with_items:
         - kg-appserver
@@ -28,7 +31,7 @@
 
     - name: Pull PDFParser Docker Image
       docker_image:
-        name: "gcr.io/able-goods-221820/{{ item }}:latest"
+        name: "lifelike.azurecr.io/{{ item }}:latest"
         source: pull
       with_items:
         - kg-pdfparser
@@ -80,6 +83,8 @@
           LMDB_HOME_FOLDER={{ LMDB_HOME_FOLDER }}
           AZURE_ACCOUNT_STORAGE_NAME={{ AZURE_ACCOUNT_STORAGE_NAME }}
           AZURE_ACCOUNT_STORAGE_KEY={{ AZURE_ACCOUNT_STORAGE_KEY }}
+          AZURE_CR_USERNAME={{ AZURE_CR_USERNAME }}
+          AZURE_CR_PASSWORD={{ AZURE_CR_PASSWORD }}
           AZURE_BLOB_STORAGE_URL={{ AZURE_BLOB_STORAGE_URL }}
           LOG_LEVEL="{{ REDIS_LOG_LEVEL | default('warning') }}"
         dest: "{{ deploy_dir }}/.env"
