@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { FindOptions } from '../../shared/utils/find';
+import { FindOptions } from 'app/shared/utils/find';
 
 @Component({
   selector: 'app-object-info',
