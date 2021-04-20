@@ -36,7 +36,7 @@ export class EnrichmentService implements OnDestroy {
 
   ngOnDestroy() {
     openEnrichmentFiles.forEach((file, hashId, fileMap) =>
-      file.ref.delete(this) && !file.ref.length && fileMap.delete(hashId)
+      file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
     );
   }
 
