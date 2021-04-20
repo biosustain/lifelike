@@ -3,10 +3,16 @@ import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from '../../../../services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
 
-interface GeneRow {
+class GeneRow {
   values: boolean[];
   frequency: number;
   others: number;
+
+  constructor(sliceSize) {
+    this.values = new Array(sliceSize);
+    this.frequency = 0;
+    this.others = 0;
+  }
 }
 
 @Component({
@@ -19,7 +25,7 @@ export class ClustergramComponent implements OnChanges {
   @Input() showMore: boolean;
 
   genes = new Map<string, GeneRow>();
-  others: GeneRow;
+  others: GeneRow|undefined;
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
@@ -38,28 +44,28 @@ export class ClustergramComponent implements OnChanges {
     const data = this.data.sort(this.columnOrder);
     const sliceSize = Math.min(data.length, this.showMore ? 50 : 25);
     const genes = new Map<string, GeneRow>();
-    let others;
-    const {importGenes} = this.enrichmentService.enrichmentDocument;
+    let others: GeneRow|undefined;
     const goTerms = data.slice(0, sliceSize);
-    data.slice(0, sliceSize).forEach(({geneNames}, goIndex) => {
-      importGenes.filter(value => geneNames.includes(value)).forEach(g => {
+    data.forEach(({geneNames}, goIndex) => {
+      geneNames.forEach(g => {
         let geneRow = genes.get(g);
         if (!geneRow) {
-          geneRow = {values: new Array(sliceSize), frequency: 0, others: 0} as GeneRow;
-          genes.set(g, geneRow);
+          if (goIndex < sliceSize) {
+            geneRow = new GeneRow(sliceSize);
+            genes.set(g, geneRow);
+          } else {
+            if (!others) {
+              others = new GeneRow(sliceSize);
+            }
+            geneRow = others;
+          }
         }
         geneRow.frequency++;
-        geneRow.values[goIndex] = true;
-      });
-    });
-    data.slice(sliceSize).forEach(({geneNames}, goIndex) => {
-      importGenes.filter(value => geneNames.includes(value)).forEach(g => {
-        let geneRow = genes.get(g);
-        if (!geneRow) {
-          others = geneRow = others || {values: new Array(sliceSize), frequency: 0, others: 0} as GeneRow;
+        if (goIndex < sliceSize) {
+          geneRow.values[goIndex] = true;
+        } else {
+          geneRow.others++;
         }
-        geneRow.frequency++;
-        geneRow.others++;
       });
     });
     this.genes = genes;
