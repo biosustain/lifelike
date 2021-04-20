@@ -3,19 +3,19 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProjectImpl } from '../../models/filesystem-object';
-import { ModelList } from '../../../shared/models';
+import { ModelList } from 'app/shared/models';
 import { Collaborator } from '../../models/collaborator';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { ProjectsService } from '../../services/projects.service';
 import { uniqueId } from 'lodash';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
-import { nonEmptyList } from '../../../shared/validators';
+import { nonEmptyList } from 'app/shared/validators';
 import { AppUser } from '../../../interfaces';
 import { Progress } from '../../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { finalize, tap } from 'rxjs/operators';
-import { ErrorHandler } from '../../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MultiCollaboratorUpdateRequest } from '../../schema';
 
 @Component({

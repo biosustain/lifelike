@@ -2,10 +2,8 @@ name: Azure QA Deployment
 
 on:
   push:
-    branches:
-      - master
     tags:
-      - qa
+      - qa-azure
 
 jobs:
   build:

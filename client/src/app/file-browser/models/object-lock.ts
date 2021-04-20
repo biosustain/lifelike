@@ -1,4 +1,4 @@
-import { RecursivePartial } from '../../shared/utils/types';
+import { RecursivePartial } from 'app/shared/utils/types';
 import { ObjectLockData } from '../schema';
 import { AppUser } from '../../interfaces';
 
