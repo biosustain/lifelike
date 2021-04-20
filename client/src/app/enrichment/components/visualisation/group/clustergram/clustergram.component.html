@@ -29,10 +29,10 @@
                 [ngClass]="{match:value}"
                 [style.backgroundColor]="value && geneColor"
             ></td>
-            <td *ngIf="others.others"
+            <td *ngIf="others"
                 class="match others">{{entry.value.others || ''}}</td>
         </tr>
-        <tr *ngIf="others.others">
+        <tr *ngIf="others">
             <th scope="row">others</th>
             <td *ngFor="let value of others.values"></td>
             <td class="match others">{{others.others}}</td>

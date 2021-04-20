@@ -267,7 +267,9 @@ $background-color: white;
       }
 
       .others {
-        width: 3ch;
+        // padding + 3 chars
+        width: calc(0.9rem + 3ch) !important;
+        min-width: calc(0.9rem + 3ch) !important;
         white-space: pre;
       }
 
