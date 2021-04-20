@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import {AnnotationGenerationResultData } from '../../schema';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
