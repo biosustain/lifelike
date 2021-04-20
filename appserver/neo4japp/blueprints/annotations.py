@@ -604,16 +604,18 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         )
 
         annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
+        # sort by lo_location_offset to go from beginning to end
+        sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
 
         prev_index = -1
         enriched_gene = ''
 
         start = time.time()
         for index, cell_text in enriched.text_index_map:
-            annotation_chunk = [anno for anno in annotations_list if anno.get(
-                'hiLocationOffset', None) and anno.get(
-                    'loLocationOffset') > prev_index and anno.get(
-                        'hiLocationOffset') <= index]
+            annotation_chunk = [anno for anno in sorted_annotations_list if anno.get(
+                'hiLocationOffset', None) and anno.get('hiLocationOffset') <= index]
+            # it's sorted so we can do this to make the list shorter every iteration
+            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk):]
 
             # update JSON to have enrichment row and domain...
             for anno in annotation_chunk:
@@ -690,8 +692,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         texts = []
         prev_ending_index = -1
 
-        # sort by lo_location_offset to go from beginning to end
-        annotations = sorted(annotations, key=lambda x: x['loLocationOffset'])
         for annotation in annotations:
             meta = annotation['meta']
             meta_type = annotation['meta']['type']

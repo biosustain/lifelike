@@ -1,7 +1,8 @@
-from collections import defaultdict
+import bisect
 import itertools
 import time
 
+from collections import defaultdict
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
@@ -988,14 +989,10 @@ class AnnotationService:
             # a text in a cell could be removed due to
             # overlapping with an adjacent cell
             split = defaultdict(list)
+            offsets = [i for i, _ in enrichment_mappings]
             for anno in fixed_unified_annotations:
-                for i, _ in enrichment_mappings:
-                    # append annotation to list that is greater
-                    # than hi_location_offset
-                    # this means the annotation is part of that sublist
-                    if anno.hi_location_offset <= i:
-                        split[i].append(anno)
-                        break
+                index = bisect.bisect_left(offsets, anno.hi_location_offset)
+                split[offsets[index]].append(anno)
 
             fixed_unified_annotations = list(itertools.chain.from_iterable(
                 [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
