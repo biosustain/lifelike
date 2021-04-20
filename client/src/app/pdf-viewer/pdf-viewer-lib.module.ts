@@ -15,7 +15,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 import { FileViewComponent } from './components/file-view.component';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { PdfTypeProvider } from './providers/pdf-type-provider';

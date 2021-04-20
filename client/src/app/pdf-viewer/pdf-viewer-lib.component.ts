@@ -32,9 +32,9 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
-import { getBoundingClientRectRelativeToContainer } from '../shared/utils/dom';
-import { openModal } from '../shared/utils/modals';
-import { ErrorHandler } from '../shared/services/error-handler.service';
+import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
+import { openModal } from 'app/shared/utils/modals';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 declare var jQuery: any;
 

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { EnrichWithGOTermsResult } from '../../../services/enrichment-visualisation.service';
+import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 @Component({
   selector: 'app-group',

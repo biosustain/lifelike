@@ -3,7 +3,7 @@ import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
-} from '../../../shared/services/data-transfer-data.service';
+} from 'app/shared/services/data-transfer-data.service';
 import { FilePrivileges } from '../../models/privileges';
 
 export const FILESYSTEM_OBJECT_TRANSFER_TOKEN = new DataTransferToken<FilesystemObject[]>('filesystemObjectTransfer');
