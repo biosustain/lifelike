@@ -12,6 +12,7 @@ export interface ContentSearchRequest extends StandardRequestOptions {
   projects?: string[];
   phrase?: string;
   wildcards?: string;
+  synonyms?: boolean;
 }
 
 export interface AnnotationRequestOptions {
