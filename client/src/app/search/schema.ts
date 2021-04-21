@@ -1,4 +1,6 @@
-import { StandardRequestOptions } from 'app/shared/schemas/common';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectData } from 'app/file-browser/schema';
+import { RankedItem, ResultList, StandardRequestOptions } from 'app/shared/schemas/common';
 
 // ========================================
 // Content Search
@@ -24,4 +26,17 @@ export interface AnnotationRequestOptions {
 
 export interface AnnotationResponse {
   texts: string[];
+}
+
+export interface ContentSearchResponse extends ResultList<RankedItem<FilesystemObject>> {
+  synonyms: {
+    [rootWord: string]: string[]
+  };
+}
+
+// Need an extra interface to accommodate the legacy data
+export interface ContentSearchResponseData extends ResultList<RankedItem<FilesystemObjectData>> {
+  synonyms: {
+    [rootWord: string]: string[]
+  };
 }

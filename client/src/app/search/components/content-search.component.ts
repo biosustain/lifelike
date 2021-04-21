@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten } from 'lodash';
 
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -22,7 +22,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, ResultList, SearchableRequestOptions } from 'app/shared/schemas/common';
+import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { CollectionModel } from 'app/shared/utils/collection-model';
@@ -38,6 +38,7 @@ import { AdvancedSearchDialogComponent } from './advanced-search-dialog.componen
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
+import { ContentSearchResponse } from '../schema';
 
 
 @Component({
@@ -55,6 +56,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  highlightTerms: string[] = [];
   highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
@@ -97,14 +99,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
 
-  getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
+  getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
-      map(result => ({
-        query: result.query,
-        total: result.collectionSize,
-        results: [...result.results.items],
-      })),
+      tap(response => {
+        const synonyms = Array.from(new Set(Object.values(response.synonyms).reduce((a, b) => a.concat(b))));
+        this.highlightTerms = [...response.query.phrases, ...synonyms];
+      })
     );
   }
 
