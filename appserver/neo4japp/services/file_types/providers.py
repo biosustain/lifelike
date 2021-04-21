@@ -6,14 +6,25 @@ from typing import Optional, List, Dict
 
 import graphviz
 import typing
+import textwrap
 from pdfminer import high_level
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.constants import (
+    ANNOTATION_STYLES_DICT,
+    ARROW_STYLE_DICT,
+    BORDER_STYLES_DICT,
+    DEFAULT_BORDER_COLOR,
+    DEFAULT_FONT_SIZE,
+    MAX_LINE_WIDTH,
+    BASE_IMAGE_HEIGHT,
+    IMAGE_HEIGHT_INCREMENT
+    )
+
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -168,25 +179,52 @@ class MapTypeProvider(BaseFileTypeProvider):
             format=format)
 
         for node in json_graph['nodes']:
+            style = node.get('style', {})
             params = {
                 'name': node['hash'],
-                'label': node['display_name'],
+                'label': '\n'.join(textwrap.TextWrapper(
+                    width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+                    replace_whitespace=False, drop_whitespace=False).wrap(node['display_name'])),
                 'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
                 'shape': 'box',
-                'style': 'rounded',
-                'color': '#2B7CE9',
-                'fontcolor': ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color'],
+                'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+                'color': style.get('strokeColor', DEFAULT_BORDER_COLOR),
+                'fontcolor': style.get('fillColor',
+                                       ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})
+                                       .get('color')),
                 'fontname': 'sans-serif',
-                'margin': "0.2,0.0"
+                'margin': "0.2,0.0",
+                'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+                'penwidth': f"{style.get('lineWidthScale', 1.0)}"
+                            if style.get('lineType') != 'none' else '0.0'
             }
 
             if node['label'] in ['map', 'link', 'note']:
                 label = node['label']
-                params['image'] = f'/home/n4j/assets/{label}.png'
-                params['labelloc'] = 'b'
-                params['forcelabels'] = "true"
-                params['imagescale'] = "both"
-                params['color'] = '#ffffff00'
+                if style.get('showDetail', False):
+                    params['style'] += ',filled'
+                    detail_text = node['data'].get('detail', ' ')
+                    params['label'] = '\n'.join(
+                        textwrap.TextWrapper(
+                            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+                            replace_whitespace=False, drop_whitespace=False
+                                            ).wrap(detail_text))
+                    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                                     {'bgcolor': 'black'}
+                                                                     ).get('bgcolor')
+                    if not style.get('strokeColor'):
+                        params['penwidth'] = '0.0'
+                else:
+                    params['image'] = f'/home/n4j/assets/{label}.png'
+                    params['imagepos'] = 'tc'
+                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
+                                           * IMAGE_HEIGHT_INCREMENT)
+                    params['labelloc'] = 'b'
+                    params['forcelabels'] = "true"
+                    params['penwidth'] = '0.0'
+                    params['fontcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                                     {'bgcolor': 'black'}
+                                                                     ).get('imagelabelcolor')
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 params['color'] = ANNOTATION_STYLES_DICT.get(
@@ -206,11 +244,19 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph.node(**params)
 
         for edge in json_graph['edges']:
+            style = edge.get('style', {})
             graph.edge(
                 edge['from'],
                 edge['to'],
                 edge['label'],
-                color='#2B7CE9'
+                dir='both',
+                color=style.get('strokeColor', '#2B7CE9'),
+                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType', 'none')),
+                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType', 'arrow')),
+                penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
+                    else '0.0',
+                fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+                style=BORDER_STYLES_DICT.get(style.get('lineType'), 'solid')
             )
 
         ext = f".{format}"
