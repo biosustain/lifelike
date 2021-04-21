@@ -1,4 +1,4 @@
-import { nullCoalesce } from '../../../shared/utils/types';
+import { nullCoalesce } from 'app/shared/utils/types';
 
 interface TextboxOptions {
   width?: number;

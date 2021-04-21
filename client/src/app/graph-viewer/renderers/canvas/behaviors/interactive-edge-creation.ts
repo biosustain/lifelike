@@ -8,7 +8,7 @@ import { EdgeCreation } from '../../../actions/edges';
 import { asLiteral } from '@angular/compiler/src/render3/view/util';
 import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { isAltOrOptionPressed } from '../../../../shared/utils';
+import { isAltOrOptionPressed } from 'app/shared/utils';
 import { TestCtx } from 'ng-bullet';
 import { min } from 'rxjs/operators';
 

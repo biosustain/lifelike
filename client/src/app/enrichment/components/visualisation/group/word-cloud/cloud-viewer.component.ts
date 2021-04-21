@@ -1,7 +1,11 @@
 import { Component, OnChanges, Input, SimpleChanges } from '@angular/core';
-import { annotationTypesMap } from '../../../../../shared/annotation-styles';
-import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
-import { WordCloudNode } from '../../../../../shared/components/word-cloud/word-cloud.component';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
+import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
+import { WorkspaceManager } from '../../../../../shared/workspace-manager';
+import { ActivatedRoute } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { paramsToEnrichmentTableLink } from '../../components/link/link.directive';
 
 @Component({
   selector: 'app-cloud-viewer',
@@ -15,6 +19,34 @@ export class CloudViewerComponent implements OnChanges {
   slicedData: WordCloudNode[];
   @Input() timeInterval = Infinity;
   @Input() show = true;
+  link;
+
+  constructor(
+    private workspaceManager: WorkspaceManager,
+    private route: ActivatedRoute
+  ) {
+    route.params.pipe(
+      map(paramsToEnrichmentTableLink)
+    ).subscribe(
+      link => {
+        this.link = link;
+      }
+    );
+  }
+
+  onClick(d) {
+    this.workspaceManager.navigateByUrl(this.link.appLink.join('/'), {
+      fragment: d.text,
+      sideBySide: true,
+      newTab: true,
+      matchExistingTab: this.link.matchExistingTab
+    });
+  }
+
+  enter(selection) {
+    selection.on('click', this.onClick.bind(this))
+      .style('cursor', 'pointer');
+  }
 
   ngOnChanges({data}: SimpleChanges) {
     const color = this.geneColor;
