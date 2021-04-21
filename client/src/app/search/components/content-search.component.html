@@ -89,7 +89,7 @@
                         <a [appLink]="result.item.getCommands(false)" [newTab]="true" [sideBySide]="true">
                           <app-term-highlight
                             [text]="result.item.name"
-                            [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                            [highlightTerms]="highlightTerms"
                             [highlightOptions]="highlightOptions"
                           ></app-term-highlight>
                         </a>
@@ -99,7 +99,7 @@
                     <div class="mt-2 paragraph-truncate-3">
                       <app-term-highlight
                         [text]="result.item.description"
-                        [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                        [highlightTerms]="highlightTerms"
                         [highlightOptions]="highlightOptions"
                       ></app-term-highlight>
                     </div>
@@ -148,7 +148,7 @@
                            (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
                            [object]="results.selection[0].item"
                            (objectOpen)="openObject($event)"
-                           [highlightTerms]="resultQuery.phrases"></app-object-info>
+                           [highlightTerms]="highlightTerms"></app-object-info>
         </ng-container>
       </div>
     </div>
