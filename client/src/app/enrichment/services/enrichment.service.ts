@@ -14,7 +14,6 @@ export class EnrichmentService implements OnDestroy {
   getFileRef(hashId: string) {
     let openFile = openEnrichmentFiles.get(hashId);
     if (!openFile) {
-      console.count(`create ${hashId}`);
       openFile = {
         get: this.filesystemService.get(hashId).pipe(map(Object.freeze), shareReplay(1)),
         getContent: this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1)),
