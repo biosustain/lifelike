@@ -22,7 +22,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, ResultList } from 'app/shared/schemas/common';
+import { RankedItem, ResultList, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { CollectionModel } from 'app/shared/utils/collection-model';
@@ -59,7 +59,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
 
-  contentSearchFormVal: ContentSearchOptions;
+  contentSearchFormVal: SearchableRequestOptions;
 
   get emptyParams(): boolean {
     if (isNullOrUndefined(this.params)) {
@@ -132,6 +132,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('wildcards')) {
       advancedParams.wildcards = params.wildcards;
     }
+    if (params.hasOwnProperty('synonyms')) {
+      advancedParams.synonyms = params.synonyms === 'true';
+    }
     return advancedParams;
   }
 
@@ -158,6 +161,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('wildcards')) {
       advancedParams.wildcards = params.wildcards;
     }
+    if (params.hasOwnProperty('synonyms')) {
+      advancedParams.synonyms = params.synonyms;
+    }
     return advancedParams;
   }
 
@@ -169,7 +175,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     };
   }
 
-  contentSearchFormChanged(form: ContentSearchOptions) {
+  contentSearchFormChanged(form: SearchableRequestOptions) {
     this.contentSearchFormVal = form;
   }
 
@@ -273,50 +279,43 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * from 'q' and added to the params object.
    * @param params object representing the content search options
    */
-  extractAdvancedParams(params: ContentSearchOptions) {
+  extractAdvancedParams(params: SearchableRequestOptions) {
     const advancedParams: ContentSearchOptions = {};
     let q = isNullOrUndefined(params.q) ? '' : params.q;
 
     // Remove 'types' from q and add to the types option of the advancedParams
     const typeMatches = q.match(/\btype:\S*/g);
     const extractedTypes = typeMatches == null ? [] : typeMatches.map(typeVal => typeVal.split(':')[1]);
-    const givenTypes = isNullOrUndefined(params.types) ? [] : params.types.map(value => value.shorthand);
-
-    q = q.replace(/\btype:\S*/g, '');
     advancedParams.types = getChoicesFromQuery(
-      {types: extractedTypes.concat(givenTypes).join(';')},
+      {types: extractedTypes.join(';')},
       'types',
       this.searchTypesMap
     );
+    q = q.replace(/\btype:\S*/g, '');
 
     // Remove 'projects' from q and add to the projects option of the advancedParams
     const projectMatches = q.match(/\bproject:\S*/g);
-    const givenProjects = isNullOrUndefined(params.projects) ? [] : params.projects;
     const extractedProjects = projectMatches === null ? [] : projectMatches.map(projectVal => projectVal.split(':')[1]);
-
+    advancedParams.projects = extractedProjects;
     q = q.replace(/\bproject:\S*/g, '');
-    advancedParams.projects = extractedProjects.concat(givenProjects);
 
     // Remove the first phrase from q and add to the phrase option of the advancedParams
     const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
-    const givenPhrase = isNullOrUndefined(params.phrase) ? '' : params.phrase;
-
+    // Group 2 of the match should be the `"` enclosed string, hence the `phraseMatch[1]` here
+    advancedParams.phrase = phraseMatch !== null ? phraseMatch[1] : '';
     q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '');
-    // If a phrase was given, we should use that in the advanced options. If it wasn't given, but there was a phrase found in q, then use
-    // that instead.
-    if (givenPhrase !== '') {
-      advancedParams.phrase = givenPhrase;
-    } else {
-      // Group 2 of the match should be the `"` enclosed string, hence the `phraseMatch[1]` here
-      advancedParams.phrase = phraseMatch !== null ? phraseMatch[1] : '';
-    }
 
     // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
-    const givenWildcards = isNullOrUndefined(params.wildcards) ? [] : [params.wildcards];
-    const extractedWildcards = q.match(/\S*(\?|\*)\S*/g);
-
+    const wildcardMatches = q.match(/\S*(\?|\*)\S*/g);
+    const extractedWildcards = wildcardMatches === null ? [] : wildcardMatches;
+    advancedParams.wildcards = extractedWildcards.join(' ').trim();
     q = q.replace(/\S*(\?|\*)\S*/g, '');
-    advancedParams.wildcards = givenWildcards.concat(extractedWildcards).join(' ').trim();
+
+    // Remove 'synoynms' from q and add to the synonyms options of the advancedParams. NOTE: by default, synonyms is true!
+    const synonymsMatches = q.match(/\bsynonyms:\S*/g);
+    const extractedSynonyms = synonymsMatches === null ? ['true'] : synonymsMatches.map(synonymVal => synonymVal.split(':')[1]);
+    advancedParams.synonyms = extractedSynonyms.pop() === 'true';
+    q = q.replace(/\bsynonyms:\S*/g, '');
 
     // Do one last whitespace replacement to clean up the query string
     q = q.replace(/\s+/g, ' ').trim();
@@ -333,8 +332,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
       size: 'md',
     });
-    // Get the starting options from the content search form query, if the user has edited it since loading the page. Otherwise, get them
-    // from the URL params.
+    // Get the starting options from the content search form query
     modalRef.componentInstance.params = this.extractAdvancedParams(this.contentSearchFormVal);
     modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
