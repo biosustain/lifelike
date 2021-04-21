@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, EventEmitter, Output } from '@angular/core';
 
 import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 
@@ -89,10 +89,10 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
+  @Output() enter = new EventEmitter();
 
   private _data: (string | WordCloudNode)[] = [];
 
-  clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
 
   margin = {
@@ -220,7 +220,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
@@ -232,21 +231,20 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    // Get the word elements
-    const wordElements = d3.select(this.g.nativeElement)
-      .selectAll('text')
-      .data(words, (d) => d.text);
-
-    // Remove any words that have been removed by either the algorithm or the user
-    wordElements.exit().remove();
-
     // Add any new words
-    return wordElements
-      .enter()
-      .append('text')
-      .attr('text-anchor', 'middle')
-      .text((d) => d.text)
-      .merge(wordElements)
+    return d3.select(this.g.nativeElement)
+      .selectAll('text')
+      .data(words, (d) => d.text)
+      .join(
+        enter => enter
+          .append('text')
+          .attr('text-anchor', 'middle')
+          .text((d) => d.text)
+          .call(e => this.enter.emit(e)),
+        update => update,
+        // Remove any words that have been removed by either the algorithm or the user
+        exit => exit.remove()
+      )
       .style('fill', (d) => d.color)
       .style('font-size', (d) => d.size + 'px')
       .transition()
