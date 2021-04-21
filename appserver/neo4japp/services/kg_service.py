@@ -428,10 +428,15 @@ class KgService(HybridDBDao):
             15: 'nagC (ALE Mutation Data)',
             16: 'nagA/nagC (ALE Mutation Data)',
             17: 'nagA/nagC Shortest Paths (ALE Mutation Data)',
-            # 18: 'nagA (ALE Mutation Data)',
-            # 19: 'Glycolisis Regulon',
-            # 20: 'SIRT5 to NFE2L2 Using Literature Data',
-            # 21: 'CTNNB1 to Diarrhea Using Literature Data',
+            18: 'metab2PTHLH Short',
+            19: 'PTHLH2metab Short',
+            20: 'metab2PTHLH Short Page',
+            21: 'PTHLH2metab Short Page',
+            22: 'PTHLH2Ca2metab Short Page'
+            # 23: 'nagA (ALE Mutation Data)',
+            # 24: 'Glycolisis Regulon',
+            # 25: 'SIRT5 to NFE2L2 Using Literature Data',
+            # 26: 'CTNNB1 to Diarrhea Using Literature Data',
 
         }
 
@@ -458,10 +463,24 @@ class KgService(HybridDBDao):
             15: [self.get_data_from_file, 'ale_mutation_data/nagC.json'],
             16: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
             17: [self.get_data_from_file, 'ale_mutation_data/nagAC_shortestpaths.json'],
-            # 18: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
-            # 19: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            # 20: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
-            # 21: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
+            18: [self.get_data_from_file, 'cytoscape_data/metab2PTHLH_short_graphml_vis_js.json'],
+            19: [self.get_data_from_file, 'cytoscape_data/PTHLH2metab_short_vis_js.graphml.json'],
+            20: [
+                self.get_data_from_file,
+                'cytoscape_data/metab2PTHLH_shortPage_graphml_vis_js.json'
+            ],
+            21: [
+                self.get_data_from_file,
+                'cytoscape_data/PTHLH2metab_shortPage_graphml_vis_js.json'
+            ],
+            22: [
+                self.get_data_from_file,
+                'cytoscape_data/PTHLH2Ca2metab_shortPage_graphml_vis_js.json'
+            ]
+            # 23: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
+            # 24: [self.get_data_from_query, self.get_glycolisis_regulon_query],
+            # 25: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
+            # 26: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
         }
 
     def get_shortest_path_data(self, query_id):
