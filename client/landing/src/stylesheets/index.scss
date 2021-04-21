@@ -26,12 +26,10 @@ body {
 .site-top {
   position: relative;
   z-index: 1;
-  margin-bottom: -$edge-angle-size;
   padding-bottom: $edge-angle-size + 5px;
   background: $primary url(/assets/img/intro_people_bg.jpg);
   background-position: center top;
   background-size: cover;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
 
   @include media-breakpoint-down(sm) {
     background-position: left top;
@@ -39,7 +37,7 @@ body {
 }
 
 .site-header-container {
-  padding: ($spacer * 1.8) 0 ($spacer);
+  padding: ($spacer * 0.9) 0 ($spacer * 0.5);
   color: #fff;
 
   a {
@@ -66,7 +64,7 @@ body {
 // ========================================
 
 .section-intro {
-  padding: ($spacer * 1) 0;
+  padding: ($spacer * 0.5) 0;
   color: #fff;
 
   @include media-breakpoint-down(sm) {
@@ -87,13 +85,13 @@ body {
 }
 
 .intro-title {
-  margin-bottom: ($spacer * 1);
+  margin-bottom: ($spacer * 0.5);
 }
 
 .intro-subtitle {
   width: 80%;
   opacity: 0.8;
-  margin-bottom: ($spacer * 2);
+  margin-bottom: ($spacer * 1);
   font-size: 120%;
 }
 
@@ -123,23 +121,43 @@ body {
   }
 }
 
+.page-section {
+  padding: ($spacer * 2.5) 0;
+}
+
+.section-title {
+  font-family: $font-intro;
+  font-size: 210%;
+  text-align: center;
+  margin: 0 0 ($spacer * 2) 0;
+}
+
+.section-divider {
+  font-family: $font-intro;
+  font-size: 210%;
+  text-align: center;
+  padding: ($spacer * 0.75) 0;
+  background: #c96e2a;
+  color: #fff;
+}
+
 // ========================================
 // Spotlight
 // ========================================
 
 .section-spotlight {
-  padding: ($spacer * 5);
+  padding: ($spacer * 2.5);
 }
 
 .spotlight-title {
-  margin: 0 0 ($spacer * 1);
+  margin: 0 0 ($spacer * 0.5);
   font-weight: bold;
   font-size: 180%;
   color: $secondary;
 }
 
 .spotlight-text {
-  margin: 0 0 ($spacer * 3);
+  margin: 0 0 ($spacer * 1.5);
   max-width: 60%;
   font-size: 105%;
 }
@@ -170,14 +188,14 @@ body {
 
   @include media-breakpoint-down(md) {
     border-bottom: 1px solid $gray-300;
-    padding: ($spacer * 3.5) $wrapper-padding-x;
+    padding: ($spacer * 1.75) $wrapper-padding-x;
 
     &:first-child {
-      padding-top: calc(#{$spacer * 2} + #{$edge-angle-size});
+      padding-top: calc(#{$spacer * 1} + #{$edge-angle-size});
     }
 
     &:last-child {
-      padding-bottom: calc(#{$spacer * 4} + #{$edge-angle-size});
+      padding-bottom: calc(#{$spacer * 2} + #{$edge-angle-size});
     }
 
     &:not(:last-child):before {
@@ -206,7 +224,7 @@ body {
 
   @include media-breakpoint-up(lg) {
     border-right: 1px solid $gray-300;
-    padding: ($spacer * 5) $wrapper-padding-x-lg;
+    padding: ($spacer * 2.5) $wrapper-padding-x-lg;
 
     img {
       max-height: 180px;
@@ -254,7 +272,7 @@ body {
 }
 
 .feature-icon {
-  margin: 0 0 ($spacer * 1.5) 0;
+  margin: 0 0 ($spacer * .7) 0;
   color: $primary;
 
   img {
@@ -266,8 +284,8 @@ body {
 
 .feature-title {
   max-width: 400px;
-  margin: 0 auto ($spacer * 1);
-  font-size: 105%;
+  margin: 0 auto ($spacer * 0.5);
+  font-size: 110%;
   line-height: 1.5;
   font-weight: bold;
 }
@@ -282,15 +300,7 @@ body {
 // ========================================
 
 .section-catcher {
-  background: $gray-100;
-  margin-top: -$edge-angle-size;
-  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
-  padding: ($spacer * 5) 0 ($spacer * 1) 0;
-}
-
-.catcher-title {
-  color: $primary;
-  font-size: 180%;
+  background: #F7FBFC;
 }
 
 .catcher-subtitle {
@@ -299,7 +309,65 @@ body {
 }
 
 .catcher-body {
-  padding: ($spacer * 2) 0;
+  padding: ($spacer * 1) 0;
+}
+
+// ========================================
+// Tag line
+// ========================================
+
+.section-tagline {
+  padding: ($spacer * 1) 0;
+  background: #c96e2a;
+  color: #fff;
+}
+
+.tagline-title {
+  margin: 0;
+  padding: 0;
+  font-weight: bold;
+  text-align: center;
+  font-size: 190%;
+}
+
+// ========================================
+// Bullets
+// ========================================
+
+.section-points {
+}
+
+.point-item {
+  margin-bottom: ($spacer * 2);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.point-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.point-image {
+  text-align: center;
+
+  img {
+    width: 310px;
+    max-width: 100%;
+  }
+}
+
+.point-title {
+  margin-bottom: ($spacer * 0.6);
+  font-weight: bold;
+  font-size: 110%;
+
+  @include media-breakpoint-down(sm) {
+    text-align: center;
+  }
 }
 
 // ========================================
@@ -307,10 +375,17 @@ body {
 // ========================================
 
 .site-footer {
-  color: $gray-600;
+  background: #FEF7F1;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(254, 215, 181, 1) 100%);
   font-size: $font-size-sm;
-  margin-top: -$edge-angle-size;
-  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+  margin-top: $spacer * 2;
+  padding: ($spacer * 2) 0 ($spacer * 2) 0;
+}
+
+.footer-title {
+  font-family: $font-intro;
+  font-size: 280%;
+  text-align: center;
 }
 
 .footer-logos {
@@ -326,10 +401,10 @@ body {
 
 .flex-spaced-wrap {
   flex-wrap: wrap;
-  margin-top: $spacer * -0.25;
+  margin-top: $spacer * -0.125;
 
   & > * {
-    margin-top: $spacer * 0.25;
+    margin-top: $spacer * 0.125;
   }
 }
 

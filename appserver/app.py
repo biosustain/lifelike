@@ -4,7 +4,7 @@ import logging
 import os
 import click
 import sentry_sdk
-from flask import request
+from flask import g, request
 
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text

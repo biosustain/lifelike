@@ -1,6 +1,10 @@
-from typing import List
-
 from flask import current_app
+from neo4j import (
+    Session as Neo4jSession,
+    Transaction as Neo4jTx
+)
+from sqlalchemy.orm import Session as SQLAlchemySession
+from typing import Dict, List
 
 from neo4japp.constants import EnrichmentDomain, LogEventType
 from neo4japp.exceptions import AnnotationError, ServerException
@@ -12,7 +16,7 @@ from neo4japp.utils.logger import EventLog
 
 
 class EnrichmentTableService(KgService):
-    def __init__(self, graph, session):
+    def __init__(self, graph: Neo4jSession, session: SQLAlchemySession):
         super().__init__(graph=graph, session=session)
 
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
@@ -76,14 +80,7 @@ class EnrichmentTableService(KgService):
         """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
             ID of given organism. Input order is maintained in result.
         """
-        query = self.match_ncbi_genes_query()
-        results = self.graph.run(
-            query,
-            {
-                'gene_names': gene_names,
-                'organism': organism
-            }
-        ).data()
+        results = self.graph.read_transaction(self.match_ncbi_genes_query, gene_names, organism)
 
         domain = self.session.query(DomainURLsMap).filter(
             DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
@@ -101,14 +98,23 @@ class EnrichmentTableService(KgService):
             result_list.append(item)
         return result_list
 
-    def match_ncbi_genes_query(self):
+    def match_ncbi_genes_query(
+        self,
+        tx: Neo4jTx,
+        gene_names: List[str],
+        organism: str
+    ) -> List[Dict]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
         a later query."""
-
-        return """
-        UNWIND $gene_names AS gene
-        MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
-            [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-        RETURN s AS synonym, g AS gene, id(g) AS neo4jID
-        """
+        return [
+            record for record in tx.run(
+                """
+                UNWIND $gene_names AS gene
+                MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
+                    [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
+                RETURN s AS synonym, g AS gene, id(g) AS neo4jID
+                """,
+                gene_names=gene_names, organism=organism
+            ).data()
+        ]

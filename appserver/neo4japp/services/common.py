@@ -3,6 +3,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 class GraphBaseDao:
     def __init__(self, graph, **kwargs):
+        # TODO LL-2916: Should rename this to neo4j_session or something similar.
+        # Also, use the correct typing.
         self.graph = graph
         super().__init__(**kwargs)
 

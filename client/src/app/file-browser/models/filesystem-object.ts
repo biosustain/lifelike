@@ -1,6 +1,6 @@
 import { Directory, Project } from '../services/project-space.service';
-import { CollectionModel } from '../../shared/utils/collection-model';
-import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
