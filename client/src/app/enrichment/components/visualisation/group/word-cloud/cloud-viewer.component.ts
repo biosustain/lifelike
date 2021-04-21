@@ -1,4 +1,4 @@
-import { Component, OnChanges, Input } from '@angular/core';
+import { Component, OnChanges, Input, SimpleChanges } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 import { WordCloudNode } from '../../../../../shared/components/word-cloud/word-cloud.component';
@@ -14,21 +14,23 @@ export class CloudViewerComponent implements OnChanges {
 
   slicedData: WordCloudNode[];
   @Input() timeInterval = Infinity;
+  @Input() show = true;
 
-  ngOnChanges() {
+  ngOnChanges({data}: SimpleChanges) {
     const color = this.geneColor;
-    this.slicedData = Object.entries(
-      this.data.reduce((o, n) => {
-        n.geneNames.forEach(g => {
-          o[g] = o[g] || 0;
-          o[g] += 1;
-        });
-        return o;
-      }, {} as { [geneName: string]: number })
-    )
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 500)
-      .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
-    console.log(this.slicedData);
+    if (this.show && data) {
+      this.slicedData = Object.entries(
+        data.currentValue.reduce((o, n) => {
+          n.geneNames.forEach(g => {
+            o[g] = o[g] || 0;
+            o[g] += 1;
+          });
+          return o;
+        }, {} as { [geneName: string]: number })
+      )
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+        .slice(0, 250)
+        .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
+    }
   }
 }
