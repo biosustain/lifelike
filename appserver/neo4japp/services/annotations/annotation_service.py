@@ -991,6 +991,8 @@ class AnnotationService:
             split = defaultdict(list)
             offsets = [i for i, _ in enrichment_mappings]
             for anno in fixed_unified_annotations:
+                # get first offset that is greater than hi_location_offset
+                # this means the annotation is part of that cell/sublist
                 index = bisect.bisect_left(offsets, anno.hi_location_offset)
                 split[offsets[index]].append(anno)
 
