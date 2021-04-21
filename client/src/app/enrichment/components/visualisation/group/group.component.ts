@@ -11,6 +11,12 @@ export class GroupComponent {
   @Input() title;
 
   showMore = false;
+  tabStatus;
+  Infinity = Infinity;
+
+  constructor() {
+    this.tabStatus = {};
+  }
 
   showMoreToggle() {
     this.showMore = !this.showMore;

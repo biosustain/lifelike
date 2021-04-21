@@ -23,9 +23,10 @@ class GeneRow {
 export class ClustergramComponent implements OnChanges {
   @Input() data: EnrichWithGOTermsResult[];
   @Input() showMore: boolean;
+  @Input() show: boolean;
 
   genes = new Map<string, GeneRow>();
-  others: GeneRow|undefined;
+  others: GeneRow | undefined;
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
@@ -41,35 +42,37 @@ export class ClustergramComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    const data = this.data.sort(this.columnOrder);
-    const sliceSize = Math.min(data.length, this.showMore ? 50 : 25);
-    const genes = new Map<string, GeneRow>();
-    let others: GeneRow|undefined;
-    const goTerms = data.slice(0, sliceSize);
-    data.forEach(({geneNames}, goIndex) => {
-      geneNames.forEach(g => {
-        let geneRow = genes.get(g);
-        if (!geneRow) {
-          if (goIndex < sliceSize) {
-            geneRow = new GeneRow(sliceSize);
-            genes.set(g, geneRow);
-          } else {
-            if (!others) {
-              others = new GeneRow(sliceSize);
+    if (this.show) {
+      const data = this.data.sort(this.columnOrder);
+      const sliceSize = Math.min(data.length, this.showMore ? 50 : 25);
+      const genes = new Map<string, GeneRow>();
+      let others: GeneRow | undefined;
+      const goTerms = data.slice(0, sliceSize);
+      data.forEach(({geneNames}, goIndex) => {
+        geneNames.forEach(g => {
+          let geneRow = genes.get(g);
+          if (!geneRow) {
+            if (goIndex < sliceSize) {
+              geneRow = new GeneRow(sliceSize);
+              genes.set(g, geneRow);
+            } else {
+              if (!others) {
+                others = new GeneRow(sliceSize);
+              }
+              geneRow = others;
             }
-            geneRow = others;
           }
-        }
-        geneRow.frequency++;
-        if (goIndex < sliceSize) {
-          geneRow.values[goIndex] = true;
-        } else {
-          geneRow.others++;
-        }
+          geneRow.frequency++;
+          if (goIndex < sliceSize) {
+            geneRow.values[goIndex] = true;
+          } else {
+            geneRow.others++;
+          }
+        });
       });
-    });
-    this.genes = genes;
-    this.others = others;
-    this.goTerms = goTerms;
+      this.genes = genes;
+      this.others = others;
+      this.goTerms = goTerms;
+    }
   }
 }
