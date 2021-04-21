@@ -1,7 +1,7 @@
 FROM fedora:32 as base
 
 # Install dependencies
-RUN dnf install htop postgresql graphviz python-pip python3-devel which -y \
+RUN dnf install tcpdump net-tools htop postgresql graphviz python-pip python3-devel which -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 RUN pip install pipenv
