@@ -1,8 +1,7 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from '../../../../services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
-import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-clustergram',
