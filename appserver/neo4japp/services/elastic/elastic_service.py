@@ -4,19 +4,20 @@ import json
 import re
 import string
 import logging
+
+from elasticsearch.helpers import parallel_bulk
+from flask import current_app
 from io import BytesIO
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from sqlalchemy import and_
+from sqlalchemy.orm import joinedload, raiseload
 from typing import (
     Dict,
     List,
 )
 
-from elasticsearch.helpers import parallel_bulk
-from flask import current_app
-from sqlalchemy import and_
-from sqlalchemy.orm import joinedload, raiseload
-
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
-from neo4japp.database import db, get_file_type_service
+from neo4japp.database import db, get_file_type_service, ElasticConnection, GraphConnection
 from neo4japp.models import (
     Files, Projects,
 )
@@ -34,12 +35,8 @@ logger = logging.getLogger('elasticsearch')
 logger.setLevel(logging.WARNING)
 
 
-class ElasticService():
-    def __init__(self, elastic):
-        self.elastic_client = elastic
-
+class ElasticService(ElasticConnection, GraphConnection):
     # Begin indexing methods
-
     def update_or_create_index(self, index_id, index_mapping_file):
         """Creates an index with the given index id and mapping file. If the index already exists,
         we update it and re-index any documents using that index."""
@@ -316,20 +313,103 @@ class ElasticService():
 
         return words, phrases, wildcards
 
+    def get_synonym_map(
+        self,
+        words: List[str],
+        phrases: List[str]
+    ) -> Dict[str, List[str]]:
+        terms = words + phrases
+
+        def get_regulon_genes_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
+            return list(
+                tx.run(
+                    """
+                    UNWIND $terms as search_term
+                    CALL {
+                        WITH search_term
+                        CALL db.index.fulltext.queryNodes("synonymIdx", search_term)
+                        YIELD node, score
+                        WHERE score > 3
+                        RETURN node
+                        LIMIT 10
+                    }
+                    RETURN search_term, collect(node.name) as synonyms
+                    """,
+                    terms=terms
+                ).data()
+            )
+
+        results = self.graph.read_transaction(get_regulon_genes_query, terms)
+        synonym_map = dict()
+
+        for row in results:
+            synonym_map[row['search_term']] = row['synonyms']
+
+        return synonym_map
+
+    def generate_synonym_match_subclause(
+        self,
+        phrase: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        synonym_map: Dict[str, List[str]]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'multi_match': {
+                            'query': term,  # type:ignore
+                            'type': 'phrase',  # type:ignore
+                            'fields': [
+                                f'{field}^{text_field_boosts[field]}'
+                                for field in text_fields
+                            ]
+                        }
+                    }
+                    for term in [phrase] + synonym_map.get(phrase, [])
+                ]
+            }
+        }
+
+    def generate_wildcard_match_subclause(
+        self,
+        wildcard: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'wildcard': {
+                            field: {
+                                'value': wildcard,
+                                'boost': text_field_boosts[field],
+                                'case_insensitive': True
+                            }
+                        }
+                    } for field in text_fields
+                ]
+            }
+        }
+
     def get_text_match_objs(
             self,
             fields: List[str],
             boost_fields: Dict[str, int],
-            word: str
+            word: str,
+            synonym_map: Dict[str, List[str]]
     ):
-        multi_match_obj = {
-            'multi_match': {
-                'query': word,
-                'type': 'phrase',
-                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
-            }
-        }
+        synonym_match_subclause = self.generate_synonym_match_subclause(
+            word,
+            fields,
+            boost_fields,
+            synonym_map
+        )
 
+        # Don't include synonyms here, because if we did we might get different results for a
+        # word without punctuation, but with the same synonyms as this word.
         term_objs = [
             {
                 'term': {
@@ -341,7 +421,7 @@ class ElasticService():
             } for field in fields
         ]
 
-        return [multi_match_obj] + term_objs  # type:ignore
+        return [synonym_match_subclause] + term_objs  # type:ignore
 
     def get_text_match_queries(
         self,
@@ -349,54 +429,55 @@ class ElasticService():
         phrases: List[str],
         wildcards: List[str],
         text_fields: List[str],
-        text_field_boosts: Dict[str, int]
+        text_field_boosts: Dict[str, int],
+        synonym_map: Dict[str, List[str]]
     ):
+        # Create single word match subclauses (this is the same as phrase matching below, with the
+        # addition of exact text matching; This helps with words that contain punctuation)
         word_operands = []
         for word in words:
             if any([c in string.punctuation for c in word]):
                 word_operands.append(
                     {
                         'bool': {
-                            'should': self.get_text_match_objs(text_fields, text_field_boosts, word)
+                            'should': self.get_text_match_objs(
+                                text_fields,
+                                text_field_boosts,
+                                word,
+                                synonym_map
+                            )
                         }
                     }
                 )
             else:
-                word_operands.append({
-                    'multi_match': {
-                        'query': word,  # type:ignore
-                        'type': 'phrase',  # type:ignore
-                        'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
-                    }
-                })
+                word_synonym_match_subclause = self.generate_synonym_match_subclause(
+                    word,
+                    text_fields,
+                    text_field_boosts,
+                    synonym_map
+                )
+                word_operands.append(word_synonym_match_subclause)
 
+        # Create phrase match subclauses
         phrase_operands = []
         for phrase in phrases:
-            phrase_operands.append({
-                'multi_match': {
-                    'query': phrase,
-                    'type': 'phrase',
-                    'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
-                }
-            })
+            phrase_synonym_match_subclause = self.generate_synonym_match_subclause(
+                phrase,
+                text_fields,
+                text_field_boosts,
+                synonym_map
+            )
+            phrase_operands.append(phrase_synonym_match_subclause)
 
+        # Create wildcard subclauses
         wildcard_operands = []
         for wildcard in wildcards:
-            wildcard_operands.append({
-                'bool': {
-                    'should': [
-                        {
-                            'wildcard': {
-                                field: {
-                                    'value': wildcard,
-                                    'boost': text_field_boosts[field],
-                                    'case_insensitive': True
-                                }
-                            }
-                        } for field in text_fields
-                    ]
-                }
-            })
+            wildcard_match_subclause = self.generate_wildcard_match_subclause(
+                wildcard,
+                text_fields,
+                text_field_boosts
+            )
+            wildcard_operands.append(wildcard_match_subclause)
 
         return {
             'bool': {
@@ -432,6 +513,7 @@ class ElasticService():
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            use_synonyms: Dict[str, str],
             query_filter,
             highlight,
     ):
@@ -450,6 +532,7 @@ class ElasticService():
             }, []
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
+        synonym_map = self.get_synonym_map(words, phrases) if use_synonyms else dict()
 
         search_queries = []
         if len(text_fields) > 0:
@@ -459,7 +542,8 @@ class ElasticService():
                     phrases,
                     wildcards,
                     text_fields,
-                    text_field_boosts
+                    text_field_boosts,
+                    synonym_map,
                 )
             )
 
@@ -487,7 +571,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }, phrases + words + wildcards
+        }, phrases + words + wildcards, synonym_map
 
     def search(
             self,
@@ -497,12 +581,13 @@ class ElasticService():
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            use_synonyms: Dict[str, str],
             offset: int = 0,
             limit: int = 10,
             query_filter=None,
             highlight=None
     ):
-        es_query, search_phrases = self._build_query_clause(
+        es_query, search_phrases, synonym_map = self._build_query_clause(
             search_term=search_term,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
@@ -510,6 +595,7 @@ class ElasticService():
             keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight,
+            use_synonyms=use_synonyms,
         )
 
         es_response = self.elastic_client.search(
@@ -521,6 +607,5 @@ class ElasticService():
         )
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response, search_phrases
-
+        return es_response, search_phrases, synonym_map
     # End search methods
