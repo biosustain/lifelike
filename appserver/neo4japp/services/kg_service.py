@@ -432,7 +432,8 @@ class KgService(HybridDBDao):
             19: 'PTHLH2metab Short',
             20: 'metab2PTHLH Short Page',
             21: 'PTHLH2metab Short Page',
-            22: 'PTHLH2Ca2metab Short Page'
+            22: 'PTHLH2Ca2metab Short Page',
+            23: 'AAK1'
             # 23: 'nagA (ALE Mutation Data)',
             # 24: 'Glycolisis Regulon',
             # 25: 'SIRT5 to NFE2L2 Using Literature Data',
@@ -476,11 +477,12 @@ class KgService(HybridDBDao):
             22: [
                 self.get_data_from_file,
                 'cytoscape_data/PTHLH2Ca2metab_shortPage_graphml_vis_js.json'
-            ]
-            # 23: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
-            # 24: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            # 25: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
-            # 26: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
+            ],
+            23: [self.get_data_from_file, 'cytoscape_data/aak1_graphml_vis_js.json']
+            # 24: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
+            # 25: [self.get_data_from_query, self.get_glycolisis_regulon_query],
+            # 26: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
+            # 27: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
         }
 
     def get_shortest_path_data(self, query_id):
