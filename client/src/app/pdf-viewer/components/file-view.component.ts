@@ -20,11 +20,11 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../annotation-type';
-import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import {
   AnnotationDragEvent,
   AnnotationHighlightResult,
@@ -33,13 +33,13 @@ import {
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { map } from 'rxjs/operators';
-import { mapBlobToBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { SearchControlComponent } from '../../shared/components/search-control.component';
+import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 class DummyFile implements PdfFile {
   constructor(

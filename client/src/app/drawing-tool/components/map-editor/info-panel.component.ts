@@ -4,9 +4,9 @@ import { GraphEntity, GraphEntityType } from '../../services/interfaces';
 
 import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { GraphAction } from '../../../graph-viewer/actions/actions';
-import { openPotentialInternalLink } from '../../../shared/utils/browser';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({

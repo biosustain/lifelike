@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ChartOptions, ChartType, ChartPoint } from 'chart.js';
-import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 const mapTootipItem = func =>
   ({datasetIndex, index}, {datasets}) => {
@@ -22,24 +22,24 @@ export class ChartComponent implements OnChanges {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-    xAxes: [
-      {
-        ticks: {
-          suggestedMin: 0,
-          stepSize: 1,
-          // callback: value => value
-        },
-        gridLines: {
-          drawOnChartArea: false
-        },
-        offset: true,
-        type: 'logarithmic',
-        scaleLabel: {
-          display: true,
-          labelString: '-log10 p-value'
+      xAxes: [
+        {
+          ticks: {
+            suggestedMin: 0,
+            stepSize: 1,
+            // callback: value => value
+          },
+          gridLines: {
+            drawOnChartArea: false
+          },
+          offset: true,
+          type: 'logarithmic',
+          scaleLabel: {
+            display: true,
+            labelString: '-log10 p-value'
+          }
         }
-      }
-    ],
+      ],
     },
     plugins: {
       // Change options for ALL labels of THIS CHART
@@ -62,16 +62,19 @@ export class ChartComponent implements OnChanges {
 
   @Input() showMore: boolean;
   @Input() data: EnrichWithGOTermsResult[];
+  @Input() show: boolean;
 
   slicedData: (EnrichWithGOTermsResult & ChartPoint)[];
   labels: string[];
 
-  ngOnChanges() {
-    const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
-    this.slicedData = data.map((d: any, i) => ({
-      ...d,
-      x: -Math.log10(d['p-value'])
-    }));
-    this.labels = data.map(({gene}) => gene);
+  ngOnChanges({show, data, showMore}: SimpleChanges) {
+    if (this.show && (show || data || showMore)) {
+      const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
+      this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
+        ...d,
+        x: -Math.log10(d['p-value'])
+      }));
+      this.labels = slicedNotFormatedData.map(({gene}) => gene);
+    }
   }
 }
