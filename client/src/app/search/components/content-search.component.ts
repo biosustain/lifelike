@@ -38,6 +38,7 @@ import { AdvancedSearchDialogComponent } from './advanced-search-dialog.componen
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
+import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 
 @Component({
@@ -346,8 +347,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       .catch(() => {});
   }
 
-  itemDragStart(event: DragEvent, object: FilesystemObject) {
+  itemDragStart(event: DragEvent, object: FilesystemObject, force = false) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    object.addDataTransferData(dataTransfer);
+    if (force || !dataTransfer.types.includes('text/uri-list')) {
+      object.addDataTransferData(dataTransfer);
+    }
   }
 }

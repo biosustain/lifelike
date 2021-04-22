@@ -15,6 +15,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectTypeService } from '../services/object-type.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
   selector: 'app-object-preview',
@@ -54,7 +55,6 @@ export class ObjectPreviewComponent implements OnChanges {
       this.object$.next(this.object);
     }
   }
-
 }
 
 @Component({
