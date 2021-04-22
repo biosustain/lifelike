@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import { annotationTypesMap } from '../../../../../shared/annotation-styles';
-import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from '../../../../services/enrichment-visualisation.service';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from 'app/enrichment/services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
 
 @Component({
@@ -11,6 +11,7 @@ import { KeyValue } from '@angular/common';
 export class ClustergramComponent implements OnChanges {
   @Input() data: EnrichWithGOTermsResult[];
   @Input() showMore: boolean;
+  @Input() show: boolean;
 
   genes = new Map<string, boolean[]>();
   goTerms: EnrichWithGOTermsResult[] = [];
@@ -28,23 +29,25 @@ export class ClustergramComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    const data = (this.showMore ?
-      this.data.slice(0, 50)
-      : this.data.slice(0, 25))
-      .sort(this.columnOrder);
-    const genes = new Map<string, boolean[]>();
-    const {importGenes} = this.enrichmentService.enrichmentDocument;
-    data.forEach(({geneNames}, goIndex) => {
-      importGenes.filter(value => geneNames.includes(value)).forEach(g => {
-        let geneRow = genes.get(g);
-        if (!geneRow) {
-          geneRow = new Array(data.length);
-          genes.set(g, geneRow);
-        }
-        geneRow[goIndex] = true;
+    if (this.show) {
+      const data = (this.showMore ?
+        this.data.slice(0, 50)
+        : this.data.slice(0, 25))
+        .sort(this.columnOrder);
+      const genes = new Map<string, boolean[]>();
+      const {importGenes} = this.enrichmentService.enrichmentDocument;
+      data.forEach(({geneNames}, goIndex) => {
+        importGenes.filter(value => geneNames.includes(value)).forEach(g => {
+          let geneRow = genes.get(g);
+          if (!geneRow) {
+            geneRow = new Array(data.length);
+            genes.set(g, geneRow);
+          }
+          geneRow[goIndex] = true;
+        });
       });
-    });
-    this.genes = genes;
-    this.goTerms = data;
+      this.genes = genes;
+      this.goTerms = data;
+    }
   }
 }

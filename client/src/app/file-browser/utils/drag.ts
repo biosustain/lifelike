@@ -1,7 +1,7 @@
 import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
-import { DragImage } from '../../shared/utils/drag';
+import { DragImage } from 'app/shared/utils/drag';
 
 function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
   const canvas = document.createElement('canvas');

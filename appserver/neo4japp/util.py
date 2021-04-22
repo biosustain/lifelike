@@ -9,13 +9,12 @@ import jwt
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
+from flask import json, jsonify, request
 from json import JSONDecodeError
+from neo4j.graph import Node as N4jDriverNode
+from py2neo import Node
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
-
-from flask import json, jsonify, request
-
-from py2neo import Node
 
 from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
 
@@ -402,6 +401,10 @@ def get_first_known_label_from_node(node: Node):
     return get_first_known_label_from_list(labels_as_str)
 
 
+def get_first_known_label_from_node_n4j_driver(node: N4jDriverNode):
+    return get_first_known_label_from_list(node.labels)
+
+
 def get_first_known_label_from_list(labels: List[str]):
     for label in labels:
         if label in DISPLAY_NAME_MAP:
@@ -415,6 +418,16 @@ def get_known_domain_labels_from_node(node: Node):
     domain_labels = []
 
     for label in labels_as_str:
+        if label in DOMAIN_LABELS:
+            domain_labels.append(label)
+
+    return domain_labels
+
+
+def get_known_domain_labels_from_node_n4j_driver(node: N4jDriverNode):
+    domain_labels = []
+
+    for label in node.labels:
         if label in DOMAIN_LABELS:
             domain_labels.append(label)
 

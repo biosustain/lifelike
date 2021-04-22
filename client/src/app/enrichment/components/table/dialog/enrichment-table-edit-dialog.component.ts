@@ -3,10 +3,10 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../../../../file-browser/components/dialog/object-edit-dialog.component';
+import { ObjectEditDialogComponent, ObjectEditDialogValue } from 'app/file-browser/components/dialog/object-edit-dialog.component';
 import { EnrichmentDocument } from '../../../models/enrichment-document';
-import { ErrorHandler } from '../../../../shared/services/error-handler.service';
-import { ProgressDialog } from '../../../../shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',

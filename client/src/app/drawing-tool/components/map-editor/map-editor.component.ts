@@ -24,12 +24,12 @@ import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
-import { makeid } from '../../../shared/utils/identifiers';
+import { makeid } from 'app/shared/utils/identifiers';
 import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 import { InfoPanel } from '../../models/info-panel';
 
