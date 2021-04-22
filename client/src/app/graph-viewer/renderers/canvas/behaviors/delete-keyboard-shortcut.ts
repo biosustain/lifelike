@@ -4,7 +4,7 @@ import {
   GraphEntityType,
   UniversalGraphEdge,
   UniversalGraphNode,
-} from '../../../../drawing-tool/services/interfaces';
+} from 'app/drawing-tool/services/interfaces';
 import { EdgeDeletion, NodeDeletion } from '../../../actions/nodes';
 import { GraphAction } from '../../../actions/actions';
 

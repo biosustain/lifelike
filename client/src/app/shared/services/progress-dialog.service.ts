@@ -6,10 +6,12 @@ import {Observable} from 'rxjs';
 
 import {ProgressDialogComponent} from '../components/dialog/progress-dialog.component';
 import {Progress} from '../../interfaces/common-dialog.interface';
+import { openModal } from '../utils/modals';
 
 export interface ProgressDialogArguments {
   title: string;
   progressObservable: Observable<Progress>;
+  onCancel?: () => void;
 }
 
 @Injectable({
@@ -22,9 +24,15 @@ export class ProgressDialog {
   }
 
   display(args: ProgressDialogArguments) {
-    const modalRef = this.modalService.open(ProgressDialogComponent);
+    const modalRef = openModal(this.modalService, ProgressDialogComponent);
     modalRef.componentInstance.title = args.title;
     modalRef.componentInstance.progressObservable = args.progressObservable;
+    modalRef.componentInstance.cancellable = !!args.onCancel;
+    if (args.onCancel) {
+      modalRef.componentInstance.progressCancel.subscribe(() => {
+        args.onCancel();
+      });
+    }
     return modalRef;
   }
 }

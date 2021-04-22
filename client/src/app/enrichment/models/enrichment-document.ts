@@ -1,8 +1,8 @@
 import { Observable, of } from 'rxjs';
-import { mapBlobToBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { map, mergeMap } from 'rxjs/operators';
 import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
-import { nullCoalesce } from '../../shared/utils/types';
+import { nullCoalesce } from 'app/shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 
@@ -41,11 +41,11 @@ export class BaseEnrichmentDocument {
       domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
     }
 
-    const [uniqueImportGenes, duplicateGenes] = this.removeDuplicates(rawImportGenes);
+    const duplicateGenes = this.getDuplicates(rawImportGenes);
 
     // We set these all at the end to be thread/async-safe
     return {
-      importGenes: uniqueImportGenes,
+      importGenes: rawImportGenes,
       taxID,
       organism,
       domains,
@@ -65,7 +65,7 @@ export class BaseEnrichmentDocument {
    * Remove any duplicates from the import gene list and populate duplicate list
    * @param arr string of gene names
    */
-  private removeDuplicates(arr: string[]): [string[], string[]] {
+  private getDuplicates(arr: string[]): string[] {
     const duplicateArray = new Set<string>();
     const uniqueArray = new Set<string>();
     for (const item of arr) {
@@ -75,7 +75,7 @@ export class BaseEnrichmentDocument {
         uniqueArray.add(item);
       }
     }
-    return [Array.from(uniqueArray), Array.from(duplicateArray)];
+    return Array.from(duplicateArray);
   }
 
   load(blob: Blob): Observable<EnrichmentParsedData> {
@@ -215,7 +215,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   private generateEnrichmentResults(domains: string[], importGenes: string[],
                                     taxID: string): Observable<EnrichmentResult> {
     return this.worksheetViewerService
-      .matchNCBINodes(importGenes, taxID)
+      .matchNCBINodes(Array.from(new Set(importGenes)), taxID)
       .pipe(
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
           const ncbiIds = ncbiNodesData.map((wrapper) => wrapper.neo4jID);
@@ -370,18 +370,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   private processGoWrapper(nodeArray: GoNode[]): string {
-    if (nodeArray.length > 5) {
-      return (
-        nodeArray
-          .map((node) => node.name)
-          .slice(0, 5)
-          .join('; ') + '...'
-      );
-    } else {
-      return nodeArray
-        .slice(0, 5)
-        .join('; ');
-    }
+    return nodeArray
+      .map((node) => node.name)
+      .slice(0, 5)
+      .join('; ') + (nodeArray.length > 5 ? '...' : '');
   }
 }
 

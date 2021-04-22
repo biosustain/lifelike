@@ -1,8 +1,14 @@
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { GraphEntity } from '../../../../drawing-tool/services/interfaces';
-import { CompoundAction } from '../../../actions/actions';
-import { isClipboardEventNativelyHandled } from '../../../../shared/utils/clipboard';
+import { NodeCreation } from '../../../actions/nodes';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
+import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { makeid } from 'app/shared/utils/identifiers';
+import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 import { extractGraphEntityActions } from '../../../../drawing-tool/utils/data';
 import { DataTransferDataService } from '../../../../shared/services/data-transfer-data.service';
 
