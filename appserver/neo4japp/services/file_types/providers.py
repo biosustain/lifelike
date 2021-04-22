@@ -127,28 +127,21 @@ class MapTypeProvider(BaseFileTypeProvider):
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
-
-        map_data: Dict[str, List[Dict[str, str]]] = {
-            'nodes': [],
-            'edges': []
-        }
+        content = io.StringIO()
+        string_list = []
 
         for node in content_json.get('nodes', []):
             node_data = node.get('data', {})
-            map_data['nodes'].append({
-                'label': node.get('label', ''),
-                'display_name': node.get('display_name', ''),
-                'detail': node_data.get('detail', '') if node_data else '',
-            })
+            string_list.append(node.get('display_name', ''))
+            string_list.append(node_data.get('detail', '') if node_data else '')
 
         for edge in content_json.get('edges', []):
             edge_data = edge.get('data', {})
-            map_data['edges'].append({
-                'label': edge.get('label', ''),
-                'detail': edge_data.get('detail', '') if edge_data else '',
-            })
+            string_list.append(edge.get('label', ''))
+            string_list.append(edge_data.get('detail', '') if edge_data else '')
 
-        return typing.cast(BufferedIOBase, io.BytesIO(json.dumps(map_data).encode('utf-8')))
+        content.write(' '.join(string_list))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
