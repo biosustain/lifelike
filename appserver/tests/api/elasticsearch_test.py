@@ -68,7 +68,7 @@ def test_user_can_search_content(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
         resp = client.post(
             f'/search/content',
@@ -91,6 +91,7 @@ def test_user_can_search_content(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -137,7 +138,7 @@ def test_user_can_search_content_with_advanced_args(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -165,6 +166,7 @@ def test_user_can_search_content_with_advanced_args(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -211,7 +213,7 @@ def test_user_can_search_content_with_single_types(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -236,6 +238,7 @@ def test_user_can_search_content_with_single_types(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -274,7 +277,7 @@ def test_user_can_search_content_with_multiple_types(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -299,6 +302,7 @@ def test_user_can_search_content_with_multiple_types(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -345,7 +349,7 @@ def test_user_can_search_content_with_project(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -370,6 +374,7 @@ def test_user_can_search_content_with_project(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -415,7 +420,7 @@ def test_user_can_search_content_with_phrase(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -440,6 +445,7 @@ def test_user_can_search_content_with_phrase(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
@@ -486,7 +492,7 @@ def test_user_can_search_content_with_wildcard(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
 
         resp = client.post(
@@ -510,6 +516,7 @@ def test_user_can_search_content_with_wildcard(
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            use_synonyms=True,
             query_filter={
                 'bool': {
                     'must': [
