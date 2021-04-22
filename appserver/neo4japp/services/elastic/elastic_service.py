@@ -325,15 +325,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                 tx.run(
                     """
                     UNWIND $terms as search_term
-                    CALL {
-                        WITH search_term
-                        CALL db.index.fulltext.queryNodes("synonymIdx", search_term)
-                        YIELD node, score
-                        WHERE score > 3
-                        RETURN node
-                        LIMIT 10
-                    }
-                    RETURN search_term, collect(node.name) as synonyms
+                    MATCH (synonym:Synonym)
+                    WHERE search_term = synonym.name
+                    WITH search_term, synonym
+                    MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    RETURN search_term, collect(distinct other_synonym.name) as synonyms
                     """,
                     terms=terms
                 ).data()
