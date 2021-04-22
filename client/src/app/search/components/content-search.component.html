@@ -10,8 +10,22 @@
           </app-content-search-form>
         </ng-container>
       </div>
-      <div class="d-flex justify-content-end w-100">
+      <div [class]="'d-flex w-100 ' + (synonyms && synonyms.size ? 'justify-content-between' : 'justify-content-end')">
+        <div *ngIf="synonyms && synonyms.size" class="btn btn-link p-0" (click)="toggleShowSynonyms()">
+          {{showSynonyms ? 'Hide' : 'Show'}} Synonym Matches
+        </div>
         <div class="btn btn-link p-0" (click)="openAdvancedSearch()">Advanced Search</div>
+      </div>
+      <div *ngIf="showSynonyms">
+        <ngb-accordion [closeOthers]="true">
+          <ngb-panel *ngFor="let synonym of synonyms | keyvalue" [title]="synonym.key">
+            <ng-template ngbPanelContent>
+              <ul>
+                <li *ngFor="let s of synonym.value">{{s}}</li>
+              </ul>
+            </ng-template>
+          </ngb-panel>
+        </ngb-accordion>
       </div>
     </div>
 

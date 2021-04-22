@@ -63,6 +63,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   contentSearchFormVal: SearchableRequestOptions;
 
+  synonyms: Map<string, string[]>;
+  showSynonyms = false;
+
   get emptyParams(): boolean {
     if (isNullOrUndefined(this.params)) {
       return true;
@@ -103,8 +106,14 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
-        const synonyms = Array.from(new Set(Object.values(response.synonyms).reduce((a, b) => a.concat(b))));
-        this.highlightTerms = [...response.query.phrases, ...synonyms];
+        const synonymsSet = new Set<string>();
+        this.synonyms = new Map<string, string[]>();
+
+        Object.entries(response.synonyms).forEach(([root, synonymList]) => {
+          this.synonyms.set(root, synonymList);
+          synonymList.forEach(synonym => synonymsSet.add(synonym));
+        });
+        this.highlightTerms = [...response.query.phrases, ...Array.from(synonymsSet)];
       })
     );
   }
@@ -348,5 +357,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   itemDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     object.addDataTransferData(dataTransfer);
+  }
+
+  toggleShowSynonyms() {
+    this.showSynonyms = !this.showSynonyms;
   }
 }
