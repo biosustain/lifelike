@@ -2,7 +2,7 @@ import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
-} from '../../../shared/services/data-transfer-data.service';
+} from 'app/shared/services/data-transfer-data.service';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../services/interfaces';
 import { Injectable } from '@angular/core';
 import {

@@ -5,10 +5,10 @@ import {
   FileAnnotationChangeData,
   FileAnnotationHistoryResponse,
 } from '../schema';
-import { CollectionModel } from '../../shared/utils/collection-model';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
 import { startCase } from 'lodash';
-import { ModelList } from '../../shared/models';
+import { ModelList } from 'app/shared/models';
 import { AppUser } from '../../interfaces';
 
 class AnnotationChange {

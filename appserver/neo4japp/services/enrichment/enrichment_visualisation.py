@@ -35,22 +35,26 @@ class EnrichmentVisualisationService(KgService):
         raise NotImplementedError
 
     def query_go_term(self, organism_id, gene_names):
-        r = self.graph.run(
-            """
-            UNWIND $gene_names AS geneName
-            MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) WHERE g.name=geneName
-            WITH g MATCH (g)-[:GO_LINK]-(go)
-            WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
-            WITH go, collect(DISTINCT g2) AS genes
-            RETURN
-                go.id AS goId,
-                go.name AS goTerm,
-                [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
-                [g IN genes |g.name] AS geneNames
-            """,
-            taxId=organism_id,
-            gene_names=gene_names
-        ).data()
+        r = self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    UNWIND $gene_names AS geneName
+                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) WHERE g.name=geneName
+                    WITH g MATCH (g)-[:GO_LINK]-(go)
+                    WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
+                    WITH go, collect(DISTINCT g2) AS genes
+                    RETURN
+                        go.id AS goId,
+                        go.name AS goTerm,
+                        [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
+                        [g IN genes |g.name] AS geneNames
+                    """,
+                    taxId=organism_id,
+                    gene_names=gene_names
+                ).data()
+            )
+        )
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
@@ -67,19 +71,23 @@ class EnrichmentVisualisationService(KgService):
         )
 
     def query_go_term_count(self, organism_id):
-        r = self.graph.run(
-                """
-match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId})
-with n match (n)-[:GO_LINK]-(go) with distinct go
-return count(go)
-                """,
-                taxId=organism_id
-        ).data()
+        r = self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId})
+                    with n match (n)-[:GO_LINK]-(go) with distinct go
+                    return count(go) as go_count
+                    """,
+                    taxId=organism_id
+                )
+            )
+        )
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
                     message=f'Could not find related GO terms for organism id: {organism_id}')
-        return r[0]['count(go)']
+        return r[0]['go_count']
 
     def get_go_term_count(self, organism):
         cache_id = f"go_term_count_{organism}"
