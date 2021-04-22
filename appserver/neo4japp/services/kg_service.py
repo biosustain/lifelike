@@ -302,6 +302,26 @@ class KgService(HybridDBDao):
                 'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"  # noqa
             } for result in results}
 
+    def get_kegg_genes(self, ncbi_gene_ids: List[int]):
+        start = time.time()
+        results = self.graph.read_transaction(
+            self.get_kegg_genes_query,
+            ncbi_gene_ids
+        )
+
+        current_app.logger.info(
+            f'Enrichment KEGG KG query time {time.time() - start}',
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        )
+
+        return {
+            result['node_id']: {
+                'result': [{
+                    'name': pathway_name,
+                    'link': f"https://www.genome.jp/pathway/hsa{pathway_id}+{result['gene_id']}"
+                } for pathway_name, pathway_id in result['pathway']],
+            } for result in results}
+
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
         node_ids = set()
@@ -509,6 +529,18 @@ class KgService(HybridDBDao):
             MATCH (g)-[:IS]-(x:db_RegulonDB)
             WHERE id(g)=node_id
             RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
+
+    def get_kegg_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:IS]-(x:db_KEGG)
+            WHERE id(g)=node_id
+            WITH node_id, g, x MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)
+            RETURN node_id, g.id AS gene_id, x.id AS kegg_id, collect([p.name, p.id]) AS pathway
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
