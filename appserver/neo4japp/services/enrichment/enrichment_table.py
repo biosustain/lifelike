@@ -112,7 +112,7 @@ class EnrichmentTableService(KgService):
             UNWIND $gene_names AS gene
             MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
                 [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-            RETURN s.name AS synonym, id(s) AS syn_neo4j_id, id(g) AS gene_neo4j_id, \
+            RETURN s.name AS synonym, id(s) AS syn_neo4j_id, id(g) AS gene_neo4j_id,
                 g.id AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
             """,
             gene_names=gene_names, organism=organism
