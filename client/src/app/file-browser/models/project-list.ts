@@ -1,5 +1,5 @@
 import { ProjectImpl } from './filesystem-object';
-import { ModelList } from '../../shared/models';
+import { ModelList } from 'app/shared/models';
 
 export class ProjectList extends ModelList<ProjectImpl> {
 }

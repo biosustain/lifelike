@@ -4,10 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { ActivatedRoute, Router } from '@angular/router';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from '../services/filesystem.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { element } from 'protractor';
 import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
 

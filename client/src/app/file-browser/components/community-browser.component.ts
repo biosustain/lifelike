@@ -3,15 +3,15 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
-import { PaginatedRequestOptions, StandardRequestOptions } from '../../shared/schemas/common';
+import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
 import { MAP_MIMETYPE } from '../../drawing-tool/providers/map.type-provider';
 
 @Component({

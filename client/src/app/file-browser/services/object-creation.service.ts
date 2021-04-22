@@ -13,9 +13,9 @@ import { AnnotationsService } from './annotations.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from './filesystem.service';
 
 @Injectable()

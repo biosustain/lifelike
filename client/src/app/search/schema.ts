@@ -1,4 +1,4 @@
-import { StandardRequestOptions } from '../shared/schemas/common';
+import { StandardRequestOptions } from 'app/shared/schemas/common';
 
 // ========================================
 // Content Search

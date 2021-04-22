@@ -5,7 +5,7 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
+import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
