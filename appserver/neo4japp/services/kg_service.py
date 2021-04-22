@@ -409,81 +409,105 @@ class KgService(HybridDBDao):
         return {'nodes': nodes, 'edges': edges}
 
     def get_shortest_path_query_list(self):
-        return {
-            0: '3-hydroxyisobutyric Acid to pykF Using ChEBI',
-            1: '3-hydroxyisobutyric Acid to pykF using BioCyc',
-            2: 'icd to rhsE',
-            3: 'Two pathways using BioCyc',
-            4: 'Serine SP Pathway',
-            5: 'Serine to malZp',
-            6: 'Acetate (ALE Mutation Data)',
-            7: 'Glycerol (ALE Mutation Data)',
-            8: 'Hexanoic (ALE Mutation Data)',
-            9: 'Isobutyric (ALE Mutation Data)',
-            10: 'Putrescine (ALE Mutation Data)',
-            11: 'Serine (ALE Mutation Data)',
-            12: 'tpiA (ALE Mutation Data)',
-            13: 'Xylose (ALE Mutation Data)',
-            14: '42C Temperature (ALE Mutation Data)',
-            15: 'nagC (ALE Mutation Data)',
-            16: 'nagA/nagC (ALE Mutation Data)',
-            17: 'nagA/nagC Shortest Paths (ALE Mutation Data)',
-            18: 'metab2PTHLH Short',
-            19: 'PTHLH2metab Short',
-            20: 'metab2PTHLH Short Page',
-            21: 'PTHLH2metab Short Page',
-            22: 'PTHLH2Ca2metab Short Page',
-            23: 'AAK1'
-            # 23: 'nagA (ALE Mutation Data)',
-            # 24: 'Glycolisis Regulon',
-            # 25: 'SIRT5 to NFE2L2 Using Literature Data',
-            # 26: 'CTNNB1 to Diarrhea Using Literature Data',
-
-        }
+        query_pathway_names = [
+            '3-hydroxyisobutyric Acid to pykF Using ChEBI',
+            '3-hydroxyisobutyric Acid to pykF using BioCyc',
+            'icd to rhsE',
+            'Two pathways using BioCyc',
+        ]
+        file_pathway_names = [
+            'Serine SP Pathway',
+            'Serine to malZp',
+            'Acetate (ALE Mutation Data)',
+            'Glycerol (ALE Mutation Data)',
+            'Hexanoic (ALE Mutation Data)',
+            'Isobutyric (ALE Mutation Data)',
+            'Putrescine (ALE Mutation Data)',
+            'Serine (ALE Mutation Data)',
+            'tpiA (ALE Mutation Data)',
+            'Xylose (ALE Mutation Data)',
+            '42C Temperature (ALE Mutation Data)',
+            'nagC (ALE Mutation Data)',
+            'nagA/nagC (ALE Mutation Data)',
+            'nagA/nagC Shortest Paths (ALE Mutation Data)',
+            'metab2PTHLH Short',
+            'PTHLH2metab Short',
+            'metab2PTHLH Short Page',
+            'PTHLH2metab Short Page',
+            'PTHLH2Ca2metab Short Page',
+            'AAK1',
+            'Auxilin Recruits HSPA8',
+            'CSNK1D Phosphorylates SEC23',
+            'Dissociation of AAK1 and Dephosphorylation of AP-2 mu2',
+            'Expression of PERIOD-1',
+            'F_BAR proteins_ARP',
+            'HSPA8-mediated ATP Hydrolysis Promotes Vesicle Uncoating',
+            'Interleukin-1 Family are Secreted',
+            'PER1 [cytosol]',
+            'The Ligand_GPCR_Gs Complex Dissociates',
+            'Vesicle Budding',
+            # 'nagA (ALE Mutation Data)',
+            # 'Glycolisis Regulon',
+            # 'SIRT5 to NFE2L2 Using Literature Data',
+            # 'CTNNB1 to Diarrhea Using Literature Data',
+        ]
+        return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
 
     def get_query_id_to_func_map(self):
-        return {
-            0: [self.get_data_from_query, self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query],
-            1: [
-                self.get_data_from_query,
-                self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query
-            ],
-            2: [self.get_data_from_query, self.get_icd_to_rhse_query],
-            3: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
-            4: [self.get_data_from_file, 'serine.json'],
-            5: [self.get_data_from_file, 'serine-to-malZp.json'],
-            6: [self.get_data_from_file, 'ale_mutation_data/acetate.json'],
-            7: [self.get_data_from_file, 'ale_mutation_data/glycerol.json'],
-            8: [self.get_data_from_file, 'ale_mutation_data/hexanoic.json'],
-            9: [self.get_data_from_file, 'ale_mutation_data/isobutyric.json'],
-            10: [self.get_data_from_file, 'ale_mutation_data/putrescine.json'],
-            11: [self.get_data_from_file, 'ale_mutation_data/serine.json'],
-            12: [self.get_data_from_file, 'ale_mutation_data/tpiA.json'],
-            13: [self.get_data_from_file, 'ale_mutation_data/xylose.json'],
-            14: [self.get_data_from_file, 'ale_mutation_data/42C.json'],
-            15: [self.get_data_from_file, 'ale_mutation_data/nagC.json'],
-            16: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
-            17: [self.get_data_from_file, 'ale_mutation_data/nagAC_shortestpaths.json'],
-            18: [self.get_data_from_file, 'cytoscape_data/metab2PTHLH_short_graphml_vis_js.json'],
-            19: [self.get_data_from_file, 'cytoscape_data/PTHLH2metab_short_vis_js.graphml.json'],
-            20: [
-                self.get_data_from_file,
-                'cytoscape_data/metab2PTHLH_shortPage_graphml_vis_js.json'
-            ],
-            21: [
-                self.get_data_from_file,
-                'cytoscape_data/PTHLH2metab_shortPage_graphml_vis_js.json'
-            ],
-            22: [
-                self.get_data_from_file,
-                'cytoscape_data/PTHLH2Ca2metab_shortPage_graphml_vis_js.json'
-            ],
-            23: [self.get_data_from_file, 'cytoscape_data/aak1_graphml_vis_js.json']
-            # 24: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
-            # 25: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            # 26: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
-            # 27: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
-        }
+        query_pathways = [
+            self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query,
+            self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query,
+            self.get_icd_to_rhse_query,
+            self.get_two_pathways_biocyc_query
+            # self.get_glycolisis_regulon_query,
+            # self.get_sirt5_to_nfe2l2_literature_query,
+            # self.get_ctnnb1_to_diarrhea_literature_query,
+        ]
+        file_pathways = [
+            'serine.json',
+            'serine-to-malZp.json',
+            'ale_mutation_data/acetate.json',
+            'ale_mutation_data/glycerol.json',
+            'ale_mutation_data/hexanoic.json',
+            'ale_mutation_data/isobutyric.json',
+            'ale_mutation_data/putrescine.json',
+            'ale_mutation_data/serine.json',
+            'ale_mutation_data/tpiA.json',
+            'ale_mutation_data/xylose.json',
+            'ale_mutation_data/42C.json',
+            'ale_mutation_data/nagC.json',
+            'ale_mutation_data/nagAC.json',
+            'ale_mutation_data/nagAC_shortestpaths.json',
+            'cytoscape_data/metab2PTHLH_short_graphml.json',
+            'cytoscape_data/PTHLH2metab_short.graphml.json',
+            'cytoscape_data/metab2PTHLH_shortPage_graphml.json',
+            'cytoscape_data/PTHLH2metab_shortPage_graphml.json',
+            'cytoscape_data/PTHLH2Ca2metab_shortPage_graphml.json',
+            'cytoscape_data/aak1_graphml.json',
+            'cytoscape_data/Auxilin recruits HSPA8.json',
+            'cytoscape_data/CSNK1D phosphorylates SEC23.json',
+            'cytoscape_data/Dissociation of AAK1 and dephosphorylation of AP-2 mu2.json',
+            'cytoscape_data/Expression of PERIOD-1.json',
+            'cytoscape_data/F_BAR proteins_ARP.json',
+            'cytoscape_data/HSPA8-mediated ATP hydrolysis promotes vesicle uncoating.json',
+            'cytoscape_data/Interleukin-1 family are secreted.json',
+            'cytoscape_data/PER1 [cytosol].json',
+            'cytoscape_data/The Ligand_GPCR_Gs complex dissociates.json',
+            'cytoscape_data/Vesicle budding.json',
+            # 'ale_mutation_data/nagA.json',
+        ]
+
+        pathway_num = 0
+        pathways = dict()
+        for query_pathway in query_pathways:
+            pathways[pathway_num] = [self.get_data_from_query, query_pathway]
+            pathway_num += 1
+
+        for file_pathway in file_pathways:
+            pathways[pathway_num] = [self.get_data_from_file, file_pathway]
+            pathway_num += 1
+
+        return pathways
 
     def get_shortest_path_data(self, query_id):
         func, arg = self.get_query_id_to_func_map()[query_id]
