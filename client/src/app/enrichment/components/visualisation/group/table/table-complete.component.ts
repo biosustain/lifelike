@@ -2,9 +2,9 @@ import { DecimalPipe } from '@angular/common';
 import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { DataService } from '../../../../../shared/services/table.service';
-import { SortableTableHeaderDirective, SortEvent } from '../../../../../shared/directives/table-sortable-header.directive';
-import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { DataService } from 'app/shared/services/table.service';
+import { SortableTableHeaderDirective, SortEvent } from 'app/shared/directives/table-sortable-header.directive';
+import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 
 @Component({
@@ -19,6 +19,7 @@ export class TableCompleteComponent implements OnChanges {
   @Input() data: EnrichWithGOTermsResult[];
   @Input() itemsPerPage: number;
   @Input() showMore = true;
+  @Input() show = true;
 
   @ViewChildren(SortableTableHeaderDirective) headers: QueryList<SortableTableHeaderDirective>;
 
@@ -27,19 +28,21 @@ export class TableCompleteComponent implements OnChanges {
     this.total$ = service.total$;
   }
 
-  ngOnChanges({showMore, data}: SimpleChanges) {
-    if (!showMore.currentValue) {
-      if (!showMore.firstChange) {
-        this.service.patch({
-          page: 1,
-          searchTerm: '',
-          pageSize: 5
-        });
+  ngOnChanges({show, showMore, data}: SimpleChanges) {
+    if (showMore) {
+      if (!showMore.currentValue) {
+        if (!showMore.firstChange) {
+          this.service.patch({
+            page: 1,
+            searchTerm: '',
+            pageSize: 5
+          });
+        }
+      } else {
+        this.service.pageSize = 15;
       }
-    } else {
-      this.service.pageSize = 15;
     }
-    if (data || showMore) {
+    if (this.show && (show || data || showMore)) {
       this.service.inputData = this.data;
     }
   }

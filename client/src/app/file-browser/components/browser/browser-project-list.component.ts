@@ -1,14 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ProjectsService } from '../../services/projects.service';
 import { mergeMap, shareReplay } from 'rxjs/operators';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectList } from '../../models/project-list';
-import { PaginatedRequestOptions } from '../../../shared/schemas/common';
-import { addStatus, PipeStatus } from '../../../shared/pipes/add-status.pipe';
+import { PaginatedRequestOptions } from 'app/shared/schemas/common';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { ProjectImpl } from '../../models/filesystem-object';
 
 @Component({

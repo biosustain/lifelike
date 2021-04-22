@@ -1,7 +1,9 @@
-from py2neo import cypher
 import re
-from typing import Any, Dict, List
+
 from flask import current_app
+from neo4j import Record as N4jRecord, Transaction as Neo4jTx
+from py2neo import cypher
+from typing import Any, Dict, List
 
 from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import (
@@ -13,8 +15,8 @@ from neo4japp.data_transfer_objects import (
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
-    get_first_known_label_from_node,
-    get_known_domain_labels_from_node,
+    get_first_known_label_from_node_n4j_driver,
+    get_known_domain_labels_from_node_n4j_driver,
     normalize_str
 )
 from neo4japp.utils.logger import EventLog
@@ -54,18 +56,18 @@ class SearchService(GraphBaseDao):
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
         raise NotImplementedError
 
-    def _visualizer_search_result_formatter(self, results) -> List[FTSQueryRecord]:
+    def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
-        for result in results:
-            node = result['node']
-            taxonomy_id = result.get('taxonomy_id', '')
-            taxonomy_name = result.get('taxonomy_name', '')
-            go_class = result.get('go_class', '')
-            graph_node = GraphNode.from_py2neo(
+        for record in result:
+            node = record['node']
+            taxonomy_id = record.get('taxonomy_id', '')
+            taxonomy_name = record.get('taxonomy_name', '')
+            go_class = record.get('go_class', '')
+            graph_node = GraphNode.from_neo4j_driver(
                 node,
                 display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label_from_node,
-                domain_labels_fn=get_known_domain_labels_from_node,
+                primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                domain_labels_fn=get_known_domain_labels_from_node_n4j_driver,
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,
@@ -155,66 +157,34 @@ class SearchService(GraphBaseDao):
 
         result_filters = self.sanitize_filter(domains, entities)
 
-        cypher_query = f"""
-            CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-            YIELD node
-            MATCH (node)-[]-(n)
-            WHERE {result_filters}
-            WITH n
-            {organism_match_string}
-            RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                t.name AS taxonomy_name, n.namespace AS go_class
-            SKIP $amount
-            LIMIT $limit
-        """
+        result = self.graph.read_transaction(
+            self.visualizer_search_query,
+            query_term,
+            organism,
+            (page - 1) * limit,
+            limit,
+            result_filters,
+            organism_match_string
+        )
 
-        results = self.graph.run(
-            cypher_query,
-            parameters={
-                'organism': organism,
-                'amount': (page - 1) * limit,
-                'limit': limit,
-                'search_term': query_term,
-            }
-        ).data()
+        records = self._visualizer_search_result_formatter(result)
 
-        records = self._visualizer_search_result_formatter(results)
-
-        total_query = f"""
-            CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-            YIELD node
-            MATCH (node)-[]-(n)
-            WHERE {result_filters}
-            WITH n
-            {organism_match_string}
-            RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                t.name AS taxonomy_name, n.namespace AS go_class
-            LIMIT 1001
-        """
-
-        total_results = len(self.graph.run(
-            total_query,
-            parameters={
-                'search_term': query_term,
-                'organism': organism
-            }
-        ).data())
+        total_results = len(
+            self.graph.read_transaction(
+                self.visualizer_search_query,
+                query_term,
+                organism,
+                0,
+                1001,
+                result_filters,
+                organism_match_string
+            )
+        )
 
         return FTSResult(term, records, total_results, page, limit)
 
-    def get_organism_with_tax_id(self, tax_id):
-        query = """
-            MATCH (t:Taxonomy {id: $tax_id})
-            RETURN t.id AS tax_id, t.name AS organism_name
-        """
-
-        result = self.graph.run(
-            query,
-            {
-                'tax_id': tax_id,
-            }
-        ).data()
-
+    def get_organism_with_tax_id(self, tax_id: str):
+        result = self.graph.read_transaction(self.get_organism_with_tax_id_query, tax_id)
         return result[0] if len(result) else None
 
     def get_organisms(self, term: str, limit: int) -> Dict[str, Any]:
@@ -227,22 +197,9 @@ class SearchService(GraphBaseDao):
                 'total': 0,
             }
 
-        cypher_query = """
-            CALL db.index.fulltext.queryNodes("synonymIdx", $term)
-            YIELD node, score
-            MATCH (node)-[]-(t:Taxonomy)
-            with t, collect(node.name) as synonyms LIMIT $limit
-            RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
-        """
         terms = query_term.split(' ')
         query_term = ' AND '.join(terms)
-        nodes = self.graph.run(
-            cypher_query,
-            parameters={
-                'limit': limit,
-                'term': query_term,
-            }
-        ).data()
+        nodes = self.graph.read_transaction(self.get_organisms_query, query_term, limit)
 
         return {
             'limit': limit,
@@ -250,3 +207,63 @@ class SearchService(GraphBaseDao):
             'query': query_term,
             'total': len(nodes),
         }
+
+    def visualizer_search_query(
+        self,
+        tx: Neo4jTx,
+        search_term: str,
+        organism: str,
+        amount: int,
+        limit: int,
+        result_filters: str,
+        organism_match_string: str
+    ) -> List[N4jRecord]:
+        """Need to collect synonyms because a gene node can have multiple
+        synonyms. So it is possible to send duplicate internal node ids to
+        a later query."""
+        return [
+            record for record in tx.run(
+                f"""
+                CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
+                YIELD node
+                MATCH (node)-[]-(n)
+                WHERE {result_filters}
+                WITH n
+                {organism_match_string}
+                RETURN DISTINCT n AS node, t.id AS taxonomy_id,
+                    t.name AS taxonomy_name, n.namespace AS go_class
+                SKIP $amount
+                LIMIT $limit
+                """,
+                search_term=search_term, organism=organism, amount=amount, limit=limit
+            )
+            # IMPORTANT: We do NOT use `data` here, because if we did we would lose some metadata
+            # attached to the `node` return value. We need this metadata to deterimine node labels.
+            # TODO: Should create a helper function that produces key-value pair records for all
+            # Neo4j driver data types, so we don't have to selectively use `data`.
+        ]
+
+    def get_organism_with_tax_id_query(self, tx: Neo4jTx, tax_id: str) -> List[Dict]:
+        return [
+            record for record in tx.run(
+                """
+                MATCH (t:Taxonomy {id: $tax_id})
+                RETURN t.id AS tax_id, t.name AS organism_name
+                """,
+                tax_id=tax_id
+            ).data()
+        ]
+
+    def get_organisms_query(self, tx: Neo4jTx, term: str, limit: int) -> List[Dict]:
+        return [
+            record for record in tx.run(
+                """
+                CALL db.index.fulltext.queryNodes("synonymIdx", $term)
+                YIELD node, score
+                MATCH (node)-[]-(t:Taxonomy)
+                with t, collect(node.name) as synonyms LIMIT $limit
+                RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
+                """,
+                term=term, limit=limit
+            ).data()
+        ]

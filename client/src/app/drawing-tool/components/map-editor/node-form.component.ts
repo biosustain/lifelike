@@ -15,12 +15,12 @@ import {
   UniversalGraphNode,
 } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
-import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-styles';
-import { nullIfEmpty, RecursivePartial } from '../../../shared/utils/types';
-import { openPotentialInternalLink } from '../../../shared/utils/browser';
+import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
+import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({
