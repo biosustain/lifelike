@@ -131,7 +131,7 @@ def test_should_not_get_results_from_empty_db(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='BOLA3',
         offset=0,
@@ -140,6 +140,7 @@ def test_should_not_get_results_from_empty_db(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -158,7 +159,7 @@ def test_can_get_results_from_pdf(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='BOLA3',
         offset=0,
@@ -167,6 +168,7 @@ def test_can_get_results_from_pdf(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -186,7 +188,7 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='BO*A3',
         offset=0,
@@ -195,6 +197,7 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -213,7 +216,7 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='BO?A3',
         offset=0,
@@ -222,6 +225,7 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -240,7 +244,7 @@ def test_can_get_results_from_map(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='COVID',
         offset=0,
@@ -249,6 +253,7 @@ def test_can_get_results_from_map(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -267,7 +272,7 @@ def test_can_get_results_from_map_with_wildcard_phrase(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='CO*ID',
         offset=0,
@@ -276,6 +281,7 @@ def test_can_get_results_from_map_with_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -294,7 +300,7 @@ def test_can_get_results_with_quoted_phrase(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='"mock map document"',
         offset=0,
@@ -303,6 +309,7 @@ def test_can_get_results_with_quoted_phrase(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
@@ -321,7 +328,7 @@ def test_using_wildcard_in_phrase_does_not_work(
     keyword_fields,
     keyword_field_boosts,
 ):
-    res, _ = elastic_service.search(
+    res, _, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         search_term='"BO*A3"',
         offset=0,
@@ -330,6 +337,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         text_field_boosts=text_field_boosts,
         keyword_fields=keyword_fields,
         keyword_field_boosts=keyword_field_boosts,
+        use_synonyms=True,
         query_filter=query_filter_map_and_pdf,
         highlight=highlight
     )
