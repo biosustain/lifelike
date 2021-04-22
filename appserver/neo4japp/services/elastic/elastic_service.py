@@ -525,7 +525,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                     }
                 },
                 'highlight': highlight
-            }, []
+            }, [], {}
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
         synonym_map = self.get_synonym_map(words, phrases) if use_synonyms else dict()
