@@ -98,12 +98,7 @@ export interface NCBIWrapper {
 
 interface BiocycWrapper {
   link: string;
-  result: BiocycNode;
-}
-
-export interface BiocycNode {
-  biocyc_id: string;
-  pathways: string[];
+  result: string[] | null;
 }
 
 interface GoWrapper {
@@ -147,12 +142,9 @@ export interface UniprotNode {
   id: string;
 }
 
-export interface KeggNode {
-  name: string;
-  link: string;
-}
 interface KeggWrapper {
-  result: KeggNode[];
+  result: string[];
+  link: string;
 }
 
 export interface DomainWrapper {
