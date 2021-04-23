@@ -17,6 +17,7 @@ export class CloudViewerComponent implements OnChanges {
   geneColor = annotationTypesMap.get('gene').color;
 
   slicedData: WordCloudNode[];
+  @Input() timeInterval = Infinity;
   @Input() show = true;
   link;
 
