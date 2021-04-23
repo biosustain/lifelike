@@ -946,7 +946,7 @@ def delete_global_annotations(pids):
         db.session.commit()
         current_app.logger.info(
             f'Deleted {len(pids)} global annotations',
-            UserEventLog(
+            extra=UserEventLog(
                 username=g.current_user.username,
                 event_type=LogEventType.ANNOTATION.value).to_dict()
         )
