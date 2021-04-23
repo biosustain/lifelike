@@ -122,6 +122,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
     def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
+        doi: Optional[str]
         try:
             for match in self.doi_re.finditer(content):
                 label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
@@ -209,7 +210,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
                         pass
         except Exception as e:
             pass
-        return None
 
 
 def to_indexable_content(self, buffer: BufferedIOBase):
