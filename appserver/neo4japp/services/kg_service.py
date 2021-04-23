@@ -407,6 +407,13 @@ class KgService(HybridDBDao):
             'The Ligand_GPCR_Gs Complex Dissociates',
             'Vesicle Budding',
             'Min Mean Short Updown Serotonin',
+            'Min Mean Short Metabs Acetate',
+            'Min Mean Short Metabs Butyrate',
+            'Min Mean Short Metabs Propionate',
+            'Min Mean Short Metabs Serotonin',
+            'Min Mean Short Metabs top10',
+            'Min Mean Short Updown Acetate',
+            'Min Mean Short Updown Butyrate'
             # 'nagA (ALE Mutation Data)',
             # 'Glycolisis Regulon',
             # 'SIRT5 to NFE2L2 Using Literature Data',
@@ -456,6 +463,13 @@ class KgService(HybridDBDao):
             'cytoscape_data/The Ligand_GPCR_Gs complex dissociates.json',
             'cytoscape_data/Vesicle budding.json',
             'cytoscape_data/minMeanShort_updown_Serotonin_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Acetate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Butyrate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Propionate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Serotonin_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_top10_graphml.json',
+            'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
+            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json'
             # 'ale_mutation_data/nagA.json',
         ]
 
