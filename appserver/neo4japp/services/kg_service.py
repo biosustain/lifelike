@@ -261,7 +261,7 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': {'id': result['biocyc_id'], 'pathways': result['pathways']},
+                'result': result['pathways'],
                 'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
                     if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"  # noqa
             } for result in results}
@@ -316,10 +316,8 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': [{
-                    'name': pathway_name,
-                    'link': f"https://www.genome.jp/pathway/hsa{pathway_id}+{result['gene_id']}"
-                } for pathway_name, pathway_id in result['pathway']],
+                'result': result['pathway'],
+                'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
             } for result in results}
 
     def get_nodes_and_edges_from_paths(self, paths):
@@ -539,8 +537,10 @@ class KgService(HybridDBDao):
             UNWIND $ncbi_gene_ids AS node_id
             MATCH (g)-[:IS]-(x:db_KEGG)
             WHERE id(g)=node_id
-            WITH node_id, g, x MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)
-            RETURN node_id, g.id AS gene_id, x.id AS kegg_id, collect([p.name, p.id]) AS pathway
+            WITH node_id, x
+            MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)-[:HAS_PATHWAY]-(gen:Genome)
+            WHERE gen.id = x.genome
+            RETURN node_id, x.id AS kegg_id, collect(p.name) AS pathway
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
