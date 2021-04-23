@@ -210,6 +210,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                         pass
         except Exception as e:
             pass
+        return None
 
 
 def to_indexable_content(self, buffer: BufferedIOBase):
