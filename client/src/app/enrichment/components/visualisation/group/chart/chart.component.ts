@@ -15,28 +15,30 @@ const mapSingularOfTootipItems = func => {
 
 @Component({
   selector: 'app-chart',
-  templateUrl: './chart.component.html'
+  templateUrl: './chart.component.html',
+  styleUrls: ['./chart.component.scss'],
 })
 export class ChartComponent implements OnChanges {
   public options: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-    xAxes: [
-      {
-        ticks: {
-          suggestedMin: 0,
-          stepSize: 1,
-          // callback: value => value
-        },
-        gridLines: {
-          drawOnChartArea: false
-        },
-        offset: true,
-        type: 'logarithmic',
-        scaleLabel: {
-          display: true,
-          labelString: '1 / q-value'
+      xAxes: [
+        {
+          ticks: {
+            suggestedMin: 0,
+            stepSize: 1,
+            // callback: value => value
+          },
+          gridLines: {
+            drawOnChartArea: false
+          },
+          offset: true,
+          type: 'logarithmic',
+          scaleLabel: {
+            display: true,
+            labelString: '1 / q-value'
+          }
         }
       }
     ],
