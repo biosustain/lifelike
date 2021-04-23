@@ -2,9 +2,7 @@ import io
 import json
 import re
 import typing
-import urllib
 from io import BufferedIOBase
-from time import time
 from typing import Optional, List, Dict
 
 import graphviz
@@ -84,32 +82,19 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return doi
 
     def _is_valid_doi(self, doi):
-        # not [bad request, not found] but yes to 403 - no access
-        return requests.get(doi,
-                            headers={
-                                # sometimes request is filtered if there is no user-agent header
-                                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                                              "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                              "Safari/537.36"
-                            }
-                            ).status_code not in [400, 404]
-
-    direct = 0
-    parsed = 0
-
-    def _try_doi(self, doi):
         try:
-            if self._is_valid_doi(doi):
-                self.direct += 1
-                return doi
-            # seems like never true
-            # parsed_doi = doi[:6] + urllib.parse.quote(doi[6:])
-            # if (parsed_doi != doi) and self._is_valid_doi(doi):
-            #     self.parsed += 1
-            #     return parsed_doi
+            # not [bad request, not found] but yes to 403 - no access
+            return requests.get(doi,
+                                headers={
+                                    # sometimes request is filtered if there is no user-agent header
+                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
+                                                  "AppleWebKit/537.36 "
+                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
+                                                  "Safari/537.36"
+                                }
+                                ).status_code not in [400, 404]
         except Exception as e:
-            pass
-        return False
+            return False
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
@@ -137,7 +122,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
     dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
     def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        start = time()
         try:
             for match in self.doi_re.finditer(content):
                 label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
@@ -145,15 +129,13 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 certainly_doi = label + url
                 url = 'https://doi.org/'
                 # is whole match a DOI? (finished on \n, trimmed whitespaces)
-                doi = self._try_doi((url + folderRegistrant + likelyDOIName + tillSpace +
-                                     DOISuffix).strip())
-                if doi:
-                    print(f'by whole {doi} xxx')
+                doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
+                        DOISuffix).strip())
+                if self._is_valid_doi(doi):
                     return doi
                 # is match till space a DOI?
-                doi = self._try_doi(url + folderRegistrant + likelyDOIName + tillSpace)
-                if doi:
-                    print(f'match till space (ignoring "{DOISuffix}") xxx')
+                doi = (url + folderRegistrant + likelyDOIName + tillSpace)
+                if self._is_valid_doi(doi):
                     return doi
                 # make deep search only if there was clear indicator that it is a doi
                 if certainly_doi:
@@ -164,8 +146,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                                         b'', match.group()
                                 )
                         )
-                        if doi:
-                            print(f'pattern sub -> {doi} xxx')
+                        if self._is_valid_doi(doi):
                             return doi
                     # try substitute different dash types
                     if self.dash_types_re.search(match.group()):
@@ -174,8 +155,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                                         b'-', match.group()
                                 )
                         )
-                        if doi:
-                            print('matched by regex substitution xxx')
+                        if self._is_valid_doi(doi):
                             return doi
                     # we iteratively start cutting off suffix on each group of
                     # unusual characters
@@ -184,12 +164,10 @@ class PDFTypeProvider(BaseFileTypeProvider):
                         while reversedDOIEnding:
                             _, _, reversedDOIEnding = self.characters_groups_re.split(
                                     reversedDOIEnding, 1)
-                            doi = self._try_doi(
+                            doi = (
                                     url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
                             )
-                            if doi:
-                                print(f'match by cutting on unusual "{tillSpace}{DOISuffix}" -> '
-                                      f'"{reversedDOIEnding[::-1]}" xxx')
+                            if self._is_valid_doi(doi):
                                 return doi
                     except Exception:
                         pass
@@ -202,19 +180,17 @@ class PDFTypeProvider(BaseFileTypeProvider):
                         while reversedDOIEnding:
                             _, _, reversedDOIEnding = self.characters_groups_re.split(
                                     reversedDOIEnding, 1)
-                            doi = self._try_doi(
+                            doi = (
                                     url + folderRegistrant + reversedDOIEnding[::-1]
                             )
-                            if doi:
-                                print(f'match by cutting groups "{likelyDOIName}{tillSpace}" -> '
-                                      f'"{reversedDOIEnding[::-1]}" xxx')
+                            if self._is_valid_doi(doi):
                                 return doi
                     except Exception:
                         pass
                     # yield 0 matches on test case
                     # # is it a DOI in common format?
-                    # doi = self._try_doi(url + folderRegistrant + likelyDOIName)
-                    # if doi:
+                    # doi = (url + folderRegistrant + likelyDOIName)
+                    # if self._is_valid_doi(doi):
                     #     print('match by common format xxx')
                     #     return doi
                     # in very rare cases there is \n in text containing doi
@@ -227,18 +203,13 @@ class PDFTypeProvider(BaseFileTypeProvider):
                                     match.group() +
                                     content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
                             )
-                            if doi:
-                                print('matched by searching in new line')
+                            if self._is_valid_doi(doi):
                                 return doi
                     except Exception as e:
                         pass
-                print('match but not doi xxx')
-            return None
         except Exception as e:
-            print(e, 'xxx')
-        finally:
-            print(f'_search_doi_in_pdf call took {time() - start}s '
-                  f'for buffer size {len(content)} xxx')
+            pass
+        return None
 
 
 def to_indexable_content(self, buffer: BufferedIOBase):
