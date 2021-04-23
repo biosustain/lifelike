@@ -1,11 +1,14 @@
 import io
 import json
 import re
+import typing
+import urllib
 from io import BufferedIOBase
+from time import time
 from typing import Optional, List, Dict
 
 import graphviz
-import typing
+import requests
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -14,9 +17,6 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
-
-import requests
-import urllib
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -84,13 +84,32 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return doi
 
     def _is_valid_doi(self, doi):
-        return requests.get(doi).status_code != 404
+        # not [bad request, not found] but yes to 403 - no access
+        return requests.get(doi,
+                            headers={
+                                # sometimes request is filtered if there is no user-agent header
+                                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                                              "(KHTML, like Gecko) Chrome/51.0.2704.103 "
+                                              "Safari/537.36"
+                            }
+                            ).status_code not in [400, 404]
+
+    direct = 0
+    parsed = 0
 
     def _try_doi(self, doi):
-        if self._is_valid_doi(doi):
-            return doi
-        doi = doi[:6] + urllib.parse.quote(doi[6:])
-        return doi if self._is_valid_doi(doi) else False
+        try:
+            if self._is_valid_doi(doi):
+                self.direct += 1
+                return doi
+            # seems like never true
+            # parsed_doi = doi[:6] + urllib.parse.quote(doi[6:])
+            # if (parsed_doi != doi) and self._is_valid_doi(doi):
+            #     self.parsed += 1
+            #     return parsed_doi
+        except Exception as e:
+            pass
+        return False
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
@@ -105,46 +124,129 @@ class PDFTypeProvider(BaseFileTypeProvider):
             rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
             # try match commonly used DOI format
             rb'([-A-z0-9]*)'
-            # match up to 50 characters in the same line
-            rb'(.{1,50})',
+            # match up to first space (values after # are ~ignored anyway)
+            rb'([^ \n\f#]*)'
+            # match up to 20 characters in the same line (values after # are ~ignored anyway)
+            rb'([^\n\f#]{0,20})',
             flags=re.IGNORECASE
     )  # noqa
     protocol_re = re.compile(r'https?:\/\/')
-    doi_unusual_characters_re = re.compile(r'([^-A-z0-9])')
+    unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
+    characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
+    common_escape_patterns_re = re.compile(rb'\\')
+    dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
     def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        for match in self.doi_re.finditer(content):
-            label, url, folderRegistrant, likelyDOIName, DOISuffix = \
-                [s.decode('utf-8') if s else '' for s in match.groups()]
-            if not url:
+        start = time()
+        try:
+            for match in self.doi_re.finditer(content):
+                label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
+                    [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
+                certainly_doi = label + url
                 url = 'https://doi.org/'
-            elif not self.protocol_re.match(url):
-                url = 'https://' + url
-            # is whole match a DOI?
-            doi = self._try_doi(url + folderRegistrant + likelyDOIName + DOISuffix)
-            if doi:
-                return doi
-            # is it a DOI in common format?
-            doi = self._try_doi(url + folderRegistrant + likelyDOIName)
-            if doi:
-                return doi
-            # if we iteratively start cutting off suffix on each unusual
-            # character will it become DOI?
-            reversedDOISuffix = DOISuffix[::-1]
-            while reversedDOISuffix:
-                _, _, reversedDOISuffix = self.doi_unusual_characters_re.split(reversedDOISuffix, 1)
-                doi = self._try_doi(
-                        url + folderRegistrant + likelyDOIName + reversedDOISuffix[::-1]
-                )
+                # is whole match a DOI? (finished on \n, trimmed whitespaces)
+                doi = self._try_doi((url + folderRegistrant + likelyDOIName + tillSpace +
+                                     DOISuffix).strip())
                 if doi:
+                    print(f'by whole {doi} xxx')
                     return doi
-        return None
+                # is match till space a DOI?
+                doi = self._try_doi(url + folderRegistrant + likelyDOIName + tillSpace)
+                if doi:
+                    print(f'match till space (ignoring "{DOISuffix}") xxx')
+                    return doi
+                # make deep search only if there was clear indicator that it is a doi
+                if certainly_doi:
+                    # if contains escape patterns try substitute them
+                    if self.common_escape_patterns_re.search(match.group()):
+                        doi = self._search_doi_in_pdf(
+                                self.common_escape_patterns_re.sub(
+                                        b'', match.group()
+                                )
+                        )
+                        if doi:
+                            print(f'pattern sub -> {doi} xxx')
+                            return doi
+                    # try substitute different dash types
+                    if self.dash_types_re.search(match.group()):
+                        doi = self._search_doi_in_pdf(
+                                self.dash_types_re.sub(
+                                        b'-', match.group()
+                                )
+                        )
+                        if doi:
+                            print('matched by regex substitution xxx')
+                            return doi
+                    # we iteratively start cutting off suffix on each group of
+                    # unusual characters
+                    try:
+                        reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
+                        while reversedDOIEnding:
+                            _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                    reversedDOIEnding, 1)
+                            doi = self._try_doi(
+                                    url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
+                            )
+                            if doi:
+                                print(f'match by cutting on unusual "{tillSpace}{DOISuffix}" -> '
+                                      f'"{reversedDOIEnding[::-1]}" xxx')
+                                return doi
+                    except Exception:
+                        pass
+                    # we iteratively start cutting off suffix on each group of either
+                    # lowercase letters
+                    # uppercase letters
+                    # numbers
+                    try:
+                        reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
+                        while reversedDOIEnding:
+                            _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                    reversedDOIEnding, 1)
+                            doi = self._try_doi(
+                                    url + folderRegistrant + reversedDOIEnding[::-1]
+                            )
+                            if doi:
+                                print(f'match by cutting groups "{likelyDOIName}{tillSpace}" -> '
+                                      f'"{reversedDOIEnding[::-1]}" xxx')
+                                return doi
+                    except Exception:
+                        pass
+                    # yield 0 matches on test case
+                    # # is it a DOI in common format?
+                    # doi = self._try_doi(url + folderRegistrant + likelyDOIName)
+                    # if doi:
+                    #     print('match by common format xxx')
+                    #     return doi
+                    # in very rare cases there is \n in text containing doi
+                    try:
+                        end_of_match_idx = match.end(0)
+                        first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
+                        if first_char_after_match == b'\n':
+                            doi = self._search_doi_in_pdf(
+                                    # new input = match + 50 chars after new line
+                                    match.group() +
+                                    content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                            )
+                            if doi:
+                                print('matched by searching in new line')
+                                return doi
+                    except Exception as e:
+                        pass
+                print('match but not doi xxx')
+            return None
+        except Exception as e:
+            print(e, 'xxx')
+        finally:
+            print(f'_search_doi_in_pdf call took {time() - start}s '
+                  f'for buffer size {len(content)} xxx')
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        return buffer  # Elasticsearch can index PDF files directly
 
-    def should_highlight_content_text_matches(self) -> bool:
-        return True
+def to_indexable_content(self, buffer: BufferedIOBase):
+    return buffer  # Elasticsearch can index PDF files directly
+
+
+def should_highlight_content_text_matches(self) -> bool:
+    return True
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -205,11 +307,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '300'))
 
         graph = graphviz.Digraph(
-            file.filename,
-            comment=file.description,
-            engine='neato',
-            graph_attr=graph_attr,
-            format=format)
+                file.filename,
+                comment=file.description,
+                engine='neato',
+                graph_attr=graph_attr,
+                format=format)
 
         for node in json_graph['nodes']:
             params = {
@@ -234,11 +336,11 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 params['color'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['fontcolor'] = 'black'
                 params['style'] = 'rounded,filled'
 
@@ -251,18 +353,18 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for edge in json_graph['edges']:
             graph.edge(
-                edge['from'],
-                edge['to'],
-                edge['label'],
-                color='#2B7CE9'
+                    edge['from'],
+                    edge['to'],
+                    edge['label'],
+                    color='#2B7CE9'
             )
 
         ext = f".{format}"
 
         return FileExport(
-            content=io.BytesIO(graph.pipe()),
-            mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
+                content=io.BytesIO(graph.pipe()),
+                mime_type=extension_mime_types[ext],
+                filename=f"{file.filename}{ext}"
         )
 
 
