@@ -26,6 +26,7 @@ const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
+const BIOC_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/BioC';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -256,6 +257,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return 'Folder';
       case MAP_MIMETYPE:
         return 'Map';
+      case BIOC_MIMETYPE:
+        return 'BioC';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'Enrichment Table';
       case 'application/pdf':
@@ -272,6 +275,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return 'fa fa-folder';
       case MAP_MIMETYPE:
         return 'fa fa-project-diagram';
+      case BIOC_MIMETYPE:
+        return 'fa fa-file-alt';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'fa fa-table';
       case 'application/pdf':
@@ -287,6 +292,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case DIRECTORY_MIMETYPE:
         return '\uf07b';
       case MAP_MIMETYPE:
+        return '\uf542';
+      case BIOC_MIMETYPE:
         return '\uf542';
       case ENRICHMENT_TABLE_MIMETYPE:
         return '\uf0ce';
@@ -437,6 +444,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'enrichment-table', this.hashId];
       case PDF_MIMETYPE:
         return ['/projects', projectName, 'files', this.hashId];
+      case BIOC_MIMETYPE:
+        return ['/projects', projectName, 'bioc', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
       default:
