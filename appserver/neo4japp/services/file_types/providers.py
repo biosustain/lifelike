@@ -102,6 +102,47 @@ class PDFTypeProvider(BaseFileTypeProvider):
     def should_highlight_content_text_matches(self) -> bool:
         return True
 
+class BiocTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'vnd.lifelike.document/bioc'
+    SHORTHAND = 'BioC'
+    mime_types = (MIME_TYPE,)
+
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+        try:
+            self.validate_content(buffer)
+            return 0
+        except ValueError as e:
+            return None
+        finally:
+            buffer.seek(0)
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        raw_collection = buffer.read()
+        docs = raw_collection.split(b'\n')
+        for doc in docs:
+            data = json.loads(doc)
+            print(data)
+
+    def can_create(self) -> bool:
+        return True
+
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+        data = buffer.read()
+        buffer.seek(0)
+
+        chunk = data[:2 ** 17]
+        doi = PDFTypeProvider._search_doi_in_pdf(self, chunk)
+        return doi
+
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        return buffer  # Elasticsearch can index PDF files directly
+
+    def should_highlight_content_text_matches(self) -> bool:
+        return True
+
 
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/map'

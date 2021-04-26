@@ -1,0 +1,19 @@
+<ng-container *ngFor="let part of parts">
+    <span *ngIf="part.text; else text"
+          [ngClass]="part.infons.type + ' annotation'"
+          [ngbTooltip]="tooltip"
+    >
+        {{part.text}}
+    </span>
+    <ng-template #tooltip>
+        <dl>
+            <dt>Identifier</dt>
+            <dd>{{part.infons.identifier}}</dd>
+            <dt>Type</dt>
+            <dd>{{part.infons.type}}</dd>
+        </dl>
+    </ng-template>
+    <ng-template #text>
+        {{part}}
+    </ng-template>
+</ng-container>

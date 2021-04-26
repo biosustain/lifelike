@@ -26,7 +26,7 @@ const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
-const BIOC_MIMETYPE = 'vnd.lifelike.document/BioC';
+const BIOC_MIMETYPE = 'vnd.lifelike.document/bioc';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
