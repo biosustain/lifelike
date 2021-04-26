@@ -15,7 +15,8 @@ const mapSingularOfTootipItems = func => {
 
 @Component({
   selector: 'app-chart',
-  templateUrl: './chart.component.html'
+  templateUrl: './chart.component.html',
+  styleUrls: ['./chart.component.scss'],
 })
 export class ChartComponent implements OnChanges {
   public options: ChartOptions = {
@@ -36,7 +37,7 @@ export class ChartComponent implements OnChanges {
           type: 'logarithmic',
           scaleLabel: {
             display: true,
-            labelString: '-log10 p-value'
+            labelString: '1 / q-value'
           }
         }
       ],
@@ -53,7 +54,7 @@ export class ChartComponent implements OnChanges {
       intersect: false,
       callbacks: {
         title: mapSingularOfTootipItems(({gene}) => gene),
-        label: mapTootipItem(d => `p-value: ${d['p-value']}`)
+        label: mapTootipItem(d => `q-value: ${d['q-value'].toExponential(2)}`)
       }
     }
   };
@@ -72,7 +73,7 @@ export class ChartComponent implements OnChanges {
       const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
       this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
         ...d,
-        x: -Math.log10(d['p-value'])
+        x: 1 / d['q-value']
       }));
       this.labels = slicedNotFormatedData.map(({gene}) => gene);
     }
