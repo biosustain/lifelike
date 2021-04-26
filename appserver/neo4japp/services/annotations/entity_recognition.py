@@ -19,7 +19,6 @@ from neo4japp.services.annotations.constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_WORDS,
     PDF_NEW_LINE_THRESHOLD,
-    SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
     ManualAnnotationType
@@ -309,12 +308,6 @@ class EntityRecognitionService:
         if lowered in self.exclusion_type_species:
             # current_app.logger.info(
             #     f'Found a match in species entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        elif lowered in SPECIES_EXCLUSION:
-            # current_app.logger.info(
-            #     f'Found a match in species entity lookup but token "{word}" is a stop word.',  # noqa
             #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
