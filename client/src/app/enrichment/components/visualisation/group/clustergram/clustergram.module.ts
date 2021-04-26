@@ -6,7 +6,6 @@ import { SharedModule } from 'app/shared/shared.module';
 import { ClustergramComponent } from './clustergram.component';
 import { LinkModule } from '../../components/link/link.module';
 
-//
 const components = [
   ClustergramComponent
 ];
