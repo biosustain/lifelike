@@ -40,8 +40,7 @@ export class ChartComponent implements OnChanges {
             labelString: '1 / q-value'
           }
         }
-      }
-    ],
+      ],
     },
     plugins: {
       // Change options for ALL labels of THIS CHART
