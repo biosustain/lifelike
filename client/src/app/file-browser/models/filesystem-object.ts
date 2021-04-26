@@ -26,7 +26,7 @@ const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
-const BIOC_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/BioC';
+const BIOC_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {

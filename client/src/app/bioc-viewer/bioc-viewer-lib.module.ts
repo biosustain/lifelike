@@ -1,9 +1,4 @@
 import { NgModule } from '@angular/core';
-import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
-import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
-import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
-
-import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,19 +11,21 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
-import { FileViewComponent } from './components/file-view.component';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { PdfTypeProvider } from './providers/pdf-type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
 import { BiocViewComponent } from './components/bioc-view.component';
+import { BiocTypeProvider } from './providers/bioc-type-provider';
+import { InfonsComponent } from './components/infons/infons.component';
+import { AnnotatedTextComponent } from './components/annotated-text/annotated-text.component';
 
 @NgModule({
   declarations: [
-    BiocViewComponent
+    BiocViewComponent,
+    InfonsComponent,
+    AnnotatedTextComponent
   ],
   imports: [
-    PdfViewerModule,
     CommonModule,
     FormsModule,
     BrowserAnimationsModule,
@@ -46,19 +43,16 @@ import { BiocViewComponent } from './components/bioc-view.component';
     FileBrowserModule,
     RouterModule.forRoot([]),
   ],
-  entryComponents: [
-    FileViewComponent,
-    AnnotationEditDialogComponent,
-    AnnotationExcludeDialogComponent,
-  ],
+  entryComponents: [],
   providers: [{
     provide: TYPE_PROVIDER,
-    useClass: PdfTypeProvider,
+    useClass: BiocTypeProvider,
     multi: true,
   }],
   exports: [
-    PdfViewerLibComponent,
-    FileViewComponent,
+    BiocViewComponent,
+    InfonsComponent,
+    AnnotatedTextComponent
   ],
 })
 export class BiocViewerLibModule {

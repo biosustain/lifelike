@@ -20,17 +20,20 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { map } from 'rxjs/operators';
-import { mapBlobToBuffer } from 'app/shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+
+interface BioCDocument {
+  // @ts-ignore
+  [key as string]: object;
+}
 
 @Component({
   selector: 'app-bioc-viewer',
   templateUrl: './bioc-view.component.html',
   styleUrls: ['./bioc-view.component.scss'],
 })
-
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
@@ -58,7 +61,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
     map((value) => value ? value.id : null),
   );
-  loadTask: BackgroundTask<[string], [FilesystemObject, ArrayBuffer]>;
+  loadTask: any;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
   openbiocSub: Subscription;
@@ -66,7 +69,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   object?: FilesystemObject;
   // Type information coming from interface biocSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/biocjs-dist/index.d.ts
-  biocData: { url?: string, data?: Uint8Array };
+  biocData: Array<object>;
   currentFileId: string;
   addAnnotationSub: Subscription;
   removedAnnotationIds: string[];
@@ -99,6 +102,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
+          mapBufferToJsons()
         )
       );
     });
@@ -109,10 +113,11 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openbiocSub = this.loadTask.results$.subscribe(({
-                                                          result: [object, content],
-                                                          value: [file],
-                                                        }) => {
-      this.biocData = {data: new Uint8Array(content)};
+                                                           result: [object, content],
+                                                           value: [file],
+                                                         }) => {
+
+      this.biocData = content;
       this.object = object;
       this.emitModuleProperties();
 
