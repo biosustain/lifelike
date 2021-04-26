@@ -1,4 +1,3 @@
-import attr
 import json
 import os
 import time
@@ -209,7 +208,7 @@ class KgService(HybridDBDao):
 
         current_app.logger.info(
             f'Enrichment UniProt KG query time {time.time() - start}',
-            extra=EventLog(event_type='enrichment-table').to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
         )
 
         domain = self.session.query(DomainURLsMap).filter(
@@ -220,17 +219,11 @@ class KgService(HybridDBDao):
                 title='Could not create enrichment table',
                 message='There was a problem finding UniProt domain URLs.')
 
-        result_list = []
-        for meta_result in results:
-            item = {'result': meta_result['x']}
-            if (meta_result['x'] is not None):
-                meta_id = meta_result['x']['id']
-                if (meta_id is not None):
-                    item['link'] = domain.base_URL.format(meta_id)
-            else:
-                item['link'] = 'https://www.uniprot.org/'
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': {'id': result['uniprot_id'], 'function': result['function']},
+                'link': domain.base_URL.format(result['uniprot_id'])
+            } for result in results}
 
     def get_string_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
@@ -241,21 +234,19 @@ class KgService(HybridDBDao):
 
         current_app.logger.info(
             f'Enrichment String KG query time {time.time() - start}',
-            extra=EventLog(event_type='enrichment-table').to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
         )
 
-        result_list = []
-        for meta_result in results:
-            item = {'result': meta_result['x']}
-            if (meta_result['x'] is not None):
-                item['link'] = f'https://string-db.org/cgi/network?identifiers='
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': {'id': result['string_id'], 'annotation': result['annotation']},
+                'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}"
+            } for result in results}
 
     def get_biocyc_genes(
         self,
         ncbi_gene_ids: List[int],
-        taxID: str
+        tax_id: str
     ):
         start = time.time()
         results = self.graph.read_transaction(
@@ -265,59 +256,35 @@ class KgService(HybridDBDao):
 
         current_app.logger.info(
             f'Enrichment Biocyc KG query time {time.time() - start}',
-            extra=EventLog(event_type='enrichment-table').to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
         )
 
-        result_list = []
-        for meta_result in results:
-            item = {'result': meta_result['x']}
-            if (meta_result['x'] is not None):
-                biocyc_id = meta_result['x']['biocyc_id']
-                if (biocyc_id is not None):
-                    if taxID in BIOCYC_ORG_ID_DICT.keys():
-                        orgID = BIOCYC_ORG_ID_DICT[taxID]
-                        item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
-                    else:
-                        item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
-            else:
-                item['link'] = 'https://biocyc.org/'
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': {'id': result['biocyc_id'], 'pathways': result['pathways']},
+                'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
+                    if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"  # noqa
+            } for result in results}
 
-    def get_go_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
-        gene_tuples = [
-            [ncbi_gene_ids[i], i]
-            for i in range(len(ncbi_gene_ids))
-        ]
-
+    def get_go_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(
             self.get_go_genes_query,
-            gene_tuples,
+            ncbi_gene_ids,
         )
 
         current_app.logger.info(
             f'Enrichment GO KG query time {time.time() - start}',
-            extra=EventLog(event_type='enrichment-table').to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
         )
 
-        result_list = []
-        domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
-        for meta_result in results:
-            xArray = meta_result['xArray']
-            item = {'result': xArray}
-            if (xArray is not None):
-                item['link'] = domain
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['go_terms'],
+                'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
+            } for result in results}
 
-    def get_regulon_genes(
-        self,
-        ncbi_gene_ids: List[int],
-    ):
+    def get_regulon_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(
             self.get_regulon_genes_query,
@@ -326,21 +293,14 @@ class KgService(HybridDBDao):
 
         current_app.logger.info(
             f'Enrichment Regulon KG query time {time.time() - start}',
-            extra=EventLog(event_type='enrichment-table').to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
         )
 
-        result_list = []
-        for meta_result in results:
-            item = {'result': meta_result['x']}
-            if (meta_result['x'] is not None):
-                regulondb_id = meta_result['x']['regulondb_id']
-                if (regulondb_id is not None):
-                    item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
-                        '&organism=ECK12&format=jsp&type=gene'
-            else:
-                item['link'] = 'http://regulondb.ccg.unam.mx/'
-            result_list.append(item)
-        return result_list
+        return {
+            result['node_id']: {
+                'result': result['node'],
+                'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"  # noqa
+            } for result in results}
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
@@ -409,60 +369,121 @@ class KgService(HybridDBDao):
         return {'nodes': nodes, 'edges': edges}
 
     def get_shortest_path_query_list(self):
-        return {
-            0: '3-hydroxyisobutyric Acid to pykF Using ChEBI',
-            1: '3-hydroxyisobutyric Acid to pykF using BioCyc',
-            2: 'icd to rhsE',
-            3: 'Two pathways using BioCyc',
-            4: 'Serine SP Pathway',
-            5: 'Serine to malZp',
-            6: 'Acetate (ALE Mutation Data)',
-            7: 'Glycerol (ALE Mutation Data)',
-            8: 'Hexanoic (ALE Mutation Data)',
-            9: 'Isobutyric (ALE Mutation Data)',
-            10: 'Putrescine (ALE Mutation Data)',
-            11: 'Serine (ALE Mutation Data)',
-            12: 'tpiA (ALE Mutation Data)',
-            13: 'Xylose (ALE Mutation Data)',
-            14: '42C Temperature (ALE Mutation Data)',
-            15: 'nagC (ALE Mutation Data)',
-            16: 'nagA/nagC (ALE Mutation Data)',
-            17: 'nagA/nagC Shortest Paths (ALE Mutation Data)',
-            # 18: 'nagA (ALE Mutation Data)',
-            # 19: 'Glycolisis Regulon',
-            # 20: 'SIRT5 to NFE2L2 Using Literature Data',
-            # 21: 'CTNNB1 to Diarrhea Using Literature Data',
-
-        }
+        query_pathway_names = [
+            '3-hydroxyisobutyric Acid to pykF Using ChEBI',
+            '3-hydroxyisobutyric Acid to pykF using BioCyc',
+            'icd to rhsE',
+            'Two pathways using BioCyc',
+        ]
+        file_pathway_names = [
+            'Serine SP Pathway',
+            'Serine to malZp',
+            'Acetate (ALE Mutation Data)',
+            'Glycerol (ALE Mutation Data)',
+            'Hexanoic (ALE Mutation Data)',
+            'Isobutyric (ALE Mutation Data)',
+            'Putrescine (ALE Mutation Data)',
+            'Serine (ALE Mutation Data)',
+            'tpiA (ALE Mutation Data)',
+            'Xylose (ALE Mutation Data)',
+            '42C Temperature (ALE Mutation Data)',
+            'nagC (ALE Mutation Data)',
+            'nagA/nagC (ALE Mutation Data)',
+            'nagA/nagC Shortest Paths (ALE Mutation Data)',
+            'metab2PTHLH Short',
+            'PTHLH2metab Short',
+            'metab2PTHLH Short Page',
+            'PTHLH2metab Short Page',
+            'PTHLH2Ca2metab Short Page',
+            'AAK1',
+            'Auxilin Recruits HSPA8',
+            'CSNK1D Phosphorylates SEC23',
+            'Dissociation of AAK1 and Dephosphorylation of AP-2 mu2',
+            'Expression of PERIOD-1',
+            'F_BAR proteins_ARP',
+            'HSPA8-mediated ATP Hydrolysis Promotes Vesicle Uncoating',
+            'Interleukin-1 Family are Secreted',
+            'PER1 [cytosol]',
+            'The Ligand_GPCR_Gs Complex Dissociates',
+            'Vesicle Budding',
+            'Min Mean Short Updown Serotonin',
+            'Min Mean Short Metabs Acetate',
+            'Min Mean Short Metabs Butyrate',
+            'Min Mean Short Metabs Propionate',
+            'Min Mean Short Metabs Serotonin',
+            'Min Mean Short Metabs top10',
+            'Min Mean Short Updown Acetate',
+            'Min Mean Short Updown Butyrate'
+            # 'nagA (ALE Mutation Data)',
+            # 'Glycolisis Regulon',
+            # 'SIRT5 to NFE2L2 Using Literature Data',
+            # 'CTNNB1 to Diarrhea Using Literature Data',
+        ]
+        return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
 
     def get_query_id_to_func_map(self):
-        return {
-            0: [self.get_data_from_query, self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query],
-            1: [
-                self.get_data_from_query,
-                self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query
-            ],
-            2: [self.get_data_from_query, self.get_icd_to_rhse_query],
-            3: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
-            4: [self.get_data_from_file, 'serine.json'],
-            5: [self.get_data_from_file, 'serine-to-malZp.json'],
-            6: [self.get_data_from_file, 'ale_mutation_data/acetate.json'],
-            7: [self.get_data_from_file, 'ale_mutation_data/glycerol.json'],
-            8: [self.get_data_from_file, 'ale_mutation_data/hexanoic.json'],
-            9: [self.get_data_from_file, 'ale_mutation_data/isobutyric.json'],
-            10: [self.get_data_from_file, 'ale_mutation_data/putrescine.json'],
-            11: [self.get_data_from_file, 'ale_mutation_data/serine.json'],
-            12: [self.get_data_from_file, 'ale_mutation_data/tpiA.json'],
-            13: [self.get_data_from_file, 'ale_mutation_data/xylose.json'],
-            14: [self.get_data_from_file, 'ale_mutation_data/42C.json'],
-            15: [self.get_data_from_file, 'ale_mutation_data/nagC.json'],
-            16: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
-            17: [self.get_data_from_file, 'ale_mutation_data/nagAC_shortestpaths.json'],
-            # 18: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
-            # 19: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            # 20: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
-            # 21: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
-        }
+        query_pathways = [
+            self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query,
+            self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query,
+            self.get_icd_to_rhse_query,
+            self.get_two_pathways_biocyc_query
+            # self.get_glycolisis_regulon_query,
+            # self.get_sirt5_to_nfe2l2_literature_query,
+            # self.get_ctnnb1_to_diarrhea_literature_query,
+        ]
+        file_pathways = [
+            'serine.json',
+            'serine-to-malZp.json',
+            'ale_mutation_data/acetate.json',
+            'ale_mutation_data/glycerol.json',
+            'ale_mutation_data/hexanoic.json',
+            'ale_mutation_data/isobutyric.json',
+            'ale_mutation_data/putrescine.json',
+            'ale_mutation_data/serine.json',
+            'ale_mutation_data/tpiA.json',
+            'ale_mutation_data/xylose.json',
+            'ale_mutation_data/42C.json',
+            'ale_mutation_data/nagC.json',
+            'ale_mutation_data/nagAC.json',
+            'ale_mutation_data/nagAC_shortestpaths.json',
+            'cytoscape_data/metab2PTHLH_short_graphml.json',
+            'cytoscape_data/PTHLH2metab_short_graphml.json',
+            'cytoscape_data/metab2PTHLH_shortPage_graphml.json',
+            'cytoscape_data/PTHLH2metab_shortPage_graphml.json',
+            'cytoscape_data/PTHLH2Ca2metab_shortPage_graphml.json',
+            'cytoscape_data/aak1_graphml.json',
+            'cytoscape_data/Auxilin recruits HSPA8.json',
+            'cytoscape_data/CSNK1D phosphorylates SEC23.json',
+            'cytoscape_data/Dissociation of AAK1 and dephosphorylation of AP-2 mu2.json',
+            'cytoscape_data/Expression of PERIOD-1.json',
+            'cytoscape_data/F_BAR proteins_ARP.json',
+            'cytoscape_data/HSPA8-mediated ATP hydrolysis promotes vesicle uncoating.json',
+            'cytoscape_data/Interleukin-1 family are secreted.json',
+            'cytoscape_data/PER1 [cytosol].json',
+            'cytoscape_data/The Ligand_GPCR_Gs complex dissociates.json',
+            'cytoscape_data/Vesicle budding.json',
+            'cytoscape_data/minMeanShort_updown_Serotonin_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Acetate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Butyrate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Propionate_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_Serotonin_graphml.json',
+            'cytoscape_data/minMeanShort_metabs_top10_graphml.json',
+            'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
+            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json'
+            # 'ale_mutation_data/nagA.json',
+        ]
+
+        pathway_num = 0
+        pathways = dict()
+        for query_pathway in query_pathways:
+            pathways[pathway_num] = [self.get_data_from_query, query_pathway]
+            pathway_num += 1
+
+        for file_pathway in file_pathways:
+            pathways[pathway_num] = [self.get_data_from_file, file_pathway]
+            pathway_num += 1
+
+        return pathways
 
     def get_shortest_path_data(self, query_id):
         func, arg = self.get_query_id_to_func_map()[query_id]
@@ -477,70 +498,60 @@ class KgService(HybridDBDao):
         with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
-    def get_uniprot_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene:db_NCBI)
-                WHERE ID(g) IN $ncbi_gene_ids
-                OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
-                RETURN x
-                """,
-                ncbi_gene_ids=ncbi_gene_ids
-            ).data()
-        )
+    def get_uniprot_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
+            WHERE id(g)=node_id
+            RETURN node_id, x.function AS function, x.id AS uniprot_id
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
 
-    def get_string_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene:db_NCBI)
-                WHERE ID(g) IN $ncbi_gene_ids
-                OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_STRING)
-                RETURN x
-                """,
-                ncbi_gene_ids=ncbi_gene_ids
-            ).data()
-        )
+    def get_string_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:HAS_GENE]-(x:db_STRING)
+            WHERE id(g)=node_id
+            RETURN node_id, x.id AS string_id, x.annotation AS annotation
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
 
-    def get_go_genes_query(self, tx: Neo4jTx, gene_tuples: List[List[int]]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                UNWIND $gene_tuples as genes
-                OPTIONAL MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:db_GO)
-                WHERE ID(g)=genes[0]
-                RETURN genes[1], collect(x) as xArray
-                """,
-                gene_tuples=gene_tuples
-            ).data()
-        )
+    def get_go_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:GO_LINK]-(x:db_GO)
+            WHERE id(g)=node_id
+            RETURN node_id, collect(x.name) AS go_terms
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
 
-    def get_biocyc_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene:db_NCBI)
-                WHERE ID(g) IN $ncbi_gene_ids
-                OPTIONAL MATCH (g)-[:IS]-(x:db_BioCyc)
-                RETURN x
-                """,
-                ncbi_gene_ids=ncbi_gene_ids
-            ).data()
-        )
+    def get_biocyc_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:IS]-(x:db_BioCyc)
+            WHERE id(g)=node_id
+            RETURN node_id, x.pathways AS pathways, x.biocyc_id AS biocyc_id
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
 
-    def get_regulon_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene:db_NCBI)
-                WHERE ID(g) IN $ncbi_gene_ids
-                OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
-                RETURN x
-                """,
-                ncbi_gene_ids=ncbi_gene_ids
-            ).data()
-        )
+    def get_regulon_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:IS]-(x:db_RegulonDB)
+            WHERE id(g)=node_id
+            RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
 
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
         return list(tx.run("""
