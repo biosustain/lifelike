@@ -20,9 +20,11 @@
         <ngb-accordion [closeOthers]="true">
           <ngb-panel *ngFor="let synonym of synonyms | keyvalue" [title]="synonym.key">
             <ng-template ngbPanelContent>
-              <ul>
-                <li *ngFor="let s of synonym.value">{{s}}</li>
-              </ul>
+              <div style="max-height: 315px; overflow-y: auto;">
+                <ul>
+                  <li *ngFor="let s of synonym.value">{{s}}</li>
+                </ul>
+              </div>
             </ng-template>
           </ngb-panel>
         </ngb-accordion>
