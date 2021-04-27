@@ -26,6 +26,7 @@ const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
+const HTML_MIMETYPE = 'application/html';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -165,7 +166,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.lifelike.document/enrichment-table';
+    return this.mimeType === 'application/pdf' ||
+      this.mimeType === 'vnd.lifelike.document/enrichment-table' ||
+      this.mimeType === 'application/html';
   }
 
   get promptOrganism() {
@@ -437,6 +440,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'enrichment-table', this.hashId];
       case PDF_MIMETYPE:
         return ['/projects', projectName, 'files', this.hashId];
+      case HTML_MIMETYPE:
+        return ['/projects', projectName, 'html', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
       default:

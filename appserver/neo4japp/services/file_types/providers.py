@@ -15,6 +15,7 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+import base64
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -74,11 +75,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
         try:
             self.validate_content(buffer)
         except NotPDFError:
-            try:
-                self.convert_to_pdf(buffer)
-                return 0
-            except Exception:
-                pass
+            return None
 
         # just return -1 so PDF becomes the fallback file type
         return -1
@@ -249,6 +246,80 @@ def to_indexable_content(self, buffer: BufferedIOBase):
 
 def should_highlight_content_text_matches(self) -> bool:
     return True
+
+class HTMLTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'application/html'
+    SHORTHAND = 'html'
+    mime_types = (MIME_TYPE,)
+
+    def convert_to_html(self, buffer):
+        # if not pdf try to covert to pdf
+        import shutil
+        import os
+        os.system("rm tmp*")
+        with open("tmp", "wb") as f:
+            shutil.copyfileobj(buffer.stream, f)
+        # adjust spreadsheets print areas (do not slice vertically)
+        # os.system("/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp  macro:///Standard.Module1.FitToPage")
+        # convert to pdf
+        assert(~os.system("/bin/libreoffice* --convert-to html tmp"))
+        data = None
+        with open("tmp.html", "rb") as f:
+            data = f.read()
+
+        def embedImages(match):
+            data_uri = base64.b64encode(open(match.group(2), 'rb').read()).replace(b'\n', b'')
+            return match.group(1) + b'"data:image/png;base64,' + data_uri + b'"'
+
+        data2 = re.sub(rb'(<img.*src=)"(.*?)"', embedImages, data)
+
+        buffer.stream = io.BytesIO(data2)
+
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+        # We don't even validate PDF content yet, but we need to detect them, so we'll
+        try:
+            self.convert_to_html(buffer)
+            return 0
+        except Exception as e:
+            pass
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        pass
+
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+        data = buffer.read()
+        buffer.seek(0)
+
+        # Attempt 1: search through the first N bytes (most probably containing only metadata)
+        chunk = data[:2 ** 17]
+        doi = self._search_doi_in_pdf(chunk)
+
+        return doi
+
+    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
+        # ref: https://stackoverflow.com/a/10324802
+        # Has a good breakdown of the DOI specifications,
+        # in case need to play around with the regex in the future
+        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
+        match = re.search(doi_re, content)
+
+        if match is None:
+            return None
+        doi = match.group(1).decode('utf-8').replace('%2F', '/')
+        # Make sure that the match does not contain undesired characters at the end.
+        # E.g. when the match is at the end of a line, and there is a full stop.
+        while doi and doi[-1] in './%':
+            doi = doi[:-1]
+        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        return buffer  # Elasticsearch can index PDF files directly
+
+    def should_highlight_content_text_matches(self) -> bool:
+        return True
 
 
 class MapTypeProvider(BaseFileTypeProvider):

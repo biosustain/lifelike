@@ -1,0 +1,22 @@
+mat-sidenav {
+  min-width: 320px;
+
+  .sidenav-title {
+    margin-left: 32px;
+  }
+
+  .drawer-content {
+    padding: 8px;
+  }
+}
+
+.html-document::ng-deep {
+  img {
+    max-width: unset;
+  }
+
+  td {
+    border: 1px solid rgba(0,0,0,0.05);
+    padding: 3px;
+  }
+}
