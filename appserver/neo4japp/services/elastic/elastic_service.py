@@ -5,6 +5,7 @@ import re
 import string
 import logging
 
+from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk
 from flask import current_app
 from io import BytesIO
@@ -18,6 +19,7 @@ from typing import (
 
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
 from neo4japp.database import db, get_file_type_service, ElasticConnection, GraphConnection
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     Files, Projects,
 )
@@ -320,26 +322,56 @@ class ElasticService(ElasticConnection, GraphConnection):
     ) -> Dict[str, List[str]]:
         terms = words + phrases
 
-        def get_regulon_genes_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
+        def get_synonyms_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
+            """
+            Attempts to get all synonyms for the entities matching each term in the `terms`
+            argument. We first find Synonyms matching each term. We then find all entities
+            with that synoynm, and find ALL OTHER synonyms of that entity.
+
+            TODO: We need to limit the number of returned synonyms partly for performance,
+            but particularly because elasticsearch has a hard cap on the number of clauses which
+            can be present in a query. By default this limit is set to 1024. The limit we pass to
+            the cypher query should be equal to:
+                (1024 - (MAX_SYNONYM_COUNT * num_terms)) / (MAX_SYNONYM_COUNT * num_terms)
+            Where "MAX_SYNONYM_COUNT" is the synonym term with the highest number of alternative
+            letter casing (currently "dvglut" at 10 alterative letter casing).
+
+            Implement this at a later date if we want as many synonyms as possible, for now just
+            using a dumb approach and setting the limit to 10. In the vast majority of cases, this
+            should be fine for now.
+            """
+            # MAX_SYNONYM_COUNT = 10  # Change me if the max changes!
             return list(
                 tx.run(
                     """
                     UNWIND $terms as search_term
-                    MATCH (synonym:Synonym)
-                    WHERE search_term = synonym.name
-                    WITH search_term, synonym
-                    MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                    RETURN search_term, collect(distinct other_synonym.name) as synonyms
+                    MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
+                    CALL {
+                        WITH search_term, synonym
+                        MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                        RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
+                        LIMIT 10
+                    }
+                    RETURN
+                        search_term,
+                        collect(distinct original_synonym) as original_synonyms,
+                        collect(distinct other_synonym) as other_synonyms
                     """,
-                    terms=terms
+                    terms=terms,
+                    # limit=int(
+                    #     (1024 - (MAX_SYNONYM_COUNT * len(terms)))
+                    #     /
+                    #     # `terms` shouldn't be empty, but use max just in case...
+                    #     max([1, MAX_SYNONYM_COUNT * len(terms)])
+                    # )
                 ).data()
             )
 
-        results = self.graph.read_transaction(get_regulon_genes_query, terms)
+        results = self.graph.read_transaction(get_synonyms_query, terms)
         synonym_map = dict()
 
         for row in results:
-            synonym_map[row['search_term']] = row['synonyms']
+            synonym_map[row['search_term']] = row['original_synonyms'] + row['other_synonyms']
 
         return synonym_map
 
@@ -594,13 +626,21 @@ class ElasticService(ElasticConnection, GraphConnection):
             use_synonyms=use_synonyms,
         )
 
-        es_response = self.elastic_client.search(
-            index=index_id,
-            body=es_query,
-            from_=offset,
-            size=limit,
-            rest_total_hits_as_int=True,
-        )
+        try:
+            es_response = self.elastic_client.search(
+                index=index_id,
+                body=es_query,
+                from_=offset,
+                size=limit,
+                rest_total_hits_as_int=True,
+            )
+        except ElasticRequestError:
+            raise ServerException(
+                title='Content Search Error',
+                message='Something went wrong during content search. Please simplify your query ' +
+                        'and try again.',
+                code=400
+            )
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
         return es_response, search_phrases, synonym_map
