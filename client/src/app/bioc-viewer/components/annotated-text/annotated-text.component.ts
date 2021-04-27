@@ -1,4 +1,5 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, OnDestroy } from '@angular/core';
+import { Annotation } from '../bioc-view.component';
 
 @Component({
   selector: 'app-bioc-annotated-text',
@@ -11,7 +12,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   @Input() annotations;
   @Input() offset;
 
-  parts: string[];
+  parts: (string | Annotation)[];
 
   private txt;
 
@@ -20,8 +21,10 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   }
 
   decodeHTML(html) {
-    this.txt.innerHTML = html;
-    return this.txt.value;
+    // this.txt.innerHTML = html;
+    // return this.txt.value;
+    // return html.replace(/&[A-z0-9]{2,5};/g, ' ');
+    return html;
   }
 
   ngOnDestroy() {
@@ -29,37 +32,69 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    const globalOffset = this.offset;
+    // todo: nested annotations are allowed but not implemented
+    const globalOffset = this.offset || 0;
     const decodedText = this.decodeHTML(this.text);
     this.parts = this.annotations.reduce((acc, annotation) => {
       return annotation.locations.reduce((iacc, location) => {
-        const part = iacc.reduce((o, part, idx) => {
-          if (part.location) {
-            o.offset = part.location.offset + part.location.length;
-          } else if (o.offset < location.offset) {
-            o.text = part;
-            o.idx = idx;
+        let part, offset = 0, idx;
+        for (idx = 0; idx < iacc.length; idx++) {
+          part = iacc[idx];
+          const localOffset = part.location ? part.location.length : part.length;
+          if (offset + localOffset >= location.offset) {
+            if (offset > location.offset || part.location) {
+              console.warn('Error state');
+            }
+            break;
           }
-          return o;
-        }, {offset: 0, text: '', idx: 0});
-        part.offset += globalOffset;
-        const start_offset = -part.offset + location.offset;
-        const end_offset = -part.offset + location.offset + location.length;
-        if (part.text.slice(start_offset, end_offset) != annotation.text) {
+          if (part.location) {
+            // if possible use absolute offset to not propagate potential error
+            offset = part.location.offset + part.location.length - globalOffset;
+          } else {
+            offset += localOffset;
+          }
+        }
+        offset += globalOffset;
+        const start_offset = -offset + location.offset;
+        const end_offset = -offset + location.offset + location.length;
+        if (part.slice(start_offset, end_offset) != annotation.text) {
           console.warn(
-            `${part.text.slice(start_offset, end_offset)} != ${annotation.text}`,
+            `${part.slice(start_offset, end_offset)} != ${annotation.text}`,
             part,
-            annotation
+            annotation,
+            location
           );
+          for (let i = 0; i < part.length; i++) {
+            if (part.slice(start_offset - i, end_offset - i) == annotation.text) {
+              console.warn(
+                `Correct for ${-i}`,
+                part.idx,
+                globalOffset,
+                part,
+                annotation
+              );
+              break;
+            }
+            if (part.slice(start_offset + i, end_offset + i) == annotation.text) {
+              console.warn(
+                `Correct for ${-i}`,
+                part.idx,
+                globalOffset,
+                part,
+                annotation
+              );
+              break;
+            }
+          }
         }
         return iacc
-          .slice(0, part.idx)
+          .slice(0, idx)
           .concat([
-            part.text.slice(0, start_offset),
+            part.slice(0, start_offset),
             {...annotation, location},
-            part.text.slice(end_offset)
+            part.slice(end_offset)
           ])
-          .concat(iacc.slice(part.idx + 1));
+          .concat(iacc.slice(idx + 1));
       }, acc);
     }, [decodedText]);
     console.log(this.text, this.parts);
