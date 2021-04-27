@@ -688,25 +688,20 @@ class AnnotationService:
             id_str=entity_id_str
         )
 
-        species_annotations_local = self._annotate_local_species(recognized_entities)
+        local_species_annotations = self._annotate_local_species(recognized_entities)
 
         local_inclusions = [
             custom for custom in custom_annotations if custom.get(
                 'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
                     'meta', {}).get('includeGlobally')]
 
-        local_exclusions = [
-            exclude for exclude in excluded_annotations if exclude.get(
-                'type') == EntityType.SPECIES.value and not exclude.get(
-                    'excludeGlobally')]
-
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences included as a custom annotation
-        filtered_species_annotations_local: List[Annotation] = []
+        filtered_local_species_annotations: List[Annotation] = []
 
         for custom in local_inclusions:
-            for custom_anno in species_annotations_local:
+            for custom_anno in local_species_annotations:
                 if custom.get('rects') and len(custom['rects']) == len(custom_anno.rects):
                     # check if center point for each rect in custom_anno.rects
                     # is in the corresponding rectangle from custom annotations
@@ -715,7 +710,7 @@ class AnnotationService:
                     # if center point is in custom annotation rectangle
                     # then add it to list
                     if valid:
-                        filtered_species_annotations_local.append(custom_anno)
+                        filtered_local_species_annotations.append(custom_anno)
 
         # clean species annotations first
         # because genes depend on them
@@ -723,35 +718,10 @@ class AnnotationService:
             annotations_list=species_annotations
         )
 
-        # we only want the annotations with correct coordinates
-        # because it is possible for a word to only have one
-        # of its occurrences excluded as a custom annotation
-        exclusions_to_remove: Set[str] = set()
-
-        for custom in local_exclusions:
-            for anno in species_annotations:
-                if custom.get('rects') and len(custom['rects']) == len(anno.rects):
-                    # check if center point for each rect in anno.rects
-                    # is in the corresponding rectangle from custom annotations
-                    valid = all(list(map(has_center_point, custom['rects'], anno.rects)))
-
-                    # if center point is in custom annotation rectangle
-                    # then remove it from list
-                    if valid:
-                        exclusions_to_remove.add(anno.uuid)
-
-        filtered_species_annotations_of_exclusions = [
-            anno for anno in species_annotations if anno.uuid not in exclusions_to_remove]
-
-        filtered_species_annotations: List[Annotation] = []
+        filtered_species_annotations = [anno for anno in species_annotations]
 
         if local_inclusions:
-            filtered_species_annotations += filtered_species_annotations_local
-
-        if local_exclusions:
-            filtered_species_annotations += filtered_species_annotations_of_exclusions
-        else:
-            filtered_species_annotations += species_annotations
+            filtered_species_annotations += filtered_local_species_annotations
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
