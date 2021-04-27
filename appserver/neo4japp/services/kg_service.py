@@ -374,6 +374,9 @@ class KgService(HybridDBDao):
             '3-hydroxyisobutyric Acid to pykF using BioCyc',
             'icd to rhsE',
             'Two pathways using BioCyc',
+            # 'Glycolisis Regulon',
+            # 'SIRT5 to NFE2L2 Using Literature Data',
+            # 'CTNNB1 to Diarrhea Using Literature Data',
         ]
         file_pathway_names = [
             'Serine SP Pathway',
@@ -413,11 +416,9 @@ class KgService(HybridDBDao):
             'Min Mean Short Metabs Serotonin',
             'Min Mean Short Metabs top10',
             'Min Mean Short Updown Acetate',
-            'Min Mean Short Updown Butyrate'
+            'Min Mean Short Updown Butyrate',
+            'AAK1 to Metab noOct'
             # 'nagA (ALE Mutation Data)',
-            # 'Glycolisis Regulon',
-            # 'SIRT5 to NFE2L2 Using Literature Data',
-            # 'CTNNB1 to Diarrhea Using Literature Data',
         ]
         return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
 
@@ -469,7 +470,8 @@ class KgService(HybridDBDao):
             'cytoscape_data/minMeanShort_metabs_Serotonin_graphml.json',
             'cytoscape_data/minMeanShort_metabs_top10_graphml.json',
             'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
-            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json'
+            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json',
+            'cytoscape_data/aak1_to_metab_noOct_graphml.json'
             # 'ale_mutation_data/nagA.json',
         ]
 
