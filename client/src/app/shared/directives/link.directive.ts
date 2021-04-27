@@ -40,7 +40,7 @@ export class AbstractLinkDirective {
       this.commands = [];
     }
   }
-  
+
   shouldReplaceTab(component) {
     return true;
   }
