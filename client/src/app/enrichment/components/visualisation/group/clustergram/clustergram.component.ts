@@ -43,7 +43,7 @@ export class ClustergramComponent implements OnChanges {
 
   ngOnChanges() {
     if (this.show) {
-      const data = this.data.sort(this.columnOrder);
+      const data = [...this.data].sort(this.columnOrder);
       const sliceSize = Math.min(data.length, this.showMore ? 50 : 25);
       const genes = new Map<string, GeneRow>();
       let others: GeneRow | undefined;
