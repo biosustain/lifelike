@@ -16,5 +16,6 @@
 
   & > .card {
     margin: 15px 0;
+    max-height: calc(100% - 30px);
   }
 }
