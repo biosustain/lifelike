@@ -32,6 +32,7 @@ import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
 import { GlobalErrorHandler } from './global-error-handler';
 import { EnrichmentTablesModule } from './enrichment/enrichment-tables.module';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
+import { HtmlViewerLibModule } from './html-viewer/html-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualis
   imports: [
     BrowserModule,
     PdfViewerLibModule,
+    HtmlViewerLibModule,
     AdminModule,
     AuthModule,
     SharedModule,

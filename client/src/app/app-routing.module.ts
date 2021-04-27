@@ -27,6 +27,7 @@ import { ObjectNavigatorComponent } from './file-navigator/components/object-nav
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { HtmlViewComponent } from './html-viewer/components/html-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -215,6 +216,15 @@ const routes: Routes = [
     data: {
       title: 'PDF Viewer',
       fontAwesomeIcon: 'file-pdf',
+    },
+  },
+  {
+    path: 'projects/:project_name/html/:file_id',
+    component: HtmlViewComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'HTML Viewer',
+      fontAwesomeIcon: 'html',
     },
   },
   {

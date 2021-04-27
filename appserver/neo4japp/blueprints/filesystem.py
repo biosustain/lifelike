@@ -658,6 +658,10 @@ class FileListView(FilesystemBaseView):
             if size:
                 file.content_id = FileContent.get_or_create(buffer)
                 buffer.seek(0)  # Must rewind
+                try:
+                    buffer.close()
+                except Exception:
+                    pass
 
         # ========================================
         # Annotation options
