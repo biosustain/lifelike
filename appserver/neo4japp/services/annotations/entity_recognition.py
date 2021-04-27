@@ -335,21 +335,21 @@ class EntityRecognitionService:
 
     def set_entity_exclusions(self, excluded_annotations: List[dict]) -> None:
         exclusion_pairs = [
-            self._set_excluded_anatomy,
-            self._set_excluded_chemicals,
-            self._set_excluded_compounds,
-            self._set_excluded_diseases,
-            self._set_excluded_foods,
-            self._set_excluded_genes,
-            self._set_excluded_phenomenas,
-            self._set_excluded_phenotypes,
-            self._set_excluded_proteins,
-            self._set_excluded_species,
-            self._set_excluded_companies,
-            self._set_excluded_entities
+            (EntityType.ANATOMY.value, self._set_excluded_anatomy),
+            (EntityType.CHEMICAL.value, self._set_excluded_chemicals),
+            (EntityType.COMPOUND.value, self._set_excluded_compounds),
+            (EntityType.DISEASE.value, self._set_excluded_diseases),
+            (EntityType.FOOD.value, self._set_excluded_foods),
+            (EntityType.GENE.value, self._set_excluded_genes),
+            (EntityType.PHENOMENA.value, self._set_excluded_phenomenas),
+            (EntityType.PHENOTYPE.value, self._set_excluded_phenotypes),
+            (EntityType.PROTEIN.value, self._set_excluded_proteins),
+            (EntityType.SPECIES.value, self._set_excluded_species),
+            (EntityType.COMPANY.value, self._set_excluded_companies),
+            (EntityType.ENTITY.value, self._set_excluded_entities)
         ]
 
-        global_annotations_to_exclude = [
+        global_exclusions = [
             exclusion for exclusion, in self.db.session.query(
                 GlobalList.annotation).filter(
                     and_(
@@ -360,17 +360,13 @@ class EntityRecognitionService:
                 )
             ]
 
-        for excludefunc in exclusion_pairs:
-            excludefunc(global_annotations_to_exclude)
-
-        # local exclusions
-        # only get the custom species for now
-        local_species_exclusions = [
-            custom for custom in excluded_annotations if custom.get(
-                'type') == EntityType.SPECIES.value and not custom.get(
-                    'meta', {}).get('excludeGlobally')
-        ]
-        self._set_excluded_species(local_species_exclusions)
+        for entity_type, excludefunc in exclusion_pairs:
+            local_exclusions = [
+                custom for custom in excluded_annotations if custom.get(
+                    'type') == entity_type and not custom.get(
+                        'meta', {}).get('excludeGlobally')
+            ]
+            excludefunc(global_exclusions + local_exclusions)
 
     def _create_annotation_inclusions(
         self,
