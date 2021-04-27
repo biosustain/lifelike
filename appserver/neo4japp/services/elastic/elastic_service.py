@@ -341,39 +341,35 @@ class ElasticService(ElasticConnection, GraphConnection):
             should be fine for now.
             """
             # MAX_SYNONYM_COUNT = 10  # Change me if the max changes!
-            return list(
-                tx.run(
-                    """
-                    UNWIND $terms as search_term
-                    MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
-                    CALL {
-                        WITH search_term, synonym
-                        MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                        RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
-                        LIMIT 10
-                    }
-                    RETURN
-                        search_term,
-                        collect(distinct original_synonym) as original_synonyms,
-                        collect(distinct other_synonym) as other_synonyms
-                    """,
-                    terms=terms,
-                    # limit=int(
-                    #     (1024 - (MAX_SYNONYM_COUNT * len(terms)))
-                    #     /
-                    #     # `terms` shouldn't be empty, but use max just in case...
-                    #     max([1, MAX_SYNONYM_COUNT * len(terms)])
-                    # )
-                ).data()
-            )
+            return tx.run(
+                """
+                UNWIND $terms as search_term
+                MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
+                CALL {
+                    WITH search_term, synonym
+                    MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
+                    LIMIT 10
+                }
+                RETURN
+                    search_term,
+                    collect(distinct original_synonym) as original_synonyms,
+                    collect(distinct other_synonym) as other_synonyms
+                """,
+                terms=terms,
+                # limit=int(
+                #     (1024 - (MAX_SYNONYM_COUNT * len(terms)))
+                #     /
+                #     # `terms` shouldn't be empty, but use max just in case...
+                #     max([1, MAX_SYNONYM_COUNT * len(terms)])
+                # )
+            ).data()
 
         results = self.graph.read_transaction(get_synonyms_query, terms)
-        synonym_map = dict()
-
-        for row in results:
-            synonym_map[row['search_term']] = row['original_synonyms'] + row['other_synonyms']
-
-        return synonym_map
+        return {
+            row['search_term']: row['original_synonyms'] + row['other_synonyms']
+            for row in results
+        }
 
     def generate_synonym_match_subclause(
         self,
