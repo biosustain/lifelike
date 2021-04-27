@@ -737,7 +737,7 @@ def test_global_excluded_chemical_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
+    entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
@@ -766,7 +766,7 @@ def test_global_excluded_compound_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_compound = mock_compound_exclusion
+    entity_service.excluded_compounds = mock_compound_exclusion
 
     pdf = path.join(
         directory,
@@ -795,7 +795,7 @@ def test_global_excluded_disease_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_disease = mock_disease_exclusion
+    entity_service.excluded_diseases = mock_disease_exclusion
 
     pdf = path.join(
         directory,
@@ -825,7 +825,7 @@ def test_global_excluded_gene_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_gene = mock_gene_exclusion
+    entity_service.excluded_genes = mock_gene_exclusion
 
     pdf = path.join(
         directory,
@@ -854,7 +854,7 @@ def test_global_excluded_phenotype_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_phenotype = mock_phenotype_exclusion
+    entity_service.excluded_phenotypes = mock_phenotype_exclusion
 
     pdf = path.join(
         directory,
@@ -883,7 +883,7 @@ def test_global_excluded_protein_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_protein = mock_protein_exclusion
+    entity_service.excluded_proteins = mock_protein_exclusion
 
     pdf = path.join(
         directory,
@@ -912,7 +912,7 @@ def test_global_excluded_species_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_species = mock_species_exclusion
+    entity_service.excluded_species = mock_species_exclusion
 
     pdf = path.join(
         directory,
@@ -941,7 +941,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
+    entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
