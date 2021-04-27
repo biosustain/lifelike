@@ -718,14 +718,14 @@ class AnnotationService:
             annotations_list=species_annotations
         )
 
-        filtered_species_annotations = [anno for anno in species_annotations]
+        species_annotations_with_local = [anno for anno in species_annotations]
 
         if local_inclusions:
-            filtered_species_annotations += filtered_local_species_annotations
+            species_annotations_with_local += filtered_local_species_annotations
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
-                annotations=filtered_species_annotations)
+                annotations=species_annotations_with_local)
 
         return species_annotations
 
