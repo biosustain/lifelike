@@ -38,81 +38,61 @@
                             </app-object-menu>
                         </div>
                     </div>
-
-                    <div class="btn-group" role="group">
-                        <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
-                            <button class="btn btn-secondary" [id]="id + '-filters-dropdown'" ngbDropdownToggle>
-                                <i class="fa fa-fw fa-filter"></i>
-                            </button>
-                            <div ngbDropdownMenu [attr.aria-labelledby]="id + '-filters-dropdown'"
-                                 [style.width]="'220px'"
-                                 class="dropdown-body dropdown-menu dropdown-menu-right">
-                                <div class="mb-2">
-                                    <button *ngIf="!entityTypeVisibilityChanged"
-                                            class="btn btn-outline-secondary btn-block"
-                                            (click)="setAllEntityTypesVisibility(false)">
-                                        Hide All
-                                    </button>
-                                    <button *ngIf="entityTypeVisibilityChanged"
-                                            class="btn btn-outline-secondary btn-block"
-                                            (click)="setAllEntityTypesVisibility(true)">
-                                        Show All
-                                    </button>
+                </div>
+            </div>
+            <div class="module-body overflow-auto">
+                <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
+                    <ngb-panel *ngFor="let doc of biocData" [title]="title(doc)">
+                        <ng-template ngbPanelContent>
+                            <div class="document">
+                                <!-- <app-bioc-infons [data]="doc.infons"></app-bioc-infons>-->
+                                <ng-template ngFor let-passage [ngForOf]="doc.passages">
+                                    <!-- <app-bioc-infons [data]="passage.infons"></app-bioc-infons> -->
+                                    <app-bioc-annotated-text
+                                            [text]="passage.text"
+                                            [annotations]="passage.annotations"
+                                            [offset]="passage.offset"
+                                            [ngClass]="passage.infons.type"
+                                    >
+                                    </app-bioc-annotated-text>
+                                    <div class="sentences">
+                                        <div *ngFor="let sentence of passage.sentences">
+                                            {{sentence}}
+                                        </div>
+                                    </div>
+                                    <div class="relations">
+                                        <div *ngFor="let relation of passage.relations">
+                                            {{relation}}
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <div class="relations">
+                                    <div *ngFor="let relation of doc.relations">
+                                        {{relation}}
+                                    </div>
                                 </div>
-
-                                <div class="mt-2">
-                                    <button class="btn btn-secondary btn-block" (click)="closeFilterPopup()">Done
-                                    </button>
+                                <div class="date">{{doc.created.$date | date}}</div>
+                                <div class="accessions">
+                                    Accessions:
+                                    <ul>
+                                        <li *ngFor="let accession of doc.accessions">
+                                            {{accession}}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="meta">
+                                    <span class="authors">
+                                            <span *ngFor="let author of doc.authors">
+                                                {{author}}
+                                            </span>
+                                    </span>
+                                    <span class="journal">{{doc.journal}}</span>
+                                    <span class="year">{{doc.year}}</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="module-body flex-fill overflow-auto space-cards">
-                    <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
-                        <ngb-panel *ngFor="let doc of biocData" [title]="doc.pmid">
-                            <ng-template ngbPanelContent>
-                                <app-bioc-infons [data]="doc.infons"></app-bioc-infons>
-                                <div class="passages">
-                                    <div *ngFor="let passage of doc.passages" [ngClass]="passage.infons.type">
-                                        <app-bioc-infons [data]="passage.infons"></app-bioc-infons>
-                                        {{passage.offset}}
-                                        <app-bioc-annotated-text
-                                                [text]="passage.text"
-                                                [annotations]="passage.annotations"
-                                                [offset]="passage.offset"
-                                        >
-                                        </app-bioc-annotated-text>
-                                        <div class="sentences">
-                                            <div *ngFor="let sentence of passage.sentences">
-                                                {{sentence}}
-                                            </div>
-                                        </div>
-                                        <div class="relations">
-                                            <div *ngFor="let relation of passage.relations">
-                                                {{relation}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {{doc.relations}}
-                                {{doc.created}}
-                                {{doc.created.$date | date}}
-                                <div class="accessions">
-                                    <div *ngFor="let accession of doc.accessions">
-                                        {{accession}}
-                                    </div>
-                                </div>
-                                {{doc.journal}}
-                                <div class="authors">
-                                    <div *ngFor="let author of doc.authors">
-                                        {{author}}
-                                    </div>
-                                </div>
-                            </ng-template>
-                        </ngb-panel>
-                    </ngb-accordion>
-                </div>
+                        </ng-template>
+                    </ngb-panel>
+                </ngb-accordion>
             </div>
         </div>
     </div>
