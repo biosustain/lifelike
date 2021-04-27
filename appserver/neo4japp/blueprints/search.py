@@ -86,9 +86,9 @@ def empty_params(params):
 
 def get_synonyms_from_params(q, advanced_args):
     # By default, synonyms is true
-    synonyms = [True]
+    use_synonyms = True
     if 'synonyms' in advanced_args and advanced_args['synonyms'] is not None:
-        synonyms = [advanced_args['synonyms']]
+        use_synonyms = advanced_args['synonyms']
 
     # Even if `synonyms` is in the advanced args, expect `q` might also contain synonyms. In this
     # case, the value found in q takes precedence.
@@ -97,9 +97,9 @@ def get_synonyms_from_params(q, advanced_args):
     if len(extracted_synonyms) > 0:
         q = re.sub(r'\bsynonyms:\S*', '', q)
         for extracted_synonym in extracted_synonyms:
-            synonyms.append(extracted_synonym.split(':')[1] == 'true')
+            use_synonyms = extracted_synonym.split(':')[1] == 'true'
 
-    return q, synonyms[-1]
+    return q, use_synonyms
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
