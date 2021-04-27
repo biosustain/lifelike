@@ -5,10 +5,8 @@ import os
 import click
 import sentry_sdk
 from flask import g, request
-from pdfminer import high_level
-import io
 
-from sqlalchemy import inspect, Table, func
+from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text
 
 from neo4japp.constants import LogEventType
@@ -19,8 +17,7 @@ from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
-from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, Files, FileContent
-from neo4japp.services.file_types.providers import PDFTypeProvider
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
@@ -121,35 +118,6 @@ def seed():
             db.session.commit()
 
         logger.info("Fixtures imported")
-
-
-@app.cli.command("doi_diff")
-def doi_diff():
-    pdf_type_provider = PDFTypeProvider()
-    print('file_name', 'db_doi', 'db_doi_valid', 'extracted_doi')
-    idx = 0
-    for file in db.session.query(Files)\
-        .filter(Files.filename.like('%.pdf'))\
-        .join(Files.content)\
-        .order_by(func.length(FileContent.raw_file))\
-        .with_entities(Files.filename, Files.doi, FileContent.raw_file)\
-        .offset(idx):
-
-        print(file.filename, 'xxx')
-
-        buffer = io.BytesIO(file.raw_file)
-        extracted_doi = pdf_type_provider.extract_doi(buffer)
-
-        # if extracted_doi != file.doi:
-        valid = False
-        try:
-            valid = pdf_type_provider._is_valid_doi(file.doi)
-        except Exception as e:
-            pass
-        print(file.filename, file.doi, valid, extracted_doi)
-        idx += 1
-
-    print("done", pdf_type_provider.direct, pdf_type_provider.parsed)
 
 
 @app.cli.command("init-neo4j")
