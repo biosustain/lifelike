@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ChartOptions, ChartType, ChartPoint } from 'chart.js';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
@@ -15,31 +15,32 @@ const mapSingularOfTootipItems = func => {
 
 @Component({
   selector: 'app-chart',
-  templateUrl: './chart.component.html'
+  templateUrl: './chart.component.html',
+  styleUrls: ['./chart.component.scss'],
 })
 export class ChartComponent implements OnChanges {
   public options: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-    xAxes: [
-      {
-        ticks: {
-          suggestedMin: 0,
-          stepSize: 1,
-          // callback: value => value
-        },
-        gridLines: {
-          drawOnChartArea: false
-        },
-        offset: true,
-        type: 'logarithmic',
-        scaleLabel: {
-          display: true,
-          labelString: '-log10 p-value'
+      xAxes: [
+        {
+          ticks: {
+            suggestedMin: 0,
+            stepSize: 1,
+            // callback: value => value
+          },
+          gridLines: {
+            drawOnChartArea: false
+          },
+          offset: true,
+          type: 'logarithmic',
+          scaleLabel: {
+            display: true,
+            labelString: '1 / q-value'
+          }
         }
-      }
-    ],
+      ],
     },
     plugins: {
       // Change options for ALL labels of THIS CHART
@@ -53,7 +54,7 @@ export class ChartComponent implements OnChanges {
       intersect: false,
       callbacks: {
         title: mapSingularOfTootipItems(({gene}) => gene),
-        label: mapTootipItem(d => `p-value: ${d['p-value']}`)
+        label: mapTootipItem(d => `q-value: ${d['q-value'].toExponential(2)}`)
       }
     }
   };
@@ -62,16 +63,19 @@ export class ChartComponent implements OnChanges {
 
   @Input() showMore: boolean;
   @Input() data: EnrichWithGOTermsResult[];
+  @Input() show: boolean;
 
   slicedData: (EnrichWithGOTermsResult & ChartPoint)[];
   labels: string[];
 
-  ngOnChanges() {
-    const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
-    this.slicedData = data.map((d: any, i) => ({
-      ...d,
-      x: -Math.log10(d['p-value'])
-    }));
-    this.labels = data.map(({gene}) => gene);
+  ngOnChanges({show, data, showMore}: SimpleChanges) {
+    if (this.show && (show || data || showMore)) {
+      const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
+      this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
+        ...d,
+        x: 1 / d['q-value']
+      }));
+      this.labels = slicedNotFormatedData.map(({gene}) => gene);
+    }
   }
 }

@@ -4,7 +4,7 @@ from neo4j import (
     Transaction as Neo4jTx
 )
 from sqlalchemy.orm import Session as SQLAlchemySession
-from typing import Dict, List
+from typing import List
 
 from neo4japp.constants import EnrichmentDomain, LogEventType
 from neo4japp.exceptions import AnnotationError, ServerException
@@ -32,7 +32,7 @@ class EnrichmentTableService(KgService):
 
         total_index = 0
         cell_texts = []
-        text_index_map = {}
+        text_index_map = []
         combined_text = ''
 
         # need to combine cell text together into one
@@ -70,7 +70,7 @@ class EnrichmentTableService(KgService):
             if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
                 combined_text += text['text']
                 total_index = len(combined_text)
-                text_index_map[total_index - 1] = text
+                text_index_map.append((total_index - 1, text))
                 combined_text += ' '  # to separate prev text
 
         return EnrichmentCellTextMapping(
@@ -90,31 +90,30 @@ class EnrichmentTableService(KgService):
                 title='Could not create enrichment table',
                 message='There was a problem finding NCBI domain URLs.')
 
-        result_list = []
-        for meta_result in results:
-            item = {'x': meta_result['gene'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['synonym']}  # noqa
-            if meta_result['gene'] is not None:
-                item['link'] = domain.base_URL.format(meta_result['gene']['id'])
-            result_list.append(item)
-        return result_list
+        return [{
+            'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},
+            'synonym': result['synonym'],
+            'geneNeo4jId': result['gene_neo4j_id'],
+            'synonymNeo4jId': result['syn_neo4j_id'],
+            'link': domain.base_URL.format(result['gene_id']) if result['gene_id'] else ''
+        } for result in results]
 
     def match_ncbi_genes_query(
         self,
         tx: Neo4jTx,
         gene_names: List[str],
         organism: str
-    ) -> List[Dict]:
+    ) -> List[dict]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
         a later query."""
-        return [
-            record for record in tx.run(
-                """
-                UNWIND $gene_names AS gene
-                MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
-                    [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
-                RETURN s AS synonym, g AS gene, id(g) AS neo4jID
-                """,
-                gene_names=gene_names, organism=organism
-            ).data()
-        ]
+        return tx.run(
+            """
+            UNWIND $gene_names AS gene
+            MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
+                [:HAS_TAXONOMY]-(t:Taxonomy {id:$organism})
+            RETURN s.name AS synonym, id(s) AS syn_neo4j_id, id(g) AS gene_neo4j_id,
+                g.id AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
+            """,
+            gene_names=gene_names, organism=organism
+        ).data()
