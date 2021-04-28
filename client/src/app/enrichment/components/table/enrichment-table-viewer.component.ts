@@ -26,7 +26,6 @@ import { isNullOrUndefined } from 'util';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { ObjectUpdateRequest } from 'app/file-browser/schema';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -37,11 +36,9 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from './dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { Progress } from '../../../interfaces/common-dialog.interface';
+import { EnrichmentService } from '../../services/enrichment.service';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -54,6 +51,7 @@ interface AnnotationData {
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
+  providers: [EnrichmentService]
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
@@ -83,7 +81,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService,
+              protected readonly enrichmentService: EnrichmentService,
               protected readonly progressDialog: ProgressDialog,
               protected readonly changeDetectorRef: ChangeDetectorRef,
               protected readonly elementRef: ElementRef) {
@@ -108,13 +106,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   }
 
   load() {
-    this.object$ = this.filesystemService.get(this.fileId).pipe(
+    this.object$ = this.enrichmentService.get(this.fileId).pipe(
       tap(() => {
         this.emitModuleProperties();
       }),
       shareReplay(),
     );
-    this.document$ = this.filesystemService.getContent(this.fileId).pipe(
+    this.document$ = this.enrichmentService.getContent(this.fileId).pipe(
       mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)),
       shareReplay(),
     );
@@ -226,7 +224,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     ).pipe(
       take(1),
       mergeMap(([object, blob]) =>
-        this.filesystemService.save([object.hashId], {
+        this.enrichmentService.save([object.hashId], {
           contentValue: blob,
           ...this.queuedChanges$.value,
         })),
@@ -333,6 +331,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
     this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
     this.findController.query = annotationId;
+    this.findController.start();
+  }
+
+  startTextFind(text: string) {
+    this.switchToTextFind();
+    this.findController.query = text;
     this.findController.start();
   }
 

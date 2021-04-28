@@ -108,9 +108,22 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   private layout: any;
   resizeObserver: any;
 
+  private _timeInterval = Infinity;
+  @Input() set timeInterval(ti) {
+    if (this.layout) {
+      this._timeInterval = ti;
+      this.layout.timeInterval(ti);
+    }
+  }
+
+  get timeInterval() {
+    return this._timeInterval;
+  }
+
   constructor() {
     this.layout = cloud()
       .padding(1)
+      .timeInterval(this.timeInterval)
       // ~~ faster substitute for Math.floor() for positive numbers
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // tslint:disable-next-line:no-bitwise

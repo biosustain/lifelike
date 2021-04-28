@@ -87,6 +87,7 @@
           AZURE_CR_PASSWORD={{ AZURE_CR_PASSWORD }}
           AZURE_BLOB_STORAGE_URL={{ AZURE_BLOB_STORAGE_URL }}
           LOG_LEVEL="{{ REDIS_LOG_LEVEL | default('warning') }}"
+          FORMAT_AS_JSON="{{ FORMAT_AS_JSON | default('true') }}"
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"
