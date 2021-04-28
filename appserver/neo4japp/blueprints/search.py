@@ -96,8 +96,7 @@ def get_synonyms_from_params(q, advanced_args):
 
     if len(extracted_synonyms) > 0:
         q = re.sub(r'\bsynonyms:\S*', '', q)
-        for extracted_synonym in extracted_synonyms:
-            use_synonyms = extracted_synonym.split(':')[1] == 'true'
+        use_synonyms = extracted_synonyms[-1].split(':')[1] == 'true'
 
     return q, use_synonyms
 
