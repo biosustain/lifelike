@@ -313,7 +313,10 @@ BASE_IMAGE_HEIGHT = 1.1
 IMAGE_HEIGHT_INCREMENT = 0.3
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
-    'dotted': 'dotted'
+    'dotted': 'dotted',
+    # Currently not implemented in Graphviz
+    'double-dashed': 'dashed',
+    'long-dashed': 'dashed'
 }
 
 ARROW_STYLE_DICT = {
