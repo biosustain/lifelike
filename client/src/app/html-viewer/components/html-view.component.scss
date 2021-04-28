@@ -11,12 +11,44 @@ mat-sidenav {
 }
 
 .html-document::ng-deep {
+  a {
+    // disable links as they likely do not work properly
+    pointer-events: none;
+  }
+
   img {
     max-width: unset;
   }
 
   td {
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     padding: 3px;
+    &:not([bgcolor]):hover {
+       background-color: rgba(0, 0, 0, 0.025);
+    }
+  }
+
+  body, div, table, thead, tbody, tfoot, tr, th, td, p {
+    font-size: small;
+  }
+
+  a.comment-indicator:hover + comment {
+    background: #ffd;
+    position: absolute;
+    display: block;
+    border: 1px solid black;
+    padding: 0.5em;
+  }
+
+  a.comment-indicator {
+    background: red;
+    display: inline-block;
+    border: 1px solid black;
+    width: 0.5em;
+    height: 0.5em;
+  }
+
+  comment {
+    display: none;
   }
 }
