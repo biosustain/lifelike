@@ -36,7 +36,7 @@ from neo4japp.schemas.search import (
 from neo4japp.services.file_types.providers import (
     EnrichmentTableTypeProvider,
     MapTypeProvider,
-    HTMLTypeProvider,
+    OfficeTypeProvider,
     PDFTypeProvider
 )
 from neo4japp.util import jsonify_with_class, SuccessResponse

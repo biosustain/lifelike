@@ -2,7 +2,7 @@ FROM fedora:32 as base
 
 # Install dependencies
 RUN dnf install htop postgresql graphviz python-pip python3-devel \
-    which wget libX11-xcb java-latest-openjdk.x86_64 -y \
+    which wget libX11-xcb java-latest-openjdk.x86_64 pandoc -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 
@@ -11,6 +11,7 @@ RUN tar -xvf LibreOffice_*_Linux_x86-64_rpm.tar.gz
 RUN cd LibreOffice_*_Linux_x86-64_rpm && dnf install -y RPMS/*.rpm
 
 COPY Module1.xba /opt/libreoffice7.1/presets/basic/Standard/
+COPY registrymodifications.xcu .config/libreoffice/4/user
 
 RUN pip install pipenv
 
