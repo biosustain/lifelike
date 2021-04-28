@@ -178,8 +178,12 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr=graph_attr,
             format=format)
 
+        node_hash_type_dict = {}
+
         for node in json_graph['nodes']:
             style = node.get('style', {})
+            # Store node hash->label for faster edge default type evaluation
+            node_hash_type_dict[node['hash']] = node['label']
             params = {
                 'name': node['hash'],
                 'label': '\n'.join(textwrap.TextWrapper(
@@ -217,9 +221,11 @@ class MapTypeProvider(BaseFileTypeProvider):
                 else:
                     params['image'] = f'/home/n4j/assets/{label}.png'
                     params['imagepos'] = 'tc'
-                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
-                                           * IMAGE_HEIGHT_INCREMENT)
                     params['labelloc'] = 'b'
+                    # Prevents the upper part of the label and image from overlapping
+                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
+                                           * IMAGE_HEIGHT_INCREMENT + 0.25 *
+                                           (style.get('fontSizeScale', 1.0) - 1.0))
                     params['forcelabels'] = "true"
                     params['penwidth'] = '0.0'
                     params['fontcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
@@ -245,6 +251,10 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for edge in json_graph['edges']:
             style = edge.get('style', {})
+            default_line_style = 'solid'
+            if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
+                   item in ['map', 'link', 'note']):
+                default_line_style = 'dashed'
             graph.edge(
                 edge['from'],
                 edge['to'],
@@ -256,7 +266,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
                     else '0.0',
                 fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                style=BORDER_STYLES_DICT.get(style.get('lineType'), 'solid')
+                style=BORDER_STYLES_DICT.get(style.get('lineType'), default_line_style)
             )
 
         ext = f".{format}"
