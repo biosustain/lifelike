@@ -628,9 +628,12 @@ class FileListView(FilesystemBaseView):
             # Save the URL
             file.upload_url = url
 
+
+            mime_type = params.get('mime_type')
+
             # Detect mime type
-            if params.get('mime_type'):
-                file.mime_type = params['mime_type']
+            if mime_type:
+                file.mime_type = mime_type
             else:
                 provider = file_type_service.detect_type(buffer)
                 buffer.seek(0)  # Must rewind
@@ -638,6 +641,18 @@ class FileListView(FilesystemBaseView):
 
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
+
+            # if no provider matched try to convert
+            from neo4japp.services.file_types.service import DefaultFileTypeProvider
+            if isinstance(provider, DefaultFileTypeProvider):
+                import os
+                file_name, extension = os.path.splitext(file.filename)
+                if extension.isupper():
+                    file.mime_type = 'application/pdf'
+                else:
+                    file.mime_type = 'application/html'
+                provider = file_type_service.get(file)
+                provider.convert(buffer)
 
             # Check if the user can even upload this type of file
             if not provider.can_create():

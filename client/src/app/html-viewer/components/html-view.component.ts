@@ -258,7 +258,7 @@ export class HtmlViewComponent implements OnDestroy, ModuleAwareComponent {
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
-      fontAwesomeIcon: 'file-html',
+      fontAwesomeIcon: 'file-code',
     });
   }
 
