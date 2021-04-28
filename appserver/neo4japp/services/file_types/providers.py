@@ -219,13 +219,22 @@ class MapTypeProvider(BaseFileTypeProvider):
                     if not style.get('strokeColor'):
                         params['penwidth'] = '0.0'
                 else:
-                    params['image'] = f'/home/n4j/assets/{label}.png'
+                    default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                                    {'color': '#000000'})['color']
+                    print(default_icon_color)
+                    filename = (
+                            f'/home/n4j/assets/{label}'
+                            f'_{style.get("fillColor", default_icon_color)}.png'
+                        )
+                    print(filename)
+                    params['image'] = filename
                     params['imagepos'] = 'tc'
                     params['labelloc'] = 'b'
                     # Prevents the upper part of the label and image from overlapping
                     params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
                                            * IMAGE_HEIGHT_INCREMENT + 0.25 *
                                            (style.get('fontSizeScale', 1.0) - 1.0))
+                    params['width'] = "1.5"
                     params['forcelabels'] = "true"
                     params['penwidth'] = '0.0'
                     params['fontcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
@@ -252,9 +261,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         for edge in json_graph['edges']:
             style = edge.get('style', {})
             default_line_style = 'solid'
+            default_arrow_head = 'arrow'
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-                   item in ['map', 'link', 'note']):
+                   item in ['link', 'note']):
                 default_line_style = 'dashed'
+                default_arrow_head = 'none'
             graph.edge(
                 edge['from'],
                 edge['to'],
@@ -262,7 +273,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 dir='both',
                 color=style.get('strokeColor', '#2B7CE9'),
                 arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType', 'none')),
-                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType', 'arrow')),
+                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType', 'default_arrow_head')),
                 penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
                     else '0.0',
                 fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
