@@ -73,6 +73,7 @@ services:
         # End debugging section
         volumes:
             - ./appserver:/home/n4j
+            - ./appserver:/home/n4j/.config/libreoffice/4/user
         networks:
             - frontend
             - backend

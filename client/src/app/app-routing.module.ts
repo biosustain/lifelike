@@ -224,7 +224,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'HTML Viewer',
-      fontAwesomeIcon: 'html',
+      fontAwesomeIcon: 'file-code',
     },
   },
   {

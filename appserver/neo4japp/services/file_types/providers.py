@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import re
@@ -6,6 +7,9 @@ from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import graphviz
+import html2text
+import nbformat
+from nbconvert import HTMLExporter, PDFExporter
 import requests
 from pdfminer import high_level
 
@@ -15,7 +19,8 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
-import base64
+import shutil
+import os
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -30,6 +35,139 @@ extension_mime_types = {
     # TODO: Use a mime type library?
 }
 
+
+def is_valid_doi(doi):
+    try:
+        # not [bad request, not found] but yes to 403 - no access
+        return requests.get(doi,
+                            headers={
+                                # sometimes request is filtered if there is no user-agent header
+                                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
+                                              "AppleWebKit/537.36 "
+                                              "(KHTML, like Gecko) Chrome/51.0.2704.103 "
+                                              "Safari/537.36"
+                            }
+                            ).status_code not in [400, 404]
+    except Exception as e:
+        return False
+
+
+# ref: https://stackoverflow.com/a/10324802
+# Has a good breakdown of the DOI specifications,
+# in case need to play around with the regex in the future
+doi_re = re.compile(
+        # match label pointing that it is DOI
+        rb'(doi[\W]*)?'
+        # match url to doi.org
+        # doi might contain subdomain or 'www' etc.
+        rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+        # match folder (10) and register name
+        rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+        # try match commonly used DOI format
+        rb'([-A-z0-9]*)'
+        # match up to first space (values after # are ~ignored anyway)
+        rb'([^ \n\f#]*)'
+        # match up to 20 characters in the same line (values after # are ~ignored anyway)
+        rb'([^\n\f#]{0,20})',
+        flags=re.IGNORECASE
+)  # noqa
+protocol_re = re.compile(r'https?:\/\/')
+unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
+characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
+common_escape_patterns_re = re.compile(rb'\\')
+dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+
+
+def search_doi_in_text(self, content: bytes) -> Optional[str]:
+    doi: Optional[str]
+    try:
+        for match in self.doi_re.finditer(content):
+            label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
+                [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
+            certainly_doi = label + url
+            url = 'https://doi.org/'
+            # is whole match a DOI? (finished on \n, trimmed whitespaces)
+            doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
+                    DOISuffix).strip())
+            if is_valid_doi(doi):
+                return doi
+            # is match till space a DOI?
+            doi = (url + folderRegistrant + likelyDOIName + tillSpace)
+            if is_valid_doi(doi):
+                return doi
+            # make deep search only if there was clear indicator that it is a doi
+            if certainly_doi:
+                # if contains escape patterns try substitute them
+                if self.common_escape_patterns_re.search(match.group()):
+                    doi = self._search_doi_in_pdf(
+                            self.common_escape_patterns_re.sub(
+                                    b'', match.group()
+                            )
+                    )
+                    if is_valid_doi(doi):
+                        return doi
+                # try substitute different dash types
+                if self.dash_types_re.search(match.group()):
+                    doi = self._search_doi_in_pdf(
+                            self.dash_types_re.sub(
+                                    b'-', match.group()
+                            )
+                    )
+                    if is_valid_doi(doi):
+                        return doi
+                # we iteratively start cutting off suffix on each group of
+                # unusual characters
+                try:
+                    reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
+                    while reversedDOIEnding:
+                        _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                reversedDOIEnding, 1)
+                        doi = (
+                                url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
+                        )
+                        if is_valid_doi(doi):
+                            return doi
+                except Exception:
+                    pass
+                # we iteratively start cutting off suffix on each group of either
+                # lowercase letters
+                # uppercase letters
+                # numbers
+                try:
+                    reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
+                    while reversedDOIEnding:
+                        _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                reversedDOIEnding, 1)
+                        doi = (
+                                url + folderRegistrant + reversedDOIEnding[::-1]
+                        )
+                        if is_valid_doi(doi):
+                            return doi
+                except Exception:
+                    pass
+                # yield 0 matches on test case
+                # # is it a DOI in common format?
+                # doi = (url + folderRegistrant + likelyDOIName)
+                # if is_valid_doi(doi):
+                #     print('match by common format xxx')
+                #     return doi
+                # in very rare cases there is \n in text containing doi
+                try:
+                    end_of_match_idx = match.end(0)
+                    first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
+                    if first_char_after_match == b'\n':
+                        doi = self._search_doi_in_pdf(
+                                # new input = match + 50 chars after new line
+                                match.group() +
+                                content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                        )
+                        if is_valid_doi(doi):
+                            return doi
+                except Exception as e:
+                    pass
+    except Exception as e:
+        pass
+    return None
 
 class DirectoryTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.filesystem/directory'
@@ -47,38 +185,18 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
+
 class NotPDFError(AssertionError):
     pass
+
 
 class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/pdf'
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def convert_to_pdf(self, buffer):
-        # if not pdf try to covert to pdf
-        import shutil
-        import os
-        f = open("tmp", "wb")
-        shutil.copyfileobj(buffer.stream, f)
-        f.close()
-        # adjust spreadsheets print areas (do not slice vertically)
-        os.system("/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp  macro:///Standard.Module1.FitToPage")
-        # convert to pdf
-        assert(~os.system("/bin/libreoffice* --convert-to pdf tmp"))
-        f = open("tmp.pdf", "rb")
-        buffer.stream = f
-        # f.close()
-
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        # We don't even validate PDF content yet, but we need to detect them, so we'll
-        try:
-            self.validate_content(buffer)
-        except NotPDFError:
-            return None
-
-        # just return -1 so PDF becomes the fallback file type
-        return -1
+    def handles(self, file: Files) -> bool:
+        return super().handles(file) and os.path.splitext(file.filename)[1].lower() == '.pdf'
 
     def can_create(self) -> bool:
         return True
@@ -97,229 +215,139 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 1: search through the first N bytes (most probably containing only metadata)
         chunk = data[:2 ** 17]
-        doi = self._search_doi_in_pdf(chunk)
+        doi = search_doi_in_text(chunk)
         if doi is not None:
             return doi
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
         text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-        doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
+        doi = search_doi_in_text(bytes(text, encoding='utf8'))
 
         return doi
 
-    def _is_valid_doi(self, doi):
-        try:
-            # not [bad request, not found] but yes to 403 - no access
-            return requests.get(doi,
-                                headers={
-                                    # sometimes request is filtered if there is no user-agent header
-                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
-                                                  "AppleWebKit/537.36 "
-                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                                  "Safari/537.36"
-                                }
-                                ).status_code not in [400, 404]
-        except Exception as e:
-            return False
-
-    # ref: https://stackoverflow.com/a/10324802
-    # Has a good breakdown of the DOI specifications,
-    # in case need to play around with the regex in the future
-    doi_re = re.compile(
-            # match label pointing that it is DOI
-            rb'(doi[\W]*)?'
-            # match url to doi.org
-            # doi might contain subdomain or 'www' etc.
-            rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
-            # match folder (10) and register name
-            rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
-            # try match commonly used DOI format
-            rb'([-A-z0-9]*)'
-            # match up to first space (values after # are ~ignored anyway)
-            rb'([^ \n\f#]*)'
-            # match up to 20 characters in the same line (values after # are ~ignored anyway)
-            rb'([^\n\f#]{0,20})',
-            flags=re.IGNORECASE
-    )  # noqa
-    protocol_re = re.compile(r'https?:\/\/')
-    unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
-    characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
-    common_escape_patterns_re = re.compile(rb'\\')
-    dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
-
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        doi: Optional[str]
-        try:
-            for match in self.doi_re.finditer(content):
-                label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
-                    [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
-                certainly_doi = label + url
-                url = 'https://doi.org/'
-                # is whole match a DOI? (finished on \n, trimmed whitespaces)
-                doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
-                        DOISuffix).strip())
-                if self._is_valid_doi(doi):
-                    return doi
-                # is match till space a DOI?
-                doi = (url + folderRegistrant + likelyDOIName + tillSpace)
-                if self._is_valid_doi(doi):
-                    return doi
-                # make deep search only if there was clear indicator that it is a doi
-                if certainly_doi:
-                    # if contains escape patterns try substitute them
-                    if self.common_escape_patterns_re.search(match.group()):
-                        doi = self._search_doi_in_pdf(
-                                self.common_escape_patterns_re.sub(
-                                        b'', match.group()
-                                )
-                        )
-                        if self._is_valid_doi(doi):
-                            return doi
-                    # try substitute different dash types
-                    if self.dash_types_re.search(match.group()):
-                        doi = self._search_doi_in_pdf(
-                                self.dash_types_re.sub(
-                                        b'-', match.group()
-                                )
-                        )
-                        if self._is_valid_doi(doi):
-                            return doi
-                    # we iteratively start cutting off suffix on each group of
-                    # unusual characters
-                    try:
-                        reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
-                        while reversedDOIEnding:
-                            _, _, reversedDOIEnding = self.characters_groups_re.split(
-                                    reversedDOIEnding, 1)
-                            doi = (
-                                    url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
-                            )
-                            if self._is_valid_doi(doi):
-                                return doi
-                    except Exception:
-                        pass
-                    # we iteratively start cutting off suffix on each group of either
-                    # lowercase letters
-                    # uppercase letters
-                    # numbers
-                    try:
-                        reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
-                        while reversedDOIEnding:
-                            _, _, reversedDOIEnding = self.characters_groups_re.split(
-                                    reversedDOIEnding, 1)
-                            doi = (
-                                    url + folderRegistrant + reversedDOIEnding[::-1]
-                            )
-                            if self._is_valid_doi(doi):
-                                return doi
-                    except Exception:
-                        pass
-                    # yield 0 matches on test case
-                    # # is it a DOI in common format?
-                    # doi = (url + folderRegistrant + likelyDOIName)
-                    # if self._is_valid_doi(doi):
-                    #     print('match by common format xxx')
-                    #     return doi
-                    # in very rare cases there is \n in text containing doi
-                    try:
-                        end_of_match_idx = match.end(0)
-                        first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
-                        if first_char_after_match == b'\n':
-                            doi = self._search_doi_in_pdf(
-                                    # new input = match + 50 chars after new line
-                                    match.group() +
-                                    content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
-                            )
-                            if self._is_valid_doi(doi):
-                                return doi
-                    except Exception as e:
-                        pass
-        except Exception as e:
-            pass
-        return None
-
-
-def to_indexable_content(self, buffer: BufferedIOBase):
-    return buffer  # Elasticsearch can index PDF files directly
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        return buffer  # Elasticsearch can index PDF files directly
 
 
 def should_highlight_content_text_matches(self) -> bool:
     return True
 
+
+class NotHTMLError(AssertionError):
+    pass
+
 class HTMLTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/html'
     SHORTHAND = 'html'
     mime_types = (MIME_TYPE,)
+    parser = html2text.HTML2Text()
 
-    def convert_to_html(self, buffer):
-        # if not pdf try to covert to pdf
-        import shutil
-        import os
-        os.system("rm tmp*")
-        with open("tmp", "wb") as f:
-            shutil.copyfileobj(buffer.stream, f)
-        # adjust spreadsheets print areas (do not slice vertically)
-        # os.system("/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp  macro:///Standard.Module1.FitToPage")
-        # convert to pdf
-        assert(~os.system("/bin/libreoffice* --convert-to html tmp"))
-        data = None
-        with open("tmp.html", "rb") as f:
-            data = f.read()
-
-        def embedImages(match):
-            data_uri = base64.b64encode(open(match.group(2), 'rb').read()).replace(b'\n', b'')
-            return match.group(1) + b'"data:image/png;base64,' + data_uri + b'"'
-
-        data2 = re.sub(rb'(<img.*src=)"(.*?)"', embedImages, data)
-
-        buffer.stream = io.BytesIO(data2)
-
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        # We don't even validate PDF content yet, but we need to detect them, so we'll
-        try:
-            self.convert_to_html(buffer)
-            return 0
-        except Exception as e:
-            pass
+    def handles(self, file: Files) -> bool:
+        return super().handles(file)
 
     def can_create(self) -> bool:
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        pass
+        try:
+            assert buffer.stream.readline(1) == b'<'
+        except AssertionError:
+            raise NotPDFError
+        finally:
+            buffer.stream.seek(0)
+
+    def embed_images(self, data):
+        def embedImage(match):
+            data_uri = base64.b64encode(open(match.group(2), 'rb').read()).replace(b'\n', b'')
+            return match.group(1) + b'"data:image/png;base64,' + data_uri + b'"'
+
+        return re.sub(rb'(<img.*src=)"(.*?)"', embedImage, data)
 
     def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
         buffer.seek(0)
 
-        # Attempt 1: search through the first N bytes (most probably containing only metadata)
+        # Attempt 1: search through all links
+        for match in re.finditer(rb'href=[\'"][^\'"]+', data):
+            doi = search_doi_in_text(match.group())
+            if doi:
+                return doi
+
+        # Attempt 2: search through text extracted from the first N bytes
         chunk = data[:2 ** 17]
-        doi = self._search_doi_in_pdf(chunk)
+        text = self.parser.handle(chunk.decode('utf-8')).encode('utf-8')
+        doi = search_doi_in_text(text)
 
         return doi
-
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        # ref: https://stackoverflow.com/a/10324802
-        # Has a good breakdown of the DOI specifications,
-        # in case need to play around with the regex in the future
-        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
-        match = re.search(doi_re, content)
-
-        if match is None:
-            return None
-        doi = match.group(1).decode('utf-8').replace('%2F', '/')
-        # Make sure that the match does not contain undesired characters at the end.
-        # E.g. when the match is at the end of a line, and there is a full stop.
-        while doi and doi[-1] in './%':
-            doi = doi[:-1]
-        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
+
+
+class OfficeTypeProvider(BaseFileTypeProvider):
+    def handles(self, file: Files) -> bool:
+        return BaseFileTypeProvider.handles(self, file) and os.path.splitext(file.filename)[
+            1].lower() != '.ipynb'
+
+class OfficeHTMLTypeProvider(OfficeTypeProvider, HTMLTypeProvider):
+    def convert(self, buffer):
+        # delete old temp files
+        os.system("rm tmp*")
+        with open("tmp", "wb") as f:
+            shutil.copyfileobj(buffer.stream, f)
+        # try to covert to html
+        assert (~os.system("/bin/libreoffice* --convert-to html tmp"))
+        data = None
+        with open("tmp.html", "rb") as f:
+            data = f.read()
+
+        parsed_data = self.embed_images(data)
+
+        buffer.stream = io.BytesIO(parsed_data)
+
+
+class OfficePDFTypeProvider(OfficeTypeProvider, PDFTypeProvider):
+    def convert(self, buffer):
+        # try to covert to pdf
+        os.system("rm tmp*")
+        with open("tmp", "wb") as f:
+            shutil.copyfileobj(buffer.stream, f)
+        # adjust spreadsheets print areas (do not slice vertically)
+        os.system(
+                "/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp macro:///Standard.Module1.FitToPage"
+        )
+        # convert to pdf
+        assert (~os.system("/bin/libreoffice* --convert-to pdf tmp"))
+        data = None
+        with open("tmp.pdf", "rb") as f:
+            data = f.read()
+        buffer.stream = io.BytesIO(data)
+
+
+class IPythonNotebookTypeProvider(BaseFileTypeProvider):
+    exporter = None
+
+    def handles(self, file: Files) -> bool:
+        return BaseFileTypeProvider.handles(self, file) and os.path.splitext(file.filename)[
+            1].lower() == '.ipynb'
+
+    def convert(self, buffer):
+        data = buffer.read().decode('utf-8')
+        notebook = nbformat.reads(data, as_version=4)
+        (body, resources) = self.exporter.from_notebook_node(notebook)
+        buffer.stream = io.BytesIO(body.encode('utf-8'))
+
+class IPythonNotebookHTMLTypeProvider(IPythonNotebookTypeProvider, HTMLTypeProvider):
+    exporter = HTMLExporter()
+
+
+class IPythonNotebookPDFTypeProvider(IPythonNotebookTypeProvider, PDFTypeProvider):
+    exporter = PDFExporter()
+
 
 
 class MapTypeProvider(BaseFileTypeProvider):

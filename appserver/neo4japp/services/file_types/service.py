@@ -34,6 +34,9 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
+    def convert(self, buffer):
+        raise NotImplementedError
+
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         """
         Given the byte buffer, return a confidence level indicating
@@ -51,7 +54,16 @@ class BaseFileTypeProvider:
         :param buffer: the file buffer
         :return: a confidence level or None
         """
-        return None
+        try:
+            # If the data validates, I guess it's an enrichment table?
+            # The enrichment table schema is very simple though so this is very simplistic
+            # and will cause problems in the future
+            self.validate_content(buffer)
+            return 0
+        except Exception as e:
+            return None
+        finally:
+            buffer.seek(0)
 
     def can_create(self) -> bool:
         """
