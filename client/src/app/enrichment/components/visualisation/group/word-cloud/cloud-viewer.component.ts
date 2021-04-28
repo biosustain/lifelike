@@ -1,11 +1,11 @@
-import { Component, OnChanges, Input } from '@angular/core';
+import { Component, OnChanges, Input, SimpleChanges } from '@angular/core';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
 import { WorkspaceManager } from '../../../../../shared/workspace-manager';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { paramsToEnrichmentTableLink } from '../../components/link/link.directive';
+import { paramsToEnrichmentTableLink, triggerSearchOnShouldReplaceTab } from '../../components/link/link.directive';
 
 @Component({
   selector: 'app-cloud-viewer',
@@ -17,6 +17,7 @@ export class CloudViewerComponent implements OnChanges {
   geneColor = annotationTypesMap.get('gene').color;
 
   slicedData: WordCloudNode[];
+  @Input() show = true;
   link;
 
   constructor(
@@ -37,7 +38,8 @@ export class CloudViewerComponent implements OnChanges {
       fragment: d.text,
       sideBySide: true,
       newTab: true,
-      matchExistingTab: this.link.matchExistingTab
+      matchExistingTab: this.link.matchExistingTab,
+      shouldReplaceTab: triggerSearchOnShouldReplaceTab(d.text)
     });
   }
 
@@ -46,20 +48,21 @@ export class CloudViewerComponent implements OnChanges {
       .style('cursor', 'pointer');
   }
 
-  ngOnChanges() {
+  ngOnChanges({data}: SimpleChanges) {
     const color = this.geneColor;
-    this.slicedData = Object.entries(
-      this.data.reduce((o, n) => {
-        n.geneNames.forEach(g => {
-          o[g] = o[g] || 0;
-          o[g] += 1;
-        });
-        return o;
-      }, {} as { [geneName: string]: number })
-    )
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 500)
-      .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
-    console.log(this.slicedData);
+    if (this.show && data) {
+      this.slicedData = Object.entries(
+        data.currentValue.reduce((o, n) => {
+          n.geneNames.forEach(g => {
+            o[g] = o[g] || 0;
+            o[g] += 1;
+          });
+          return o;
+        }, {} as { [geneName: string]: number })
+      )
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+        .slice(0, 250)
+        .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
+    }
   }
 }
