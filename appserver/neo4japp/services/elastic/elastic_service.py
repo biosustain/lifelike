@@ -634,7 +634,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             raise ServerException(
                 title='Content Search Error',
                 message='Something went wrong during content search. Please simplify your query ' +
-                        'and try again.',
+                        '(e.g. remove terms, filters, flags, etc.) and try again.',
                 code=400
             )
 
