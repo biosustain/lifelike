@@ -122,6 +122,7 @@ def map_document(elastic_service):
     )
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_should_not_get_results_from_empty_db(
     elastic_service,
     highlight,
@@ -149,6 +150,7 @@ def test_should_not_get_results_from_empty_db(
     assert len(res) == 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_from_pdf(
     elastic_service,
     pdf_document,
@@ -178,6 +180,7 @@ def test_can_get_results_from_pdf(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     elastic_service,
     pdf_document,
@@ -206,6 +209,7 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
     elastic_service,
     pdf_document,
@@ -234,6 +238,7 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_from_map(
     elastic_service,
     map_document,
@@ -262,6 +267,7 @@ def test_can_get_results_from_map(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_from_map_with_wildcard_phrase(
     elastic_service,
     map_document,
@@ -290,6 +296,7 @@ def test_can_get_results_from_map_with_wildcard_phrase(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_can_get_results_with_quoted_phrase(
     elastic_service,
     map_document,
@@ -318,6 +325,7 @@ def test_can_get_results_with_quoted_phrase(
     assert len(res) > 0
 
 
+@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_using_wildcard_in_phrase_does_not_work(
     elastic_service,
     pdf_document,
