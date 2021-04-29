@@ -204,20 +204,17 @@ ANNOTATION_STYLES_DICT = {
         'label': 'link',
         'color': '#000000',
         'bgcolor': '#dcf1f1',
-        'imagelabelcolor': '#41a4a4',
-        'dafaultimagecolor': '#669999'
+        'defaultimagecolor': '#669999'
     },
     'map': {
         'label': 'map',
         'color': '#0277bd',
-        'imagelabelcolor': '#003b5e',
         'defaultimagecolor': '#0277bd'
     },
     'note': {
         'label': 'note',
         'color': '#000000',
         'bgcolor': '#fff6d5',
-        'imagelabelcolor': '#eab700',
         'defaultimagecolor': '#edc949'
     },
     'reaction': {
@@ -311,6 +308,8 @@ ANNOTATION_STYLES_DICT = {
 # Style constants
 DEFAULT_FONT_SIZE = 14.0
 DEFAULT_BORDER_COLOR = '#2B7CE9'
+DEFAULT_NODE_WIDTH = 41.25
+DEFAULT_NODE_HEIGHT = 27.5
 MAX_LINE_WIDTH = 50
 BASE_IMAGE_HEIGHT = 1.5
 IMAGE_HEIGHT_INCREMENT = 0.23
