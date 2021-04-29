@@ -52,8 +52,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  private readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
   private readonly defaultLimit = 20;
+  readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
   public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });

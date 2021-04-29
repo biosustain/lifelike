@@ -419,23 +419,15 @@ class ElasticService(ElasticConnection, GraphConnection):
             }
         }
 
+    # TODO: Currently unused in favor of using an inline approach. Keeping just in case we need
+    # this pattern elsewhere in the future.
     def get_text_match_objs(
             self,
             fields: List[str],
             boost_fields: Dict[str, int],
             word: str,
-            synonym_map: Dict[str, List[str]]
     ):
-        synonym_match_subclause = self.generate_synonym_match_subclause(
-            word,
-            fields,
-            boost_fields,
-            synonym_map
-        )
-
-        # Don't include synonyms here, because if we did we might get different results for a
-        # word without punctuation, but with the same synonyms as this word.
-        term_objs = [
+        return [
             {
                 'term': {
                     field: {
@@ -445,8 +437,6 @@ class ElasticService(ElasticConnection, GraphConnection):
                 }
             } for field in fields
         ]
-
-        return [synonym_match_subclause] + term_objs  # type:ignore
 
     def get_text_match_queries(
         self,
@@ -459,29 +449,32 @@ class ElasticService(ElasticConnection, GraphConnection):
     ):
         # Create single word match subclauses (this is the same as phrase matching below, with the
         # addition of exact text matching; This helps with words that contain punctuation)
-        word_operands = []
-        for word in words:
-            if any([c in string.punctuation for c in word]):
-                word_operands.append(
-                    {
-                        'bool': {
-                            'should': self.get_text_match_objs(
-                                text_fields,
-                                text_field_boosts,
-                                word,
-                                synonym_map
-                            )
-                        }
-                    }
-                )
-            else:
-                word_synonym_match_subclause = self.generate_synonym_match_subclause(
-                    word,
-                    text_fields,
-                    text_field_boosts,
-                    synonym_map
-                )
-                word_operands.append(word_synonym_match_subclause)
+        word_operands = [
+            {
+                'bool': {
+                    'should': [
+                        self.generate_synonym_match_subclause(
+                            word,
+                            text_fields,
+                            text_field_boosts,
+                            synonym_map
+                        )
+                    ] + ([
+                        # Duplicates the get_text_match_objs above, if we ever need this pattern
+                        # elsewhere, replace this with the function
+                        {
+                            'term': {
+                                field: {
+                                    'value': word,
+                                    'boost': text_field_boosts[field]
+                                }
+                            }
+                        } for field in text_fields
+                    ] if any([c in string.punctuation for c in word]) else [])
+                }
+            }
+            for word in words
+        ]
 
         # Create phrase match subclauses
         phrase_operands = [
