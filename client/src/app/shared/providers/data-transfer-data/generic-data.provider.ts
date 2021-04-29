@@ -33,7 +33,6 @@ export class GenericDataProvider implements DataTransferDataProvider {
             dataTransfer.getData('text/x-moz-url'),
             'Link',
           );
-        console.log('existing', existing);
         existing.push(...data);
         dataTransfer.setData('text/x-moz-url', GenericDataProvider.marshalMozUrlList(existing));
       }
