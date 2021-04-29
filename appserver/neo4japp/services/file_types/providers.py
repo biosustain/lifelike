@@ -20,6 +20,8 @@ from neo4japp.constants import (
     BORDER_STYLES_DICT,
     DEFAULT_BORDER_COLOR,
     DEFAULT_FONT_SIZE,
+    DEFAULT_NODE_WIDTH,
+    DEFAULT_NODE_HEIGHT,
     MAX_LINE_WIDTH,
     BASE_IMAGE_HEIGHT,
     IMAGE_HEIGHT_INCREMENT
@@ -190,12 +192,13 @@ class MapTypeProvider(BaseFileTypeProvider):
                     width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
                     replace_whitespace=False, drop_whitespace=False).wrap(node['display_name'])),
                 'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
+                'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / 55}",
+                'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / 55}",
                 'shape': 'box',
                 'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
-                'color': style.get('strokeColor', DEFAULT_BORDER_COLOR),
-                'fontcolor': style.get('fillColor',
-                                       ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})
-                                       .get('color')),
+                'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
+                    node['label'], {'color': 'black'}).get('color'),
                 'fontname': 'sans-serif',
                 'margin': "0.2,0.0",
                 'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
@@ -205,7 +208,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['map', 'link', 'note']:
                 label = node['label']
-                if style.get('showDetail', False):
+                if style.get('showDetail'):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
                     params['label'] = '\n'.join(
@@ -220,14 +223,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                         params['penwidth'] = '0.0'
                 else:
                     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                                    {'color': '#000000'})['color']
-                    print(default_icon_color)
-                    filename = (
+                                                                    {'defaultimagecolor': 'black'}
+                                                                    )['defaultimagecolor']
+                    params['image'] = (
                             f'/home/n4j/assets/{label}'
-                            f'_{style.get("fillColor", default_icon_color)}.png'
+                            f'_{style.get("fillColor") or default_icon_color}.png'
                         )
-                    print(filename)
-                    params['image'] = filename
                     params['imagepos'] = 'tc'
                     params['labelloc'] = 'b'
                     # Prevents the upper part of the label and image from overlapping
@@ -237,9 +238,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['width'] = "1.5"
                     params['forcelabels'] = "true"
                     params['penwidth'] = '0.0'
-                    params['fontcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                                     {'bgcolor': 'black'}
-                                                                     ).get('imagelabelcolor')
+                    params['fontcolor'] = style.get("fillColor") or default_icon_color
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 params['color'] = ANNOTATION_STYLES_DICT.get(
@@ -271,13 +270,13 @@ class MapTypeProvider(BaseFileTypeProvider):
                 edge['to'],
                 edge['label'],
                 dir='both',
-                color=style.get('strokeColor', '#2B7CE9'),
-                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType', 'none')),
-                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType', 'default_arrow_head')),
+                color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType') or default_arrow_head),
                 penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
                     else '0.0',
                 fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                style=BORDER_STYLES_DICT.get(style.get('lineType'), default_line_style)
+                style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
             )
 
         ext = f".{format}"
