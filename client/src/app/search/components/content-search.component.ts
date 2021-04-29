@@ -25,6 +25,7 @@ import { ModuleProperties } from 'app/shared/modules';
 import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { uuidv4 } from 'app/shared/utils';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { FindOptions } from 'app/shared/utils/find';
 import {
@@ -51,6 +52,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
+  private readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
   private readonly defaultLimit = 20;
   public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
@@ -63,6 +65,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   contentSearchFormVal: SearchableRequestOptions;
 
+  useSynonyms = true;
   synonyms: Map<string, string[]>;
   showSynonyms = false;
 
@@ -100,7 +103,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       fontAwesomeIcon: 'search',
     });
   }
-
 
   getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
@@ -143,7 +145,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       advancedParams.wildcards = params.wildcards;
     }
     if (params.hasOwnProperty('synonyms')) {
-      advancedParams.synonyms = params.synonyms === 'true';
+      // TODO: Change this back if we ever move synonyms back to the advanced search dialog
+      // advancedParams.synonyms = params.synonyms === 'true';
+      this.useSynonyms = params.synonyms === 'true';
     }
     return advancedParams;
   }
@@ -171,9 +175,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('wildcards')) {
       advancedParams.wildcards = params.wildcards;
     }
-    if (params.hasOwnProperty('synonyms')) {
-      advancedParams.synonyms = params.synonyms;
-    }
+    // TODO: Uncomment if we ever move synonyms back to the advanced search dialog
+    // if (params.hasOwnProperty('synonyms')) {
+    //   advancedParams.synonyms = params.synonyms;
+    // }
+    advancedParams.synonyms = this.useSynonyms.toString();
     return advancedParams;
   }
 
