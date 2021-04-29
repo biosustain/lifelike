@@ -256,6 +256,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             if 'source' in node['data'] and node['data']['source']:
                 params['href'] = node['data']['source']
 
+            if node['data'].get('hyperlinks'):
+                params['href'] = node['data']['hyperlinks'][0].get('url')
+            elif node['data'].get('sources'):
+                params['href'] = node['data']['sources'][0].get('url')
+
             graph.node(**params)
 
         for edge in json_graph['edges']:
