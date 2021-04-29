@@ -73,7 +73,7 @@ def upload_node_mapping(req: Neo4jColumnMapping):
 
 
 """ TODO refactor import
-@bp.route('/import-genes', methods=['POST'])
+@bp.route('/import-matches', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
     import_service = get_user_file_import_service()

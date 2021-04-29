@@ -38,7 +38,7 @@ class EnrichmentTableService(KgService):
         # need to combine cell text together into one
         # the idea is to create a mapping to later identify
         # what row/column each text is originally in
-        for i, gene in enumerate(data['genes']):
+        for i, gene in enumerate(data['matches']):
             if gene.get('matched', None) is None:
                 # gene did not match so ignore and don't annotate
                 continue

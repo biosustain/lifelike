@@ -215,7 +215,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       this.object$,
       this.document$.pipe(
         // need to use updateParameters instead of save
-        // because save only update the import genes list
+        // because save only update the import matches list
         // not the matched results
         // so a new version of the file will not get created
         // the newly added gene matched

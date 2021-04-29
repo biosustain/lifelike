@@ -157,7 +157,7 @@
     </div>
 
     <div class="form-group">
-      <label>To what species do these genes belong?</label>
+      <label>To what species do these matches belong?</label>
       <select class="custom-select" formControlName="speciesSelection">
         <option value="" disabled selected hidden>Species</option>
         <option *ngFor="let keyvalue of organisms | keyvalue" [value]="organisms.get(keyvalue.key)">{{ keyvalue.key }}</option>

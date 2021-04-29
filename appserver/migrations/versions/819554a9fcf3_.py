@@ -69,7 +69,7 @@ def data_upgrades():
         for fid, annotations in chunk:
             annotations['version'] = '3'
             updated_genes = []
-            for gene in annotations['genes']:
+            for gene in annotations['matches']:
                 if 'full_name' not in gene:
                     updated_genes.append(gene)
                     # means gene was not matched
@@ -96,7 +96,7 @@ def data_upgrades():
                 # then when enrich data is refreshed, it will update correctly
                 gene['annotated_full_name'] = gene['full_name']
                 updated_genes.append(gene)
-            annotations['genes'] = updated_genes
+            annotations['matches'] = updated_genes
             collected.append({'id': fid, 'enrichment_annotations': annotations})
         try:
             session.bulk_update_mappings(Files, collected)

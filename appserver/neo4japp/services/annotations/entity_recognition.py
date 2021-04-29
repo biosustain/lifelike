@@ -267,7 +267,7 @@ class EntityRecognitionService:
         lowered = word.lower()
         if word in self.exclusion_type_gene or lowered in self.type_gene_case_insensitive_exclusion:
             # current_app.logger.info(
-            #     f'Found a match in genes entity lookup but token "{word}" is an exclusion.',  # noqa
+            #     f'Found a match in matches entity lookup but token "{word}" is an exclusion.',  # noqa
             #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
