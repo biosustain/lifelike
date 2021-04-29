@@ -51,10 +51,9 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        # We don't even validate PDF content yet, but we need to detect them, so we'll
-        # just return -1 so PDF becomes the fallback file type
-        return -1
+    def detect_type(self, buffer: BufferedIOBase) -> \
+            List[typing.Tuple[float, 'BaseFileTypeProvider']]:
+        return [(0, self)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
@@ -108,13 +107,14 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_type(self, buffer: BufferedIOBase) -> \
+            List[typing.Tuple[float, 'BaseFileTypeProvider']]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
-            return 0
+            return [(0, self)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
@@ -227,15 +227,16 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_type(self, buffer: BufferedIOBase) \
+            -> List[typing.Tuple[float, 'BaseFileTypeProvider']]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
             self.validate_content(buffer)
-            return 0
+            return [(0, self)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
