@@ -30,8 +30,14 @@ export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayB
       return null;
     }
     const text = new TextDecoder(encoding).decode(data);
+    const jsonLines = text.split('\n');
     // @ts-ignore
-    return text.split('\n').map(JSON.parse);
+    return jsonLines.reduce((o, n) => {
+      if (n) {
+        o.push(JSON.parse(n));
+      }
+      return o;
+    }, []);
   });
 }
 

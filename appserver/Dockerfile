@@ -2,7 +2,9 @@ FROM fedora:32 as base
 
 # Install dependencies
 RUN dnf install htop postgresql graphviz python-pip python3-devel \
-    which wget libX11-xcb java-latest-openjdk.x86_64 pandoc -y \
+    which wget libX11-xcb java-latest-openjdk.x86_64 pandoc texlive-collection-latexextra \
+    texlive-scheme-small texlive-collection-xetex texlive-collection-fontsrecommended \
+    texlive-collection-genericrecommended -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 

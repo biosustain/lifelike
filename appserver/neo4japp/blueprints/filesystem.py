@@ -643,11 +643,12 @@ class FileListView(FilesystemBaseView):
             provider = file_type_service.get(file)
 
             # if no provider matched try to convert
-            from neo4japp.services.file_types.service import DefaultFileTypeProvider
-            if isinstance(provider, DefaultFileTypeProvider):
+            if provider == file_type_service.default_provider:
                 import os
                 file_name, extension = os.path.splitext(file.filename)
-                if extension.isupper():
+                if extension.lower() == '.xml':
+                    file.mime_type = 'vnd.lifelike.document/bioc'
+                elif extension.isupper():
                     file.mime_type = 'application/pdf'
                 else:
                     file.mime_type = 'application/html'
