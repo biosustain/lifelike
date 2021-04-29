@@ -190,7 +190,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 'name': node['hash'],
                 'label': '\n'.join(textwrap.TextWrapper(
                     width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-                    replace_whitespace=False, drop_whitespace=False).wrap(node['display_name'])),
+                    replace_whitespace=False).wrap(node['display_name'])),
                 'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
                 'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / 55}",
                 'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / 55}",
@@ -214,8 +214,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['label'] = '\n'.join(
                         textwrap.TextWrapper(
                             width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                            replace_whitespace=False, drop_whitespace=False
-                                            ).wrap(detail_text))
+                            replace_whitespace=False).wrap(detail_text))
                     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                      {'bgcolor': 'black'}
                                                                      ).get('bgcolor')
