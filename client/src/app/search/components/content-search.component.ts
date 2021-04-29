@@ -66,7 +66,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   contentSearchFormVal: SearchableRequestOptions;
 
   useSynonyms = true;
-  synonyms: Map<string, string[]>;
+  synonyms = new Map<string, string[]>();
   showSynonyms = false;
 
   get emptyParams(): boolean {
@@ -78,6 +78,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
     const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
     const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
+    // TODO: Doesn't really make sense for synoynms to be here, but we could add it in the future
 
     return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
   }
@@ -105,11 +106,15 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
+    // No point sending a request if the params are completely empty
+    if (this.emptyParams) {
+      return of({total: 0, results: [], synonyms: {}});
+    }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
         const synonymsSet = new Set<string>();
-        this.synonyms = new Map<string, string[]>();
+        this.synonyms.clear();
 
         Object.entries(response.synonyms).forEach(([***ARANGO_USERNAME***, synonymList]) => {
           this.synonyms.set(***ARANGO_USERNAME***, synonymList);
