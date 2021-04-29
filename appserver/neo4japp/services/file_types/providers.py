@@ -1,16 +1,21 @@
 import base64
 import io
 import json
+import os
 import re
+import shutil
 import typing
 from io import BufferedIOBase
-from typing import Optional, List, Dict
+from typing import Optional
 
+import bioc
 import graphviz
 import html2text
 import nbformat
-from nbconvert import HTMLExporter, PDFExporter
 import requests
+from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
+from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
+from nbconvert import HTMLExporter, PDFExporter
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -19,8 +24,6 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
-import shutil
-import os
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -78,10 +81,10 @@ common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
 
-def search_doi_in_text(self, content: bytes) -> Optional[str]:
+def search_doi_in_text(content: bytes) -> Optional[str]:
     doi: Optional[str]
     try:
-        for match in self.doi_re.finditer(content):
+        for match in doi_re.finditer(content):
             label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
                 [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
             certainly_doi = label + url
@@ -98,18 +101,18 @@ def search_doi_in_text(self, content: bytes) -> Optional[str]:
             # make deep search only if there was clear indicator that it is a doi
             if certainly_doi:
                 # if contains escape patterns try substitute them
-                if self.common_escape_patterns_re.search(match.group()):
-                    doi = self._search_doi_in_pdf(
-                            self.common_escape_patterns_re.sub(
+                if common_escape_patterns_re.search(match.group()):
+                    doi = _search_doi_in_pdf(
+                            common_escape_patterns_re.sub(
                                     b'', match.group()
                             )
                     )
                     if is_valid_doi(doi):
                         return doi
                 # try substitute different dash types
-                if self.dash_types_re.search(match.group()):
-                    doi = self._search_doi_in_pdf(
-                            self.dash_types_re.sub(
+                if dash_types_re.search(match.group()):
+                    doi = _search_doi_in_pdf(
+                            dash_types_re.sub(
                                     b'-', match.group()
                             )
                     )
@@ -120,7 +123,7 @@ def search_doi_in_text(self, content: bytes) -> Optional[str]:
                 try:
                     reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
                     while reversedDOIEnding:
-                        _, _, reversedDOIEnding = self.characters_groups_re.split(
+                        _, _, reversedDOIEnding = characters_groups_re.split(
                                 reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
@@ -136,7 +139,7 @@ def search_doi_in_text(self, content: bytes) -> Optional[str]:
                 try:
                     reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
                     while reversedDOIEnding:
-                        _, _, reversedDOIEnding = self.characters_groups_re.split(
+                        _, _, reversedDOIEnding = characters_groups_re.split(
                                 reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + reversedDOIEnding[::-1]
@@ -156,7 +159,7 @@ def search_doi_in_text(self, content: bytes) -> Optional[str]:
                     end_of_match_idx = match.end(0)
                     first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
                     if first_char_after_match == b'\n':
-                        doi = self._search_doi_in_pdf(
+                        doi = _search_doi_in_pdf(
                                 # new input = match + 50 chars after new line
                                 match.group() +
                                 content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
@@ -168,6 +171,7 @@ def search_doi_in_text(self, content: bytes) -> Optional[str]:
     except Exception as e:
         pass
     return None
+
 
 class DirectoryTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.filesystem/directory'
@@ -237,6 +241,42 @@ def should_highlight_content_text_matches(self) -> bool:
 class NotHTMLError(AssertionError):
     pass
 
+
+class BiocTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'vnd.lifelike.document/bioc'
+    SHORTHAND = 'BioC'
+    mime_types = (MIME_TYPE,)
+
+    def handles(self, file: Files) -> bool:
+        return super().handles(file) and os.path.splitext(file.filename)[1].lower() in ['.json',
+            '.xml', '']
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        with BioCJsonIterReader(buffer) as reader:
+            for obj in reader:
+                passage = biocFromJSON(obj, level=bioc.DOCUMENT)
+
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+        data = buffer.read()
+        buffer.seek(0)
+
+        chunk = data[:2 ** 17]
+        doi = search_doi_in_text(chunk)
+        return doi
+
+    def convert(self, buffer):
+        # assume it is xml
+        collection = bioc.load(buffer)
+        buffer.stream = io.BytesIO()
+        with BioCJsonIterWriter(buffer) as writer:
+            for doc in collection.documents:
+                writer.write(biocToJSON(doc))
+        buffer.seek(0)
+
+
 class HTMLTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/html'
     SHORTHAND = 'html'
@@ -244,7 +284,8 @@ class HTMLTypeProvider(BaseFileTypeProvider):
     parser = html2text.HTML2Text()
 
     def handles(self, file: Files) -> bool:
-        return super().handles(file)
+        return super().handles(file) and os.path.splitext(file.filename)[
+            1].lower() != '.xml'
 
     def can_create(self) -> bool:
         return True
@@ -287,52 +328,12 @@ class HTMLTypeProvider(BaseFileTypeProvider):
     def should_highlight_content_text_matches(self) -> bool:
         return True
 
-class BiocTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.document/bioc'
-    SHORTHAND = 'BioC'
-    mime_types = (MIME_TYPE,)
-
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        try:
-            self.validate_content(buffer)
-            return 0
-        except ValueError as e:
-            return None
-        finally:
-            buffer.seek(0)
-
-    def can_create(self) -> bool:
-        return True
-
-    def validate_content(self, buffer: BufferedIOBase):
-        raw_collection = buffer.read()
-        docs = raw_collection.split(b'\n')
-        for doc in docs:
-            data = json.loads(doc)
-            print(data)
-
-    def can_create(self) -> bool:
-        return True
-
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
-        data = buffer.read()
-        buffer.seek(0)
-
-        chunk = data[:2 ** 17]
-        doi = PDFTypeProvider._search_doi_in_pdf(self, chunk)
-        return doi
-
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        return buffer  # Elasticsearch can index PDF files directly
-
-    def should_highlight_content_text_matches(self) -> bool:
-        return True
-
 
 class OfficeTypeProvider(BaseFileTypeProvider):
     def handles(self, file: Files) -> bool:
         return BaseFileTypeProvider.handles(self, file) and os.path.splitext(file.filename)[
-            1].lower() != '.ipynb'
+            1].lower() not in ['.ipynb', '.xml']
+
 
 class OfficeHTMLTypeProvider(OfficeTypeProvider, HTMLTypeProvider):
     def convert(self, buffer):
@@ -359,7 +360,8 @@ class OfficePDFTypeProvider(OfficeTypeProvider, PDFTypeProvider):
             shutil.copyfileobj(buffer.stream, f)
         # adjust spreadsheets print areas (do not slice vertically)
         os.system(
-                "/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp macro:///Standard.Module1.FitToPage"
+                "/bin/libreoffice* --headless --nologo --nofirststartwizard --norestore  tmp "
+                "macro:///Standard.Module1.FitToPage"
         )
         # convert to pdf
         assert (~os.system("/bin/libreoffice* --convert-to pdf tmp"))
@@ -382,6 +384,7 @@ class IPythonNotebookTypeProvider(BaseFileTypeProvider):
         (body, resources) = self.exporter.from_notebook_node(notebook)
         buffer.stream = io.BytesIO(body.encode('utf-8'))
 
+
 class IPythonNotebookHTMLTypeProvider(IPythonNotebookTypeProvider, HTMLTypeProvider):
     exporter = HTMLExporter()
 
@@ -389,7 +392,11 @@ class IPythonNotebookHTMLTypeProvider(IPythonNotebookTypeProvider, HTMLTypeProvi
 class IPythonNotebookPDFTypeProvider(IPythonNotebookTypeProvider, PDFTypeProvider):
     exporter = PDFExporter()
 
-
+    def convert(self, buffer):
+        data = buffer.read().decode('utf-8')
+        notebook = nbformat.reads(data, as_version=4)
+        (body, resources) = self.exporter.from_notebook_node(notebook)
+        buffer.stream = io.BytesIO(body)
 
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/map'
