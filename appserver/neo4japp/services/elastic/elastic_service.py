@@ -348,6 +348,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 CALL {
                     WITH search_term, synonym
                     MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    WHERE NOT 'Protein' IN LABELS(entity) AND SIZE(other_synonym.name) > 1
                     RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
                     LIMIT 10
                 }
@@ -483,25 +484,25 @@ class ElasticService(ElasticConnection, GraphConnection):
                 word_operands.append(word_synonym_match_subclause)
 
         # Create phrase match subclauses
-        phrase_operands = []
-        for phrase in phrases:
-            phrase_synonym_match_subclause = self.generate_synonym_match_subclause(
+        phrase_operands = [
+            self.generate_synonym_match_subclause(
                 phrase,
                 text_fields,
                 text_field_boosts,
                 synonym_map
             )
-            phrase_operands.append(phrase_synonym_match_subclause)
+            for phrase in phrases
+        ]
 
         # Create wildcard subclauses
-        wildcard_operands = []
-        for wildcard in wildcards:
-            wildcard_match_subclause = self.generate_wildcard_match_subclause(
+        wildcard_operands = [
+            self.generate_wildcard_match_subclause(
                 wildcard,
                 text_fields,
                 text_field_boosts
             )
-            wildcard_operands.append(wildcard_match_subclause)
+            for wildcard in wildcards
+        ]
 
         return {
             'bool': {
