@@ -80,8 +80,19 @@ def visualizer_search(
 
 # Start Search Helpers #
 
-def empty_params(params):
-    return not any([params[key] for key in params.keys()])
+def content_search_params_are_empty(params):
+    """
+    Checks if the given content search params are completely empty. We do checking on
+    specific fields, because for some options we don't want to execute a search if only that option
+    is present. E.g., a request with only the `synonyms` option doesn't make sense.
+    """
+    if 'q' in params and params['q']:
+        return False
+    elif 'projects' in params and params['projects']:
+        return False
+    elif 'types' in params and params['types']:
+        return False
+    return True
 
 
 def get_synonyms_from_params(q, advanced_args):
@@ -224,7 +235,7 @@ class ContentSearchView(FilesystemBaseView):
         current_user = g.current_user
         file_type_service = get_file_type_service()
 
-        if empty_params(params):
+        if content_search_params_are_empty(params):
             return jsonify(ContentSearchResponseSchema(context={
                 'user_privilege_filter': g.current_user.id,
             }).dump({
