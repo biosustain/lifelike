@@ -336,7 +336,7 @@ class AnnotationService:
         we always prefer homo sapiens if it is either of the two entity.
         Otherwise, we choose the one we matched first.
 
-        Currently used for proteins and genes.
+        Currently used for proteins and matches.
         """
         entity_location_lo = entity.lo_location_offset
         entity_location_hi = entity.hi_location_offset
@@ -397,18 +397,18 @@ class AnnotationService:
         entity_id_str: str,
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
-        except that we check genes against the matched organisms found in the
+        except that we check matches against the matched organisms found in the
         document.
 
         It is likely that the annotator will detect keywords that resemble gene
-        names, but are not genes in the context of the document.
+        names, but are not matches in the context of the document.
 
         It is also possible that two organisms discussed in the document each have a
         gene with the same name. In this case we need a way to distinguish between the
         two.
 
         To resolve both of the above issues we check the graph database for
-        relationships between genes/organisms, and handle each of the following cases:
+        relationships between matches/organisms, and handle each of the following cases:
             1. Exactly one organism match for a given gene
             2. More than one organism match for a given gene
             3. No organism matches for a given gene
@@ -446,7 +446,7 @@ class AnnotationService:
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
-        # any genes not matched in KG fall back to specified organism
+        # any matches not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
 
         if self.specified_organism.synonym:
@@ -712,7 +712,7 @@ class AnnotationService:
                         filtered_species_annotations_local.append(custom_anno)
 
         # clean species annotations first
-        # because genes depend on them
+        # because matches depend on them
         species_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=species_annotations
         )

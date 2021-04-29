@@ -370,7 +370,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         content.write('\r\n\r\n')
 
         if 'result' in data:
-            genes = data['result']['genes']
+            genes = data['result']['matches']
             for gene in genes:
                 content.write('\u2022 ')
                 content.write(gene['imported'])

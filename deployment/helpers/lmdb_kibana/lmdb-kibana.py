@@ -46,7 +46,7 @@ def open_env(entity_type, parentdir):
         env, db = _open_env(parentdir, DISEASES_MESH_LMDB)
     elif entity_type == 'foods':
         env, db = _open_env(parentdir, FOODS_MESH_LMDB)
-    elif entity_type == 'genes':
+    elif entity_type == 'matches':
         env, db = _open_env(parentdir, GENES_NCBI_LMDB)
     elif entity_type == 'phenomenas':
         env, db = _open_env(parentdir, PHENOMENAS_MESH_LMDB)

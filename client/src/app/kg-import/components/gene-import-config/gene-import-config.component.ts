@@ -182,7 +182,7 @@ export class GeneImportConfigComponent {
     /**
      * Resets the 'speciesSelection' and 'geneMatchingProperty' controls whenever the 'columnIndex2'
      * selection changes. The former two controls are required if the user is matching to KG
-     * genes, and here we set their values/validators accordingly. Also pre-populates the label field
+     * matches, and here we set their values/validators accordingly. Also pre-populates the label field
      * in the case of previously chosen columns, as with the columnSelection1 control.
      */
     columnSelection2Changed() {

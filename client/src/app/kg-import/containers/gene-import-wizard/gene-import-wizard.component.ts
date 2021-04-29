@@ -135,7 +135,7 @@ export class GeneImportWizardComponent {
         this.kgImportService.importGeneRelationships(formData).subscribe(
             result => {
                 // TODO: Eventually we may do something with the result, which is a list
-                // of relationships which didn't get matched to genes, if any.
+                // of relationships which didn't get matched to matches, if any.
                 this.importingRelationships = false;
                 this.snackbar.open('Finished importing relationships!', 'Close', {duration: 3000});
             },

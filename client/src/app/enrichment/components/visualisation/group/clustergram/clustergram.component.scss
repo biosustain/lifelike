@@ -45,26 +45,31 @@ $background-color: white;
     min-height: 300px;
     max-height: 100%;
 
-
-
     table {
-      margin-top: $tilted-text-estimate-y-space;
-      //table-layout: fixed;
-      scroll-snap-align: start;
+      &.headers {
+        margin-top: $tilted-text-estimate-y-space;
+        //table-layout: fixed;
+        scroll-snap-align: start;
+      }
       // if there is enough space show tilted text clipped on the right
       // rather than expanding columns
       width: calc(100% - #{$tilted-text-estimate-x-space});
 
-      thead tr {
+      .predefinedWidth tr {
         th {
-          position: relative;
           width: $cell-size;
-          height: $cell-size;
 
           &:first-child {
             width: $first-column-width;
             max-width: $first-column-width;
           }
+        }
+      }
+
+      thead tr {
+        th {
+          position: relative;
+          height: $cell-size;
 
           &[scope="col"] {
 
@@ -291,3 +296,10 @@ $background-color: white;
 
 
 
+.grid {
+  display: grid;
+  height: 1000px;
+
+  grid-template-columns: 3px;
+  grid-template-rows: 3px;
+}

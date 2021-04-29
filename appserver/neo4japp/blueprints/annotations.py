@@ -643,17 +643,17 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 annotations=annotation_chunk
             )
             if cell_text['domain'] == 'Imported':
-                enrichment['result']['genes'][cell_text[
+                enrichment['result']['matches'][cell_text[
                     'index']]['annotatedImported'] = snippet
             elif cell_text['domain'] == 'Matched':
-                enrichment['result']['genes'][cell_text[
+                enrichment['result']['matches'][cell_text[
                     'index']]['annotatedMatched'] = snippet
             elif cell_text['domain'] == 'Full Name':
-                enrichment['result']['genes'][cell_text[
+                enrichment['result']['matches'][cell_text[
                     'index']]['annotatedFullName'] = snippet
             else:
                 enrichment['result'][
-                    'genes'][cell_text[
+                    'matches'][cell_text[
                         'index']]['domains'][cell_text[
                             'domain']][cell_text[
                                 'label']]['annotatedText'] = snippet

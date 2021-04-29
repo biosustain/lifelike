@@ -618,7 +618,7 @@ def test_fix_false_positive_gene_annotations(
         annotations_list=create_mock_annotations(annotations),
     )
 
-    # do exact case matching for genes
+    # do exact case matching for matches
     if index == 1:
         assert len(fixed) == 0
     elif index == 2:
@@ -655,7 +655,7 @@ def test_fix_false_positive_protein_annotations(
         annotations_list=create_mock_annotations(annotations)
     )
 
-    # do exact case matching for genes
+    # do exact case matching for matches
     if index == 1:
         assert len(fixed) == 0
     elif index == 2:
