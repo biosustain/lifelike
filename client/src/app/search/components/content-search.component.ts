@@ -38,7 +38,6 @@ import { AdvancedSearchDialogComponent } from './advanced-search-dialog.componen
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
-import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 
 @Component({
