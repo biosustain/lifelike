@@ -1,6 +1,6 @@
-<div class="clustergram-wrapper" [style.height.em]="genes.size*2.5 + 8.5">
-    <table class="table table-striped column-hover">
-        <thead>
+<div class="clustergram-wrapper" [style.height.em]="matches.size*2.5 + 8.5">
+    <table class="table table-striped column-hover headers">
+        <thead class="predefinedWidth">
         <tr>
             <th></th>
             <th scope="col" *ngFor="let goTerm of goTerms">
@@ -22,21 +22,47 @@
             </th>
         </tr>
         </thead>
-        <tbody>
-        <tr *ngFor="let entry of genes | keyvalue: rowOrder">
-            <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>
-            <td *ngFor="let value of entry.value.values"
-                [ngClass]="{match:value}"
-                [style.backgroundColor]="value && geneColor"
-            ></td>
-            <td *ngIf="others"
-                class="match others">{{entry.value.others || ''}}</td>
-        </tr>
-        <tr *ngIf="others">
-            <th scope="row">others</th>
-            <td *ngFor="let value of others.values"></td>
-            <td class="match others">{{others.others}}</td>
-        </tr>
-        </tbody>
     </table>
+    <cdk-virtual-scroll-viewport [style.height.vh]="70" [style.maxHeight.vh]="70">
+        <div class="grid">
+            <div *cdkVirtualFor="let entry of matches"
+                 class="match"
+                 [style.backgroundColor]="geneColor"
+                 [ngStyle]="{
+                    gridColumn: entry.x,
+                    gridRow: entry.y
+                 }"
+            >
+            </div>
+        </div>
+        <!--        <table class="table table-striped column-hover">-->
+        <!--        <tbody class="predefinedWidth">-->
+        <!--        <tr *cdkVirtualFor="let entry of matches | keyvalue: rowOrder">-->
+        <!--            <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>-->
+        <!--            <td *ngFor="let value of entry.value.values"-->
+        <!--                [ngClass]="{match:value}"-->
+        <!--                [style.backgroundColor]="value && geneColor"-->
+        <!--            ></td>-->
+        <!--            <td *ngIf="others"-->
+        <!--                class="match others">{{entry.value.others || ''}}</td>-->
+        <!--        </tr>-->
+        <!--        <tr *ngIf="others">-->
+        <!--            <th scope="row">others</th>-->
+        <!--            <td *ngFor="let value of others.values"></td>-->
+        <!--            <td class="match others">{{others.others}}</td>-->
+        <!--        </tr>-->
+        <!--        </tbody>-->
+        <!--    </table>-->
+    </cdk-virtual-scroll-viewport>
+    <div class="grid">
+        <div *ngFor="let entry of matches"
+             class="match"
+             [style.backgroundColor]="geneColor"
+             [ngStyle]="{
+                    gridColumn: entry.x,
+                    gridRow: entry.y
+                 }"
+        >
+        </div>
+    </div>
 </div>

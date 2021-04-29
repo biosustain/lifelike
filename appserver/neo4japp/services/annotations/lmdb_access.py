@@ -29,7 +29,7 @@ class LMDBAccess:
         compounds_lmdb_path: str = 'lmdb/compounds',
         diseases_lmdb_path: str = 'lmdb/diseases',
         foods_lmdb_path: str = 'lmdb/foods',
-        genes_lmdb_path: str = 'lmdb/genes',
+        genes_lmdb_path: str = 'lmdb/matches',
         phenomenas_lmdb_path: str = 'lmdb/phenomenas',
         phenotypes_lmdb_path: str = 'lmdb/phenotypes',
         proteins_lmdb_path: str = 'lmdb/proteins',
