@@ -241,14 +241,15 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['fontcolor'] = style.get("fillColor") or default_icon_color
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
-                params['color'] = ANNOTATION_STYLES_DICT.get(
+                default_color = ANNOTATION_STYLES_DICT.get(
                     node['label'],
                     {'color': 'black'})['color']
-                params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
-                params['fontcolor'] = 'black'
-                params['style'] = 'rounded,filled'
+                params['color'] = style.get('strokeColor') or default_color
+                if style.get('fillColor'):
+                    params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
+                params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+                params['fontcolor'] = style.get('fillColor') or 'black'
+                params['style'] += ',filled'
 
             if 'hyperlink' in node['data'] and node['data']['hyperlink']:
                 params['href'] = node['data']['hyperlink']
