@@ -8,7 +8,6 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { EnrichmentService } from '../../services/enrichment.service';
 
-
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
   templateUrl: './enrichment-visualisation-viewer.component.html',
