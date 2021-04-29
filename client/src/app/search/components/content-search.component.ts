@@ -323,8 +323,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
     // Remove 'synoynms' from q and add to the synonyms options of the advancedParams. NOTE: by default, synonyms is true!
     const synonymsMatches = q.match(/\bsynonyms:\S*/g);
-    const extractedSynonyms = synonymsMatches === null ? ['true'] : synonymsMatches.map(synonymVal => synonymVal.split(':')[1]);
-    advancedParams.synonyms = extractedSynonyms.pop() === 'true';
+    advancedParams.synonyms = (synonymsMatches === null || synonymsMatches.pop().split(':')[1] === 'true');
     q = q.replace(/\bsynonyms:\S*/g, '');
 
     // Do one last whitespace replacement to clean up the query string
