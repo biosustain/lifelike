@@ -33,6 +33,7 @@ import { GlobalErrorHandler } from './global-error-handler';
 import { EnrichmentTablesModule } from './enrichment/enrichment-tables.module';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
 import { HtmlViewerLibModule } from './html-viewer/html-viewer-lib.module';
+import { BiocViewerLibModule } from './bioc-viewer/bioc-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { HtmlViewerLibModule } from './html-viewer/html-viewer-lib.module';
     DrawingToolModule,
     NgbModule,
     FileNavigatorModule,
+    BiocViewerLibModule,
     EnrichmentVisualisationsModule,
     ShortestPathModule,
     EnrichmentTablesModule,
