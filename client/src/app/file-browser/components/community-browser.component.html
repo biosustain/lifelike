@@ -45,8 +45,7 @@
       <div class="flex-fill overflow-auto">
         <app-object-list [objects]="status.placeholdersShown ? null : list.results" [appLinks]="true"
                        [forEditing]="false"
-                       (refreshRequest)="refresh()"
-                       (objectOpen)="openObject($event)"></app-object-list>
+                       (refreshRequest)="refresh()"></app-object-list>
       </div>
     </div>
   </ng-template>
