@@ -27,6 +27,7 @@ import { ObjectNavigatorComponent } from './file-navigator/components/object-nav
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component';
 import { HtmlViewComponent } from './html-viewer/components/html-view.component';
 
 // TODO: Add an unprotected home page
@@ -225,6 +226,15 @@ const routes: Routes = [
     data: {
       title: 'HTML Viewer',
       fontAwesomeIcon: 'file-code',
+    },
+  },
+  {
+    path: 'projects/:project_name/bioc/:file_id',
+    component: BiocViewComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'BioC Viewer',
+      fontAwesomeIcon: 'file-alt',
     },
   },
   {

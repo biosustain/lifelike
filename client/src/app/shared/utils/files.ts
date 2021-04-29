@@ -1,4 +1,4 @@
-import { from, Observable, of, OperatorFunction, Subject } from 'rxjs';
+import { from, Observable, OperatorFunction, Subject } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 export function mapBlobToBuffer(): OperatorFunction<Blob, ArrayBuffer> {
@@ -21,6 +21,17 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
       return null;
     }
     return JSON.parse(new TextDecoder(encoding).decode(data)) as T;
+  });
+}
+
+export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T | undefined> {
+  return map((data: ArrayBuffer | undefined) => {
+    if (data == null) {
+      return null;
+    }
+    const text = new TextDecoder(encoding).decode(data);
+    // @ts-ignore
+    return text.split('\n').map(JSON.parse);
   });
 }
 
