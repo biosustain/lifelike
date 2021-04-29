@@ -93,8 +93,7 @@ export class EnrichmentVisualisationService {
       {geneNames, organism: `${taxID}/${organism}`, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp),
-      map(data => data.map(addressPrecisionMistake))
+      map((data: any) => data.map(addressPrecisionMistake))
     );
   }
 }
