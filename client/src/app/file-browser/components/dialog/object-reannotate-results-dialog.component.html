@@ -3,7 +3,7 @@
 
   <app-modal-body>
     <ngb-accordion>
-      <ngb-panel *ngIf="success.length" title="Files that successfully re-annotated">
+      <ngb-panel *ngIf="success.length" title="Files that successfully annotated">
         <ng-template ngbPanelContent>
           <ul *ngFor="let file of success">
             <li>Filename: {{file}}</li>
@@ -11,7 +11,7 @@
         </ng-template>
       </ngb-panel>
 
-      <ngb-panel *ngIf="failed.length" title="Files that failed to re-annotate">
+      <ngb-panel *ngIf="failed.length" title="Files that failed to annotate">
         <ng-template ngbPanelContent>
           <ul *ngFor="let file of failed">
             <li>
