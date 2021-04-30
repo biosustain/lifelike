@@ -97,8 +97,7 @@
     - name: Stop any previous containers
       shell:
         chdir: "{{ deploy_dir }}"
-        shell: |
-          docker stop $(docker ps -aq)
+        cmd: docker stop $(docker ps -aq)
 
     - name: Pull latest docker images (if any)
       shell:
