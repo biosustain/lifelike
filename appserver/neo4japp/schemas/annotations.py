@@ -58,6 +58,7 @@ class AnnotationGenerationRequestSchema(CamelCaseSchema):
 class AnnotationGenerationResultSchema(CamelCaseSchema):
     attempted = fields.Boolean()
     success = fields.Boolean()
+    error = fields.String()
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):

@@ -6,7 +6,7 @@
       <ngb-panel *ngIf="success.length" title="Files that successfully re-annotated">
         <ng-template ngbPanelContent>
           <ul *ngFor="let file of success">
-            <li>{{file}}</li>
+            <li>Filename: {{file}}</li>
           </ul>
         </ng-template>
       </ngb-panel>
@@ -14,7 +14,10 @@
       <ngb-panel *ngIf="failed.length" title="Files that failed to re-annotate">
         <ng-template ngbPanelContent>
           <ul *ngFor="let file of failed">
-            <li>{{file}}</li>
+            <li>
+              Filename: {{file.filename}}<br>
+              Error: {{file.error}}
+            </li>
           </ul>
         </ng-template>
       </ngb-panel>
