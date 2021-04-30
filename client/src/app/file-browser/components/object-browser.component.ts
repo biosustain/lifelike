@@ -122,6 +122,17 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  getObjectQueryParams(object: FilesystemObject) {
+    if (this.router.url === this.workspaceManager.workspaceUrl) {
+      return {};
+    } else {
+      return {
+        return: `/projects/${encodeURIComponent(object.locator.projectName)}`
+          + (object.locator.directoryId ? `/folders/${object.locator.directoryId}` : ''),
+      };
+    }
+  }
+
   // ========================================
   // Template
   // ========================================
@@ -183,6 +194,13 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       });
       this.load(this.hashId);
     }, () => {
+    });
+  }
+
+  openObject(target: FilesystemObject) {
+    this.workspaceManager.navigate(target.getCommands(), {
+      queryParams: this.getObjectQueryParams(target),
+      newTab: target.type !== 'dir',
     });
   }
 
