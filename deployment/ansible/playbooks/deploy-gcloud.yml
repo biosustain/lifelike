@@ -47,7 +47,6 @@
         mode: u=rw,g=r,o=r
       with_items:
         - docker-compose.yml
-        - docker-compose.prod.yml
       tags:
         - deploy
 
@@ -98,7 +97,7 @@
     - name: Stop any previous containers
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml down"
+        cmd: docker stop $(docker ps -aq)
 
     - name: Pull latest docker images (if any)
       shell:
@@ -110,7 +109,7 @@
     - name: Start docker
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+        cmd: "docker-compose up -d"
       tags:
         - deploy
 
@@ -123,7 +122,7 @@
     - name: Run the migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
+        cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
       tags:
         - deploy
 
@@ -138,14 +137,14 @@
     - name: Create/Update LMDB database
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver flask load-lmdb"
+        cmd: "docker-compose exec -T appserver flask load-lmdb"
       tags:
         - deploy
 
     - name: Seed Elasticsearch
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -d -T appserver flask seed-elastic"
+        cmd: "docker-compose exec -d -T appserver flask seed-elastic"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
