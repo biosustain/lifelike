@@ -102,6 +102,13 @@ def close_lmdb(e=None):
         lmdb.close_envs()
 
 
+def _connect_to_elastic():
+    return Elasticsearch(
+        timeout=180,
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+    )
+
+
 class LMDBConnection:
     def __init__(self):
         super().__init__()
@@ -120,11 +127,10 @@ class GraphConnection:
         self.graph = get_neo4j_db()
 
 
-def _connect_to_elastic():
-    return Elasticsearch(
-        timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
-    )
+class ElasticConnection:
+    def __init__(self):
+        super().__init__()
+        self.elastic_client = _connect_to_elastic()
 
 
 """
@@ -248,8 +254,7 @@ def get_projects_service():
 def get_elastic_service():
     if 'elastic_service' not in g:
         from neo4japp.services.elastic import ElasticService
-        elastic = _connect_to_elastic()
-        g.elastic_service = ElasticService(elastic=elastic)
+        g.elastic_service = ElasticService()
     return g.elastic_service
 
 
