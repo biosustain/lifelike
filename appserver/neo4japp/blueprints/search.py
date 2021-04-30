@@ -80,8 +80,36 @@ def visualizer_search(
 
 # Start Search Helpers #
 
-def empty_params(params):
-    return not any([params[key] for key in params.keys()])
+def content_search_params_are_empty(params):
+    """
+    Checks if the given content search params are completely empty. We do checking on
+    specific fields, because for some options we don't want to execute a search if only that option
+    is present. E.g., a request with only the `synonyms` option doesn't make sense.
+    """
+    if 'q' in params and params['q']:
+        return False
+    elif 'projects' in params and params['projects']:
+        return False
+    elif 'types' in params and params['types']:
+        return False
+    return True
+
+
+def get_synonyms_from_params(q, advanced_args):
+    # By default, synonyms is true
+    use_synonyms = True
+    if 'synonyms' in advanced_args and advanced_args['synonyms'] is not None:
+        use_synonyms = advanced_args['synonyms']
+
+    # Even if `synonyms` is in the advanced args, expect `q` might also contain synonyms. In this
+    # case, the value found in q takes precedence.
+    extracted_synonyms = re.findall(r'\bsynonyms:\S*', q)
+
+    if len(extracted_synonyms) > 0:
+        q = re.sub(r'\bsynonyms:\S*', '', q)
+        use_synonyms = extracted_synonyms[-1].split(':')[1] == 'true'
+
+    return q, use_synonyms
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
@@ -207,7 +235,7 @@ class ContentSearchView(FilesystemBaseView):
         current_user = g.current_user
         file_type_service = get_file_type_service()
 
-        if empty_params(params):
+        if content_search_params_are_empty(params):
             return jsonify(ContentSearchResponseSchema(context={
                 'user_privilege_filter': g.current_user.id,
             }).dump({
@@ -223,6 +251,7 @@ class ContentSearchView(FilesystemBaseView):
         q, projects = get_projects_from_params(q, params)
         q = get_wildcards_from_params(q, params)
         q = get_phrase_from_params(q, params)
+        q, use_synonyms = get_synonyms_from_params(q, params)
 
         # Set the search term once we've parsed 'q' for all advanced options
         search_term = q.strip()
@@ -257,7 +286,7 @@ class ContentSearchView(FilesystemBaseView):
         }
 
         elastic_service = get_elastic_service()
-        elastic_result, search_phrases = elastic_service.search(
+        elastic_result, search_phrases, synonym_map = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
@@ -266,6 +295,7 @@ class ContentSearchView(FilesystemBaseView):
             text_field_boosts=text_field_boosts,
             keyword_fields=[],
             keyword_field_boosts={},
+            use_synonyms=use_synonyms,
             query_filter=query_filter,
             highlight=highlight
         )
@@ -309,6 +339,7 @@ class ContentSearchView(FilesystemBaseView):
             'total': elastic_result['total'],
             'query': ResultQuery(phrases=search_phrases),
             'results': results,
+            'synonyms': synonym_map
         }))
 
 
