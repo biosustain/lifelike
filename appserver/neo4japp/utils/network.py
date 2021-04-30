@@ -1,10 +1,13 @@
+import re
 import socket
 import urllib
 from http.client import HTTPSConnection, HTTPConnection
+from http.cookiejar import CookieJar
 from io import BytesIO
-from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector,\
+from typing import List, Tuple
+from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
     UnknownHandler, HTTPRedirectHandler, \
-    HTTPDefaultErrorHandler, HTTPErrorProcessor
+    HTTPDefaultErrorHandler, HTTPErrorProcessor, HTTPCookieProcessor, BaseHandler, Request
 
 from IPy import IP
 
@@ -76,6 +79,23 @@ class ControlledHTTPSConnection(ControlledConnectionMixin, HTTPSConnection):
                                               server_hostname=server_hostname)
 
 
+class DirectDownloadDetectorHandler(BaseHandler):
+    """Try to detect direct download URLs on known websites."""
+
+    rewrite_map: List[Tuple[re.Pattern, str]] = [
+        # LL-3036 - Force wiley.com links to go to the direct PDF
+        (re.compile('^https?://onlinelibrary.wiley.com/doi/epdf/([^?]+)$', re.I),
+         'https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true'),
+    ]
+
+    def http_request(self, request: Request):
+        for rewrite_pair in self.rewrite_map:
+            request.full_url = rewrite_pair[0].sub(rewrite_pair[1], request.full_url)
+        return request
+
+    https_request = http_request
+
+
 class ControlledHTTPHandler(HTTPHandler):
     """A version of HTTPHandler that blacklists certain hosts and ports."""
 
@@ -95,7 +115,8 @@ class ContentTooLongError(urllib.error.URLError):
     """Raised when the content is too big."""
 
 
-def read_url(*args, max_length, read_chunk_size=8192, buffer=None, **kwargs):
+def read_url(*args, max_length, read_chunk_size=8192, buffer=None, debug_level=0,
+             prefer_direct_downloads=False, **kwargs):
     """
     Get the contents at a URL, while controlling access to some degree.
 
@@ -104,19 +125,23 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None, **kwargs):
     :param read_chunk_size: the size of each chunk when downloading
     :param buffer: the buffer object to put the data in -- if None, then a new
         memory BytesIO will be created
+    :param debug_level: set to 1 to show requests in STDOUT
+    :param prefer_direct_downloads: set to true to change URLs to direct download versions if known
     :param kwargs: arguments for the opener
     :return: the buffer
     """
     # Build the opener with only select handlers
     opener = OpenerDirector()
-    handler_classes = [UnknownHandler,
-                       HTTPDefaultErrorHandler,
-                       HTTPRedirectHandler,
-                       HTTPErrorProcessor,
-                       ControlledHTTPHandler,
-                       ControlledHTTPSHandler]
-    for cls in handler_classes:
-        opener.add_handler(cls())
+    cookie_jar = CookieJar()
+    opener.add_handler(UnknownHandler())
+    if prefer_direct_downloads:
+        opener.add_handler(DirectDownloadDetectorHandler())
+    opener.add_handler(HTTPDefaultErrorHandler())
+    opener.add_handler(HTTPRedirectHandler())
+    opener.add_handler(HTTPCookieProcessor(cookiejar=cookie_jar))  # LL-1045 - add cookie support
+    opener.add_handler(HTTPErrorProcessor())
+    opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
+    opener.add_handler(ControlledHTTPSHandler(debuglevel=debug_level))
 
     conn = opener.open(*args, **kwargs)
 
