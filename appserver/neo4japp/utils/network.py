@@ -180,7 +180,7 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None, debug_level=0
     opener.add_handler(HTTPRedirectHandler())
     opener.add_handler(HTTPCookieProcessor(cookiejar=cookie_jar))  # LL-1045 - add cookie support
     opener.add_handler(HTTPErrorProcessor())
-    opener.add_handler(URLFixerHandler())
+    opener.add_handler(URLFixerHandler())  # LL-2990 - fix 'invalid' URLs
     opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
     opener.add_handler(ControlledHTTPSHandler(debuglevel=debug_level))
 
