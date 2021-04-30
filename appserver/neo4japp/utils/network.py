@@ -3,8 +3,9 @@ import socket
 import urllib
 from http.client import HTTPSConnection, HTTPConnection
 from http.cookiejar import CookieJar
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import List, Tuple
+from urllib.parse import urlsplit, urlunsplit, quote
 from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
     UnknownHandler, HTTPRedirectHandler, \
     HTTPDefaultErrorHandler, HTTPErrorProcessor, HTTPCookieProcessor, BaseHandler, Request
@@ -96,6 +97,45 @@ class DirectDownloadDetectorHandler(BaseHandler):
     https_request = http_request
 
 
+class URLFixerHandler(BaseHandler):
+    """Make URLs valid."""
+
+    def http_request(self, request: Request):
+        parsed = urlsplit(request.full_url)
+
+        scheme, netloc, path, query, fragment = parsed
+        username = parsed.username
+        password = parsed.password
+        hostname = parsed.hostname
+        port = parsed.port
+
+        path = quote(path, '/%')
+        query = quote(query, '&%=')
+        fragment = quote(fragment, '%')
+
+        # Encode the netloc
+        new_netloc = StringIO()
+        if username is not None:
+            new_netloc.write(quote(username, '%'))
+            if password is not None:
+                new_netloc.write(':')
+                new_netloc.write(quote(password, '%'))
+            new_netloc.write('@')
+        if hostname is not None:
+            # Apply punycode
+            new_netloc.write(hostname.encode('idna').decode('ascii'))
+        if port is not None:
+            new_netloc.write(':')
+            new_netloc.write(str(port))
+        netloc = new_netloc.getvalue()
+
+        request.full_url = urlunsplit((scheme, netloc, path, query, fragment))
+
+        return request
+
+    https_request = http_request
+
+
 class ControlledHTTPHandler(HTTPHandler):
     """A version of HTTPHandler that blacklists certain hosts and ports."""
 
@@ -140,6 +180,7 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None, debug_level=0
     opener.add_handler(HTTPRedirectHandler())
     opener.add_handler(HTTPCookieProcessor(cookiejar=cookie_jar))  # LL-1045 - add cookie support
     opener.add_handler(HTTPErrorProcessor())
+    opener.add_handler(URLFixerHandler())
     opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
     opener.add_handler(ControlledHTTPSHandler(debuglevel=debug_level))
 
