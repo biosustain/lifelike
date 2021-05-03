@@ -89,9 +89,14 @@ class DirectDownloadDetectorHandler(BaseHandler):
          'https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true'),
     ]
 
+    @classmethod
+    def rewrite_url(cls, url):
+        for rewrite_pair in cls.rewrite_map:
+            url = rewrite_pair[0].sub(rewrite_pair[1], url)
+        return url
+
     def http_request(self, request: Request):
-        for rewrite_pair in self.rewrite_map:
-            request.full_url = rewrite_pair[0].sub(rewrite_pair[1], request.full_url)
+        request.full_url = DirectDownloadDetectorHandler.rewrite_url(request.full_url)
         return request
 
     https_request = http_request
@@ -100,8 +105,9 @@ class DirectDownloadDetectorHandler(BaseHandler):
 class URLFixerHandler(BaseHandler):
     """Make URLs valid."""
 
-    def http_request(self, request: Request):
-        parsed = urlsplit(request.full_url)
+    @staticmethod
+    def fix_url(url):
+        parsed = urlsplit(url)
 
         scheme, netloc, path, query, fragment = parsed
         username = parsed.username
@@ -129,8 +135,10 @@ class URLFixerHandler(BaseHandler):
             new_netloc.write(str(port))
         netloc = new_netloc.getvalue()
 
-        request.full_url = urlunsplit((scheme, netloc, path, query, fragment))
+        return urlunsplit((scheme, netloc, path, query, fragment))
 
+    def http_request(self, request: Request):
+        request.full_url = URLFixerHandler.fix_url(request.full_url)
         return request
 
     https_request = http_request
