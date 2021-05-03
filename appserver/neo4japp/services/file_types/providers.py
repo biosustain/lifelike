@@ -212,10 +212,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
             pass
         return None
 
-
     def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
-
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
