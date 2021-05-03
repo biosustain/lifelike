@@ -26,7 +26,7 @@ import {
 } from 'app/users/components/terms-of-service-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
-import { ErrorResponse } from '../../shared/schemas/common';
+import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Injectable()
 export class AuthEffects {

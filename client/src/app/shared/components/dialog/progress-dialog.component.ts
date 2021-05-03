@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -18,6 +18,8 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 export class ProgressDialogComponent implements OnInit, OnDestroy {
   @Input() title: string;
   @Input() progressObservable: Observable<Progress>;
+  @Input() cancellable = false;
+  @Output() readonly progressCancel = new EventEmitter<any>();
   progressSubscription: Subscription;
   /**
    * Periodically updated with the progress of the upload.
@@ -40,5 +42,10 @@ export class ProgressDialogComponent implements OnInit, OnDestroy {
     if (this.progressSubscription != null) {
       this.progressSubscription.unsubscribe();
     }
+  }
+
+  cancel() {
+    this.activeModal.dismiss();
+    this.progressCancel.emit();
   }
 }

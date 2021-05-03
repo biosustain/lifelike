@@ -1,14 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES } from '../../shared/annotation-types';
-import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/annotation-types';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
-import { SEARCH_LINKS } from '../../shared/links';
+import { SEARCH_LINKS } from 'app/shared/links';
 import { cloneDeep } from 'lodash';
-import { url } from '../../shared/validators';
+import { url } from 'app/shared/validators';
 import { AnnotationType } from 'app/shared/constants';
 
 @Component({

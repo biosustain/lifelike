@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, ReplaySubject } from 'rxjs';
 
 import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
 import { SortDirectionType, SortDirection } from '../directives/table-sortable-header.directive';
@@ -40,8 +40,8 @@ function matches(data: any, term: string) {
 export class DataService {
   private _loading$ = new BehaviorSubject<boolean>(true);
   private _search$ = new Subject<void>();
-  private _data$ = new BehaviorSubject<any[]>([]);
-  private _total$ = new BehaviorSubject<number>(0);
+  private _data$ = new ReplaySubject<any[]>(1);
+  private _total$ = new ReplaySubject<number>(1);
 
   private _state: State = {
     page: 1,
