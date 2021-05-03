@@ -41,7 +41,7 @@ class FileContent(db.Model):
 def recalculate_doi_based_on_current_algorithm():
     session = Session(op.get_bind())
     pdf_type_provider = PDFTypeProvider()
-    dois = []
+
     for file in session.query(Files) \
             .filter(Files.mime_type == 'application/pdf') \
             .join(Files.content) \
@@ -49,8 +49,6 @@ def recalculate_doi_based_on_current_algorithm():
 
         buffer = io.BytesIO(file.raw_file)
         extracted_doi = pdf_type_provider.extract_doi(buffer)
-
-        dois.append(extracted_doi)
 
         session.query(Files)\
             .filter(Files.id == file.id)\
