@@ -20,6 +20,7 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
+  @Input() matchExistingTab: string;
   @Input() handleClick = true;
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
@@ -60,6 +61,7 @@ export class AbstractLinkDirective {
       state: this.state,
       newTab: attrBoolValue(this.newTab),
       sideBySide: attrBoolValue(this.sideBySide),
+      matchExistingTab: this.matchExistingTab,
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,
       preferStartupPane: this.preferStartupPane,

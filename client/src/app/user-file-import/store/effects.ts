@@ -22,7 +22,7 @@ import {
 import { displaySnackbar } from 'app/shared/store/snackbar-actions';
 
 import { UserFileImportService } from '../services/user-file-import.service';
-import { ErrorResponse } from '../../shared/schemas/common';
+import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Injectable()
 export class UserFileImportEffects {

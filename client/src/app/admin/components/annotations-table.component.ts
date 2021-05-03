@@ -17,7 +17,7 @@ import {
   PaginatedRequestOptions,
   ResultList,
   StandardRequestOptions,
-} from '../../shared/schemas/common';
+} from 'app/shared/schemas/common';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 
