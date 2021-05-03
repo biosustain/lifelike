@@ -1,10 +1,12 @@
+import urllib.request
 from contextlib import contextmanager
+from urllib.error import URLError
 
 import httpretty
 import pytest
 
 from neo4japp.utils.network import URLFixerHandler, DirectDownloadDetectorHandler, read_url, \
-    ControlledConnectionMixin
+    ControlledConnectionMixin, ContentTooLongError
 
 
 @contextmanager
@@ -24,6 +26,56 @@ def test_read_url():
         httpretty.register_uri(httpretty.GET, 'http://example.com', body='yo 🤙')
         assert 'yo 🤙' == read_url('http://example.com', max_length=1024 * 8).getvalue().decode(
             'utf-8')
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_has_custom_user_agent():
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body='hello')
+        read_url(urllib.request.Request('http://example.com', headers={
+            'User-Agent': 'some test',
+        }), max_length=1000)
+        assert 'some test' == httpretty.last_request().headers['User-Agent']
+
+
+@pytest.mark.parametrize('url', [
+    'file://etc/passwd',
+    'ftp://example.com',
+    'data:text/plain;charset=utf-8;base64,eW8=',
+], ids=str)
+def test_read_url_fails_on_dangerous_schemes(url):
+    with pytest.raises(URLError):
+        read_url(url, max_length=1000)
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_enforces_read_length():
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body=('hello' * 1000))
+        with pytest.raises(ContentTooLongError):
+            read_url('http://example.com', max_length=1000)
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_ignores_malicious_content_length_header():
+    def generate_response(request, uri, response_headers):
+        response_headers['Content-Length'] = 1
+        return [200, response_headers, 'hello' * 1000]
+
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body=generate_response)
+        assert b'h' == read_url('http://example.com', max_length=1000).getvalue()
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_ignores_wrong_content_length_header():
+    def generate_response(request, uri, response_headers):
+        response_headers['Content-Length'] = 10
+        return [200, response_headers, 'hello']
+
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body=generate_response)
+        assert b'hello' == read_url('http://example.com', max_length=1000).getvalue()
 
 
 @pytest.mark.parametrize('status_code', [301, 302, 303, 307], ids=str)
@@ -51,6 +103,16 @@ def test_read_url_cookie_support():
                read_url('http://example.com/redirect', max_length=1024 * 8).getvalue().decode(
                    'utf-8')
         assert 'name=joe' == httpretty.last_request().headers['Cookie']
+
+
+@pytest.mark.parametrize('url', [
+    'https://localhost',
+    'https://127.0.0.1',
+    'https://192.168.1.1',
+], ids=str)
+def test_read_url_blocks_local_ips(url):
+    with pytest.raises(URLError):
+        read_url(url, max_length=1024 * 8)
 
 
 @pytest.mark.parametrize(
