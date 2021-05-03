@@ -6,24 +6,24 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import { coerceNumberProperty } from '@angular/cdk/coercion';
-import { Directive, forwardRef, Input, OnChanges } from '@angular/core';
+import { Directive, forwardRef, Input, OnChanges, Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { VIRTUAL_SCROLL_STRATEGY, VirtualScrollStrategy } from './virtual-scroll-strategy';
-import { CdkVirtualScrollViewport } from './virtual-scroll-viewport';
-
+import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
+import { VirtualScrollStrategy, VIRTUAL_SCROLL_STRATEGY } from '@angular/cdk/scrolling';
+import { coerceNumberProperty } from '@angular/cdk/coercion';
 
 /** Virtual scrolling strategy for lists with items of known fixed size. */
+@Injectable()
 export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy {
   private readonly _scrolledIndexChange = new Subject<number[]>();
 
-  /** @docs-private Implemented as part of VirtualScrollStrategy. */
+  /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
   // @ts-ignore
   scrolledIndexChange: Observable<number[]> = this._scrolledIndexChange.pipe(distinctUntilChanged());
 
   /** The attached viewport. */
-  private _viewport: CdkVirtualScrollViewport | null = null;
+  private _viewport: AppGridVirtualScrollViewportComponent | null = null;
 
   /** The size of the items in the virtually scrolling list. */
   private _itemSize: number[];
@@ -49,7 +49,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
    * Attaches this scroll strategy to a viewport.
    * @param viewport The viewport to attach this strategy to.
    */
-  attach(viewport: CdkVirtualScrollViewport) {
+  attach(viewport) {
     this._viewport = viewport;
     this._updateTotalContentSize();
     this._updateRenderedRange();
@@ -78,22 +78,22 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     this._updateRenderedRange();
   }
 
-  /** @docs-private Implemented as part of VirtualScrollStrategy. */
+  /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
   onContentScrolled() {
     this._updateRenderedRange();
   }
 
-  /** @docs-private Implemented as part of VirtualScrollStrategy. */
+  /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
   onDataLengthChanged() {
     this._updateTotalContentSize();
     this._updateRenderedRange();
   }
 
-  /** @docs-private Implemented as part of VirtualScrollStrategy. */
+  /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
   onContentRendered() { /* no-op */
   }
 
-  /** @docs-private Implemented as part of VirtualScrollStrategy. */
+  /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
   onRenderedOffsetChanged() { /* no-op */
   }
 
@@ -209,10 +209,10 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
 /**
  * Provider factory for `FixedSizeVirtualScrollStrategy` that simply extracts the already created
  * `FixedSizeVirtualScrollStrategy` from the given directive.
- * @param fixedSizeDir The instance of `CdkFixedSizeVirtualScroll` to extract the
+ * @param fixedSizeDir The instance of `AppFixedSizeVirtualScroll` to extract the
  *     `FixedSizeVirtualScrollStrategy` from.
  */
-export function _fixedSizeVirtualScrollStrategyFactory(fixedSizeDir: CdkFixedSizeGridVirtualScroll) {
+export function _fixedSizeVirtualScrollStrategyFactory(fixedSizeDir: AppFixedSizeGridVirtualScroll) {
   return fixedSizeDir._scrollStrategy;
 }
 
@@ -220,22 +220,22 @@ export function _fixedSizeVirtualScrollStrategyFactory(fixedSizeDir: CdkFixedSiz
 /** A virtual scroll strategy that supports fixed-size items. */
 @Directive({
   // tslint:disable-next-line:directive-selector
-  selector: 'app-virtual-scroll-viewport-xy[itemSize]',
+  selector: 'app-grid-virtual-scroll-viewport[itemSize]',
   providers: [{
     provide: VIRTUAL_SCROLL_STRATEGY,
     useFactory: _fixedSizeVirtualScrollStrategyFactory,
-    deps: [forwardRef(() => CdkFixedSizeGridVirtualScroll)],
+    deps: [forwardRef(() => AppFixedSizeGridVirtualScroll)],
   }],
 })
 // tslint:disable-next-line:directive-class-suffix
-export class CdkFixedSizeGridVirtualScroll implements OnChanges {
+export class AppFixedSizeGridVirtualScroll implements OnChanges {
   /** The size of the items in the list (in pixels). */
   @Input()
   get itemSize(): number[] {
     return this._itemSize;
   }
 
-  set itemSizeX(value: number[]) {
+  set itemSize(value: number[]) {
     this._itemSize = value.map(coerceNumberProperty) as number[];
   }
 

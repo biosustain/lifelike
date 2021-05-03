@@ -5,25 +5,21 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { ClustergramComponent } from './clustergram.component';
 import { LinkModule } from '../../components/link/link.module';
-import { CdkFixedSizeGridVirtualScroll } from './gridScroll/fixed-size-grid-virtual-scroll';
-import { CdkVirtualScrollViewport } from './gridScroll/virtual-scroll-viewport';
+import { GridScrollModule } from './gridScroll/grid-scroll.module';
 
 const components = [
   ClustergramComponent
 ];
 
 @NgModule({
-  declarations: [
-    components,
-    CdkFixedSizeGridVirtualScroll,
-    CdkVirtualScrollViewport
-  ],
+  declarations: components,
   imports: [
     CommonModule,
     SharedModule,
-    LinkModule
+    LinkModule,
+    GridScrollModule
   ],
-  exports: components,
+  exports: components
 })
 export class ClustergramModule {
 }
