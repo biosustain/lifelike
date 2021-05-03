@@ -250,13 +250,17 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for node in content_json.get('nodes', []):
             node_data = node.get('data', {})
-            string_list.append(node.get('display_name', ''))
-            string_list.append(node_data.get('detail', '') if node_data else '')
+            display_name = node.get('display_name', '')
+            detail = node_data.get('detail', '') if node_data else ''
+            string_list.append('' if display_name is None else display_name)
+            string_list.append('' if detail is None else detail)
 
         for edge in content_json.get('edges', []):
             edge_data = edge.get('data', {})
-            string_list.append(edge.get('label', ''))
-            string_list.append(edge_data.get('detail', '') if edge_data else '')
+            label = edge.get('label', '')
+            detail = edge_data.get('detail', '') if edge_data else ''
+            string_list.append('' if label is None else label)
+            string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
