@@ -7,8 +7,6 @@ services:
         env_file:
             - ./.env
         volumes:
-            # Service account file needs access to Google Cloud Storage (Bucket)
-            - ${GCP_SERVICE_ACCOUNT:-/home/ansible/ansible_service_account.json}:/home/n4j/ansible_service_account.json
             - ${LMDB_DIR:-/home/ansible/lmdb}:/home/n4j/neo4japp/services/annotations/lmdb
         networks:
             - frontend
@@ -20,6 +18,8 @@ services:
             - 443:443
         networks:
             - frontend
+        depends_on:
+            - appserver
 
     pdfparser:
         ports:

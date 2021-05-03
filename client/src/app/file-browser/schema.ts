@@ -5,7 +5,7 @@ import {
   Meta,
 } from '../pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
-import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
+import { PaginatedRequestOptions, ResultList } from 'app/shared/schemas/common';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================

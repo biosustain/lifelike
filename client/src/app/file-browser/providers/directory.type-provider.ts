@@ -14,13 +14,13 @@ import {
 import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { DirectoryPreviewComponent } from '../components/directory-preview.component';
-import { RankedItem } from '../../shared/schemas/common';
+import { RankedItem } from 'app/shared/schemas/common';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AnnotationsService } from '../services/annotations.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 export const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 export const DIRECTORY_SHORTHAND = 'directory';

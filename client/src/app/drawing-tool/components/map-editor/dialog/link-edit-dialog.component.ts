@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { CommonFormDialogComponent } from '../../../../shared/components/dialog/common-form-dialog.component';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { Hyperlink, Source } from '../../../services/interfaces';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../../shared/services/message-dialog.service';
-import { potentiallyInternalUrl } from '../../../../shared/validators';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { potentiallyInternalUrl } from 'app/shared/validators';
 
 @Component({
   selector: 'app-link-edit-dialog',
