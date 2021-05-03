@@ -23,7 +23,7 @@
         </tr>
         </thead>
     </table>
-    <app-virtual-scroll-viewport-xy [itemSize]="[10, 10]" [style.height.vh]="70" [style.maxHeight.vh]="70">
+    <app-grid-virtual-scroll-viewport [itemSize]="[10, 10]" [style.height.vh]="70" [style.maxHeight.vh]="70">
         <div class="grid">
             <div *cdkVirtualFor="let entry of matches"
                  class="match"
@@ -53,7 +53,7 @@
         <!--        </tr>-->
         <!--        </tbody>-->
         <!--    </table>-->
-    </app-virtual-scroll-viewport-xy>
+    </app-grid-virtual-scroll-viewport>
     <div class="grid">
         <div *ngFor="let entry of matches"
              class="match"
