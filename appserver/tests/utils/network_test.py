@@ -1,6 +1,6 @@
 import urllib.request
 from contextlib import contextmanager
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 
 import httpretty
 import pytest
@@ -92,6 +92,16 @@ def test_read_url_redirect_support(status_code):
 
 
 @httpretty.activate(allow_net_connect=False)
+def test_read_url_has_redirect_limit():
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com/redirect', forcing_headers={
+            'Location': 'http://example.com/redirect'
+        }, status=302)
+        with pytest.raises(HTTPError):
+            read_url('http://example.com/redirect', max_length=1024 * 8)
+
+
+@httpretty.activate(allow_net_connect=False)
 def test_read_url_cookie_support():
     with monkey_patch_controlled_conn():
         httpretty.register_uri(httpretty.GET, 'http://example.com/redirect', forcing_headers={
@@ -108,6 +118,7 @@ def test_read_url_cookie_support():
 @pytest.mark.parametrize('url', [
     'https://localhost',
     'https://127.0.0.1',
+    'https://[::1]',
     'https://192.168.1.1',
 ], ids=str)
 def test_read_url_blocks_local_ips(url):
@@ -115,11 +126,52 @@ def test_read_url_blocks_local_ips(url):
         read_url(url, max_length=1024 * 8)
 
 
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_guards_against_dns_pinning():
+    prev_resolve = ControlledConnectionMixin.resolve
+    try:
+        ControlledConnectionMixin.resolve = lambda self, host: '127.0.0.1'
+        with pytest.raises(URLError):
+            read_url('http://example.com', max_length=1024 * 8)
+    finally:
+        ControlledConnectionMixin.resolve = prev_resolve
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_guards_against_dns_rebinding():
+    class RebindingResolver:
+        index = 0
+
+        def __call__(self, *args, **kwargs):
+            self.index += 1
+            if self.index == 1:
+                return '11.11.11.11'
+            elif self.index == 2:
+                return '127.0.0.1'
+            else:
+                raise RuntimeError('third case is not supposed to happen')
+
+    prev_resolve = ControlledConnectionMixin.resolve
+    try:
+        resolver = RebindingResolver()
+        ControlledConnectionMixin.resolve = resolver
+        httpretty.register_uri(httpretty.GET, 'http://11.11.11.11', forcing_headers={
+            'Location': 'http://example.com'
+        }, status=302)
+        with pytest.raises(URLError):
+            read_url('http://example.com', max_length=1024 * 8)
+        assert 2 == resolver.index
+    finally:
+        ControlledConnectionMixin.resolve = prev_resolve
+
+
 @pytest.mark.parametrize(
     'url_pair', [
         # Basic tests
         ('http://www.example.com//a-simple/url//test',
          'http://www.example.com//a-simple/url//test'),
+        ('http://www.example.com//a-simple/url/test\r\n\r\nContent-Type: application/json',
+         'http://www.example.com//a-simple/url/test%0D%0A%0D%0AContent-Type%3A%20application/json'),
         ('https://www.example.com//a-simple/url//test',
          'https://www.example.com//a-simple/url//test'),
         ('https://user:pass@example.com:4000//test/test',
