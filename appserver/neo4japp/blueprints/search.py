@@ -88,6 +88,10 @@ def content_search_params_are_empty(params):
     """
     if 'q' in params and params['q']:
         return False
+    elif 'phrase' in params and params['phrase']:
+        return False
+    elif 'wildcards' in params and params['wildcards']:
+        return False
     elif 'projects' in params and params['projects']:
         return False
     elif 'types' in params and params['types']:
