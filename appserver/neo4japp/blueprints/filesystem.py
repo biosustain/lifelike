@@ -632,9 +632,9 @@ class FileListView(FilesystemBaseView):
             if params.get('mime_type'):
                 file.mime_type = params['mime_type']
             else:
-                provider = file_type_service.detect_type(buffer)
+                mime_type = file_type_service.detect_mime_type(buffer)
                 buffer.seek(0)  # Must rewind
-                file.mime_type = provider.mime_types[0]
+                file.mime_type = mime_type
 
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
