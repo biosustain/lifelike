@@ -1,6 +1,56 @@
+from contextlib import contextmanager
+
+import httpretty
 import pytest
 
-from neo4japp.utils.network import URLFixerHandler, DirectDownloadDetectorHandler
+from neo4japp.utils.network import URLFixerHandler, DirectDownloadDetectorHandler, read_url, \
+    ControlledConnectionMixin
+
+
+@contextmanager
+def monkey_patch_controlled_conn():
+    prev_is_ip_allowed = ControlledConnectionMixin.is_ip_allowed
+    prev_resolve = ControlledConnectionMixin.resolve
+    ControlledConnectionMixin.is_ip_allowed = lambda self, ip: True
+    ControlledConnectionMixin.resolve = lambda self, host: host
+    yield
+    ControlledConnectionMixin.is_ip_allowed = prev_is_ip_allowed
+    ControlledConnectionMixin.resolve = prev_resolve
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url():
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body='yo 🤙')
+        assert 'yo 🤙' == read_url('http://example.com', max_length=1024 * 8).getvalue().decode(
+            'utf-8')
+
+
+@pytest.mark.parametrize('status_code', [301, 302, 303, 307], ids=str)
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_redirect_support(status_code):
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com/redirect', forcing_headers={
+            'Location': 'http://example.com'
+        }, status=status_code)
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body='yo 🤙')
+        assert 'yo 🤙' == \
+               read_url('http://example.com/redirect', max_length=1024 * 8).getvalue().decode(
+                   'utf-8')
+
+
+@httpretty.activate(allow_net_connect=False)
+def test_read_url_cookie_support():
+    with monkey_patch_controlled_conn():
+        httpretty.register_uri(httpretty.GET, 'http://example.com/redirect', forcing_headers={
+            'Location': 'http://example.com',
+            'Set-Cookie': 'name=joe'
+        }, status=302)
+        httpretty.register_uri(httpretty.GET, 'http://example.com', body='yo 🤙')
+        assert 'yo 🤙' == \
+               read_url('http://example.com/redirect', max_length=1024 * 8).getvalue().decode(
+                   'utf-8')
+        assert 'name=joe' == httpretty.last_request().headers['Cookie']
 
 
 @pytest.mark.parametrize(
