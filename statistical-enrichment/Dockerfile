@@ -7,7 +7,7 @@ RUN pip install pipenv
 
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
 COPY --chown=1000:1000 Pipfile* .
-RUN ([ -e "Pipfile.lock" ] || pipenv --python python lock)
+RUN ([ -f "Pipfile.lock" ] || pipenv --python python lock)
 RUN pipenv install --dev --deploy --system
 
 ENV FLASK_APP=statistical_enrichment

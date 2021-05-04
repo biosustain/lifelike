@@ -17,8 +17,8 @@ services:
     appserver:
         container_name: appserver
         image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
-        ports:
-            - "5000:5000"
+        expose:
+            - 80
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
