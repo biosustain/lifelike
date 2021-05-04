@@ -1,4 +1,4 @@
-# Use this if you want to spin up a local webserver
+ # Use this if you want to spin up a local webserver
 # for testing. This will build the Angular bundle
 # as it does for production and load the bundle into
 # Nginx and accessible via localhost

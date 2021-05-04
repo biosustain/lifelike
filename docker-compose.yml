@@ -4,6 +4,9 @@ services:
     appserver:
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
 
+    statistical-enrichment:
+        image: ${REGISTRY:-lifelike.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
+
     webserver:
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
 

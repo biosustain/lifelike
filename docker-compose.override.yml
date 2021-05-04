@@ -83,6 +83,60 @@ services:
             - redis
             - pdfparser
 
+    statistical-enrichment:
+        container_name: appserver
+        build: ./appserver
+        ports:
+            - "6000:6000"
+        env_file:
+            # File found in Azure File Store
+            - azure-secrets.env
+        environment:
+            # Log Services
+            - FORMAT_AS_JSON=false
+            # Flask
+            - FLASK_APP=app
+            - FLASK_APP_CONFIG=Development
+            - FLASK_DEBUG=1
+            - FLASK_ENV=development
+            # Postgres
+            - POSTGRES_HOST=pgdatabase
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+            # ElasticSearch
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+            - ELASTIC_FILE_INDEX_ID=file_dev
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            - NEO4J_PORT=7687
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
+            # Other
+            - DOMAIN=http://localhost
+            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
+        # Allow debugging w/ IPython or pdb
+        stdin_open: true
+        tty: true
+        # End debugging section
+        volumes:
+            - ./appserver:/home/n4j
+        networks:
+            - frontend
+            - backend
+        depends_on:
+            - elasticsearch
+            - database
+            - pgdatabase
+            - redis
+            - pdfparser
+
     cache-invalidator:
         container_name: cache-invalidator
         build: ./cache-invalidator
