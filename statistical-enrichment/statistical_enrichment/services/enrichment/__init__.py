@@ -1,11 +1,12 @@
-from enrichment import EnrichmentVisualisationService
+from flask import g
+
+from ...database import get_neo4j_db
+from .enrichment_visualisation import EnrichmentVisualisationService
 
 def get_enrichment_visualisation_service():
     if 'enrichment_visualisation_service' not in g:
-        from neo4japp.services import EnrichmentVisualisationService
         graph = get_neo4j_db()
         g.enrichment_visualisation_service = EnrichmentVisualisationService(
-            graph=graph,
-            session=db.session,
+            graph=graph
         )
     return g.enrichment_visualisation_service

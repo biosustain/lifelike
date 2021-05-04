@@ -196,8 +196,6 @@ def get_enrichment_table_service():
     return g.enrichment_table_service
 
 
-
-
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
