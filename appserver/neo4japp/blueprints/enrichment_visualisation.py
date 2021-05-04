@@ -6,6 +6,7 @@ from neo4japp.blueprints.auth import auth
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
+
 def forward_request():
     url = f'{request.scheme}://{request.path.replace(bp.url_prefix, "statistical-enrichment")}'
     resp = requests.request(
@@ -22,6 +23,7 @@ def forward_request():
                if name.lower() not in excluded_headers]
 
     return Response(resp.content, resp.status_code, headers)
+
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
