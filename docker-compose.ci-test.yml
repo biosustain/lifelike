@@ -17,8 +17,8 @@ services:
     appserver:
         container_name: appserver
         image: lifelike.azurecr.io/kg-appserver:${GITHUB_HASH}
-        expose:
-            - 80
+        ports:
+            - "5000:5000"
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
@@ -53,8 +53,8 @@ services:
     statistical-enrichment:
         container_name: statistical-enrichment
         build: ./statistical-enrichment
-        ports:
-            - "80:6000"
+        expose:
+            - 80
         environment:
             # Flask
             - FLASK_APP=statistical_enrichment
