@@ -4,9 +4,6 @@ services:
     appserver:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
 
-    statistical-enrichment:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
-
     webserver:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
 
@@ -18,3 +15,6 @@ services:
 
     cache-invalidator:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
+
+    statistical-enrichment:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}

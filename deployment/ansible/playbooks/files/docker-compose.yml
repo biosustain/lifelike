@@ -15,3 +15,6 @@ services:
 
     pdfparser:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
+
+    statistical-enrichment:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
