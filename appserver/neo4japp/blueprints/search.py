@@ -88,6 +88,10 @@ def content_search_params_are_empty(params):
     """
     if 'q' in params and params['q']:
         return False
+    elif 'phrase' in params and params['phrase']:
+        return False
+    elif 'wildcards' in params and params['wildcards']:
+        return False
     elif 'projects' in params and params['projects']:
         return False
     elif 'types' in params and params['types']:
@@ -308,8 +312,13 @@ class ContentSearchView(FilesystemBaseView):
         # complete data about the matched files, so we'll take the hash IDs returned by Elastic
         # and query our database
         file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
-        file_map = {file.id: file for file in
-                    self.get_nondeleted_recycled_files(Files.id.in_(file_ids))}
+        file_map = {
+            file.id: file
+            for file in self.get_nondeleted_recycled_files(
+                Files.id.in_(file_ids),
+                attr_excl=['enrichment_annotations', 'annotations']
+            )
+        }
 
         results = []
         for document in elastic_result['hits']:
