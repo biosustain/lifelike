@@ -54,7 +54,7 @@ scheme = os.getenv('NEO4J_SCHEME', 'bolt')
 port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'
 username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
-driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
+driver = GraphDatabase.driver(url, auth=basic_auth(username, password), max_connection_lifetime=300)
 
 
 def get_neo4j_db():
