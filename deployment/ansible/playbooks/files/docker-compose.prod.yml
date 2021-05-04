@@ -21,6 +21,14 @@ services:
         depends_on:
             - appserver
 
+    statistical-enrichment:
+        expose:
+            - 80
+        env_file:
+            - ./.env
+        networks:
+            - backend
+
     pdfparser:
         ports:
             - "7600:7600"
