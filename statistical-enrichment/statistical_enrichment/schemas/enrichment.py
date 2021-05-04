@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from flask_marshmallow import fields, Schema
-from marshmallow import ValidationError
+from flask_marshmallow import Schema
+from marshmallow import fields, ValidationError
 from marshmallow.validate import Regexp, OneOf
 
 
