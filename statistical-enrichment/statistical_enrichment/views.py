@@ -1,14 +1,21 @@
-from statistical_enrichment import app, EnrichmentSchema
+from . import app
 
 from functools import partial
 
-from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_enrichment_visualisation_service
-from neo4japp.services.rcache import redis_cached
+from .services.rcache import redis_cached
 from webargs.flaskparser import use_args
+from .schemas import EnrichmentSchema
+from .services import get_enrichment_visualisation_service
+
+@app.route('/', methods=['GET','POST'])
+def enrich():
+    raise Exception('No function provided!')
+
+@app.route('/healthz', methods=['GET','POST'])
+def healthz():
+    return "I am OK!"
 
 @app.route('/enrich-with-go-terms', methods=['POST'])
-@auth.login_required
 @use_args(EnrichmentSchema)
 def enrich_go(args):
     gene_names = args['geneNames']
