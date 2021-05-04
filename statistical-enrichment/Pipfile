@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "==5.3.5"
+mypy = "==0.770"
+pycodestyle = "==2.5.0"
+
+[packages]
+flask-marshmallow = "==0.11.0"
+Flask = "==1.1.2"
+flask-caching = "==1.8.0"
+Flask-Cors = "==3.0.10"
+Flask-SQLAlchemy = "==2.4.4"
+gunicorn = "==20.0.4"
+redis = "==3.5.2"
+pandas = "==1.0.5"
+fastjsonschema = "==2.15.0"
+marshmallow-dataclass = "==8.3.1"
+marshmallow-enum = "==1.5.1"
+scipy = "==1.6.1"
+statsmodels = "==0.12.2"
+neo4j = "==4.2.1"
+
+[requires]
+python_version = "3.9"
