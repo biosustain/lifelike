@@ -14,7 +14,6 @@ services:
             - frontend
             - backend
         restart: always
-        mem_limit: 12gb
 
     webserver:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
@@ -26,7 +25,6 @@ services:
         depends_on:
             - appserver
         restart: always
-        mem_limit: 2gb
 
     pdfparser:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
