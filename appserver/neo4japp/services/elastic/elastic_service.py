@@ -123,6 +123,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         results = parallel_bulk(
             self.elastic_client,
             documents,
+            thread_count=1,
             raise_on_error=False,
             raise_on_exception=False
         )
