@@ -6,7 +6,7 @@ import string
 import logging
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
-from elasticsearch.helpers import parallel_bulk
+from elasticsearch.helpers import parallel_bulk, streaming_bulk
 from flask import current_app
 from io import BytesIO
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
@@ -143,11 +143,38 @@ class ElasticService(ElasticConnection, GraphConnection):
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
 
+    def streaming_bulk_documents(self, documents):
+        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = streaming_bulk(
+            client=self.elastic_client,
+            actions=documents,
+            max_retries=5,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
+
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+
     def delete_documents(self, document_ids: List[str], index_id: str):
         """
         Deletes all documents with the given file hash IDs from Elastic.
         """
-        self.parallel_bulk_documents(({
+        self.streaming_bulk_documents(({
             '_op_type': 'delete',
             '_index': index_id,
             '_id': document_id
@@ -185,7 +212,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             if not batch:
                 break
 
-            self.parallel_bulk_documents(self._lazy_create_es_docs(batch))
+            self.streaming_bulk_documents(self._lazy_create_es_docs(batch))
 
     def _lazy_create_es_docs(self, batch):
         """
