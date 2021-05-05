@@ -1,56 +1,55 @@
 <div class="clustergram-wrapper" [style.height.em]="matches.size*2.5 + 8.5">
-<!--    <table class="table table-striped column-hover headers">-->
-<!--        <thead class="predefinedWidth">-->
-<!--        <tr>-->
-<!--            <th></th>-->
-<!--            <th scope="col" *ngFor="let goTerm of goTerms">-->
-<!--                <div>-->
-<!--                    <ng-template #tooltip>-->
-<!--                        {{goTerm.goTerm}} ({{goTerm.goId}})-->
-<!--                    </ng-template>-->
-<!--                    <span [ngbTooltip]="tooltip"-->
-<!--                          container="body"-->
-<!--                          tooltipClass="rotatedTooltip"-->
-<!--                          placement="bottom-left bottom-right">-->
-<!--                        {{goTerm.goTerm}}</span>-->
-<!--                </div>-->
-<!--            </th>-->
-<!--            <th scope="col" *ngIf="others" class="others">-->
-<!--                <div>-->
-<!--                    <span>others</span>-->
-<!--                </div>-->
-<!--            </th>-->
-<!--        </tr>-->
-<!--        </thead>-->
-<!--    </table>-->
+    <!--    <table class="table table-striped column-hover headers">-->
+    <!--        <thead class="predefinedWidth">-->
+    <!--        <tr>-->
+    <!--            <th></th>-->
+    <!--            <th scope="col" *ngFor="let goTerm of goTerms">-->
+    <!--                <div>-->
+    <!--                    <ng-template #tooltip>-->
+    <!--                        {{goTerm.goTerm}} ({{goTerm.goId}})-->
+    <!--                    </ng-template>-->
+    <!--                    <span [ngbTooltip]="tooltip"-->
+    <!--                          container="body"-->
+    <!--                          tooltipClass="rotatedTooltip"-->
+    <!--                          placement="bottom-left bottom-right">-->
+    <!--                        {{goTerm.goTerm}}</span>-->
+    <!--                </div>-->
+    <!--            </th>-->
+    <!--            <th scope="col" *ngIf="others" class="others">-->
+    <!--                <div>-->
+    <!--                    <span>others</span>-->
+    <!--                </div>-->
+    <!--            </th>-->
+    <!--        </tr>-->
+    <!--        </thead>-->
+    <!--    </table>-->
     <app-grid-virtual-scroll-viewport [itemSize]="[14, 14]" [style.height.px]="300" [style.width.perc]="100"
                                       [style.display]="'block'">
-<!--                <table class="table table-striped column-hover headers">-->
-<!--        <thead class="predefinedWidth">-->
-<!--        <tr>-->
-<!--            <th></th>-->
-<!--            <th scope="col" *ngFor="let goTerm of goTerms">-->
-<!--                <div>-->
-<!--                    <ng-template #tooltip>-->
-<!--                        {{goTerm.goTerm}} ({{goTerm.goId}})-->
-<!--                    </ng-template>-->
-<!--                    <span [ngbTooltip]="tooltip"-->
-<!--                          container="body"-->
-<!--                          tooltipClass="rotatedTooltip"-->
-<!--                          placement="bottom-left bottom-right">-->
-<!--                        {{goTerm.goTerm}}</span>-->
-<!--                </div>-->
-<!--            </th>-->
-<!--            <th scope="col" *ngIf="others" class="others">-->
-<!--                <div>-->
-<!--                    <span>others</span>-->
-<!--                </div>-->
-<!--            </th>-->
-<!--        </tr>-->
-<!--        </thead>-->
-<!--    </table>-->
-        <div class="box"></div>
-        <div class="box2"></div>
+        <div class="box columnHeader rowHeader">
+            <ng-template appVirtualFor [appVirtualForOf]="goTerms" let-goTerm [secondary]="true">
+                <div [ngStyle]="{
+                    left: goTerm.x*14+'px'
+                 }">
+                    <ng-template #tooltip>
+                        {{goTerm.goTerm}} ({{goTerm.goId}})
+                    </ng-template>
+                    <span [ngbTooltip]="tooltip"
+                          container="body"
+                          tooltipClass="rotatedTooltip"
+                          placement="bottom-left bottom-right">
+                        {{goTerm.goTerm}}{{goTerm.x}}</span>
+                </div>
+            </ng-template>
+        </div>
+        <div class="box2 rowHeader">
+            <ng-template appVirtualFor [appVirtualForOf]="genes" let-entry [secondary]="true">
+                <div [appSELink]="entry.key"
+                     [ngStyle]="{
+                    top: entry.y*14+'px'
+                 }"
+                >{{entry.key}}{{entry.y}}</div>
+            </ng-template>
+        </div>
         <div class="grid">
             <div *appVirtualFor="let entry of matches"
                  class="match"
@@ -81,15 +80,15 @@
         <!--        </tbody>-->
         <!--    </table>-->
     </app-grid-virtual-scroll-viewport>
-<!--    <div class="grid">-->
-<!--        <div *ngFor="let entry of matches"-->
-<!--             class="match"-->
-<!--             [style.backgroundColor]="geneColor"-->
-<!--             [ngStyle]="{-->
-<!--                    gridColumn: entry.x,-->
-<!--                    gridRow: entry.y-->
-<!--                 }"-->
-<!--        >-->
-<!--        </div>-->
-<!--    </div>-->
+    <!--    <div class="grid">-->
+    <!--        <div *ngFor="let entry of matches"-->
+    <!--             class="match"-->
+    <!--             [style.backgroundColor]="geneColor"-->
+    <!--             [ngStyle]="{-->
+    <!--                    gridColumn: entry.x,-->
+    <!--                    gridRow: entry.y-->
+    <!--                 }"-->
+    <!--        >-->
+    <!--        </div>-->
+    <!--    </div>-->
 </div>

@@ -300,6 +300,8 @@ $background-color: white;
 
 .grid {
   position: relative;
+  margin-top: 140px;
+  margin-left: 140px;
   //display: grid;
   //grid-template-areas: "zero";
   //
@@ -319,14 +321,22 @@ $background-color: white;
 .box {
   position: sticky;
   background: red;
-  width: 50px;
-  height: 50px;
-  top: 20px;
+  top: 0;
+  & > * {
+    position: absolute;
+    overflow: hidden;
+    width: 14px;
+    height: 140px;
+  }
 }
 .box2 {
   position: sticky;
   background: green;
-  width: 50px;
-  height: 50px;
-  left: 20px;
+  left: 0;
+  & > * {
+    position: absolute;
+    overflow: hidden;
+    width: 140px;
+    height: 14px;
+  }
 }

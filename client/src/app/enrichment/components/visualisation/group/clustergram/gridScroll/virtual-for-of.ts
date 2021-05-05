@@ -74,11 +74,9 @@ function getOffset(orientation: 'horizontal' | 'vertical', direction: 'start' | 
  */
 @Directive({
   selector: '[appVirtualFor][appVirtualForOf]'
-  // providers: [
-  //   {provide: _VIEW_REPEATER_STRATEGY, useClass: _RecycleViewRepeaterStrategy},
-  // ]
 })
 export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>, CollectionViewer, DoCheck, OnDestroy {
+  @Input() secondary: boolean;
 
   /** The DataSource to display. */
   @Input()
@@ -161,7 +159,11 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       ngZone.run(() => this.viewChange.next(this._renderedRange));
       this._onRenderedDataChange();
     });
-    this._viewport.attach(this);
+    if (this.secondary) {
+      this._viewport.attachSecondary(this);
+    } else {
+      this._viewport.attach(this);
+    }
   }
 
   static ngAcceptInputType_appVirtualForTemplateCacheSize;
@@ -287,7 +289,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     }
     const {_renderedRange: {start: [sx, sy], end: [ex, ey]}} = this;
     this._renderedItems = this._data.filter(d =>
-      sx <= d.x && d.x <= ex && sy <= d.y && d.y <= ey
+      (!d.x || (sx <= d.x && d.x <= ex)) && (!d.y || (sy <= d.y && d.y <= ey))
     );
     console.log('rendered items', this._renderedItems.length);
     if (!this._differ) {
