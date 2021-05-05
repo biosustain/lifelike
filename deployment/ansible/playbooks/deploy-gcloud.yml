@@ -141,10 +141,10 @@
       tags:
         - deploy
 
-    # - name: Seed Elasticsearch
-    #   shell:
-    #     chdir: "{{ deploy_dir }}"
-    #     cmd: "docker-compose exec -d -T appserver flask seed-elastic"
+    - name: Seed Elasticsearch
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose exec -d -T appserver flask seed-elastic"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
