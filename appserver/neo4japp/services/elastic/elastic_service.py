@@ -160,7 +160,7 @@ class ElasticService(ElasticConnection, GraphConnection):
     def _delete_files(self, hash_ids: List[str]):
         self.delete_documents(hash_ids, FILE_INDEX_ID)
 
-    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 25):
         """
         Adds the files with the given ids to Elastic. If no IDs are given,
         all non-deleted files will be indexed.
