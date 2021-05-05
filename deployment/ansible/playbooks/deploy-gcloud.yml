@@ -122,7 +122,7 @@
     - name: Run the migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
+        cmd: "docker-compose exec -d appserver bin/migrate-db --upgrade --data-migrate"
       tags:
         - deploy
 
@@ -137,14 +137,14 @@
     - name: Create/Update LMDB database
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -T appserver flask load-lmdb"
+        cmd: "docker-compose exec -d appserver flask load-lmdb"
       tags:
         - deploy
 
     - name: Seed Elasticsearch
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -d -T appserver flask seed-elastic"
+        cmd: "docker-compose exec -d appserver flask seed-elastic"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
