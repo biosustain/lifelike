@@ -2,6 +2,7 @@ version: '2.4'
 
 services:
     appserver:
+        container_name: appserver
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
         ports:
             - 5000:5000
