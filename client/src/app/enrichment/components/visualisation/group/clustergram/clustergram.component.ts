@@ -27,6 +27,7 @@ export class ClustergramComponent implements OnChanges {
   @Input() show: boolean;
 
   matches: Array<{ x: number, y: number }>;
+  genes;
   others: GeneRow | undefined;
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
@@ -49,14 +50,14 @@ export class ClustergramComponent implements OnChanges {
 
   ngOnChanges() {
     if (this.show) {
-      const data = [...this.data].sort(this.columnOrder);
+      const data = [...this.data].sort(this.columnOrder).map((o, i) => ({...o, x: i}));
       let genes = new Map<string, number>();
       const matches = [];
       data.forEach(({geneNames}, goIndex) => {
         geneNames.forEach(g => {
           matches.push({
-            y: goIndex,
-            x: g
+            x: goIndex,
+            y: g
           });
           let frequency = genes.get(g);
           if (!frequency) {
@@ -68,11 +69,12 @@ export class ClustergramComponent implements OnChanges {
       });
       genes = new Map(
         [...genes]
-        .sort((a, b) => b[1] - a[1])
-        .map(([k, v], i) => [k, i])
+          .sort((a, b) => b[1] - a[1])
+          .map(([k, v], i) => [k, i])
       );
+      this.genes = [...genes].map(([key, i]) => ({key, y: i}));
       this.matches = matches
-        .map(({x, y}) => ({y, x: genes.get(x)}));
+        .map(({x, y}) => ({x, y: genes.get(y)}));
       this.goTerms = data;
     }
   }

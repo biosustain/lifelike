@@ -5,7 +5,7 @@ import { AppFixedSizeGridVirtualScroll } from './fixed-size-grid-virtual-scroll'
 import { PlatformModule } from '@angular/cdk/platform';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { BidiModule } from '@angular/cdk/bidi';
-import { AppVirtualForOfDirective } from './virtual-for-of';
+import { AppVirtualForOfDirective, AppVirtualForOfSecondaryDirective } from './virtual-for-of';
 
 @NgModule({
   imports: [

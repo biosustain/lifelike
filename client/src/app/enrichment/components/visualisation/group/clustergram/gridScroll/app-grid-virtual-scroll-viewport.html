@@ -2,6 +2,8 @@
   Wrap the rendered content in an element that will be used to offset it based on the scroll
   position.
 -->
+<ng-content select=".columnHeader"></ng-content>
+<ng-content select=".rowHeader"></ng-content>
 <div #contentWrapper class="app-virtual-scroll-content-wrapper">
   <ng-content></ng-content>
 </div>
