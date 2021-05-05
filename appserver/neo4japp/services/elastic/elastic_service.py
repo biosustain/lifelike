@@ -123,7 +123,6 @@ class ElasticService(ElasticConnection, GraphConnection):
         results = parallel_bulk(
             self.elastic_client,
             documents,
-            thread_count=1,
             raise_on_error=False,
             raise_on_exception=False
         )
@@ -188,7 +187,28 @@ class ElasticService(ElasticConnection, GraphConnection):
     def _delete_files(self, hash_ids: List[str]):
         self.delete_documents(hash_ids, FILE_INDEX_ID)
 
-    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 25):
+    def windowed_query(self, q, column, windowsize):
+        """"Break a Query into chunks on a given column."""
+
+        single_entity = q.is_single_entity
+        q = q.add_column(column).order_by(column)
+        last_id = None
+
+        while True:
+            subq = q
+            if last_id is not None:
+                subq = subq.filter(column > last_id)
+            chunk = subq.limit(windowsize).all()
+            if not chunk:
+                break
+            last_id = chunk[-1][-1]
+            for row in chunk:
+                if single_entity:
+                    yield row[0]
+                else:
+                    yield row[0:-1]
+
+    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
         """
         Adds the files with the given ids to Elastic. If no IDs are given,
         all non-deleted files will be indexed.
@@ -204,14 +224,14 @@ class ElasticService(ElasticConnection, GraphConnection):
             filters.append(Files.hash_id.in_(hash_ids))
 
         query = self._get_file_hierarchy_query(and_(*filters))
-        results = iter(query.yield_per(batch_size))
-
-        while True:
-            batch = list(itertools.islice(results, batch_size))
-
-            if not batch:
-                break
-
+        batch = []  # type:ignore
+        for result in self.windowed_query(query, Files.hash_id, batch_size):
+            if len(batch) == batch_size:
+                self.streaming_bulk_documents(self._lazy_create_es_docs(batch))
+                batch = []
+            else:
+                batch.append(result)
+        if len(batch):
             self.streaming_bulk_documents(self._lazy_create_es_docs(batch))
 
     def _lazy_create_es_docs(self, batch):
