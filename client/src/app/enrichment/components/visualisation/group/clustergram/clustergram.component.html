@@ -1,36 +1,63 @@
 <div class="clustergram-wrapper" [style.height.em]="matches.size*2.5 + 8.5">
-    <table class="table table-striped column-hover headers">
-        <thead class="predefinedWidth">
-        <tr>
-            <th></th>
-            <th scope="col" *ngFor="let goTerm of goTerms">
-                <div>
-                    <ng-template #tooltip>
-                        {{goTerm.goTerm}} ({{goTerm.goId}})
-                    </ng-template>
-                    <span [ngbTooltip]="tooltip"
-                          container="body"
-                          tooltipClass="rotatedTooltip"
-                          placement="bottom-left bottom-right">
-                        {{goTerm.goTerm}}</span>
-                </div>
-            </th>
-            <th scope="col" *ngIf="others" class="others">
-                <div>
-                    <span>others</span>
-                </div>
-            </th>
-        </tr>
-        </thead>
-    </table>
-    <app-grid-virtual-scroll-viewport [itemSize]="[10, 10]" [style.height.vh]="70" [style.maxHeight.vh]="70">
+<!--    <table class="table table-striped column-hover headers">-->
+<!--        <thead class="predefinedWidth">-->
+<!--        <tr>-->
+<!--            <th></th>-->
+<!--            <th scope="col" *ngFor="let goTerm of goTerms">-->
+<!--                <div>-->
+<!--                    <ng-template #tooltip>-->
+<!--                        {{goTerm.goTerm}} ({{goTerm.goId}})-->
+<!--                    </ng-template>-->
+<!--                    <span [ngbTooltip]="tooltip"-->
+<!--                          container="body"-->
+<!--                          tooltipClass="rotatedTooltip"-->
+<!--                          placement="bottom-left bottom-right">-->
+<!--                        {{goTerm.goTerm}}</span>-->
+<!--                </div>-->
+<!--            </th>-->
+<!--            <th scope="col" *ngIf="others" class="others">-->
+<!--                <div>-->
+<!--                    <span>others</span>-->
+<!--                </div>-->
+<!--            </th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--    </table>-->
+    <app-grid-virtual-scroll-viewport [itemSize]="[14, 14]" [style.height.px]="300" [style.width.perc]="100"
+                                      [style.display]="'block'">
+<!--                <table class="table table-striped column-hover headers">-->
+<!--        <thead class="predefinedWidth">-->
+<!--        <tr>-->
+<!--            <th></th>-->
+<!--            <th scope="col" *ngFor="let goTerm of goTerms">-->
+<!--                <div>-->
+<!--                    <ng-template #tooltip>-->
+<!--                        {{goTerm.goTerm}} ({{goTerm.goId}})-->
+<!--                    </ng-template>-->
+<!--                    <span [ngbTooltip]="tooltip"-->
+<!--                          container="body"-->
+<!--                          tooltipClass="rotatedTooltip"-->
+<!--                          placement="bottom-left bottom-right">-->
+<!--                        {{goTerm.goTerm}}</span>-->
+<!--                </div>-->
+<!--            </th>-->
+<!--            <th scope="col" *ngIf="others" class="others">-->
+<!--                <div>-->
+<!--                    <span>others</span>-->
+<!--                </div>-->
+<!--            </th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--    </table>-->
+        <div class="box"></div>
+        <div class="box2"></div>
         <div class="grid">
-            <div *cdkVirtualFor="let entry of matches"
+            <div *appVirtualFor="let entry of matches"
                  class="match"
                  [style.backgroundColor]="geneColor"
                  [ngStyle]="{
-                    gridColumn: entry.x,
-                    gridRow: entry.y
+                    left: entry.x*14+'px',
+                    top: entry.y*14+'px'
                  }"
             >
             </div>
@@ -54,15 +81,15 @@
         <!--        </tbody>-->
         <!--    </table>-->
     </app-grid-virtual-scroll-viewport>
-    <div class="grid">
-        <div *ngFor="let entry of matches"
-             class="match"
-             [style.backgroundColor]="geneColor"
-             [ngStyle]="{
-                    gridColumn: entry.x,
-                    gridRow: entry.y
-                 }"
-        >
-        </div>
-    </div>
+<!--    <div class="grid">-->
+<!--        <div *ngFor="let entry of matches"-->
+<!--             class="match"-->
+<!--             [style.backgroundColor]="geneColor"-->
+<!--             [ngStyle]="{-->
+<!--                    gridColumn: entry.x,-->
+<!--                    gridRow: entry.y-->
+<!--                 }"-->
+<!--        >-->
+<!--        </div>-->
+<!--    </div>-->
 </div>

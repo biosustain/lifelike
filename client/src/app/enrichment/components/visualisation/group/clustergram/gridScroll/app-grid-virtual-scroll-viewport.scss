@@ -1,15 +1,15 @@
-// When elements such as `<tr>` or `<li>` are repeated inside the cdk-virtual-scroll-viewport,
+// When elements such as `<tr>` or `<li>` are repeated inside the app-virtual-scroll-viewport,
 // their container element (e.g. `<table>`, `<ul>`, etc.) needs to be placed in the viewport as
 // well. We reset some properties here to prevent these container elements from introducing
 // additional space that would throw off the scrolling calculations.
-@mixin _cdk-virtual-scroll-clear-container-space($direction) {
+@mixin _app-virtual-scroll-clear-container-space($direction) {
   $start: if($direction == horizontal, 'left', 'top');
   $end: if($direction == horizontal, 'right', 'bottom');
 
-  & > dl:not([cdkVirtualFor]),
-  & > ol:not([cdkVirtualFor]),
-  & > table:not([cdkVirtualFor]),
-  & > ul:not([cdkVirtualFor]) {
+  & > dl:not([appVirtualFor]),
+  & > ol:not([appVirtualFor]),
+  & > table:not([appVirtualFor]),
+  & > ul:not([appVirtualFor]) {
     padding: {
       #{$start}: 0;
       #{$end}: 0;
@@ -28,7 +28,7 @@
 
 
 // Scrolling container.
-cdk-virtual-scroll-viewport {
+app-grid-virtual-scroll-viewport {
   display: block;
   position: relative;
   overflow: auto;
@@ -40,11 +40,11 @@ cdk-virtual-scroll-viewport {
 
 // Wrapper element for the rendered content. This element will be transformed to push the rendered
 // content to its correct offset in the data set as a whole.
-.cdk-virtual-scroll-content-wrapper {
+.app-virtual-scroll-content-wrapper {
   position: absolute;
   top: 0;
   left: 0;
-  contain: content;
+  //contain: content;
 
   // Note: We can't put `will-change: transform;` here because it causes Safari to not update the
   // viewport's `scrollHeight` when the spacer's transform changes.
@@ -55,27 +55,27 @@ cdk-virtual-scroll-viewport {
   }
 }
 
-.cdk-virtual-scroll-orientation-horizontal .cdk-virtual-scroll-content-wrapper {
+.app-virtual-scroll-content-wrapper {
   min-height: 100%;
-  @include _cdk-virtual-scroll-clear-container-space(horizontal);
-}
-
-.cdk-virtual-scroll-orientation-vertical .cdk-virtual-scroll-content-wrapper {
+  @include _app-virtual-scroll-clear-container-space(horizontal);
   min-width: 100%;
-  @include _cdk-virtual-scroll-clear-container-space(vertical);
+  @include _app-virtual-scroll-clear-container-space(vertical);
 }
 
 // Spacer element that whose width or height will be adjusted to match the size of the entire data
 // set if it were rendered all at once. This ensures that the scrollable content region is the
 // correct size.
-.cdk-virtual-scroll-spacer {
+.app-virtual-scroll-spacer {
   position: absolute;
   top: 0;
   left: 0;
   height: 1px;
   width: 1px;
   transform-origin: 0 0;
+  z-index: -1;
 
+  background-image: linear-gradient(transparent 0%, transparent 50%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.05) 100%);
+  background-size: 28px 28px;
   // Note: We can't put `will-change: transform;` here because it causes Safari to not update the
   // viewport's `scrollHeight` when the spacer's transform changes.
 
