@@ -123,7 +123,7 @@
     - name: Run the migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -d -T appserver bin/migrate-db --upgrade --data-migrate"
       tags:
         - deploy
 
@@ -142,10 +142,10 @@
       tags:
         - deploy
 
-    - name: Seed Elasticsearch
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -d -T appserver flask seed-elastic"
+    # - name: Seed Elasticsearch
+    #   shell:
+    #     chdir: "{{ deploy_dir }}"
+    #     cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -d -T appserver flask seed-elastic"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
