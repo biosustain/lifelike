@@ -33,10 +33,6 @@ from neo4japp.utils import EventLog
 from app import app
 
 
-logger = logging.getLogger('elasticsearch')
-logger.setLevel(logging.WARNING)
-
-
 class ElasticService(ElasticConnection, GraphConnection):
     # Begin indexing methods
     def update_or_create_index(self, index_id, index_mapping_file):
