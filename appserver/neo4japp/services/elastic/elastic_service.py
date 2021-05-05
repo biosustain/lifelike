@@ -57,7 +57,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
                 return
 
@@ -71,7 +71,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             current_app.logger.error(
                 f'Failed to create ElasticSearch index {index_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -93,7 +93,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -135,7 +135,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
 
     def streaming_bulk_documents(self, documents):
@@ -162,7 +162,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
 
     def delete_documents(self, document_ids: List[str], index_id: str):
@@ -285,7 +285,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
 
         return {
