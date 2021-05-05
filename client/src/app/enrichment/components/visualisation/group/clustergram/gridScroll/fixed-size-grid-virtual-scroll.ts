@@ -176,7 +176,10 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     const scrollOffset = this._viewport.measureScrollOffset();
 
     const result = [0, 1].map(i => this._updateRenderedRangeAxis(
-      renderedRange[i],
+      {
+        start: renderedRange.start[i],
+        end: renderedRange.end[i]
+      },
       viewportSize[i],
       dataLength[i],
       scrollOffset[i],
