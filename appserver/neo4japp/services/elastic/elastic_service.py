@@ -220,17 +220,13 @@ class ElasticService(ElasticConnection, GraphConnection):
             filters.append(Files.hash_id.in_(hash_ids))
 
         query = self._get_file_hierarchy_query(and_(*filters))
-        batch = []  # type:ignore
-        for result in self.windowed_query(query, Files.hash_id, batch_size):
-            if len(batch) == batch_size:
-                self.streaming_bulk_documents(self._lazy_create_es_docs(batch))
-                batch = []
-            else:
-                batch.append(result)
-        if len(batch):
-            self.streaming_bulk_documents(self._lazy_create_es_docs(batch))
+        self.streaming_bulk_documents(
+            self._lazy_create_es_docs_for_streaming_bulk(
+                self.windowed_query(query, Files.hash_id, batch_size)
+            )
+        )
 
-    def _lazy_create_es_docs(self, batch):
+    def _lazy_create_es_docs_for_parallel_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
@@ -243,6 +239,16 @@ class ElasticService(ElasticConnection, GraphConnection):
         with app.app_context():
             for file, _, _, project, *_ in batch:
                 yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+
+    def _lazy_create_es_docs_for_streaming_bulk(self, windowed_query):
+        """
+        Creates a generator out of the elastic document creation
+        process to prevent loading everything into memory.
+        :param windowed_query: results from 'windowed_query(query, Files.hash_id, batch_size)'
+        :return: indexable object in generator form
+        """
+        for file, _, _, project, *_ in windowed_query:
+            yield self._get_elastic_document(file, project, FILE_INDEX_ID)
 
     def _get_file_hierarchy_query(self, filter):
         """
