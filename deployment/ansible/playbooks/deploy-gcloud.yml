@@ -122,7 +122,7 @@
     - name: Run the migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -d -T appserver bin/migrate-db --upgrade --data-migrate"
+        cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
       tags:
         - deploy
 
