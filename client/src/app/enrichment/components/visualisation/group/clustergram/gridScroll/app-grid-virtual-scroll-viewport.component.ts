@@ -11,7 +11,7 @@ import {
   NgZone,
   ChangeDetectorRef,
   Optional,
-  Inject
+  Inject, ContentChildren
 } from '@angular/core';
 import { Subject, Observable, Observer, Subscription, animationFrameScheduler, asapScheduler } from 'rxjs';
 import { startWith, auditTime, takeUntil } from 'rxjs/operators';
@@ -24,6 +24,7 @@ import {
   ScrollDispatcher,
   ViewportRuler
 } from '@angular/cdk/scrolling';
+import { AppVirtualForOfDirective } from './virtual-for-of';
 
 /** Checks if the given ranges are equal. */
 function rangesEqual(r1, r2): boolean {
@@ -48,6 +49,7 @@ const SCROLL_SCHEDULER =
 })
 export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewport implements OnInit, OnDestroy {
   @HostBinding('class') 'app-virtual-scroll-viewport';
+  @ContentChildren(AppVirtualForOfDirective) lists;
   /** Emits when the viewport is detached from a AppVirtualForOfDirective. */
   private readonly _detachedSubject = new Subject<void>();
 
@@ -66,6 +68,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** The element that wraps the rendered content. */
   @ViewChild('contentWrapper', {static: true}) _contentWrapper: ElementRef<HTMLElement>;
+  @ViewChild('columnHeaderWrapper', {static: true}) _columnHeaderWrapper: ElementRef<HTMLElement>;
+  @ViewChild('rowHeaderWrapper', {static: true}) _rowHeaderWrapper: ElementRef<HTMLElement>;
 
   /** A stream that emits whenever the rendered range changes. */
   readonly renderedRangeStream: Observable<ListRange> = this._renderedRangeSubject;
@@ -98,6 +102,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** the currently attached AppVirtualScrollRepeater. */
   private _forOf;
+  private _forOfs;
 
   /** The last rendered content offset that was set. */
   private _renderedContentOffset = [0, 0];
@@ -181,9 +186,9 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** Attaches a `AppVirtualScrollRepeater` to this viewport. */
   attach(forOf) {
-    if (this._forOf) {
-      throw Error('AppVirtualScrollViewport is already attached.');
-    }
+    // if (this._forOf) {
+    //   throw Error('AppVirtualScrollViewport is already attached.');
+    // }
 
     // Subscribe to the data stream of the AppVirtualForOfDirective to keep track of when the data length
     // changes. Run outside the zone to avoid triggering change detection, since we're managing the
@@ -195,10 +200,27 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
           Math.max(...data.map(({x}) => x)),
           Math.max(...data.map(({y}) => y))
         ];
-        if (newLength.some((v, i) => v !== this._dataLength[i])) {
+        if (this._dataLength.some((v, i) => v !== newLength[i])) {
           this._dataLength = newLength;
           this._scrollStrategy.onDataLengthChanged();
         }
+        this._doChangeDetection();
+      });
+    });
+  }
+
+  /** Attaches a `AppVirtualScrollRepeater` to this viewport. */
+  attachSecondary(forOf) {
+    // if (this._forOf) {
+    //   throw Error('AppVirtualScrollViewport is already attached.');
+    // }
+
+    // Subscribe to the data stream of the AppVirtualForOfDirective to keep track of when the data length
+    // changes. Run outside the zone to avoid triggering change detection, since we're managing the
+    // change detection loop ourselves.
+    this.ngZone.runOutsideAngular(() => {
+      this._forOfs.add(forOf);
+      forOf.dataStream.pipe(takeUntil(this._detachedSubject)).subscribe(data => {
         this._doChangeDetection();
       });
     });
@@ -396,6 +418,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     // string literals, a variable that can only be 'X' or 'Y', and user input that is run through
     // the `Number` function first to coerce it to a numeric value.
     this._contentWrapper.nativeElement.style.transform = this._renderedContentTransform;
+    this._columnHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
+    this._rowHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
     // Apply changes to Angular bindings. Note: We must call `markForCheck` to run change detection
     // from the ***ARANGO_USERNAME***, since the repeated items are content projected in. Calling `detectChanges`
     // instead does not properly check the projected content.
