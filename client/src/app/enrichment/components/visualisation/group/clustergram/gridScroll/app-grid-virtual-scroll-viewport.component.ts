@@ -11,7 +11,7 @@ import {
   NgZone,
   ChangeDetectorRef,
   Optional,
-  Inject, Input
+  Inject
 } from '@angular/core';
 import { Subject, Observable, Observer, Subscription, animationFrameScheduler, asapScheduler } from 'rxjs';
 import { startWith, auditTime, takeUntil } from 'rxjs/operators';
@@ -26,8 +26,8 @@ import {
 } from '@angular/cdk/scrolling';
 
 /** Checks if the given ranges are equal. */
-function rangesEqual(r1: ListRange, r2: ListRange): boolean {
-  return r1.start === r2.start && r1.end === r2.end;
+function rangesEqual(r1, r2): boolean {
+  return r1.start.every((v, i) => v === r2.start[i]) && r1.end.every((v, i) => v === r2.end[i]);
 }
 
 /**
@@ -36,7 +36,7 @@ function rangesEqual(r1: ListRange, r2: ListRange): boolean {
  * that don't support it (e.g. server-side rendering).
  */
 const SCROLL_SCHEDULER =
-    typeof requestAnimationFrame !== 'undefined' ? animationFrameScheduler : asapScheduler;
+  typeof requestAnimationFrame !== 'undefined' ? animationFrameScheduler : asapScheduler;
 
 /** A viewport that virtualizes its scrolling with the help of `AppVirtualForOfDirective`. */
 @Component({
@@ -88,7 +88,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   private _renderedContentTransform: string;
 
   /** The currently rendered range of indices. */
-  private _renderedRange: ListRange = {start: 0, end: 0};
+  private _renderedRange = {start: [0, 0], end: [0, 0]};
 
   /** The length of the data bound to this viewport (in number of items). */
   private _dataLength = [0, 0];
@@ -124,13 +124,12 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     private _changeDetectorRef: ChangeDetectorRef,
     ngZone: NgZone,
     @Optional() @Inject(VIRTUAL_SCROLL_STRATEGY)
-              private _scrollStrategy: VirtualScrollStrategy,
+    private _scrollStrategy: VirtualScrollStrategy,
     @Optional() dir: Directionality,
     scrollDispatcher: ScrollDispatcher,
     viewportRuler: ViewportRuler
   ) {
-    // @ts-ignore
-    super(elementRef, scrollDispatcher, ngZone, dir);
+    super(elementRef, _changeDetectorRef, ngZone, _scrollStrategy, dir, scrollDispatcher);
     this.ngZone = ngZone;
 
     if (!_scrollStrategy) {
@@ -229,7 +228,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   // `pendingRange` and `renderedRange`, the latter reflecting whats actually in the DOM.
 
   /** Get the current rendered range of items. */
-  getRenderedRange(): ListRange {
+  getRenderedRange() {
     return this._renderedRange;
   }
 
@@ -240,7 +239,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   // @ts-ignore
   setTotalContentSize(size: number[]) {
     // todo: comp arrays
-    if (this._totalContentSize !== size) {
+    if (this._totalContentSize.some((tcs, i) => tcs !== size[i])) {
       this._totalContentSize = size;
       this._calculateSpacerSize();
       this._markChangeDetectionNeeded();
@@ -272,7 +271,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     // For a horizontal viewport in a right-to-left language we need to translate along the x-axis
     // in the negative direction.
     const axis = 'XY';
-    let transform = `translate${axis}(${offset.map(Number).join(', ')}px)`;
+    let transform = `translate${axis}(${offset.map(Number).join('px, ')}px)`;
     this._renderedContentOffset = offset;
     if (to === 'to-end') {
       transform += ` translate${axis}(-100%)`;
@@ -329,9 +328,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * @param from The edge to measure the offset from. Defaults to 'top' in vertical mode and 'start'
    *     in horizontal mode.
    */
-  // @ts-ignore
   measureScrollOffset(from: ('top' | 'left' | 'right' | 'bottom' | 'start' | 'end')[] = ['left', 'top']): number[] {
-    return from.map(super.measureScrollOffset);
+    return from.map(f => super.measureScrollOffset(f));
   }
 
   /** Measure the combined size of all of the rendered items. */

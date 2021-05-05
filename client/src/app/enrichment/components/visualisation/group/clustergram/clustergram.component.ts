@@ -2,6 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from 'app/enrichment/services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
+import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
 
 class GeneRow {
   values: boolean[];
@@ -30,7 +31,12 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
-  constructor(readonly enrichmentService: EnrichmentVisualisationService) {
+  constructor(
+    readonly enrichmentService: EnrichmentVisualisationService,
+    readonly scrollDispatcher: ScrollDispatcher,
+    readonly viewportRuler: ViewportRuler
+  ) {
+
   }
 
   rowOrder(a: KeyValue<string, GeneRow>, b: KeyValue<string, GeneRow>) {
@@ -44,7 +50,7 @@ export class ClustergramComponent implements OnChanges {
   ngOnChanges() {
     if (this.show) {
       const data = [...this.data].sort(this.columnOrder);
-      const genes = new Map<string, number>();
+      let genes = new Map<string, number>();
       const matches = [];
       data.forEach(({geneNames}, goIndex) => {
         geneNames.forEach(g => {
@@ -60,9 +66,13 @@ export class ClustergramComponent implements OnChanges {
           }
         });
       });
+      genes = new Map(
+        [...genes]
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, v], i) => [k, i])
+      );
       this.matches = matches
-        .map(({x, y}) => ({y, x: genes.get(x)}))
-        .sort((a, b) => b.y - a.y || b.x - b.x);
+        .map(({x, y}) => ({y, x: genes.get(x)}));
       this.goTerms = data;
     }
   }
