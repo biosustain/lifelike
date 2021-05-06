@@ -1,7 +1,7 @@
 import re
-from dataclasses import dataclass
-from typing import Dict, List
 
+from dataclasses import dataclass
+from flask import current_app
 from sqlalchemy import (
     event,
     join,
@@ -12,8 +12,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
+from typing import Dict, List
 
+from neo4japp.constants import LogEventType
 from neo4japp.database import db
+from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -22,6 +25,7 @@ from neo4japp.models.auth import (
     AppUser,
 )
 from neo4japp.models.common import RDBMSBase, FullTimestampMixin, HashIdMixin
+from neo4japp.utils import EventLog
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -205,3 +209,39 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
+
+
+@event.listens_for(Projects, 'after_update')
+def file_update(mapper, connection, target: Projects):
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.database import get_elastic_service
+    from neo4japp.models.files import Files
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+
+    try:
+        children = get_nondeleted_recycled_children_query(
+            Files.id == target.root_id,
+            children_filter=and_(
+                Files.recycling_date.is_(None)
+            ),
+            lazy_load_content=True
+        ).all()
+
+        elastic_service = get_elastic_service()
+
+        current_app.logger.info(
+            f'Attempting to update children of project file with root_id: {target.root_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.index_or_delete_files([child.hash_id for child in children])
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic search update failed for project with root_id: {target.root_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Update Project',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )

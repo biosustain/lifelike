@@ -2,22 +2,31 @@ import enum
 import hashlib
 import os
 import re
+import sqlalchemy
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import BinaryIO, Optional, List, Dict
-
-import sqlalchemy
+from flask import current_app
 from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import ARRAY, TIMESTAMP
+from typing import BinaryIO, Optional, List, Dict
 
-from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.constants import FILE_INDEX_ID, LogEventType
 from neo4japp.database import db, get_elastic_service
+from neo4japp.exceptions import ServerException
 from neo4japp.models import Projects
-from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, \
+from neo4japp.models.common import (
+    RDBMSBase,
+    TimestampMixin,
+    RecyclableMixin,
+    FullTimestampMixin,
     HashIdMixin
+)
+from neo4japp.utils import EventLog
+from neo4japp.utils.sqlalchemy import get_model_changes
 
 file_collaborator_role = db.Table(
     'file_collaborator_role',
@@ -287,11 +296,104 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
 # Files table ORM event listeners
 @event.listens_for(Files, 'after_insert')
-@event.listens_for(Files, 'after_delete')
+def file_insert(mapper, connection, target: Files):
+    """
+    Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
+    file insert will be rolled back.
+    """
+    try:
+        elastic_service = get_elastic_service()
+        current_app.logger.info(
+            f'Attempting to index newly created file with hash_id: {target.hash_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.index_or_delete_files([target.hash_id])
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic index failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Create File',
+            message='Something unexpected occurred while creating your file! Please try again ' +
+                    'later.'
+        )
+
+
 @event.listens_for(Files, 'after_update')
-def file_change(mapper, connection, target: Files):
-    elastic_service = get_elastic_service()
-    elastic_service.index_or_delete_files([target.hash_id])
+def file_update(mapper, connection, target: Files):
+    """
+    Handles updating this document in elastic. Note: if this fails, the file update will be rolled
+    back.
+    """
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
+    try:
+        elastic_service = get_elastic_service()
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            children = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            ).all()
+            current_app.logger.info(
+                f'Attempting to update children of directory-like file with hash_id: ' +
+                f'{target.hash_id}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            # TODO: Need to check if the target file was flagged for deletion. If so, should delete
+            # instead of update. Should also delete all of its children (we don't currently allow
+            # users to delete folders when they have stuff in them, but we might someday).
+            elastic_service.index_or_delete_files([child.hash_id for child in children])
+        current_app.logger.info(
+            f'Attempting to update in elastic updated file with hash_id: {target.hash_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.index_or_delete_files([target.hash_id])
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic update failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Update File',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )
+
+
+@event.listens_for(Files, 'after_delete')
+def file_delete(mapper, connection, target: Files):
+    """
+    Handles deleting this document from elastic. Note: if this fails, the file deletion will be
+    rolled back.
+    """
+    # NOTE: This event is rarely triggered, because we're currently flagging files for deletion
+    # rather than removing them outright. See the TODO in `after_update`.
+    try:
+        elastic_service = get_elastic_service()
+        current_app.logger.info(
+            f'Attempting to delete newly updated file with hash_id: {target.hash_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.index_or_delete_files([target.hash_id])
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic search delete failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Delete File',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )
 
 
 class AnnotationChangeCause(enum.Enum):
