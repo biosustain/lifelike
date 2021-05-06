@@ -205,18 +205,18 @@
             "label": "mature GLP-1 [extracellular region]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -665,18 +665,18 @@
             "label": "ligands of SLC28A3 & 29A1 [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -1225,18 +1225,18 @@
             "label": "ligands of SLC29A2 [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -1245,18 +1245,18 @@
             "label": "p-T,Y MAPKs [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -1565,18 +1565,18 @@
             "label": "ligands of SLC29A4 [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -2905,18 +2905,18 @@
             "label": "OCT1 substrates [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -3165,18 +3165,18 @@
             "label": "OCT2 substrates [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
@@ -3785,18 +3785,18 @@
             "label": "choloyl-CoA; chenodeoxycholoyl-CoA [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#49a7d6"
+                "color": "#d84a6d"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#49a7d6",
+                "border": "#d84a6d",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#49a7d6"
+                    "border": "#d84a6d"
                 }
             }
         },
