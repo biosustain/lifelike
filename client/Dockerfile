@@ -83,6 +83,6 @@ COPY --from=landing /home/node/client/landing/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=build "/home/node/client/nginx/nginx.conf" /etc/nginx/conf.d/default.conf
 
-EXPOSE 80 443
+# EXPOSE 80 443
 
-CMD ["nginx", "-g", "daemon off;"]
+# CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+    proxy:
+        ports:
+            - 80:80
+            - 8090:8090
+        command:
+            - --providers.docker
+            - --providers.docker.constraints=Label(`traefik.constraint-label-stack`, `${TRAEFIK_TAG?Variable not set}`)
+            - --providers.docker.exposedbydefault=false
+            - --accesslog
+            - --log.level=DEBUG
+            - --log
+            - --api
+            - --api.insecure=true
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.${STACK_NAME?Variable not set}-traefik-public-http.rule=Host(`${DOMAIN?Variable not set}`)
+            - traefik.http.services.${STACK_NAME?Variable not set}-traefik-public.loadbalancer.server.port=80
+
+    appserver:
+        volumes:
+            - ../appserver:/home/n4j
+        # Allow debugging w/ IPython or pdb
+        stdin_open: true
+        tty: true
+        ports:
+            - 5000:5000
+        env_file:
+            # File found in Azure File Store
+            - ../azure-secrets.env
+        environment:
+            # Log Services
+            - FORMAT_AS_JSON=false
+            # Flask
+            - FLASK_APP=app
+            - FLASK_APP_CONFIG=Development
+            - FLASK_DEBUG=1
+            - FLASK_ENV=development
+            # Postgres
+            - POSTGRES_HOST=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+            # ElasticSearch
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+            - ELASTIC_FILE_INDEX_ID=file_dev
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=neo4j
+            - NEO4J_AUTH=neo4j/password
+            - NEO4J_PORT=7687
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
+            # Other
+            - DOMAIN=http://localhost
+            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
+        depends_on:
+            - redis
+            - pdfparser
+            - postgres
+            - neo4j
+
+    cache-invalidator:
+        environment:
+            - LOG_LEVEL=debug
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=neo4j
+            - NEO4J_AUTH=neo4j/password
+            - NEO4J_PORT=7687
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
+        volumes:
+            - ../cache-invalidator:/app
+        depends_on:
+            - redis
+            - neo4j
+
+    webserver:
+        labels:
+            - traefik.enable=true
+            - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
+            - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`) || PathPrefix(`/api`)
+            - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
+
+    filebeat:
+        container_name: filebeat
+        user: root
+        build:
+            context: ../filebeat
+            dockerfile: Dockerfile
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            # This is needed for filebeat to load container log path as specified in filebeat.yml
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        environment:
+            - ELASTICSEARCH_HOST="http://elasticsearch:9200"
+            - KIBANA_HOST="http://kibana:5601"
+            - ELASTICSEARCH_USERNAME="elastic"
+            - ELASTICSEARCH_PASSWORD="changeme"
+        command: ["--strict.perms=false"]
+
+    pdfparser:
+        ports:
+            - 7600:7600
+
+    client:
+        container_name: client
+        build:
+            context: ../client
+            dockerfile: Dockerfile
+            target: build
+        command: yarn dev-start
+        volumes:
+            - ../client:/home/node/client
+            # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
+            # Helps not overwrite the node_modules with host
+            - /home/node/client/node_modules
+        ports:
+            - 4200:4200
+
+    redis:
+        command: redis-server --requirepass password
+
+    postgres:
+        container_name: postgres
+        image: postgres:11
+        command: postgres -c max_wal_size=2GB -c log_statement='all'
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - 5431:5432
+
+    neo4j:
+        container_name: neo4j
+        build:
+            context: ../neo4j
+            dockerfile: Dockerfile
+        environment:
+            - NEO4J_AUTH=neo4j/password
+        volumes:
+            - ../neo4j/data:/data
+            - ../neo4j/logs:/logs
+            - ../neo4j/import:/import
+            - ../neo4j/plugins:/plugins
+            - ../neo4j/backups:/backups
+        ports:
+            - 7474:7474
+            - 7687:7687
+
+networks:
+    traefik-public:
+        # local dev, don't expect external Traefik network
+        external: false
