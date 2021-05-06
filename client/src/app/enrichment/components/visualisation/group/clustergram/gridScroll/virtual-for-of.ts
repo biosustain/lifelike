@@ -289,9 +289,8 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     }
     const {_renderedRange: {start: [sx, sy], end: [ex, ey]}} = this;
     this._renderedItems = this._data.filter(d =>
-      (!d.x || (sx <= d.x && d.x <= ex)) && (!d.y || (sy <= d.y && d.y <= ey))
+      (!d.hasOwnProperty('x') || (sx <= d.x && d.x <= ex)) && (!d.hasOwnProperty('y') || (sy <= d.y && d.y <= ey))
     );
-    console.log('rendered items', this._renderedItems.length);
     if (!this._differ) {
       // Use a wrapper function for the `trackBy` so any new values are
       // picked up automatically without having to recreate the differ.
@@ -341,7 +340,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     const itemContextFactory = (record: IterableChangeRecord<T>,
                                 _adjustedPreviousIndex: number | null,
                                 currentIndex: number | null) => this._getEmbeddedViewArgs(record, currentIndex);
-    changes.forEachOperation((record: IterableChangeRecord<R>,
+    changes.forEachOperation((record: IterableChangeRecord<T>,
                               adjustedPreviousIndex: number | null,
                               currentIndex: number | null) => {
       if (record.previousIndex == null) {  // Item added.
@@ -353,7 +352,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       } else if (currentIndex == null) {  // Item removed.
         this._viewContainerRef.detach(adjustedPreviousIndex);
       } else {  // Item moved.
-        const view = this._viewContainerRef.get(adjustedPreviousIndex) as EmbeddedViewRef<C>;
+        const view = this._viewContainerRef.get(adjustedPreviousIndex) as EmbeddedViewRef<T>;
         this._viewContainerRef.move(view, currentIndex);
         view.context.$implicit = itemValueResolver(record);
       }

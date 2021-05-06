@@ -32,6 +32,8 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
+  itemSize = [27, 27];
+
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly scrollDispatcher: ScrollDispatcher,
