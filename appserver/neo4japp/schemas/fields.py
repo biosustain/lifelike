@@ -1,3 +1,4 @@
+import os.path
 import re
 from typing import Optional, Dict
 
@@ -8,11 +9,27 @@ from neo4japp.utils.string import stripped_characters, is_nice_filename_char
 
 
 class NiceFilenameString(fields.String):
+    extension_blacklist = {
+        '.exe', '.pif', '.application', '.gadget', '.msi', '.msp', '.com', '.scr', '.hta',
+        '.cpl', '.msc', '.jar', '.bat', '.dll', '.cmd', '.vb', '.vbs', '.vbe', '.js', '.jse', '.ws',
+        '.wsf', '.wsc', '.wsh', '.ps1', '.ps1xml', '.ps2', '.ps2xml', '.psc1', '.psc2',
+        '.scf', '.lnk', '.inf', '.reg', '.sh', '.dmg', '.app', '.apk', '.ade', '.adp',
+        '.appx', '.appxbundle', '.cab', '.chm', '.ex', '.ex_', '.ins', '.isp', '.iso',
+        '.lib', '.mde', '.msix', '.msixbundle', '.mst', '.nsh', '.sct', '.shb', '.sys',
+        '.vxd',
+    }
+
+    def validate_ext(self, filename):
+        name, ext = os.path.splitext(filename)
+        if ext.lower() in self.extension_blacklist:
+            raise ValidationError(f"Files of type {ext} are not supported")
+
     def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data, **kwargs)
         # Not the most efficient
         value = value.strip(stripped_characters)
         value = ''.join([ch for ch in value if is_nice_filename_char(ch)])
+        self.validate_ext(value)
         return value
 
 
