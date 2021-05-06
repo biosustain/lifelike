@@ -838,9 +838,12 @@ class EntityRecognitionService:
 
     def check_lmdb(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         results = EntityResults()
-        keys = {token.normalized_keyword for token in tokens}
+        original_keys = {token.normalized_keyword for token in tokens}
 
         for entity_type in [entity.value for entity in EntityType]:
+            # because an entity type can create its own set of keys
+            # need to reset for next iteration
+            keys = original_keys
             cursor = None
             global_inclusion = None
             id_type = None
