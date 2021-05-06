@@ -23,13 +23,12 @@
     <!--        </tr>-->
     <!--        </thead>-->
     <!--    </table>-->
-    <app-grid-virtual-scroll-viewport [itemSize]="[14, 14]" [style.height.px]="300" [style.width.perc]="100"
-                                      [style.display]="'block'">
-        <div class="box columnHeader rowHeader">
+    <app-grid-virtual-scroll-viewport [itemSize]="itemSize" [style.height.px]="500" [style.width.perc]="100">
+        <div class="columnHeader" #columnHeader>
             <ng-template appVirtualFor [appVirtualForOf]="goTerms" let-goTerm [secondary]="true">
                 <div [ngStyle]="{
-                    left: goTerm.x*14+'px'
-                 }">
+                    left: goTerm.x*itemSize[0]+'px'
+                 }" class="rotatedHeader">
                     <ng-template #tooltip>
                         {{goTerm.goTerm}} ({{goTerm.goId}})
                     </ng-template>
@@ -41,25 +40,25 @@
                 </div>
             </ng-template>
         </div>
-        <div class="box2 rowHeader">
+        <div class="rowHeader scrollableBackground" #rowHeader>
+        </div>
+        <div class="box2 rowHeader" #rowHeader>
             <ng-template appVirtualFor [appVirtualForOf]="genes" let-entry [secondary]="true">
                 <div [appSELink]="entry.key"
                      [ngStyle]="{
-                    top: entry.y*14+'px'
+                    top: entry.y*itemSize[1]+'px'
                  }"
                 >{{entry.key}}{{entry.y}}</div>
             </ng-template>
         </div>
-        <div class="grid">
-            <div *appVirtualFor="let entry of matches"
-                 class="match"
-                 [style.backgroundColor]="geneColor"
-                 [ngStyle]="{
-                    left: entry.x*14+'px',
-                    top: entry.y*14+'px'
+        <div *appVirtualFor="let entry of matches"
+             class="match"
+             [style.backgroundColor]="geneColor"
+             [ngStyle]="{
+                    left: entry.x*itemSize[0]+'px',
+                    top: entry.y*itemSize[1]+'px'
                  }"
-            >
-            </div>
+        >
         </div>
         <!--        <table class="table table-striped column-hover">-->
         <!--        <tbody class="predefinedWidth">-->
