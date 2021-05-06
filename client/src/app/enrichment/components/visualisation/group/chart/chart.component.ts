@@ -37,7 +37,7 @@ export class ChartComponent implements OnChanges {
           type: 'logarithmic',
           scaleLabel: {
             display: true,
-            labelString: '1 / q-value'
+            labelString: '-log(q-value)'
           }
         }
       ],
@@ -73,7 +73,7 @@ export class ChartComponent implements OnChanges {
       const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
       this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
         ...d,
-        x: 1 / d['q-value']
+        x: -Math.log(d['q-value'])
       }));
       this.labels = slicedNotFormatedData.map(({gene}) => gene);
     }
