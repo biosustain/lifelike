@@ -7,9 +7,6 @@ import urllib.request
 
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
-from urllib.error import URLError
-
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
 from flask.views import MethodView
@@ -18,6 +15,8 @@ from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from urllib.error import URLError
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -213,41 +212,6 @@ class FilesystemBaseView(MethodView):
 
         # In the end, we just return a list of Files instances!
         return files
-
-    def get_nondeleted_recycled_children(self, filter, children_filter=None,
-                                         lazy_load_content=False) -> List[Files]:
-        """
-        Retrieve all files that match the provided filter, including the children of those
-        files, even if those children do not match the filter. The files returned by
-        this method do not have complete information to determine permissions.
-
-        :param filter: the SQL Alchemy filter
-        :param lazy_load_content: whether to load the file's content into memory
-        :return: the result, which may be an empty list
-        """
-        q_hierarchy = build_file_children_cte(and_(
-            filter,
-            Files.deletion_date.is_(None)
-        ))
-
-        t_parent_files = aliased(Files)
-
-        query = db.session.query(Files) \
-            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
-            .outerjoin(t_parent_files, t_parent_files.id == Files.parent_id) \
-            .options(raiseload('*'),
-                     contains_eager(Files.parent, alias=t_parent_files),
-                     joinedload(Files.user),
-                     joinedload(Files.fallback_organism)) \
-            .order_by(q_hierarchy.c.level)
-
-        if children_filter is not None:
-            query = query.filter(children_filter)
-
-        if lazy_load_content:
-            query = query.options(lazyload(Files.content))
-
-        return query.all()
 
     def check_file_permissions(self, files: List[Files], user: AppUser,
                                require_permissions: List[str], *, permit_recycled: bool):

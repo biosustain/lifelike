@@ -7,9 +7,8 @@ import re
 import time
 
 import sqlalchemy as sa
-from datetime import datetime
-from typing import Optional, List, Dict, Any
 
+from datetime import datetime
 from flask import (
     Blueprint,
     current_app,
@@ -20,13 +19,13 @@ from flask import (
 )
 from flask_apispec import use_kwargs
 from json import JSONDecodeError
+from marshmallow import validate, fields
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
+from typing import Optional, List, Dict, Any
 from webargs.flaskparser import use_args
-from marshmallow import validate, fields
 
 from .filesystem import bp as filesystem_bp
-from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
@@ -48,6 +47,8 @@ from neo4japp.models import (
     GlobalList,
     FallbackOrganism
 )
+from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion
+from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
 from neo4japp.services.annotations.constants import (
     DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
@@ -274,11 +275,11 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(
+        files = get_nondeleted_recycled_children_query(
             Files.id == file.id,
             children_filter=Files.mime_type == 'application/pdf',
             lazy_load_content=True
-        )
+        ).all()
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
@@ -358,14 +359,14 @@ class FileAnnotationSortedView(FilesystemBaseView):
             for row in self.get_rows(files, annotation_service):
                 writer.writerow(row)
         else:
-            files = self.get_nondeleted_recycled_children(
+            files = get_nondeleted_recycled_children_query(
                     Files.id == file.id,
                     children_filter=and_(
                             Files.mime_type == 'application/pdf',
                             Files.recycling_date.is_(None)
                     ),
                     lazy_load_content=True
-            )
+            ).all()
 
             annotation_service = get_sorted_annotation_service(sort)
             for row in self.get_rows(files, annotation_service):
