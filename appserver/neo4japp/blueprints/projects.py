@@ -223,11 +223,15 @@ class ProjectBaseView(MethodView):
         missing_hash_ids = self.get_missing_hash_ids(hash_ids, projects)
 
         for project in projects:
-            for field in ('name', 'description'):
-                if field in params:
-                    if getattr(project, field) != params[field]:
-                        setattr(project, field, params[field])
-                        changed_fields.add(field)
+            for field in params:
+                # IMPORTANT: Set new values on the project object directly, otherwise the ORM
+                # event listeners will not catch these changes!
+                if field == 'name' and project.name != params['name']:
+                    project.name = params['name']
+                    changed_fields.add('name')
+                elif field == 'description' and project.description != params['description']:
+                    project.description = params['description']
+                    changed_fields.add('description')
 
         if len(changed_fields):
             try:
