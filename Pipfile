@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+neo4j = "==4.2.1"
+numpy = "==1.20.2"
+pandas = "==1.2.4"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
