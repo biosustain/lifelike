@@ -216,8 +216,8 @@ def seed_organism_gene_match_table():
     db.session.commit()
 
 
-@app.cli.command('seed-elastic')
-def seed_elasticsearch():
+@app.cli.command('reset-elastic')
+def reset_elastic():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
     elastic_service = get_elastic_service()
@@ -232,6 +232,13 @@ def update_or_create_index(index_id, index_mapping_file):
     we recreate it and re-index all documents."""
     elastic_service = get_elastic_service()
     elastic_service.update_or_create_index(index_id, index_mapping_file)
+
+
+@app.cli.command('reindex-elastic')
+def reindex_elastic():
+    """Reindexes all files in the index given by the ELASTIC_FILE_INDEX_ID environment variable."""
+    elastic_service = get_elastic_service()
+    elastic_service.index_files()
 
 
 @app.cli.command('reannotate')
