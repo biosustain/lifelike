@@ -130,11 +130,7 @@ def visualizer_service(app, graph, session):
 
 @pytest.fixture(scope='function')
 def elastic_service(app, session):
-    elastic_conn = Elasticsearch(
-        timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
-    )
-    elastic_service = ElasticService(elastic=elastic_conn)
+    elastic_service = ElasticService()
 
     # Ensures that anytime the elastic service is requested for a test, that the environment is
     # clean
