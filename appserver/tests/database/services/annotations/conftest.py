@@ -126,8 +126,6 @@ def lmdb_service():
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
 
-    environ['LMDB_HOME_FOLDER'] = '/home/n4j/tests/database/services/annotations'
-
     lmdb = LMDBAccess(
         genes_lmdb_path=genes_lmdb_path,
         anatomy_lmdb_path=anatomy_lmdb_path,
