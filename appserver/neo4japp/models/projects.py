@@ -219,21 +219,23 @@ def file_update(mapper, connection, target: Projects):
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
 
     try:
-        children = get_nondeleted_recycled_children_query(
+        elastic_service = get_elastic_service()
+        family = get_nondeleted_recycled_children_query(
             Files.id == target.***ARANGO_USERNAME***_id,
             children_filter=and_(
                 Files.recycling_date.is_(None)
             ),
             lazy_load_content=True
         ).all()
-
-        elastic_service = get_elastic_service()
+        files_to_update = [member.hash_id for member in family]
 
         current_app.logger.info(
-            f'Attempting to update children of project file with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
+            f'Attempting to update files in elastic with hash_ids: ' +
+            f'{files_to_update}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        elastic_service.index_or_delete_files([child.hash_id for child in children])
+        # TODO: Change this to an update operation, and only update filepath
+        elastic_service.index_files(files_to_update)
     except Exception as e:
         current_app.logger.error(
             f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
@@ -245,3 +247,5 @@ def file_update(mapper, connection, target: Projects):
             message='Something unexpected occurred while updating your file! Please try again ' +
                     'later.'
         )
+
+# TODO: Need to implment some kind of deletion handler if we ever allow deletion of projects.
