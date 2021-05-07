@@ -2,7 +2,7 @@ import lmdb
 import json
 import pytest
 
-from os import path, remove, walk
+from os import environ, path, remove, walk
 
 from neo4japp.database import DBConnection, GraphConnection
 from neo4japp.models import FileContent, GlobalList
@@ -39,6 +39,13 @@ from neo4japp.util import normalize_str
 directory = path.realpath(path.dirname(__file__))
 
 
+def teardown():
+    for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+        for fn in filenames:
+            if fn.lower().endswith('.mdb'):
+                remove(path.join(parent, fn))
+
+
 @pytest.fixture(scope='function')
 def graph_service(graph):
     class MockGraphConnection(GraphConnection):
@@ -69,12 +76,6 @@ def db_service(session):
 
 @pytest.fixture(scope='function')
 def get_annotation_service(db_service, graph_service, lmdb_service, request):
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
     return AnnotationService(db=db_service, graph=graph_service)
@@ -82,12 +83,6 @@ def get_annotation_service(db_service, graph_service, lmdb_service, request):
 
 @pytest.fixture(scope='function')
 def get_manual_annotation_service(graph_service, lmdb_service, request):
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
     return ManualAnnotationService(graph=graph_service)
@@ -95,13 +90,6 @@ def get_manual_annotation_service(graph_service, lmdb_service, request):
 
 @pytest.fixture(scope='function')
 def get_entity_service(db_service, graph_service, lmdb_service, request):
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-        lmdb_service.session.close_envs()
-
     request.addfinalizer(teardown)
 
     return EntityRecognitionService(
@@ -137,6 +125,8 @@ def lmdb_service():
     phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
+
+    environ['LMDB_HOME_FOLDER'] = '/home/n4j/tests/database/services/annotations'
 
     lmdb = LMDBAccess(
         genes_lmdb_path=genes_lmdb_path,
@@ -528,12 +518,6 @@ def default_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -583,12 +567,6 @@ def abbreviation_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -631,12 +609,6 @@ def global_inclusion_normalized_already_in_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -670,12 +642,6 @@ def food_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -708,12 +674,6 @@ def anatomy_lmdb_setup(app, request):
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
-
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
 
     request.addfinalizer(teardown)
 
@@ -768,12 +728,6 @@ def bola_human_monkey_gene(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -818,12 +772,6 @@ def human_gene_pdf_lmdb_setup(app, request):
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
-
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
 
     request.addfinalizer(teardown)
 
@@ -894,12 +842,6 @@ def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -941,12 +883,6 @@ def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     ]
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
-
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
 
     request.addfinalizer(teardown)
 
@@ -1001,12 +937,6 @@ def human_rat_gene_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
     request.addfinalizer(teardown)
 
 
@@ -1060,11 +990,31 @@ def fish_gene_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def vascular_cell_adhesion_lmdb_setup(app, request):
+    vascular = lmdb_protein_factory(
+        protein_id='Vascular',
+        id_type=DatabaseType.UNIPROT.value,
+        name='Vascular cell adhesion protein 1',
+        synonym='Vascular cell adhesion protein 1',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [vascular]),
+        (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
     request.addfinalizer(teardown)
 
