@@ -29,6 +29,7 @@
           <ul [class]="i === synonyms.size - 1 ? 'mb-0' : 'mb-3'">
             <li>
               <strong class="mr-2">{{synonym.key}}:</strong>
+              <div *ngIf="synonym.value.length === 0" class="d-inline-block">No synonyms found for this term.</div>
               <div *ngFor="let s of synonym.value; let i = index" class="mr-2" style="display: inline-block;">
                 {{s + (i < synonym.value.length - 1 ? ';' : '')}}
               </div>
