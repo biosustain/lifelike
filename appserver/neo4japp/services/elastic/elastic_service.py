@@ -294,6 +294,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_id': file.hash_id,
             '_source': {
                 'filename': file.filename,
+                'filepath': file.filepath,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
                 'data': base64.b64encode(indexable_content).decode('utf-8'),
