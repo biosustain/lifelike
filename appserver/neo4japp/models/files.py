@@ -237,8 +237,34 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def effectively_recycled(self):
         return self.recycled or self.parent_recycled
 
-    # TODO: Add a property for filepath here? Would just need to travel up the parent until parent
-    # is null...
+    @property
+    def filepath(self):
+        current_file = self
+        filepath = []
+        while current_file is not None and current_file.parent is not None:
+            filepath.append(current_file.filename)
+            current_file = current_file.parent
+
+        try:
+            # Current_file should be the root file, so just get the project that points to it
+            project_name = db.session.query(
+                Projects.name
+            ).filter(
+                Projects.root_id == current_file.id
+            ).one()[0]
+        except NoResultFound as e:
+            current_app.logger.error(
+                f'Could not find project of file with id: {self.id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+            )
+            raise ServerException(
+                title=f'Cannot Get Filepath',
+                message=f'Could not find project of file {self.filename}.',
+            )
+
+        filepath.append(project_name)
+        return f'/{"/".join(filepath[::-1])}'
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename

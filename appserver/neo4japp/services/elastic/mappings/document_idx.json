@@ -9,9 +9,17 @@
                   "replace_dot"
                 ]
               },
+              "filepath_analyzer": {
+                  "tokenizer": "filepath_tokenizer"
+              },
               "default": {
                   "type": "standard"
               }
+            },
+            "tokenizer": {
+                "filepath_tokenizer": {
+                    "type": "path_hierarchy"
+                  }
             },
             "char_filter": {
               "replace_dot": {
@@ -30,6 +38,10 @@
             "filename": {
                 "type": "text",
                 "analyzer": "filename_analyzer"
+            },
+            "filepath": {
+                "type": "text",
+                "analyzer": "filepath_analyzer"
             },
             "description": {
                 "type": "text"
