@@ -394,17 +394,17 @@ class ElasticService(ElasticConnection, GraphConnection):
             return tx.run(
                 """
                 UNWIND $terms as search_term
-                MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
+                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
                 CALL {
                     WITH search_term, synonym
-                    MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    OPTIONAL MATCH
+                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
                     WHERE NOT 'Protein' IN LABELS(entity) AND SIZE(other_synonym.name) > 1
-                    RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
+                    RETURN other_synonym.name as other_synonym
                     LIMIT 10
                 }
                 RETURN
                     search_term,
-                    collect(distinct original_synonym) as original_synonyms,
                     collect(distinct other_synonym) as other_synonyms
                 """,
                 terms=terms,
@@ -418,7 +418,7 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         results = self.graph.read_transaction(get_synonyms_query, terms)
         return {
-            row['search_term']: row['original_synonyms'] + row['other_synonyms']
+            row['search_term']: row['other_synonyms']
             for row in results
         }
 
