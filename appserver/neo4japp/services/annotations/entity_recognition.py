@@ -600,33 +600,29 @@ class EntityRecognitionService:
 
         for token in tokens_list:
             if prev_token is None:
-                # do not check for digits and re.match here
-                # because a term could start with digits
-                if (token.keyword.lower() in COMMON_WORDS or
-                    token.keyword in ascii_letters or
-                    len(token.normalized_keyword) <= 2 or
-                    self.is_abbrev(token)
-                ):  # noqa
-                    continue
-                else:
-                    # copied from def normalize_str
-                    # to avoid function calls, ~7-10 sec faster
-                    normalized = token.keyword.lower()
-                    normalized = normalized.translate(str.maketrans('', '', punctuation))
-                    normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
-                    new_token = PDFWord(
-                        keyword=token.keyword,
-                        normalized_keyword=normalized_keyword,
-                        page_number=token.page_number,
-                        lo_location_offset=token.lo_location_offset,
-                        hi_location_offset=token.hi_location_offset,
-                        coordinates=token.coordinates,
-                        heights=token.heights,
-                        widths=token.widths,
-                        previous_words=token.previous_words
-                    )
-                    new_tokens.append(new_token)
-                    prev_token = new_token
+                # do not remove any keywords that fit the removal
+                # criteria, e.g common words, digits, ascii_letters etc
+                # because a term could start with them
+                # instead remove them at the very end
+
+                # copied from def normalize_str
+                # to avoid function calls, ~7-10 sec faster
+                normalized = token.keyword.lower()
+                normalized = normalized.translate(str.maketrans('', '', punctuation))
+                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
+                new_token = PDFWord(
+                    keyword=token.keyword,
+                    normalized_keyword=normalized_keyword,
+                    page_number=token.page_number,
+                    lo_location_offset=token.lo_location_offset,
+                    hi_location_offset=token.hi_location_offset,
+                    coordinates=token.coordinates,
+                    heights=token.heights,
+                    widths=token.widths,
+                    previous_words=token.previous_words
+                )
+                new_tokens.append(new_token)
+                prev_token = new_token
             else:
                 words_subset = [prev_token, token]
                 curr_keyword = ' '.join([word.keyword for word in words_subset])
@@ -718,7 +714,20 @@ class EntityRecognitionService:
                 else:
                     new_tokens.append(new_token)
                     prev_token = new_token
-        return new_tokens
+
+        tokens_to_use = []
+        for token in new_tokens:
+            if (token.keyword.lower() in COMMON_WORDS or
+                self.token_word_check_regex.match(token.keyword) or
+                token.keyword in ascii_letters or
+                token.keyword in digits or
+                len(token.normalized_keyword) <= 2 or
+                self.is_abbrev(token)
+            ):  # noqa
+                continue
+            else:
+                tokens_to_use.append(token)
+        return tokens_to_use
 
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
