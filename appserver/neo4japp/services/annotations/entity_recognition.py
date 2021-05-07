@@ -600,10 +600,10 @@ class EntityRecognitionService:
 
         for token in tokens_list:
             if prev_token is None:
+                # do not check for digits and re.match here
+                # because a term could start with digits
                 if (token.keyword.lower() in COMMON_WORDS or
-                    self.token_word_check_regex.match(token.keyword) or
                     token.keyword in ascii_letters or
-                    token.keyword in digits or
                     len(token.normalized_keyword) <= 2 or
                     self.is_abbrev(token)
                 ):  # noqa
