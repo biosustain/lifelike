@@ -237,6 +237,9 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def effectively_recycled(self):
         return self.recycled or self.parent_recycled
 
+    # TODO: Add a property for filepath here? Would just need to travel up the parent until parent
+    # is null...
+
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
@@ -307,7 +310,7 @@ def file_insert(mapper, connection, target: Files):
             f'Attempting to index newly created file with hash_id: {target.hash_id}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        elastic_service.index_or_delete_files([target.hash_id])
+        elastic_service.index_files([target.hash_id])
     except Exception as e:
         current_app.logger.error(
             f'Elastic index failed for file with hash_id: {target.hash_id}',
@@ -333,31 +336,42 @@ def file_update(mapper, connection, target: Files):
 
     try:
         elastic_service = get_elastic_service()
+        files_to_update = [target.hash_id]
         if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-            children = get_nondeleted_recycled_children_query(
+            family = get_nondeleted_recycled_children_query(
                     Files.id == target.id,
                     children_filter=and_(
                         Files.recycling_date.is_(None)
                     ),
                     lazy_load_content=True
             ).all()
+            files_to_update = [member.hash_id for member in family]
+
+        changes = get_model_changes(target)
+        # Only delete a file when it changes from "not-deleted" to "deleted"
+        if 'deletion_date' in changes and changes['deletion_date'][0] is None and changes['deletion_date'][1] is not None:  # noqa
             current_app.logger.info(
-                f'Attempting to update children of directory-like file with hash_id: ' +
-                f'{target.hash_id}',
+                f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
-            # TODO: Need to check if the target file was flagged for deletion. If so, should delete
-            # instead of update. Should also delete all of its children (we don't currently allow
-            # users to delete folders when they have stuff in them, but we might someday).
-            elastic_service.index_or_delete_files([child.hash_id for child in children])
-        current_app.logger.info(
-            f'Attempting to update in elastic updated file with hash_id: {target.hash_id}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-        )
-        elastic_service.index_or_delete_files([target.hash_id])
+            elastic_service.delete_files(files_to_update)
+            # TODO: Should we handle the case where a document's deleted state goes from "deleted"
+            # to "not deleted"? What would that mean for folders? Re-index all children as well?
+        else:
+            # File was not deleted, so update it -- and possibly its children if it has any --
+            # instead
+            current_app.logger.info(
+                f'Attempting to update files in elastic with hash_ids: {files_to_update}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            # TODO: Change this to an update operation, and only update what has changed
+            # TODO: Only need to update children if the folder name changes (is this true? any
+            # other cases where we would do this? Maybe safer to just always update filepath
+            # any time the parent changes...)
+            elastic_service.index_files(files_to_update)
     except Exception as e:
         current_app.logger.error(
-            f'Elastic update failed for file with hash_id: {target.hash_id}',
+            f'Elastic update failed for files with hash_ids: {files_to_update}',
             exc_info=e,
             extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
         )
@@ -374,15 +388,29 @@ def file_delete(mapper, connection, target: Files):
     Handles deleting this document from elastic. Note: if this fails, the file deletion will be
     rolled back.
     """
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
     # NOTE: This event is rarely triggered, because we're currently flagging files for deletion
-    # rather than removing them outright. See the TODO in `after_update`.
+    # rather than removing them outright. See the `after_update` event for Files.
     try:
         elastic_service = get_elastic_service()
+        files_to_delete = [target.hash_id]
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            family = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            ).all()
+            files_to_delete = [member.hash_id for member in family]
         current_app.logger.info(
-            f'Attempting to delete newly updated file with hash_id: {target.hash_id}',
+            f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        elastic_service.index_or_delete_files([target.hash_id])
+        elastic_service.delete_files(files_to_delete)
     except Exception as e:
         current_app.logger.error(
             f'Elastic search delete failed for file with hash_id: {target.hash_id}',
