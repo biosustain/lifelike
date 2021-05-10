@@ -252,7 +252,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {path: '', component: KgImportWizardComponent},
-      {path: 'matches', component: GeneImportWizardComponent},
+      {path: 'genes', component: GeneImportWizardComponent},
     ],
   },
   */

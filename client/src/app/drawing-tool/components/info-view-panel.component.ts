@@ -40,7 +40,7 @@ export class InfoViewPanelComponent {
       entityType = 'chemical';
     } else if (entityType === 'species') {
       entityType = 'taxonomy';
-    // TODO: Temp change to allow users to quickly find matches. We will likely remove this once entity IDs are included in the node metadata.
+    // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node metadata.
     } else if (entityType === 'gene') {
       organism = '9606';
     }

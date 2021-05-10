@@ -25,7 +25,7 @@ python script: lifelike_data_loader.update_lifelike_0.9()
         - If no name, use biocyc_id
     - TranscriptionUnit: 
         - name + ‘ TU'
-        - if no name, get all matches, and connect with ‘-', then add 'TU’
+        - if no name, get all genes, and connect with ‘-', then add 'TU’
     - DNABindingSite:
         - regulator protein name + ‘BS'
     - All others:
@@ -39,5 +39,6 @@ python script: lifelike_data_loader.update_lifelike_0.9()
 - Added taxonomy synonyms - combined_terms 
 - Added properties for gene enrichment table:
     - Add property 'function' for uniprot proteins 
-    - add properties 'regulator_family', 'activated_by', 'repressed_by' to RegulonDB matches
-    - add proterty 'pathways' for biocyc matches
+    - add properties 'regulator_family', 'activated_by', 'repressed_by' to RegulonDB genes
+    - add proterty 'pathways' for biocyc genes
+  
