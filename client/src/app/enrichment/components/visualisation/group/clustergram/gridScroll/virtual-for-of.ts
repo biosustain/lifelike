@@ -28,6 +28,7 @@ import { Observable, Subject, of as observableOf, isObservable } from 'rxjs';
 import { pairwise, shareReplay, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { AppVirtualScrollRepeater } from './virtual-scroll-repeater';
 import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
+import { PointRange } from './utils';
 
 // import {CdkVirtualScrollViewport} from './virtual-scroll-viewport';
 
@@ -76,7 +77,6 @@ function getOffset(orientation: 'horizontal' | 'vertical', direction: 'start' | 
   selector: '[appVirtualFor][appVirtualForOf]'
 })
 export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>, CollectionViewer, DoCheck, OnDestroy {
-  @Input() secondary: boolean;
 
   /** The DataSource to display. */
   @Input()
@@ -120,23 +120,6 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     }
   }
 
-  /**
-   * The size of the cache used to store templates that are not being used for re-use later.
-   * Setting the cache size to `0` will disable caching. Defaults to 20 templates.
-   */
-  @Input()
-  get appVirtualForTemplateCacheSize() {
-    // todo
-    // return this._viewRepeater.viewCacheSize;
-    return 20;
-  }
-
-  set appVirtualForTemplateCacheSize(size: number) {
-    console.log(size);
-    // todo
-    // this._viewRepeater.viewCacheSize = coerceNumberProperty(size);
-  }
-
   constructor(
     /** The view container to add items to. */
     private _viewContainerRef: ViewContainerRef,
@@ -165,10 +148,11 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       this._viewport.attach(this);
     }
   }
+  @Input() secondary: boolean;
 
-  static ngAcceptInputType_appVirtualForTemplateCacheSize;
   /** Emits when the rendered view of the data changes. */
-  readonly viewChange = new Subject<ListRange>();
+  // @ts-ignore
+  readonly viewChange = new Subject<PointRange>();
 
   /** Subject that emits when a new DataSource instance is given. */
   private readonly _dataSourceChanges = new Subject<DataSource<T>>();
@@ -201,12 +185,20 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
   private _renderedItems: T[];
 
   /** The currently rendered range of indices. */
-  private _renderedRange: ListRange;
+  private _renderedRange: PointRange;
 
   /** Whether the rendered data should be updated during the next ngDoCheck cycle. */
   private _needsUpdate = false;
 
   private readonly _destroyed = new Subject<void>();
+
+  /** Update the computed properties on the `AppVirtualForOfContext`. */
+  private static _updateComputedContextProperties(context: AppVirtualForOfContext<any>) {
+    context.first = context.index === 0;
+    context.last = context.index === context.count - 1;
+    context.even = context.index % 2 === 0;
+    context.odd = !context.even;
+  }
 
   /**
    * Measures the combined size (width for horizontal orientation, height for vertical) of all items
@@ -257,7 +249,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
 
   ngDoCheck() {
     if (this._differ && this._needsUpdate) {
-      // TODO(mmalerba): We should differentiate needs update due to scrolling and a new portion of
+      // We should differentiate needs update due to scrolling and a new portion of
       // this list being rendered (can use simpler algorithm) vs needs update due to data actually
       // changing (need to do this diff).
       const changes = this._differ.diff(this._renderedItems);
@@ -287,7 +279,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     if (!this._renderedRange) {
       return;
     }
-    const {_renderedRange: {start: [sx, sy], end: [ex, ey]}} = this;
+    const {start: [sx, sy], end: [ex, ey]} = this._renderedRange;
     this._renderedItems = this._data.filter(d =>
       (!d.hasOwnProperty('x') || (sx <= d.x && d.x <= ex)) && (!d.hasOwnProperty('y') || (sy <= d.y && d.y <= ey))
     );
@@ -321,21 +313,13 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       const view = this._viewContainerRef.get(i) as EmbeddedViewRef<AppVirtualForOfContext<T>>;
       view.context.index = this._renderedRange.start + i;
       view.context.count = count;
-      this._updateComputedContextProperties(view.context);
+      AppVirtualForOfDirective._updateComputedContextProperties(view.context);
       view.detectChanges();
     }
   }
 
   /** Apply changes to the DOM. */
   private _applyChanges(changes: IterableChanges<T>) {
-    // this._viewRepeater.applyChanges(
-    //   changes,
-    //   this._viewContainerRef,
-    //   (record: IterableChangeRecord<T>,
-    //    _adjustedPreviousIndex: number | null,
-    //    currentIndex: number | null) => this._getEmbeddedViewArgs(record, currentIndex),
-    //   (record) => record.item);
-
     const itemValueResolver = record => record.item;
     const itemContextFactory = (record: IterableChangeRecord<T>,
                                 _adjustedPreviousIndex: number | null,
@@ -372,16 +356,8 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       const view = this._viewContainerRef.get(i) as EmbeddedViewRef<AppVirtualForOfContext<T>>;
       view.context.index = this._renderedRange.start + i;
       view.context.count = count;
-      this._updateComputedContextProperties(view.context);
+      AppVirtualForOfDirective._updateComputedContextProperties(view.context);
     }
-  }
-
-  /** Update the computed properties on the `AppVirtualForOfContext`. */
-  private _updateComputedContextProperties(context: AppVirtualForOfContext<any>) {
-    context.first = context.index === 0;
-    context.last = context.index === context.count - 1;
-    context.even = context.index % 2 === 0;
-    context.odd = !context.even;
   }
 
   private _getEmbeddedViewArgs(record: IterableChangeRecord<T>, index: number) {

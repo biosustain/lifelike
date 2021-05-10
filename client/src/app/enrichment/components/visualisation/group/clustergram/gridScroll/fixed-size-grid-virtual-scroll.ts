@@ -12,6 +12,7 @@ import { distinctUntilChanged } from 'rxjs/operators';
 import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
 import { VirtualScrollStrategy, VIRTUAL_SCROLL_STRATEGY } from '@angular/cdk/scrolling';
 import { coerceNumberProperty } from '@angular/cdk/coercion';
+import { PointRange, Point } from './utils';
 
 /** Virtual scrolling strategy for lists with items of known fixed size. */
 @Injectable()
@@ -26,7 +27,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
   private _viewport: AppGridVirtualScrollViewportComponent | null = null;
 
   /** The size of the items in the virtually scrolling list. */
-  private _itemSize: number[];
+  private _itemSize: Point;
 
   /** The minimum amount of buffer rendered beyond the viewport (in pixels). */
   private _minBufferPx: number;
@@ -39,7 +40,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
    * @param minBufferPx The minimum amount of buffer (in pixels) before needing to render more
    * @param maxBufferPx The amount of buffer (in pixels) to render when rendering more.
    */
-  constructor(itemSize: number[], minBufferPx: number, maxBufferPx: number) {
+  constructor(itemSize: Point, minBufferPx: number, maxBufferPx: number) {
     this._itemSize = itemSize;
     this._minBufferPx = minBufferPx;
     this._maxBufferPx = maxBufferPx;
@@ -67,7 +68,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
    * @param minBufferPx The minimum amount of buffer (in pixels) before needing to render more
    * @param maxBufferPx The amount of buffer (in pixels) to render when rendering more.
    */
-  updateItemAndBufferSize(itemSize: number[], minBufferPx: number, maxBufferPx: number) {
+  updateItemAndBufferSize(itemSize: Point, minBufferPx: number, maxBufferPx: number) {
     if (maxBufferPx < minBufferPx) {
       throw Error('CDK virtual scroll: maxBufferPx must be greater than or equal to minBufferPx');
     }
@@ -103,9 +104,9 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
    * @param behavior The ScrollBehavior to use when scrolling.
    */
   // @ts-ignore
-  scrollToIndex(index: number[], behavior: ScrollBehavior): void {
+  scrollToIndex(index: Point, behavior: ScrollBehavior): void {
     if (this._viewport) {
-      this._viewport.scrollToOffset(this._itemSize.map((s, i) => s * index[i]), behavior);
+      this._viewport.scrollToOffset(this._itemSize.multiply(index), behavior);
     }
   }
 
@@ -186,16 +187,9 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
       this._itemSize[i]
     ));
 
-    const newRange = {
-      start: [
-        result[0].newRange.start,
-        result[1].newRange.start,
-      ]
-      , end: [
-        result[0].newRange.end,
-        result[1].newRange.end,
-      ]
-    };
+    const newRange = new PointRange();
+    newRange.x = result[0].newRange;
+    newRange.y = result[1].newRange;
 
     const firstVisibleIndex = [
       result[0].firstVisibleIndex,
@@ -203,7 +197,9 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     ];
 
     this._viewport.setRenderedRange(newRange);
-    this._viewport.setRenderedContentOffset(this._itemSize.map((v, i) => v * newRange.start[i]));
+    this._viewport.setRenderedContentOffset(new Point(
+      ...this._itemSize.map((v, i) => v * newRange.start[i])
+    ));
     this._scrolledIndexChange.next(firstVisibleIndex.map(Math.floor));
   }
 }
@@ -234,12 +230,12 @@ export function _fixedSizeVirtualScrollStrategyFactory(fixedSizeDir: AppFixedSiz
 export class AppFixedSizeGridVirtualScroll implements OnChanges {
   /** The size of the items in the list (in pixels). */
   @Input()
-  get itemSize(): number[] {
+  get itemSize(): Point {
     return this._itemSize;
   }
 
-  set itemSize(value: number[]) {
-    this._itemSize = value.map(coerceNumberProperty) as number[];
+  set itemSize(value: Point) {
+    this._itemSize = value.map(coerceNumberProperty) as Point;
   }
 
   /**
@@ -274,17 +270,17 @@ export class AppFixedSizeGridVirtualScroll implements OnChanges {
   // tslint:disable-next-line:variable-name
   static ngAcceptInputType_maxBufferPx;
 
-  _itemSize: number[] = [20, 20];
+  _itemSize: Point = new Point(8, 8);
 
   _minBufferPx = 100;
-
-  _maxBufferPx = 200;
+  _maxBufferPx = this._minBufferPx * 2;
 
   /** The scroll strategy used by this directive. */
-  _scrollStrategy =
-    new FixedSizeGridVirtualScrollStrategy(this.itemSize, this.minBufferPx, this.maxBufferPx);
+  _scrollStrategy = new FixedSizeGridVirtualScrollStrategy(this.itemSize, this.minBufferPx, this.maxBufferPx);
 
   ngOnChanges() {
+    this._minBufferPx = Math.max(...this.itemSize) * 4;
+    this._maxBufferPx = this._minBufferPx * 2;
     this._scrollStrategy.updateItemAndBufferSize(this._itemSize, this.minBufferPx, this.maxBufferPx);
   }
 }

@@ -6,7 +6,6 @@ import {
   OnDestroy,
   HostBinding,
   Output,
-  ViewChild,
   ElementRef,
   NgZone,
   ChangeDetectorRef,
@@ -27,11 +26,7 @@ import {
   ViewportRuler
 } from '@angular/cdk/scrolling';
 import { AppVirtualForOfDirective } from './virtual-for-of';
-
-/** Checks if the given ranges are equal. */
-function rangesEqual(r1, r2): boolean {
-  return r1.start.every((v, i) => v === r2.start[i]) && r1.end.every((v, i) => v === r2.end[i]);
-}
+import { Point, PointRange } from './utils';
 
 /**
  * Scheduler to be used for scroll events. Needs to fall back to
@@ -45,7 +40,6 @@ const SCROLL_SCHEDULER =
 @Component({
   selector: 'app-grid-virtual-scroll-viewport',
   templateUrl: 'app-grid-virtual-scroll-viewport.html',
-  styleUrls: ['app-grid-virtual-scroll-viewport.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -56,7 +50,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   private readonly _detachedSubject = new Subject<void>();
 
   /** Emits when the rendered range changes. */
-  private readonly _renderedRangeSubject = new Subject<ListRange>();
+  private readonly _renderedRangeSubject = new Subject<PointRange>();
 
   // Note: we don't use the typical EventEmitter here because we need to subscribe to the scroll
   // strategy lazily (i.e. only if the user is actually listening to the events). We do this because
@@ -69,23 +63,19 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
       index => Promise.resolve().then(() => this.ngZone.run(() => observer.next(index)))));
 
   /** The element that wraps the rendered content. */
-  @ViewChild('contentWrapper', {static: true}) _contentWrapper: ElementRef<HTMLElement>;
+  @ContentChild('content', {static: false}) _contentWrapper: ElementRef<HTMLElement>;
+  @ContentChild('scrollSpacer', {static: false}) _scrollSpacerWrapper: ElementRef<HTMLElement>;
   @ContentChild('columnHeader', {static: false}) _columnHeaderWrapper: ElementRef<HTMLElement>;
   @ContentChild('rowHeader', {static: false}) _rowHeaderWrapper: ElementRef<HTMLElement>;
 
   /** A stream that emits whenever the rendered range changes. */
-  readonly renderedRangeStream: Observable<ListRange> = this._renderedRangeSubject;
+    // @ts-ignore
+  readonly renderedRangeStream: Observable<PointRange> = this._renderedRangeSubject;
 
   /**
    * The total size of all content (in pixels), including content that is not currently rendered.
    */
-  private _totalContentSize = [0, 0];
-
-  /** A string representing the `style.width` property value to be used for the spacer element. */
-  _totalContentWidth = '';
-
-  /** A string representing the `style.height` property value to be used for the spacer element. */
-  _totalContentHeight = '';
+  private _totalContentSize = new Point();
 
   /**
    * The CSS transform applied to the rendered subset of items so that they appear within the bounds
@@ -94,20 +84,20 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   private _renderedContentTransform: string;
 
   /** The currently rendered range of indices. */
-  private _renderedRange = {start: [0, 0], end: [0, 0]};
+  private _renderedRange = new PointRange();
 
   /** The length of the data bound to this viewport (in number of items). */
-  private _dataLength = [0, 0];
+  private _dataLength = new Point();
 
   /** The size of the viewport (in pixels). */
-  private _viewportSize = [0, 0];
+  private _viewportSize = new Point();
 
   /** the currently attached AppVirtualScrollRepeater. */
   private _forOf;
   private _forOfs;
 
   /** The last rendered content offset that was set. */
-  private _renderedContentOffset = [0, 0];
+  private _renderedContentOffset = new Point();
 
   /**
    * Whether the last rendered content offset was to the end of the content (and therefore needs to
@@ -199,10 +189,10 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     this.ngZone.runOutsideAngular(() => {
       this._forOf = forOf;
       this._forOf.dataStream.pipe(takeUntil(this._detachedSubject)).subscribe(data => {
-        const newLength = [
+        const newLength = new Point(
           Math.max(...data.map(({x}) => x)),
           Math.max(...data.map(({y}) => y))
-        ];
+        );
         if (this._dataLength.some((v, i) => v !== newLength[i])) {
           this._dataLength = newLength;
           this._scrollStrategy.onDataLengthChanged();
@@ -237,13 +227,13 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** Gets the length of the data bound to this viewport (in number of items). */
   // @ts-ignore
-  getDataLength(): number[] {
+  getDataLength(): Point {
     return this._dataLength;
   }
 
   /** Gets the size of the viewport (in pixels). */
   // @ts-ignore
-  getViewportSize(): number[] {
+  getViewportSize(): Point {
     return this._viewportSize;
   }
 
@@ -263,11 +253,10 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * rendered.
    */
   // @ts-ignore
-  setTotalContentSize(size: number[]) {
-    // todo: comp arrays
-    if (this._totalContentSize.some((tcs, i) => tcs !== size[i])) {
-      this._columnHeaderWrapper.nativeElement.style.width = size[0] + 'px';
-      this._rowHeaderWrapper.nativeElement.style.height = size[1] + 'px';
+  setTotalContentSize(size: Point) {
+    if (!this._totalContentSize.equals(size)) {
+      this._columnHeaderWrapper.nativeElement.style.width = size.x + 'px';
+      this._rowHeaderWrapper.nativeElement.style.height = size.y + 'px';
       this._totalContentSize = size;
       this._calculateSpacerSize();
       this._markChangeDetectionNeeded();
@@ -275,8 +264,9 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   }
 
   /** Sets the currently rendered range of indices. */
-  setRenderedRange(range) {
-    if (!rangesEqual(this._renderedRange, range)) {
+  // @ts-ignore
+  setRenderedRange(range: PointRange) {
+    if (!this._renderedRange.equals(range)) {
       this._renderedRangeSubject.next(this._renderedRange = range);
       this._markChangeDetectionNeeded(() => this._scrollStrategy.onContentRendered());
     }
@@ -286,8 +276,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * Gets the offset from the start of the viewport to the start of the rendered data (in pixels).
    */
   // @ts-ignore
-  getOffsetToRenderedContentStart(): number[] | null {
-    return this._renderedContentOffsetNeedsRewrite ? [null, null] : this._renderedContentOffset;
+  getOffsetToRenderedContentStart(): Point | null {
+    return this._renderedContentOffsetNeedsRewrite ? new Point(null, null) : this._renderedContentOffset;
   }
 
   /**
@@ -295,7 +285,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * (in pixels).
    */
   // @ts-ignore
-  setRenderedContentOffset(offset: number[], to: 'to-start' | 'to-end' = 'to-start') {
+  setRenderedContentOffset(offset: Point, to: 'to-start' | 'to-end' = 'to-start') {
     // For a horizontal viewport in a right-to-left language we need to translate along the x-axis
     // in the negative direction.
     const axis = 'XY';
@@ -315,9 +305,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
       this._markChangeDetectionNeeded(() => {
         if (this._renderedContentOffsetNeedsRewrite) {
           const measureRenderedContentSize = this.measureRenderedContentSize();
-          this._renderedContentOffset = this._renderedContentOffset.map((v, i) =>
-            v - measureRenderedContentSize[i]
-          );
+          this._renderedContentOffset = this._renderedContentOffset.substract(measureRenderedContentSize);
           this._renderedContentOffsetNeedsRewrite = false;
           this.setRenderedContentOffset(this._renderedContentOffset);
         } else {
@@ -335,7 +323,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * @param behavior The ScrollBehavior to use when scrolling. Default is behavior is `auto`.
    */
   // @ts-ignore
-  scrollToOffset(offset: number[], behavior: ScrollBehavior = 'auto') {
+  scrollToOffset(offset: Point, behavior: ScrollBehavior = 'auto') {
     const options = {behavior, start: undefined, top: undefined};
     options.start = offset;
     options.top = offset;
@@ -352,14 +340,14 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   }
 
   getContentOffset(from: ('top' | 'left' | 'right' | 'bottom' | 'start' | 'end')): number {
-      switch (from) {
-        case 'top':
-          return this._columnHeaderWrapper.nativeElement.offsetHeight;
-        case 'left':
-          return this._rowHeaderWrapper.nativeElement.offsetWidth;
-        default:
-          return 0;
-      }
+    switch (from) {
+      case 'top':
+        return this._columnHeaderWrapper.nativeElement.offsetHeight;
+      case 'left':
+        return this._rowHeaderWrapper.nativeElement.offsetWidth;
+      default:
+        return 0;
+    }
   }
 
   /**
@@ -368,15 +356,15 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    *     in horizontal mode.
    */
   // @ts-ignore
-  measureScrollOffset(from: ('top' | 'left' | 'right' | 'bottom' | 'start' | 'end')[] = ['left', 'top']): number[] {
-    return from.map(f => Math.max(0, - this.getContentOffset(f) +  super.measureScrollOffset(f)));
+  measureScrollOffset(from: ('top' | 'left' | 'right' | 'bottom' | 'start' | 'end')[] = ['left', 'top']): Point {
+    return new Point(...from.map(f => Math.max(0, -this.getContentOffset(f) + super.measureScrollOffset(f))));
   }
 
   /** Measure the combined size of all of the rendered items. */
   // @ts-ignore
-  measureRenderedContentSize(): number[] {
+  measureRenderedContentSize(): Point {
     const contentEl = this._contentWrapper.nativeElement;
-    return [contentEl.offsetWidth, contentEl.offsetHeight];
+    return new Point(contentEl.offsetWidth, contentEl.offsetHeight);
   }
 
   /**
@@ -384,14 +372,14 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
    * not rendered.
    */
   // @ts-ignore
-  measureRangeSize(range: ListRange): number[] {
+  measureRangeSize(range: ListRange): Point {
     if (!this._forOf) {
-      return [0, 0];
+      return new Point();
     }
-    return [
+    return new Point(
       this._forOf.measureRangeSize(range, 'horizontal'),
       this._forOf.measureRangeSize(range, 'vertical')
-    ];
+    );
   }
 
   /** Update the viewport dimensions and re-render. */
@@ -404,10 +392,11 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   /** Measure the viewport size. */
   private _measureViewportSize() {
     const viewportEl = this.elementRef.nativeElement;
-    this._viewportSize = [
-      viewportEl.clientWidth,
-      viewportEl.clientHeight
-    ];
+    const contentEl = this._contentWrapper.nativeElement;
+    this._viewportSize = new Point(
+      viewportEl.clientWidth - contentEl.offsetLeft,
+      viewportEl.clientHeight - contentEl.offsetTop
+    );
   }
 
   /** Queue up change detection to run. */
@@ -437,8 +426,12 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     // string literals, a variable that can only be 'X' or 'Y', and user input that is run through
     // the `Number` function first to coerce it to a numeric value.
     this._contentWrapper.nativeElement.style.transform = this._renderedContentTransform;
-    this._columnHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
-    this._rowHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
+    if (this._columnHeaderWrapper) {
+      this._columnHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
+    }
+    if (this._rowHeaderWrapper) {
+      this._rowHeaderWrapper.nativeElement.style.transform = this._renderedContentTransform;
+    }
     // Apply changes to Angular bindings. Note: We must call `markForCheck` to run change detection
     // from the ***ARANGO_USERNAME***, since the repeated items are content projected in. Calling `detectChanges`
     // instead does not properly check the projected content.
@@ -453,7 +446,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** Calculates the `style.width` and `style.height` for the spacer element. */
   private _calculateSpacerSize() {
-    this._totalContentHeight = `${this._totalContentSize[1]}px`;
-    this._totalContentWidth = `${this._totalContentSize[0]}px`;
+    const spacerStyles = this._scrollSpacerWrapper.nativeElement.style;
+    spacerStyles.width = `${this._totalContentSize.x}px`;
+    spacerStyles.height = `${this._totalContentSize.y}px`;
   }
 }
