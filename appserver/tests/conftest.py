@@ -628,10 +628,10 @@ def gas_gangrene_with_associations_and_references(
         snippet_to_pub_rels = [
             [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_publication_node],
             [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_publication_node],
-            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_publication_node1],
-            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_publication_node2],
-            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_publication_node2],
-            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_publication_node2]
+            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_publication_node1],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_publication_node2],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_publication_node2],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_publication_node2]  # noqa
         ]
         for rel in snippet_to_pub_rels:
             create_in_pub_relationship(
