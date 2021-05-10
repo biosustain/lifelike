@@ -174,6 +174,18 @@ export interface ObjectExportRequest {
   format: string;
 }
 
+// Responses
+// ----------------------------------------
+
+interface FileNode {
+  name: string;
+  children: FileNode[];
+}
+
+export interface FileHierarchyResponse {
+  results: FileNode[];
+}
+
 // ========================================
 // Backups
 // ========================================

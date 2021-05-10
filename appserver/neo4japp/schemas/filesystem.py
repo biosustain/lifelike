@@ -289,6 +289,15 @@ class FileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileSchema))
 
 
+class FileNode(CamelCaseSchema):
+    name = fields.String()
+    children = fields.List(fields.Nested(lambda: FileNode()))
+
+
+class FileHierarchySchema(CamelCaseSchema):
+    results = fields.List(fields.Nested(FileNode))
+
+
 # ========================================
 # Backups
 # ========================================
