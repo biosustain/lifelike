@@ -1,25 +1,4 @@
-<!--
-  Wrap the rendered content in an element that will be used to offset it based on the scroll
-  position.
--->
-<div #contentWrapper class="app-virtual-scroll-content-wrapper">
-    <div class="app-virtual-scroll-spacer"
-         [style.width]="_totalContentWidth" [style.height]="_totalContentHeight"></div>
-    <ng-content></ng-content>
-    <!--
-      Spacer used to force the scrolling container to the correct size for the *total* number of items
-      so that the scrollbar captures the size of the entire data set.
-    -->
-</div>
+<ng-content select=".content"></ng-content>
+<ng-content select=".scrollSpacer"></ng-content>
 <ng-content select=".columnHeader"></ng-content>
 <ng-content select=".rowHeader"></ng-content>
-
-
-<!--<app-virtual-scroll-viewport [itemSize]="itemSize">-->
-<!--  <ng-content></ng-content>-->
-<!--  <ng-template #content>-->
-<!--    <ng-template let-item appVirtualFor [appVirtualForOf]="items">-->
-<!--      <ng-template *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-template>-->
-<!--    </ng-template>-->
-<!--  </ng-template>-->
-<!--</app-virtual-scroll-viewport>-->

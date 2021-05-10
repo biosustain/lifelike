@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, HostBinding } from '@angular/core';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from 'app/enrichment/services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
-import { ScrollDispatcher, ViewportRuler } from '@angular/cdk/scrolling';
+import { ScrollDispatcher } from '@angular/cdk/scrolling';
+import { DomSanitizer } from '@angular/platform-browser';
 
 class GeneRow {
   values: boolean[];
@@ -32,14 +33,27 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
-  itemSize = [27, 27];
+
+  @HostBinding('style') private size;
+
+  _itemSize;
+  get itemSize() {
+    return this._itemSize;
+  }
+
+  set itemSize(itemSize) {
+    this._itemSize = itemSize;
+    this.size = this.sanitizer.bypassSecurityTrustStyle(
+      `--sizeX: ${itemSize[0]}px;--sizeY: ${itemSize[1]}px;`
+    );
+  }
 
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly scrollDispatcher: ScrollDispatcher,
-    readonly viewportRuler: ViewportRuler
+    private sanitizer: DomSanitizer
   ) {
-
+    this.itemSize = [27, 27];
   }
 
   rowOrder(a: KeyValue<string, GeneRow>, b: KeyValue<string, GeneRow>) {
