@@ -1,0 +1,8 @@
+deploy_user: ansible
+deploy_group: ansible
+deploy_dir: /home/ansible
+TRAEFIK_DOMAIN: swarm.lifelike.bio
+STACK_NAME: lifelike
+TRAEFIK_PUBLIC_NETWORK: traefik-public
+TRAEFIK_TAG: lifelike-app
+TRAEFIK_PUBLIC_TAG: traefik-public

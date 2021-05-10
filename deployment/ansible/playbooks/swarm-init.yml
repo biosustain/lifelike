@@ -1,0 +1,31 @@
+- hosts: swarm_nodes
+  become: yes
+
+  tasks:
+    - name: Log into Docker Registry
+      docker_login:
+        registry_url: lifelike.azurecr.io
+        username: "{{ AZURE_CR_USERNAME }}"
+        password: "{{ AZURE_CR_PASSWORD }}"
+  # roles:
+  #   - role: docker
+
+- name: Docker Swarm Manager
+  hosts: node_managers
+  become: yes
+
+  tasks:
+    - name: Docker Swarm Manager
+      docker_swarm:
+        state: present
+        advertise_addr: "{{ ansible_host }}"
+      register: docker_swarm_tokens
+
+- name: Docker Swarm Workers
+  hosts: node_workers
+  become: yes
+
+  tasks:
+    - name: Docker Worker Add
+      shell: "docker swarm join --token {{ hostvars['manager01']['docker_swarm_tokens']['swarm_facts']['JoinTokens']['Worker'] }} {{ hostvars['manager01']['ansible_default_ipv4']['address'] }}:2377"
+

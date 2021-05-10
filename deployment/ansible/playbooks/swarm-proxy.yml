@@ -1,0 +1,46 @@
+- name: Docker Swarm Traefik Proxy
+  hosts: node_managers
+
+  tasks:
+    - name: Create overlay network
+      docker_network:
+        name: "traefik-public"
+        driver: "overlay"
+
+    - name: Get docker node Id
+      shell:
+        cmd: docker info -f {{ "'{{ .Swarm.NodeID }}'" }}
+      register: docker_node_id
+
+    - name: Anchor Traefik to only this particular docker node
+      shell:
+        cmd: docker node update --label-add traefik-public.traefik-public-certificates=true {{ docker_node_id.stdout }}
+
+    - name: Copy docker files
+      copy:
+        src: "./files/docker-compose.proxy.yml"
+        dest: "{{ deploy_dir }}"
+        owner: "{{ deploy_user }}"
+        group: docker
+        mode: u=rw,g=r,o=r
+
+    - name: Create .env file
+      copy:
+        content: |
+          USERNAME={{ USERNAME }}
+          HASHED_PASSWORD={{ HASHED_PASSWORD }}
+          DOMAIN={{ DOMAIN }}
+          EMAIL={{ EMAIL }}
+        dest: "{{ deploy_dir }}/.env"
+        owner: "{{ deploy_user }}"
+        group: docker
+        mode: u=rw,g=r,o=r
+
+    - name: Create docker stack file
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: docker-compose -f docker-compose.proxy.yml config > docker-stack.yml
+
+    - name: Deploy Traefik
+      shell:
+        cmd: docker stack deploy -c docker-stack.yml traefik

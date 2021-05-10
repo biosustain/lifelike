@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
     proxy:
@@ -20,6 +20,13 @@ services:
             - traefik.http.services.${STACK_NAME?Variable not set}-traefik-public.loadbalancer.server.port=80
 
     appserver:
+        labels:
+            - traefik.enable=true
+            - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
+            - traefik.http.middlewares.flask-stripprefix.stripprefix.prefixes=/api
+            - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.rule=PathPrefix(`/api`)
+            - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.middlewares=flask-stripprefix
+            - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=5000
         volumes:
             - ../appserver:/home/n4j
         # Allow debugging w/ IPython or pdb
@@ -89,7 +96,7 @@ services:
         labels:
             - traefik.enable=true
             - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
-            - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`) || PathPrefix(`/api`)
+            - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
             - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
 
     filebeat:

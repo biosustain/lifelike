@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
     traefik:
@@ -18,11 +18,11 @@ services:
                 - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
                 - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
                 # HTTP
-                - traefik.http.routers.traefik-public-http.rule=Host(`${DOMAIN?Variable not set}`)
+                - traefik.http.routers.traefik-public-http.rule=Host(`${TRAEFIK_DOMAIN?Variable not set}`)
                 - traefik.http.routers.traefik-public-http.entrypoints=http
                 - traefik.http.routers.traefik-public-http.middlewares=https-redirect
                 # HTTPS
-                - traefik.http.routers.traefik-public-https.rule=Host(`${DOMAIN?Variable not set}`)
+                - traefik.http.routers.traefik-public-https.rule=Host(`${TRAEFIK_DOMAIN?Variable not set}`)
                 - traefik.http.routers.traefik-public-https.entrypoints=https
                 - traefik.http.routers.traefik-public-https.tls=true
                 - traefik.http.routers.traefik-public-https.service=api@internal

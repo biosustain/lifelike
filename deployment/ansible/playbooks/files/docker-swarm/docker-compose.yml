@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
 
@@ -42,53 +42,54 @@ services:
 
     appserver:
         container_name: appserver
+        deploy:
+            replicas: 1
+        env_file:
+            - .env
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
-        build:
-            context: ../appserver
-            dockerfile: Dockerfile
         volumes:
             - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
-        depends_on:
-            - redis
-            - pdfparser
 
     cache-invalidator:
         container_name: cache-invalidator
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
-        build:
-            context: ../cache-invalidator
-            dockerfile: Dockerfile
-        depends_on:
-            - redis
+        deploy:
+            replicas: 1
+        env_file:
+            - .env
 
     webserver:
         container_name: webserver
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
-        build:
-            context: ../client
-            dockerfile: Dockerfile
-            target: webserver
         deploy:
+            replicas: 1
             labels:
                 - traefik.enable=true
                 - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
                 - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`) || PathPrefix(`/api`)
                 - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
-        depends_on:
-            - appserver
 
     pdfparser:
         container_name: pdfparser
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-pdfparser:latest
+        deploy:
+            replicas: 1
         tty: true
 
     filebeat:
         container_name: filebeat
         image: ${REGISTRY:-lifelike.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+        deploy:
+            replicas: 1
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
 
     redis:
         container_name: redis
         image: redis:6.0.3-alpine
+        deploy:
+            replicas: 1
         command: redis-server --requirepass ${REDIS_PASSWORD}
 
 volumes:

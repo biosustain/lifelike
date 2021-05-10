@@ -1,0 +1,80 @@
+- name: Docker Stack Deploy
+  hosts: node_managers
+
+  tasks:
+    - name: Make deploy directory
+      file:
+        path: "{{ deploy_dir }}/deploy"
+        owner: "{{ deploy_user }}"
+        group: docker
+        state: directory
+        mode: u=rwx,g=r,o=r
+
+    - name: Copy docker files
+      copy:
+        src: "./files/docker-swarm/docker-compose.yml"
+        dest: "{{ deploy_dir }}/deploy/docker-compose.yml"
+        owner: "{{ deploy_user }}"
+        group: docker
+        mode: u=rw,g=r,o=r
+
+    - name: Create .env file
+      copy:
+        content: |
+          # GITHUB_COMMIT_TIMESTAMP={{ git_timestamp | default('TODO')  }}
+          ELASTICSEARCH_HOSTS={{ ELASTICSEARCH_HOSTS }}
+          ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}
+          POSTGRES_HOST={{ POSTGRES_HOST }}
+          POSTGRES_PORT={{ POSTGRES_PORT }}
+          POSTGRES_USER={{ POSTGRES_USER }}
+          POSTGRES_PASSWORD={{ POSTGRES_PASSWORD }}
+          POSTGRES_DB={{ POSTGRES_DB }}
+          NEO4J_HOST={{ NEO4J_HOST }}
+          NEO4J_AUTH={{ NEO4J_AUTH }}
+          NEO4J_PORT="{{ NEO4J_PORT|quote }}"
+          FLASK_APP={{ FLASK_APP }}
+          FLASK_APP_CONFIG={{ FLASK_APP_CONFIG }}
+          FLASK_ENV={{ FLASK_ENV }}
+          PROJECT_ID={{ PROJECT_ID }}
+          CLOUD_SQL_ALIAS={{ CLOUD_SQL_ALIAS }}
+          GCE_BACKUP_BUCKET={{ GCE_BACKUP_BUCKET }}
+          SENTRY_KEY={{ SENTRY_KEY }}
+          REDIS_HOST={{ REDIS_HOST }}
+          REDIS_PORT={{ REDIS_PORT }}
+          REDIS_PASSWORD={{ REDIS_PASSWORD }}
+          DOMAIN={{ DOMAIN }}
+          GITHUB_HASH={{ docker_img_hash | default('latest')  }}
+          APP_VERSION={{ app_version | default('TODO')  }}
+          APP_BUILD_NUMBER={{ app_build_number | default('TODO') }}
+          GOOGLE_APPLICATION_CREDENTIALS="ansible_service_account.json"
+          LMDB_HOME_FOLDER={{ LMDB_HOME_FOLDER }}
+          AZURE_ACCOUNT_STORAGE_NAME={{ AZURE_ACCOUNT_STORAGE_NAME }}
+          AZURE_ACCOUNT_STORAGE_KEY={{ AZURE_ACCOUNT_STORAGE_KEY }}
+          AZURE_CR_USERNAME={{ AZURE_CR_USERNAME }}
+          AZURE_CR_PASSWORD={{ AZURE_CR_PASSWORD }}
+          AZURE_BLOB_STORAGE_URL={{ AZURE_BLOB_STORAGE_URL }}
+          LOG_LEVEL="{{ REDIS_LOG_LEVEL | default('warning') }}"
+          STACK_NAME="{{ STACK_NAME }}"
+          TRAEFIK_PUBLIC_NETWORK="{{ TRAEFIK_PUBLIC_NETWORK }}"
+          TRAEFIK_TAG="{{ TRAEFIK_TAG }}"
+          TRAEFIK_PUBLIC_TAG="{{ TRAEFIK_PUBLIC_TAG }}"
+        dest: "{{ deploy_dir }}/deploy/.env"
+        owner: "{{ deploy_user }}"
+        group: docker
+        mode: u=rw,g=r,o=r
+
+    - name: Log into Docker Registry
+      docker_login:
+        registry_url: lifelike.azurecr.io
+        username: "{{ AZURE_CR_USERNAME }}"
+        password: "{{ AZURE_CR_PASSWORD }}"
+
+    - name: Create docker stack file
+      shell:
+        chdir: "{{ deploy_dir }}/deploy"
+        cmd: docker-compose -f docker-compose.yml config > docker-lifelike-stack.yml
+
+    - name: Deploy Lifelike
+      shell:
+        chdir: "{{ deploy_dir }}/deploy"
+        cmd: docker stack deploy -c docker-lifelike-stack.yml --with-registry-auth lifelike
