@@ -46,7 +46,7 @@ def main():
         max_dbs=2,
     )
     genes_env = lmdb.open(
-        path=os.path.join(lmdb_home, 'lmdb/matches'),
+        path=os.path.join(lmdb_home, 'lmdb/genes'),
         readonly=True,
         max_dbs=2,
     )

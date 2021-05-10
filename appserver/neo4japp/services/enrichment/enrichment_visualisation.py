@@ -43,12 +43,12 @@ class EnrichmentVisualisationService(KgService):
                     MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) WHERE g.name=geneName
                     WITH g MATCH (g)-[:GO_LINK]-(go)
                     WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
-                    WITH go, collect(DISTINCT g2) AS matches
+                    WITH go, collect(DISTINCT g2) AS genes
                     RETURN
                         go.id AS goId,
                         go.name AS goTerm,
                         [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
-                        [g IN matches |g.name] AS geneNames
+                        [g IN genes |g.name] AS geneNames
                     """,
                     taxId=organism_id,
                     gene_names=gene_names

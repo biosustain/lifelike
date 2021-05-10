@@ -63,7 +63,7 @@ class AnnotationGraphService(GraphConnection):
         """Returns a map of gene name to gene id."""
         postgres_result = postgres_genes
 
-        # Collect all the matches that were not matched to an organism in the table, and search
+        # Collect all the genes that were not matched to an organism in the table, and search
         # the Neo4j database for them
         second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
         neo4j_result = self.get_genes_to_organisms(second_round_genes, matched_organism_ids)
@@ -141,13 +141,13 @@ class AnnotationGraphService(GraphConnection):
         genes: List[str],
         organisms: List[str]
     ) -> List[Neo4jRecord]:
-        """Retrieves a list of all the matches with a given name
+        """Retrieves a list of all the genes with a given name
         in a particular organism."""
         return list(
             tx.run(
                 """
                 MATCH (s:Synonym)-[]-(g:Gene)
-                WHERE s.name IN $matches
+                WHERE s.name IN $genes
                 WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
                 WHERE p.id IN $organisms
                 RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id,
@@ -285,7 +285,7 @@ class AnnotationGraphService(GraphConnection):
         gene_ids: List[str]
     ) -> List[Neo4jRecord]:
         """Retrieves a list of gene and corresponding organism data
-        from a given list of matches."""
+        from a given list of genes."""
         return list(
             tx.run(
                 """

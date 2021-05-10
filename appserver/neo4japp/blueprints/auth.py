@@ -130,12 +130,6 @@ def verify_token(token):
             token = token.split(' ')[-1].strip()
             try:
                 user = AppUser.query_by_email(decoded['sub']).one()
-                current_app.logger.info(
-                    f'Active user: {user.email}',
-                    extra=UserEventLog(
-                        username=user.username,
-                        event_type=LogEventType.LAST_ACTIVE.value).to_dict()
-                )
             except NoResultFound:
                 raise ServerException(
                     title='Failed to Authenticate',
@@ -211,12 +205,9 @@ def login():
     else:
         if user.check_password(data.get('password')):
             current_app.logger.info(
-                f'Authenticating {user.email}',
-                extra=UserEventLog(
+                UserEventLog(
                     username=user.username,
-                    event_type=LogEventType.AUTHENTICATION.value
-                ).to_dict()
-            )
+                    event_type=LogEventType.AUTHENTICATION.value).to_dict())
             token_service = TokenService(current_app.config['SECRET_KEY'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
