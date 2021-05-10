@@ -52,10 +52,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        # We don't even validate PDF content yet, but we need to detect them, so we'll
-        # just return -1 so PDF becomes the fallback file type
-        return -1
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
@@ -212,13 +210,11 @@ class PDFTypeProvider(BaseFileTypeProvider):
             pass
         return None
 
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        return buffer  # Elasticsearch can index PDF files directly
 
-def to_indexable_content(self, buffer: BufferedIOBase):
-    return buffer  # Elasticsearch can index PDF files directly
-
-
-def should_highlight_content_text_matches(self) -> bool:
-    return True
+    def should_highlight_content_text_matches(self) -> bool:
+        return True
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -226,13 +222,13 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
@@ -250,13 +246,17 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for node in content_json.get('nodes', []):
             node_data = node.get('data', {})
-            string_list.append(node.get('display_name', ''))
-            string_list.append(node_data.get('detail', '') if node_data else '')
+            display_name = node.get('display_name', '')
+            detail = node_data.get('detail', '') if node_data else ''
+            string_list.append('' if display_name is None else display_name)
+            string_list.append('' if detail is None else detail)
 
         for edge in content_json.get('edges', []):
             edge_data = edge.get('data', {})
-            string_list.append(edge.get('label', ''))
-            string_list.append(edge_data.get('detail', '') if edge_data else '')
+            label = edge.get('label', '')
+            detail = edge_data.get('detail', '') if edge_data else ''
+            string_list.append('' if label is None else label)
+            string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
@@ -338,15 +338,15 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
