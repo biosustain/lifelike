@@ -177,12 +177,26 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
  */
 @Injectable()
 export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
-  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper) {
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+              protected readonly filesystemService: FilesystemService) {
     super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
     return true;
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([{
+      name: 'Download',
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          map(blob => {
+            return new File([blob], object.filename);
+          }),
+        );
+      },
+    }]);
   }
 }
 

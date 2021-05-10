@@ -6,7 +6,7 @@ import string
 import logging
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
-from elasticsearch.helpers import parallel_bulk
+from elasticsearch.helpers import parallel_bulk, streaming_bulk
 from flask import current_app
 from io import BytesIO
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
@@ -33,10 +33,6 @@ from neo4japp.utils import EventLog
 from app import app
 
 
-logger = logging.getLogger('elasticsearch')
-logger.setLevel(logging.WARNING)
-
-
 class ElasticService(ElasticConnection, GraphConnection):
     # Begin indexing methods
     def update_or_create_index(self, index_id, index_mapping_file):
@@ -61,7 +57,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
                 return
 
@@ -75,7 +71,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             current_app.logger.error(
                 f'Failed to create ElasticSearch index {index_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -97,7 +93,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -139,14 +135,41 @@ class ElasticService(ElasticConnection, GraphConnection):
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
+
+    def streaming_bulk_documents(self, documents):
+        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = streaming_bulk(
+            client=self.elastic_client,
+            actions=documents,
+            max_retries=5,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
+
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
 
     def delete_documents(self, document_ids: List[str], index_id: str):
         """
         Deletes all documents with the given file hash IDs from Elastic.
         """
-        self.parallel_bulk_documents(({
+        self.streaming_bulk_documents(({
             '_op_type': 'delete',
             '_index': index_id,
             '_id': document_id
@@ -159,6 +182,27 @@ class ElasticService(ElasticConnection, GraphConnection):
 
     def _delete_files(self, hash_ids: List[str]):
         self.delete_documents(hash_ids, FILE_INDEX_ID)
+
+    def windowed_query(self, q, column, windowsize):
+        """"Break a Query into chunks on a given column."""
+
+        single_entity = q.is_single_entity
+        q = q.add_column(column).order_by(column)
+        last_id = None
+
+        while True:
+            subq = q
+            if last_id is not None:
+                subq = subq.filter(column > last_id)
+            chunk = subq.limit(windowsize).all()
+            if not chunk:
+                break
+            last_id = chunk[-1][-1]
+            for row in chunk:
+                if single_entity:
+                    yield row[0]
+                else:
+                    yield row[0:-1]
 
     def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
         """
@@ -176,17 +220,13 @@ class ElasticService(ElasticConnection, GraphConnection):
             filters.append(Files.hash_id.in_(hash_ids))
 
         query = self._get_file_hierarchy_query(and_(*filters))
-        results = iter(query.yield_per(batch_size))
+        self.streaming_bulk_documents(
+            self._lazy_create_es_docs_for_streaming_bulk(
+                self.windowed_query(query, Files.hash_id, batch_size)
+            )
+        )
 
-        while True:
-            batch = list(itertools.islice(results, batch_size))
-
-            if not batch:
-                break
-
-            self.parallel_bulk_documents(self._lazy_create_es_docs(batch))
-
-    def _lazy_create_es_docs(self, batch):
+    def _lazy_create_es_docs_for_parallel_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
@@ -199,6 +239,16 @@ class ElasticService(ElasticConnection, GraphConnection):
         with app.app_context():
             for file, _, _, project, *_ in batch:
                 yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+
+    def _lazy_create_es_docs_for_streaming_bulk(self, windowed_query):
+        """
+        Creates a generator out of the elastic document creation
+        process to prevent loading everything into memory.
+        :param windowed_query: results from 'windowed_query(query, Files.hash_id, batch_size)'
+        :return: indexable object in generator form
+        """
+        for file, _, _, project, *_ in windowed_query:
+            yield self._get_elastic_document(file, project, FILE_INDEX_ID)
 
     def _get_file_hierarchy_query(self, filter):
         """
@@ -235,7 +285,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
 
         return {
@@ -344,17 +394,17 @@ class ElasticService(ElasticConnection, GraphConnection):
             return tx.run(
                 """
                 UNWIND $terms as search_term
-                MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
+                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
                 CALL {
                     WITH search_term, synonym
-                    MATCH (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    OPTIONAL MATCH
+                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
                     WHERE NOT 'Protein' IN LABELS(entity) AND SIZE(other_synonym.name) > 1
-                    RETURN synonym.name as original_synonym, other_synonym.name as other_synonym
+                    RETURN other_synonym.name as other_synonym
                     LIMIT 10
                 }
                 RETURN
                     search_term,
-                    collect(distinct original_synonym) as original_synonyms,
                     collect(distinct other_synonym) as other_synonyms
                 """,
                 terms=terms,
@@ -368,7 +418,7 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         results = self.graph.read_transaction(get_synonyms_query, terms)
         return {
-            row['search_term']: row['original_synonyms'] + row['other_synonyms']
+            row['search_term']: row['other_synonyms']
             for row in results
         }
 
