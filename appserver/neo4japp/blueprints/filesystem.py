@@ -72,7 +72,7 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 # - The project that the files are in may be recycled
 
 
-# TODO: Deprecate me after LL-3006
+# TODO: Deprecate me after LL-2840
 @bp.route('/enrichment-tables', methods=['GET'])
 @auth.login_required
 def get_all_enrichment_tables():
@@ -81,7 +81,14 @@ def get_all_enrichment_tables():
         raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
 
     query = db.session.query(Files.hash_id).filter(
-        Files.mime_type == 'vnd.lifelike.document/enrichment-table')
+        and_(
+            Files.mime_type == 'vnd.lifelike.document/enrichment-table',
+            or_(
+                Files.annotation_configs.is_(None),
+                Files.fallback_organism_id.is_(None)
+            )
+        )
+    )
     results = [hash_id[0] for hash_id in query.all()]
     return jsonify(dict(result=results)), 200
 

@@ -53,10 +53,10 @@ of these synonyms that are also common names.
 Previously we were collapsing into a collection `common_name`. But
 we don't want that, instead row in LMDB should represent a row in the datset.
 
-Additionally, this also fixes the collapsing of matches. A gene can
+Additionally, this also fixes the collapsing of genes. A gene can
 appear multiple times in a dataset, with each time, it has a different
 gene id and references a different taxonomy id. By allowing duplicate
-keys, we do not lose these matches.
+keys, we do not lose these genes.
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 IMPORTANT NOTE: As of lmdb 0.98
@@ -446,7 +446,7 @@ if __name__ == '__main__':
     prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
 
     # gene
-    prepare_lmdb_genes_database(filename='datasets/matches.tsv')
+    prepare_lmdb_genes_database(filename='datasets/genes.tsv')
 
     # disease
     prepare_lmdb_diseases_database(filename='datasets/disease.tsv')

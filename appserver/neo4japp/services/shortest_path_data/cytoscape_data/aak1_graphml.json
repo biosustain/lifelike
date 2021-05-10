@@ -3,480 +3,480 @@
         {
             "id": "135",
             "label": "Dissociation of the PAR:Gq complex",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "134",
             "label": "P2RY11 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "133",
             "label": "FPR2:FPR2 ligands [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "132",
             "label": "FPR2 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "131",
             "label": "F2RL3(18-385) [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "130",
             "label": "EDNRB [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "129",
             "label": "Active PAK1 and Active CDC42 dissociates from GNB/GNG:PAK1:ARHGEF6:CDC42 complex",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "128",
             "label": "CDC42:GTP [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "127",
             "label": "PGE2 [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "126",
             "label": "The Ligand:GPCR:Gq complex dissociates",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "125",
             "label": "GPR39 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "124",
             "label": "CASR:Ca2+ [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "123",
             "label": "APOA1(25-266) [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "122",
             "label": "A2M [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "121",
             "label": "CXCR4 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "120",
             "label": "PCSK6,FURIN mediate dissociation of 2 x LPL from GPIHBP1:HSPG:LPL dimer",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "119",
             "label": "LDL + LDLR => LDL:LDLR complex",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "118",
             "label": "Dissociation of the Gi alpha:G olf complex",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "117",
             "label": "Bradykinin receptor:Bradykinin [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "116",
             "label": "GNAL [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "115",
             "label": "MCHR1,MCHR2:PMCH(147-165) [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "114",
             "label": "NMUR1,NMUR2:NMU [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "113",
             "label": "5HT [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "112",
             "label": "GPIHBP1 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
@@ -503,1000 +503,1000 @@
         {
             "id": "110",
             "label": "G-protein beta-gamma complex [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "109",
             "label": "GPR4 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "108",
             "label": "NAd [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "107",
             "label": "ADR [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "106",
             "label": "THBS1 gene transcription is stimulated by the complex containing RUNX1, PRMT1 and GATA1 and inhibited by the complex of RUNX1, SIN3A and PRMT6",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#9999ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "105",
             "label": "Exocytosis of specific granule membrane proteins",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "104",
             "label": "THBS1 trimer [platelet alpha granule lumen]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "103",
             "label": "NPS [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "102",
             "label": "CIN85 dissociates from EGF:p-6Y-EGFR:CBL:Beta-Pix:CDC42:GTP:CIN85",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "101",
             "label": "G-protein alpha (i):GDP [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "100",
             "label": "Dissociation of AAK1 and dephosphorylation of AP-2 mu2",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0000ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0000ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0000ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "99",
             "label": "CHEST [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "98",
             "label": "NOTCH1 mRNA translation controlled by miRNAs",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#9999ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "97",
             "label": "NOTCH1 mRNA [cytosol]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "96",
             "label": "CGA [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "95",
             "label": "Dissociation of the PAR:G12/13 complex",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "94",
             "label": "PCSK5 mediates dissociation of 2 x LPL from GPIHBP1:HSPG:LPL dimer",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "93",
             "label": "Hist [extracellular region]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "92",
             "label": "AGTR1 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "91",
             "label": "GCG(53-81) [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "90",
             "label": "LPAR1,2,3,5:LPA [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "89",
             "label": "spherical HDL and SR-BI receptor form a complex at the cell surface",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "88",
             "label": "CHOL [plasma membrane]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "87",
             "label": "PL [plasma membrane]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "86",
             "label": "Expression of Lipoprotein lipase (LPL)",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#9999ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "85",
             "label": "LPL [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "84",
             "label": "VWF(23-763) [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "83",
             "label": "NPSR1 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "82",
             "label": "Pre-NOTCH1 [endoplasmic reticulum membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "81",
             "label": "AVP(20-28) [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "80",
             "label": "G-proteins dissociate from plasma-membrane estrogen receptors",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "79",
             "label": "CCNH [nucleoplasm]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "78",
             "label": "TNFRSF1B [specific granule membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "77",
             "label": "Exocytosis of platelet alpha granule contents",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "76",
             "label": "CIN85:endophilin [cytosol]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "75",
             "label": "EP300 [nucleoplasm]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "74",
             "label": "BMP1-3:Zn2+ cleaves pro-APOA1 to APOA1",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "73",
             "label": "NMUR2:NMS [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "72",
             "label": "cholesterol esters [plasma membrane]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "71",
             "label": "TAGs [plasma membrane]",
-            "databaseLabel": "SimpleEntity",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#43bf49"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#43bf49",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#43bf49"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "70",
             "label": "Disassembly of SR-BI-bound spherical HDL",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "69",
             "label": "spherical HDL:SR-BI complex [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "68",
             "label": "NOTCH1 gene transcription",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#9999ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "67",
             "label": "The Ligand:GPCR:Gi complex dissociates",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "66",
             "label": "cholesterol + phosphatidylcholine (lecithin) => cholesterol ester + 2-lysophosphatidylcholine (lysolecithin)",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "65",
             "label": "F2RL3 [plasma membrane]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff33ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff33ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "64",
             "label": "The Ligand:GPCR:Gs complex dissociates",
-            "databaseLabel": "Reaction",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ebb434"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "63",
             "label": "PTHLH [extracellular region]",
-            "databaseLabel": "EntityWithAccessionedSequence",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#ff33ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ff0000",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#ff0000"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "62",
             "label": "Recovery of RNA synthesis after TC-NER",
-            "databaseLabel": "BlackBoxEvent",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#9999ff"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#9999ff",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#9999ff"
+                    "border": "#0a96b4"
                 }
             }
         },
         {
             "id": "61",
             "label": "LDL:LDLR complex [plasma membrane]",
-            "databaseLabel": "Complex",
+            "databaseLabel": "DatabaseObject",
             "font": {
-                "color": "#CC0066"
+                "color": "#0a96b4"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#CC0066",
+                "border": "#0a96b4",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#CC0066"
+                    "border": "#0a96b4"
                 }
             }
         }

@@ -190,7 +190,7 @@ def _create_annotations(
     excluded_annotations: List[dict],
     custom_annotations: List[dict],
     annotation_method: Dict[str, dict],
-    enrichment_mappings: List[Tuple[int, dict]] = None
+    enrichment_mappings: Dict[int, dict] = None
 ):
     annotator = get_annotation_service()
     bioc_service = get_bioc_document_service()

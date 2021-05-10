@@ -39,8 +39,8 @@ class NLPResults():
     species: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
 
 
-@attr.s(frozen=True)
-class PDFWord():
+@attr.s(frozen=False)
+class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()
