@@ -600,11 +600,6 @@ class EntityRecognitionService:
 
         for token in tokens_list:
             if prev_token is None:
-                # do not remove any keywords that fit the removal
-                # criteria, e.g common words, digits, ascii_letters etc
-                # because a term could start with them
-                # instead remove them at the very end
-
                 # copied from def normalize_str
                 # to avoid function calls, ~7-10 sec faster
                 normalized = token.keyword.lower()
@@ -703,18 +698,14 @@ class EntityRecognitionService:
                     previous_words=words_subset[0].previous_words,
                 )
 
-                if (new_token.keyword.lower() in COMMON_WORDS or
-                    self.token_word_check_regex.match(new_token.keyword) or
-                    new_token.keyword in ascii_letters or
-                    new_token.keyword in digits or
-                    len(new_token.normalized_keyword) <= 2 or
-                    self.is_abbrev(new_token)
-                ):  # noqa
-                    continue
-                else:
-                    new_tokens.append(new_token)
-                    prev_token = new_token
+                new_tokens.append(new_token)
+                prev_token = new_token
 
+        # remove any keywords that fit the removal
+        # criteria at the end here, e.g common words, digits, ascii_letters etc
+        # because a term could start with them
+        # had we removed earlier, then some terms may possibly
+        # have been missed
         tokens_to_use = []
         for token in new_tokens:
             if (token.keyword.lower() in COMMON_WORDS or
