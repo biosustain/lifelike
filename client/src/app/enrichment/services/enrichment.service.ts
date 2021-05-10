@@ -9,13 +9,16 @@ const openEnrichmentFiles = new Map();
 
 @Injectable()
 export class EnrichmentService implements OnDestroy {
-  constructor(protected readonly filesystemService: FilesystemService) {}
+  constructor(protected readonly filesystemService: FilesystemService) {
+  }
 
   getFileRef(hashId: string) {
     let openFile = openEnrichmentFiles.get(hashId);
     if (!openFile) {
       openFile = {
-        get: this.filesystemService.get(hashId).pipe(map(Object.freeze), shareReplay(1)),
+        // metadata can be mutated (example params edit)
+        get: this.filesystemService.get(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1)),
+        // data is not mutable
         getContent: this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1)),
         ref: new Set()
       };
@@ -43,7 +46,9 @@ export class EnrichmentService implements OnDestroy {
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
     return this.filesystemService.save(hashIds, changes, updateWithLatest).pipe(tap(ret =>
-      hashIds.forEach(hashId => this.getFileRef(hashId).get = ret[hashId])
-    ));
+        // dump keep track of file upon save so it reloaded
+        // todo: implement optimistic update
+        hashIds.forEach(hashId => openEnrichmentFiles.delete(hashId)
+      )));
   }
 }
