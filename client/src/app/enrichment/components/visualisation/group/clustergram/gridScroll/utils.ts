@@ -31,12 +31,19 @@ export class Point extends Array<number> {
     );
   }
 
+  add(addend) {
+    return new Point(
+      ...this.map((v, i) => v - addend[i])
+    );
+  }
+
   multiply(multiplier) {
     return new Point(
       ...this.map((v, i) => v * multiplier[i])
     );
   }
 
+  // @ts-ignore
   map(f): Point {
     return new Point(...Array.prototype.map.call(this, f));
   }

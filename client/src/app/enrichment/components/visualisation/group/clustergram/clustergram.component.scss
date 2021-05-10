@@ -51,15 +51,12 @@
     z-index: 1;
   }
 
-
   // Scrolling container.
   app-grid-virtual-scroll-viewport {
     position: relative;
     overflow: auto;
     scroll-padding-top: $first-column-width;
     // force scroll only on load
-    min-height: 300px;
-    max-height: 100%;
     display: grid;
     grid-template-areas:
     "cover spacer"
@@ -67,10 +64,13 @@
     "rowheader content";
     animation: 0.01s 0s 1 forceScroll;
     contain: strict;
+    max-height: 100%;
+    min-height: 300px;
+    height: 300px;
     transform: translateZ(0);
     will-change: scroll-position;
     -webkit-overflow-scrolling: touch;
-    font-size: calc(0.5 * var(--sizeX));
+    font-size: calc(0.35 * var(--sizeX));
 
     &:after {
       content: "";
@@ -314,8 +314,9 @@
       width: $row-header-sticky-width;
       @include stripes;
       font-weight: bold;
-      font-size: calc(0.5 * var(--sizeY));
+      font-size: 1.2em;
       border-right: 1px solid $stripe-border-color;
+      justify-self: end;
 
       & > * {
         position: absolute;
@@ -334,6 +335,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      font-size: 1.2em;
 
       // Note: We can't put `will-change: transform;` here because it causes Safari to not update the
       // viewport's `scrollHeight` when the spacer's transform changes.
@@ -341,14 +343,25 @@
       min-height: 100%;
       min-width: 100%;
 
-      .match {
+      & > * {
         position: absolute;
         overflow: hidden;
+        border-left: 1px solid $background-color;
+        opacity: 0.3;
+      }
+
+      .match {
+        border-bottom: 1px solid $background-color;
         width: var(--sizeX);
         height: var(--sizeY);
-        border-left: 1px solid $background-color;
-        border-bottom: 1px solid $background-color;
-        opacity: 0.3;
+      }
+
+      .others {
+        // padding + 3 chars
+        width: calc(0.9rem + 3ch) !important;
+        min-width: calc(0.9rem + 3ch) !important;
+        white-space: pre;
+        padding: 0.4em;
       }
     }
 
