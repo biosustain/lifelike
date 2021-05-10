@@ -224,7 +224,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
             .pipe(
               map((domainResults: EnrichmentWrapper): EnrichmentResult => {
                 // a gene can point to 2 different synonyms
-                // and a synonym can point to 2 different matches
+                // and a synonym can point to 2 different genes
                 const neo4jIdSynonymMap: Map<number, Map<number, string>> = new Map();
                 const neo4jIdNodeMap: Map<number, Map<number, NCBINode>> = new Map();
                 const neo4jIdLinkMap: Map<number, Map<number, string>> = new Map();

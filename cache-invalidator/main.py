@@ -108,11 +108,11 @@ def precalculateGO():
         return graph.run(
                 """
                 MATCH (g:Gene)-[:GO_LINK {tax_id:$id}]-(go:db_GO)
-                WITH go, collect(distinct g) as matches
+                WITH go, collect(distinct g) as genes
                 RETURN go.id as goId,
                     go.name as goTerm,
                     [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
-                    [g in matches |g.name] as geneNames
+                    [g in genes |g.name] as geneNames
                 """,
                 id=organism['id']
         ).data()
