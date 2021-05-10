@@ -8,7 +8,7 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
-from flask import Blueprint, jsonify, g, request, make_response
+from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
@@ -20,6 +20,7 @@ from urllib.error import URLError
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
 from neo4japp.models import (
@@ -32,34 +33,36 @@ from neo4japp.models import (
 )
 from neo4japp.models.files import FileLock, FileAnnotationsVersion
 from neo4japp.models.files_queries import (
-    FileHierarchy,
+    add_file_user_role_columns,
     build_file_hierarchy_query,
     build_file_children_cte,
-    add_file_user_role_columns
+    FileHierarchy,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
-    FileUpdateRequestSchema,
-    FileResponseSchema,
-    FileCreateRequestSchema,
     BulkFileRequestSchema,
-    MultipleFileResponseSchema,
     BulkFileUpdateRequestSchema,
-    FileListSchema,
-    FileSearchRequestSchema,
     FileBackupCreateRequestSchema,
-    FileVersionHistorySchema,
+    FileCreateRequestSchema,
     FileExportRequestSchema,
+    FileHierarchySchema,
+    FileListSchema,
     FileLockCreateRequest,
     FileLockDeleteRequest,
-    FileLockListResponse
+    FileLockListResponse,
+    FileResponseSchema,
+    FileSearchRequestSchema,
+    FileUpdateRequestSchema,
+    FileVersionHistorySchema,
+    MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -492,6 +495,73 @@ class FilesystemBaseView(MethodView):
             if hash_id not in found_hash_ids:
                 missing.add(hash_id)
         return missing
+
+
+class FileHierarchyView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self):
+        """
+        Fetches a representation of the complete file hierarchy accessible by the current user.
+        """
+        current_app.logger.info(
+            f'Attempting to generate file hierarchy...',
+            extra=UserEventLog(
+                username=g.current_user.username,
+                event_type=LogEventType.FILESYSTEM.value
+            ).to_dict()
+        )
+
+        EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+        hierarchy = self.get_nondeleted_recycled_files(
+            and_(
+                Files.recycling_date.is_(None),
+            ),
+            attr_excl=EXCLUDE_FIELDS
+        )
+
+        root = {}
+        curr_dir = root
+        for file in hierarchy:
+            curr_dir = root
+            # Don't include the leading '/' when we split
+            file_path_list = file.filepath[1:].split('/')
+            for filename in file_path_list[:-1]:
+                if filename not in curr_dir:
+                    curr_dir[filename] = {}
+                curr_dir = curr_dir[filename]
+            # file_path_list[-1] and file are the same
+            if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
+                curr_dir[file_path_list[-1]] = {}
+            else:
+                curr_dir[file_path_list[-1]] = None
+
+        def generate_node_tree(filename, children):
+            if children is None:
+                return {'name': filename}
+            return {
+                'name': filename,
+                'children': [
+                    generate_node_tree(child_filename, grandchildren)
+                    for child_filename, grandchildren in children.items()
+                ]
+            }
+
+        results = [
+            generate_node_tree(project_name, children)
+            for project_name, children in root.items()
+        ]
+
+        current_app.logger.info(
+            f'Generated file hierarchy!',
+            extra=UserEventLog(
+                username=g.current_user.username,
+                event_type=LogEventType.FILESYSTEM.value
+            ).to_dict()
+        )
+        return jsonify(FileHierarchySchema().dump({
+            'results': results,
+        }))
 
 
 class FileListView(FilesystemBaseView):
@@ -1282,6 +1352,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
 bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
