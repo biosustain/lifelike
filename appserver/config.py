@@ -37,6 +37,7 @@ class Base():
         POSTGRES_DB
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
 
     SUPPORTED_LOCALES = ['en']
 

@@ -4,19 +4,22 @@ import json
 import re
 import string
 import logging
+
+from elasticsearch.exceptions import RequestError as ElasticRequestError
+from elasticsearch.helpers import parallel_bulk, streaming_bulk
+from flask import current_app
 from io import BytesIO
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from sqlalchemy import and_
+from sqlalchemy.orm import joinedload, raiseload
 from typing import (
     Dict,
     List,
 )
 
-from elasticsearch.helpers import parallel_bulk
-from flask import current_app
-from sqlalchemy import and_
-from sqlalchemy.orm import joinedload, raiseload
-
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
-from neo4japp.database import db, get_file_type_service
+from neo4japp.database import db, get_file_type_service, ElasticConnection, GraphConnection
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     Files, Projects,
 )
@@ -30,16 +33,8 @@ from neo4japp.utils import EventLog
 from app import app
 
 
-logger = logging.getLogger('elasticsearch')
-logger.setLevel(logging.WARNING)
-
-
-class ElasticService():
-    def __init__(self, elastic):
-        self.elastic_client = elastic
-
+class ElasticService(ElasticConnection, GraphConnection):
     # Begin indexing methods
-
     def update_or_create_index(self, index_id, index_mapping_file):
         """Creates an index with the given index id and mapping file. If the index already exists,
         we update it and re-index any documents using that index."""
@@ -62,7 +57,7 @@ class ElasticService():
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
                 return
 
@@ -76,7 +71,7 @@ class ElasticService():
             current_app.logger.error(
                 f'Failed to create ElasticSearch index {index_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -98,7 +93,7 @@ class ElasticService():
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
             return
 
@@ -140,14 +135,41 @@ class ElasticService():
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
+
+    def streaming_bulk_documents(self, documents):
+        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = streaming_bulk(
+            client=self.elastic_client,
+            actions=documents,
+            max_retries=5,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
+
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
                 )
 
     def delete_documents(self, document_ids: List[str], index_id: str):
         """
         Deletes all documents with the given file hash IDs from Elastic.
         """
-        self.parallel_bulk_documents(({
+        self.streaming_bulk_documents(({
             '_op_type': 'delete',
             '_index': index_id,
             '_id': document_id
@@ -160,6 +182,27 @@ class ElasticService():
 
     def _delete_files(self, hash_ids: List[str]):
         self.delete_documents(hash_ids, FILE_INDEX_ID)
+
+    def windowed_query(self, q, column, windowsize):
+        """"Break a Query into chunks on a given column."""
+
+        single_entity = q.is_single_entity
+        q = q.add_column(column).order_by(column)
+        last_id = None
+
+        while True:
+            subq = q
+            if last_id is not None:
+                subq = subq.filter(column > last_id)
+            chunk = subq.limit(windowsize).all()
+            if not chunk:
+                break
+            last_id = chunk[-1][-1]
+            for row in chunk:
+                if single_entity:
+                    yield row[0]
+                else:
+                    yield row[0:-1]
 
     def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
         """
@@ -177,17 +220,13 @@ class ElasticService():
             filters.append(Files.hash_id.in_(hash_ids))
 
         query = self._get_file_hierarchy_query(and_(*filters))
-        results = iter(query.yield_per(batch_size))
+        self.streaming_bulk_documents(
+            self._lazy_create_es_docs_for_streaming_bulk(
+                self.windowed_query(query, Files.hash_id, batch_size)
+            )
+        )
 
-        while True:
-            batch = list(itertools.islice(results, batch_size))
-
-            if not batch:
-                break
-
-            self.parallel_bulk_documents(self._lazy_create_es_docs(batch))
-
-    def _lazy_create_es_docs(self, batch):
+    def _lazy_create_es_docs_for_parallel_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
@@ -200,6 +239,16 @@ class ElasticService():
         with app.app_context():
             for file, _, _, project, *_ in batch:
                 yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+
+    def _lazy_create_es_docs_for_streaming_bulk(self, windowed_query):
+        """
+        Creates a generator out of the elastic document creation
+        process to prevent loading everything into memory.
+        :param windowed_query: results from 'windowed_query(query, Files.hash_id, batch_size)'
+        :return: indexable object in generator form
+        """
+        for file, _, _, project, *_ in windowed_query:
+            yield self._get_elastic_document(file, project, FILE_INDEX_ID)
 
     def _get_file_hierarchy_query(self, filter):
         """
@@ -236,7 +285,7 @@ class ElasticService():
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
 
         return {
@@ -316,21 +365,119 @@ class ElasticService():
 
         return words, phrases, wildcards
 
+    def get_synonym_map(
+        self,
+        words: List[str],
+        phrases: List[str]
+    ) -> Dict[str, List[str]]:
+        terms = words + phrases
+
+        def get_synonyms_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
+            """
+            Attempts to get all synonyms for the entities matching each term in the `terms`
+            argument. We first find Synonyms matching each term. We then find all entities
+            with that synoynm, and find ALL OTHER synonyms of that entity.
+
+            TODO: We need to limit the number of returned synonyms partly for performance,
+            but particularly because elasticsearch has a hard cap on the number of clauses which
+            can be present in a query. By default this limit is set to 1024. The limit we pass to
+            the cypher query should be equal to:
+                (1024 - (MAX_SYNONYM_COUNT * num_terms)) / (MAX_SYNONYM_COUNT * num_terms)
+            Where "MAX_SYNONYM_COUNT" is the synonym term with the highest number of alternative
+            letter casing (currently "dvglut" at 10 alterative letter casing).
+
+            Implement this at a later date if we want as many synonyms as possible, for now just
+            using a dumb approach and setting the limit to 10. In the vast majority of cases, this
+            should be fine for now.
+            """
+            # MAX_SYNONYM_COUNT = 10  # Change me if the max changes!
+            return tx.run(
+                """
+                UNWIND $terms as search_term
+                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
+                CALL {
+                    WITH search_term, synonym
+                    OPTIONAL MATCH
+                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    WHERE NOT 'Protein' IN LABELS(entity) AND SIZE(other_synonym.name) > 1
+                    RETURN other_synonym.name as other_synonym
+                    LIMIT 10
+                }
+                RETURN
+                    search_term,
+                    collect(distinct other_synonym) as other_synonyms
+                """,
+                terms=terms,
+                # limit=int(
+                #     (1024 - (MAX_SYNONYM_COUNT * len(terms)))
+                #     /
+                #     # `terms` shouldn't be empty, but use max just in case...
+                #     max([1, MAX_SYNONYM_COUNT * len(terms)])
+                # )
+            ).data()
+
+        results = self.graph.read_transaction(get_synonyms_query, terms)
+        return {
+            row['search_term']: row['other_synonyms']
+            for row in results
+        }
+
+    def generate_synonym_match_subclause(
+        self,
+        phrase: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        synonym_map: Dict[str, List[str]]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'multi_match': {
+                            'query': term,  # type:ignore
+                            'type': 'phrase',  # type:ignore
+                            'fields': [
+                                f'{field}^{text_field_boosts[field]}'
+                                for field in text_fields
+                            ]
+                        }
+                    }
+                    for term in [phrase] + synonym_map.get(phrase, [])
+                ]
+            }
+        }
+
+    def generate_wildcard_match_subclause(
+        self,
+        wildcard: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'wildcard': {
+                            field: {
+                                'value': wildcard,
+                                'boost': text_field_boosts[field],
+                                'case_insensitive': True
+                            }
+                        }
+                    } for field in text_fields
+                ]
+            }
+        }
+
+    # TODO: Currently unused in favor of using an inline approach. Keeping just in case we need
+    # this pattern elsewhere in the future.
     def get_text_match_objs(
             self,
             fields: List[str],
             boost_fields: Dict[str, int],
-            word: str
+            word: str,
     ):
-        multi_match_obj = {
-            'multi_match': {
-                'query': word,
-                'type': 'phrase',
-                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
-            }
-        }
-
-        term_objs = [
+        return [
             {
                 'term': {
                     field: {
@@ -341,62 +488,64 @@ class ElasticService():
             } for field in fields
         ]
 
-        return [multi_match_obj] + term_objs  # type:ignore
-
     def get_text_match_queries(
         self,
         words: List[str],
         phrases: List[str],
         wildcards: List[str],
         text_fields: List[str],
-        text_field_boosts: Dict[str, int]
+        text_field_boosts: Dict[str, int],
+        synonym_map: Dict[str, List[str]]
     ):
-        word_operands = []
-        for word in words:
-            if any([c in string.punctuation for c in word]):
-                word_operands.append(
-                    {
-                        'bool': {
-                            'should': self.get_text_match_objs(text_fields, text_field_boosts, word)
-                        }
-                    }
-                )
-            else:
-                word_operands.append({
-                    'multi_match': {
-                        'query': word,  # type:ignore
-                        'type': 'phrase',  # type:ignore
-                        'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
-                    }
-                })
-
-        phrase_operands = []
-        for phrase in phrases:
-            phrase_operands.append({
-                'multi_match': {
-                    'query': phrase,
-                    'type': 'phrase',
-                    'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
-                }
-            })
-
-        wildcard_operands = []
-        for wildcard in wildcards:
-            wildcard_operands.append({
+        # Create single word match subclauses (this is the same as phrase matching below, with the
+        # addition of exact text matching; This helps with words that contain punctuation)
+        word_operands = [
+            {
                 'bool': {
                     'should': [
+                        self.generate_synonym_match_subclause(
+                            word,
+                            text_fields,
+                            text_field_boosts,
+                            synonym_map
+                        )
+                    ] + ([
+                        # Duplicates the get_text_match_objs above, if we ever need this pattern
+                        # elsewhere, replace this with the function
                         {
-                            'wildcard': {
+                            'term': {
                                 field: {
-                                    'value': wildcard,
-                                    'boost': text_field_boosts[field],
-                                    'case_insensitive': True
+                                    'value': word,
+                                    'boost': text_field_boosts[field]
                                 }
                             }
                         } for field in text_fields
-                    ]
+                    ] if any([c in string.punctuation for c in word]) else [])
                 }
-            })
+            }
+            for word in words
+        ]
+
+        # Create phrase match subclauses
+        phrase_operands = [
+            self.generate_synonym_match_subclause(
+                phrase,
+                text_fields,
+                text_field_boosts,
+                synonym_map
+            )
+            for phrase in phrases
+        ]
+
+        # Create wildcard subclauses
+        wildcard_operands = [
+            self.generate_wildcard_match_subclause(
+                wildcard,
+                text_fields,
+                text_field_boosts
+            )
+            for wildcard in wildcards
+        ]
 
         return {
             'bool': {
@@ -432,6 +581,7 @@ class ElasticService():
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            use_synonyms: Dict[str, str],
             query_filter,
             highlight,
     ):
@@ -447,9 +597,10 @@ class ElasticService():
                     }
                 },
                 'highlight': highlight
-            }, []
+            }, [], {}
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
+        synonym_map = self.get_synonym_map(words, phrases) if use_synonyms else dict()
 
         search_queries = []
         if len(text_fields) > 0:
@@ -459,7 +610,8 @@ class ElasticService():
                     phrases,
                     wildcards,
                     text_fields,
-                    text_field_boosts
+                    text_field_boosts,
+                    synonym_map,
                 )
             )
 
@@ -487,7 +639,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }, phrases + words + wildcards
+        }, phrases + words + wildcards, synonym_map
 
     def search(
             self,
@@ -497,12 +649,13 @@ class ElasticService():
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            use_synonyms: Dict[str, str],
             offset: int = 0,
             limit: int = 10,
             query_filter=None,
             highlight=None
     ):
-        es_query, search_phrases = self._build_query_clause(
+        es_query, search_phrases, synonym_map = self._build_query_clause(
             search_term=search_term,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
@@ -510,17 +663,25 @@ class ElasticService():
             keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight,
+            use_synonyms=use_synonyms,
         )
 
-        es_response = self.elastic_client.search(
-            index=index_id,
-            body=es_query,
-            from_=offset,
-            size=limit,
-            rest_total_hits_as_int=True,
-        )
+        try:
+            es_response = self.elastic_client.search(
+                index=index_id,
+                body=es_query,
+                from_=offset,
+                size=limit,
+                rest_total_hits_as_int=True,
+            )
+        except ElasticRequestError:
+            raise ServerException(
+                title='Content Search Error',
+                message='Something went wrong during content search. Please simplify your query ' +
+                        '(e.g. remove terms, filters, flags, etc.) and try again.',
+                code=400
+            )
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response, search_phrases
-
+        return es_response, search_phrases, synonym_map
     # End search methods
