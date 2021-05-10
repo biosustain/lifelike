@@ -63,10 +63,10 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
       index => Promise.resolve().then(() => this.ngZone.run(() => observer.next(index)))));
 
   /** The element that wraps the rendered content. */
-  @ContentChild('content', {static: false}) _contentWrapper: ElementRef<HTMLElement>;
-  @ContentChild('scrollSpacer', {static: false}) _scrollSpacerWrapper: ElementRef<HTMLElement>;
-  @ContentChild('columnHeader', {static: false}) _columnHeaderWrapper: ElementRef<HTMLElement>;
-  @ContentChild('rowHeader', {static: false}) _rowHeaderWrapper: ElementRef<HTMLElement>;
+  @ContentChild('content', {static: true}) _contentWrapper: ElementRef<HTMLElement>;
+  @ContentChild('scrollSpacer', {static: true}) _scrollSpacerWrapper: ElementRef<HTMLElement>;
+  @ContentChild('columnHeader', {static: true}) _columnHeaderWrapper: ElementRef<HTMLElement>;
+  @ContentChild('rowHeader', {static: true}) _rowHeaderWrapper: ElementRef<HTMLElement>;
 
   /** A stream that emits whenever the rendered range changes. */
     // @ts-ignore
@@ -136,6 +136,8 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
     this._viewportChanges = viewportRuler.change().subscribe(() => {
       this.checkViewportSize();
     });
+
+    this._forOfs = new Set();
   }
 
   ngOnInit() {
@@ -179,9 +181,9 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
 
   /** Attaches a `AppVirtualScrollRepeater` to this viewport. */
   attach(forOf) {
-    // if (this._forOf) {
-    //   throw Error('AppVirtualScrollViewport is already attached.');
-    // }
+    if (this._forOf) {
+      throw Error('AppVirtualScrollViewport is already attached.');
+    }
 
     // Subscribe to the data stream of the AppVirtualForOfDirective to keep track of when the data length
     // changes. Run outside the zone to avoid triggering change detection, since we're managing the
@@ -190,10 +192,10 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
       this._forOf = forOf;
       this._forOf.dataStream.pipe(takeUntil(this._detachedSubject)).subscribe(data => {
         const newLength = new Point(
-          Math.max(...data.map(({x}) => x)),
-          Math.max(...data.map(({y}) => y))
+          Math.max(...data.map(({x}) => x)) + 1,
+          Math.max(...data.map(({y}) => y)) + 1
         );
-        if (this._dataLength.some((v, i) => v !== newLength[i])) {
+        if (!this._dataLength.equals(newLength)) {
           this._dataLength = newLength;
           this._scrollStrategy.onDataLengthChanged();
         }
@@ -392,10 +394,11 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   /** Measure the viewport size. */
   private _measureViewportSize() {
     const viewportEl = this.elementRef.nativeElement;
-    const contentEl = this._contentWrapper.nativeElement;
+    const contentRow = this._rowHeaderWrapper.nativeElement;
+    const contentColumn = this._columnHeaderWrapper.nativeElement;
     this._viewportSize = new Point(
-      viewportEl.clientWidth - contentEl.offsetLeft,
-      viewportEl.clientHeight - contentEl.offsetTop
+      viewportEl.clientWidth - contentRow.offsetWidth,
+      viewportEl.clientHeight - contentColumn.offsetHeight
     );
   }
 

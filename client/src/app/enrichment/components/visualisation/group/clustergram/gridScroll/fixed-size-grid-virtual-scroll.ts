@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import { Directive, forwardRef, Input, OnChanges, Injectable } from '@angular/core';
+import { Directive, forwardRef, Input, OnChanges, Injectable, AfterViewInit, OnInit } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
@@ -16,7 +16,7 @@ import { PointRange, Point } from './utils';
 
 /** Virtual scrolling strategy for lists with items of known fixed size. */
 @Injectable()
-export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy {
+export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy, AfterViewInit, OnInit {
   private readonly _scrolledIndexChange = new Subject<number[]>();
 
   /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
@@ -44,6 +44,14 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     this._itemSize = itemSize;
     this._minBufferPx = minBufferPx;
     this._maxBufferPx = maxBufferPx;
+  }
+
+  ngAfterViewInit() {
+    this._updateRenderedRange();
+  }
+
+  ngOnInit() {
+    this._updateRenderedRange();
   }
 
   /**
@@ -116,7 +124,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
       return;
     }
 
-    this._viewport.setTotalContentSize(this._viewport.getDataLength().map((v, i) => v * this._itemSize[i]));
+    this._viewport.setTotalContentSize(this._viewport.getDataLength().multiply(this._itemSize));
   }
 
   /** Update the viewport's rendered range. */
@@ -170,9 +178,12 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     if (!this._viewport) {
       return;
     }
+    const viewportSize = this._viewport.getViewportSize();
+    if (viewportSize.x <= 1 || viewportSize.y <= 1) {
+      return;
+    }
 
     const renderedRange = this._viewport.getRenderedRange();
-    const viewportSize = this._viewport.getViewportSize();
     const dataLength = this._viewport.getDataLength();
     const scrollOffset = this._viewport.measureScrollOffset();
 
@@ -279,7 +290,7 @@ export class AppFixedSizeGridVirtualScroll implements OnChanges {
   _scrollStrategy = new FixedSizeGridVirtualScrollStrategy(this.itemSize, this.minBufferPx, this.maxBufferPx);
 
   ngOnChanges() {
-    this._minBufferPx = Math.max(...this.itemSize) * 4;
+    this._minBufferPx = Math.max(...this.itemSize) * 5;
     this._maxBufferPx = this._minBufferPx * 2;
     this._scrollStrategy.updateItemAndBufferSize(this._itemSize, this.minBufferPx, this.maxBufferPx);
   }

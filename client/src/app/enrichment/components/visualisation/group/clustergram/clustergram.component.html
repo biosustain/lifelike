@@ -7,13 +7,13 @@
                  class="rotatedHeader"
             >
                 <ng-template #tooltip>
-                    {{goTerm.goTerm}} ({{goTerm.goId}})
+                    {{goTerm.goTerm}} {{goTerm.goId && '(' + goTerm.goId + ')'}}
                 </ng-template>
                 <span [ngbTooltip]="tooltip"
                       container="body"
                       tooltipClass="rotatedTooltip"
                       placement="bottom-left bottom-right"
-                >{{goTerm.goTerm}}{{goTerm.x}}</span>
+                >{{goTerm.goTerm}}</span>
             </div>
         </ng-template>
     </div>
@@ -22,19 +22,17 @@
         <ng-template appVirtualFor [appVirtualForOf]="genes" let-entry [secondary]="true">
             <div [appSELink]="entry.key"
                  [style.top.px]="entry.y*itemSize[1]"
-            >{{entry.key}}{{entry.y}}</div>
+            >{{entry.key}}</div>
         </ng-template>
     </div>
     <div class="content" #content>
         <div *appVirtualFor="let entry of matches"
-             class="match"
-             [style.backgroundColor]="geneColor"
+             [ngClass]="entry.value ? 'others' : 'match'"
+             [style.backgroundColor]="entry.value || geneColor"
              [ngStyle]="{
                     left: entry.x*itemSize[0]+'px',
                     top: entry.y*itemSize[1]+'px'
                  }"
-        >
-        </div>
+        >{{entry.value}}</div>
     </div>
 </app-grid-virtual-scroll-viewport>
-
