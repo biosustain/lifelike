@@ -160,7 +160,9 @@ services:
             - "9300:9300"
         networks:
             - backend
+            - elastic
 
 networks:
     frontend:
     backend:
+    elastic:
