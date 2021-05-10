@@ -18,8 +18,9 @@ from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
 
-FALLBACK_ORGANISM_SYNONYM = ''
-FALLBACK_ORGANISM_TAXID = ''
+
+ORGANISM_SYNONYM = ''
+ORGANISM_TAX_ID = ''
 
 
 @contextlib.contextmanager
@@ -77,8 +78,8 @@ def main():
         with cprofiled():
             annotations = create_annotations_from_pdf(
                 annotation_method=DEFAULT_ANNOTATION_CONFIGS,
-                specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
-                specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
+                specified_organism_synonym=ORGANISM_SYNONYM,
+                specified_organism_tax_id=ORGANISM_TAX_ID,
                 document=f,
                 filename=f.filename)
 
