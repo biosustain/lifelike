@@ -379,34 +379,29 @@ def create_has_taxonomy_relationship(
 # Begin Entity Node Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene(graph: Session) -> Node:
-    tx = graph.begin_transaction()
-    gas_gangrene = create_disease_node(tx, 'gas gangrene', 'MESH:D005738')
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        gas_gangrene = create_disease_node(tx, 'gas gangrene', 'MESH:D005738')
     return gas_gangrene
 
 
 @pytest.fixture(scope='function')
 def penicillins(graph: Session) -> Node:
-    tx = graph.begin_transaction()
-    penicillins = create_chemical_node(tx, 'Penicillins', 'MESH:D010406')
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        penicillins = create_chemical_node(tx, 'Penicillins', 'MESH:D010406')
     return penicillins
 
 
 @pytest.fixture(scope='function')
 def oxygen(graph: Session) -> Node:
-    tx = graph.begin_transaction()
-    oxygen = create_chemical_node(tx, 'Oxygen', 'MESH:D010100')
-    tx.commit()
-
+    with graph.begin_transaction() as tx:
+        oxygen = create_chemical_node(tx, 'Oxygen', 'MESH:D010100')
     return oxygen
 
 
 @pytest.fixture(scope='function')
 def pomc(graph: Session) -> Node:
-    tx = graph.begin_transaction()
-    pomc = create_gene_node(tx, 'POMC', '5443', None)
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        pomc = create_gene_node(tx, 'POMC', '5443', None)
     return pomc
 
 
@@ -420,15 +415,14 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
     gas_gangrene: Node,
     pomc: Node,
 ) -> Relationship:
-    tx = graph.begin_transaction()
-    pomc_to_gas_gangrene_pathogenesis_edge = create_associated_relationship(
-        tx=tx,
-        source_id=pomc.id,
-        target_id=gas_gangrene.id,
-        assoc_type='J',
-        description='role in disease pathogenesis',
-    )
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        pomc_to_gas_gangrene_pathogenesis_edge = create_associated_relationship(
+            tx=tx,
+            source_id=pomc.id,
+            target_id=gas_gangrene.id,
+            assoc_type='J',
+            description='role in disease pathogenesis',
+        )
     return pomc_to_gas_gangrene_pathogenesis_edge
 
 
@@ -438,15 +432,14 @@ def penicillins_to_gas_gangrene_alleviates_edge(
     gas_gangrene: Node,
     penicillins: Node,
 ) -> Relationship:
-    tx = graph.begin_transaction()
-    penicillins_to_gas_gangrene_alleviates_edge = create_associated_relationship(
-        tx=tx,
-        source_id=penicillins.id,
-        target_id=gas_gangrene.id,
-        assoc_type='Pa',
-        description='alleviates, reduces',
-    )
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        penicillins_to_gas_gangrene_alleviates_edge = create_associated_relationship(
+            tx=tx,
+            source_id=penicillins.id,
+            target_id=gas_gangrene.id,
+            assoc_type='Pa',
+            description='alleviates, reduces',
+        )
     return penicillins_to_gas_gangrene_alleviates_edge
 
 
@@ -456,15 +449,14 @@ def oxygen_to_gas_gangrene_treatment_edge(
     gas_gangrene: Node,
     oxygen: Node,
 ) -> Relationship:
-    tx = graph.begin_transaction()
-    oxygen_to_gas_gangrene_treatment_edge = create_associated_relationship(
-        tx=tx,
-        source_id=oxygen.id,
-        target_id=gas_gangrene.id,
-        assoc_type='Pa',
-        description='treatment/therapy (including investigatory)',
-    )
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        oxygen_to_gas_gangrene_treatment_edge = create_associated_relationship(
+            tx=tx,
+            source_id=oxygen.id,
+            target_id=gas_gangrene.id,
+            assoc_type='Pa',
+            description='treatment/therapy (including investigatory)',
+        )
     return oxygen_to_gas_gangrene_treatment_edge
 
 
@@ -474,15 +466,14 @@ def penicillins_to_gas_gangrene_treatment_edge(
     gas_gangrene: Node,
     penicillins: Node,
 ) -> Relationship:
-    tx = graph.begin_transaction()
-    penicillins_to_gas_gangrene_treatment_edge = create_associated_relationship(
-        tx=tx,
-        source_id=penicillins.id,
-        target_id=gas_gangrene.id,
-        assoc_type='Pa',
-        description='treatment/therapy (including investigatory)',
-    )
-    tx.commit()
+    with graph.begin_transaction() as tx:
+        penicillins_to_gas_gangrene_treatment_edge = create_associated_relationship(
+            tx=tx,
+            source_id=penicillins.id,
+            target_id=gas_gangrene.id,
+            assoc_type='Pa',
+            description='treatment/therapy (including investigatory)',
+        )
     return penicillins_to_gas_gangrene_treatment_edge
 
 # End Entity -> Entity Relationship Fixtures #
@@ -500,157 +491,154 @@ def gas_gangrene_with_associations_and_references(
     penicillins_to_gas_gangrene_alleviates_edge: Relationship,
     penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
-    tx = graph.begin_transaction()
-    # Association Nodes
-    oxygen_to_gas_gangrene_association_node = create_association_node(
-        tx=tx,
-        assoc_type='J',
-        description='treatment/therapy (including investigatory)',
-        assoc_id=1089126,
-    )
-    pomc_to_gas_gangrene_association_node = create_association_node(
-        tx=tx,
-        assoc_type='J',
-        description='role in disease pathogenesis',
-        assoc_id=1387448,
-    )
-    penicillins_to_gas_gangrene_association_node1 = create_association_node(
-        tx=tx,
-        assoc_type='Pa',
-        description='alleviates, reduces',
-        assoc_id=2771500,
-    )
-    penicillins_to_gas_gangrene_association_node2 = create_association_node(
-        tx=tx,
-        assoc_type='J',
-        description='treatment/therapy (including investigatory)',
-        assoc_id=2771501,
-    )
-
-    # Snippet Nodes
-    oxygen_to_gas_gangrene_snippet_node1 = create_snippet_node(
-        tx=tx,
-        entry1_text='oxygen',
-        entry2_text='gas gangrene',
-        snippet_id=7430189,
-        sentence='In this study , we aimed to investigate the effect of HBO2...',
-    )
-    oxygen_to_gas_gangrene_snippet_node2 = create_snippet_node(
-        tx=tx,
-        entry1_text='oxygen',
-        entry2_text='gas gangrene',
-        snippet_id=1890743,
-        sentence='Hyperbaric oxygen therapy has an adjunctive role...',
-    )
-    penicillins_to_gas_gangrene_snippet_node1 = create_snippet_node(
-        tx=tx,
-        entry1_text='penicillin',
-        entry2_text='gas gangrene',
-        snippet_id=9810347,
-        sentence='In a mouse model of gas_gangrene caused by...',
-    )
-    penicillins_to_gas_gangrene_snippet_node2 = create_snippet_node(
-        tx=tx,
-        entry1_text='penicillin',
-        entry2_text='gas gangrene',
-        snippet_id=9810346,
-        sentence='Toxin suppression and rapid bacterial killing may...',
-    )
-    penicillins_to_gas_gangrene_snippet_node3 = create_snippet_node(
-        tx=tx,
-        entry1_text='penicillin',
-        entry2_text='gas gangrene',
-        snippet_id=9810348,
-        sentence='...penicillin was found to reduce the affect of...',
-    )
-    penicillins_to_gas_gangrene_snippet_node4 = create_snippet_node(
-        tx=tx,
-        entry1_text='penicillin',
-        entry2_text='gas gangrene',
-        snippet_id=9810346,
-        sentence='...suppresses toxins and rapidly kills bacteria...',
-    )
-
-    # Publication Nodes
-    oxygen_to_gas_gangrene_publication_node = create_publication_node(
-        tx=tx,
-        pub_id=3,
-        pub_year=2019,
-    )
-    penicillins_to_gas_gangrene_publication_node1 = create_publication_node(
-        tx=tx,
-        pub_id=1,
-        pub_year=2014
-    )
-    penicillins_to_gas_gangrene_publication_node2 = create_publication_node(
-        tx=tx,
-        pub_id=2,
-    )
-
-    # Entity -> Association Relationships
-    entity_to_association_rels = [
-        [oxygen, oxygen_to_gas_gangrene_association_node],
-        [pomc, pomc_to_gas_gangrene_association_node],
-        [penicillins, penicillins_to_gas_gangrene_association_node1],
-        [penicillins, penicillins_to_gas_gangrene_association_node2]
-    ]
-    for rel in entity_to_association_rels:
-        create_has_association_relationship(
+    with graph.begin_transaction() as tx:
+        # Association Nodes
+        oxygen_to_gas_gangrene_association_node = create_association_node(
             tx=tx,
-            source_id=rel[0].id,
-            target_id=rel[1].id
+            assoc_type='J',
+            description='treatment/therapy (including investigatory)',
+            assoc_id=1089126,
+        )
+        pomc_to_gas_gangrene_association_node = create_association_node(
+            tx=tx,
+            assoc_type='J',
+            description='role in disease pathogenesis',
+            assoc_id=1387448,
+        )
+        penicillins_to_gas_gangrene_association_node1 = create_association_node(
+            tx=tx,
+            assoc_type='Pa',
+            description='alleviates, reduces',
+            assoc_id=2771500,
+        )
+        penicillins_to_gas_gangrene_association_node2 = create_association_node(
+            tx=tx,
+            assoc_type='J',
+            description='treatment/therapy (including investigatory)',
+            assoc_id=2771501,
         )
 
-    # Association -> Entity Relationships
-    association_to_entity_rels = [
-        [oxygen_to_gas_gangrene_association_node, gas_gangrene],
-        [pomc_to_gas_gangrene_association_node, gas_gangrene],
-        [penicillins_to_gas_gangrene_association_node1, gas_gangrene],
-        [penicillins_to_gas_gangrene_association_node2, gas_gangrene]
-    ]
-    for rel in association_to_entity_rels:
-        create_has_association_relationship(
+        # Snippet Nodes
+        oxygen_to_gas_gangrene_snippet_node1 = create_snippet_node(
             tx=tx,
-            source_id=rel[0].id,
-            target_id=rel[1].id,
+            entry1_text='oxygen',
+            entry2_text='gas gangrene',
+            snippet_id=7430189,
+            sentence='In this study , we aimed to investigate the effect of HBO2...',
+        )
+        oxygen_to_gas_gangrene_snippet_node2 = create_snippet_node(
+            tx=tx,
+            entry1_text='oxygen',
+            entry2_text='gas gangrene',
+            snippet_id=1890743,
+            sentence='Hyperbaric oxygen therapy has an adjunctive role...',
+        )
+        penicillins_to_gas_gangrene_snippet_node1 = create_snippet_node(
+            tx=tx,
+            entry1_text='penicillin',
+            entry2_text='gas gangrene',
+            snippet_id=9810347,
+            sentence='In a mouse model of gas_gangrene caused by...',
+        )
+        penicillins_to_gas_gangrene_snippet_node2 = create_snippet_node(
+            tx=tx,
+            entry1_text='penicillin',
+            entry2_text='gas gangrene',
+            snippet_id=9810346,
+            sentence='Toxin suppression and rapid bacterial killing may...',
+        )
+        penicillins_to_gas_gangrene_snippet_node3 = create_snippet_node(
+            tx=tx,
+            entry1_text='penicillin',
+            entry2_text='gas gangrene',
+            snippet_id=9810348,
+            sentence='...penicillin was found to reduce the affect of...',
+        )
+        penicillins_to_gas_gangrene_snippet_node4 = create_snippet_node(
+            tx=tx,
+            entry1_text='penicillin',
+            entry2_text='gas gangrene',
+            snippet_id=9810346,
+            sentence='...suppresses toxins and rapidly kills bacteria...',
         )
 
-    # Snippet -> Association Relationships
-    snippet_to_association_rels = [
-        [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
-        [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_association_node1, 2, 0.385],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_association_node1, 5, 0.693],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_association_node2, 1, 0.222],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_association_node2, 3, 0.456],  # noqa
-    ]
-    for rel in snippet_to_association_rels:
-        create_predicts_relationship(
+        # Publication Nodes
+        oxygen_to_gas_gangrene_publication_node = create_publication_node(
             tx=tx,
-            source_id=rel[0].id,
-            target_id=rel[1].id,
-            raw_score=rel[2],
-            normalized_score=rel[3],
+            pub_id=3,
+            pub_year=2019,
+        )
+        penicillins_to_gas_gangrene_publication_node1 = create_publication_node(
+            tx=tx,
+            pub_id=1,
+            pub_year=2014
+        )
+        penicillins_to_gas_gangrene_publication_node2 = create_publication_node(
+            tx=tx,
+            pub_id=2,
         )
 
-    # Snippet -> Publication Relationships
-    snippet_to_pub_rels = [
-        [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_publication_node],
-        [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_publication_node],
-        [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_publication_node1],
-        [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_publication_node2],
-        [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_publication_node2],
-        [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_publication_node2]
-    ]
-    for rel in snippet_to_pub_rels:
-        create_in_pub_relationship(
-            tx=tx,
-            source_id=rel[0].id,
-            target_id=rel[1].id
-        )
+        # Entity -> Association Relationships
+        entity_to_association_rels = [
+            [oxygen, oxygen_to_gas_gangrene_association_node],
+            [pomc, pomc_to_gas_gangrene_association_node],
+            [penicillins, penicillins_to_gas_gangrene_association_node1],
+            [penicillins, penicillins_to_gas_gangrene_association_node2]
+        ]
+        for rel in entity_to_association_rels:
+            create_has_association_relationship(
+                tx=tx,
+                source_id=rel[0].id,
+                target_id=rel[1].id
+            )
 
-    tx.commit()
+        # Association -> Entity Relationships
+        association_to_entity_rels = [
+            [oxygen_to_gas_gangrene_association_node, gas_gangrene],
+            [pomc_to_gas_gangrene_association_node, gas_gangrene],
+            [penicillins_to_gas_gangrene_association_node1, gas_gangrene],
+            [penicillins_to_gas_gangrene_association_node2, gas_gangrene]
+        ]
+        for rel in association_to_entity_rels:
+            create_has_association_relationship(
+                tx=tx,
+                source_id=rel[0].id,
+                target_id=rel[1].id,
+            )
 
+        # Snippet -> Association Relationships
+        snippet_to_association_rels = [
+            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
+            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_association_node1, 2, 0.385],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_association_node1, 5, 0.693],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_association_node2, 1, 0.222],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_association_node2, 3, 0.456],  # noqa
+        ]
+        for rel in snippet_to_association_rels:
+            create_predicts_relationship(
+                tx=tx,
+                source_id=rel[0].id,
+                target_id=rel[1].id,
+                raw_score=rel[2],
+                normalized_score=rel[3],
+            )
+
+        # Snippet -> Publication Relationships
+        snippet_to_pub_rels = [
+            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_publication_node],
+            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_publication_node],
+            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_publication_node1],
+            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_publication_node2],
+            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_publication_node2],
+            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_publication_node2]
+        ]
+        for rel in snippet_to_pub_rels:
+            create_in_pub_relationship(
+                tx=tx,
+                source_id=rel[0].id,
+                target_id=rel[1].id
+            )
     return gas_gangrene
 
 
@@ -658,65 +646,61 @@ def gas_gangrene_with_associations_and_references(
 def example4_pdf_gene_and_organism_network(
     graph: Session,
 ):
-    tx = graph.begin_transaction()
-
-    cysB = create_gene_node(
-        tx=tx,
-        gene_name='cysB',
-        gene_id='945771',
-        locus_tag='b1275'
-    )
-
-    mcrB = create_gene_node(
-        tx=tx,
-        gene_name='mcrB',
-        gene_id='949122',
-        locus_tag='b4346'
-    )
-
-    oxyR_e_coli = create_gene_node(
-        tx=tx,
-        gene_name='oxyR',
-        gene_id='948462',
-        locus_tag='b3961'
-    )
-
-    oxyR_salmonella = create_gene_node(
-        tx=tx,
-        gene_name='cysB',
-        gene_id='1255651',
-        locus_tag='STM4125'
-    )
-
-    e_coli = create_taxonomy_node(
-        tx=tx,
-        name='Escherichia coli',
-        rank='species',
-        tax_id='562'
-    )
-
-    salmonella = create_taxonomy_node(
-        tx=tx,
-        name='Salmonella enterica',
-        rank='species',
-        tax_id='28901'
-    )
-
-    gene_to_organism_rels = [
-        [cysB, e_coli],
-        [mcrB, e_coli],
-        [oxyR_e_coli, e_coli],
-        [oxyR_salmonella, salmonella]
-    ]
-    for rel in gene_to_organism_rels:
-        create_has_taxonomy_relationship(
+    with graph.begin_transaction() as tx:
+        cysB = create_gene_node(
             tx=tx,
-            source_id=rel[0].id,
-            target_id=rel[1].id
+            gene_name='cysB',
+            gene_id='945771',
+            locus_tag='b1275'
         )
 
-    tx.commit()
+        mcrB = create_gene_node(
+            tx=tx,
+            gene_name='mcrB',
+            gene_id='949122',
+            locus_tag='b4346'
+        )
 
+        oxyR_e_coli = create_gene_node(
+            tx=tx,
+            gene_name='oxyR',
+            gene_id='948462',
+            locus_tag='b3961'
+        )
+
+        oxyR_salmonella = create_gene_node(
+            tx=tx,
+            gene_name='cysB',
+            gene_id='1255651',
+            locus_tag='STM4125'
+        )
+
+        e_coli = create_taxonomy_node(
+            tx=tx,
+            name='Escherichia coli',
+            rank='species',
+            tax_id='562'
+        )
+
+        salmonella = create_taxonomy_node(
+            tx=tx,
+            name='Salmonella enterica',
+            rank='species',
+            tax_id='28901'
+        )
+
+        gene_to_organism_rels = [
+            [cysB, e_coli],
+            [mcrB, e_coli],
+            [oxyR_e_coli, e_coli],
+            [oxyR_salmonella, salmonella]
+        ]
+        for rel in gene_to_organism_rels:
+            create_has_taxonomy_relationship(
+                tx=tx,
+                source_id=rel[0].id,
+                target_id=rel[1].id
+            )
     return graph
 
 
@@ -724,29 +708,25 @@ def example4_pdf_gene_and_organism_network(
 def human_gene_pdf_gene_and_organism_network(
     graph: Session,
 ):
-    tx = graph.begin_transaction()
+    with graph.begin_transaction() as tx:
+        ace2 = create_gene_node(
+            tx=tx,
+            gene_name='ace2',
+            gene_id='59272'
+        )
 
-    ace2 = create_gene_node(
-        tx=tx,
-        gene_name='ace2',
-        gene_id='59272'
-    )
+        human = create_taxonomy_node(
+            tx=tx,
+            name='Homo Sapiens',
+            rank='species',
+            tax_id='9606',
+        )
 
-    human = create_taxonomy_node(
-        tx=tx,
-        name='Homo Sapiens',
-        rank='species',
-        tax_id='9606',
-    )
-
-    create_has_taxonomy_relationship(
-        tx=tx,
-        source_id=ace2.id,
-        target_id=human.id,
-    )
-
-    tx.commit()
-
+        create_has_taxonomy_relationship(
+            tx=tx,
+            source_id=ace2.id,
+            target_id=human.id,
+        )
     return graph
 
 # End Graph Data Fixtures #
