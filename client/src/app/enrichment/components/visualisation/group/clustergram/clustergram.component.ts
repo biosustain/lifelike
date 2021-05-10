@@ -29,7 +29,6 @@ export class ClustergramComponent implements OnChanges {
 
   matches: Array<{ x: number, y: number }>;
   genes;
-  others: GeneRow | undefined;
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
@@ -53,7 +52,7 @@ export class ClustergramComponent implements OnChanges {
     readonly scrollDispatcher: ScrollDispatcher,
     private sanitizer: DomSanitizer
   ) {
-    this.itemSize = [27, 27];
+    this.itemSize = [35, 35];
   }
 
   rowOrder(a: KeyValue<string, GeneRow>, b: KeyValue<string, GeneRow>) {
@@ -68,21 +67,76 @@ export class ClustergramComponent implements OnChanges {
     if (this.show) {
       const data = [...this.data].sort(this.columnOrder).map((o, i) => ({...o, x: i}));
       let genes = new Map<string, number>();
-      const matches = [];
-      data.forEach(({geneNames}, goIndex) => {
-        geneNames.forEach(g => {
-          matches.push({
-            x: goIndex,
-            y: g
-          });
-          let frequency = genes.get(g);
-          if (!frequency) {
-            genes.set(g, 1);
+      let matches;
+      let goTerms;
+      if (this.showMore) {
+        goTerms = data;
+        matches = data.reduce((o1, {geneNames}, goIndex) =>
+            geneNames.reduce((o2, g) => {
+              let frequency = genes.get(g);
+              if (!frequency) {
+                genes.set(g, 1);
+              } else {
+                genes.set(g, ++frequency);
+              }
+              o2.push({
+                x: goIndex,
+                y: g
+              });
+              return o2;
+            }, o1)
+          , []);
+      } else {
+        const sliceSize = Math.min(data.length, 25);
+        // @ts-ignore
+        goTerms = data.slice(0, sliceSize).concat([{
+          goTerm: 'others',
+          x: sliceSize
+        }]);
+        const others = new Map<string, any>();
+        matches = data.reduce((o1, {geneNames}, goIndex) => {
+          if (goIndex < sliceSize) {
+            return geneNames.reduce((o2, g) => {
+              let frequency = genes.get(g);
+              if (!frequency) {
+                genes.set(g, 1);
+              } else {
+                genes.set(g, ++frequency);
+              }
+              o2.push({
+                x: goIndex,
+                y: g
+              });
+              return o2;
+            }, o1);
           } else {
-            genes.set(g, ++frequency);
+            return geneNames.reduce((o2, g) => {
+              let frequency = genes.get(g);
+              if (frequency) {
+                genes.set(g, ++frequency);
+              }
+              if (!genes.has(g)) {
+                g = 'others';
+                genes.set(g, 0);
+              }
+              let cell = others.get(g);
+              if (!cell) {
+                cell = {
+                  y: g,
+                  x: sliceSize,
+                  value: 1
+                };
+                others.set(g, cell);
+                o2.push(cell);
+              } else {
+                cell.value++;
+              }
+              return o2;
+            }, o1);
           }
-        });
-      });
+        }, []);
+      }
+      // get row order
       genes = new Map(
         [...genes]
           .sort((a, b) => b[1] - a[1])
@@ -90,8 +144,8 @@ export class ClustergramComponent implements OnChanges {
       );
       this.genes = [...genes].map(([key, i]) => ({key, y: i}));
       this.matches = matches
-        .map(({x, y}) => ({x, y: genes.get(y)}));
-      this.goTerms = data;
+        .map(({y, ...rest}) => ({y: genes.get(y), ...rest}));
+      this.goTerms = goTerms;
     }
   }
 }

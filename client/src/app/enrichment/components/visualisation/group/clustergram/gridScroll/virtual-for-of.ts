@@ -22,7 +22,7 @@ import {
   SkipSelf,
   TemplateRef,
   TrackByFunction,
-  ViewContainerRef,
+  ViewContainerRef, AfterViewInit,
 } from '@angular/core';
 import { Observable, Subject, of as observableOf, isObservable } from 'rxjs';
 import { pairwise, shareReplay, startWith, switchMap, takeUntil } from 'rxjs/operators';
@@ -76,7 +76,7 @@ function getOffset(orientation: 'horizontal' | 'vertical', direction: 'start' | 
 @Directive({
   selector: '[appVirtualFor][appVirtualForOf]'
 })
-export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>, CollectionViewer, DoCheck, OnDestroy {
+export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>, CollectionViewer, DoCheck, OnDestroy, AfterViewInit {
 
   /** The DataSource to display. */
   @Input()
@@ -107,7 +107,8 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
   set appVirtualForTrackBy(fn: TrackByFunction<T> | undefined) {
     this._needsUpdate = true;
     this._appVirtualForTrackBy = fn ?
-      (index, item) => fn(index + (this._renderedRange ? this._renderedRange.start : 0), item) :
+      // @ts-ignore
+      (index, item) => fn(index + (this._renderedRange ? this._renderedRange.start : index), item) :
       undefined;
   }
 
@@ -142,16 +143,20 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       ngZone.run(() => this.viewChange.next(this._renderedRange));
       this._onRenderedDataChange();
     });
+  }
+
+  ngAfterViewInit(): void {
     if (this.secondary) {
       this._viewport.attachSecondary(this);
     } else {
       this._viewport.attach(this);
     }
   }
+
   @Input() secondary: boolean;
 
   /** Emits when the rendered view of the data changes. */
-  // @ts-ignore
+    // @ts-ignore
   readonly viewChange = new Subject<PointRange>();
 
   /** Subject that emits when a new DataSource instance is given. */
@@ -209,11 +214,13 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     if (range.start >= range.end) {
       return 0;
     }
+    // @ts-ignore
     if (range.start < this._renderedRange.start || range.end > this._renderedRange.end) {
       throw Error(`Error: attempted to measure an item that isn't rendered.`);
     }
 
     // The index into the list of rendered views for the first item in the range.
+    // @ts-ignore
     const renderedStartIndex = range.start - this._renderedRange.start;
     // The length of the range we're measuring.
     const rangeLen = range.end - range.start;
@@ -281,6 +288,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     }
     const {start: [sx, sy], end: [ex, ey]} = this._renderedRange;
     this._renderedItems = this._data.filter(d =>
+      // @ts-ignore
       (!d.hasOwnProperty('x') || (sx <= d.x && d.x <= ex)) && (!d.hasOwnProperty('y') || (sy <= d.y && d.y <= ey))
     );
     if (!this._differ) {
@@ -298,10 +306,12 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     Observable<readonly T[]> {
 
     if (oldDs) {
+      // @ts-ignore
       oldDs.disconnect(this);
     }
 
     this._needsUpdate = true;
+    // @ts-ignore
     return newDs ? newDs.connect(this) : observableOf();
   }
 
@@ -311,7 +321,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     let i = this._viewContainerRef.length;
     while (i--) {
       const view = this._viewContainerRef.get(i) as EmbeddedViewRef<AppVirtualForOfContext<T>>;
-      view.context.index = this._renderedRange.start + i;
+      view.context.index = this._calcViewStartIndex(view) + i;
       view.context.count = count;
       AppVirtualForOfDirective._updateComputedContextProperties(view.context);
       view.detectChanges();
@@ -338,6 +348,7 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
       } else {  // Item moved.
         const view = this._viewContainerRef.get(adjustedPreviousIndex) as EmbeddedViewRef<T>;
         this._viewContainerRef.move(view, currentIndex);
+        // @ts-ignore
         view.context.$implicit = itemValueResolver(record);
       }
     });
@@ -354,10 +365,21 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     let i = this._viewContainerRef.length;
     while (i--) {
       const view = this._viewContainerRef.get(i) as EmbeddedViewRef<AppVirtualForOfContext<T>>;
-      view.context.index = this._renderedRange.start + i;
+      view.context.index = this._calcViewStartIndex(view) + i;
       view.context.count = count;
       AppVirtualForOfDirective._updateComputedContextProperties(view.context);
     }
+  }
+
+  private _calcViewStartIndex(view) {
+    const {start} = this._renderedRange;
+    return Math.max(0,
+      // @ts-ignore
+      view._viewContainerRef._embeddedViews.findIndex(d =>
+        (!d.hasOwnProperty('x') || d.x > start.x) &&
+        (!d.hasOwnProperty('y') || d.y > start.y)
+      )
+    );
   }
 
   private _getEmbeddedViewArgs(record: IterableChangeRecord<T>, index: number) {
