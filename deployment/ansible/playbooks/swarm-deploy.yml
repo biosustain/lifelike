@@ -1,5 +1,10 @@
 - name: Docker Stack Deploy
   hosts: node_managers
+  vars:
+    docker_img_hash: "{{ set_docker_img_hash | default('latest') }}"
+    git_timestamp: "{{ set_git_timestamp | default('not specified') }}"
+    app_build_number: "{{ set_app_build_number | default('not specified') }}"
+    app_version: "{{ set_app_version | default('not specified') }}"
 
   tasks:
     - name: Make deploy directory
