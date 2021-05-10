@@ -28,4 +28,4 @@ def test_lmdb_vascular_cell_adhesion(
         nlp_results=NLPResults()
     )
 
-    assert len(results.matched_type_protein) == 2
+    assert len(results.recognized_proteins) == 2
