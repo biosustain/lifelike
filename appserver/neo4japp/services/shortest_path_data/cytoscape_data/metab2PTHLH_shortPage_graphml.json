@@ -1825,18 +1825,18 @@
             "label": "choloyl-CoA; chenodeoxycholoyl-CoA [cytosol]",
             "databaseLabel": "DefinedSet",
             "font": {
-                "color": "#d84a6d"
+                "color": "#49a7d6"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#d84a6d",
+                "border": "#49a7d6",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#d84a6d"
+                    "border": "#49a7d6"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#d84a6d"
+                    "border": "#49a7d6"
                 }
             }
         },

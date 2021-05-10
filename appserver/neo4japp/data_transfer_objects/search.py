@@ -13,7 +13,7 @@ class FTSQueryRecord(CamelDictMixin):
 
 @attr.s(frozen=True)
 class FTSTaxonomyRecord(FTSQueryRecord):
-    """ Taxonomy data around matches"""
+    """ Taxonomy data around genes"""
     taxonomy_id: int = attr.ib()
     taxonomy_name: str = attr.ib()
     go_class: str = attr.ib()

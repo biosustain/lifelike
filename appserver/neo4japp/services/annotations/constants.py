@@ -60,6 +60,8 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
+SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'pigs', 'electron'}
+
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm
 MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217, 183, 61623}
