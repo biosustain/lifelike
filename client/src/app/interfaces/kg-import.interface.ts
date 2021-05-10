@@ -9,7 +9,7 @@ export enum RelationshipDirection {
 }
 
 // TODO: These are unused right now because we're sending a FormData
-// object in the import-matches request. Might decide to use these
+// object in the import-genes request. Might decide to use these
 // interfaces in the future.
 //
 // export interface Properties {
