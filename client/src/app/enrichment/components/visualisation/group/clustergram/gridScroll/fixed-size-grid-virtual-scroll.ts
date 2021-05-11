@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import { Directive, forwardRef, Input, OnChanges, Injectable, AfterViewInit, OnInit } from '@angular/core';
+import { Directive, forwardRef, Input, OnChanges, Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
@@ -16,7 +16,7 @@ import { PointRange, Point } from './utils';
 
 /** Virtual scrolling strategy for lists with items of known fixed size. */
 @Injectable()
-export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy, AfterViewInit, OnInit {
+export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy {
   private readonly _scrolledIndexChange = new Subject<number[]>();
 
   /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
@@ -44,14 +44,6 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
     this._itemSize = itemSize;
     this._minBufferPx = minBufferPx;
     this._maxBufferPx = maxBufferPx;
-  }
-
-  ngAfterViewInit() {
-    this._updateRenderedRange();
-  }
-
-  ngOnInit() {
-    this._updateRenderedRange();
   }
 
   /**
