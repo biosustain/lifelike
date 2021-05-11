@@ -20,7 +20,7 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
   private readonly _scrolledIndexChange = new Subject<number[]>();
 
   /** @docs-private Implemented as part of XYVirtualScrollStrategy. */
-    // @ts-ignore
+  // @ts-ignore
   scrolledIndexChange: Observable<number[]> = this._scrolledIndexChange.pipe(distinctUntilChanged());
 
   /** The attached viewport. */
