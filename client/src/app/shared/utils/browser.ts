@@ -55,6 +55,18 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   if (openInternally) {
     let m;
 
+    // TODO: Folder tabs have a slightly different URL structure than other files for some reason, so we need to check for them manually
+    m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
+    if (m != null) {
+      workspaceManager.navigateByUrl(pathSearchHash, {
+        newTab: true,
+        sideBySide: true,
+        matchExistingTab: `^/+folders/${escapeRegExp(m[2])}.*`,
+      });
+
+      return true;
+    }
+
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
     if (m != null) {
       workspaceManager.navigateByUrl(pathSearchHash, {
@@ -81,7 +93,8 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
       workspaceManager.navigateByUrl(pathSearchHash, {
         newTab: true,
         sideBySide: true,
-        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}`,
+        // Need the regex end character here so we don't accidentally match a child of this directory
+        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\??$`,
       });
 
       return true;
