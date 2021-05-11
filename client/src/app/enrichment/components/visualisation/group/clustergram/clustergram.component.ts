@@ -75,13 +75,10 @@ export class ClustergramComponent implements OnChanges {
 
   _itemSize;
 
-  private static _valueMapToSortedList(valueMap: Map<string, number>): [string, number][] {
-    return [...valueMap].sort((a, b) => b[1] - a[1]);
-  }
-
-  private static _sortedListToIndexMap(sortedList: [string, number][]): Map<string, number> {
+  private static _valueMapToIndexMap(valueMap: Map<string, number>): Map<string, number> {
     return new Map(
-      sortedList
+      [...valueMap]
+        .sort((a, b) => b[1] - a[1])
         .map(([k, v], i) => [k, i])
     );
   }
@@ -116,7 +113,7 @@ export class ClustergramComponent implements OnChanges {
       // Sort copy of data
       const data: EnrichWithGOTermsResult[] = [...this.data].sort(this.columnOrder);
       const rowMentions = new Map<string, number>();
-      let columnHeaders, geneIndex;
+      let columnHeaders;
       // Iterate through columns and nested rows collecting points and number of ref per row
       let matches: Match[] = data.reduce((o1, {geneNames}, goIndex) =>
           geneNames.reduce((o2, g) => {
@@ -129,12 +126,8 @@ export class ClustergramComponent implements OnChanges {
             return o2;
           }, o1)
         , [] as Match[]);
-      // get gene order
-      const sortedGeneList = ClustergramComponent._valueMapToSortedList(rowMentions);
       if (this.showMore) {
         columnHeaders = ClustergramComponent._goTermsToColumnHeaders(data);
-        // resolve row index for each gene
-        geneIndex = ClustergramComponent._sortedListToIndexMap(sortedGeneList);
       } else {
         const sliceSize = Math.min(data.length, 25);
         if (data.length > sliceSize) {
@@ -145,9 +138,11 @@ export class ClustergramComponent implements OnChanges {
               // and save which rows are being shown
               o.shown.add(n.y);
             } else {
+              // try without cumulative others group
               // if row has been shown accumulate 'others' for it
               // otherwise dump to row/column 'others' common cell
-              const rowId = o.shown.has(n.y) ? n.y : OTHERS;
+              // const rowId = o.shown.has(n.y) ? n.y : OTHERS;
+              const rowId = n.y;
               const othersNumber = o.others.get(rowId);
               o.others.set(rowId, (othersNumber || 0) + 1);
             }
@@ -167,13 +162,10 @@ export class ClustergramComponent implements OnChanges {
             goTerm: OTHERS,
             x: sliceSize
           } as ColumnHeader);
-          // resolve row index for each shown gene
-          const sortedShownGenes = sortedGeneList.filter(d => shown.has(d[0]));
-          // add others row
-          sortedShownGenes.push([OTHERS, 0]);
-          geneIndex = ClustergramComponent._sortedListToIndexMap(sortedShownGenes);
         }
       }
+      // resolve row index for each gene
+      const geneIndex = ClustergramComponent._valueMapToIndexMap(rowMentions);
       // generate rows headers
       this.rowHeaders = ClustergramComponent._indexMapToRowHeaders(geneIndex);
       // generate cells
