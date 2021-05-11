@@ -1,8 +1,8 @@
 <app-grid-virtual-scroll-viewport [itemSize]="itemSize"
-                                  [style.height.px]="(matches.size*2.5 + 8.5)*27"
+                                  [style.height.px]="(cells.size*2.5 + 8.5)*27"
                                   [style.width.perc]="100">
     <div class="columnHeader" #columnHeader>
-        <ng-template appVirtualFor [appVirtualForOf]="goTerms" let-goTerm [secondary]="true">
+        <ng-template appVirtualFor [appVirtualForOf]="columnHeaders" let-goTerm [secondary]="true">
             <div [style.left.px]="goTerm.x*itemSize[0]"
                  class="rotatedHeader"
             >
@@ -19,14 +19,14 @@
     </div>
     <div class="scrollSpacer" #scrollSpacer></div>
     <div class="rowHeader" #rowHeader>
-        <ng-template appVirtualFor [appVirtualForOf]="genes" let-entry [secondary]="true">
+        <ng-template appVirtualFor [appVirtualForOf]="rowHeaders" let-entry [secondary]="true">
             <div [appSELink]="entry.key"
                  [style.top.px]="entry.y*itemSize[1]"
             >{{entry.key}}</div>
         </ng-template>
     </div>
     <div class="content" #content>
-        <div *appVirtualFor="let entry of matches"
+        <div *appVirtualFor="let entry of cells"
              [ngClass]="entry.value ? 'others' : 'match'"
              [style.backgroundColor]="entry.value || geneColor"
              [ngStyle]="{
