@@ -121,38 +121,6 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     }
   }
 
-  constructor(
-    /** The view container to add items to. */
-    private _viewContainerRef: ViewContainerRef,
-    /** The template to use when stamping out new items. */
-    private _template: TemplateRef<AppVirtualForOfContext<T>>,
-    /** The set of available differs. */
-    private _differs: IterableDiffers,
-    /** The strategy used to render items in the virtual scroll viewport. */
-    // @Inject(VIEW_REPEATER_STRATEGY)
-    // private _viewRepeater: _RecycleViewRepeaterStrategy<T, T, AppVirtualForOfContext<T>>,
-    /** The virtual scrolling viewport that these items are being rendered in. */
-    @SkipSelf() private _viewport: AppGridVirtualScrollViewportComponent,
-    ngZone: NgZone) {
-    this.dataStream.subscribe(data => {
-      this._data = data;
-      this._onRenderedDataChange();
-    });
-    this._viewport.renderedRangeStream.pipe(takeUntil(this._destroyed)).subscribe(range => {
-      this._renderedRange = range;
-      ngZone.run(() => this.viewChange.next(this._renderedRange));
-      this._onRenderedDataChange();
-    });
-  }
-
-  ngAfterViewInit(): void {
-    if (this.secondary) {
-      this._viewport.attachSecondary(this);
-    } else {
-      this._viewport.attach(this);
-    }
-  }
-
   @Input() secondary: boolean;
 
   /** Emits when the rendered view of the data changes. */
@@ -204,6 +172,39 @@ export class AppVirtualForOfDirective<T> implements AppVirtualScrollRepeater<T>,
     context.even = context.index % 2 === 0;
     context.odd = !context.even;
   }
+
+  constructor(
+    /** The view container to add items to. */
+    private _viewContainerRef: ViewContainerRef,
+    /** The template to use when stamping out new items. */
+    private _template: TemplateRef<AppVirtualForOfContext<T>>,
+    /** The set of available differs. */
+    private _differs: IterableDiffers,
+    /** The strategy used to render items in the virtual scroll viewport. */
+    // @Inject(VIEW_REPEATER_STRATEGY)
+    // private _viewRepeater: _RecycleViewRepeaterStrategy<T, T, AppVirtualForOfContext<T>>,
+    /** The virtual scrolling viewport that these items are being rendered in. */
+    @SkipSelf() private _viewport: AppGridVirtualScrollViewportComponent,
+    ngZone: NgZone) {
+    this.dataStream.subscribe(data => {
+      this._data = data;
+      this._onRenderedDataChange();
+    });
+    this._viewport.renderedRangeStream.pipe(takeUntil(this._destroyed)).subscribe(range => {
+      this._renderedRange = range;
+      ngZone.run(() => this.viewChange.next(this._renderedRange));
+      this._onRenderedDataChange();
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.secondary) {
+      this._viewport.attachSecondary(this);
+    } else {
+      this._viewport.attach(this);
+    }
+  }
+
 
   /**
    * Measures the combined size (width for horizontal orientation, height for vertical) of all items
