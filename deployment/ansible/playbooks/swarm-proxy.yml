@@ -18,7 +18,7 @@
 
     - name: Copy docker files
       copy:
-        src: "./files/docker-compose.proxy.yml"
+        src: "./files/docker-swarm/docker-compose.proxy.yml"
         dest: "{{ deploy_dir }}"
         owner: "{{ deploy_user }}"
         group: docker
@@ -29,7 +29,7 @@
         content: |
           USERNAME={{ USERNAME }}
           HASHED_PASSWORD={{ HASHED_PASSWORD }}
-          DOMAIN={{ DOMAIN }}
+          TRAEFIK_DOMAIN={{ TRAEFIK_DOMAIN }}
           EMAIL={{ EMAIL }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
