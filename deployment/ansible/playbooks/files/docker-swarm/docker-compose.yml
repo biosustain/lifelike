@@ -60,7 +60,7 @@ services:
 
     cache-invalidator:
         container_name: cache-invalidator
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
+        image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-service:${GITHUB_HASH:-latest}
         deploy:
             replicas: 1
         env_file:
