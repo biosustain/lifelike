@@ -36,7 +36,7 @@ services:
             - --providers.docker
             - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
             - --providers.docker.exposedbydefault=false
-            - --providers.docker.swarmmode
+            - --providers.docker.swarmMode=true
             - --entrypoints.http.address=:80
             - --entrypoints.https.address=:443
             - --certificatesresolvers.le.acme.email=${EMAIL?Variable not set}
