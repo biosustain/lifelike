@@ -16,6 +16,10 @@
       shell:
         cmd: docker node update --label-add traefik-public.traefik-public-certificates=true {{ docker_node_id.stdout }}
 
+    - name: Anchor Portainer to only this particular docker node
+      shell:
+        cmd: docker node update --label-add portainer.portainer-data=true {{ docker_node_id.stdout }}
+
     - name: Copy docker files
       copy:
         src: "./files/docker-swarm/docker-compose.proxy.yml"
@@ -31,6 +35,7 @@
           HASHED_PASSWORD={{ HASHED_PASSWORD }}
           TRAEFIK_DOMAIN={{ TRAEFIK_DOMAIN }}
           EMAIL={{ EMAIL }}
+          PORTAINER_DOMAIN={{ PORTAINER_DOMAIN }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: docker
