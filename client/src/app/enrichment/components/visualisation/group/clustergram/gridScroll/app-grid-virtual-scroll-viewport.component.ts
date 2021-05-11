@@ -69,7 +69,7 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   @ContentChild('rowHeader', {static: true}) _rowHeaderWrapper: ElementRef<HTMLElement>;
 
   /** A stream that emits whenever the rendered range changes. */
-    // @ts-ignore
+  // @ts-ignore
   readonly renderedRangeStream: Observable<PointRange> = this._renderedRangeSubject;
 
   /**
