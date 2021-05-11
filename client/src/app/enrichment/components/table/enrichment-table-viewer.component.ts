@@ -129,7 +129,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   ngAfterViewInit() {
     this.findTargetChangesSub = this.findTarget.changes.subscribe({
       next: () => {
-        if (this.findTarget.first) {
+        // If the enrichment table is rendered, and we haven't already set the findController target, set it
+        if (this.findTarget.first && this.findController.target === null) {
           this.findController.target = this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0];
           // This may seem like an anti-pattern -- and it probably is -- but there is seemingingly no other way around Angular's
           // `ExpressionChangedAfterItHasBeenCheckedError` here. Even Angular seems to think so, as they use this exact pattern in their
@@ -139,8 +140,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             // Actually not sure if this the desired behavior.
             this.findController.start();
           }, 0);
-        } else {
+        // Only reset the findController target when the table is reset
+        } else if (isNullOrUndefined(this.findTarget.first)) {
           this.findController.target = null;
+          setTimeout(() => {
+            this.findController.stop();
+          }, 0);
         }
       }
     });
@@ -314,7 +319,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.annotation = {id: '', text: '', color: ''};
     this.findController.stop();
     this.findController = new AsyncElementFind(
-      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.findController.target,
       this.generateTextFindQueue
     );
   }
@@ -323,7 +328,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.annotation = {id, text, color};
     this.findController.stop();
     this.findController = new AsyncElementFind(
-      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.findController.target,
       this.generateAnnotationFindQueue
     );
   }
