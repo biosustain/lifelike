@@ -26,9 +26,9 @@ services:
                 - traefik.constraint-label=${TRAEFIK_PUBLIC_TAG?Variable not set}
                 - traefik.http.middlewares.${STACK_NAME?Variable not set}-https-redirect.redirectscheme.scheme=https
                 - traefik.http.middlewares.${STACK_NAME?Variable not set}-https-redirect.redirectscheme.permanent=true
-                - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-http.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
+                - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-http.rule=Host(`${DOMAIN?Variable not set}`)
                 - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-http.entrypoints=http
-                - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
+                - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.rule=Host(`${DOMAIN?Variable not set}`)
                 - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.entrypoints=https
                 - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.tls=true
                 - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-https.tls.certresolver=le
