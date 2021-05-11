@@ -88,6 +88,7 @@ services:
     filebeat:
         container_name: filebeat
         image: ${REGISTRY:-lifelike.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+        user: root
         deploy:
             replicas: 1
         volumes:
