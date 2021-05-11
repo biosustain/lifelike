@@ -17,6 +17,23 @@ class GeneRow {
   }
 }
 
+interface ColumnHeader {
+  x: number;
+  goId?: string;
+  goTerm: string;
+}
+
+interface RowHeader {
+  y: number;
+  key: string;
+}
+
+interface Match {
+  x: number;
+  y: number;
+  value?: number;
+}
+
 @Component({
   selector: 'app-clustergram',
   templateUrl: './clustergram.component.html',
@@ -27,9 +44,9 @@ export class ClustergramComponent implements OnChanges {
   @Input() showMore: boolean;
   @Input() show: boolean;
 
-  matches: Array<{ x: number, y: number }>;
-  genes;
-  goTerms: EnrichWithGOTermsResult[] = [];
+  matches: Match[];
+  genes: RowHeader[];
+  goTerms: ColumnHeader[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
 
@@ -92,7 +109,7 @@ export class ClustergramComponent implements OnChanges {
         goTerms = data.slice(0, sliceSize).concat([{
           goTerm: 'others',
           x: sliceSize
-        }]);
+        } as ColumnHeader]) as ColumnHeader;
         const others = new Map<string, any>();
         matches = data.reduce((o1, {geneNames}, goIndex) => {
           if (goIndex < sliceSize) {
@@ -142,10 +159,10 @@ export class ClustergramComponent implements OnChanges {
           .sort((a, b) => b[1] - a[1])
           .map(([k, v], i) => [k, i])
       );
-      this.genes = [...genes].map(([key, i]) => ({key, y: i}));
+      this.genes = [...genes].map(([key, i]) => ({key, y: i})) as RowHeader[];
       this.matches = matches
-        .map(({y, ...rest}) => ({y: genes.get(y), ...rest}));
-      this.goTerms = goTerms;
+        .map(({y, ...rest}) => ({y: genes.get(y), ...rest})) as Match[];
+      this.goTerms = goTerms as ColumnHeader[];
     }
   }
 }
