@@ -43,6 +43,7 @@ services:
             - --certificatesresolvers.le.acme.storage=/certificates/acme.json
             - --certificatesresolvers.le.acme.tlschallenge=true
             - --accesslog
+            - --log.level=DEBUG
             - --log
             - --api
         networks:

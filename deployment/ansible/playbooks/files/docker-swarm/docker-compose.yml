@@ -13,6 +13,7 @@ services:
             - --providers.docker.exposedbydefault=false
             - --providers.docker.swarmmode
             - --accesslog
+            - --log.level=DEBUG
             - --log
             - --api
         deploy:
