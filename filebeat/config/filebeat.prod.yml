@@ -35,6 +35,10 @@ filebeat.autodiscover:
 processors:
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"
+  # https://discuss.elastic.co/t/using-autodiscover-feature-for-docker-does-not-work-when-running-in-swarm-mode/120342/2
+  - drop_fields:
+      fields:
+        - "docker.containers.labels"
 
 output.logstash:
     hosts: ["elk.prod.lifelike.bio:5044"]
