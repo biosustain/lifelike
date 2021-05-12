@@ -32,8 +32,8 @@ docker-run: docker-stop container-login azure-secrets lmdb
 	docker-compose up -d
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
-docker-run-all: docker-stop container-login azure-secrets lmdb
-	docker-compose -f docker-compose.override.yml -f docker-compose.middleware.yml
+docker-run-all: container-login azure-secrets
+	docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
 
 docker-stop:
 	docker ps -aq | xargs docker stop
