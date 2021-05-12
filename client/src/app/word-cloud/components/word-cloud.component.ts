@@ -24,7 +24,7 @@ import * as cloud from 'd3.layout.cloud';
   encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudComponent implements OnInit, OnDestroy {
-  id = uniqueId('WordCloudComponent-');
+  id = uniqueId('SankeyComponent-');
 
   @Input() title = 'Entity Cloud';
   @Input() object: FilesystemObject;
