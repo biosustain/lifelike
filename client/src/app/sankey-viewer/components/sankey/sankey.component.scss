@@ -1,0 +1,53 @@
+.nodes {
+  z-index: 1;
+
+  .Reaction {
+    fill: blue;
+  }
+  .EntityWithAccessionedSequence {
+    fill: black;
+  }
+  .Polymerisation {
+    fill: #1f3a97;
+  }
+  .SimpleEntity {
+    fill: #2dbaff;
+  }
+  .Complex {
+    fill: red;
+  }
+  .Depolymerisation {
+    fill: #bcbd22;
+  }
+  .BlackBoxEvent {
+    fill: indianred;
+  }
+  .Polymer {
+    fill: mediumslateblue;
+  }
+  .CandidateSet {
+    fill: mediumturquoise;
+  }
+}
+
+.nodes rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.nodes text {
+  //pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+  font-size: 6px;
+}
+
+.links {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.links path:hover {
+  stroke-opacity: .5;
+}
