@@ -104,10 +104,4 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   getObjectCommands(object: FilesystemObject): any[] {
     return ['/projects', object.project.projectName, 'maps', object.hashId];
   }
-
-  openObject(target: FilesystemObject) {
-    this.workspaceManager.navigate(target.getCommands(false), {
-      newTab: true,
-    });
-  }
 }

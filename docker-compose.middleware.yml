@@ -5,29 +5,27 @@ services:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.10.1
     ports:
-      - "5601:5601"
+      - 5601:5601
     environment:
-      SERVER_NAME: localhost
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       ELASTICSEARCH_URL: http://elasticsearch:9200
     networks:
-      - backend
+      - elastic
     depends_on:
       - elasticsearch
 
   logstash:
     container_name: logstash
     build:
-      context: logstash/
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      dockerfile: Dockerfile
+      context: logstash
     ports:
-      - "5044:5044"
-      - "9600:9600"
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      - 9600:9600
+    expose:
+      - 5000
+      - 5044
     networks:
-      - backend
+      - elastic
     depends_on:
       - elasticsearch
 
@@ -50,4 +48,4 @@ services:
       - elasticsearch
       - logstash
     networks:
-      - backend
+      - elastic
