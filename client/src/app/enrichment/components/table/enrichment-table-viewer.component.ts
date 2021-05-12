@@ -87,10 +87,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
+
+    // If the url fragment contains entity id info, assume we're looking for a specific annotation. Otherwise just search text.
     this.findController = new AsyncElementFind(
       null, // We'll update this later, once the table is rendered
       this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
     );
+    this.findController.query = this.annotation.id.length ? this.annotation.id : this.annotation.text;
   }
 
   ngOnInit() {
