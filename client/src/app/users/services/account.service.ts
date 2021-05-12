@@ -5,6 +5,8 @@ import {
     UserCreationRequest,
     ChangePasswordRequest,
     PrivateAppUser,
+  UserUpdateRequest
+
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
 import { map, takeUntil } from 'rxjs/operators';
@@ -29,6 +31,13 @@ export class AccountService implements OnDestroy {
     createUser(request: UserCreationRequest) {
         return this.http.post<{result: AppUser}>(
             `${this.accountApi}/`, request,
+        ).pipe(map(resp => resp.result));
+    }
+
+    updateUser(request: UserUpdateRequest) {
+        console.log(request);
+        return this.http.put<{result: AppUser}>(
+            `${this.accountApi}/${request.hashId}`, request,
         ).pipe(map(resp => resp.result));
     }
 

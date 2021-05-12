@@ -12,6 +12,7 @@ import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { UserUpdateDialogComponent } from './user-update-dialog.component';
 
 
 @Component({
@@ -63,6 +64,18 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  isOneSelected(): boolean {
+    if (!this.selection.selected.length) {
+      return false;
+    }
+    for (const item of this.shownUsers) {
+      if (this.selection.isSelected(item)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   toggleAllSelected(): void {
     if (this.isAllSelected()) {
       this.selection.clear();
@@ -102,4 +115,39 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     }, () => {
     });
   }
+
+
+  displayUpdateDialog() {
+    for (const selectedUser of this.shownUsers.reverse()) {
+      if (this.selection.isSelected(selectedUser)) {
+        const modalRef = this.modalService.open(UserUpdateDialogComponent);
+        modalRef.componentInstance.setUser(selectedUser);
+        modalRef.result.then(updatedUser => {
+          const progressDialogRef = this.progressDialog.display({
+            title: `Creating User`,
+            progressObservable: new BehaviorSubject<Progress>(new Progress({
+              status: 'Creating user...',
+            })),
+          });
+
+          this.accountService.updateUser(updatedUser)
+            .pipe(this.errorHandler.create({label: 'Update user'}))
+            .subscribe((user: AppUser) => {
+              progressDialogRef.close();
+              this.accountService.getUserList();
+              this.refresh();
+              this.snackBar.open(
+                `User ${user.username} updated!`,
+                'close',
+                {duration: 5000},
+              );
+            }, () => {
+              progressDialogRef.close();
+            });
+        }, () => {
+        });
+      }
+    }
+  }
+
 }

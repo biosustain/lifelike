@@ -7,4 +7,11 @@ export interface UserCreationRequest {
     roles: string[];
 }
 
+export interface UserUpdateRequest {
+  hashId: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
 
