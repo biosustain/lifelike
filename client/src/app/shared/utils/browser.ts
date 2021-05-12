@@ -1,6 +1,9 @@
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
-import { WorkspaceManager } from '../workspace-manager';
 import { escapeRegExp } from 'lodash';
+
+import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
+import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+
+import { WorkspaceManager } from '../workspace-manager';
 
 export function toValidLink(url: string) {
   let newUrl: string;
@@ -80,6 +83,19 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
             if (fragmentMatch) {
               fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
             }
+          } else if (m[1] === 'enrichment-table') {
+            const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+            if (fragmentMatch) {
+              enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
+              enrichmentTableViewerComponent.startAnnotationFind(
+                enrichmentTableViewerComponent.annotation.id,
+                enrichmentTableViewerComponent.annotation.text,
+                enrichmentTableViewerComponent.annotation.color
+              );
+            }
+
+            return false;
           }
           return false;
         },
