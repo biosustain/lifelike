@@ -121,7 +121,6 @@ class AccountView(MethodView):
             last_name=params['last_name']
         )
         app_user.set_password(params['password'])
-
         if not params.get('roles'):
             # Add default role
             app_user.roles.append(self.get_or_create_role('user'))
@@ -147,6 +146,14 @@ class AccountView(MethodView):
                 message='You do not have sufficient privileges.')
         else:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+            if target.username != params['username']:
+                if db.session.query(AppUser.query_by_username(params["username"]).exists()
+                                    ).scalar():
+                    raise ServerException(
+                        title='Cannot Update The User',
+                        message=f'Username {params["username"]} already taken.',
+                        code=400)
+
             for attribute, new_value in params.items():
                 setattr(target, attribute, new_value)
 
@@ -156,7 +163,7 @@ class AccountView(MethodView):
             except SQLAlchemyError:
                 db.session.rollback()
                 raise
-        return jsonify(dict(result='')), 204
+        return jsonify(dict(result=target.to_dict()))
 
     def delete(self):
         # TODO: Need to implement soft deletes as well as blocking assets from being viewed
