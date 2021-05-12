@@ -116,7 +116,7 @@ export class FilesystemService {
     );
   }
 
-  // TODO: Deprecate after LL-2840
+  // TODO: Deprecate after LL-3006
   getAllEnrichmentTables() {
     return this.http.get<{result: string[]}>(
       `/api/filesystem/enrichment-tables`, {

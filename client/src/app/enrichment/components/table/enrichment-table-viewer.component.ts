@@ -26,7 +26,6 @@ import { isNullOrUndefined } from 'util';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { ObjectUpdateRequest } from 'app/file-browser/schema';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -37,13 +36,9 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from './dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { EnrichmentService } from '../../services/enrichment.service';
-import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -336,6 +331,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
     this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
     this.findController.query = annotationId;
+    this.findController.start();
+  }
+
+  startTextFind(text: string) {
+    this.switchToTextFind();
+    this.findController.query = text;
     this.findController.start();
   }
 

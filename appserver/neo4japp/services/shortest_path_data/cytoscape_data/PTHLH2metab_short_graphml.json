@@ -3,800 +3,800 @@
         {
             "id": "1219",
             "label": "Equilibrative transport (export) of nucleosides and free bases by solute carrier family 29 (nucleoside transporters), member 1",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1218",
             "label": "Equilibrative transport (import) of nucleosides and free bases by solute carrier family 29 (nucleoside transporters), member 1",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1217",
             "label": "PALM [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1216",
             "label": "PYR [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1215",
             "label": "Thy [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1214",
             "label": "PYR [mitochondrial intermembrane space]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1213",
             "label": "AGM [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1212",
             "label": "CoA-SH [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1211",
             "label": "oxaloacetate + glutamate <=> aspartate + alpha-ketoglutarate [GOT1]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1210",
             "label": "SLC5A8 transports monocarboxylates from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1209",
             "label": "MAT1A multimers transfer Ado from ATP to L-Met",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1208",
             "label": "L-Glu [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1207",
             "label": "L-Met [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1206",
             "label": "2OG [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1205",
             "label": "PALM [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1204",
             "label": "p-hydroxyphenylpyruvate + glutamate <=> tyrosine + alpha-ketoglutarate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1203",
             "label": "Exchange of alpha-ketoglutarate (2-oxoglutarate) and malate across the inner mitochondrial membrane",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1202",
             "label": "malate [mitochondrial matrix] + alpha-ketoglutarate [cytosol] <=> malate [cytosol] + alpha-ketoglutarate [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1201",
             "label": "glutamate uptake by astrocytes",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1200",
             "label": "Cho [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1199",
             "label": "CAR [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1198",
             "label": "Concentrative transport (import) of nucleosides plus sodium ions by solute carrier family 28 (sodium-coupled nucleoside transporter), member 2",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1197",
             "label": "CAR translocates from the cytosol to the mitochondrial intermembrane space",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 }
             }
         },
         {
             "id": "1196",
             "label": "a-ketoisocaproate, a-keto-b-methylvalerate, or a-ketoisovalerate + glutamate <=> leu, ile, or val + alpha-ketoglutarate [BCAT1]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1195",
             "label": "Gua-Rib [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1194",
             "label": "ADR [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1193",
             "label": "BSG:MCTs cotransport LACT, H+ from cytosol to extracellular region",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1192",
             "label": "Sulfate is exported to the cytosol in exchange for dicarboxylate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1191",
             "label": "5HT [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1190",
             "label": "PALM-CoA [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1189",
             "label": "LACT [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1188",
             "label": "SLC6A14 cotransports SLC6A14 ligands, Cl-, 2Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1187",
             "label": "oxaloacetate + glutamate <=> aspartate + alpha-ketoglutarate [GOT2]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1186",
             "label": "SLC6A2 cotransports NAd, Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1185",
             "label": "L-Glu [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1184",
             "label": "Reuptake of serotonin from the synapse",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1183",
             "label": "AVP(20-28) [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         },
         {
             "id": "1182",
             "label": "Transport of Citrate from Mitochondrial Matrix to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1181",
             "label": "MPC1:MPC2 cotransports PYR, H+ from cytosol to mitochondrial matrix",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1180",
             "label": "Hist [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
@@ -823,580 +823,580 @@
         {
             "id": "1178",
             "label": "SLC7A8-mediated uptake of neutral amino acids",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1177",
             "label": "Succinate <=> Fumarate (with FAD redox reaction on enzyme)",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1176",
             "label": "PXLP-K314-GPT transaminates PYR to form L-Ala",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1175",
             "label": "Concentrative transport (import) of a nucleoside and a sodium ions by solute carrier family 28 (sodium-coupled nucleoside transporter), member 1",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1174",
             "label": "SUCCA [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1173",
             "label": "SLC25A12,13 exchange cytosolic L-Glu for mitochondrial matrix L-Asp",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1172",
             "label": "ADR [clathrin-sculpted monoamine transport vesicle lumen]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1171",
             "label": "LDHAL6B reduces PYR to LACT",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1170",
             "label": "L-Ala [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1169",
             "label": "Ade-Rib [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1168",
             "label": "Two DITs combine to form thyroxine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1167",
             "label": "SLC6A3 cotransports DA, Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1166",
             "label": "Equilibrative transport (import) of adenosine and biogenic amines by solute carrier family 29 (nucleoside transporters), member 4",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1165",
             "label": "GCG(53-81) [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         },
         {
             "id": "1164",
             "label": "CD36 (FAT) translocates palmitate from the extracellular region to the cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1163",
             "label": "MNA [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1162",
             "label": "glutamate + NAD(P)+ => alpha-ketoglutarate + NH4+ + NAD(P)H + H+ [GLUD1]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1161",
             "label": "glutamate + L-glutamate gamma-semialdehyde <=> ornithine + alpha-ketoglutarate [OAT]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1160",
             "label": "CRET [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1159",
             "label": "DIT and MIT combine to form triiodothyronine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1158",
             "label": "Exchange of palmitoylcarnitine and carnitine across the inner mitochondrial membrane",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1157",
             "label": "CAR [mitochondrial intermembrane space]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1156",
             "label": "L-PCARN [mitochondrial intermembrane space]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1155",
             "label": "cAMP [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1154",
             "label": "Noradrenaline clearance from the synaptic cleft",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1153",
             "label": "ADR [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1152",
             "label": "guanidinoacetate + S-adenosylmethionine => creatine + S-adenosylhomocysteine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1151",
             "label": "Cyt [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1150",
             "label": "CIM [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "ChemicalDrug",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff9900"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff9900",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff9900"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff9900"
                 }
             }
         },
@@ -1423,20 +1423,20 @@
         {
             "id": "1148",
             "label": "NAd [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
@@ -1463,300 +1463,300 @@
         {
             "id": "1146",
             "label": "urate [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1145",
             "label": "SPM [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1144",
             "label": "Equilibrative transport (export) of nucleosides and free bases by solute carrier family 29 (nucleoside transporters), member 2",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1143",
             "label": "Equilibrative transport (import) of nucleosides and free bases by solute carrier family 29 (nucleoside transporters), member 2",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1142",
             "label": "Spermidine  => N-acetylated spermidine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1141",
             "label": "Guanine + H2O => Xanthine + NH4+",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1140",
             "label": "Glc [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1139",
             "label": "SLC6A4 co-transports 5HT, Cl-, Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1138",
             "label": "Ura [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1137",
             "label": "SLC1A1-3,6,7 exchange L-Glu, H+ and 3Na+ for K+",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1136",
             "label": "MAL [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1135",
             "label": "SLC1A1,2,3,6,7 cotransport L-Glu,L-Asp,D-Asp,H+,3Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1134",
             "label": "Xanthine + H2O + O2 => Urate + H2O2",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1133",
             "label": "urate [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1132",
             "label": "ADR [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
@@ -1783,1020 +1783,1020 @@
         {
             "id": "1130",
             "label": "GPR39 [plasma membrane]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         },
         {
             "id": "1129",
             "label": "MAL [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1128",
             "label": "Cyt-Rib [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1127",
             "label": "NAd [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1126",
             "label": "Thy-dRib [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1125",
             "label": "Ura-Rib [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1124",
             "label": "BBOX1:AscH-:Fe2+ dimer dioxygenates TEABT and 2OG to form CAR and SUCCA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1123",
             "label": "SPN [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1122",
             "label": "2OG [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1121",
             "label": "Unknown carnitine exporter transports CAR from the cytosol to the extracellular space",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 }
             }
         },
         {
             "id": "1120",
             "label": "Hyp [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1119",
             "label": "PTHLH [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 }
             }
         },
         {
             "id": "1118",
             "label": "VMAT1/2 can mediate the transport of biogenic amines",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1117",
             "label": "LACT [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1116",
             "label": "The Ligand:GPCR:Gs complex dissociates",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1115",
             "label": "G alpha (s):GTP [plasma membrane]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 }
             }
         },
         {
             "id": "1114",
             "label": "L-Glu [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1113",
             "label": "Ino [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1112",
             "label": "Ade [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1111",
             "label": "acetyl-CoA + bicarbonate + ATP => malonyl-CoA + H2O + ADP + orthophosphate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1110",
             "label": "PXLP-K200-PSAT1 dimer transfers amino group from L-Glu to 3POPA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1109",
             "label": "HCO3- [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1108",
             "label": "Cl- [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1107",
             "label": "SLC6A15-mediated amino acid uptake",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1106",
             "label": "Ura-Rib [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1105",
             "label": "a-ketoisocaproate, a-keto-b-methylvalerate, or a-ketoisovalerate + glutamate <=> leu, ile, or val + alpha-ketoglutarate [BCAT2]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1104",
             "label": "AKR1B1 reduces Glc to D-sorbitol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1103",
             "label": "GDP + Orthophosphate + Succinyl-CoA <=> GTP + Succinate + CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1102",
             "label": "CREAT [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1101",
             "label": "palmitoylcarnitine + CoASH => palmitoyl-CoA + carnitine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1100",
             "label": "SLC6A19 cotransports neutral amino acids, Na+ from extracellular region to cytosol",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1099",
             "label": "CAR [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1098",
             "label": "N-acetylation of serotonin",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1097",
             "label": "DA [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1096",
             "label": "PYR [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1095",
             "label": "SLC22A12 exchanges extracellular urate for cytosolic LACT",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1094",
             "label": "D-sorbitol [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1093",
             "label": "LACT [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1092",
             "label": "EtCOO- or C2H5COO- [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1091",
             "label": "CH3COO- [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1090",
             "label": "SLC2A9 transports Fru, Glc, urate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1089",
             "label": "BUT [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1088",
             "label": "NPSR1 [plasma membrane]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         },
         {
             "id": "1087",
             "label": "QN [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1086",
             "label": "alpha-ketoadipate + glutamate <=> alpha-aminoadipate + alpha-ketoglutarate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1085",
             "label": "4-Di-2-ASP [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1084",
             "label": "AdoMet [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1083",
             "label": "SLC38A2 (ATA2)-mediated uptake of neutral amino acids",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1082",
             "label": "Equilibrative transport (export) of adenosine and biogenic amines by solute carrier family 29 (nucleoside transporters), member 4",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1081",
             "label": "MTF [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1080",
             "label": "Concentrative transport (import) of a nucleoside and two sodium ions by solute carrier family 28 (sodium-coupled nucleoside transporter), member 3",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
@@ -2823,240 +2823,240 @@
         {
             "id": "1078",
             "label": "(S)-Malate <=> Fumarate + H2O",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1077",
             "label": "MAT2B:MAT2A:K+:2Mg2+ transfers Ado from ATP to L-Met",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1076",
             "label": "FUMA [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1075",
             "label": "L-Arg [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1074",
             "label": "OCT1 transports organic cations out of hepatic cells",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1073",
             "label": "OCT1 transports organic cations into hepatic cells",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1072",
             "label": "Hist [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1071",
             "label": "L-Lys [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1070",
             "label": "SLC38A1 (ATA1)-mediated uptake of neutral amino acids",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1069",
             "label": "Btn-ACACB:2Mn2+ polymer carboxylates Ac-CoA to form Mal-CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1068",
             "label": "CAR [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1067",
             "label": "Oxaliplatin [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
@@ -3083,840 +3083,840 @@
         {
             "id": "1065",
             "label": "Uptake of Noradrenaline",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1064",
             "label": "ADP + Orthophosphate + Succinyl-CoA <=> ATP + Succinate + CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1063",
             "label": "CoA-SH [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1062",
             "label": "SUCC-CoA [mitochondrial matrix]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1061",
             "label": "OCT2 mediates tubular uptake of organic cations in the kidney",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1060",
             "label": "OCT2 mediates tubular secretion of organic cations in the kidney",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1059",
             "label": "SLC25A16 transports cytosolic CoA-SH to mitichondrial matrix",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1058",
             "label": "NPS [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         },
         {
             "id": "1057",
             "label": "OXCT dimers transfer CoA from SUCC-CoA to ACA, forming ACA-CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1056",
             "label": "Hypoxanthine + H2O + O2 => Xanthine + H2O2",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1055",
             "label": "MPP [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1054",
             "label": "XAN [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1053",
             "label": "Gu [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1052",
             "label": "TMAM [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1051",
             "label": "ACSL1,3,5,6 ligate CoA to PALM to form PALM-CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1050",
             "label": "G-protein beta-gamma complex [plasma membrane]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 }
             }
         },
         {
             "id": "1049",
             "label": "5HT [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1048",
             "label": "Btn-ACACA:2Mn2+ polymer carboxylates Ac-CoA to form Mal-CoA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1047",
             "label": "CPT1A,B transfers PALM to CAR",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1046",
             "label": "Ura-Rib [lysosomal lumen]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 }
             }
         },
         {
             "id": "1045",
             "label": "Mal-CoA [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1044",
             "label": "TMLHE dimer dioxygenates TMLYS and 2OG to form HTMLYS and SUCCA",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1043",
             "label": "GPR161 promotes cAMP production in a G alpha(s)-dependent manner",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1042",
             "label": "Gua [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1041",
             "label": "Spermine  => N-acetylated spermine",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1040",
             "label": "Cho is acetylated to AcCho by CHAT",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1039",
             "label": "PXLP-K341-GPT2 transaminates PYR to form L-Ala",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1038",
             "label": "SLC17A3-2 transports cytosolic urate to extracellular region",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1037",
             "label": "SLC25A18,A22 cotransport Glu, H+ from cytosol to mitochondrial matrix",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1036",
             "label": "Thyrotropin [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 }
             }
         },
         {
             "id": "1035",
             "label": "The Ligand:GPCR:Gq complex dissociates",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1034",
             "label": "PGE2 [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1033",
             "label": "phosphoenolpyruvate + ADP => pyruvate + ATP",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1032",
             "label": "Band 3 Anion Exchanger (AE1, SLC4A1) exchanges cytosolic chloride for extracellular bicarbonate",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1031",
             "label": "Ade-Rib [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1030",
             "label": "ACSL3,4 ligates coenzyme A (CoA-SH) to palmitate yielding palmitoyl-coenzyme A in the pancreatic beta cell",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1029",
             "label": "DA [cytosol]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 }
             }
         },
         {
             "id": "1028",
             "label": "Na+-driven Cl-/HCO3- exchanger transport",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1027",
             "label": "VDAC1 transports PYR from cytosol to mitochondrial intermembrane space",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1026",
             "label": "alpha-ketoglutarate + CoASH + NAD+ => succinyl-CoA + CO2 + NADH + H+",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1025",
             "label": "SLC29A3 transports nucleosides from cytosol to lysosomal lumen",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1024",
             "label": "P2RY11 [plasma membrane]",
-            "databaseLabel": "DatabaseObject",
+            "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 }
             }
         }
