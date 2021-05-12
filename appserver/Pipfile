@@ -55,6 +55,7 @@ azure-storage-file = "==2.1.0"
 azure-storage-blob = "==12.8.0"
 neo4j = "==4.2.1"
 python-magic = "==0.4.22"
+httpretty = "==1.0.5"
 
 [requires]
 python_version = "3.8.2"
