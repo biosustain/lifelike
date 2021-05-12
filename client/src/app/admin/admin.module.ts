@@ -10,6 +10,7 @@ import { AdminPanelComponent } from './components/admin-panel.component';
 import { AdminSettingsComponent } from './components/admin-settings.component';
 import { UserCreateDialogComponent } from './components/user-create-dialog.component';
 import { UserBrowserComponent } from './components/user-browser.component';
+import { UserUpdateDialogComponent } from './components/user-update-dialog.component';
 
 const components = [
   AdminPanelComponent,
@@ -17,11 +18,13 @@ const components = [
   AnnotationTableComponent,
   UserCreateDialogComponent,
   UserBrowserComponent,
+  UserUpdateDialogComponent
 ];
 
 @NgModule({
   entryComponents: [
     UserCreateDialogComponent,
+    UserUpdateDialogComponent,
   ],
   imports: [
     SharedModule,

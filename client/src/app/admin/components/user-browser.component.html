@@ -5,8 +5,8 @@
         <i class="fa fa-fw fa-plus"></i>
         Create User
       </button>
-      <div class="d-inline-block" ngbTooltip="Not yet implemented.">
-        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+      <div class="d-inline-block" ngbTooltip="Under construction!">
+        <button class="btn btn-secondary ml-2" [disabled]="!isOneSelected()" (click)="displayUpdateDialog()" >
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
         <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
