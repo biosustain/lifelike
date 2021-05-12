@@ -182,13 +182,14 @@ def get_file_type_service():
     """
     from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
     from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
+        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider, SankeyTypeProvider
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
     service.register(PDFTypeProvider())
     service.register(MapTypeProvider())
     service.register(EnrichmentTableTypeProvider())
+    service.register(SankeyTypeProvider())
     return service
 
 
