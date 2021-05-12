@@ -1,7 +1,7 @@
 import json
 import re
 
-from string import digits, ascii_letters, punctuation
+from string import digits, ascii_letters, punctuation, whitespace
 from typing import Dict, List, Set, Tuple
 
 from flask import current_app
@@ -19,7 +19,6 @@ from neo4japp.services.annotations.constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_WORDS,
     PDF_NEW_LINE_THRESHOLD,
-    SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
     ManualAnnotationType
@@ -312,12 +311,6 @@ class EntityRecognitionService:
             #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             # )
             return True
-        elif lowered in SPECIES_EXCLUSION:
-            # current_app.logger.info(
-            #     f'Found a match in species entity lookup but token "{word}" is a stop word.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
         return False
 
     def is_company_exclusion(self, word) -> bool:
@@ -601,26 +594,20 @@ class EntityRecognitionService:
             return True
         return False
 
-    def _discard_token(self, token: PDFWord) -> bool:
-        if (token.keyword.lower() in COMMON_WORDS or
-            self.token_word_check_regex.match(token.keyword) or
-            token.keyword in ascii_letters or
-            token.keyword in digits or
-            len(token.normalized_keyword) <= 2 or
-            self.is_abbrev(token)
-        ):  # noqa
-            return True
-        return False
-
     def generate_tokens(self, tokens_list: List[PDFWord]) -> List[PDFWord]:
         prev_token = None
         new_tokens = []
 
         for token in tokens_list:
             if prev_token is None:
+                # copied from def normalize_str
+                # to avoid function calls, ~7-10 sec faster
+                normalized = token.keyword.lower()
+                normalized = normalized.translate(str.maketrans('', '', punctuation))
+                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
                 new_token = PDFWord(
                     keyword=token.keyword,
-                    normalized_keyword=normalize_str(token.keyword),
+                    normalized_keyword=normalized_keyword,
                     page_number=token.page_number,
                     lo_location_offset=token.lo_location_offset,
                     hi_location_offset=token.hi_location_offset,
@@ -691,9 +678,14 @@ class EntityRecognitionService:
                     widths += word.widths
                 coordinates.append([start_lower_x, start_lower_y, end_upper_x, end_upper_y])
 
+                # copied from def normalize_str
+                # to avoid function calls, ~7-10 sec faster
+                normalized = curr_keyword.lower()
+                normalized = normalized.translate(str.maketrans('', '', punctuation))
+                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
                 new_token = PDFWord(
                     keyword=curr_keyword,
-                    normalized_keyword=normalize_str(curr_keyword),
+                    normalized_keyword=normalized_keyword,
                     # take the page of the first word
                     # if multi-word, consider it as part
                     # of page of first word
@@ -705,9 +697,28 @@ class EntityRecognitionService:
                     widths=widths,
                     previous_words=words_subset[0].previous_words,
                 )
+
                 new_tokens.append(new_token)
                 prev_token = new_token
-        return new_tokens
+
+        # remove any keywords that fit the removal
+        # criteria at the end here, e.g common words, digits, ascii_letters etc
+        # because a term could start with them
+        # had we removed earlier, then some terms may possibly
+        # have been missed
+        tokens_to_use = []
+        for token in new_tokens:
+            if (token.keyword.lower() in COMMON_WORDS or
+                self.token_word_check_regex.match(token.keyword) or
+                token.keyword in ascii_letters or
+                token.keyword in digits or
+                len(token.normalized_keyword) <= 2 or
+                self.is_abbrev(token)
+            ):  # noqa
+                continue
+            else:
+                tokens_to_use.append(token)
+        return tokens_to_use
 
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
@@ -722,7 +733,7 @@ class EntityRecognitionService:
         key_id_hyperlink: Dict[str, str] = {}
 
         for key, value in matched_results:
-            decoded_key = key.decode('utf')
+            decoded_key = key.decode('utf-8')
             match_list = key_results.get(decoded_key, [])
             match_list.append(json.loads(value))
             key_results[decoded_key] = match_list
@@ -777,7 +788,7 @@ class EntityRecognitionService:
         key_id_hyperlink: Dict[str, str] = {}
 
         for key, value in matched_results:
-            decoded_key = key.decode('utf')
+            decoded_key = key.decode('utf-8')
             match_list = key_results.get(decoded_key, [])
             match_list.append(json.loads(value))
             key_results[decoded_key] = match_list
@@ -827,9 +838,12 @@ class EntityRecognitionService:
 
     def check_lmdb(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         results = EntityResults()
-        keys = {token.normalized_keyword for token in tokens}
+        original_keys = {token.normalized_keyword for token in tokens}
 
         for entity_type in [entity.value for entity in EntityType]:
+            # because an entity type can create its own set of keys
+            # need to reset for next iteration
+            keys = original_keys
             cursor = None
             global_inclusion = None
             id_type = None
@@ -927,7 +941,7 @@ class EntityRecognitionService:
                 key_id_hyperlink: Dict[str, str] = {}
 
                 for key, value in matched_results:
-                    decoded_key = key.decode('utf')
+                    decoded_key = key.decode('utf-8')
                     match_list = key_results.get(decoded_key, [])
                     match_list.append(json.loads(value))
                     key_results[decoded_key] = match_list
@@ -1005,6 +1019,6 @@ class EntityRecognitionService:
         generated_tokens = [
             current_token for idx, token in enumerate(tokens)
                 for current_token in self.generate_tokens(
-                    tokens[idx:self.entity_max_words + idx]) if not self._discard_token(current_token)]  # noqa
+                    tokens[idx:self.entity_max_words + idx])]  # noqa
 
         return self.check_lmdb(nlp_results=nlp_results, tokens=generated_tokens)
