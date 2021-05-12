@@ -1,5 +1,7 @@
 - hosts: swarm_nodes
   become: yes
+  roles:
+    - role: docker
 
   tasks:
     - name: Log into Docker Registry
@@ -7,8 +9,6 @@
         registry_url: lifelike.azurecr.io
         username: "{{ AZURE_CR_USERNAME }}"
         password: "{{ AZURE_CR_PASSWORD }}"
-  # roles:
-  #   - role: docker
 
 - name: Docker Swarm Manager
   hosts: node_managers
