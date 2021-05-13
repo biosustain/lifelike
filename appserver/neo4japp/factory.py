@@ -42,7 +42,6 @@ module_logs = [
     'urllib3',
     'alembic',
     'webargs',
-    'py2neo',
     'werkzeug'
 ]
 
