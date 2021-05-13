@@ -1,4 +1,4 @@
-import { PDFAnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
+import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
@@ -17,6 +17,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from './filesystem.service';
+import { ResultMapping } from 'app/shared/schemas/common';
+import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
 @Injectable()
 export class ObjectCreationService {
@@ -47,6 +49,7 @@ export class ObjectCreationService {
       title: `Creating '${request.filename}'`,
       progressObservable,
     });
+    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
 
     return this.filesystemService.create(request)
       .pipe(
@@ -79,10 +82,18 @@ export class ObjectCreationService {
           return this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
           ).pipe(
-            map(() => object), // This method returns the object
+            map(result => {
+              results = [[object], [result]];
+              return object;
+            }), // This method returns the object
           );
         }),
-        finalize(() => progressDialogRef.close()),
+        finalize(() => {
+          progressDialogRef.close();
+          const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+          modalRef.componentInstance.objects = results[0];
+          modalRef.componentInstance.results = results[1];
+        }),
         this.errorHandler.create({label: 'Create object'}),
       );
   }
