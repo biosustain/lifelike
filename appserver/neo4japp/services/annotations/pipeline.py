@@ -199,9 +199,14 @@ def _create_annotations(
     start = time.time()
 
     # identify entities w/ NLP first
-    nlp_results = get_nlp_entities(
-        text=pdf_text,
-        entities=set(k for k, v in annotation_method.items() if v['nlp']))
+    try:
+        nlp_results = get_nlp_entities(
+            text=pdf_text,
+            entities=set(k for k, v in annotation_method.items() if v['nlp']))
+    except Exception:
+        raise AnnotationError(
+            'Unable to Annotate',
+            'An unexpected error occurred with the NLP service.')
 
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
