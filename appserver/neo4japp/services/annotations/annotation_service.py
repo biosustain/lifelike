@@ -672,9 +672,8 @@ class AnnotationService:
             else:
                 if entity_synonym in protein_organism_matches:
                     organisms_to_match: Dict[str, str] = {}
-                    # only take the first gene for the organism
+                    # only take the first protein for the organism
                     # no way for us to infer which to use
-                    # logic moved from annotation_graph_service.py
                     for d in list(protein_organism_matches[entity_synonym].values()):
                         key = next(iter(d))
                         if key not in organisms_to_match:
