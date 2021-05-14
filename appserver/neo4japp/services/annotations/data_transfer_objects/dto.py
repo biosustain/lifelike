@@ -1,6 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
 
