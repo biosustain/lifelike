@@ -62,7 +62,6 @@ def annotate_pdf(
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
         specified_organism=specified_organism

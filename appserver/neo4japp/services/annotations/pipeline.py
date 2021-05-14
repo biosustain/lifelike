@@ -241,7 +241,6 @@ def _create_annotations(
 
     annotations = annotator.create_annotations(
         custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
         specified_organism=SpecifiedOrganismStrain(
