@@ -364,9 +364,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       .catch(() => {});
   }
 
-  itemDragStart(event: DragEvent, object: FilesystemObject) {
+  itemDragStart(event: DragEvent, object: FilesystemObject, force = false) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    object.addDataTransferData(dataTransfer);
+    if (force || !dataTransfer.types.includes('text/uri-list')) {
+      object.addDataTransferData(dataTransfer);
+    }
   }
 
   toggleShowSynonyms() {
