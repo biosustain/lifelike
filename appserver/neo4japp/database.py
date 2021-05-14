@@ -200,7 +200,10 @@ def get_user_file_import_service():
 #         from neo4japp.services import UserFileImportService
 #         # TODO Replace with neo4j driver
 #         graph = connect_to_neo4j()
-#         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
+#         g.current_user_file_import_service = UserFileImportService(
+#           graph=graph,
+#           session=db.session
+#         )
 #     return g.current_user_file_import_service
 
 

@@ -688,8 +688,8 @@ class UserFileImportService(HybridDBDao):
         #         node_label1 = relationship.node_label1
         #         node_label2 = relationship.node_label2
 
-        #         # If this relationship describes a column-to-column mapping, merge the two new nodes
-        #         # and map them to each other.
+        #         # If this relationship describes a column-to-column mapping, merge the two new
+        #         # nodes and map them to each other.
         #         if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
         #             merge_col_match_query = self.get_merge_col_match_query(
         #                 node_label1,
@@ -711,8 +711,8 @@ class UserFileImportService(HybridDBDao):
         #                         'worksheet_node_id': worksheet_node_id
         #                     }
         #                 )
-        #         # If this relationship describes a column-to-KG-gene mapping, merge the column node,
-        #         # and map it to the corresponding KG node.
+        #         # If this relationship describes a column-to-KG-gene mapping, merge the column
+        #         # node, and map it to the corresponding KG node.
         #         else:
         #             merge_gene_match_query = self.get_merge_gene_match_query(
         #                 node_label1,
@@ -764,7 +764,7 @@ class UserFileImportService(HybridDBDao):
         worksheet: FileStorage,
         worksheet_node_id: int
     ):
-        worksheet_content = worksheet.read()
+        worksheet_content = worksheet.stream.read()
         worksheet.stream.seek(0)
 
         checksum_sha256 = hashlib.sha256(worksheet_content).digest()
