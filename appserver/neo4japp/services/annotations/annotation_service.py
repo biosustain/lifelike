@@ -4,7 +4,7 @@ import time
 
 from collections import defaultdict
 from math import inf, isinf
-from typing import cast, Dict, List, Set, Tuple, Union
+from typing import cast, Dict, List, Set, Tuple
 from uuid import uuid4
 
 from flask import current_app
@@ -348,11 +348,7 @@ class AnnotationService:
             min_organism_dist = inf
             new_organism_dist = inf
 
-            organism_locations = []
-
-            try:
-                organism_locations = self.organism_locations[organism]
-            except KeyError:
+            if organism not in self.organism_locations:
                 current_app.logger.error(
                     f'Organism ID {organism} does not exist in {self.organism_locations}.',
                     extra=EventLog(event_type='annotations').to_dict()
@@ -360,7 +356,7 @@ class AnnotationService:
                 continue
 
             # Get the closest instance of this organism
-            for organism_pos in organism_locations:
+            for organism_pos in self.organism_locations[organism]:
                 organism_location_lo = organism_pos[0]
                 organism_location_hi = organism_pos[1]
 
@@ -406,7 +402,7 @@ class AnnotationService:
         entity_synonym,
         organisms_to_match,
         fallback_organism_matches,
-        type_protein=False
+        entity_type
     ) -> BestOrganismMatch:
         """Finds the best entity/organism pair.
 
@@ -433,15 +429,16 @@ class AnnotationService:
                 fallback_organisms_to_match: Dict[str, str] = {}
 
                 try:
-                    if type_protein:
-                        raise KeyError  # protein doesn't prioritize
+                    if entity_type == EntityType.PROTEIN.value:
+                        # protein doesn't prioritize
+                        # trigger KeyError below
+                        raise KeyError
 
                     # prioritize common name match over synonym
                     fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
                 except KeyError:
                     # only take the first gene/protein for the organism
                     # no way for us to infer which to use
-                    # logic moved from annotation_graph_service.py
                     for d in list(fallback_organism_matches[entity_synonym].values()):  # noqa
                         key = next(iter(d))
                         if key not in fallback_organisms_to_match:
@@ -460,6 +457,7 @@ class AnnotationService:
                     organism_matches=organisms_to_match,
                     above_only=True
                 )
+                # if distance is inf, then it means we didn't find an organism above
                 if isinf(closest_distance):
                     # try to use the most frequent organism
                     most_frequent = max(self.organism_frequency.keys(), key=(lambda k: self.organism_frequency[k]))  # noqa
@@ -476,7 +474,6 @@ class AnnotationService:
 
     def _annotate_type_gene(
         self,
-        entity_id_str: str,
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
@@ -572,7 +569,8 @@ class AnnotationService:
                         token=token,
                         entity_synonym=entity_synonym,
                         organisms_to_match=organisms_to_match,
-                        fallback_organism_matches=fallback_gene_organism_matches)
+                        fallback_organism_matches=fallback_gene_organism_matches,
+                        entity_type=EntityType.GENE.value)
 
                     if isinf(best_match.closest_distance):
                         continue
@@ -615,7 +613,6 @@ class AnnotationService:
 
     def _annotate_type_protein(
         self,
-        entity_id_str: str,
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Nearly identical to `self._annotate_type_gene`. Return a list of
@@ -688,7 +685,7 @@ class AnnotationService:
                         entity_synonym=entity_synonym,
                         organisms_to_match=organisms_to_match,
                         fallback_organism_matches=fallback_protein_organism_matches,
-                        type_protein=True)
+                        entity_type=EntityType.PROTEIN.value)
 
                     if isinf(best_match.closest_distance):
                         continue
@@ -754,7 +751,6 @@ class AnnotationService:
         self,
         entity_id_str: str,
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
@@ -931,7 +927,6 @@ class AnnotationService:
         self,
         types_to_annotate: List[Tuple[str, str]],
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Create annotations.
@@ -966,15 +961,12 @@ class AnnotationService:
                 unified_annotations += self._annotate_type_species(
                     entity_id_str=entity_id_str,
                     custom_annotations=custom_annotations,
-                    excluded_annotations=excluded_annotations,
                     recognized_entities=recognized_entities
                 )
             elif entity_type == EntityType.GENE.value:
-                unified_annotations += self._annotate_type_gene(
-                    entity_id_str, recognized_entities)
+                unified_annotations += self._annotate_type_gene(recognized_entities)
             elif entity_type == EntityType.PROTEIN.value:
-                unified_annotations += self._annotate_type_protein(
-                    entity_id_str, recognized_entities)
+                unified_annotations += self._annotate_type_protein(recognized_entities)
             else:
                 unified_annotations += self._get_annotation(
                     matches_list=matched_data[entity_type],
@@ -987,7 +979,6 @@ class AnnotationService:
     def create_annotations(
         self,
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         entity_results: RecognizedEntities,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
@@ -999,7 +990,6 @@ class AnnotationService:
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
             custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations,
             recognized_entities=entity_results
         )
 
