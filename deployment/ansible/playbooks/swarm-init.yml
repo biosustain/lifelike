@@ -1,7 +1,7 @@
 - hosts: swarm_nodes
   become: yes
-  roles:
-    - role: docker
+  # roles:
+  #   - role: docker
 
   tasks:
     - name: Log into Docker Registry
@@ -15,10 +15,11 @@
   become: yes
 
   tasks:
+
     - name: Docker Swarm Manager
       docker_swarm:
         state: present
-        advertise_addr: "{{ ansible_host }}"
+        advertise_addr: "{{ hostvars['manager01']['ansible_default_ipv4']['address'] }}:2377"
       register: docker_swarm_tokens
 
 - name: Docker Swarm Workers
@@ -26,6 +27,9 @@
   become: yes
 
   tasks:
+    # - name: Debug
+    #   debug:
+    #     msg: "{{ hostvars }}"
     - name: Docker Worker Add
       shell: "docker swarm join --token {{ hostvars['manager01']['docker_swarm_tokens']['swarm_facts']['JoinTokens']['Worker'] }} {{ hostvars['manager01']['ansible_default_ipv4']['address'] }}:2377"
 

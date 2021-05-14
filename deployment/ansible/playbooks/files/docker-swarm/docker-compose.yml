@@ -44,7 +44,7 @@ services:
     appserver:
         container_name: appserver
         deploy:
-            replicas: 1
+            replicas: 4
             labels:
                 - traefik.enable=true
                 - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
