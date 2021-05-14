@@ -21,7 +21,7 @@ if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development"
     flask run --host 0.0.0.0
 elif [ "${FLASK_APP_CONFIG}" = "Production" ] || [ "${FLASK_APP_CONFIG}" = "Staging" ] || [ "${FLASK_APP_CONFIG}" = "QA" ]; then
     flask load-lmdb
-    gunicorn -b 0.0.0.0:5000 --workers=2 app:app --timeout 1200
+    gunicorn -b 0.0.0.0:5000 --workers=2 --threads 4 --worker-class=gthread --worker-tmp-dir /dev/shm app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"
 fi
