@@ -124,9 +124,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         modalRef.componentInstance.setUser(selectedUser);
         modalRef.result.then(updatedUser => {
           const progressDialogRef = this.progressDialog.display({
-            title: `Creating User`,
+            title: `Updating User`,
             progressObservable: new BehaviorSubject<Progress>(new Progress({
-              status: 'Creating user...',
+              status: 'Updating user...',
             })),
           });
 

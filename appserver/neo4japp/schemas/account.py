@@ -30,7 +30,6 @@ class UserUpdateSchema(CamelCaseSchema):
     last_name = fields.String()
 
 
-
 class UserSchema(CamelCaseSchema):
     """Generic schema for returning public information about a user."""
     hash_id = fields.String()
