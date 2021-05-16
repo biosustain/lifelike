@@ -2,7 +2,7 @@
   We're working on letting you change your profile.
 </div>
 <form [formGroup]="form" (ngSubmit)="submit()">
-  <app-modal-header (cancel)="cancel()">
+  <app-modal-header (cancel)="reset()">
     Update User
   </app-modal-header>
 
@@ -25,7 +25,7 @@
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary mr-2" (click)="reset()">Cancel</button>
+    <button type="submit" class="btn btn-primary" [disabled]="!form.dirty" (click)="submit()" >Submit</button>
   </app-modal-footer>
 </form>
