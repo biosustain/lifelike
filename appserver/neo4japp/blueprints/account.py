@@ -58,7 +58,7 @@ class AccountView(MethodView):
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
             t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id)
-            .join(t_approle, user_role.c.app_role_id == t_approle.c.id)
+                .join(t_approle, user_role.c.app_role_id == t_approle.c.id)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
@@ -87,7 +87,7 @@ class AccountView(MethodView):
                 'last_name': last_name,
                 'roles': roles.split(',')
             } for id, hash_id, username, email,
-            first_name, last_name, roles in db.session.execute(query).fetchall()]
+                  first_name, last_name, roles in db.session.execute(query).fetchall()]
 
         return jsonify(UserProfileListSchema().dump({
             'total': len(results),
@@ -97,7 +97,7 @@ class AccountView(MethodView):
     @use_args(UserCreateSchema)
     def post(self, params: dict):
         admin_or_private_access = g.current_user.has_role('admin') or \
-            g.current_user.has_role('private-data-access')
+                                  g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
             raise NotAuthorized(
                 title='Cannot Create New User',
@@ -139,7 +139,7 @@ class AccountView(MethodView):
     def put(self, params: dict, hash_id):
         """ Updating password and roles will be delegated to a separate function """
         admin_or_private_access = g.current_user.has_role('admin') or \
-            g.current_user.has_role('private-data-access')
+                                  g.current_user.has_role('private-data-access')
         if g.current_user.hash_id != hash_id and admin_or_private_access is False:
             raise NotAuthorized(
                 title='Failed to Update User',
@@ -181,7 +181,7 @@ bp.add_url_rule('/<string:hash_id>', view_func=account_view, methods=['GET', 'PU
 @use_args(UserChangePasswordSchema)
 def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
-        g.current_user.has_role('private-data-access')
+                              g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
         raise NotAuthorized(
             title='Failed to Update User',
