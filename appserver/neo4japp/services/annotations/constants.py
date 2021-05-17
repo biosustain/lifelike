@@ -162,7 +162,7 @@ SEARCH_LINKS = {
     'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
     'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=',
     'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=',
-    'wikipedia': 'https://en.wikipedia.org/w/index.php?search=',
+    'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+',
     'google': 'https://www.google.com/search?q=',
 }
 ENTITY_HYPERLINKS = {
