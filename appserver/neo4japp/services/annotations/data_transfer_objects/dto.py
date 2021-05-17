@@ -1,6 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -147,6 +147,14 @@ class SpecifiedOrganismStrain():
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class BestOrganismMatch():
+    entity_id: str = attr.ib()
+    organism_id: str = attr.ib()
+    closest_distance: float = attr.ib()
+    specified_organism_id: Optional[str] = attr.ib(default=None)
 
 
 @attr.s(frozen=True)

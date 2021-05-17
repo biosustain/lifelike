@@ -62,7 +62,6 @@ def annotate_pdf(
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
         specified_organism=specified_organism
@@ -1374,3 +1373,65 @@ def test_global_inclusion_normalized_already_in_lmdb(
     )
 
     assert annotations[1].primary_name == 'CXCL8'
+
+
+def test_gene_matched_to_organism_before_if_closest_is_too_far(
+    gene_organism_matching_use_organism_before_lmdb_setup,
+    mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_matched_to_organism_before_if_closest_is_too_far.json')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    assert len(annotations) == 5
+
+    matches = {a.keyword: a.meta.id for a in annotations}
+    assert '5743' in matches['PTGS2']
+    assert '627' in matches['BDNF']
+    assert '684' in matches['BST2']
+
+
+def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism(
+    gene_organism_matching_use_organism_before_lmdb_setup,
+    mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism.json')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    assert len(annotations) == 8
+
+    matches = {a.keyword: a.meta.id for a in annotations}
+    assert '5743' in matches['PTGS2']
+    assert '627' in matches['BDNF']
+    assert '684' in matches['BST2']

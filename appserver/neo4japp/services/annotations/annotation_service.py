@@ -1,10 +1,7 @@
-import bisect
-import itertools
 import time
 
-from collections import defaultdict
-from math import inf
-from typing import cast, Dict, List, Set, Tuple, Union
+from math import inf, isinf
+from typing import cast, Dict, List, Set, Tuple
 from uuid import uuid4
 
 from flask import current_app
@@ -30,6 +27,7 @@ from neo4japp.services.annotations.constants import (
 from neo4japp.services.annotations.util import has_center_point
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
+    BestOrganismMatch,
     CreateAnnotationObjParams,
     RecognizedEntities,
     GeneAnnotation,
@@ -39,7 +37,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.util import normalize_str, standardize_str
+from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
@@ -275,7 +273,7 @@ class AnnotationService:
         Returns list of matched annotations
         """
         matches: List[Annotation] = []
-        tokens_lowercased = set([match.token.normalized_keyword for match in matches_list])  # noqa
+        tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)  # noqa
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
         entities_to_create: List[CreateAnnotationObjParams] = []
@@ -324,19 +322,15 @@ class AnnotationService:
         self,
         entity: PDFWord,
         organism_matches: Dict[str, str],
+        above_only: bool = False
     ) -> Tuple[str, str, float]:
-        """Gets the correct entity/organism pair for a given entity
-        and its list of matching organisms.
-
-        An entity name may match multiple organisms. To choose which organism to use,
+        """An entity name may match multiple organisms. To choose which organism to use,
         we first check for the closest one in the document. If two organisms are
-        equal in distance, we choose the one that appears most frequently in the document.
+        equal in distance, we choose the one that appears more frequently in the document.
 
         If the two organisms are both equidistant and equally frequent,
         we always prefer homo sapiens if it is either of the two entity.
         Otherwise, we choose the one we matched first.
-
-        Currently used for proteins and genes.
         """
         entity_location_lo = entity.lo_location_offset
         entity_location_hi = entity.hi_location_offset
@@ -345,31 +339,41 @@ class AnnotationService:
         curr_closest_organism = None
 
         for organism in organism_matches:
-            try:
-                if curr_closest_organism is None:
-                    curr_closest_organism = organism
+            if curr_closest_organism is None:
+                curr_closest_organism = organism
 
-                min_organism_dist = inf
+            min_organism_dist = inf
+            new_organism_dist = inf
 
-                # Get the closest instance of this organism
-                for organism_pos in self.organism_locations[organism]:
-                    organism_location_lo = organism_pos[0]
-                    organism_location_hi = organism_pos[1]
+            if organism not in self.organism_locations:
+                current_app.logger.error(
+                    f'Organism ID {organism} does not exist in {self.organism_locations}.',
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+                continue
 
-                    if entity_location_lo > organism_location_hi:
-                        new_organism_dist = entity_location_lo - organism_location_hi
-                    else:
+            # Get the closest instance of this organism
+            for organism_pos in self.organism_locations[organism]:
+                organism_location_lo = organism_pos[0]
+                organism_location_hi = organism_pos[1]
+
+                if entity_location_lo > organism_location_hi:
+                    # organism is before entity
+                    new_organism_dist = entity_location_lo - organism_location_hi
+                else:
+                    if not above_only:
                         new_organism_dist = organism_location_lo - entity_location_hi
 
-                    if new_organism_dist < min_organism_dist:
-                        min_organism_dist = new_organism_dist
+                if new_organism_dist < min_organism_dist:
+                    min_organism_dist = new_organism_dist
 
-                # If this organism is closer than the current closest, update
-                if min_organism_dist < closest_dist:
-                    curr_closest_organism = organism
-                    closest_dist = min_organism_dist
-                # If this organism is equidistant to the current closest, check frequency instead
-                elif min_organism_dist == closest_dist:
+            # If this organism is closer than the current closest, update
+            if min_organism_dist < closest_dist:
+                curr_closest_organism = organism
+                closest_dist = min_organism_dist
+            # If this organism is equidistant to the current closest, check frequency instead
+            elif min_organism_dist == closest_dist:
+                try:
                     # If the frequency of this organism is greater, update
                     if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
                         curr_closest_organism = organism
@@ -378,11 +382,8 @@ class AnnotationService:
                         # check if the new organism is human, and if so update
                         if organism == HOMO_SAPIENS_TAX_ID:
                             curr_closest_organism = organism
-            except KeyError:
-                current_app.logger.error(
-                    f'Organism ID {organism} does not exist in {self.organism_locations}.',
-                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-                )
+                except KeyError:
+                    curr_closest_organism = organism
 
         if curr_closest_organism is None:
             raise AnnotationError(
@@ -392,9 +393,84 @@ class AnnotationService:
         # Return the gene id of the organism with the highest priority
         return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
 
+    def _find_best_organism_match(
+        self,
+        token,
+        entity_synonym,
+        organisms_to_match,
+        fallback_organism_matches,
+        entity_type
+    ) -> BestOrganismMatch:
+        """Finds the best entity/organism pair.
+
+        First we start out by trying to find the closest organism (before/after)
+        to pair with entity. If that organism distance is greater than threshold,
+        try to use the fallback organism if given.
+
+        If no fallback organism was given (or one didn't match), and distance is
+        greater than threshold, try to find the closest organism before entity.
+        If none found, then use the most frequent organism in document if it is in the
+        matched dict, otherwise do not annotate.
+        """
+        entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
+            entity=token,
+            organism_matches=organisms_to_match
+        )
+
+        specified_organism_id = None
+        if closest_distance > ORGANISM_DISTANCE_THRESHOLD:
+            has_fallback_match = fallback_organism_matches.get(entity_synonym, False)  # noqa
+            find_organism_above = True
+
+            if self.specified_organism.synonym and has_fallback_match:
+                fallback_organisms_to_match: Dict[str, str] = {}
+
+                try:
+                    if entity_type == EntityType.PROTEIN.value:
+                        # protein doesn't prioritize
+                        # trigger KeyError below
+                        raise KeyError
+
+                    # prioritize common name match over synonym
+                    fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
+                except KeyError:
+                    # only take the first gene/protein for the organism
+                    # no way for us to infer which to use
+                    for d in list(fallback_organism_matches[entity_synonym].values()):  # noqa
+                        key = next(iter(d))
+                        if key not in fallback_organisms_to_match:
+                            fallback_organisms_to_match[key] = d[key]
+
+                # if matched in KG then set to fallback strain
+                if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
+                    entity_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
+                    specified_organism_id = self.specified_organism.organism_id
+                    find_organism_above = False
+
+            if find_organism_above:
+                # try to get organism above
+                entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
+                    entity=token,
+                    organism_matches=organisms_to_match,
+                    above_only=True
+                )
+                # if distance is inf, then it means we didn't find an organism above
+                if isinf(closest_distance):
+                    # try to use the most frequent organism
+                    most_frequent = max(self.organism_frequency.keys(), key=(lambda k: self.organism_frequency[k]))  # noqa
+                    if most_frequent in organisms_to_match:
+                        entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
+                            entity=token,
+                            organism_matches={most_frequent: organisms_to_match[most_frequent]}
+                        )
+        return BestOrganismMatch(
+            entity_id=entity_id,
+            organism_id=organism_id,
+            closest_distance=closest_distance,
+            specified_organism_id=specified_organism_id)
+
     def _annotate_type_gene(
         self,
-        entity_id_str: str,
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
@@ -434,18 +510,17 @@ class AnnotationService:
         organism_ids = list(self.organism_frequency)
         gene_organism_matches = {}
 
-        if not self.enrichment_mappings:
-            gene_match_time = time.time()
-            gene_organism_matches = self.graph.get_gene_to_organism_match_result(
-                genes=gene_names_list,
-                postgres_genes=self.db.get_genes(
-                    genes=gene_names_list, organism_ids=organism_ids),
-                matched_organism_ids=organism_ids,
-            )
-            current_app.logger.info(
-                f'Gene organism KG query time {time.time() - gene_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
+        gene_match_time = time.time()
+        gene_organism_matches = self.graph.get_gene_to_organism_match_result(
+            genes=gene_names_list,
+            postgres_genes=self.db.get_genes(
+                genes=gene_names_list, organism_ids=organism_ids),
+            matched_organism_ids=organism_ids,
+        )
+        current_app.logger.info(
+            f'Gene organism KG query time {time.time() - gene_match_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
@@ -480,39 +555,25 @@ class AnnotationService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotation_graph_service.py
                         for d in list(gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
                                 organisms_to_match[key] = d[key]
 
-                    gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-                        entity=token,
-                        organism_matches=organisms_to_match
-                    )
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity_synonym=entity_synonym,
+                        organisms_to_match=organisms_to_match,
+                        fallback_organism_matches=fallback_gene_organism_matches,
+                        entity_type=EntityType.GENE.value)
 
-                    specified_organism_id = None
-                    if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                        if fallback_gene_organism_matches.get(entity_synonym, None):
-                            fallback_organisms_to_match: Dict[str, str] = {}
+                    if isinf(best_match.closest_distance):
+                        # didn't find a suitable organism in organisms_to_match
+                        continue
 
-                            try:
-                                # prioritize common name match over synonym
-                                fallback_organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
-                            except KeyError:
-                                # only take the first gene for the organism
-                                # no way for us to infer which to use
-                                # logic moved from annotation_graph_service.py
-                                for d in list(fallback_gene_organism_matches[entity_synonym].values()):  # noqa
-                                    key = next(iter(d))
-                                    if key not in fallback_organisms_to_match:
-                                        fallback_organisms_to_match[key] = d[key]
-
-                            # if matched in KG then set to fallback strain
-                            if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
-                                gene_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
-                                specified_organism_id = self.specified_organism.organism_id
-
+                    gene_id = best_match.entity_id
+                    organism_id = best_match.organism_id
+                    specified_organism_id = best_match.specified_organism_id
                     category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
                 elif entity_synonym in fallback_gene_organism_matches:
                     try:
@@ -521,7 +582,6 @@ class AnnotationService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotation_graph_service.py
                         for d in list(fallback_gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -548,7 +608,6 @@ class AnnotationService:
 
     def _annotate_type_protein(
         self,
-        entity_id_str: str,
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Nearly identical to `self._annotate_type_gene`. Return a list of
@@ -572,16 +631,15 @@ class AnnotationService:
         protein_names_list = list(protein_names)
         protein_organism_matches = {}
 
-        if not self.enrichment_mappings:
-            protein_match_time = time.time()
-            protein_organism_matches = self.graph.get_proteins_to_organisms(
-                proteins=protein_names_list,
-                organisms=list(self.organism_frequency),
-            )
-            current_app.logger.info(
-                f'Protein organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
+        protein_match_time = time.time()
+        protein_organism_matches = self.graph.get_proteins_to_organisms(
+            proteins=protein_names_list,
+            organisms=list(self.organism_frequency),
+        )
+        current_app.logger.info(
+            f'Protein organism KG query time {time.time() - protein_match_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
@@ -606,21 +664,29 @@ class AnnotationService:
             except KeyError:
                 continue
             else:
-                # TODO: code is identical to gene organism
-                # move into function later if more than these two use
                 if entity_synonym in protein_organism_matches:
-                    protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
-                        entity=token,
-                        organism_matches=protein_organism_matches[entity_synonym]
-                    )
+                    organisms_to_match: Dict[str, str] = {}
+                    # only take the first protein for the organism
+                    # no way for us to infer which to use
+                    for d in list(protein_organism_matches[entity_synonym].values()):
+                        key = next(iter(d))
+                        if key not in organisms_to_match:
+                            organisms_to_match[key] = d[key]
 
-                    specified_organism_id = None
-                    if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                        if fallback_protein_organism_matches.get(entity_synonym, None):
-                            # if matched in KG then set to fallback strain
-                            protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                            specified_organism_id = self.specified_organism.organism_id
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity_synonym=entity_synonym,
+                        organisms_to_match=organisms_to_match,
+                        fallback_organism_matches=fallback_protein_organism_matches,
+                        entity_type=EntityType.PROTEIN.value)
 
+                    if isinf(best_match.closest_distance):
+                        # didn't find a suitable organism in organisms_to_match
+                        continue
+
+                    protein_id = best_match.entity_id
+                    organism_id = best_match.organism_id
+                    specified_organism_id = best_match.specified_organism_id
                     category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
                 elif entity_synonym in fallback_protein_organism_matches:
                     try:
@@ -679,7 +745,6 @@ class AnnotationService:
         self,
         entity_id_str: str,
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
@@ -765,7 +830,7 @@ class AnnotationService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -804,7 +869,7 @@ class AnnotationService:
             entity_categories[annotation.meta.id] = annotation.meta.category or ''
 
             # Need to add an entry for humans if we annotated a virus
-            if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
                 entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
@@ -856,7 +921,6 @@ class AnnotationService:
         self,
         types_to_annotate: List[Tuple[str, str]],
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Create annotations.
@@ -891,15 +955,12 @@ class AnnotationService:
                 unified_annotations += self._annotate_type_species(
                     entity_id_str=entity_id_str,
                     custom_annotations=custom_annotations,
-                    excluded_annotations=excluded_annotations,
                     recognized_entities=recognized_entities
                 )
             elif entity_type == EntityType.GENE.value:
-                unified_annotations += self._annotate_type_gene(
-                    entity_id_str, recognized_entities)
+                unified_annotations += self._annotate_type_gene(recognized_entities)
             elif entity_type == EntityType.PROTEIN.value:
-                unified_annotations += self._annotate_type_protein(
-                    entity_id_str, recognized_entities)
+                unified_annotations += self._annotate_type_protein(recognized_entities)
             else:
                 unified_annotations += self._get_annotation(
                     matches_list=matched_data[entity_type],
@@ -912,26 +973,21 @@ class AnnotationService:
     def create_annotations(
         self,
         custom_annotations: List[dict],
-        excluded_annotations: List[dict],
         entity_results: RecognizedEntities,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
-        enrichment_mappings: List[Tuple[int, dict]] = None
+        **kwargs
     ) -> List[Annotation]:
         self.specified_organism = specified_organism
-        self.enrichment_mappings = enrichment_mappings
 
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
             custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations,
             recognized_entities=entity_results
         )
 
         start = time.time()
-        cleaned = self._clean_annotations(
-            annotations=annotations,
-            enrichment_mappings=self.enrichment_mappings)
+        cleaned = self._clean_annotations(annotations=annotations)
 
         current_app.logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
@@ -946,29 +1002,13 @@ class AnnotationService:
     def _clean_annotations(
         self,
         annotations: List[Annotation],
-        enrichment_mappings: List[Tuple[int, dict]] = None
+        **kwargs
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
 
-        if enrichment_mappings:
-            # need to split up the annotations otherwise
-            # a text in a cell could be removed due to
-            # overlapping with an adjacent cell
-            split = defaultdict(list)
-            offsets = [i for i, _ in enrichment_mappings]
-            for anno in fixed_unified_annotations:
-                # get first offset that is greater than hi_location_offset
-                # this means the annotation is part of that cell/sublist
-                index = bisect.bisect_left(offsets, anno.hi_location_offset)
-                split[offsets[index]].append(anno)
-
-            fixed_unified_annotations = list(itertools.chain.from_iterable(
-                [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
-            ))
-        else:
-            fixed_unified_annotations = self.fix_conflicting_annotations(
-                unified_annotations=fixed_unified_annotations)
+        fixed_unified_annotations = self.fix_conflicting_annotations(
+            unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
