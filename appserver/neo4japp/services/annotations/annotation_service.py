@@ -568,6 +568,7 @@ class AnnotationService:
                         entity_type=EntityType.GENE.value)
 
                     if isinf(best_match.closest_distance):
+                        # didn't find a suitable organism in organisms_to_match
                         continue
 
                     gene_id = best_match.entity_id
@@ -680,6 +681,7 @@ class AnnotationService:
                         entity_type=EntityType.PROTEIN.value)
 
                     if isinf(best_match.closest_distance):
+                        # didn't find a suitable organism in organisms_to_match
                         continue
 
                     protein_id = best_match.entity_id
