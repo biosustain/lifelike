@@ -87,6 +87,10 @@
           AZURE_BLOB_STORAGE_URL={{ AZURE_BLOB_STORAGE_URL }}
           LOG_LEVEL="{{ REDIS_LOG_LEVEL | default('warning') }}"
           FORMAT_AS_JSON="{{ FORMAT_AS_JSON | default('true') }}"
+          MB_ELASTICSEARCH_HOSTS={{ MB_ELASTICSEARCH_HOSTS }}
+          MB_ELASTICSEARCH_USERNAME={{ MB_ELASTICSEARCH_USERNAME }}
+          MB_ELASTICSEARCH_PASSWORD={{ MB_ELASTICSEARCH_PASSWORD }}
+          MB_KIBANA_HOST={{ MB_KIBANA_HOST }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"
