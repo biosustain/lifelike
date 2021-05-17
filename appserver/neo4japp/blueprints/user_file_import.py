@@ -45,31 +45,31 @@ def get_node_properties(req: NodePropertiesRequest):
     props = kg.get_node_properties(req.node_label)
     return SuccessResponse(result=props, status_code=200)
 
+# TODO: Refactor the file import service to use the Neo4j driver
+# @bp.route('/upload-file', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(UploadFileRequest, has_file=True)
+# def upload_neo4j_file(req: UploadFileRequest):
+#     importer = get_user_file_import_service()
+#     workbook = importer.parse_file(req.file_input)
+#     worksheet_names_and_cols = importer.get_workbook_sheet_names_and_columns(
+#         filename=req.file_input.filename,
+#         workbook=workbook,
+#     )
+#     return SuccessResponse(result=worksheet_names_and_cols, status_code=200)
 
-@bp.route('/upload-file', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(UploadFileRequest, has_file=True)
-def upload_neo4j_file(req: UploadFileRequest):
-    importer = get_user_file_import_service()
-    workbook = importer.parse_file(req.file_input)
-    worksheet_names_and_cols = importer.get_workbook_sheet_names_and_columns(
-        filename=req.file_input.filename,
-        workbook=workbook,
-    )
-    return SuccessResponse(result=worksheet_names_and_cols, status_code=200)
 
+# @bp.route('/upload-node-mapping', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(Neo4jColumnMapping)
+# def upload_node_mapping(req: Neo4jColumnMapping):
+#     importer = get_user_file_import_service()
+#     graph_db_mappings = importer.create_graph_db_mappings(req)
 
-@bp.route('/upload-node-mapping', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(Neo4jColumnMapping)
-def upload_node_mapping(req: Neo4jColumnMapping):
-    importer = get_user_file_import_service()
-    graph_db_mappings = importer.create_graph_db_mappings(req)
+#     importer.save_node_to_neo4j(graph_db_mappings)
+#     importer.save_relationship_to_neo4j(graph_db_mappings)
 
-    importer.save_node_to_neo4j(graph_db_mappings)
-    importer.save_relationship_to_neo4j(graph_db_mappings)
-
-    return SuccessResponse(result='', status_code=200)
+#     return SuccessResponse(result='', status_code=200)
 
 
 """ TODO refactor import
