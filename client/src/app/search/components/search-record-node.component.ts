@@ -36,8 +36,16 @@ export class SearchRecordNodeComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    const url = new URL(getLink(this.node));
-    const domain = this.getNodeDomain(url.hostname);
+    let url: URL | string;
+    let domain = '';
+    try {
+      url = new URL(getLink(this.node));
+      domain = this.getNodeDomain(url.hostname);
+    } catch {
+      // Expect a TypeError here if the url was invalid
+      url = getLink(this.node);
+      domain = 'Knowledge Graph';
+    }
 
     dataTransfer.setData('text/plain', this.node.node.displayName);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
@@ -57,7 +65,7 @@ export class SearchRecordNodeComponent {
     } as Partial<UniversalGraphNode>));
   }
 
-  getNodeDomain(hostname: string) {
+  getNodeDomain(hostname: string): string {
     // Examples:
     // UniProt -- https://www.uniprot.org/uniprot/Q59RR0
     // NCBI -- https://www.ncbi.nlm.nih.gov/gene/850822
