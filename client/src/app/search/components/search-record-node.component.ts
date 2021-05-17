@@ -1,10 +1,12 @@
 import { Component, Input } from '@angular/core';
+
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
 import { stringToHex } from 'app/shared/utils';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+
+import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
-import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-search-record-node',
@@ -34,6 +36,9 @@ export class SearchRecordNodeComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
+    const url = new URL(getLink(this.node));
+    const domain = this.getNodeDomain(url.hostname);
+
     dataTransfer.setData('text/plain', this.node.node.displayName);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: this.node.node.displayName,
@@ -41,8 +46,8 @@ export class SearchRecordNodeComponent {
       sub_labels: [],
       data: {
         hyperlinks: [{
-          domain: 'Knowledge Graph',
-          url: getLink(this.node),
+          domain,
+          url: url.toString()
         }],
         references: [{
           type: 'DATABASE',
@@ -50,6 +55,28 @@ export class SearchRecordNodeComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  getNodeDomain(hostname: string) {
+    // Examples:
+    // UniProt -- https://www.uniprot.org/uniprot/Q59RR0
+    // NCBI -- https://www.ncbi.nlm.nih.gov/gene/850822
+    // MeSH -- https://www.ncbi.nlm.nih.gov/mesh/?term=C413524
+    // ChEBI -- https://www.ebi.ac.uk/chebi/searchId.do?chebiId=147289
+    // GO -- http://amigo.geneontology.org/amigo/term/GO:0097649
+
+    switch (hostname) {
+      case 'www.uniprot.org':
+        return 'UniProt';
+      case 'www.ncbi.nlm.nih.gov':
+        return 'NCBI';
+      case 'www.ebi.ac.uk':
+        return 'ChEBI';
+      case 'amigo.geneontology.org':
+        return 'GO';
+      default:
+        return 'Knowledge Graph';
+    }
   }
 
   getVisualizerQueryParams(params) {
