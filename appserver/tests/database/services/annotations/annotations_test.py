@@ -354,7 +354,7 @@ def test_local_inclusion_organism_gene_crossmatch(
                 'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=hooman',
                 'google': 'https://www.google.com/search?q=hooman',
                 'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
-                'wikipedia': 'https://en.wikipedia.org/w/index.php?search=hooman',
+                'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
             },
             'idType': '',
             'allText': 'hooman',
