@@ -22,7 +22,7 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   isDatabase: true,
 }, {
   domain: 'Wikipedia',
-  url: 'https://www.google.com/search?q=site:+wikipedia.org+%s',
+  url: 'https://en.wikipedia.org/w/index.php?search=%s',
   isDatabase: false,
 }, {
   domain: 'Google',
