@@ -1,8 +1,5 @@
-import bisect
-import itertools
 import time
 
-from collections import defaultdict
 from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
 from uuid import uuid4
@@ -40,7 +37,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.util import normalize_str, standardize_str
+from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
@@ -513,18 +510,17 @@ class AnnotationService:
         organism_ids = list(self.organism_frequency)
         gene_organism_matches = {}
 
-        if not self.enrichment_mappings:
-            gene_match_time = time.time()
-            gene_organism_matches = self.graph.get_gene_to_organism_match_result(
-                genes=gene_names_list,
-                postgres_genes=self.db.get_genes(
-                    genes=gene_names_list, organism_ids=organism_ids),
-                matched_organism_ids=organism_ids,
-            )
-            current_app.logger.info(
-                f'Gene organism KG query time {time.time() - gene_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
+        gene_match_time = time.time()
+        gene_organism_matches = self.graph.get_gene_to_organism_match_result(
+            genes=gene_names_list,
+            postgres_genes=self.db.get_genes(
+                genes=gene_names_list, organism_ids=organism_ids),
+            matched_organism_ids=organism_ids,
+        )
+        current_app.logger.info(
+            f'Gene organism KG query time {time.time() - gene_match_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
@@ -559,7 +555,6 @@ class AnnotationService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotation_graph_service.py
                         for d in list(gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -586,7 +581,6 @@ class AnnotationService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotation_graph_service.py
                         for d in list(fallback_gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -636,16 +630,15 @@ class AnnotationService:
         protein_names_list = list(protein_names)
         protein_organism_matches = {}
 
-        if not self.enrichment_mappings:
-            protein_match_time = time.time()
-            protein_organism_matches = self.graph.get_proteins_to_organisms(
-                proteins=protein_names_list,
-                organisms=list(self.organism_frequency),
-            )
-            current_app.logger.info(
-                f'Protein organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
+        protein_match_time = time.time()
+        protein_organism_matches = self.graph.get_proteins_to_organisms(
+            proteins=protein_names_list,
+            organisms=list(self.organism_frequency),
+        )
+        current_app.logger.info(
+            f'Protein organism KG query time {time.time() - protein_match_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
@@ -835,7 +828,7 @@ class AnnotationService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -874,7 +867,7 @@ class AnnotationService:
             entity_categories[annotation.meta.id] = annotation.meta.category or ''
 
             # Need to add an entry for humans if we annotated a virus
-            if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
                 entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
@@ -981,10 +974,9 @@ class AnnotationService:
         entity_results: RecognizedEntities,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
-        enrichment_mappings: List[Tuple[int, dict]] = None
+        **kwargs
     ) -> List[Annotation]:
         self.specified_organism = specified_organism
-        self.enrichment_mappings = enrichment_mappings
 
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
@@ -993,9 +985,7 @@ class AnnotationService:
         )
 
         start = time.time()
-        cleaned = self._clean_annotations(
-            annotations=annotations,
-            enrichment_mappings=self.enrichment_mappings)
+        cleaned = self._clean_annotations(annotations=annotations)
 
         current_app.logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
@@ -1010,29 +1000,13 @@ class AnnotationService:
     def _clean_annotations(
         self,
         annotations: List[Annotation],
-        enrichment_mappings: List[Tuple[int, dict]] = None
+        **kwargs
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
 
-        if enrichment_mappings:
-            # need to split up the annotations otherwise
-            # a text in a cell could be removed due to
-            # overlapping with an adjacent cell
-            split = defaultdict(list)
-            offsets = [i for i, _ in enrichment_mappings]
-            for anno in fixed_unified_annotations:
-                # get first offset that is greater than hi_location_offset
-                # this means the annotation is part of that cell/sublist
-                index = bisect.bisect_left(offsets, anno.hi_location_offset)
-                split[offsets[index]].append(anno)
-
-            fixed_unified_annotations = list(itertools.chain.from_iterable(
-                [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
-            ))
-        else:
-            fixed_unified_annotations = self.fix_conflicting_annotations(
-                unified_annotations=fixed_unified_annotations)
+        fixed_unified_annotations = self.fix_conflicting_annotations(
+            unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
