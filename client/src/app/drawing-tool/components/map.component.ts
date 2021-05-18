@@ -153,7 +153,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   private isInEditMode() {
-    const { path } = this.route.snapshot.url[4] || {};
+    const {path = ''} = this.route.snapshot.url[4] || {};
     return path === 'edit';
   }
 
