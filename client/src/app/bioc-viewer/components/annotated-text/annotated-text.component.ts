@@ -28,7 +28,10 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.txt.parentNode.removeChild(this.txt);
+    const parent = this.txt.parentNode;
+    if (parent) {
+      parent.removeChild(this.txt);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -41,9 +44,10 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
         for (idx = 0; idx < iacc.length; idx++) {
           part = iacc[idx];
           const localOffset = part.location ? part.location.length : part.length;
-          if (offset + localOffset >= location.offset) {
-            if (offset > location.offset || part.location) {
+          if (offset + localOffset + globalOffset >= location.offset) {
+            if (offset + globalOffset > location.offset || part.location) {
               console.warn('Error state');
+              return iacc;
             }
             break;
           }
@@ -57,6 +61,11 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
         offset += globalOffset;
         const start_offset = -offset + location.offset;
         const end_offset = -offset + location.offset + location.length;
+        const raw_text = part.slice(start_offset, end_offset);
+        if (raw_text.length < location.length) {
+          console.error('Ran out of index!', part, location, offset);
+          return iacc;
+        }
         if (part.slice(start_offset, end_offset) != annotation.text) {
           console.warn(
             `${part.slice(start_offset, end_offset)} != ${annotation.text}`,
@@ -86,6 +95,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
               break;
             }
           }
+          return iacc;
         }
         return iacc
           .slice(0, idx)
@@ -97,6 +107,6 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           .concat(iacc.slice(idx + 1));
       }, acc);
     }, [decodedText]);
-    console.log(this.text, this.parts);
+    // console.log(this.text, this.parts);
   }
 }

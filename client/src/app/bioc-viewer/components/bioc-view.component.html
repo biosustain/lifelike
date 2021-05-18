@@ -71,7 +71,7 @@
                                         {{relation}}
                                     </div>
                                 </div>
-                                <div class="date">{{doc.created.$date | date}}</div>
+                                <div class="date" *ngIf="doc.created">{{doc.created.$date | date}}</div>
                                 <div class="accessions">
                                     Accessions:
                                     <ul>
