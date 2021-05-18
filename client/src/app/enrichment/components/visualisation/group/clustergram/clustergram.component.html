@@ -1,5 +1,5 @@
 <app-grid-virtual-scroll-viewport [itemSize]="itemSize"
-                                  [style.height.px]="(cells.size*2.5 + 8.5)*27"
+                                  [style.height.px]="(itemSize[0]*2.5 + 8.5)*27"
                                   [style.width.perc]="100">
     <div class="columnHeader" #columnHeader>
         <ng-template appVirtualFor [appVirtualForOf]="columnHeaders" let-goTerm [secondary]="true">
