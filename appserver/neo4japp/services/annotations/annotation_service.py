@@ -665,18 +665,10 @@ class AnnotationService:
                 continue
             else:
                 if entity_synonym in protein_organism_matches:
-                    organisms_to_match: Dict[str, str] = {}
-                    # only take the first protein for the organism
-                    # no way for us to infer which to use
-                    for d in list(protein_organism_matches[entity_synonym].values()):
-                        key = next(iter(d))
-                        if key not in organisms_to_match:
-                            organisms_to_match[key] = d[key]
-
                     best_match = self._find_best_organism_match(
                         token=token,
                         entity_synonym=entity_synonym,
-                        organisms_to_match=organisms_to_match,
+                        organisms_to_match=protein_organism_matches[entity_synonym],
                         fallback_organism_matches=fallback_protein_organism_matches,
                         entity_type=EntityType.PROTEIN.value)
 
