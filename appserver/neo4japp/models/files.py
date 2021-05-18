@@ -303,6 +303,63 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             filename_path.append(file.filename)
         return f'/{"/".join(filename_path)}'
 
+    @property
+    def id_path(self):
+        """
+        List representing a path of ids from the ***ARANGO_USERNAME*** project of this file, down to the file
+        itself. Similar to filepath, but useful if we want to quickly get the data of any of the
+        files in the path.
+        """
+        current_file = self
+        id_path = []
+        while current_file is not None and current_file.parent is not None:
+            id_path.append(current_file.id)
+            current_file = current_file.parent
+
+        try:
+            # Current_file should be the ***ARANGO_USERNAME*** file, so just get the project that points to it
+            project_hash = db.session.query(
+                Projects.id
+            ).filter(
+                Projects.***ARANGO_USERNAME***_id == current_file.id
+            ).one()[0]
+        except NoResultFound as e:
+            current_app.logger.error(
+                f'Could not find project of file with id: {self.id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+            )
+            raise ServerException(
+                title=f'Cannot Get Filepath',
+                message=f'Could not find project of file {self.filename}.',
+            )
+
+        id_path.append(project_hash)
+        return id_path[::-1]
+
+    # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
+    # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
+    @property
+    def true_filename(self):
+        if self.parent is not None:
+            return self.filename
+        try:
+            return db.session.query(
+                Projects.name
+            ).filter(
+                Projects.***ARANGO_USERNAME***_id == self.id
+            ).one()[0]
+        except NoResultFound as e:
+            current_app.logger.error(
+                f'Could not find project of file with id: {self.id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+            )
+            raise ServerException(
+                title=f'Cannot Get Filepath',
+                message=f'Could not find project of file {self.filename}.',
+            )
+
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
