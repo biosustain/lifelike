@@ -425,21 +425,24 @@ class AnnotationService:
             if self.specified_organism.synonym and has_fallback_match:
                 fallback_organisms_to_match: Dict[str, str] = {}
 
-                try:
-                    if entity_type == EntityType.PROTEIN.value:
-                        # protein doesn't prioritize
-                        # trigger KeyError below
-                        raise KeyError
-
-                    # prioritize common name match over synonym
-                    fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
-                except KeyError:
-                    # only take the first gene/protein for the organism
-                    # no way for us to infer which to use
-                    for d in list(fallback_organism_matches[entity_synonym].values()):  # noqa
-                        key = next(iter(d))
-                        if key not in fallback_organisms_to_match:
-                            fallback_organisms_to_match[key] = d[key]
+                if entity_type == EntityType.PROTEIN.value:
+                    try:
+                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym]
+                    except KeyError:
+                        # pass here to let it be handled below
+                        pass
+                else:
+                    # for genes
+                    try:
+                        # prioritize common name match over synonym
+                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
+                    except KeyError:
+                        # only take the first gene/protein for the organism
+                        # no way for us to infer which to use
+                        for d in list(fallback_organism_matches[entity_synonym].values()):  # noqa
+                            key = next(iter(d))
+                            if key not in fallback_organisms_to_match:
+                                fallback_organisms_to_match[key] = d[key]
 
                 # if matched in KG then set to fallback strain
                 if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
