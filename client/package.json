@@ -8,15 +8,11 @@
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
-    "print-pipe": "tee /dev/stdout",
-    "lint-files": "xargs printf -- '--files=%s\\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null",
-    "get-staged-files-to-lint": "git diff --cached --name-only | { grep -E '\\.(js|ts)$' || true; } | tee /dev/stdout",
-    "lint-staged": "yarn get-staged-files-to-lint | yarn print-pipe | yarn lint-files",
     "e2e": "ng e2e"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint-staged && docker-compose exec -T appserver mypy . && docker-compose exec -T appserver pycodestyle ."
+      "pre-commit": "ng lint && docker-compose exec -T appserver mypy . && docker-compose exec -T appserver pycodestyle ."
     }
   },
   "private": true,
