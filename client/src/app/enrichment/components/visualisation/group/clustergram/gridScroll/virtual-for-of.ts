@@ -30,9 +30,6 @@ import { AppVirtualScrollRepeater } from './virtual-scroll-repeater';
 import { AppGridVirtualScrollViewportComponent } from './app-grid-virtual-scroll-viewport.component';
 import { PointRange } from './utils';
 
-// import {CdkVirtualScrollViewport} from './virtual-scroll-viewport';
-
-
 /** The context for an item rendered by `AppVirtualForOfDirective` */
 export interface AppVirtualForOfContext<T> {
   /** The item value. */
