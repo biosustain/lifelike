@@ -71,7 +71,7 @@ export class ClustergramComponent implements OnChanges {
   geneColor: string = annotationTypesMap.get('gene').color;
 
 
-  @HostBinding('style') private size;
+  @HostBinding('style') size;
 
   _itemSize;
 

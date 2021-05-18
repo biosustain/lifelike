@@ -49,6 +49,11 @@ export class AppGridVirtualScrollViewportComponent extends CdkVirtualScrollViewp
   /** Emits when the viewport is detached from a AppVirtualForOfDirective. */
   private readonly _detachedSubject = new Subject<void>();
 
+  readonly app;
+  readonly virtual;
+  readonly scroll;
+  readonly viewport;
+
   /** Emits when the rendered range changes. */
   private readonly _renderedRangeSubject = new Subject<PointRange>();
 

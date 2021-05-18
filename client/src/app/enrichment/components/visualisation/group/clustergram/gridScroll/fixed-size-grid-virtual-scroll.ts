@@ -37,13 +37,9 @@ export class FixedSizeGridVirtualScrollStrategy implements VirtualScrollStrategy
 
   /**
    * @param itemSize The size of the items in the virtually scrolling list.
-   * @param minBufferPx The minimum amount of buffer (in pixels) before needing to render more
-   * @param maxBufferPx The amount of buffer (in pixels) to render when rendering more.
    */
-  constructor(itemSize: Point, minBufferPx: number, maxBufferPx: number) {
+  constructor(itemSize: Point) {
     this._itemSize = itemSize;
-    this._minBufferPx = minBufferPx;
-    this._maxBufferPx = maxBufferPx;
   }
 
   /**
@@ -279,7 +275,7 @@ export class AppFixedSizeGridVirtualScroll implements OnChanges {
   _maxBufferPx = this._minBufferPx * 2;
 
   /** The scroll strategy used by this directive. */
-  _scrollStrategy = new FixedSizeGridVirtualScrollStrategy(this.itemSize, this.minBufferPx, this.maxBufferPx);
+  _scrollStrategy = new FixedSizeGridVirtualScrollStrategy(this.itemSize);
 
   ngOnChanges() {
     this._minBufferPx = Math.max(...this.itemSize) * 5;
