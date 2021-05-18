@@ -32,11 +32,17 @@ export interface ContentSearchResponse extends ResultList<RankedItem<FilesystemO
   synonyms: {
     [rootWord: string]: string[]
   };
+  droppedSynonyms: {
+    [rootWord: string]: string[]
+  };
 }
 
 // Need an extra interface to accommodate the legacy data
 export interface ContentSearchResponseData extends ResultList<RankedItem<FilesystemObjectData>> {
   synonyms: {
+    [rootWord: string]: string[]
+  };
+  droppedSynonyms: {
     [rootWord: string]: string[]
   };
 }
