@@ -524,26 +524,26 @@ class FileHierarchyView(FilesystemBaseView):
         curr_dir = ***ARANGO_USERNAME***
         for file in hierarchy:
             curr_dir = ***ARANGO_USERNAME***
-            # Don't include the leading '/' when we split
-            file_path_list = file.filepath[1:].split('/')
-            for filename in file_path_list[:-1]:
-                if filename not in curr_dir:
-                    curr_dir[filename] = {}
-                curr_dir = curr_dir[filename]
-            # file_path_list[-1] and file are the same
+            id_path_list = file.id_path
+            for id in id_path_list[:-1]:
+                if id not in curr_dir:
+                    curr_dir[id] = {}
+                curr_dir = curr_dir[id]
+            # id_path_list[-1] and file.id are the same
             if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                curr_dir[file_path_list[-1]] = {}
+                curr_dir[id_path_list[-1]] = {}
             else:
-                curr_dir[file_path_list[-1]] = None
+                curr_dir[id_path_list[-1]] = None
 
-        def generate_node_tree(filename, children):
+        def generate_node_tree(id, children):
+            file = db.session.query(Files).get(id)
             if children is None:
-                return {'name': filename}
+                return {'data': file}
             return {
-                'name': filename,
+                'data': file,
                 'children': [
-                    generate_node_tree(child_filename, grandchildren)
-                    for child_filename, grandchildren in children.items()
+                    generate_node_tree(id, grandchildren)
+                    for id, grandchildren in children.items()
                 ]
             }
 
@@ -559,7 +559,9 @@ class FileHierarchyView(FilesystemBaseView):
                 event_type=LogEventType.FILESYSTEM.value
             ).to_dict()
         )
-        return jsonify(FileHierarchySchema().dump({
+        return jsonify(FileHierarchySchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
             'results': results,
         }))
 

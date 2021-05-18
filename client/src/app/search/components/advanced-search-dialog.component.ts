@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { ProjectData } from 'app/file-browser/schema';
 
 import { ContentSearchOptions } from '../content-search';
