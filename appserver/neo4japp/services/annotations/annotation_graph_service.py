@@ -106,8 +106,8 @@ class AnnotationGraphService(GraphConnection):
         self,
         proteins: List[str],
         organisms: List[str],
-    ) -> Dict[str, Dict[str, Dict[str, str]]]:
-        protein_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
+    ) -> Dict[str, Dict[str, str]]:
+        protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         result = self.graph.read_transaction(
             self.get_protein_to_organism_query,
@@ -116,18 +116,16 @@ class AnnotationGraphService(GraphConnection):
         )
 
         for row in result:
-            protein_name = row['protein_name']
-            protein_synonym = row['protein_synonym']
-            organism_id = row['organism_id']
-            protein_id = row['protein_id']
+            protein_name: str = row['protein']
+            organism_id: str = row['organism_id']
+            # For now just get the first protein in the list of matches,
+            # no way for us to infer which to use
+            gene_id: str = row['protein_ids'][0]
 
-            if protein_to_organism_map.get(protein_synonym, None) is not None:
-                if protein_to_organism_map[protein_synonym].get(protein_name, None):
-                    protein_to_organism_map[protein_synonym][protein_name][organism_id] = protein_id
-                else:
-                    protein_to_organism_map[protein_synonym][protein_name] = {organism_id: protein_id}  # noqa
+            if protein_to_organism_map.get(protein_name, None) is not None:
+                protein_to_organism_map[protein_name][organism_id] = gene_id
             else:
-                protein_to_organism_map[protein_synonym] = {protein_name: {organism_id: protein_id}}
+                protein_to_organism_map[protein_name] = {organism_id: gene_id}
 
         return protein_to_organism_map
 
@@ -174,8 +172,7 @@ class AnnotationGraphService(GraphConnection):
                 WHERE s.name IN $proteins
                 WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
                 WHERE p.id IN $organisms
-                RETURN g.name AS protein_name, s.name AS protein_synonym,
-                    g.id AS protein_id, p.id AS organism_id
+                RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
                 """,
                 proteins=proteins, organisms=organisms
             )
