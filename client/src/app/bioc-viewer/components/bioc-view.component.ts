@@ -125,7 +125,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
   title(doc) {
     try {
-      return doc.passages.find(p => p.infons.type === 'title').text;
+      return doc.passages.find(p => p.infons.type.toLowerCase() === 'title' || p.infons.section_type.toLowerCase() === 'title').text;
     } catch (e) {
       return doc.pmid;
     }
