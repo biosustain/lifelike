@@ -58,7 +58,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
 )
 from neo4japp.services.annotations.pipeline import (
     create_annotations_from_pdf,
-    create_annotations_from_text,
     create_annotations_from_enrichment_table
 )
 from neo4japp.services.annotations import AnnotationGraphService

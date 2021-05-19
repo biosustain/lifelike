@@ -12,4 +12,3 @@ echo "Set up the indexes manually by running"
 # Sets up the pipeline for elasticsearch
 echo "Configuring Elasticsearch"
 flask seed-elastic
-echo "docker-compose exec appserver flask init-neo4j"
