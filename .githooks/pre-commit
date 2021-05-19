@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Runs linting checks on the appserver and client
+# Can bypass via --no-verify
+
+__dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+***ARANGO_USERNAME***_dir="$( cd "$( dirname "${__dir__}}" )" &> /dev/null && pwd )"
+
+cd $***ARANGO_USERNAME***_dir/appserver && \
+   python3 -m venv venv && \
+   source venv/bin/activate && \
+   pip install mypy pycodestyle
+
+echo "> 🤖 Running mypy..."
+mypy .
+if [ $? -eq 0 ]
+then
+   echo "✅ mypy success!"
+else
+   echo "❌ mypy failed! Run git commit --no-verify to skip"
+   exit 1
+fi
+
+echo "> 🤖 Running pycodestyle..."
+pycodestyle .
+if [ $? -eq 0 ]
+then
+   echo "✅ pycodestyle success!"
+else
+   echo "❌ pycodestyle failed! Run git commit --no-verify to skip"
+   exit 1
+fi
+
+cd $***ARANGO_USERNAME***_dir/client
+echo "> 🤖 Running yarn lint..."
+yarn lint
+if [ $? -eq 0 ]
+then
+   echo "✅ yarn lint success!"
+else
+   echo "❌ yarn lint failed! Run git commit --no-verify to skip"
+   exit 1
+fi
