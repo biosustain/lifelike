@@ -21,6 +21,8 @@ webargs = "==8.0.0"
 py2neo = "==2021.0.1"
 sentry_sdk = "==1.0.0"
 python-json-logger = "==2.0.1"
+gunicorn = "==20.0.4"
+blinker = "*"
 
 [requires]
 python_version = "3.9"
