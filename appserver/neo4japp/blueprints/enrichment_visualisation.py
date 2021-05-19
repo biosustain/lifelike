@@ -32,21 +32,28 @@ def forward_request():
         raise StatisticalEnrichmentError()
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    headers = [(name, value) for (name, value) in resp.raw.headers.items()
-        if name.lower() not in excluded_headers]
+    headers = [
+        (name, value) for (name, value) in resp.raw.headers.items()
+        if name.lower() not in excluded_headers
+    ]
 
     # 500 should be enough verbose so it is passed through with prefix
     if resp.status_code == 500:
         try:
             decoded_error_message = json.loads(resp.content)['message']
-            return Response("Statistical enrichment error:" + decoded_error_message,
-                        resp.status_code,
-                        headers)
+            return Response(
+                    "Statistical enrichment error:" + decoded_error_message,
+                    resp.status_code,
+                    headers
+            )
         except Exception as e:
             logging.exception(e)
     if resp.status_code >= 400:
-        return Response("Internal error of statistical enrichment service.", resp.status_code,
-                        headers)
+        return Response(
+                "Internal error of statistical enrichment service.",
+                resp.status_code,
+                headers
+        )
 
     return Response(resp.content, resp.status_code, headers)
 
