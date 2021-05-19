@@ -128,17 +128,16 @@ class EnrichmentAnnotationService(AnnotationService):
         protein_names_list = list(protein_names)
         fallback_protein_organism_matches = {}
 
-        if self.specified_organism.synonym:
-            protein_match_time = time.time()
-            fallback_protein_organism_matches = \
-                self.graph.get_proteins_to_organisms(
-                    proteins=protein_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
-            current_app.logger.info(
-                f'Protein fallback organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        protein_match_time = time.time()
+        fallback_protein_organism_matches = \
+            self.graph.get_proteins_to_organisms(
+                proteins=protein_names_list,
+                organisms=[self.specified_organism.organism_id],
             )
+        current_app.logger.info(
+            f'Protein fallback organism KG query time {time.time() - protein_match_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
