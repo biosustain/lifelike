@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.9-buster
 
 WORKDIR code
 
@@ -8,7 +8,7 @@ RUN pip install pipenv
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
 COPY --chown=1000:1000 Pipfile* .
 RUN ([ -f "Pipfile.lock" ] || pipenv --python python lock)
-RUN pipenv install --dev --deploy --system
+RUN pipenv install --dev --deploy --system -vvv
 
 ENV FLASK_APP=statistical_enrichment
 

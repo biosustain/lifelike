@@ -19,10 +19,10 @@ statsmodels = "==0.12.2"
 neo4j = "==4.2.1"
 webargs = "==8.0.0"
 py2neo = "==2021.0.1"
-sentry_sdk = "==1.0.0"
+sentry-sdk = {extras = ["flask"],version = "==0.14.3"}
 python-json-logger = "==2.0.1"
 gunicorn = "==20.0.4"
-blinker = "*"
+Werkzeug = "==1.0.1"
 
 [requires]
 python_version = "3.9"
