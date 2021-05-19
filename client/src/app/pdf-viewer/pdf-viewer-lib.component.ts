@@ -38,6 +38,12 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 declare var jQuery: any;
 
+interface ScrollDestination {
+  pageNumber: number;
+  destArray: [string | null, { name: string }, number | null, number | null, number | null];
+  allowNegativeOffset: boolean;
+  ignoreDestinationZoom: boolean;
+}
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -215,7 +221,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       }
       if (sub != null) {
         if (sub.pageNumber != null) {
-          this.scrollToPage(sub.pageNumber, sub.rect);
+          this.addHighlightItem(sub.pageNumber, sub.rect);
           this.goToPositionVisit.emit(sub);
         } else if (sub.jumpText != null) {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
@@ -1081,14 +1087,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * Scroll view
    */
   scrollToPage(pageNum: number, highlightRect?: number[]) {
-    this.pdfComponent.pdfViewer.scrollPageIntoView({
-      pageNumber: pageNum,
-    });
-    if (highlightRect && highlightRect.length > 0) {
-      setTimeout(() => {
-        this.addHighlightItem(pageNum, highlightRect);
-      }, 500);
+    const dest = {pageNumber: pageNum} as ScrollDestination;
+    if (highlightRect.length >= 2) {
+      dest.destArray = [
+        null,
+        {name: 'XYZ'},
+        highlightRect[0],
+        highlightRect[1],
+        null
+      ];
     }
+    this.pdfComponent.pdfViewer.scrollPageIntoView(dest);
   }
 
   highlightAllAnnotations(id: string | undefined, toggle = true) {
@@ -1149,7 +1158,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           + `in the document, starting on page ${firstPageNumber}.`,
           'Close', {duration: 5000});
 
-        this.scrollToPage(firstPageNumber, firstAnnotation.rects[0]);
+        this.addHighlightItem(firstPageNumber, firstAnnotation.rects[0]);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
           'Close', {duration: 5000});
@@ -1157,27 +1166,24 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
+  goToAnnotationHighlight(index) {
+    const annotation_length = this.foundHighlightAnnotations.length;
+    const normalized_index = (annotation_length + index) % annotation_length;
+    this.currentHighlightAnnotationsIndex = normalized_index;
+    const {pageNumber, rects: [rect]} = this.foundHighlightAnnotations[normalized_index];
+    this.addHighlightItem(pageNumber, rect);
+    // this.scrollToPage(pageNumber, rect);
+  }
+
   previousAnnotationHighlight() {
     if (this.currentHighlightAnnotationsIndex != null && this.foundHighlightAnnotations.length) {
-      let previousIndex = this.currentHighlightAnnotationsIndex - 1;
-      if (previousIndex < 0) {
-        previousIndex = this.foundHighlightAnnotations.length - 1;
-      }
-      this.currentHighlightAnnotationsIndex = previousIndex;
-      const annotation = this.foundHighlightAnnotations[previousIndex];
-      this.addHighlightItem(annotation.pageNumber, annotation.rects[0]);
+      this.goToAnnotationHighlight(this.currentHighlightAnnotationsIndex - 1);
     }
   }
 
   nextAnnotationHighlight() {
     if (this.currentHighlightAnnotationsIndex != null && this.foundHighlightAnnotations.length) {
-      let nextIndex = this.currentHighlightAnnotationsIndex + 1;
-      if (nextIndex >= this.foundHighlightAnnotations.length) {
-        nextIndex = 0;
-      }
-      this.currentHighlightAnnotationsIndex = nextIndex;
-      const annotation = this.foundHighlightAnnotations[nextIndex];
-      this.addHighlightItem(annotation.pageNumber, annotation.rects[0]);
+      this.goToAnnotationHighlight(this.currentHighlightAnnotationsIndex + 1);
     }
   }
 
@@ -1193,6 +1199,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const pdfPageView = this.pageRef[pageNum];
     if (!pdfPageView) {
       this.pendingHighlights[pageNum] = highlightRect;
+      this.scrollToPage(pageNum, highlightRect);
       return;
     }
     const viewPort: PDFPageViewport = pdfPageView.viewport;
