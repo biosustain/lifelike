@@ -8,16 +8,10 @@
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
-    "print-pipe": "tee /dev/stdout",
     "lint-files": "xargs printf -- '--files=%s\\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null",
     "get-staged-files-to-lint": "git diff --cached --name-only | { grep -E '\\.(js|ts)$' || true; } | tee /dev/stdout",
-    "lint-staged": "yarn get-staged-files-to-lint | yarn print-pipe | yarn lint-files",
+    "lint-staged": "yarn get-staged-files-to-lint | yarn lint-files",
     "e2e": "ng e2e"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint-staged && docker-compose exec -T appserver mypy . && docker-compose exec -T appserver pycodestyle ."
-    }
   },
   "private": true,
   "dependencies": {
@@ -88,7 +82,6 @@
     "@types/vis": "^4.21.19",
     "babel-loader": "^8.2.1",
     "codelyzer": "^5.0.0",
-    "husky": "^4.2.5",
     "jasmine-core": "~3.4.0",
     "jasmine-marbles": "^0.6.0",
     "jasmine-spec-reporter": "~4.2.1",
