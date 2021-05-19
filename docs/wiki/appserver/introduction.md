@@ -9,9 +9,10 @@ We manage dependencies through *pipenv*. Dependencies are stored in `Pipfile` bu
 Use the following command to install dependencies:
 
 ```sh
-cd appserver/
-pipenv install --keep-outdated $dependency_name
+docker-compose exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
 ```
+
+Note: The `--python` argument is only required if there is a mismatch between the Python version in the Docker container and the Python version in the Pipfile, although it doesn't hurt to add it.
 
 ### Dealing with Pipfile Merge Conflicts
 
@@ -20,8 +21,7 @@ If two people add dependencies on different branches, you will run into a merge 
 To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
 
 ```sh
-cd appserver/
-pipenv lock --keep-outdated
+docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3 lock
 ```
 
 ## PostgreSQL Migrations
@@ -158,21 +158,41 @@ To exit out of attach mode, can do either `Ctrl+C` to exit and kill the containe
 
 ### Running Tests
 
-To run the unit tests for Flask, use the following commands when Flask is running
+To run the unit tests for Flask, use the following commands when Flask is running:
 
 ```sh
 docker-compose exec appserver pytest
 ```
 
-To run a specific test
+To run a specific test file:
 
 ```sh
-docker-compose exec appserver pytest -k $test_or_file
+docker-compose exec appserver pytest -k tests/api/filesystem/object_test.py
+```
+
+To run a specific test:
+
+```sh
+docker-compose exec appserver pytest -k tests/api/filesystem/object_test.py::test_patch_file
+```
+
+Some additional flags that may make tests easier to read include:
+
+* `--disable-pytest-warnings` to disable warning summaries
+* `--capture=no` to show stdout/stderr for all and not just failed tests
+* `--verbose` to show test names and not just '.'
+* `--tb=native` to show stack traces the normal Python way
+* `--ignore=tests/some/test.py` to ignore a specific test or folder
+
+Together:
+
+```sh
+docker-compose exec appserver pytest --disable-pytest-warnings --capture=no --verbose --tb=native
 ```
 
 ## Lint Checks
 
-## Running Checks
+### Running Checks
 
 ```sh
 docker-compose exec appserver pycodestyle .

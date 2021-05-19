@@ -30,6 +30,7 @@ import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/u
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
+import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 
 @Component({
   selector: 'app-map',
@@ -75,6 +76,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly errorHandler: ErrorHandler,
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly dataTransferDataService: DataTransferDataService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
