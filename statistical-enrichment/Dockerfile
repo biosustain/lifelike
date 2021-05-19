@@ -12,4 +12,7 @@ RUN pipenv install --dev --deploy --system
 
 ENV FLASK_APP=statistical_enrichment
 
-CMD [ "flask", "run", "-h", "0.0.0.0", "-p", "80" ]
+COPY statistical_enrichment .
+COPY bin .
+
+CMD [ "bin/startup.sh" ]

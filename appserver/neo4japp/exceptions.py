@@ -56,6 +56,15 @@ class ServerException(Exception):
         return retval
 
 
+class StatisticalEnrichmentError(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
 class AnnotationError(ServerException):
     def __init__(self, title=None, message=None, additional_msgs=[], code=500):
         super().__init__(

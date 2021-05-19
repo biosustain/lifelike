@@ -66,6 +66,7 @@ services:
             - REDIS_SSL=false
             # StatisticalEnrichment
             - SE_HOST=statistical-enrichment
+            - SE_PORT=5010
             # Other
             - DOMAIN=http://localhost
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
@@ -89,7 +90,7 @@ services:
         container_name: statistical-enrichment
         build: ./statistical-enrichment
         ports:
-            - "80:6000"
+            - "5010:5010"
         environment:
             # Log Services
             - FORMAT_AS_JSON=false
