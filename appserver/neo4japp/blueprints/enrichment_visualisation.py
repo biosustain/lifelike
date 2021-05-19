@@ -12,7 +12,7 @@ from neo4japp.exceptions import StatisticalEnrichmentError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-host = os.getenv('SE_HOST', '0.0.0.0')
+host = os.getenv('SE_HOST', 'statistical-enrichment')
 port = os.getenv('SE_PORT', '5010')
 
 

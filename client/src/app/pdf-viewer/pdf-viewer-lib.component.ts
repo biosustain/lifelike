@@ -955,7 +955,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   isSelectionAnnotatable(): boolean {
     const text = window.getSelection().toString();
-    return text.trim() != '' && text.length <= 200;
+    return text.trim() != '';
   }
 
   copySelectionText() {

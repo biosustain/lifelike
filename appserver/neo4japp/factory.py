@@ -42,7 +42,7 @@ module_logs = [
     'urllib3',
     'alembic',
     'webargs',
-    'py2neo'
+    'werkzeug'
 ]
 
 for mod in module_logs:
@@ -201,7 +201,7 @@ def register_blueprints(app, pkgname):
 
 def handle_error(ex: ServerException):
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
+    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
@@ -232,7 +232,7 @@ def handle_generic_error(code: int, ex: Exception):
     # but log with the real exception message below
     newex = ServerException()
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
+    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
