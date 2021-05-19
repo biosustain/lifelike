@@ -173,7 +173,7 @@
         restart_retries: 3
         image: "{{ container_registry }}/kg-statistical-enrichment:{{ docker_img_hash }}"
         expose:
-          - 80
+          - 5010
         env:
           GITHUB_COMMIT_TIMESTAMP: "{{ git_timestamp }}"
           NEO4J_HOST: "{{ NEO4J_HOST }}"

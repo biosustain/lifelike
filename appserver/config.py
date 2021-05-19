@@ -25,6 +25,9 @@ class Base():
     NEO4J_PORT = os.environ.get('NEO4J_PORT')
     NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
 
+    SE_HOST = os.environ.get('SE_HOST')
+    SE_PORT = os.environ.get('SE_PORT')
+
     AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')

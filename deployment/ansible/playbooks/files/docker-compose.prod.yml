@@ -23,7 +23,7 @@ services:
 
     statistical-enrichment:
         expose:
-            - 80
+            - 5010
         env_file:
             - ./.env
         networks:
