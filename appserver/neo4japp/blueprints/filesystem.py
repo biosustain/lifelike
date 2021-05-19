@@ -72,7 +72,7 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 # - The project that the files are in may be recycled
 
 
-# TODO: Deprecate me after LL-2840
+# TODO: Deprecate me after LL-3006
 @bp.route('/enrichment-tables', methods=['GET'])
 @auth.login_required
 def get_all_enrichment_tables():
@@ -81,14 +81,7 @@ def get_all_enrichment_tables():
         raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
 
     query = db.session.query(Files.hash_id).filter(
-        and_(
-            Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
-            or_(
-                Files.annotation_configs.is_(None),
-                Files.fallback_organism_id.is_(None)
-            )
-        )
-    )
+        Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
     results = [hash_id[0] for hash_id in query.all()]
     return jsonify(dict(result=results)), 200
 
@@ -215,7 +208,7 @@ class FilesystemBaseView(MethodView):
                 raise RecordNotFound(
                     title='File Not Found',
                     message=f"The request specified one or more file or directory "
-                    f"({', '.join(missing_hash_ids)}) that could not be found.",
+                            f"({', '.join(missing_hash_ids)}) that could not be found.",
                     code=404)
 
         # In the end, we just return a list of Files instances!
@@ -632,9 +625,9 @@ class FileListView(FilesystemBaseView):
             if params.get('mime_type'):
                 file.mime_type = params['mime_type']
             else:
-                provider = file_type_service.detect_type(buffer)
+                mime_type = file_type_service.detect_mime_type(buffer)
                 buffer.seek(0)  # Must rewind
-                file.mime_type = provider.mime_types[0]
+                file.mime_type = mime_type
 
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
@@ -742,7 +735,7 @@ class FileListView(FilesystemBaseView):
             children = self.get_nondeleted_recycled_files(and_(
                 Files.parent_id == file.id,
                 Files.recycling_date.is_(None),
-                ))
+            ))
 
             # For now, we won't let people delete non-empty folders (although this code
             # is subject to a race condition) because the app doesn't handle deletion that well
@@ -784,13 +777,20 @@ class FileListView(FilesystemBaseView):
         # Fetch from URL
         if url is not None:
             try:
-                buffer = read_url(urllib.request.Request(url, headers={
-                    'User-Agent': self.url_fetch_user_agent,
-                }), max_length=self.file_max_size, timeout=self.url_fetch_timeout)
-            except (ValueError, URLError):
+                buffer = read_url(
+                    urllib.request.Request(url, headers={
+                        'User-Agent': self.url_fetch_user_agent,
+                    }),
+                    max_length=self.file_max_size,
+                    timeout=self.url_fetch_timeout,
+                    prefer_direct_downloads=True
+                )
+            except Exception:
                 raise ValidationError('Your file could not be downloaded, either because it is '
                                       'inaccessible or another problem occurred. Please double '
-                                      'check the spelling of the URL.', "content_url")
+                                      'check the spelling of the URL. You can also download '
+                                      'the file to your computer from the original website and '
+                                      'upload the file manually.', "content_url")
 
             return buffer, url
 

@@ -16,31 +16,59 @@ export class URIData {
 
 export class GenericDataProvider implements DataTransferDataProvider {
 
-  private readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');
+  private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');
 
   static setURIs(dataTransfer: DataTransfer, data: URIData[], options: {
-    replace?: boolean
+    action?: 'replace' | 'append'
   } = {}) {
     if (data.length) {
-      if (options.replace || !dataTransfer.getData('text/uri-list')) {
-        dataTransfer.setData('text/x-moz-url', this.getMozUrlList(data));
-        dataTransfer.setData('text/uri-list', this.getUriList(data));
+      if (options.action === 'replace' || !dataTransfer.getData('text/uri-list')) {
+        dataTransfer.setData('text/uri-list', this.marshalUriList(data));
+      }
+
+      // We can't always read the data transfer data
+      if (!dataTransfer.types.includes('text/x-moz-url') || dataTransfer.getData('text/x-moz-url')) {
+        const existing: URIData[] = options.action === 'replace' ? []
+          : GenericDataProvider.unmarshalMozUrlList(
+            dataTransfer.getData('text/x-moz-url'),
+            'Link',
+          );
+        existing.push(...data);
+        dataTransfer.setData('text/x-moz-url', GenericDataProvider.marshalMozUrlList(existing));
       }
     }
   }
 
-  static getMozUrlList(data: URIData[]): string {
+  private static marshalMozUrlList(data: URIData[]): string {
     return data.map(item => `${item.uri.replace(/[\r\n]/g, '')}\r\n${item.title.replace(/[\r\n]/g, '')}`).join('\r\n');
   }
 
-  static getUriList(data: URIData[]): string {
+  private static marshalUriList(data: URIData[]): string {
     return data.map(item => item.uri).join('\r\n');
+  }
+
+  private static unmarshalMozUrlList(data: string, fallbackTitle: string): URIData[] {
+    if (data === '') {
+      return [];
+    }
+
+    const uris: URIData[] = [];
+
+    for (const [uri, title] of chunk(data.split(/\r?\n/g), 2)) {
+      if (uri.match(GenericDataProvider.acceptedUriPattern)) {
+        uris.push({
+          title: nullCoalesce(title, fallbackTitle).trim().replace(/ {2,}/g, ' '),
+          uri,
+        });
+      }
+    }
+
+    return uris;
   }
 
   extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
     const results: DataTransferData<any>[] = [];
     let text: string | undefined;
-    let hasLinks = false;
 
     if (dataTransfer.types.includes('text/plain')) {
       text = dataTransfer.getData('text/plain');
@@ -53,38 +81,26 @@ export class GenericDataProvider implements DataTransferDataProvider {
     text = text.trim().replace(/ {2,}/g, ' ');
 
     if (dataTransfer.types.includes('text/x-moz-url')) {
-      const uris: URIData[] = [];
       const data = dataTransfer.getData('text/x-moz-url');
 
-      for (const [uri, title] of chunk(data.split(/\r?\n/g), 2)) {
-        if (uri.match(this.acceptedUriPattern)) {
-          uris.push({
-            title: nullCoalesce(title, text).trim().replace(/ {2,}/g, ' '),
-            uri,
-          });
-        }
-      }
+      const uris = GenericDataProvider.unmarshalMozUrlList(data, text);
 
       results.push({
         token: URI_TOKEN,
         data: uris,
         confidence: 0,
       });
-
-      hasLinks = true;
     } else if (dataTransfer.types.includes('text/uri-list')) {
       results.push({
         token: URI_TOKEN,
         data: dataTransfer.getData('text/uri-list').split(/\r?\n/g)
-          .filter(item => item.trim().length && !item.startsWith('#') && item.match(this.acceptedUriPattern))
+          .filter(item => item.trim().length && !item.startsWith('#') && item.match(GenericDataProvider.acceptedUriPattern))
           .map(uri => ({
             title: text,
             uri,
           })),
         confidence: 0,
       });
-
-      hasLinks = true;
     }
 
     results.push({

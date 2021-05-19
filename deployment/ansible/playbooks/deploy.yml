@@ -181,7 +181,6 @@
           NEO4J_SCHEME: "{{ NEO4J_SCHEME }}"
           NEO4J_PORT: "{{ NEO4J_PORT|quote }}"
           NEO4J_DATABASE: "{{ NEO4J_DATABASE }}"
-          FLASK_APP: "{{ FLASK_APP }}"
           FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
           FLASK_ENV: "{{ FLASK_ENV }}"
           SENTRY_KEY: "{{ SENTRY_KEY }}"

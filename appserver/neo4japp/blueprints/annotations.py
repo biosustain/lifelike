@@ -58,7 +58,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
 )
 from neo4japp.services.annotations.pipeline import (
     create_annotations_from_pdf,
-    create_annotations_from_text,
     create_annotations_from_enrichment_table
 )
 from neo4japp.services.annotations import AnnotationGraphService
@@ -480,6 +479,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
+                        'error': e.message
                     }
                 else:
                     current_app.logger.debug(
@@ -489,6 +489,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
+                        'error': ''
                     }
             elif file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
                 try:
@@ -499,6 +500,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
+                        'error': 'Enrichment table content is not valid JSON.'
                     }
                     continue
                 enrich_service = get_enrichment_table_service()
@@ -521,6 +523,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
+                        'error': e.message
                     }
                 else:
                     current_app.logger.debug(
@@ -530,11 +533,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
+                        'error': ''
                     }
             else:
                 results[file.hash_id] = {
                     'attempted': False,
                     'success': False,
+                    'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.'
                 }
 
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
@@ -604,16 +609,18 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         )
 
         annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
+        # sort by lo_location_offset to go from beginning to end
+        sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
 
         prev_index = -1
         enriched_gene = ''
 
         start = time.time()
-        for index, cell_text in enriched.text_index_map.items():
-            annotation_chunk = [anno for anno in annotations_list if anno.get(
-                'hiLocationOffset', None) and anno.get(
-                    'loLocationOffset') > prev_index and anno.get(
-                        'hiLocationOffset') <= index]
+        for index, cell_text in enriched.text_index_map:
+            annotation_chunk = [anno for anno in sorted_annotations_list if anno.get(
+                'hiLocationOffset', None) and anno.get('hiLocationOffset') <= index]
+            # it's sorted so we can do this to make the list shorter every iteration
+            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk):]
 
             # update JSON to have enrichment row and domain...
             for anno in annotation_chunk:
@@ -690,8 +697,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         texts = []
         prev_ending_index = -1
 
-        # sort by lo_location_offset to go from beginning to end
-        annotations = sorted(annotations, key=lambda x: x['loLocationOffset'])
         for annotation in annotations:
             meta = annotation['meta']
             meta_type = annotation['meta']['type']
@@ -946,7 +951,7 @@ def delete_global_annotations(pids):
         db.session.commit()
         current_app.logger.info(
             f'Deleted {len(pids)} global annotations',
-            UserEventLog(
+            extra=UserEventLog(
                 username=g.current_user.username,
                 event_type=LogEventType.ANNOTATION.value).to_dict()
         )
