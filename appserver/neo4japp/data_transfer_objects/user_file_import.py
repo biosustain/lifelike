@@ -132,6 +132,7 @@ class ImportRelationship(CamelDictMixin):
     relationship_label: str = attr.ib()
     relationship_properties: List[Properties] = attr.ib()
     relationship_direction: str = attr.ib()
+
     @relationship_direction.validator
     def validate(self, attribute, value):
         relationship_direction_enum_vals = [data.value for data in RelationshipDirection]
@@ -146,6 +147,7 @@ class ImportRelationship(CamelDictMixin):
 class GeneImportRelationship(ImportRelationship):
     species_selection: Optional[str] = attr.ib()
     gene_matching_property: Optional[str] = attr.ib()
+
     @gene_matching_property.validator
     def validate(self, attribute, value):
         if value is None:

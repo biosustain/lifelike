@@ -39,7 +39,7 @@ class GraphNode(NEO4JBase):
         display_fn=None,
         url_fn=None
     ):
-        labels = [l for l in node.labels]
+        labels = [label for label in node.labels]
         prop_filter_fn = prop_filter_fn or (lambda x: x)
         primary_label = labels[0] if not primary_label_fn else primary_label_fn(node)
         domain_labels = [] if not domain_labels_fn else domain_labels_fn(node)
