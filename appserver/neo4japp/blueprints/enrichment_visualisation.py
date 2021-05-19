@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 
 import requests
@@ -35,8 +37,13 @@ def forward_request():
 
     # 500 should be enough verbose so it is passed through with prefix
     if resp.status_code == 500:
-        return Response("Statistical enrichment erorr:" + resp.content, resp.status_code,
+        try:
+            decoded_error_message = json.loads(resp.content)['message']
+            return Response("Statistical enrichment error:" + decoded_error_message,
+                        resp.status_code,
                         headers)
+        except Exception as e:
+            logging.exception(e)
     if resp.status_code >= 400:
         return Response("Internal error of statistical enrichment service.", resp.status_code,
                         headers)
