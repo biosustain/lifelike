@@ -1,5 +1,4 @@
 import json
-import logging
 from functools import partial
 from typing import List
 
@@ -8,9 +7,6 @@ import pandas as pd
 from statistical_enrichment.exceptions import ServerException
 from statistical_enrichment.services.enrichment.enrich_methods import fisher
 from statistical_enrichment.services.rcache import redis_cached, redis_server
-
-# Excessive logging noticeably slows down execution
-logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 
 
 class EnrichmentVisualisationService():
