@@ -15,4 +15,6 @@ ENV FLASK_APP=statistical_enrichment
 COPY statistical_enrichment .
 COPY bin .
 
+USER $N4J_USER
+
 CMD [ "bin/startup.sh" ]
