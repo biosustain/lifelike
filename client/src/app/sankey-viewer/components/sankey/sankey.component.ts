@@ -85,6 +85,20 @@ interface SankeyGraph {
   graph: any;
 }
 
+const colorPalletGenerator = (
+  n,
+  defaultSaturation = 0.75,
+  defaultLightness = 0.75,
+  defaultAlpha = 0.75
+) =>
+  (
+    i,
+    saturation = defaultSaturation,
+    lightness = defaultLightness,
+    alpha = defaultAlpha
+  ) =>
+    `hsla(${360 * (i % 2 ? i : n - 2) / n},${100 * saturation}%,${100 * lightness}%,${alpha})`;
+
 @Component({
   selector: 'app-sankey',
   templateUrl: './sankey.component.html',
@@ -136,10 +150,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   @Input('data') set data({links, graph, ...data}) {
+    const pathColorPalette = colorPalletGenerator(graph.up2aak1.length);
     graph.up2aak1.forEach((path, i) => {
-      const schemaClass = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
-      path.forEach((nodeId, i, p) => {
-        const nextNodeId = p[i + 1] || NaN;
+      const schemaClass = pathColorPalette(i);
+      path.forEach((nodeId, nodeIdx, p) => {
+        const nextNodeId = p[nodeIdx + 1] || NaN;
         const link = links.find(({source, target}) => source === nodeId && target === nextNodeId);
         if (link) {
           link.schemaClass = schemaClass;
