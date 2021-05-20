@@ -4,10 +4,10 @@ import os
 from flask import Flask
 from flask_marshmallow import Marshmallow
 
-app_name = os.environ['FLASK_APP']
+app_name = os.environ.get('FLASK_APP', __name__)
 app = Flask(app_name)
 Marshmallow().init_app(app)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(app_name)
 
 from .views import *
 from .schemas import *

@@ -1,4 +1,4 @@
-FROM python:3.9-buster
+FROM python:3.8-buster
 
 ENV _USER user
 ENV _HOME /home/$_USER
@@ -16,17 +16,17 @@ RUN addgroup --system wheel && \
     groupadd -g $GID $_USER && \
     useradd -u $UID -g $GID -G wheel --create-home --shell /bin/bash $_USER
 
-USER $_USER
 WORKDIR $_HOME
 
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
 COPY --chown=$UID:$GID Pipfile* .
-RUN ([ -f "Pipfile.lock" ] || pipenv --python python lock)
-RUN pipenv install --dev --deploy --system -vvv
+RUN pipenv install --dev --deploy --system
 
 ENV FLASK_APP=statistical_enrichment
 
 COPY --chown=$UID:$GID statistical_enrichment .
 COPY --chown=$UID:$GID bin .
+
+USER $_USER
 
 CMD [ "bin/startup.sh" ]
