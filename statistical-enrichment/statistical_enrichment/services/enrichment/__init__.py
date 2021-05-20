@@ -1,5 +1,5 @@
 from flask import g
-from neo4japp.database import get_neo4j_db
+from ..graphdb import get_neo4j_db
 from .enrichment_visualisation import EnrichmentVisualisationService
 
 def get_enrichment_visualisation_service():

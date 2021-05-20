@@ -1,4 +1,6 @@
 import os
+
+from flask import g
 from neo4j import GraphDatabase, basic_auth
 
 host = os.getenv('NEO4J_HOST', '0.0.0.0')
