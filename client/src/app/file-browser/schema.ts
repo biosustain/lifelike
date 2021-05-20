@@ -5,7 +5,7 @@ import {
   Meta,
 } from '../pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
-import { PaginatedRequestOptions, ResultList } from 'app/shared/schemas/common';
+import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
@@ -177,13 +177,17 @@ export interface ObjectExportRequest {
 // Responses
 // ----------------------------------------
 
-interface FileNode {
-  name: string;
-  children: FileNode[];
+export interface FileNodeData {
+  trueFilename: string;
+  description: string;
+  mimeType: string;
+  filepath: string;
+  hashId: string;
+  parent: number;
 }
 
 export interface FileHierarchyResponse {
-  results: FileNode[];
+  results: TreeNode<FileNodeData>[];
 }
 
 // ========================================
