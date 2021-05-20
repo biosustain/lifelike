@@ -1,10 +1,12 @@
 import logging
 import os
 
-from .factory import create_app
+from flask import Flask
+from flask_marshmallow import Marshmallow
 
-app_config = os.environ['FLASK_APP_CONFIG']
-app = create_app(config=f'config.{app_config}')
+app_name = os.environ['FLASK_APP']
+app = Flask(app_name)
+Marshmallow().init_app(app)
 logger = logging.getLogger(__name__)
 
 from .views import *

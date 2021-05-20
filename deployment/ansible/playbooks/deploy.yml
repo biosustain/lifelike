@@ -175,7 +175,6 @@
         expose:
           - 5010
         env:
-          GITHUB_COMMIT_TIMESTAMP: "{{ git_timestamp }}"
           NEO4J_HOST: "{{ NEO4J_HOST }}"
           NEO4J_AUTH: "{{ NEO4J_AUTH }}"
           NEO4J_SCHEME: "{{ NEO4J_SCHEME }}"
@@ -183,16 +182,10 @@
           NEO4J_DATABASE: "{{ NEO4J_DATABASE }}"
           FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
           FLASK_ENV: "{{ FLASK_ENV }}"
-          SENTRY_KEY: "{{ SENTRY_KEY }}"
           REDIS_HOST: "{{ REDIS_HOST }}"
           REDIS_PORT: "{{ REDIS_PORT|quote }}"
           REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
           REDIS_SSL: "{{ REDIS_SSL }}"
-          DOMAIN: "{{ DOMAIN }}"
-          GITHUB_HASH: "{{ docker_img_hash }}"
-          APP_VERSION: "{{ app_version }}"
-          APP_BUILD_NUMBER: "{{ app_build_number|quote }}"
-          SECRET_KEY: "{{ SECRET_KEY }}"
         comparisons:
           image: strict
           env: strict
