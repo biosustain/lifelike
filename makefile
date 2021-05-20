@@ -26,7 +26,7 @@ init: ansible-secrets azure-secrets container-login githooks docker-build lmdb
 
 # Sets up commit hooks for linting
 githooks:
-	find .git/hooks -type l -exec rm {} \; && find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
+	git config --local core.hooksPath .githooks/
 
 docker-build:
 	docker-compose build

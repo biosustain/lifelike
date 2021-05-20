@@ -7,7 +7,7 @@ WORKDIR /app
 COPY --chown=1000:1000 Pipfile .
 COPY --chown=1000:1000 Pipfile.lock .
 
-RUN pipenv install --deploy --system
+RUN pipenv install --deploy --dev --system
 
 COPY --chown=1000:1000 . .
 
