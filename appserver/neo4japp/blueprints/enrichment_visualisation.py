@@ -9,6 +9,7 @@ from flask import (
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.exceptions import StatisticalEnrichmentError
+from requests.exceptions import ConnectionError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
@@ -28,31 +29,37 @@ def forward_request():
                 cookies=request.cookies,
                 allow_redirects=False
         )
-    except ConnectionError:
-        raise StatisticalEnrichmentError()
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [
+            (name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers
+        ]
+    except ConnectionError as e:
+        raise StatisticalEnrichmentError(
+            'Unable to process request',
+            'An unexpected connection error occurred to statistical enrichment service.'
+        )
 
-    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    headers = [
-        (name, value) for (name, value) in resp.raw.headers.items()
-        if name.lower() not in excluded_headers
-    ]
-
-    # 500 should be enough verbose so it is passed through with prefix
+    # 500 should contain message from service so we try to include it
     if resp.status_code == 500:
         try:
             decoded_error_message = json.loads(resp.content)['message']
-            return Response(
-                    "Statistical enrichment error:" + decoded_error_message,
-                    resp.status_code,
-                    headers
-            )
         except Exception as e:
+            # log and proceed so general error can be raised
             logging.exception(e)
-    if resp.status_code >= 400:
-        return Response(
-                "Internal error of statistical enrichment service.",
-                resp.status_code,
-                headers
+        else:
+            raise StatisticalEnrichmentError(
+                    'Statistical enrichment error',
+                    decoded_error_message,
+                    code=resp.status_code
+            )
+
+    # All errors including failure to parse internal error message
+    if 400 <= resp.status_code < 600:
+        raise StatisticalEnrichmentError(
+                'Unable to process request',
+                'An internal error of statistical enrichment service occurred.',
+                code=resp.status_code
         )
 
     return Response(resp.content, resp.status_code, headers)
