@@ -87,17 +87,20 @@ interface SankeyGraph {
 
 const colorPalletGenerator = (
   n,
-  defaultSaturation = 0.75,
-  defaultLightness = 0.75,
-  defaultAlpha = 0.75
+  {
+    hue = (i, n) => 360 * (i % 2 ? i : n - 2) / n,
+    saturation = (i, n) => 0.75,
+    lightness = (i, n) => 0.75,
+    alpha = (i, n) => 0.75
+  } = {}
 ) =>
-  (
-    i,
-    saturation = defaultSaturation,
-    lightness = defaultLightness,
-    alpha = defaultAlpha
-  ) =>
-    `hsla(${360 * (i % 2 ? i : n - 2) / n},${100 * saturation}%,${100 * lightness}%,${alpha})`;
+  i => `hsla(${360 * hue(i, n)},${100 * saturation(i, n)}%,${100 * lightness(i, n)}%,${alpha(i, n)})`;
+
+const createMapToColor = (arr, ...rest) => {
+  const uniq = new Set(arr);
+  const palette = colorPalletGenerator(uniq.size, ...rest);
+  return new Map([...uniq].map((v, i) => [v, palette(i)]));
+};
 
 @Component({
   selector: 'app-sankey',
@@ -145,25 +148,38 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   constructor() {
     this.sankey = d3Sankey.sankey()
       .nodeId(n => n.id)
-      .nodeAlign(d3Sankey.sankeyLeft)
+      .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
   }
 
-  @Input('data') set data({links, graph, ...data}) {
-    const pathColorPalette = colorPalletGenerator(graph.up2aak1.length);
+  @Input('data') set data({links, graph, nodes, ...data}) {
+    const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
+    const linksColorMap = createMapToColor(graph.up2aak1.map(pathIdAccessor));
     graph.up2aak1.forEach((path, i) => {
-      const schemaClass = pathColorPalette(i);
+      const schemaClass = linksColorMap.get(pathIdAccessor(path));
       path.forEach((nodeId, nodeIdx, p) => {
         const nextNodeId = p[nodeIdx + 1] || NaN;
-        const link = links.find(({source, target}) => source === nodeId && target === nextNodeId);
+        const link = links.find(({source, target, schemaClass}) => source === nodeId && target === nextNodeId && !schemaClass);
         if (link) {
           link.schemaClass = schemaClass;
         } else if (nextNodeId) {
-          console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
+          // console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
         }
       });
     });
-    this._data = {...data, links: links.map(link => ({value: link['pageUp'], ...link}))};
+    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
+    const nodesColorMap = createMapToColor(
+      nodes.map(nodeColorCategoryAccessor),
+      {
+        hue: () => 0,
+        lightness: (i, n) => (i + 0.5) / n,
+        saturation: () => 0
+      }
+    );
+    nodes.forEach(node => {
+      node.color = nodesColorMap.get(nodeColorCategoryAccessor(node));
+    });
+    this._data = {...data, nodes, links: links.map(link => ({value: link['pageUp'], ...link}))};
     if (this.svg) {
       this.updateLayout(this._data).then(this.updateDOM.bind(this));
     }
@@ -181,6 +197,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.resizeObserver.disconnect();
+
     delete this.resizeObserver;
   }
 
@@ -205,21 +222,25 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    */
   updateLayout(data) {
     return new Promise(resolve => {
-      // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-      resolve(
-        this.sankey(data)
-      );
-    });
+        // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
+        resolve(
+          this.sankey(data)
+        );
+      }
+    )
+      ;
   }
 
 
   /**
-   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example, if
-   * the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
+   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example,
+   * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
    */
   private getCloudSvgDimensions() {
     const cloudWrapper = this.cloudWrapper.nativeElement;
-    const {margin} = this;
+    const {
+      margin
+    } = this;
     return {
       width: cloudWrapper.offsetWidth - margin.left - margin.right,
       height: cloudWrapper.offsetHeight - margin.top - margin.bottom
@@ -252,8 +273,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         const targetValues = targetLinks.map(({value}) => value);
         const sourceIndex = sourceLinks.indexOf(link);
         const targetIndex = targetLinks.indexOf(link);
-        const sourceNormalizer = normalizeGenerator(sourceValues);
-        const targetNormalizer = normalizeGenerator(targetValues);
+        const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
+        const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
         const sourceX = source.x1;
         const targetX = target.x0;
         let sourceY = 0, targetY = 0;
@@ -292,7 +313,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .data(words.nodes)
       .join(
         enter => enter.append('g')
-          .attr('class', ({schemaClass}) => schemaClass)
+          .attr('fill', ({color}) => color)
           .call(enterNode => enterNode.append('rect'))
           .call(enterNode =>
             enterNode.append('text')
