@@ -26,7 +26,6 @@ services:
             - appserver
         restart: always
 
-
     statistical-enrichment:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
         # not truly exposing using as a note on which port does service respond in internal network
