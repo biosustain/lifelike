@@ -10,6 +10,7 @@ import { ContentSearchFormComponent } from './components/content-search-form.com
 import { FileRecordsComponent } from './components/file-records.component';
 import { GraphSearchComponent } from './components/graph-search.component';
 import { GraphSearchFormComponent } from './components/graph-search-form.component';
+import { HierarchySearchTreeComponent } from './components/hierarchy-search-tree.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
 
@@ -22,6 +23,7 @@ const components = [
   AdvancedSearchDialogComponent,
   GraphSearchComponent,
   GraphSearchFormComponent,
+  HierarchySearchTreeComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
   ContentSearchComponent,
