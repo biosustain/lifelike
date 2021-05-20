@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "> 🥧 Running mypy..."
+docker exec appserver mypy .
+echo "> 🐍 Running pycodestyle..."
+docker exec appserver pycodestyle .

@@ -1,43 +1,48 @@
 #!/bin/sh
 
-# Runs linting checks on the appserver and client
-# Can bypass via --no-verify
+# Script is used for running git hooks. This script can be expanded to perform
+# other "git hook" actions, but is currently only limited to 'pre-commit'.
+#
+# How it works
+# The script will start at the root project directory and iterate over all
+# directories, looking for the .githook directory. It will then execute
+# the 'pre-commit' hook if found.
+#
+# To use
+# (1) Each directory MUST have a .githook directory
+# (2) Each .githook directory must have an executable
+# (3) Each .githook action MUST follow the naming conventions laid out by https://git-scm.com/docs/githooks
+
 
 __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 root_dir="$( cd "$( dirname "${__dir__}}" )" &> /dev/null && pwd )"
 
-cd $root_dir/appserver && \
-   python3 -m venv venv && \
-   source venv/bin/activate && \
-   pip install mypy pycodestyle
+hook_name="pre-commit"
+hook_dir=".githooks"
+hook_path=".githooks/$hook_name"
 
-echo "> 🤖 Running mypy..."
-mypy .
-if [ $? -eq 0 ]
-then
-   echo "✅ mypy success!"
-else
-   echo "❌ mypy failed! Run git commit --no-verify to skip"
-   exit 1
-fi
+# Formatting
+b=$(tput bold)
+n=$(tput sgr0)
+HEADER () {
+  echo "${b}${1}${n}"
+}
 
-echo "> 🤖 Running pycodestyle..."
-pycodestyle .
-if [ $? -eq 0 ]
-then
-   echo "✅ pycodestyle success!"
-else
-   echo "❌ pycodestyle failed! Run git commit --no-verify to skip"
-   exit 1
-fi
+# TODO: Refactor to execute other hooks if needed
+for d in */; do
+  code_path="$root_dir/$d$hook_dir"
+  if [[ -d $code_path ]];
+  then
+    HEADER "🤖  Running lint checks for $code_path"
+    # Execute hook
+    "$code_path/$hook_name"
+    exit_code=$?
 
-cd $root_dir/client
-echo "> 🤖 Running yarn lint..."
-yarn lint
-if [ $? -eq 0 ]
-then
-   echo "✅ yarn lint success!"
-else
-   echo "❌ yarn lint failed! Run git commit --no-verify to skip"
-   exit 1
-fi
+    if [ $exit_code != 0 ]; then
+      echo "❌ Linting check has failed. You may use git commit --no-verify to skip."
+      exit $exit_code
+    fi
+  fi
+done
+
+exit 0
