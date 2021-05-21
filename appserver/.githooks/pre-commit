@@ -3,7 +3,7 @@
 # Runs linting on only files that are staged
 
 echo "> 🥧 Running mypy..."
-git diff --cached --name-only | grep -E '\.(py)$' | sed 's/appserver\///g' | xargs docker exec appserver mypy
+git diff --cached --name-status | grep -E '(A\t|M\t)' | grep -E '\.(py)$' | cut -f 2 | grep -E 'appserver' | sed 's/appserver\///g' | xargs docker exec appserver mypy
 echo "> 🐍 Running pycodestyle..."
-git diff --cached --name-only | grep -E '\.(py)$' | sed 's/appserver\///g' | xargs docker exec appserver pycodestyle
+git diff --cached --name-status | grep -E '(A\t|M\t)' | grep -E '\.(py)$' | cut -f 2 | grep -E 'appserver' | sed 's/appserver\///g' | xargs docker exec appserver pycodestyle
 
