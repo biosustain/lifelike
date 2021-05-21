@@ -1,5 +1,9 @@
 #!/bin/sh
+
+# Runs linting on only files that are staged
+
 echo "> 🥧 Running mypy..."
-docker exec appserver mypy .
+git diff --cached --name-only | grep -E '\.(py)$' | sed 's/appserver\///g' | xargs docker exec appserver mypy
 echo "> 🐍 Running pycodestyle..."
-docker exec appserver pycodestyle .
+git diff --cached --name-only | grep -E '\.(py)$' | sed 's/appserver\///g' | xargs docker exec appserver pycodestyle
+
