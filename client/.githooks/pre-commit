@@ -4,4 +4,4 @@ __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ***ARANGO_USERNAME***_dir="$( cd "$( dirname "${__dir__}}" )" &> /dev/null && pwd )"
 
 # Runs linting on only files that are staged
-cd $***ARANGO_USERNAME***_dir && git diff --cached --name-only | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
+cd $***ARANGO_USERNAME***_dir && git diff --cached --name-status | grep -E '(A\t|M\t|R100\t)' | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
