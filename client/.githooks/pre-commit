@@ -4,4 +4,6 @@ __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 root_dir="$( cd "$( dirname "${__dir__}}" )" &> /dev/null && pwd )"
 
 # Runs linting on only files that are staged
-cd $root_dir && git diff --cached --name-status | grep -E '(A\t|M\t|R100\t)' | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
+cd $root_dir && git diff --cached --name-status | grep -E '(A\t|M\t)' | cut -f 2 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
+# Catch renamed files too
+git diff --cached --name-status | grep -E 'R\d+\t' | cut -f 3 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
