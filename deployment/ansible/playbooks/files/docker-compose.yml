@@ -27,6 +27,16 @@ services:
             - appserver
         restart: always
 
+    statistical-enrichment:
+        image: ${REGISTRY:-lifelike.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
+        # not truly exposing using as a note on which port does service respond in internal network
+        expose:
+          - 5010
+        env_file:
+          - ./.env
+        networks:
+          - backend
+
     pdfparser:
         container_name: pdfparser
         image: ${REGISTRY:-lifelike.azurecr.io}/kg-pdfparser:latest
