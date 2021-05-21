@@ -5,7 +5,6 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { ClustergramComponent } from './clustergram.component';
 import { LinkModule } from '../../components/link/link.module';
-import { GridScrollModule } from './gridScroll/grid-scroll.module';
 
 const components = [
   ClustergramComponent
@@ -16,10 +15,9 @@ const components = [
   imports: [
     CommonModule,
     SharedModule,
-    LinkModule,
-    GridScrollModule
+    LinkModule
   ],
-  exports: components
+  exports: components,
 })
 export class ClustergramModule {
 }
