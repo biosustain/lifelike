@@ -15,3 +15,6 @@ services:
 
     cache-invalidator:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
+
+    statistical-enrichment:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
