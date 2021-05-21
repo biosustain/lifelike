@@ -8,9 +8,6 @@
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
-    "lint-files": "xargs printf -- '--files=%s\\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null",
-    "get-staged-files-to-lint": "git diff --cached --name-only | { grep -E '\\.(js|ts)$' || true; } | tee /dev/stdout",
-    "lint-staged": "yarn get-staged-files-to-lint | yarn lint-files",
     "e2e": "ng e2e"
   },
   "private": true,
