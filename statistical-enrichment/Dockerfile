@@ -26,8 +26,7 @@ RUN pipenv install --dev --deploy --system
 
 ENV FLASK_APP=statistical_enrichment
 
-COPY --chown=$UID:$GID statistical_enrichment .
-COPY --chown=$UID:$GID bin bin/
+COPY --chown=$UID:$GID . .
 
 USER $_USER
 
