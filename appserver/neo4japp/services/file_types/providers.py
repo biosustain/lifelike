@@ -1,12 +1,16 @@
 import io
 import json
 import re
+import typing
 from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import graphviz
-import typing
+
+import requests
+
 import textwrap
+
 from pdfminer import high_level
 
 from neo4japp.models import Files
@@ -64,10 +68,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        # We don't even validate PDF content yet, but we need to detect them, so we'll
-        # just return -1 so PDF becomes the fallback file type
-        return -1
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
@@ -93,21 +95,136 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         return doi
 
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        # ref: https://stackoverflow.com/a/10324802
-        # Has a good breakdown of the DOI specifications,
-        # in case need to play around with the regex in the future
-        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
-        match = re.search(doi_re, content)
+    def _is_valid_doi(self, doi):
+        try:
+            # not [bad request, not found] but yes to 403 - no access
+            return requests.get(doi,
+                                headers={
+                                    # sometimes request is filtered if there is no user-agent header
+                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
+                                                  "AppleWebKit/537.36 "
+                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
+                                                  "Safari/537.36"
+                                }
+                                ).status_code not in [400, 404]
+        except Exception as e:
+            return False
 
-        if match is None:
-            return None
-        doi = match.group(1).decode('utf-8').replace('%2F', '/')
-        # Make sure that the match does not contain undesired characters at the end.
-        # E.g. when the match is at the end of a line, and there is a full stop.
-        while doi and doi[-1] in './%':
-            doi = doi[:-1]
-        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+    # ref: https://stackoverflow.com/a/10324802
+    # Has a good breakdown of the DOI specifications,
+    # in case need to play around with the regex in the future
+    doi_re = re.compile(
+            # match label pointing that it is DOI
+            rb'(doi[\W]*)?'
+            # match url to doi.org
+            # doi might contain subdomain or 'www' etc.
+            rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+            # match folder (10) and register name
+            rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+            # try match commonly used DOI format
+            rb'([-A-z0-9]*)'
+            # match up to first space (values after # are ~ignored anyway)
+            rb'([^ \n\f#]*)'
+            # match up to 20 characters in the same line (values after # are ~ignored anyway)
+            rb'([^\n\f#]{0,20})',
+            flags=re.IGNORECASE
+    )  # noqa
+    protocol_re = re.compile(r'https?:\/\/')
+    unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
+    characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
+    common_escape_patterns_re = re.compile(rb'\\')
+    dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+
+    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
+        doi: Optional[str]
+        try:
+            for match in self.doi_re.finditer(content):
+                label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
+                    [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
+                certainly_doi = label + url
+                url = 'https://doi.org/'
+                # is whole match a DOI? (finished on \n, trimmed whitespaces)
+                doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
+                        DOISuffix).strip())
+                if self._is_valid_doi(doi):
+                    return doi
+                # is match till space a DOI?
+                doi = (url + folderRegistrant + likelyDOIName + tillSpace)
+                if self._is_valid_doi(doi):
+                    return doi
+                # make deep search only if there was clear indicator that it is a doi
+                if certainly_doi:
+                    # if contains escape patterns try substitute them
+                    if self.common_escape_patterns_re.search(match.group()):
+                        doi = self._search_doi_in_pdf(
+                                self.common_escape_patterns_re.sub(
+                                        b'', match.group()
+                                )
+                        )
+                        if self._is_valid_doi(doi):
+                            return doi
+                    # try substitute different dash types
+                    if self.dash_types_re.search(match.group()):
+                        doi = self._search_doi_in_pdf(
+                                self.dash_types_re.sub(
+                                        b'-', match.group()
+                                )
+                        )
+                        if self._is_valid_doi(doi):
+                            return doi
+                    # we iteratively start cutting off suffix on each group of
+                    # unusual characters
+                    try:
+                        reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
+                        while reversedDOIEnding:
+                            _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                    reversedDOIEnding, 1)
+                            doi = (
+                                    url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
+                            )
+                            if self._is_valid_doi(doi):
+                                return doi
+                    except Exception:
+                        pass
+                    # we iteratively start cutting off suffix on each group of either
+                    # lowercase letters
+                    # uppercase letters
+                    # numbers
+                    try:
+                        reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
+                        while reversedDOIEnding:
+                            _, _, reversedDOIEnding = self.characters_groups_re.split(
+                                    reversedDOIEnding, 1)
+                            doi = (
+                                    url + folderRegistrant + reversedDOIEnding[::-1]
+                            )
+                            if self._is_valid_doi(doi):
+                                return doi
+                    except Exception:
+                        pass
+                    # yield 0 matches on test case
+                    # # is it a DOI in common format?
+                    # doi = (url + folderRegistrant + likelyDOIName)
+                    # if self._is_valid_doi(doi):
+                    #     print('match by common format xxx')
+                    #     return doi
+                    # in very rare cases there is \n in text containing doi
+                    try:
+                        end_of_match_idx = match.end(0)
+                        first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
+                        if first_char_after_match == b'\n':
+                            doi = self._search_doi_in_pdf(
+                                    # new input = match + 50 chars after new line
+                                    match.group() +
+                                    content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                            )
+                            if self._is_valid_doi(doi):
+                                return doi
+                    except Exception as e:
+                        pass
+        except Exception as e:
+            pass
+        return None
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
@@ -121,13 +238,13 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
@@ -140,28 +257,25 @@ class MapTypeProvider(BaseFileTypeProvider):
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
-
-        map_data: Dict[str, List[Dict[str, str]]] = {
-            'nodes': [],
-            'edges': []
-        }
+        content = io.StringIO()
+        string_list = []
 
         for node in content_json.get('nodes', []):
             node_data = node.get('data', {})
-            map_data['nodes'].append({
-                'label': node.get('label', ''),
-                'display_name': node.get('display_name', ''),
-                'detail': node_data.get('detail', '') if node_data else '',
-            })
+            display_name = node.get('display_name', '')
+            detail = node_data.get('detail', '') if node_data else ''
+            string_list.append('' if display_name is None else display_name)
+            string_list.append('' if detail is None else detail)
 
         for edge in content_json.get('edges', []):
             edge_data = edge.get('data', {})
-            map_data['edges'].append({
-                'label': edge.get('label', ''),
-                'detail': edge_data.get('detail', '') if edge_data else '',
-            })
+            label = edge.get('label', '')
+            detail = edge_data.get('detail', '') if edge_data else ''
+            string_list.append('' if label is None else label)
+            string_list.append('' if detail is None else detail)
 
-        return typing.cast(BufferedIOBase, io.BytesIO(json.dumps(map_data).encode('utf-8')))
+        content.write(' '.join(string_list))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
@@ -174,11 +288,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '300'))
 
         graph = graphviz.Digraph(
-            file.filename,
-            comment=file.description,
-            engine='neato',
-            graph_attr=graph_attr,
-            format=format)
+                file.filename,
+                comment=file.description,
+                engine='neato',
+                graph_attr=graph_attr,
+                format=format)
 
         node_hash_type_dict = {}
 
@@ -234,7 +348,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
                                            * IMAGE_HEIGHT_INCREMENT + 0.25 *
                                            (style.get('fontSizeScale', 1.0) - 1.0))
-                    params['width'] = "1.5"
+                    params['width'] = '0.6'
+                    params['fixedsize'] = 'true'
+                    params['imagescale'] = 'true'
                     params['forcelabels'] = "true"
                     params['penwidth'] = '0.0'
                     params['fontcolor'] = style.get("fillColor") or default_icon_color
@@ -249,6 +365,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fillcolor'] = 'white' if style.get('fillColor') else default_color
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
+
 
             if 'hyperlink' in node['data'] and node['data']['hyperlink']:
                 params['href'] = node['data']['hyperlink']
@@ -282,14 +399,15 @@ class MapTypeProvider(BaseFileTypeProvider):
                     else '0.0',
                 fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
                 style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
+
             )
 
         ext = f".{format}"
 
         return FileExport(
-            content=io.BytesIO(graph.pipe()),
-            mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
+                content=io.BytesIO(graph.pipe()),
+                mime_type=extension_mime_types[ext],
+                filename=f"{file.filename}{ext}"
         )
 
 
@@ -298,15 +416,15 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
@@ -353,3 +471,6 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
+
+    def handle_content_update(self, file: Files):
+        file.enrichment_annotations = None
