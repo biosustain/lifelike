@@ -49,8 +49,10 @@ class LogEventType(Enum):
     AUTHENTICATION = 'authentication'
     CONTENT_SEARCH = 'content_search'
     ELASTIC = 'elastic'
+    ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
+    LAST_ACTIVE = 'last_active'
     SENTRY_HANDLED = 'handled_exception'
     SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
@@ -311,7 +313,7 @@ DEFAULT_BORDER_COLOR = '#2B7CE9'
 DEFAULT_NODE_WIDTH = 41.25
 DEFAULT_NODE_HEIGHT = 27.5
 MAX_LINE_WIDTH = 50
-BASE_IMAGE_HEIGHT = 1.5
+BASE_IMAGE_HEIGHT = 0.8
 IMAGE_HEIGHT_INCREMENT = 0.23
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
