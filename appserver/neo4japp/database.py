@@ -6,7 +6,7 @@ from flask import g, current_app
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from py2neo import Graph
+from neo4j import GraphDatabase, basic_auth
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 from neo4japp.utils.flask import scope_flask_app_ctx
@@ -48,24 +48,24 @@ db = SQLAlchemy(
     }
 )
 
+host = os.getenv('NEO4J_HOST', '0.0.0.0')
+scheme = os.getenv('NEO4J_SCHEME', 'bolt')
+port = os.getenv('NEO4J_PORT', '7687')
+url = f'{scheme}://{host}:{port}'
+username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
 
-# NOTE: local network connection to cloud seems to be causing issues
-# Neo4j Lead Dev/Py2neo creator: https://stackoverflow.com/a/63592570
-# https://github.com/technige/py2neo
-# TODO: how to close connection? Py2neo doesn't seem to do this...
-def connect_to_neo4j():
-    if 'neo4j' not in g:
-        protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
-        secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
-        g.neo4j = Graph(
-            name=current_app.config.get('NEO4J_DATABASE'),
-            host=current_app.config.get('NEO4J_HOST'),
-            auth=current_app.config.get('NEO4J_AUTH').split('/'),
-            secure=secure in protocols,
-            port=current_app.config.get('NEO4J_PORT'),
-            scheme=current_app.config.get('NEO4J_SCHEME')
-        )
-    return g.neo4j
+
+def get_neo4j_db():
+    if not hasattr(g, 'neo4j_db'):
+        g.neo4j_db = driver.session()
+    return g.neo4j_db
+
+
+def close_neo4j_db(e=None):
+    neo4j_db = g.pop('neo4j_db', None)
+    if neo4j_db:
+        neo4j_db.close()
 
 
 def connect_to_lmdb():
@@ -80,6 +80,13 @@ def close_lmdb(e=None):
     lmdb = g.pop('lmdb', None)
     if lmdb:
         lmdb.close_envs()
+
+
+def _connect_to_elastic():
+    return Elasticsearch(
+        timeout=180,
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+    )
 
 
 class LMDBConnection:
@@ -97,14 +104,13 @@ class DBConnection:
 class GraphConnection:
     def __init__(self):
         super().__init__()
-        self.graph = connect_to_neo4j()
+        self.graph = get_neo4j_db()
 
 
-def _connect_to_elastic():
-    return Elasticsearch(
-        timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
-    )
+class ElasticConnection:
+    def __init__(self):
+        super().__init__()
+        self.elastic_client = _connect_to_elastic()
 
 
 """
@@ -126,7 +132,7 @@ not apply to the AnnotationServices (except manual and sorted).
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.kg_service = KgService(
             graph=graph,
             session=db.session,
@@ -137,7 +143,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.visualizer_service = VisualizerService(
             graph=graph,
             session=db.session,
@@ -154,10 +160,11 @@ def get_file_type_service():
 
     :return: the service
     """
-    from neo4japp.services.file_types.service import FileTypeService
+    from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
     from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
         MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
     service = FileTypeService()
+    service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
     service.register(PDFTypeProvider())
     service.register(MapTypeProvider())
@@ -168,7 +175,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.enrichment_table_service = EnrichmentTableService(
             graph=graph,
             session=db.session,
@@ -176,29 +183,23 @@ def get_enrichment_table_service():
     return g.enrichment_table_service
 
 
-def get_enrichment_visualisation_service():
-    if 'enrichment_visualisation_service' not in g:
-        from neo4japp.services import EnrichmentVisualisationService
-        graph = connect_to_neo4j()
-        g.enrichment_visualisation_service = EnrichmentVisualisationService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.enrichment_visualisation_service
-
-
 def get_user_file_import_service():
-    if 'user_file_import_service' not in g:
-        from neo4japp.services import UserFileImportService
-        graph = connect_to_neo4j()
-        g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
-    return g.current_user_file_import_service
+    raise NotImplementedError()
+#     if 'user_file_import_service' not in g:
+#         from neo4japp.services import UserFileImportService
+#         # TODO Replace with neo4j driver
+#         graph = connect_to_neo4j()
+#         g.current_user_file_import_service = UserFileImportService(
+#           graph=graph,
+#           session=db.session
+#         )
+#     return g.current_user_file_import_service
 
 
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        graph = connect_to_neo4j()
+        graph = get_neo4j_db()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
@@ -227,35 +228,8 @@ def get_projects_service():
 def get_elastic_service():
     if 'elastic_service' not in g:
         from neo4japp.services.elastic import ElasticService
-        elastic = _connect_to_elastic()
-        g.elastic_service = ElasticService(elastic=elastic)
+        g.elastic_service = ElasticService()
     return g.elastic_service
-
-
-def get_annotation_service():
-    from neo4japp.services.annotations import (
-        AnnotationService,
-        AnnotationDBService,
-        AnnotationGraphService
-    )
-    return AnnotationService(
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService()
-    )
-
-
-def get_entity_recognition():
-    from neo4japp.services.annotations import (
-        AnnotationDBService,
-        AnnotationGraphService,
-        EntityRecognitionService,
-        LMDBService
-    )
-    return EntityRecognitionService(
-        lmdb=LMDBService(),
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService()
-    )
 
 
 def get_manual_annotation_service():
@@ -290,22 +264,9 @@ def get_sorted_annotation_service(sort_id, *, mime_type=None):
     )
 
 
-def get_bioc_document_service():
-    from neo4japp.services.annotations import BiocDocumentService
-    return BiocDocumentService()
-
-
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
     return ExcelExportService()
-
-
-def get_kg_statistics_service():
-    if 'kg_statistics_service' not in g:
-        from neo4japp.services.kg_statistics import KgStatisticsService
-        graph = connect_to_neo4j()
-        g.kg_statistics_service = KgStatisticsService(graph=graph)
-    return g.kg_statistics_service
 
 
 def reset_dao():

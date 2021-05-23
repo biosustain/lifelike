@@ -8,7 +8,7 @@ import {
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
-import { RankedItem } from '../../shared/schemas/common';
+import { RankedItem } from 'app/shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchType } from '../../search/shared';
@@ -17,9 +17,9 @@ import { EnrichmentTableService } from '../services/enrichment-table.service';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
+import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 import { EnrichmentTable } from '../models/enrichment-table';
 import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
 import {
@@ -28,8 +28,8 @@ import {
 } from '../components/table/dialog/enrichment-table-edit-dialog.component';
 import { ObjectContentSource, ObjectCreateRequest } from '../../file-browser/schema';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { openModal } from '../../shared/utils/modals';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { openModal } from 'app/shared/utils/modals';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
@@ -148,6 +148,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               contentValue: newBlob,
               ...value.request,
             })),
+            mergeMap(o => document.refreshData().pipe(
+              map(() => o),
+            )),
             map(() => value),
             // Errors are lost below with the catch() so we need to handle errors here too
             this.errorHandler.create(),

@@ -42,7 +42,7 @@ def annotate_pdf(
     parsed,
     custom_annotations=None,
     excluded_annotations=None,
-    annotation_method=None,
+    nlp_results=None,
     specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
 ):
     if custom_annotations is None:
@@ -51,23 +51,17 @@ def annotate_pdf(
     if excluded_annotations is None:
         excluded_annotations = []
 
-    if annotation_method is None:
-        annotation_method = {}
-
-    # if chemical used NLP then set compound too
-    if annotation_method.get(EntityType.CHEMICAL.value, {}).get('nlp', False):
-        annotation_method[EntityType.COMPOUND.value] = {'nlp': True, 'rules_base': False}
+    if nlp_results is None:
+        nlp_results = NLPResults()
 
     entity_results = entity_service.identify(
         excluded_annotations=excluded_annotations,
         custom_annotations=custom_annotations,
         tokens=parsed,
-        nlp_results=NLPResults(),
-        annotation_method=annotation_method
+        nlp_results=nlp_results
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
         specified_organism=specified_organism
@@ -731,7 +725,7 @@ def test_global_excluded_chemical_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
+    entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
@@ -759,7 +753,7 @@ def test_global_excluded_compound_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_compound = mock_compound_exclusion
+    entity_service.excluded_compounds = mock_compound_exclusion
 
     pdf = path.join(
         directory,
@@ -787,7 +781,7 @@ def test_global_excluded_disease_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_disease = mock_disease_exclusion
+    entity_service.excluded_diseases = mock_disease_exclusion
 
     pdf = path.join(
         directory,
@@ -816,7 +810,7 @@ def test_global_excluded_gene_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_gene = mock_gene_exclusion
+    entity_service.excluded_genes = mock_gene_exclusion
 
     pdf = path.join(
         directory,
@@ -844,7 +838,7 @@ def test_global_excluded_phenotype_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_phenotype = mock_phenotype_exclusion
+    entity_service.excluded_phenotypes = mock_phenotype_exclusion
 
     pdf = path.join(
         directory,
@@ -872,7 +866,7 @@ def test_global_excluded_protein_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_protein = mock_protein_exclusion
+    entity_service.excluded_proteins = mock_protein_exclusion
 
     pdf = path.join(
         directory,
@@ -900,7 +894,7 @@ def test_global_excluded_species_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_species = mock_species_exclusion
+    entity_service.excluded_species = mock_species_exclusion
 
     pdf = path.join(
         directory,
@@ -928,7 +922,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
-    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
+    entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
@@ -1353,46 +1347,6 @@ def test_user_source_database_input_priority(
     assert annotations[0].meta.id_type == custom['meta']['idType']
 
 
-def test_compound_use_chemical_nlp(
-    default_lmdb_setup,
-    get_annotation_service,
-    get_entity_service
-):
-    annotation_service = get_annotation_service
-    entity_service = get_entity_service
-
-    pdf = path.join(
-        directory,
-        'pdf_samples/annotations_test/test_compound_use_chemical_nlp.json')
-
-    with open(pdf, 'rb') as f:
-        parsed = json.load(f)
-
-    _, parsed = read_parser_response(parsed)
-    annotations = annotate_pdf(
-        annotation_service=annotation_service,
-        entity_service=entity_service,
-        parsed=parsed
-    )
-
-    keywords = {o.keyword: o.meta.type for o in annotations}
-
-    assert 'Lead' in keywords
-    assert keywords['Lead'] == EntityType.CHEMICAL.value
-
-    # now test Lead is no longer chemical or compound
-    annotations = annotate_pdf(
-        annotation_service=annotation_service,
-        entity_service=entity_service,
-        parsed=parsed,
-        annotation_method={EntityType.CHEMICAL.value: {'nlp': True, 'rules_based': False}}
-    )
-
-    keywords = {o.keyword: o.meta.type for o in annotations}
-
-    assert 'Lead' not in keywords
-
-
 def test_global_inclusion_normalized_already_in_lmdb(
     global_inclusion_normalized_already_in_lmdb_setup,
     mock_global_gene_inclusion,
@@ -1419,3 +1373,65 @@ def test_global_inclusion_normalized_already_in_lmdb(
     )
 
     assert annotations[1].primary_name == 'CXCL8'
+
+
+def test_gene_matched_to_organism_before_if_closest_is_too_far(
+    gene_organism_matching_use_organism_before_lmdb_setup,
+    mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_matched_to_organism_before_if_closest_is_too_far.json')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    assert len(annotations) == 5
+
+    matches = {a.keyword: a.meta.id for a in annotations}
+    assert '5743' in matches['PTGS2']
+    assert '627' in matches['BDNF']
+    assert '684' in matches['BST2']
+
+
+def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism(
+    gene_organism_matching_use_organism_before_lmdb_setup,
+    mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism.json')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    assert len(annotations) == 8
+
+    matches = {a.keyword: a.meta.id for a in annotations}
+    assert '5743' in matches['PTGS2']
+    assert '627' in matches['BDNF']
+    assert '684' in matches['BST2']

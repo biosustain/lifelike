@@ -1,6 +1,6 @@
 import { Directory, Project } from '../services/project-space.service';
-import { CollectionModel } from '../../shared/utils/collection-model';
-import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -154,8 +154,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get isOpenable() {
-    // TODO: Move this method to ObjectTypeProvider
-    return true;
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
+      case MAP_MIMETYPE:
+      case ENRICHMENT_TABLE_MIMETYPE:
+      case 'application/pdf':
+        return true;
+      default:
+        return false;
+    }
   }
 
   get isEditable() {
@@ -266,6 +273,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get fontAwesomeIcon() {
+    if (this.mimeType.startsWith('image/')) {
+      return 'fa fa-file-image';
+    } else if (this.mimeType.startsWith('video/')) {
+      return 'fa fa-file-video';
+    } else if (this.mimeType.startsWith('text/')) {
+      return 'fa fa-file-alt';
+    }
+
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
@@ -440,7 +455,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
       default:
-        throw new Error(`unknown directory object type: ${this.mimeType}`);
+        return ['/files', this.hashId];
     }
   }
 

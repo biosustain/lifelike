@@ -20,6 +20,7 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
+  @Input() matchExistingTab: string;
   @Input() handleClick = true;
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
@@ -38,6 +39,10 @@ export class AbstractLinkDirective {
     } else {
       this.commands = [];
     }
+  }
+
+  shouldReplaceTab(component) {
+    return true;
   }
 
   @HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey'])
@@ -60,9 +65,11 @@ export class AbstractLinkDirective {
       state: this.state,
       newTab: attrBoolValue(this.newTab),
       sideBySide: attrBoolValue(this.sideBySide),
+      matchExistingTab: this.matchExistingTab,
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,
       preferStartupPane: this.preferStartupPane,
+      shouldReplaceTab: this.shouldReplaceTab
     };
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
 

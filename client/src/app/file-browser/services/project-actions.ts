@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { ProjectsService } from './projects.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProjectImpl } from '../models/filesystem-object';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
 import { ProjectEditDialogComponent, ProjectEditDialogValue } from '../components/dialog/project-edit-dialog.component';
 import { ProjectCreateRequest } from '../schema';
 import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { finalize } from 'rxjs/operators';
 import { ProjectCollaboratorsDialogComponent } from '../components/dialog/project-collaborators-dialog.component';
 

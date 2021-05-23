@@ -6,12 +6,14 @@
 
                 <ul ngbNav #nav="ngbNav"
                     [destroyOnHide]="false"
+                     (navChange)="tabStatus[$event.nextId]=true"
                     class="nav-tabs">
                     <li ngbNavItem="table">
                         <a ngbNavLink>Table</a>
-                        <ng-template ngbNavContent>
+                        <ng-template ngbNavContent let-active>
                             <app-table-complete
                                     [data]="data"
+                                    [show]="active"
                                     [showMore]="showMore"
                             >
 
@@ -20,10 +22,11 @@
                     </li>
                     <li ngbNavItem="graph">
                         <a ngbNavLink>Graph</a>
-                        <ng-template ngbNavContent>
-                            <app-chart
+                        <ng-template ngbNavContent let-active>
+                            <app-chart *ngIf="tabStatus['graph']"
                                     [style.display]="'block'"
                                     [data]="data"
+                                    [show]="active"
                                     [showMore]="showMore"
                             >
                             </app-chart>
@@ -31,18 +34,23 @@
                     </li>
                     <li ngbNavItem="clustergram">
                         <a ngbNavLink>Clustergram</a>
-                        <ng-template ngbNavContent>
-                            <app-clustergram
+                        <ng-template ngbNavContent let-active>
+                            <app-clustergram *ngIf="tabStatus['clustergram']"
                                     [data]="data"
+                                    [show]="active"
                                     [showMore]="showMore"
+                                    [style.minHeight.px]="300"
                             >
                             </app-clustergram>
                         </ng-template>
                     </li>
                     <li ngbNavItem="cloud">
                         <a ngbNavLink>Cloud</a>
-                        <ng-template ngbNavContent>
+                        <ng-template ngbNavContent let-active>
                             <app-cloud-viewer
+                                    *ngIf="tabStatus['cloud']"
+                                    [show]="active"
+                                    [timeInterval]="30"
                                     [data]="data"
                                     [showMore]="showMore"
                             >

@@ -8,11 +8,11 @@ import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { GraphSearchService } from '../services/graph-search.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
 import { GraphSearchParameters } from '../graph-search';
-import { ModuleProperties } from '../../shared/modules';
+import { ModuleProperties } from 'app/shared/modules';
 
 @Component({
   selector: 'app-graph-search',

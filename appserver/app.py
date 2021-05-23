@@ -4,7 +4,7 @@ import logging
 import os
 import click
 import sentry_sdk
-from flask import request
+from flask import g, request
 
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text
@@ -118,13 +118,6 @@ def seed():
             db.session.commit()
 
         logger.info("Fixtures imported")
-
-
-@app.cli.command("init-neo4j")
-def init_neo4j():
-    # Sets up the proper indexes for Neo4j
-    from db import setup as neo4jsetup
-    neo4jsetup()
 
 
 @app.cli.command("drop_tables")

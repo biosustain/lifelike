@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { CollectionModel } from '../../shared/utils/collection-model';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 
 @Component({
   selector: 'app-directory-preview',

@@ -1,7 +1,7 @@
 import { ComponentRef, Injectable, InjectionToken, Injector, NgZone } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { RankedItem } from '../../shared/schemas/common';
+import { RankedItem } from 'app/shared/schemas/common';
 import { CreateDialogOptions } from './object-creation.service';
 import { SearchType } from '../../search/shared';
 import {
@@ -13,10 +13,10 @@ import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { openModal } from '../../shared/utils/modals';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { openModal } from 'app/shared/utils/modals';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -177,12 +177,26 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
  */
 @Injectable()
 export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
-  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper) {
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+              protected readonly filesystemService: FilesystemService) {
     super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
     return true;
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([{
+      name: 'Download',
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          map(blob => {
+            return new File([blob], object.filename);
+          }),
+        );
+      },
+    }]);
   }
 }
 
