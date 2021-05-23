@@ -10,9 +10,11 @@ import { AuthEffects } from './store/effects';
 
 import { AuthGuard } from './guards/auth-guard.service';
 import { LoginGuard } from './guards/login-guard.service';
+import { ResetPasswordDialogComponent } from './components/reset-password-dialog.component';
 
 const components = [
     LoginComponent,
+    ResetPasswordDialogComponent
 ];
 
 @NgModule({
@@ -28,5 +30,6 @@ const components = [
         LoginGuard,
     ],
     exports: components,
+    entryComponents: [ResetPasswordDialogComponent]
 })
 export class AuthModule {}
