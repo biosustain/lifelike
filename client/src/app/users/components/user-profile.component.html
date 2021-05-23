@@ -1,5 +1,5 @@
 <div class="alert alert-info">
-  We're working on letting you change your profile.
+  We're working on letting you change your email.
 </div>
 <form [formGroup]="form" (ngSubmit)="submit()">
   <app-modal-header (cancel)="reset()">
@@ -11,7 +11,7 @@
       <input type="text" formControlName="username" id="username" [appFormInput]="form.get('username')" appAutoFocus>
     </app-form-row>
 
-    <app-form-row for="email" label="Email" [control]="form.get('email')">
+    <app-form-row for="email" label="Email" ngbTooltip="Not yet implemented." [control]="form.get('email')">
       <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')">
     </app-form-row>
 
