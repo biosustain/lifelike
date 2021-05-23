@@ -9,22 +9,13 @@ import jwt
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
+from flask import json, jsonify, request
 from json import JSONDecodeError
+from neo4j.graph import Node as N4jDriverNode
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
-from unidecode import unidecode
-
-from flask import json, jsonify, request
-
-from py2neo import Node
 
 from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
-
-
-def clean_char(c) -> str:
-    # pdfminer does not correctly convert
-    # convert all unicode characters to nearest ascii
-    return unidecode(c)
 
 
 def normalize_str(s) -> str:
@@ -404,9 +395,8 @@ def compute_hash(data: dict, **kwargs) -> str:
     return hexdigest
 
 
-def get_first_known_label_from_node(node: Node):
-    labels_as_str = str(node.labels).split(':')[1:]  # First item is always ''
-    return get_first_known_label_from_list(labels_as_str)
+def get_first_known_label_from_node(node: N4jDriverNode):
+    return get_first_known_label_from_list(node.labels)
 
 
 def get_first_known_label_from_list(labels: List[str]):
@@ -417,11 +407,10 @@ def get_first_known_label_from_list(labels: List[str]):
     raise ValueError('Detected node label of an unknown type!')
 
 
-def get_known_domain_labels_from_node(node: Node):
-    labels_as_str = str(node.labels).split(':')[1:]
+def get_known_domain_labels_from_node(node: N4jDriverNode):
     domain_labels = []
 
-    for label in labels_as_str:
+    for label in node.labels:
         if label in DOMAIN_LABELS:
             domain_labels.append(label)
 

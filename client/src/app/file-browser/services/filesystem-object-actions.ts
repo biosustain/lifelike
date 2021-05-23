@@ -3,16 +3,16 @@ import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { BehaviorSubject, forkJoin, from, merge, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
-import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
 import {
@@ -27,7 +27,7 @@ import {
   ObjectExportDialogComponent,
   ObjectExportDialogValue,
 } from '../components/dialog/object-export-dialog.component';
-import { openDownloadForBlob } from '../../shared/utils/files';
+import { openDownloadForBlob } from 'app/shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
@@ -230,7 +230,7 @@ export class FilesystemObjectActions {
   }
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
-    const progressDialogRef = this.createProgressDialog('Identifying annotations...');
+    const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
     const annotationRequests = targets.map(

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from '../services/interfaces';
-import { openPotentialInternalLink } from '../../shared/utils/browser';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-info-view-panel',
@@ -61,7 +61,8 @@ export class InfoViewPanelComponent {
   searchMapNodeInContent(node, types: string) {
     this.workspaceManager.navigate(['/search/content'], {
       queryParams: {
-        q: node.display_name,
+        q: '',
+        phrase: node.display_name,
         types,
         limit: 20,
         page: 1

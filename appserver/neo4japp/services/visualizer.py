@@ -1,4 +1,5 @@
-from typing import List
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from typing import Dict, List
 
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.data_transfer_objects.visualization import (
@@ -17,7 +18,10 @@ from neo4japp.data_transfer_objects.visualization import (
 )
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import KgService
-from neo4japp.util import get_first_known_label_from_node
+from neo4japp.util import (
+
+    get_first_known_label_from_node
+)
 
 
 class VisualizerService(KgService):
@@ -25,15 +29,7 @@ class VisualizerService(KgService):
         super().__init__(graph=graph, session=session)
 
     def expand_graph(self, node_id: str, filter_labels: List[str]):
-        query = self.get_expand_query()
-
-        result = self.graph.run(
-            query,
-            {
-                'node_id': node_id,
-                'labels': filter_labels
-            }
-        ).data()
+        result = self.graph.read_transaction(self.get_expand_query, node_id, filter_labels)
 
         nodes = []
         relationships = []
@@ -51,17 +47,14 @@ class VisualizerService(KgService):
         page: int,
         limit: int
     ):
-        query = self.get_snippets_from_edges_query()
-        return self.graph.run(
-            query,
-            {
-                'from_ids': from_ids,
-                'to_ids': to_ids,
-                'description': description,  # All the edges should have the same label
-                'skip': (page - 1) * limit,
-                'limit': limit,
-            }
-        ).data()
+        return self.graph.read_transaction(
+            self.get_snippets_from_edges_query,
+            from_ids,
+            to_ids,
+            description,
+            (page - 1) * limit,
+            limit
+        )
 
     def get_snippets_from_node_pair(
         self,
@@ -70,17 +63,13 @@ class VisualizerService(KgService):
         page: int,
         limit: int
     ):
-        query = self.get_snippets_from_node_pair_query()
-
-        return self.graph.run(
-            query,
-            {
-                'from_id': from_id,
-                'to_id': to_id,
-                'skip': (page - 1) * limit,
-                'limit': limit,
-            }
-        ).data()
+        return self.graph.read_transaction(
+            self.get_snippets_from_node_pair_query,
+            from_id,
+            to_id,
+            (page - 1) * limit,
+            limit
+        )
 
     def get_snippet_count_from_edges(
         self,
@@ -88,29 +77,23 @@ class VisualizerService(KgService):
         to_ids: List[int],
         description: str,
     ):
-        query = self.get_snippet_count_from_edges_query()
-        return self.graph.run(
-            query,
-            {
-                'from_ids': from_ids,
-                'to_ids': to_ids,
-                'description': description,  # All the edges should have the same label
-            }
-        ).evaluate()
+        return self.graph.read_transaction(
+            self.get_snippet_count_from_edges_query,
+            from_ids,
+            to_ids,
+            description
+        )['snippet_count']
 
     def get_snippet_count_from_node_pair(
         self,
         from_id: int,
         to_id: int,
     ):
-        query = self.get_snippet_count_from_node_pair_query()
-        return self.graph.run(
-            query,
-            {
-                'from_id': from_id,
-                'to_id': to_id,
-            }
-        ).evaluate()
+        return self.graph.read_transaction(
+            self.get_snippet_count_from_node_pair_query,
+            from_id,
+            to_id
+        )['snippet_count']
 
     def get_reference_table_data(self, node_edge_pairs: List[ReferenceTablePair]):
         # For duplicate edges, We need to remember which true node ID pairs map to which
@@ -128,15 +111,12 @@ class VisualizerService(KgService):
         description = node_edge_pairs[0].edge.label  # Every edge should have the same label
         direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
-        query = self.get_individual_snippet_count_from_edges_query()
-        counts = self.graph.run(
-            query,
-            {
-                'from_ids': from_ids,
-                'to_ids': to_ids,
-                'description': description,
-            }
-        ).data()
+        counts = self.graph.read_transaction(
+            self.get_individual_snippet_count_from_edges_query,
+            from_ids,
+            to_ids,
+            description
+        )
 
         reference_table_rows: List[ReferenceTableRow] = []
         for row in counts:
@@ -172,12 +152,12 @@ class VisualizerService(KgService):
             for reference in row['references']:
                 snippets.append(
                     Snippet(
-                        reference=GraphNode.from_py2neo(
+                        reference=GraphNode.from_neo4j(
                             reference['snippet'],
                             display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
                             primary_label_fn=get_first_known_label_from_node,
                         ),
-                        publication=GraphNode.from_py2neo(
+                        publication=GraphNode.from_neo4j(
                             reference['publication'],
                             display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                             primary_label_fn=get_first_known_label_from_node,
@@ -229,12 +209,12 @@ class VisualizerService(KgService):
                 to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_py2neo(
+                    reference=GraphNode.from_neo4j(
                         reference['snippet'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
                     ),
-                    publication=GraphNode.from_py2neo(
+                    publication=GraphNode.from_neo4j(
                         reference['publication'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
@@ -265,14 +245,12 @@ class VisualizerService(KgService):
         elif (label == 'Disease'):
             sanitized_label = 'Disease'
 
-        query = self.get_associated_type_snippet_count_query(sanitized_label)
-        results = self.graph.run(
-            query,
-            {
-                'source_node': source_node,
-                'associated_nodes': associated_nodes
-            }
-        ).data()
+        results = self.graph.read_transaction(
+            self.get_associated_type_snippet_count_query,
+            sanitized_label,
+            source_node,
+            associated_nodes
+        )
 
         return GetAssociatedTypesResult(
             associated_data=results
@@ -294,12 +272,12 @@ class VisualizerService(KgService):
                 to_node_id=to_id,
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_py2neo(
+                    reference=GraphNode.from_neo4j(
                         reference['snippet'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
                     ),
-                    publication=GraphNode.from_py2neo(
+                    publication=GraphNode.from_neo4j(
                         reference['publication'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
@@ -316,8 +294,10 @@ class VisualizerService(KgService):
             query_data={'from_node_id': from_id, 'to_node_id': to_id},
         )
 
-    def get_expand_query(self):
-        query = """
+    def get_expand_query(self, tx: Neo4jTx, node_id: str, labels: List[str]) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
                 MATCH (n)
                 WHERE ID(n)=$node_id
                 MATCH (n)-[l:ASSOCIATED]-(m)
@@ -325,113 +305,147 @@ class VisualizerService(KgService):
                 RETURN
                     apoc.convert.toSet([n] + collect(m)) AS nodes,
                     apoc.convert.toSet(collect(l)) AS relationships
+                """,
+                node_id=node_id, labels=labels
+            )
+        )
+
+    def get_associated_type_snippet_count_query(
+        self,
+        tx,
+        sanitized_label: str,
+        source_node: int,
+        associated_nodes: List[int]
+    ):
+        return list(
+            tx.run(
+                f"""
+                MATCH
+                    (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{sanitized_label})
+                WHERE
+                    ID(f) = $source_node AND
+                    ID(t) IN $associated_nodes
+                WITH
+                    a AS association,
+                    t.name as name,
+                    ID(t) as node_id
+                MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                RETURN name, node_id, COUNT(s) as snippet_count
+                ORDER BY snippet_count DESC
+                """,
+                source_node=source_node, associated_nodes=associated_nodes
+            ).data()
+        )
+
+    def get_snippets_from_edges_query(
+        self,
+        tx: Neo4jTx,
+        from_ids: List[int],
+        to_ids: List[int],
+        description: str,
+        skip: int,
+        limit: int
+    ) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+                WHERE
+                    ID(f) IN $from_ids AND
+                    ID(t) IN $to_ids AND
+                    a.description=$description
+                WITH
+                    a AS association,
+                    ID(f) as from_id,
+                    ID(t) as to_id,
+                    a.description as description
+                MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                WITH
+                    COUNT(s) as snippet_count,
+                    collect({
+                        snippet:s,
+                        publication:p,
+                        raw_score:r.raw_score,
+                        normalized_score:r.normalized_score
+                    }) as references,
+                    max(p.pub_year) as max_pub_year,
+                    from_id,
+                    to_id,
+                    description
+                ORDER BY snippet_count DESC, max_pub_year DESC
+                UNWIND references as reference
+                WITH
+                    snippet_count,
+                    reference,
+                    from_id,
+                    to_id,
+                    description
+                ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+                SKIP $skip LIMIT $limit
+                RETURN collect(reference) as references, from_id, to_id, description
+                """,
+                from_ids=from_ids, to_ids=to_ids, description=description, skip=skip, limit=limit
+            )
+        )
+
+    def get_snippets_from_node_pair_query(
+        self,
+        tx: Neo4jTx,
+        from_id: List[int],
+        to_id: List[int],
+        skip: int,
+        limit: int
+    ) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+                WHERE
+                    ID(f)=$from_id AND
+                    ID(t)=$to_id
+                WITH
+                    a AS association,
+                    ID(f) as from_id,
+                    ID(t) as to_id,
+                    a.description as description
+                MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                WITH
+                    COUNT(s) as snippet_count,
+                    collect({
+                        snippet:s,
+                        publication:p,
+                        raw_score:r.raw_score,
+                        normalized_score:r.normalized_score
+                    }) as references,
+                    max(p.pub_year) as max_pub_year,
+                    from_id,
+                    to_id,
+                    description
+                ORDER BY snippet_count DESC, max_pub_year DESC
+                UNWIND references as reference
+                WITH
+                    snippet_count,
+                    reference,
+                    from_id,
+                    to_id,
+                    description
+                ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+                SKIP $skip LIMIT $limit
+                RETURN collect(reference) as references, from_id, to_id, description
+                """,
+                from_id=from_id, to_id=to_id, skip=skip, limit=limit
+            )
+        )
+
+    def get_snippet_count_from_edges_query(
+        self,
+        tx: Neo4jTx,
+        from_ids: List[int],
+        to_ids: List[int],
+        description: str
+    ) -> Neo4jRecord:
+        return tx.run(
             """
-        return query
-
-    def get_associated_type_snippet_count_query(self, to_label: str):
-        query = """
-            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{})
-            WHERE
-                ID(f) = $source_node AND
-                ID(t) IN $associated_nodes
-            WITH
-                a AS association,
-                t.name as name,
-                ID(t) as node_id
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            RETURN name, node_id, COUNT(s) as snippet_count
-            ORDER BY snippet_count DESC
-        """.format(to_label)
-        return query
-
-    def get_snippets_from_edge_query(self, from_label: str, to_label: str):
-        query = """
-            MATCH (f:{})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{})
-            WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
-            WITH a AS association
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            RETURN s AS reference, p AS publication
-            ORDER BY p.pub_year DESC
-        """.format(from_label, to_label)
-        return query
-
-    def get_snippets_from_edges_query(self):
-        return """
-            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
-            WHERE
-                ID(f) IN $from_ids AND
-                ID(t) IN $to_ids AND
-                a.description=$description
-            WITH
-                a AS association,
-                ID(f) as from_id,
-                ID(t) as to_id,
-                a.description as description
-            MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            WITH
-                COUNT(s) as snippet_count,
-                collect({
-                    snippet:s,
-                    publication:p,
-                    raw_score:r.raw_score,
-                    normalized_score:r.normalized_score
-                }) as references,
-                max(p.pub_year) as max_pub_year,
-                from_id,
-                to_id,
-                description
-            ORDER BY snippet_count DESC, max_pub_year DESC
-            UNWIND references as reference
-            WITH
-                snippet_count,
-                reference,
-                from_id,
-                to_id,
-                description
-            ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
-            SKIP $skip LIMIT $limit
-            RETURN collect(reference) as references, from_id, to_id, description
-        """
-
-    def get_snippets_from_node_pair_query(self):
-        return """
-            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
-            WHERE
-                ID(f)=$from_id AND
-                ID(t)=$to_id
-            WITH
-                a AS association,
-                ID(f) as from_id,
-                ID(t) as to_id,
-                a.description as description
-            MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            WITH
-                COUNT(s) as snippet_count,
-                collect({
-                    snippet:s,
-                    publication:p,
-                    raw_score:r.raw_score,
-                    normalized_score:r.normalized_score
-                }) as references,
-                max(p.pub_year) as max_pub_year,
-                from_id,
-                to_id,
-                description
-            ORDER BY snippet_count DESC, max_pub_year DESC
-            UNWIND references as reference
-            WITH
-                snippet_count,
-                reference,
-                from_id,
-                to_id,
-                description
-            ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
-            SKIP $skip LIMIT $limit
-            RETURN collect(reference) as references, from_id, to_id, description
-        """
-
-    def get_snippet_count_from_edges_query(self):
-        return """
             MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
             WHERE
                 ID(f) IN $from_ids AND
@@ -443,10 +457,18 @@ class VisualizerService(KgService):
                 ID(t) as to_id
             MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN COUNT(s) as snippet_count
-        """
+            """,
+            from_ids=from_ids, to_ids=to_ids, description=description
+        ).single()
 
-    def get_snippet_count_from_node_pair_query(self):
-        return """
+    def get_snippet_count_from_node_pair_query(
+        self,
+        tx: Neo4jTx,
+        from_id: int,
+        to_id: int
+    ) -> Neo4jRecord:
+        return tx.run(
+            """
             MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
             WHERE
                 ID(f)=$from_id AND
@@ -457,34 +479,46 @@ class VisualizerService(KgService):
                 ID(t) as to_id
             MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN COUNT(s) as snippet_count
-        """
+            """,
+            from_id=from_id, to_id=to_id
+        ).single()
 
-    def get_individual_snippet_count_from_edges_query(self):
-        query = """
-            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
-            WHERE
-                ID(f) IN $from_ids AND
-                ID(t) IN $to_ids AND
-                a.description=$description
-            WITH
-                a as association,
-                ID(f) as from_id,
-                ID(t) as to_id,
-                labels(f) as from_labels,
-                labels(t) as to_labels
-            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            WITH
-                COUNT(s) as snippet_count,
-                collect({
-                    snippet:s,
-                    publication:p
-                }) as references,
-                max(p.pub_year) as max_pub_year,
-                from_id,
-                to_id,
-                from_labels,
-                to_labels
-            ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
-            RETURN from_id, to_id, from_labels, to_labels, snippet_count as count
-        """
-        return query
+    def get_individual_snippet_count_from_edges_query(
+        self,
+        tx: Neo4jTx,
+        from_ids: List[int],
+        to_ids: List[int],
+        description: str
+    ) -> List[Neo4jRecord]:
+        return list(
+            tx.run(
+                """
+                MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+                WHERE
+                    ID(f) IN $from_ids AND
+                    ID(t) IN $to_ids AND
+                    a.description=$description
+                WITH
+                    a as association,
+                    ID(f) as from_id,
+                    ID(t) as to_id,
+                    labels(f) as from_labels,
+                    labels(t) as to_labels
+                OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                WITH
+                    COUNT(s) as snippet_count,
+                    collect({
+                        snippet:s,
+                        publication:p
+                    }) as references,
+                    max(p.pub_year) as max_pub_year,
+                    from_id,
+                    to_id,
+                    from_labels,
+                    to_labels
+                ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
+                RETURN from_id, to_id, from_labels, to_labels, snippet_count as count
+                """,
+                from_ids=from_ids, to_ids=to_ids, description=description
+            )
+        )

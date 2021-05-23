@@ -5,12 +5,9 @@ import typing
 from io import BufferedIOBase
 from typing import Optional, List, Dict
 
-import graphviz
-
-import requests
-
 import textwrap
-
+import graphviz
+import requests
 from pdfminer import high_level
 
 from neo4japp.models import Files
@@ -30,7 +27,6 @@ from neo4japp.constants import (
     BASE_IMAGE_HEIGHT,
     IMAGE_HEIGHT_INCREMENT
     )
-
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types

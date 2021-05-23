@@ -20,11 +20,11 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../annotation-type';
-import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import {
   AnnotationDragEvent,
   AnnotationHighlightResult,
@@ -33,13 +33,13 @@ import {
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { map } from 'rxjs/operators';
-import { mapBlobToBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { SearchControlComponent } from '../../shared/components/search-control.component';
+import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -478,6 +478,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
    * @param annotationHighlightId - the ID of an annotation to highlight, if any
    */
   openPdf(hashId: string, loc: Location = null, annotationHighlightId: string = null) {
+    this.pendingScroll = loc;
     if (this.object != null && this.currentFileId === this.object.hashId) {
       if (loc) {
         this.scrollInPdf(loc);
@@ -487,7 +488,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       }
       return;
     }
-    this.pendingScroll = loc;
     this.pendingAnnotationHighlightId = annotationHighlightId;
     this.pdfFileLoaded = false;
     this.ready = false;
@@ -517,12 +517,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   scrollInPdf(loc: Location) {
+    this.pendingScroll = loc;
     if (!this.pdfFileLoaded) {
       console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
-      this.pendingScroll = loc;
       return;
     }
     this.goToPosition.next(loc);
+  }
+
+  goToPositionVisit(loc: Location) {
+    this.pendingScroll = null;
   }
 
   highlightAnnotation(annotationId: string) {
@@ -551,7 +555,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.pdfFileLoaded = status;
     if (this.pendingScroll) {
       this.scrollInPdf(this.pendingScroll);
-      this.pendingScroll = null;
     }
     if (this.pendingAnnotationHighlightId) {
       this.highlightAnnotation(this.pendingAnnotationHighlightId);

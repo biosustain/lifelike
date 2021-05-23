@@ -20,7 +20,7 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
-import { nullCoalesce } from '../../../shared/utils/types';
+import { nullCoalesce } from 'app/shared/utils/types';
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;

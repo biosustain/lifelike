@@ -32,9 +32,9 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
-import { getBoundingClientRectRelativeToContainer } from '../shared/utils/dom';
-import { openModal } from '../shared/utils/modals';
-import { ErrorHandler } from '../shared/services/error-handler.service';
+import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
+import { openModal } from 'app/shared/utils/modals';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 declare var jQuery: any;
 
@@ -126,6 +126,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
   @Output() searchChange = new EventEmitter<string>();
   @Output() annotationHighlightChange = new EventEmitter<AnnotationHighlightResult>();
+  @Output() goToPositionVisit = new EventEmitter<Location>();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -154,6 +155,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   allPages = 0;
   currentRenderedPage = 0;
   showNextFindFeedback = false;
+  goToPositionVisitAfterFind: Location | undefined = null;
 
   pageRef = {};
   index: any;
@@ -214,6 +216,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       if (sub != null) {
         if (sub.pageNumber != null) {
           this.scrollToPage(sub.pageNumber, sub.rect);
+          this.goToPositionVisit.emit(sub);
         } else if (sub.jumpText != null) {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
@@ -223,6 +226,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             keyword: prefixQuery,
             findPrevious: true,
           });
+          this.goToPositionVisitAfterFind = sub;
+        } else {
+          this.goToPositionVisit.emit(sub);
         }
       }
     });
@@ -949,7 +955,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   isSelectionAnnotatable(): boolean {
     const text = window.getSelection().toString();
-    return text.trim() != '' && text.length <= 200;
+    return text.trim() != '';
   }
 
   copySelectionText() {
@@ -1306,6 +1312,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
 
   findControlStateUpdated(event) {
+    if (this.goToPositionVisitAfterFind != null) {
+      this.goToPositionVisit.emit(this.goToPositionVisitAfterFind);
+      this.goToPositionVisitAfterFind = null;
+    }
     if (this.showNextFindFeedback) {
       if (event.state === FindState.FOUND) {
         this.showNextFindFeedback = false;
@@ -1360,7 +1370,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
     return ret;
   }
-
 }
 
 export interface AnnotationHighlightResult {

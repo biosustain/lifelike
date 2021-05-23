@@ -1,4 +1,4 @@
-import { PDFAnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
+import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
@@ -13,10 +13,12 @@ import { AnnotationsService } from './annotations.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from './filesystem.service';
+import { ResultMapping } from 'app/shared/schemas/common';
+import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
 @Injectable()
 export class ObjectCreationService {
@@ -47,6 +49,7 @@ export class ObjectCreationService {
       title: `Creating '${request.filename}'`,
       progressObservable,
     });
+    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
 
     return this.filesystemService.create(request)
       .pipe(
@@ -74,15 +77,23 @@ export class ObjectCreationService {
           // we can't actually show a progress percentage)
           progressObservable.next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Saved; identifying annotations...',
+            status: 'Saved; Parsing and identifying annotations...',
           }));
           return this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
           ).pipe(
-            map(() => object), // This method returns the object
+            map(result => {
+              results = [[object], [result]];
+              return object;
+            }), // This method returns the object
           );
         }),
-        finalize(() => progressDialogRef.close()),
+        finalize(() => {
+          progressDialogRef.close();
+          const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+          modalRef.componentInstance.objects = results[0];
+          modalRef.componentInstance.results = results[1];
+        }),
         this.errorHandler.create({label: 'Create object'}),
       );
   }

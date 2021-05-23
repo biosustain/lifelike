@@ -7,8 +7,8 @@ import {
 } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { UserCreationRequest } from '../../interfaces';
 
 @Component({
