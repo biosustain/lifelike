@@ -2,21 +2,22 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Subscription } from 'rxjs';
-import { ModuleAwareComponent } from '../../shared/modules';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MapComponent } from './map.component';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
+import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 
 @Component({
   selector: 'app-map-view',
@@ -42,9 +43,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
               filesystemObjectActions: FilesystemObjectActions,
+              dataTransferDataService: DataTransferDataService,
               protected readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
-      errorHandler, workspaceManager, filesystemObjectActions);
+      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

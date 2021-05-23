@@ -176,6 +176,7 @@
               [pdfSrc]="pdfData"
               [annotations]="annotations"
               [goToPosition]="goToPosition"
+              (goToPositionVisit)="goToPositionVisit($event)"
               [highlightAnnotations]="highlightAnnotationIds"
               [addedAnnotations]="addedAnnotations"
               [removedAnnotationIds]="removedAnnotationIds"

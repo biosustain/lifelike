@@ -17,19 +17,20 @@ import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleProperties } from '../../shared/modules';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ModuleProperties } from 'app/shared/modules';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { tokenizeQuery } from '../../shared/utils/find';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { tokenizeQuery } from 'app/shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
+import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 
 @Component({
   selector: 'app-map',
@@ -75,6 +76,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly errorHandler: ErrorHandler,
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly dataTransferDataService: DataTransferDataService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([

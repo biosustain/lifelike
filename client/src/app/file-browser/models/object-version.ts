@@ -1,10 +1,10 @@
 import { AppUser } from '../../interfaces';
-import { RecursivePartial } from '../../shared/utils/types';
+import { RecursivePartial } from 'app/shared/utils/types';
 import { ObjectVersionData } from '../schema';
-import { CollectionModel } from '../../shared/utils/collection-model';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import { FilesystemObject } from './filesystem-object';
 import { cloneDeep } from 'lodash';
-import { ModelList } from '../../shared/models';
+import { ModelList } from 'app/shared/models';
 import { of } from 'rxjs';
 
 export class ObjectVersion {

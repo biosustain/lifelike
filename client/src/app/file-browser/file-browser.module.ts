@@ -47,7 +47,8 @@ import { ObjectCreationService } from './services/object-creation.service';
 import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
-import { DATA_TRANSFER_DATA_PROVIDER } from '../shared/services/data-transfer-data.service';
+import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
+import { ObjectViewerComponent } from './components/object-viewer.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +83,7 @@ import { DATA_TRANSFER_DATA_PROVIDER } from '../shared/services/data-transfer-da
     ObjectAnnotationHistoryComponent,
     ObjectReannotateResultsDialogComponent,
     FilesystemObjectTargetDirective,
+    ObjectViewerComponent,
   ],
   imports: [
     SharedModule,
