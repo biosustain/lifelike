@@ -14,4 +14,8 @@ export interface UserUpdateRequest {
   lastName: string;
 }
 
+export interface UserResetPasswordRequest {
+  email: string;
+}
+
 
