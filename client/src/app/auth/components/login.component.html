@@ -16,6 +16,9 @@
         Login
       </button>
     </form>
+    <button (click)="displayResetDialog()" class="btn btn-block">
+      Reset password
+    </button>
   </div>
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
