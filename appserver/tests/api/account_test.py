@@ -145,7 +145,8 @@ def test_can_update_only_allowed_attributes(client, test_user, attribute, value,
         content_type='application/json'
     )
 
-    assert response.status_code == 204
+    assert response.status_code == 200
+    # assert response.status_code == 204
 
     response = client.get(
         f'/accounts/{test_user.hash_id}', headers=headers, content_type='application/json')
