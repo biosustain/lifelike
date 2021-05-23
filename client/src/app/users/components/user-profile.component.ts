@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import { AppUser,  UserUpdateRequest } from 'app/interfaces';
+import { AppUser, PrivateAppUser, UserUpdateRequest } from 'app/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -10,16 +10,21 @@ import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { AccountService } from '../services/account.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { ResultList } from '../../shared/schemas/common';
 
 
 @Component({
   selector: 'app-user-profile',
   templateUrl: './user-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+
 })
 export class UserProfileComponent implements OnInit  {
 
   @Input() user: AppUser;
+  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() => this.accountService.getUsers());
+
 
   form = new FormGroup({
     username: new FormControl({value: '', disabled: false}),
@@ -45,6 +50,7 @@ export class UserProfileComponent implements OnInit  {
 
   getValue(): UserUpdateRequest {
     return {
+      hashId: this.user.hashId,
       ...this.form.value,
     };
   }
@@ -71,6 +77,7 @@ export class UserProfileComponent implements OnInit  {
       progressDialogRef.close();
       this.accountService.getUserList();
       this.user = user;
+      this.reset();
       this.snackBar.open(
         `User ${user.username} updated!`,
         'close',

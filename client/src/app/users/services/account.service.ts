@@ -35,7 +35,6 @@ export class AccountService implements OnDestroy {
     }
 
     updateUser(request: UserUpdateRequest) {
-        console.log(request);
         return this.http.put<{result: AppUser}>(
             `${this.accountApi}/${request.hashId}`, request,
         ).pipe(map(resp => resp.result));
