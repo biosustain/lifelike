@@ -362,7 +362,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-
             if 'hyperlink' in node['data'] and node['data']['hyperlink']:
                 params['href'] = node['data']['hyperlink']
             if 'source' in node['data'] and node['data']['source']:
