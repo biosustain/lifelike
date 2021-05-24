@@ -10,9 +10,7 @@ import {
 
 import { cloneDeep } from 'lodash';
 
-import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
-
-import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
@@ -22,16 +20,21 @@ import { MapViewComponent } from '../map-view.component';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
-import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
+import {
+  CompoundAction,
+  GraphAction,
+  GraphActionReceiver,
+} from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
-import { makeid } from 'app/shared/utils/identifiers';
 import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 import { InfoPanel } from '../../models/info-panel';
+import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
+import { extractGraphEntityActions } from '../../utils/data';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -151,7 +154,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
+      new PasteKeyboardShortcut(this.graphCanvas, this.dataTransferDataService), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
@@ -213,7 +217,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   dragOver(event: DragEvent) {
-    if (event.dataTransfer.types.includes('application/lifelike-node')) {
+    if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
       if (!this.dropTargeted) {
@@ -226,25 +230,20 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   drop(event: DragEvent) {
     event.preventDefault();
+
     this.ngZone.run(() => {
       this.dropTargeted = false;
     });
-    const data = event.dataTransfer.getData('application/lifelike-node');
-    const node = JSON.parse(data) as UniversalGraphNode;
+
     const hoverPosition = this.graphCanvas.hoverPosition;
     if (hoverPosition != null) {
-      this.graphCanvas.execute(new NodeCreation(
-        `Create ${node.display_name} node`, {
-          hash: makeid(),
-          ...node,
-          data: {
-            ...node.data,
-            x: hoverPosition.x,
-            y: hoverPosition.y,
-          },
-        }, true,
-      ));
-      this.graphCanvas.focus();
+      const items = this.dataTransferDataService.extract(event.dataTransfer);
+      const actions = extractGraphEntityActions(items, hoverPosition);
+
+      if (actions.length) {
+        this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
+        this.graphCanvas.focus();
+      }
     }
   }
 
