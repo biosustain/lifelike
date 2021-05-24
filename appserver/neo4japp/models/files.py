@@ -304,7 +304,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         return f'/{"/".join(filename_path)}'
 
     @property
-    def id_path(self):
+    def id_path(self) -> List[int]:
         """
         List representing a path of ids from the root project of this file, down to the file
         itself. Similar to filepath, but useful if we want to quickly get the data of any of the
