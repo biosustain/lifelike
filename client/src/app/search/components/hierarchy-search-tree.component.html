@@ -4,7 +4,7 @@
     <mat-checkbox class="checklist-leaf-node"
                   color="primary"
                   [checked]="checklistSelection.isSelected(node)"
-                  (change)="leafItemSelectionToggle(node)">
+                  (change)="itemSelectionToggle(node)">
       {{node.data.trueFilename}}
       <i [class]="'fas ' + getIconForFileNode(node)"></i>
     </mat-checkbox>
@@ -19,7 +19,7 @@
     </button>
     <mat-checkbox color="primary"
                   [checked]="checklistSelection.isSelected(node)"
-                  [indeterminate]="descendantsPartiallySelected(node)"
+                  [indeterminate]="(descendantsPartiallySelected(node) || (descendantsAllSelected(node)) && !checklistSelection.isSelected(node))"
                   (change)="itemSelectionToggle(node)">
       {{node.data.trueFilename}}
       <i [class]="'fas ' + getIconForFileNode(node)"></i>

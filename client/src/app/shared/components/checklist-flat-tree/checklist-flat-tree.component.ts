@@ -3,12 +3,29 @@ import { Input, OnDestroy, OnInit } from '@angular/core';
 
 import { Subject, Subscription } from 'rxjs';
 
-import { FlatNode } from 'app/shared/schemas/common';
+import { isNullOrUndefined } from 'util';
+
+import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree.component';
 
 export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeComponent<T> implements OnDestroy, OnInit {
   @Input() resetTree: Subject<boolean>;
+  @Input() set initiallyCheckedNodesFilterFn(filterFn: (t: FlatNode<T>) => boolean) {
+    this._initiallyCheckedNodesFilterFn = filterFn;
+    if (!isNullOrUndefined(this.treeData)) {
+      this.checklistInit(this.flatNodes.filter(this._initiallyCheckedNodesFilterFn));
+    }
+  }
+  @Input() set treeData(treeData: TreeNode<T>[]) {
+    super.treeData = treeData;
+    this.checklistInit(this.flatNodes.filter(this._initiallyCheckedNodesFilterFn));
+  }
+  get treeData() {
+    return super.treeData;
+  }
+
+  private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
 
   selectionChangedSubscription: Subscription;
 
@@ -18,6 +35,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   constructor() {
     super();
     this.selectionChangedSubscription = this.checklistSelection.changed.subscribe(() => this.selectionChanged());
+    this._initiallyCheckedNodesFilterFn = (t: FlatNode<T>) => false;
   }
 
   ngOnInit() {
@@ -25,6 +43,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   }
 
   ngOnDestroy() {
+    super.ngOnDestroy();
     this.resetTree.complete();
     this.selectionChangedSubscription.unsubscribe();
   }
@@ -34,65 +53,50 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
     this.checklistSelection.clear();
   }
 
-  /** Whether all the descendants of the node are selected. */
+  checklistInit(nodesToCheck: FlatNode<T>[]) {
+    this.reset();
+    nodesToCheck.forEach((flatNode) => {
+      // Check and expand this node
+      this.itemSelectionToggle(flatNode);
+      this.treeControl.expand(flatNode);
+
+      // Expand all parents as well
+      let parent: FlatNode<T> | null = this.getParentNode(flatNode);
+      while (parent) {
+        this.treeControl.expand(parent);
+        parent = this.getParentNode(parent);
+      }
+    });
+  }
+
+  /**
+   * Determines whether all descendants of a node are selected.
+   * @param node node whose descendants we will check
+   * @returns true if all descendants are selected, false otherwise
+   */
   descendantsAllSelected(node: FlatNode<T>): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    const descAllSelected = descendants.length > 0 && descendants.every(child => {
+    return descendants.length > 0 && descendants.every(child => {
       return this.checklistSelection.isSelected(child);
     });
-    return descAllSelected;
   }
 
-  /** Whether part of the descendants are selected */
+  /**
+   * Determines whether some descendants of a node are selected.
+   * @param node node whose descendants we will check
+   * @returns true if some descendants are selected, false otherwise
+   */
   descendantsPartiallySelected(node: FlatNode<T>): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    const result = descendants.some(child => this.checklistSelection.isSelected(child));
-    return result && !this.descendantsAllSelected(node);
+    const selectedDescendants = descendants.filter(child => this.checklistSelection.isSelected(child));
+    return selectedDescendants.length > 0 && selectedDescendants.length < descendants.length;
   }
 
-  /** Toggle item selection. Select/deselect all the descendants node */
-  itemSelectionToggle(node: FlatNode<T>): void {
-    this.checklistSelection.toggle(node);
-    const descendants = this.treeControl.getDescendants(node);
-    this.checklistSelection.isSelected(node)
-      ? this.checklistSelection.select(...descendants)
-      : this.checklistSelection.deselect(...descendants);
-
-    // Force update for the parent
-    descendants.forEach(child => this.checklistSelection.isSelected(child));
-    this.checkAllParentsSelection(node);
-  }
-
-  /** Toggle a leaf item selection. Check all the parents to see if they changed */
-  leafItemSelectionToggle(node: FlatNode<T>): void {
-    this.checklistSelection.toggle(node);
-    this.checkAllParentsSelection(node);
-  }
-
-  /* Checks all the parents when a leaf node is selected/unselected */
-  checkAllParentsSelection(node: FlatNode<T>): void {
-    let parent: FlatNode<T> | null = this.getParentNode(node);
-    while (parent) {
-      this.checkRootNodeSelection(parent);
-      parent = this.getParentNode(parent);
-    }
-  }
-
-  /** Check root node checked state and change it accordingly */
-  checkRootNodeSelection(node: FlatNode<T>): void {
-    const nodeSelected = this.checklistSelection.isSelected(node);
-    const descendants = this.treeControl.getDescendants(node);
-    const descAllSelected = descendants.length > 0 && descendants.every(child => {
-      return this.checklistSelection.isSelected(child);
-    });
-    if (nodeSelected && !descAllSelected) {
-      this.checklistSelection.deselect(node);
-    } else if (!nodeSelected && descAllSelected) {
-      this.checklistSelection.select(node);
-    }
-  }
-
-  /* Get the parent node of a node */
+  /**
+   * Get the parent of a node. Return null if there is no parent.
+   * @param node node to get the parent of
+   * @returns the parent node, or null if there is no parent
+   */
   getParentNode(node: FlatNode<T>): FlatNode<T> | null {
     const currentLevel = this.getLevel(node);
 
@@ -111,6 +115,8 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
     }
     return null;
   }
+
+  abstract itemSelectionToggle(node: FlatNode<T>): void;
 
   abstract selectionChanged(): any;
 }

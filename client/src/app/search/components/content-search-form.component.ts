@@ -61,8 +61,8 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
     if (params.hasOwnProperty('types') && params.types !== []) {
       params.types.forEach(type => q.push(`type:${type.shorthand}`));
     }
-    if (params.hasOwnProperty('projects') && params.projects !== []) {
-      params.projects.forEach(project => q.push(`project:${project}`));
+    if (params.hasOwnProperty('folders') && params.folders !== []) {
+      params.folders.forEach(folder => q.push(`folder:${folder}`));
     }
     // TODO: Add this back if we put synonyms back in the advanced search dialog
     // if (params.hasOwnProperty('synonyms') && !isNullOrUndefined(params.synonyms)) {

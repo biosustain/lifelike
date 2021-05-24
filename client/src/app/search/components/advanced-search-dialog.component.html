@@ -28,17 +28,28 @@
     </div>
 
     <!-- Projects field -->
-    <div class="form-group row">
+    <!-- <div class="form-group row">
       <label class="col-sm-4 col-form-label">Projects:</label>
       <div class="col-sm-8">
-        <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
-          assume the list of accessible projects will remain small as the site grows. -->
         <app-select formId="projects" [choices]="projects"
           [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
           (touch)="form.get('projects').markAsTouched()"
           [choiceLabel]="projectLabel">
         </app-select>
       </div>
+    </div> -->
+
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">Directory Filters:</label>
+    </div>
+
+    <div class="form-group row">
+      <app-hierarchy-search-tree
+        [treeData]="fileHierarchyTree"
+        [initiallyCheckedNodesFilterFn]="initiallyCheckedNodesFilterFn"
+        [resetTree]="resetHierarchyTreeSubject"
+        (folderSelectionChanged)="updateFolders($event)"
+      ></app-hierarchy-search-tree>
     </div>
 
     <!-- TODO: Might add this back in the future -->

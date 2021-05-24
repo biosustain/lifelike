@@ -137,6 +137,7 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
+    filepath = fields.String()
     true_filename = fields.String()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
@@ -273,6 +274,10 @@ class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
 
 
+class FileHierarchyRequestSchema(CamelCaseSchema):
+    directories_only = fields.Boolean(required=False)
+
+
 # Response
 # ----------------------------------------
 
@@ -291,7 +296,9 @@ class FileListSchema(ResultListSchema):
 
 
 class FileNode(CamelCaseSchema):
-    data = fields.Nested(FileSchema, only=('true_filename', 'description', 'mime_type'))
+    data = fields.Nested(FileSchema, only=(
+        'true_filename', 'description', 'mime_type', 'hash_id', 'filepath', 'parent'))
+    level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 
 

@@ -19,7 +19,8 @@ class ContentSearchSchema(CamelCaseSchema):
         required=True,
     )
     types = ma.String(default='', required=False)
-    projects = ma.String(default='', required=False)
+    filepaths = ma.String(default='', required=False)
+    # projects = ma.String(default='', required=False)
     phrase = ma.String(default='', required=False)
     wildcards = ma.String(default='', required=False)
     synonyms = ma.Boolean(default=True, required=False)
