@@ -29,6 +29,25 @@ services:
     depends_on:
       - elasticsearch
 
+  metricbeat:
+    container_name: metricbeat
+    user: ***ARANGO_USERNAME***
+    environment:
+      - MB_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - MB_ELASTICSEARCH_USERNAME=elastic
+      - MB_ELASTICSEARCH_PASSWORD=changeme
+      - MB_KIBANA_HOST=http://kibana:5601
+    build:
+      context: metricbeat/
+    volumes:
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+    networks:
+      - elastic
+
   filebeat:
     container_name: filebeat
     user: ***ARANGO_USERNAME***
@@ -48,4 +67,6 @@ services:
       - elasticsearch
       - logstash
     networks:
+      - frontend
+      - backend
       - elastic

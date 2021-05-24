@@ -230,7 +230,7 @@ export class FilesystemObjectActions {
   }
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
-    const progressDialogRef = this.createProgressDialog('Identifying annotations...');
+    const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
     const annotationRequests = targets.map(

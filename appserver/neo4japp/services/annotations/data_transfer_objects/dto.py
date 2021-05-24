@@ -1,6 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -125,21 +125,21 @@ class LMDBMatch():
 
 
 @attr.s(frozen=False)
-class EntityResults():
-    matched_type_anatomy: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_chemical: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_compound: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_disease: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_food: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_gene: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_phenomena: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_phenotype: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_protein: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_species: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_species_local: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+class RecognizedEntities():
+    recognized_anatomy: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_chemicals: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_compounds: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_diseases: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_foods: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_genes: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_phenomenas: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_phenotypes: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_proteins: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_species: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_local_species: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     # non LMDB entity types
-    matched_type_company: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
-    matched_type_entity: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_companies: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_entities: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
@@ -147,6 +147,14 @@ class SpecifiedOrganismStrain():
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class BestOrganismMatch():
+    entity_id: str = attr.ib()
+    organism_id: str = attr.ib()
+    closest_distance: float = attr.ib()
+    specified_organism_id: Optional[str] = attr.ib(default=None)
 
 
 @attr.s(frozen=True)
