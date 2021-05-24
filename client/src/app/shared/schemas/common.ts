@@ -1,12 +1,13 @@
 export interface TreeNode<T> {
   data: T;
+  level: number;
   children: TreeNode<T>[];
 }
 
 export interface FlatNode<F> {
-  expandable: boolean;
   data: F;
   level: number;
+  expandable: boolean;
 }
 
 export interface PaginatedRequestOptions {

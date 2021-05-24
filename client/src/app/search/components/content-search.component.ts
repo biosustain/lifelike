@@ -75,12 +75,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
     const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
-    const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
+    const foldersExists = this.params.hasOwnProperty('folders') && this.params.folders.length !== 0;
     const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
     const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
     // TODO: Doesn't really make sense for synoynms to be here, but we could add it in the future
 
-    return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
+    return !(qExists || typesExists || foldersExists || phraseExists || wildcardExists);
   }
 
   constructor(private modalService: NgbModal,
@@ -140,8 +140,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('types')) {
       advancedParams.types = getChoicesFromQuery(params, 'types', this.searchTypesMap);
     }
-    if (params.hasOwnProperty('projects')) {
-      advancedParams.projects = params.projects === '' ? [] : params.projects.split(';');
+    if (params.hasOwnProperty('folders')) {
+      advancedParams.folders = params.folders === '' ? [] : params.folders.split(';');
     }
     if (params.hasOwnProperty('phrase')) {
       advancedParams.phrase = params.phrase;
@@ -171,8 +171,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('types')) {
       advancedParams.types = params.types.map(value => value.shorthand).join(';');
     }
-    if (params.hasOwnProperty('projects')) {
-      advancedParams.projects = params.projects.join(';');
+    if (params.hasOwnProperty('folders')) {
+      advancedParams.folders = params.folders.join(';');
     }
     if (params.hasOwnProperty('phrase')) {
       advancedParams.phrase = params.phrase;
@@ -314,11 +314,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     );
     q = q.replace(/\btype:\S*/g, '');
 
-    // Remove 'projects' from q and add to the projects option of the advancedParams
-    const projectMatches = q.match(/\bproject:\S*/g);
-    const extractedProjects = projectMatches === null ? [] : projectMatches.map(projectVal => projectVal.split(':')[1]);
-    advancedParams.projects = extractedProjects;
-    q = q.replace(/\bproject:\S*/g, '');
+    // Remove 'folders' from q and add to the folders option of the advancedParams
+    const folderMatches = q.match(/\bfolder:\S*/g);
+    const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
+    advancedParams.folders = extractedFilepaths;
+    q = q.replace(/\bfolder:\S*/g, '');
 
     // Remove the first phrase from q and add to the phrase option of the advancedParams
     const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
