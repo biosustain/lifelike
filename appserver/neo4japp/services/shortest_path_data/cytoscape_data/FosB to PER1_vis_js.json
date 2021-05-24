@@ -1,0 +1,1056 @@
+{
+    "nodes": [
+        {
+            "id": "167",
+            "label": "RARA,G:RXRA at HOXB1 bivalent chromatin [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "166",
+            "label": "FOSB:JUND [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "165",
+            "label": "p-BMAL1:p-CLOCK,NPAS2 [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "164",
+            "label": "Histone H2A [nucleoplasm]",
+            "databaseLabel": "EntitySet",
+            "font": {
+                "color": "#8535dc"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#8535dc",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#8535dc"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#8535dc"
+                }
+            }
+        },
+        {
+            "id": "163",
+            "label": "Positive gene expression regulation by 'MYC gene:ESR1:ESTG:JUND:FOSB:Cohesin Complex [nucleoplasm]'",
+            "databaseLabel": "Regulation",
+            "font": {
+                "color": "#bf5858"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bf5858",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                }
+            }
+        },
+        {
+            "id": "162",
+            "label": "RARA,B:RXRA at HOXA4 bivalent chromatin [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "161",
+            "label": "Estrogen-responsive MYC gene expression",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "160",
+            "label": "Bivalent Nucleosome (H3K27me3, H3K4me3) [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "159",
+            "label": "NCOR1 [nucleoplasm]",
+            "databaseLabel": "EntityWithAccessionedSequence",
+            "font": {
+                "color": "#ff33ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ff33ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                }
+            }
+        },
+        {
+            "id": "158",
+            "label": "BMAL1:CLOCK,NPAS2 heterodimer is phosphorylated and translocates to the nucleus",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "157",
+            "label": "MYC gene, BCL2 gene: H3K9me2 nucleosome [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "156",
+            "label": "Overexpressed HIST1H2AC and ESR1:ESTG bind MYC and BCL2 genes",
+            "databaseLabel": "Reaction",
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": "155",
+            "label": "Positive gene expression regulation by 'p-BMAL1:p-CLOCK,NPAS2:PER1 gene [nucleoplasm]'",
+            "databaseLabel": "Regulation",
+            "font": {
+                "color": "#bf5858"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bf5858",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                }
+            }
+        },
+        {
+            "id": "154",
+            "label": "Retinoic acid activates HOXD4 chromatin",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "153",
+            "label": "Retinoic acid activates HOXB4 chromatin",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "152",
+            "label": "RARA,G:RXRA at HOXA1 bivalent chromatin [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "151",
+            "label": "NR1D1 (REV-ERBA):heme:Corepressor [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "150",
+            "label": "FOSB [nucleoplasm]",
+            "databaseLabel": "EntityWithAccessionedSequence",
+            "font": {
+                "color": "#ff33ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ff33ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                }
+            }
+        },
+        {
+            "id": "149",
+            "label": "Retinoic acid activates HOXB1 chromatin",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "148",
+            "label": "Retinoic acid activates HOXA1 chromatin",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "147",
+            "label": "p-BMAL1:p-CLOCK,NPAS2:PER1 gene [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "146",
+            "label": "RARA,B:RXRA at HOXB4 bivalent chromatin [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "145",
+            "label": "Expression of NPAS2",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "144",
+            "label": "Retinoic acid activates HOXA4 chromatin",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "143",
+            "label": "MYC gene, BCL2 gene [nucleoplasm]",
+            "databaseLabel": "DefinedSet",
+            "font": {
+                "color": "#d84a6d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#d84a6d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#d84a6d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#d84a6d"
+                }
+            }
+        },
+        {
+            "id": "142",
+            "label": "RARA,B:RXRA at HOXD4 bivalent chromatin [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "141",
+            "label": "NPAS2 [cytosol]",
+            "databaseLabel": "EntityWithAccessionedSequence",
+            "font": {
+                "color": "#ff33ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ff33ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                }
+            }
+        },
+        {
+            "id": "140",
+            "label": "NR1D1:heme:Corepressors:NPAS2 gene [nucleoplasm]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "139",
+            "label": "Negative gene expression regulation by 'NR1D1:heme:Corepressors:NPAS2 gene [nucleoplasm]'",
+            "databaseLabel": "Regulation",
+            "font": {
+                "color": "#bf5858"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bf5858",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bf5858"
+                }
+            }
+        },
+        {
+            "id": "138",
+            "label": "Expression of PERIOD-1",
+            "databaseLabel": "BlackBoxEvent",
+            "font": {
+                "color": "#9999ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#9999ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#9999ff"
+                }
+            }
+        },
+        {
+            "id": "137",
+            "label": "CLOCK,NPAS2 [cytosol]",
+            "databaseLabel": "DefinedSet",
+            "font": {
+                "color": "#d84a6d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#d84a6d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#d84a6d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#d84a6d"
+                }
+            }
+        },
+        {
+            "id": "136",
+            "label": "BMAL1:CLOCK,NPAS2 [cytosol]",
+            "databaseLabel": "Complex",
+            "font": {
+                "color": "#CC0066"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#CC0066",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#CC0066"
+                }
+            }
+        },
+        {
+            "id": "135",
+            "label": "MYC [nucleoplasm]",
+            "databaseLabel": "EntityWithAccessionedSequence",
+            "font": {
+                "color": "#ff33ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ff33ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                }
+            }
+        },
+        {
+            "id": "134",
+            "label": "PER1 [cytosol]",
+            "databaseLabel": "EntityWithAccessionedSequence",
+            "font": {
+                "color": "#ff33ff"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ff33ff",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ff33ff"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "204",
+            "label": "input",
+            "from": "167",
+            "to": "149",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "203",
+            "label": "hasComponent",
+            "from": "167",
+            "to": "160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "202",
+            "label": "hasComponent",
+            "from": "166",
+            "to": "150",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "201",
+            "label": "activeUnit",
+            "from": "163",
+            "to": "166",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "200",
+            "label": "input",
+            "from": "162",
+            "to": "144",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "199",
+            "label": "hasComponent",
+            "from": "162",
+            "to": "160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "198",
+            "label": "output",
+            "from": "161",
+            "to": "135",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "197",
+            "label": "regulatedBy",
+            "from": "161",
+            "to": "163",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "196",
+            "label": "hasComponent",
+            "from": "160",
+            "to": "164",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "195",
+            "label": "output",
+            "from": "158",
+            "to": "165",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "194",
+            "label": "input",
+            "from": "157",
+            "to": "156",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "193",
+            "label": "hasComponent",
+            "from": "157",
+            "to": "143",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "192",
+            "label": "output",
+            "from": "156",
+            "to": "164",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "191",
+            "label": "regulator",
+            "from": "155",
+            "to": "147",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "190",
+            "label": "output",
+            "from": "154",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "189",
+            "label": "output",
+            "from": "153",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "188",
+            "label": "input",
+            "from": "152",
+            "to": "148",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "187",
+            "label": "hasComponent",
+            "from": "152",
+            "to": "160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "186",
+            "label": "hasComponent",
+            "from": "151",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "185",
+            "label": "output",
+            "from": "149",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "184",
+            "label": "output",
+            "from": "148",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "183",
+            "label": "hasComponent",
+            "from": "147",
+            "to": "165",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "182",
+            "label": "input",
+            "from": "146",
+            "to": "153",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "181",
+            "label": "hasComponent",
+            "from": "146",
+            "to": "160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "180",
+            "label": "output",
+            "from": "145",
+            "to": "141",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "179",
+            "label": "regulatedBy",
+            "from": "145",
+            "to": "139",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "178",
+            "label": "output",
+            "from": "144",
+            "to": "159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "177",
+            "label": "hasMember",
+            "from": "143",
+            "to": "135",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "176",
+            "label": "hasComponent",
+            "from": "142",
+            "to": "160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "175",
+            "label": "input",
+            "from": "142",
+            "to": "154",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "174",
+            "label": "hasComponent",
+            "from": "140",
+            "to": "151",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "173",
+            "label": "regulator",
+            "from": "139",
+            "to": "140",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "172",
+            "label": "regulatedBy",
+            "from": "138",
+            "to": "155",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "171",
+            "label": "output",
+            "from": "138",
+            "to": "134",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "170",
+            "label": "hasMember",
+            "from": "137",
+            "to": "141",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "169",
+            "label": "input",
+            "from": "136",
+            "to": "158",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "168",
+            "label": "hasComponent",
+            "from": "136",
+            "to": "137",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        }
+    ]
+}
