@@ -1,13 +1,15 @@
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Input } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+
+import { Subscription } from 'rxjs';
 
 import { isNullOrUndefined } from 'util';
 
 import {TreeNode, FlatNode} from 'app/shared/schemas/common';
 
 
-export abstract class GenericFlatTreeComponent<T> {
+export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   protected _treeData: TreeNode<T>[] = [];
   @Input() set treeData(treeData: TreeNode<T>[]) {
     this._treeData = treeData;
@@ -21,11 +23,22 @@ export abstract class GenericFlatTreeComponent<T> {
   treeFlattener: MatTreeFlattener<TreeNode<T>, FlatNode<T>>;
   dataSource: MatTreeFlatDataSource<TreeNode<T>, FlatNode<T>>;
 
+  flatNodes: FlatNode<T>[];
+  flatNodesChangedListener: Subscription;
+
   constructor() {
     this.treeControl = new FlatTreeControl<FlatNode<T>>(this.getLevel, this.isExpandable);
     this.treeFlattener = new MatTreeFlattener(this._transformer, this.getLevel, this.isExpandable, this.getChildren);
     this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
     this._initDataSource();
+
+    this.flatNodesChangedListener = this.dataSource._flattenedData.subscribe((flatNodes) => {
+      this.flatNodes = flatNodes;
+    });
+  }
+
+  ngOnDestroy() {
+    this.flatNodesChangedListener.unsubscribe();
   }
 
   protected _initDataSource() {

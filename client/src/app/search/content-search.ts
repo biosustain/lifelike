@@ -3,7 +3,8 @@ import { StandardRequestOptions } from 'app/shared/schemas/common';
 
 export interface ContentSearchOptions extends StandardRequestOptions {
   types?: SearchType[];
-  projects?: string[];
+  // projects?: string[];
+  folders?: string[];
   phrase?: string;
   wildcards?: string;
   synonyms?: boolean;

@@ -347,10 +347,14 @@ export class FilesystemService {
     );
   }
 
-  getHierarchy(): Observable<FileHierarchyResponse> {
+  getHierarchy(directoriesOnly: boolean = false): Observable<FileHierarchyResponse> {
     return this.http.get<FileHierarchyResponse>(
-      `/api/filesystem/objects/hierarchy`,
-      this.apiService.getHttpOptions(true),
+      `/api/filesystem/objects/hierarchy`, {
+        ...this.apiService.getHttpOptions(true),
+        params: {
+          directoriesOnly: String(directoriesOnly)
+        }
+      }
     );
   }
 }

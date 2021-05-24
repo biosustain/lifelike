@@ -35,7 +35,6 @@ from neo4japp.models.files import FileLock, FileAnnotationsVersion
 from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
-    build_file_children_cte,
     FileHierarchy,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
@@ -47,6 +46,7 @@ from neo4japp.schemas.filesystem import (
     FileBackupCreateRequestSchema,
     FileCreateRequestSchema,
     FileExportRequestSchema,
+    FileHierarchyRequestSchema,
     FileHierarchySchema,
     FileListSchema,
     FileLockCreateRequest,
@@ -500,7 +500,8 @@ class FilesystemBaseView(MethodView):
 class FileHierarchyView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get(self):
+    @use_args(FileHierarchyRequestSchema)
+    def get(self, params: dict):
         """
         Fetches a representation of the complete file hierarchy accessible by the current user.
         """
@@ -513,14 +514,19 @@ class FileHierarchyView(FilesystemBaseView):
         )
 
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+        filters = [
+            Files.recycling_date.is_(None)
+        ]
+
+        if params['directories_only']:
+            filters.append(Files.mime_type == DirectoryTypeProvider.MIME_TYPE)
+
         hierarchy = self.get_nondeleted_recycled_files(
-            and_(
-                Files.recycling_date.is_(None),
-            ),
+            and_(*filters),
             attr_excl=EXCLUDE_FIELDS
         )
 
-        ***ARANGO_USERNAME*** = {}
+        ***ARANGO_USERNAME*** = {}  # type: ignore
         curr_dir = ***ARANGO_USERNAME***
         for file in hierarchy:
             curr_dir = ***ARANGO_USERNAME***
@@ -538,9 +544,13 @@ class FileHierarchyView(FilesystemBaseView):
         def generate_node_tree(id, children):
             file = db.session.query(Files).get(id)
             if children is None:
-                return {'data': file}
+                return {
+                    'data': file,
+                    'level': len(file.filepath.split('/')) - 2
+                }
             return {
                 'data': file,
+                'level': len(file.filepath.split('/')) - 2,
                 'children': [
                     generate_node_tree(id, grandchildren)
                     for id, grandchildren in children.items()

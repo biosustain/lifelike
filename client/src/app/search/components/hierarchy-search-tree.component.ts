@@ -16,19 +16,33 @@ import { FlatNode, TreeNode } from 'app/shared/schemas/common';
   styleUrls: ['./hierarchy-search-tree.component.scss']
 })
 export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<FileNodeData> {
-  @Output() pathSelectionChanged = new EventEmitter<string[]>();
+  @Output() folderSelectionChanged = new EventEmitter<string[]>();
 
   constructor() {
     super();
   }
 
-  /**
-   * Toggle a leaf item selection. DO NOT update parent state, since toggling all leaves (folders) of a parent DOES NOT mean the user
-   * wants all files in the parent.
-   * @param node the node to toggle
-   */
-  leafItemSelectionToggle(node: FlatNode<FileNodeData>): void {
+  /** Toggle item selection. Select/deselect all the descendants node */
+  itemSelectionToggle(node: FlatNode<FileNodeData>): void {
     this.checklistSelection.toggle(node);
+
+    // Node is a parent
+    if (node.expandable) {
+      // When a parent is selected, select all its children as well.
+      const descendants = this.treeControl.getDescendants(node);
+      this.checklistSelection.isSelected(node)
+        ? this.checklistSelection.select(...descendants)
+        : this.checklistSelection.deselect(...descendants);
+    }
+
+    // If this node was deselected, and it has a parent, then deselect the parent as well. It doesn't make sense for a parent to be
+    // selected if any of its children are deselected.
+    if (!this.checklistSelection.isSelected(node)) {
+      const parent = this.getParentNode(node);
+      if (parent !== null) {
+        this.checklistSelection.deselect(this.getParentNode(node));
+      }
+    }
   }
 
   getIconForFileNode(node: TreeNode<FileNodeData>) {
@@ -57,7 +71,7 @@ export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<Fil
    selectionChanged() {
     // Sort the list so that leaves appear before non-leaves. This allows us to
     // easily return only ***ARANGO_USERNAME*** paths if all children in the path are also selected.
-    const selectedPaths = new Set<string>();
+    const selectedFolders = new Set<string>();
     this.checklistSelection.sort((a, b) => b.level - a.level);
 
     this.checklistSelection.selected.forEach(selectedNode => {
@@ -65,13 +79,13 @@ export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<Fil
       if (parentNode !== null && this.checklistSelection.isSelected(parentNode)) {
         // If the parent is selected, then we can safely add its path to the list. We can also remove this node from the list, since it and
         // its children will still be included via the parent's path.
-        selectedPaths.add(parentNode.data.filepath);
-        selectedPaths.delete(selectedNode.data.filepath);
+        selectedFolders.add(parentNode.data.hashId);
+        selectedFolders.delete(selectedNode.data.hashId);
       } else {
-        selectedPaths.add(selectedNode.data.filepath);
+        selectedFolders.add(selectedNode.data.hashId);
       }
     });
 
-    this.pathSelectionChanged.emit(Array.from(selectedPaths));
+    this.folderSelectionChanged.emit(Array.from(selectedFolders));
   }
 }
