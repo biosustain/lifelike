@@ -33,6 +33,11 @@ class Neo4jInstance(Enum):
 
 
 def get_database(neo4j: Neo4jInstance, dbname='neo4j'):
+    """
+    :param neo4j: preset Neo4jInstance
+    :param dbname: graphdb name to use (for the neo4j instance), e.g. lifelike, lifelike-stg, reactome
+    :return: database instance
+    """
     if neo4j == Neo4jInstance.GOOGLE_STG:
         driver = GraphDatabase.driver(STG_URI, auth=('neo4j', STG_PASSWORD))
     elif neo4j == Neo4jInstance.GOOGLE_PROD:
