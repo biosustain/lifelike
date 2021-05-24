@@ -267,22 +267,30 @@ class FilesystemBaseView(MethodView):
                     # Do not reveal the filename with the error!
                     # TODO: probably refactor these readable, commentable to
                     # actual string values...
+
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                            curr_access='no',
-                            req_access='readable',
-                            hash_id=file.hash_id)
+                            'You need access',
+                            f'Please request access from the owner of this file or folder.',
+                            hash_id=file.hash_id
+                        )
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                curr_access='commentable',
-                                req_access='writable',
-                                hash_id=file.hash_id)
+                                'You need access',
+                                f'You can open "{file.hash_id}" but you cannot make comments.'
+                                f'Please request "comment" access from the owner of this '
+                                f'file or folder.',
+                                hash_id=file.hash_id
+                            )
                         else:
                             raise AccessRequestRequiredError(
-                                curr_access='readable',
-                                req_access='writable',
-                                hash_id=file.hash_id)
+                                'You need access',
+                                f'You can read "{file.hash_id}" but you cannot make changes to it. '
+                                f'Please request "write" access from the owner of this '
+                                f'file or folder.',
+                                hash_id=file.hash_id
+                            )
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
