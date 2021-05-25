@@ -38,9 +38,17 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 declare var jQuery: any;
 
+// Based on https://github.com/mozilla/pdf.js/search?q=scrollPageIntoView and
+// https://github.com/mozilla/pdf.js/blob/f07d50f8eeced1cd9cc967e938485893d584fc32/web/base_viewer.js#L900:L909
 interface ScrollDestination {
   pageNumber: number;
-  destArray: [string | null, { name: string }, number | null, number | null, number | null];
+  destArray: [
+      string | null, // redundant page number - leave empty when calling scrollPageIntoView with 'pageNumber' param
+    { name: string }, // destination definition type
+      number | null, // x position on the page [null for default/unchanged]
+      number | null, // y position on the page [null for default/unchanged]
+      number | null // z position on the page (zoom) [null for default/unchanged]
+  ];
   allowNegativeOffset: boolean;
   ignoreDestinationZoom: boolean;
 }
@@ -1167,12 +1175,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   goToAnnotationHighlight(index) {
-    const annotation_length = this.foundHighlightAnnotations.length;
-    const normalized_index = (annotation_length + index) % annotation_length;
-    this.currentHighlightAnnotationsIndex = normalized_index;
-    const {pageNumber, rects: [rect]} = this.foundHighlightAnnotations[normalized_index];
+    const annotationLength = this.foundHighlightAnnotations.length;
+    const normalizedIndex = (annotationLength + index) % annotationLength;
+    this.currentHighlightAnnotationsIndex = normalizedIndex;
+    const {pageNumber, rects: [rect]} = this.foundHighlightAnnotations[normalizedIndex];
     this.addHighlightItem(pageNumber, rect);
-    // this.scrollToPage(pageNumber, rect);
   }
 
   previousAnnotationHighlight() {
