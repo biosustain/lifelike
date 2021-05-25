@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
+import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 
 import { GraphSearchParameters } from '../graph-search';
@@ -66,21 +67,14 @@ export class SearchRecordNodeComponent {
   }
 
   getNodeDomain(hostname: string): string {
-    // Examples:
-    // UniProt -- https://www.uniprot.org/uniprot/Q59RR0
-    // NCBI -- https://www.ncbi.nlm.nih.gov/gene/850822
-    // MeSH -- https://www.ncbi.nlm.nih.gov/mesh/?term=C413524
-    // ChEBI -- https://www.ebi.ac.uk/chebi/searchId.do?chebiId=147289
-    // GO -- http://amigo.geneontology.org/amigo/term/GO:0097649
-
     switch (hostname) {
-      case 'www.uniprot.org':
+      case DBHostname.UniProt:
         return 'UniProt';
-      case 'www.ncbi.nlm.nih.gov':
+      case DBHostname.NCBI:
         return 'NCBI';
-      case 'www.ebi.ac.uk':
+      case DBHostname.ChEBI:
         return 'ChEBI';
-      case 'amigo.geneontology.org':
+      case DBHostname.GO:
         return 'GO';
       default:
         return 'Knowledge Graph';
