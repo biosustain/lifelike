@@ -270,25 +270,21 @@ class FilesystemBaseView(MethodView):
 
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                            'You need access',
-                            f'Please request access from the owner of this file or folder.',
+                            curr_access='no',
+                            req_access='readable',
                             hash_id=file.hash_id
                         )
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                'You need access',
-                                f'You can open "{file.hash_id}" but you cannot make comments.'
-                                f'Please request "comment" access from the owner of this '
-                                f'file or folder.',
+                                curr_access='commentable',
+                                req_access='writable',
                                 hash_id=file.hash_id
                             )
                         else:
                             raise AccessRequestRequiredError(
-                                'You need access',
-                                f'You can read "{file.hash_id}" but you cannot make changes to it. '
-                                f'Please request "write" access from the owner of this '
-                                f'file or folder.',
+                                curr_access='readable',
+                                req_access='writable',
                                 hash_id=file.hash_id
                             )
 
