@@ -88,8 +88,15 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       ]);
     });
 
+    const isInEditMode = this.isInEditMode.bind(this);
+
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, blob, extra], value}) => {
       this.map = result;
+
+      if (result.new && result.privileges.writable && !isInEditMode()) {
+        this.workspaceManager.navigate(['/projects', this.map.project.name, 'maps', this.map.hashId, 'edit']);
+      }
+
       this.contentValue = blob;
       this.initializeMap();
       this.handleExtra(extra);
@@ -169,15 +176,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.emitModuleProperties();
 
-    const isInEditMode = this.isInEditMode.bind(this);
-
     this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
     ).subscribe(graph => {
-      if (!graph.nodes.length && !graph.edges.length && !isInEditMode()) {
-        this.workspaceManager.navigate(['/projects', this.map.project.name, 'maps', this.map.hashId, 'edit']);
-      }
       this.graphCanvas.setGraph(graph);
       this.graphCanvas.zoomToFit(0);
 
