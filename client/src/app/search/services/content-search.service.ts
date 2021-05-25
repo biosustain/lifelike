@@ -48,7 +48,8 @@ export class ContentSearchService {
               item: new FilesystemObject().update(itemData.item)
           })),
           query: data.query,
-          synonyms: data.synonyms
+          synonyms: data.synonyms,
+          droppedSynonyms: data.droppedSynonyms
         };
       }),
     );
