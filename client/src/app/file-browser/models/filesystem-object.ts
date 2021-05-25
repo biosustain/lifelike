@@ -1,24 +1,32 @@
-import { Directory, Project } from '../services/project-space.service';
-import { CollectionModel } from 'app/shared/utils/collection-model';
-import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import moment from 'moment';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
+
+import { isNullOrUndefined } from 'util';
+
+
+
 import {
   KnowledgeMap,
   Source,
   UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
-} from '../../drawing-tool/services/interfaces';
-import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
-import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
+} from 'app/drawing-tool/services/interfaces';
+import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { Meta } from 'app/pdf-viewer/annotation-type';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
+
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData,
 } from '../providers/data-transfer-data/filesystem-object-data.provider';
+import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
+import { Directory, Project } from '../services/project-space.service';
+import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -459,19 +467,34 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  getURL(forEditing = true): string {
+  getURL(forEditing = true, meta?: Meta): string {
     // TODO: Move this method to ObjectTypeProvider
-    return '/' + this.getCommands(forEditing).map(item => {
+    const url = '/' + this.getCommands(forEditing).map(item => {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
+
+    switch (this.mimeType) {
+      case ENRICHMENT_TABLE_MIMETYPE:
+        let fragment = '';
+        if (!isNullOrUndefined(meta)) {
+          fragment = '#' + [
+            `id=${encodeURIComponent(meta.id)}`,
+            `text=${encodeURIComponent(meta.allText)}`,
+            `color=${encodeURIComponent(annotationTypesMap.get(meta.type.toLowerCase()).color)}`
+          ].join('&');
+        }
+        return url + fragment;
+      default:
+        return url;
+    }
   }
 
-  getGraphEntitySources(): Source[] {
+  getGraphEntitySources(meta?: Meta): Source[] {
     const sources = [];
 
     sources.push({
       domain: this.filename,
-      url: this.getURL(false),
+      url: this.getURL(false, meta),
     });
 
     if (this.doi != null) {
