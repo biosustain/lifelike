@@ -333,6 +333,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 filename=f"{file.filename}{ext}"
         )
 
+
 class SankeyTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/sankey'
     SHORTHAND = 'Sankey'
