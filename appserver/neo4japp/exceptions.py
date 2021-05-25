@@ -190,9 +190,11 @@ class AccessRequestRequiredError(ServerException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
-    def __init__(self, title=None, message=None, hash_id=None, additional_msgs=[], code=403):  # noqa
+    def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):  # noqa
+        message = f'You have "{curr_access}" access. Please request "{req_access}" ' \
+                  f'access at minimum for <{hash_id}>.'
         super().__init__(
-            title=title,
+            'You need access',
             message=message,
             additional_msgs=additional_msgs,
             code=code)
