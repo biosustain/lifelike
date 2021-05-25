@@ -394,7 +394,6 @@ class ElasticService(ElasticConnection, GraphConnection):
                     search_term,
                     collect(DISTINCT other_synonym) AS other_synonyms,
                     COUNT(DISTINCT other_synonym) AS synonym_count
-                ORDER BY synonym_count ASC
                 """,
                 terms=terms,
             ).data()
