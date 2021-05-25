@@ -12,6 +12,14 @@ export enum Hyperlink {
   Uniprot = 'https://www.uniprot.org/uniprot/?sort=score&query=',
   NcbiGenes = 'https://www.ncbi.nlm.nih.gov/gene/',
   NcbiSpecies = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
+  Go = 'http://amigo.geneontology.org/amigo/term/'
+}
+
+export enum DBHostname {
+  ChEBI = 'www.ebi.ac.uk',
+  UniProt = 'www.uniprot.org',
+  NCBI = 'www.ncbi.nlm.nih.gov',
+  GO = 'amigo.geneontology.org'
 }
 
 export enum AnnotationType {
