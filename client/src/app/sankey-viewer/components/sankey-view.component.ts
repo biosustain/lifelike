@@ -132,7 +132,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', this.object.filename);

@@ -333,6 +333,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 filename=f"{file.filename}{ext}"
         )
 
+
 class SankeyTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/sankey'
     SHORTHAND = 'Sankey'
