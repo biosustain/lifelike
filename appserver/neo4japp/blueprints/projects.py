@@ -175,8 +175,8 @@ class ProjectBaseView(MethodView):
                 if not getattr(project.calculated_privileges[user.id], permission):
                     # Do not reveal the project name with the error!
                     raise AccessRequestRequiredError(
-                        'You need access',
-                        f'Please request access from an administrator of this project.',
+                        curr_access='no',
+                        req_access=permission,
                         hash_id=project.hash_id)
 
     def get_project_response(self, hash_id: str, user: AppUser):
