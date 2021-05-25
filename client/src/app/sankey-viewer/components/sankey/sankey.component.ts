@@ -25,17 +25,6 @@ export function throttled(fn: (...r: any[]) => void) {
 
 const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
 
-export interface WordCloudNode {
-  value?: any;
-  result?: any;
-  frequency: any;
-  text?: any;
-  shown?: any;
-  id?: any;
-  type?: any;
-  color?: any;
-}
-
 const normalizeGenerator = values => {
   const min = Math.min(...values);
   const max = values.reduce((o, n) => o + n, 0);
@@ -89,9 +78,9 @@ const colorPalletGenerator = (
   size,
   {
     hue = (i, n) => 360 * (i % 2 ? i : n - 2) / n,
-    saturation = (i, n) => 0.75,
-    lightness = (i, n) => 0.75,
-    alpha = (i, n) => 0.75
+    saturation = (_i, _n) => 0.75,
+    lightness = (_i, _n) => 0.75,
+    alpha = (_i, _n) => 0.75
   } = {}
 ) =>
   i => `hsla(${360 * hue(i, size)},${100 * saturation(i, size)}%,${100 * lightness(i, size)}%,${alpha(i, size)})`;
@@ -155,7 +144,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   @Input('data') set data({links, graph, nodes, ...data}) {
     const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
     const linksColorMap = createMapToColor(graph.up2aak1.map(pathIdAccessor));
-    graph.up2aak1.forEach((path, i) => {
+    graph.up2aak1.forEach(path => {
       const color = linksColorMap.get(pathIdAccessor(path));
       path.forEach((nodeId, nodeIdx, p) => {
         const nextNodeId = p[nodeIdx + 1] || NaN;
@@ -258,8 +247,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    const [width, height] = this.sankey.size();
-    const links = d3.select(this.links.nativeElement)
+    const [width, _height] = this.sankey.size();
+    d3.select(this.links.nativeElement)
       .selectAll('path')
       .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)))
       .join(
@@ -309,7 +298,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         join.selectAll('title')
           .text(({path}) => path)
       );
-    const nodes = d3.select(this.nodes.nativeElement)
+    d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .data(words.nodes)
       .join(
