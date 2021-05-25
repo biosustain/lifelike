@@ -4,13 +4,7 @@ import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import {
-  KnowledgeMap,
-  Source,
-  UniversalEntityData,
-  UniversalGraph,
-  UniversalGraphNode,
-} from '../../drawing-tool/services/interfaces';
+import { KnowledgeMap, Source, UniversalEntityData, UniversalGraph, UniversalGraphNode, } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
@@ -432,6 +426,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
    */
   get data(): Directory | KnowledgeMap | PdfFile {
     return this;
+  }
+
+  get new(): boolean {
+    return this.creationDate === this.modifiedDate;
   }
 
   filterChildren(filter: string) {
