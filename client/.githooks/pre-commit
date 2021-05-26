@@ -1,9 +1,13 @@
 #!/bin/sh
-echo "> 🧶 Running yarn lint.."
 __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 root_dir="$( cd "$( dirname "${__dir__}}" )" &> /dev/null && pwd )"
 
 # Runs linting on only files that are staged
-cd $root_dir && git diff --cached --name-status | grep -E '(A\t|M\t)' | cut -f 2 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
-# Catch renamed files too
-git diff --cached --name-status | grep -E 'R\d+\t' | cut -f 3 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n' | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
+cd $root_dir
+
+staged_files=$(git diff --cached --name-status --diff-filter=AM | cut -f 2 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n')
+staged_renamed_files=$(git diff --cached --name-status --diff-filter=R | cut -f 3 | grep -E '\.(js|ts)$' | sed 's/client\///g' | xargs printf -- '--files=%s\n')
+all_staged_files="${staged_files}\n${staged_renamed_files}"
+
+echo "> 🧶 Running yarn lint.."
+echo ${all_staged_files} | xargs ng lint -- --tsConfig=tsconfig.json 2>/dev/null
