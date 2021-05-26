@@ -3,13 +3,12 @@ import json
 import re
 import typing
 from io import BufferedIOBase
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 import graphviz
 import requests
-from typing import Generator
-from pdfminer import high_level
 
+import neo4japp.utils.string
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -20,6 +19,7 @@ from neo4japp.services.file_types.service import BaseFileTypeProvider
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
+from neo4japp.utils.string import extract_text
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -76,7 +76,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
-        text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        text = neo4japp.utils.string.extract_text(fp, page_numbers=[0, 1], caching=False)
         doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
 
         return doi
@@ -333,27 +333,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
-
-
-def extract_text(d) -> Generator[str, None, None]:
-    """Recursively extract all strings from python object
-    :param d: Any object
-    :returns Iterator over str instances
-    """
-    if isinstance(d, str):
-        yield d
-    elif isinstance(d, dict):
-        for value in d.values():
-            for v in extract_text(value):
-                yield v
-    else:
-        try:
-            for value in d:
-                for v in extract_text(value):
-                    yield v
-        except TypeError:
-            # not iterable
-            pass
 
 
 class SankeyTypeProvider(BaseFileTypeProvider):
