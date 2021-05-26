@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, View
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
+import { createMapToColor, normalizeGenerator } from './utils';
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -24,15 +25,6 @@ export function throttled(fn: (...r: any[]) => void) {
 }
 
 const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
-
-const normalizeGenerator = values => {
-  const min = Math.min(...values);
-  const max = values.reduce((o, n) => o + n, 0);
-  return {
-    min, max,
-    normalize: (max - min) ? d => Math.max(0, d / max) : d => d / max
-  };
-};
 
 const createResizeObserver = (callback, container) => {
   const resize = throttled(async (width, height) => {
@@ -73,23 +65,6 @@ interface SankeyGraph {
   nodes: any[];
   graph: any;
 }
-
-const colorPalletGenerator = (
-  size,
-  {
-    hue = (i, n) => 360 * (i % 2 ? i : n - 2) / n,
-    saturation = (_i, _n) => 0.75,
-    lightness = (_i, _n) => 0.75,
-    alpha = (_i, _n) => 0.75
-  } = {}
-) =>
-  i => `hsla(${360 * hue(i, size)},${100 * saturation(i, size)}%,${100 * lightness(i, size)}%,${alpha(i, size)})`;
-
-const createMapToColor = (arr, ...rest) => {
-  const uniq = new Set(arr);
-  const palette = colorPalletGenerator(uniq.size, ...rest);
-  return new Map([...uniq].map((v, i) => [v, palette(i)]));
-};
 
 @Component({
   selector: 'app-sankey',
