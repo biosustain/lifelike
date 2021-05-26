@@ -3,10 +3,12 @@ import json
 import re
 import typing
 from io import BufferedIOBase
-from typing import Optional, List
+from typing import Optional, List, Dict
 
+import graphviz
 import requests
 from typing import Generator
+from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
@@ -332,11 +334,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                 filename=f"{file.filename}{ext}"
         )
 
-""" 
-Recursively extract all strings from python object
-:returns Iterator over str instances 
-"""
-def extract_text(d) -> Generator[str]:
+
+def extract_text(d) -> Generator[str, None, None]:
+    """Recursively extract all strings from python object
+    :param d: Any object
+    :returns Iterator over str instances
+    """
     if isinstance(d, str):
         yield d
     elif isinstance(d, dict):
