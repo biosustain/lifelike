@@ -1,6 +1,6 @@
 import re
 import sys
-from typing import Generator
+from typing import Generator, Union
 
 import unicodedata
 
@@ -25,7 +25,7 @@ stripped_characters = ''.join(ch for ch in all_unicode_chars if (
 ))
 
 
-def extract_text(d) -> Generator[str, None, None]:
+def extract_text(d):
     """Recursively extract all strings from python object
     :param d: Any object
     :returns Iterator over str instances

@@ -7,6 +7,7 @@ from typing import Optional, List
 
 import graphviz
 import requests
+from pdfminer import high_level
 
 import neo4japp.utils.string
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -76,7 +77,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
-        text = neo4japp.utils.string.extract_text(fp, page_numbers=[0, 1], caching=False)
+        text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
         doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
 
         return doi
@@ -362,7 +363,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
         content = io.StringIO()
         string_list = set(extract_text(content_json))
 
-        content.write(' '.join(string_list))
+        content.write(' '.join(list(string_list)))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
 
