@@ -3,11 +3,10 @@ import json
 import re
 import typing
 from io import BufferedIOBase
-from typing import Optional, List, Dict
+from typing import Optional, List
 
-import graphviz
 import requests
-from pdfminer import high_level
+from typing import Generator
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
@@ -333,6 +332,26 @@ class MapTypeProvider(BaseFileTypeProvider):
                 filename=f"{file.filename}{ext}"
         )
 
+""" 
+Recursively extract all strings from python object
+:returns Iterator over str instances 
+"""
+def extract_text(d) -> Generator[str]:
+    if isinstance(d, str):
+        yield d
+    elif isinstance(d, dict):
+        for value in d.values():
+            for v in extract_text(value):
+                yield v
+    else:
+        try:
+            for value in d:
+                for v in extract_text(value):
+                    yield v
+        except TypeError:
+            # not iterable
+            pass
+
 
 class SankeyTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/sankey'
@@ -359,21 +378,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
         content = io.StringIO()
-        string_list = []
-
-        for node in content_json.get('nodes', []):
-            node_data = node.get('data', {})
-            display_name = node.get('display_name', '')
-            detail = node_data.get('detail', '') if node_data else ''
-            string_list.append('' if display_name is None else display_name)
-            string_list.append('' if detail is None else detail)
-
-        for edge in content_json.get('edges', []):
-            edge_data = edge.get('data', {})
-            label = edge.get('label', '')
-            detail = edge_data.get('detail', '') if edge_data else ''
-            string_list.append('' if label is None else label)
-            string_list.append('' if detail is None else detail)
+        string_list = set(extract_text(content_json))
 
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
