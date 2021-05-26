@@ -36,6 +36,7 @@ import {
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
+import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
@@ -108,7 +109,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     // No point sending a request if the params are completely empty
     if (this.emptyParams) {
-      return of({total: 0, results: [], synonyms: {}});
+      return of({total: 0, results: [], synonyms: {}, droppedSynonyms: {}});
     }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
@@ -121,6 +122,14 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
           synonymList.forEach(synonym => synonymsSet.add(synonym));
         });
         this.highlightTerms = [...response.query.phrases, ...Array.from(synonymsSet)];
+
+        if (Object.keys(response.droppedSynonyms).length) {
+          const rejectedSynonyms = new Map<string, string[]>();
+          Object.entries(response.droppedSynonyms).forEach(([***ARANGO_USERNAME***, synonymList]) => {
+            rejectedSynonyms.set(***ARANGO_USERNAME***, synonymList);
+          });
+          this.openRejectedSynoynms(rejectedSynonyms);
+        }
       })
     );
   }
@@ -361,6 +370,22 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         this.advancedSearch(params);
       })
       // Advanced search dialog was dismissed or rejected
+      .catch(() => {});
+  }
+
+  /**
+   * Opens the rejected synonym dialog. This will show the user which, if any, search terms had too many synonyms to search all at once.
+   */
+  openRejectedSynoynms(rejectedSynonyms: Map<string, string[]>) {
+    const modalRef = this.modalService.open(RejectedSynonymsDialogComponent, {
+      size: 'md',
+    });
+    // Get the starting options from the content search form query
+    modalRef.componentInstance.rejectedSynonyms = rejectedSynonyms;
+    modalRef.result
+      // Currently there's no "Submit" action on this dialog, but maybe we'll add one later
+      .then(() => {})
+      // Rejected synonyms dialog was dismissed or rejected
       .catch(() => {});
   }
 
