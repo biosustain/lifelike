@@ -20,8 +20,6 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
 
-  id = uniqueId('FileViewComponent-');
-
   paramsSubscription: Subscription;
   returnUrl: string;
 
