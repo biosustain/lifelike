@@ -30,6 +30,7 @@ def get_ncbi_enrichment_domains():
         go = kg.get_go_genes(node_ids)
         string = kg.get_string_genes(node_ids)
         uniprot = kg.get_uniprot_genes(node_ids)
+        kegg = kg.get_kegg_genes(node_ids)
 
         nodes = {
             node_id: {
@@ -38,6 +39,7 @@ def get_ncbi_enrichment_domains():
                 'string': string.get(node_id, None),
                 'go': go.get(node_id, None),
                 'biocyc': biocyc.get(node_id, None),
+                'kegg': kegg.get(node_id, None),
                 'node_id': node_id
             } for node_id in node_ids}
 

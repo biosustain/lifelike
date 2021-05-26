@@ -58,7 +58,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
 )
 from neo4japp.services.annotations.pipeline import (
     create_annotations_from_pdf,
-    create_annotations_from_text,
     create_annotations_from_enrichment_table
 )
 from neo4japp.services.annotations import AnnotationGraphService
@@ -480,6 +479,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
+                        'error': e.message
                     }
                 else:
                     current_app.logger.debug(
@@ -489,6 +489,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
+                        'error': ''
                     }
             elif file.mime_type == 'vnd.lifelike.document/enrichment-table':
                 try:
@@ -499,6 +500,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
+                        'error': 'Enrichment table content is not valid JSON.'
                     }
                     continue
                 enrich_service = get_enrichment_table_service()
@@ -521,6 +523,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
+                        'error': e.message
                     }
                 else:
                     current_app.logger.debug(
@@ -530,11 +533,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
+                        'error': ''
                     }
             else:
                 results[file.hash_id] = {
                     'attempted': False,
                     'success': False,
+                    'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.'
                 }
 
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
