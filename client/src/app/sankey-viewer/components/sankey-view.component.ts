@@ -130,7 +130,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         sources: [{
           domain: this.object.filename,
           url: ['/projects', encodeURIComponent(this.object.project.name),
-            'files', encodeURIComponent(this.object.hashId)].join('/'),
+            'sankey', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
     } as Partial<UniversalGraphNode>));
