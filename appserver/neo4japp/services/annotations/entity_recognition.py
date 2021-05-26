@@ -719,6 +719,7 @@ class EntityRecognitionService:
         exclude_token = self.is_gene_exclusion
 
         matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+        cursor.close()
         key_results: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
@@ -773,6 +774,7 @@ class EntityRecognitionService:
         exclude_token = self.is_species_exclusion
 
         matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+        cursor.close()
         key_results: Dict[str, List[dict]] = {}
         key_results_local: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
@@ -927,6 +929,7 @@ class EntityRecognitionService:
 
             if cursor is not None and global_inclusion is not None:
                 matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+                cursor.close()
                 key_results: Dict[str, List[dict]] = {}
                 key_id_type: Dict[str, str] = {}
                 key_id_hyperlink: Dict[str, str] = {}

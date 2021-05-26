@@ -78,7 +78,7 @@
     </div>
     <div *ngIf="object.type === 'file' && object.highlight" class="mt-5">
       <h5>Term matches in document:</h5>
-      <div *ngFor="let highlight of shownHighlights">
+      <div *ngFor="let highlight of shownHighlights" (dragstart)="highlightDragStart($event)">
         <hr class="my-3">
         <div class="mt-2">
           <app-highlight-text [highlight]="highlight"></app-highlight-text>
