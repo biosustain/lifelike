@@ -68,14 +68,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  title(doc) {
-    try {
-      return doc.passages.find(p => p.infons.type === 'title').text;
-    } catch (e) {
-      return doc.pmid;
-    }
-  }
-
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
     // from
