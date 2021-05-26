@@ -1,9 +1,7 @@
 import base64
-import itertools
 import json
 import re
 import string
-import logging
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk, streaming_bulk
@@ -15,6 +13,7 @@ from sqlalchemy.orm import joinedload, raiseload
 from typing import (
     Dict,
     List,
+    Tuple
 )
 
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
@@ -368,8 +367,8 @@ class ElasticService(ElasticConnection, GraphConnection):
     def get_synonym_map(
         self,
         words: List[str],
-        phrases: List[str]
-    ) -> Dict[str, List[str]]:
+        phrases: List[str],
+    ) -> Tuple[Dict[str, List[str]], Dict[str, List[str]]]:
         terms = words + phrases
 
         def get_synonyms_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
@@ -377,20 +376,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             Attempts to get all synonyms for the entities matching each term in the `terms`
             argument. We first find Synonyms matching each term. We then find all entities
             with that synoynm, and find ALL OTHER synonyms of that entity.
-
-            TODO: We need to limit the number of returned synonyms partly for performance,
-            but particularly because elasticsearch has a hard cap on the number of clauses which
-            can be present in a query. By default this limit is set to 1024. The limit we pass to
-            the cypher query should be equal to:
-                (1024 - (MAX_SYNONYM_COUNT * num_terms)) / (MAX_SYNONYM_COUNT * num_terms)
-            Where "MAX_SYNONYM_COUNT" is the synonym term with the highest number of alternative
-            letter casing (currently "dvglut" at 10 alterative letter casing).
-
-            Implement this at a later date if we want as many synonyms as possible, for now just
-            using a dumb approach and setting the limit to 10. In the vast majority of cases, this
-            should be fine for now.
             """
-            # MAX_SYNONYM_COUNT = 10  # Change me if the max changes!
             return tx.run(
                 """
                 UNWIND $terms as search_term
@@ -399,28 +385,36 @@ class ElasticService(ElasticConnection, GraphConnection):
                     WITH search_term, synonym
                     OPTIONAL MATCH
                         (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                    WHERE NOT 'Protein' IN LABELS(entity) AND SIZE(other_synonym.name) > 1
-                    RETURN other_synonym.name as other_synonym
-                    LIMIT 10
+                    WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
+                    RETURN other_synonym.name AS other_synonym
                 }
+                WITH search_term, other_synonym
+                ORDER BY size(other_synonym) DESC
                 RETURN
                     search_term,
-                    collect(distinct other_synonym) as other_synonyms
+                    collect(DISTINCT other_synonym) AS other_synonyms,
+                    COUNT(DISTINCT other_synonym) AS synonym_count
                 """,
                 terms=terms,
-                # limit=int(
-                #     (1024 - (MAX_SYNONYM_COUNT * len(terms)))
-                #     /
-                #     # `terms` shouldn't be empty, but use max just in case...
-                #     max([1, MAX_SYNONYM_COUNT * len(terms)])
-                # )
             ).data()
 
         results = self.graph.read_transaction(get_synonyms_query, terms)
-        return {
-            row['search_term']: row['other_synonyms']
-            for row in results
-        }
+
+        # We need to limit the number of returned synonyms partly for performance, but particularly
+        # because elasticsearch has a hard cap on the number of clauses which can be present in a
+        # single Lucene BooleanQuery:
+        # (https://www.elastic.co/guide/en/elasticsearch/reference/current/search-settings.html).
+        # By default this limit is set to 1024.
+        returned_synonyms = {}
+        dropped_synonyms = {}
+        MAX_SYNONYMS_PER_ROW = 1023  # 1024 - the original term
+        for row in results:
+            returned_synonyms[row['search_term']] = row['other_synonyms'][:MAX_SYNONYMS_PER_ROW]
+            returned_synonym_count = len(returned_synonyms[row['search_term']])
+
+            if returned_synonym_count < len(row['other_synonyms']):
+                dropped_synonyms[row['search_term']] = row['other_synonyms'][MAX_SYNONYMS_PER_ROW:]
+        return returned_synonyms, dropped_synonyms
 
     def generate_synonym_match_subclause(
         self,
@@ -600,7 +594,10 @@ class ElasticService(ElasticConnection, GraphConnection):
             }, [], {}
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
-        synonym_map = self.get_synonym_map(words, phrases) if use_synonyms else dict()
+        synonym_map: Dict[str, List[str]] = dict()
+        dropped_synonyms: Dict[str, List[str]] = dict()
+        if use_synonyms:
+            synonym_map, dropped_synonyms = self.get_synonym_map(words, phrases)
 
         search_queries = []
         if len(text_fields) > 0:
@@ -639,7 +636,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 }
             },
             'highlight': highlight
-        }, phrases + words + wildcards, synonym_map
+        }, phrases + words + wildcards, synonym_map, dropped_synonyms
 
     def search(
             self,
@@ -655,7 +652,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             query_filter=None,
             highlight=None
     ):
-        es_query, search_phrases, synonym_map = self._build_query_clause(
+        es_query, search_phrases, synonym_map, dropped_synonyms = self._build_query_clause(
             search_term=search_term,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
@@ -683,5 +680,5 @@ class ElasticService(ElasticConnection, GraphConnection):
             )
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response, search_phrases, synonym_map
+        return es_response, search_phrases, synonym_map, dropped_synonyms
     # End search methods
