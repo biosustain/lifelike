@@ -107,13 +107,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
 
   private _data: SankeyGraph = {} as SankeyGraph;
 
-  WORD_CLOUD_MARGIN = 10;
+  MARGIN = 10;
 
   margin = {
-    top: this.WORD_CLOUD_MARGIN,
-    right: this.WORD_CLOUD_MARGIN,
-    bottom: this.WORD_CLOUD_MARGIN,
-    left: this.WORD_CLOUD_MARGIN
+    top: this.MARGIN,
+    right: this.MARGIN,
+    bottom: this.MARGIN,
+    left: this.MARGIN
   };
 
   MIN_FONT = 12;
