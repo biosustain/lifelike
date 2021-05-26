@@ -1,7 +1,5 @@
-import { Component, EventEmitter, OnDestroy, Output} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
-import { uniqueId } from 'lodash';
 
 import { combineLatest, Subscription } from 'rxjs';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
@@ -101,14 +99,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   ngOnDestroy() {
-    if (this.paramsSubscription) {
-      this.paramsSubscription.unsubscribe();
-    }
-    if (this.openSankeySub) {
-      this.openSankeySub.unsubscribe();
-    }
+    this.paramsSubscription.unsubscribe();
+    this.openSankeySub.unsubscribe();
   }
-
 
 
   close() {
