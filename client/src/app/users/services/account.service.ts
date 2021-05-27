@@ -5,7 +5,7 @@ import {
   UserCreationRequest,
   ChangePasswordRequest,
   PrivateAppUser,
-  UserUpdateRequest, UserResetPasswordRequest,
+  UserUpdateRequest,
 
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
@@ -40,9 +40,14 @@ export class AccountService implements OnDestroy {
         ).pipe(map(resp => resp.result));
     }
 
-    resetPassword(request: UserResetPasswordRequest) {
-      // Send to API endpoint here
-      // this.http.post
+    resetPassword(email: string) {
+      console.log(email);
+      console.log("admin@example.com");
+        return this.http.get(`${this.accountApi}/${email}/reset-password`);
+    }
+
+    unlockUser(hashId: string) {
+        return this.http.get(`${this.accountApi}/${hashId}/unlock-user`);
     }
 
     /**

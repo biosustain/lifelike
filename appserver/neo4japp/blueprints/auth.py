@@ -7,9 +7,11 @@ from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import TypedDict
 
-from neo4japp.constants import LogEventType
+from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
+from neo4japp.database import db
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
@@ -203,7 +205,12 @@ def login():
             message='There was a problem authenticating, please try again.',
             code=404)
     else:
-        if user.check_password(data.get('password')):
+        if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
+            raise ServerException(
+                title='Failed to Login',
+                message='The account is suspended, Please contact administrator!',
+                code=423)
+        elif user.check_password(data.get('password')):
             current_app.logger.info(
                 UserEventLog(
                     username=user.username,
@@ -211,6 +218,7 @@ def login():
             token_service = TokenService(current_app.config['SECRET_KEY'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
+            user.failed_login_count = 0
             return jsonify(JWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
@@ -225,6 +233,14 @@ def login():
                 },
             }))
         else:
+            user.failed_login_count += 1
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
+
             raise ServerException(
                 title='Failed to Authenticate',
                 message='There was a problem authenticating, please try again.',

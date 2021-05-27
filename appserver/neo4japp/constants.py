@@ -303,3 +303,6 @@ ANNOTATION_STYLES_DICT = {
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
+
+# Start shared security constants
+MAX_ALLOWED_LOGIN_FAILURES = 5

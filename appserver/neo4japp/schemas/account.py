@@ -42,6 +42,7 @@ class UserSchema(CamelCaseSchema):
 class UserProfileSchema(UserSchema):
     id = fields.Integer()
     email = fields.Email()
+    locked = fields.Boolean()
     roles = fields.List(fields.String())
 
 
