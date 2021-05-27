@@ -2,10 +2,15 @@ import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, View
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
+import * as d3Interpolate from 'd3-interpolate';
 import { createMapToColor, normalizeGenerator } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
+import * as Hammer from 'hammerjs';
+import { BehaviorSubject } from 'rxjs';
+
+const RELAYOUT_DURATION = 250;
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -26,6 +31,64 @@ export function throttled(fn: (...r: any[]) => void) {
     }
   };
 }
+
+const calculateLinkPathParams = link => {
+  const {value: linkValue, source, target} = link;
+  const {sourceLinks} = source;
+  const {targetLinks} = target;
+  const sourceValues = sourceLinks.map(({value}) => value);
+  const targetValues = targetLinks.map(({value}) => value);
+  const sourceIndex = sourceLinks.indexOf(link);
+  const targetIndex = targetLinks.indexOf(link);
+  const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
+  const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
+  const sourceX = source.x1;
+  const targetX = target.x0;
+  let sourceY = 0;
+  let targetY = 0;
+  for (let i = 0; i < sourceIndex; i++) {
+    sourceY += sourceLinks[i].value;
+  }
+  for (let i = 0; i < targetIndex; i++) {
+    targetY += targetLinks[i].value;
+  }
+  const sourceHeight = source.y1 - source.y0;
+  const targetHeight = target.y1 - target.y0;
+  // tslint:disable-next-line:no-bitwise
+  const sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + source.y0;
+  // tslint:disable-next-line:no-bitwise
+  const targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + target.y0;
+  // tslint:disable-next-line:no-bitwise
+  const sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
+  // tslint:disable-next-line:no-bitwise
+  const targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
+  // tslint:disable-next-line:no-bitwise
+  const bezierX = (sourceX + targetX) / 2;
+  return {
+    sourceX,
+    sourceY0,
+    sourceY1,
+    targetX,
+    targetY0,
+    targetY1,
+    bezierX
+  };
+};
+
+const composeLinkPath = ({
+                           sourceX,
+                           sourceY0,
+                           sourceY1,
+                           targetX,
+                           targetY0,
+                           targetY1,
+                           bezierX
+                         }) =>
+  `M${sourceX} ${sourceY0}` +
+  `C${bezierX} ${sourceY0},${bezierX} ${targetY0},${targetX} ${targetY0}` +
+  `L${targetX} ${targetY1}` +
+  `C${bezierX} ${targetY1},${bezierX} ${sourceY1},${sourceX} ${sourceY1}` +
+  `Z`;
 
 const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
 
@@ -91,6 +154,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   constructor(
+    private elRef: ElementRef,
     private clipboard: ClipboardService,
     private readonly snackBar: MatSnackBar
   ) {
@@ -98,6 +162,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .nodeId(n => n.id)
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
+    this.UIState = new BehaviorSubject(1);
+    this.pan = new BehaviorSubject([0, 0]);
   }
 
   @Input('data') set data({links, graph, nodes, ...data}) {
@@ -137,7 +203,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     return this._data;
   }
 
-  @ViewChild('wrapper', {static: false}) cloudWrapper!: ElementRef;
+  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
@@ -164,11 +230,47 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   private _timeInterval = Infinity;
 
   selected;
+  UIState;
+  pan;
+  size;
 
   ngAfterViewInit() {
-    const {width, height} = this.getCloudSvgDimensions();
+    const {width, height} = this.size = this.getCloudSvgDimensions();
     this.onResize(width, height).then();
-    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.cloudWrapper.nativeElement);
+    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
+
+    this.wrapper.nativeElement.addEventListener('wheel', event => {
+      const {wheelDelta, ctrlKey, deltaX, deltaY, offsetX, offsetY} = event;
+      const {UIState: {value: {zoom = 1, panX = 0, panY = 0}},} = this;
+      event.preventDefault();
+      if (ctrlKey) {
+        const zoomDelta = wheelDelta / 800;
+        this.UIState.next({
+          panX: panX + offsetX * zoomDelta,
+          panY: panY + offsetY * zoomDelta,
+          zoom: Math.max(0, zoom + zoomDelta)
+        });
+      } else {
+        this.UIState.next({
+          panX: panX + deltaX,
+          panY: panY + deltaY,
+          zoom
+        });
+      }
+    });
+
+    const hammer = new Hammer(this.wrapper.nativeElement);
+
+    // hammer.get('pinch').set({enable: true});
+
+    const {pan} = this;
+    hammer.on('pan pinch panend', function(e) {
+      // e.target.classList.toggle('expand');
+      console.log('You\'re pressing me!');
+      console.log(e);
+      const currentPan = pan.value;
+      pan.next([currentPan[0] + e.deltaX, currentPan[1] + e.deltaY]);
+    });
   }
 
   ngOnDestroy() {
@@ -213,13 +315,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
    */
   private getCloudSvgDimensions() {
-    const cloudWrapper = this.cloudWrapper.nativeElement;
+    const wrapper = this.wrapper.nativeElement;
     const {
       margin
     } = this;
     return {
-      width: cloudWrapper.offsetWidth - margin.left - margin.right,
-      height: cloudWrapper.offsetHeight - margin.top - margin.bottom
+      width: wrapper.offsetWidth - margin.left - margin.right,
+      height: wrapper.offsetHeight - margin.top - margin.bottom
     };
   }
 
@@ -270,8 +372,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .selectAll('g')
       .style('opacity', ({color}) => color === data.color ? 1 : 0.35);
     d3.select(element).select('text')
-      .style('font-size', '12px')
       .text(({displayName}) => displayName);
+    // .style('font-size', '12px');
   }
 
   nodeMouseOut(element, data, eventId, links, ...rest) {
@@ -279,7 +381,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .selectAll('g')
       .style('opacity', 1);
     d3.select(element).select('text')
-      .style('font-size', '6px')
+      // .style('font-size', '6px')
       .text(({displayName}) => displayName.slice(0, 10) + '...');
   }
 
@@ -316,51 +418,42 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
             return pathMouseOut(this, data, eventId, links, ...args);
           })
           .call(enterLink => enterLink.append('title'))
+          .attr('d', link => {
+            link.calculated_params = calculateLinkPathParams(link);
+            return composeLinkPath(link.calculated_params);
+          }),
+        update => update
+          .transition().duration(RELAYOUT_DURATION)
+          .attrTween('d', function(link) {
+            const newPathParams = calculateLinkPathParams(link);
+            const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+            return t => {
+              const interpolatedParams = paramsInterpolator(t);
+              link.interpolatedParams = interpolatedParams;
+              return composeLinkPath(interpolatedParams);
+            };
+          })
+          .on('end interrupt cancel', function(link) {
+            link.calculated_params = link.interpolatedParams;
+          })
       )
-      .attr('d', link => {
-        const {value: linkValue, source, target} = link;
-        const {sourceLinks} = source;
-        const {targetLinks} = target;
-        const sourceValues = sourceLinks.map(({value}) => value);
-        const targetValues = targetLinks.map(({value}) => value);
-        const sourceIndex = sourceLinks.indexOf(link);
-        const targetIndex = targetLinks.indexOf(link);
-        const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
-        const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
-        const sourceX = source.x1;
-        const targetX = target.x0;
-        let sourceY = 0;
-        let targetY = 0;
-        for (let i = 0; i < sourceIndex; i++) {
-          sourceY += sourceLinks[i].value;
-        }
-        for (let i = 0; i < targetIndex; i++) {
-          targetY += targetLinks[i].value;
-        }
-        const sourceHeight = source.y1 - source.y0;
-        const targetHeight = target.y1 - target.y0;
-        // tslint:disable-next-line:no-bitwise
-        const sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + source.y0;
-        // tslint:disable-next-line:no-bitwise
-        const targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + target.y0;
-        // tslint:disable-next-line:no-bitwise
-        const sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
-        // tslint:disable-next-line:no-bitwise
-        const targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
-        // tslint:disable-next-line:no-bitwise
-        const bezierX = (sourceX + targetX) / 2;
-        return `M${sourceX} ${sourceY0}` +
-          `C${bezierX} ${sourceY0},${bezierX} ${targetY0},${targetX} ${targetY0}` +
-          `L${targetX} ${targetY1}` +
-          `C${bezierX} ${targetY1},${bezierX} ${sourceY1},${sourceX} ${sourceY1}` +
-          `Z`;
-      })
       // .attr('stroke-width', ({width}) => Math.max(1, width))
       .attr('fill', ({schemaClass}) => schemaClass)
       .call(join =>
         join.selectAll('title')
           .text(({path}) => path)
       );
+    const updateNodeRect = rects => rects
+      .attr('x', ({x0}) => x0)
+      .attr('y', ({y0}) => y0)
+      .attr('height', ({y0, y1}) => y1 - y0)
+      .attr('width', ({x1, x0}) => x1 - x0);
+    const updateNodeText = texts => texts
+      .attr('x', ({x0}) => x0 - 6)
+      .attr('y', ({y0, y1}) => (y1 + y0) / 2)
+      .filter(({x0}) => x0 < width / 2)
+      .attr('x', ({x1}) => x1 + 6)
+      .attr('text-anchor', 'start');
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .data(words.nodes)
@@ -373,35 +466,51 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
             return nodeMouseOut(this, data, eventId, links, ...args);
           })
           .attr('fill', ({color}) => color)
-          .call(enterNode => enterNode.append('rect')
-            .on('click', function(data, eventId, links, ...args) {
-              return nodeClick(this, data, eventId, links, ...args);
-            }))
           .call(enterNode =>
-            enterNode.append('text')
-              .attr('dy', '0.35em')
-              .attr('text-anchor', 'end')
+            updateNodeRect(
+              enterNode.append('rect')
+                .on('click', function(data, eventId, links, ...args) {
+                  return nodeClick(this, data, eventId, links, ...args);
+                })
+            )
           )
-          .call(enterNode => enterNode.append('title'))
+          .call(enterNode =>
+            updateNodeText(
+              enterNode.append('text')
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'end')
+            )
+          )
+          .call(enterNode =>
+            enterNode.append('title')
+          )
           .call(e => this.enter.emit(e)),
-        update => update,
+        update => update
+          .call(enterNode =>
+            updateNodeRect(
+              enterNode.selectAll('rect')
+                .transition().duration(RELAYOUT_DURATION)
+            )
+          )
+          .call(enterNode =>
+            updateNodeText(
+              enterNode.selectAll('text')
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'end')
+                .transition().duration(RELAYOUT_DURATION)
+            )
+          )
+          .call(enterNode =>
+            enterNode.selectAll('title')
+          ),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
       .call(joined => joined.selectAll('rect')
-        .attr('x', ({x0}) => x0)
-        .attr('y', ({y0}) => y0)
-        .attr('height', ({y0, y1}) => y1 - y0)
-        .attr('width', ({x1, x0}) => x1 - x0)
         .attr('stroke', '#000')
       )
       .call(joined => joined.selectAll('text')
-        .attr('x', ({x0}) => x0 - 6)
-        .attr('y', ({y0, y1}) => (y1 + y0) / 2)
         .text(({displayName}) => displayName.slice(0, 10) + '...')
-        .filter(({x0}) => x0 < width / 2)
-        .attr('x', ({x1}) => x1 + 6)
-        .attr('text-anchor', 'start')
       )
       .call(joined => joined.selectAll('title')
         .text(({name}) => name)
