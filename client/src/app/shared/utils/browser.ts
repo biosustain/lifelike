@@ -1,6 +1,9 @@
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
-import { WorkspaceManager } from '../workspace-manager';
 import { escapeRegExp } from 'lodash';
+
+import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
+import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+
+import { WorkspaceManager } from '../workspace-manager';
 
 export function toValidLink(url: string) {
   let newUrl: string;
@@ -55,6 +58,20 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   if (openInternally) {
     let m;
 
+    // TODO: Folder tabs have a slightly different URL structure than other files for some reason, so we need to check for them manually.
+    // You can verify this behavior by opening a folder and a file in the workspace and clicking the "Share" button in the tab options
+    // for each.
+    m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
+    if (m != null) {
+      workspaceManager.navigateByUrl(pathSearchHash, {
+        newTab: true,
+        sideBySide: true,
+        matchExistingTab: `^/+folders/${escapeRegExp(m[2])}.*`,
+      });
+
+      return true;
+    }
+
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
     if (m != null) {
       workspaceManager.navigateByUrl(pathSearchHash, {
@@ -68,6 +85,19 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
             if (fragmentMatch) {
               fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
             }
+          } else if (m[1] === 'enrichment-table') {
+            const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+            if (fragmentMatch) {
+              enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
+              enrichmentTableViewerComponent.startAnnotationFind(
+                enrichmentTableViewerComponent.annotation.id,
+                enrichmentTableViewerComponent.annotation.text,
+                enrichmentTableViewerComponent.annotation.color
+              );
+            }
+
+            return false;
           }
           return false;
         },
@@ -81,7 +111,8 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
       workspaceManager.navigateByUrl(pathSearchHash, {
         newTab: true,
         sideBySide: true,
-        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}`,
+        // Need the regex end character here so we don't accidentally match a child of this directory
+        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\?$`,
       });
 
       return true;

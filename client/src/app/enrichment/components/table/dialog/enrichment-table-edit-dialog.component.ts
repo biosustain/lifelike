@@ -29,6 +29,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     'String',
     'GO',
     'Biocyc',
+    'KEGG'
   ];
 
   constructor(modal: NgbActiveModal,

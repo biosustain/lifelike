@@ -28,7 +28,7 @@ from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import db, ma, migrate, close_lmdb, close_neo4j_db
+from neo4japp.database import db, ma, migrate, close_neo4j_db
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
@@ -42,7 +42,6 @@ module_logs = [
     'urllib3',
     'alembic',
     'webargs',
-    'py2neo',
     'werkzeug'
 ]
 
@@ -163,7 +162,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
-    app.teardown_appcontext_funcs = [close_lmdb, close_neo4j_db]
+    app.teardown_appcontext_funcs = [close_neo4j_db]
 
     cors.init_app(app)
     db.init_app(app)
@@ -202,7 +201,7 @@ def register_blueprints(app, pkgname):
 
 def handle_error(ex: ServerException):
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
+    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
@@ -233,7 +232,7 @@ def handle_generic_error(code: int, ex: Exception):
     # but log with the real exception message below
     newex = ServerException()
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
+    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,

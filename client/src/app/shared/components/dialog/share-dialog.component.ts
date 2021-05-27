@@ -26,6 +26,7 @@ export class ShareDialogComponent {
         this.snackBar.open('Copied to clipboard.', null, {
           duration: 3000,
         });
+        this.close();
         return;
       }
     }
