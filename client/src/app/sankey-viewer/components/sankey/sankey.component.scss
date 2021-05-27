@@ -1,5 +1,6 @@
 .nodes {
   z-index: 1;
+  transition: opacity 250ms 250ms;
 }
 
 .nodes rect {
@@ -11,14 +12,34 @@
 .nodes text {
   text-shadow: 0 1px 0 #fff;
   font-size: 6px;
+  transition: font-size, fill 250ms;
+  pointer-events: none;
+}
+
+.nodes:hover text {
+  fill: black;
 }
 
 .links {
   fill: none;
   stroke: #000;
   stroke-opacity: .2;
+
+  path {
+    transition: opacity 250ms 250ms;
+
+    &:hover {
+      stroke-opacity: .5;
+    }
+  }
 }
 
-.links path:hover {
-  stroke-opacity: .5;
+.sankey-popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.wrapper {
+  position: relative;
 }

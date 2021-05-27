@@ -3,6 +3,9 @@ import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, View
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
 import { createMapToColor, normalizeGenerator } from './utils';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -73,31 +76,6 @@ interface SankeyGraph {
   encapsulation: ViewEncapsulation.None,
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
-  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
-  @ViewChild('links', {static: false}) links!: ElementRef;
-  @Output() enter = new EventEmitter();
-
-  private _data: SankeyGraph = {} as SankeyGraph;
-
-  MARGIN = 10;
-
-  margin = {
-    top: this.MARGIN,
-    right: this.MARGIN,
-    bottom: this.MARGIN,
-    left: this.MARGIN
-  };
-
-  MIN_FONT = 12;
-  MAX_FONT = 48;
-
-  private readonly sankey: any;
-  resizeObserver: any;
-
-  private _timeInterval = Infinity;
   @Input() set timeInterval(ti) {
     if (this.sankey) {
       this._timeInterval = ti;
@@ -105,11 +83,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  @ViewChild('popover') public popover: NgbPopover;
+  @ViewChild('popoverAnchor') public popoverAnchor;
+
   get timeInterval() {
     return this._timeInterval;
   }
 
-  constructor() {
+  constructor(
+    private clipboard: ClipboardService,
+    private readonly snackBar: MatSnackBar
+  ) {
     this.sankey = d3Sankey.sankey()
       .nodeId(n => n.id)
       .nodeAlign(d3Sankey.sankeyRight)
@@ -152,6 +136,34 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   get data() {
     return this._data;
   }
+
+  @ViewChild('wrapper', {static: false}) cloudWrapper!: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
+  @ViewChild('links', {static: false}) links!: ElementRef;
+  @Output() enter = new EventEmitter();
+
+  private _data: SankeyGraph = {} as SankeyGraph;
+
+  MARGIN = 10;
+
+  margin = {
+    top: this.MARGIN,
+    right: this.MARGIN,
+    bottom: this.MARGIN,
+    left: this.MARGIN
+  };
+
+  MIN_FONT = 12;
+  MAX_FONT = 48;
+
+  private readonly sankey: any;
+  resizeObserver: any;
+
+  private _timeInterval = Infinity;
+
+  selected;
 
   ngAfterViewInit() {
     const {width, height} = this.getCloudSvgDimensions();
@@ -211,6 +223,66 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     };
   }
 
+  linkClick(element, data, eventId, links, ...rest) {
+    this.selected = data;
+    this.clipboard.writeToClipboard(data.path).then(r =>
+      this.snackBar.open(
+        `Path copied to clipboard`,
+        undefined,
+        {duration: 500},
+      )
+    );
+
+    this.showPopOverForSVGElement(element, {link: data});
+  }
+
+  nodeClick(element, data, eventId, links, ...rest) {
+    this.showPopOverForSVGElement(element, {node: data});
+  }
+
+  showPopOverForSVGElement(element, context) {
+    const bbox = element.getBBox();
+    if (this.popover.isOpen()) {
+      this.popover.close();
+    }
+    const popoverAnchorStyle = this.popoverAnchor.nativeElement.style;
+    popoverAnchorStyle.left = bbox.x + 'px';
+    popoverAnchorStyle.top = bbox.y + 'px';
+    popoverAnchorStyle.width = bbox.width + 'px';
+    popoverAnchorStyle.height = bbox.height + 'px';
+    this.popover.open(context);
+  }
+
+  pathMouseOver(element, data, eventId, links, ...rest) {
+    d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .style('opacity', ({schemaClass}) => schemaClass === data.schemaClass ? 1 : 0.35);
+  }
+
+  pathMouseOut(element, data, eventId, links, ...rest) {
+    d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .style('opacity', 1);
+  }
+
+  nodeMouseOver(element, data, eventId, links, ...rest) {
+    d3.select(this.nodes.nativeElement)
+      .selectAll('g')
+      .style('opacity', ({color}) => color === data.color ? 1 : 0.35);
+    d3.select(element).select('text')
+      .style('font-size', '12px')
+      .text(({displayName}) => displayName);
+  }
+
+  nodeMouseOut(element, data, eventId, links, ...rest) {
+    d3.select(this.nodes.nativeElement)
+      .selectAll('g')
+      .style('opacity', 1);
+    d3.select(element).select('text')
+      .style('font-size', '6px')
+      .text(({displayName}) => displayName.slice(0, 10) + '...');
+  }
+
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
@@ -223,11 +295,27 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    */
   private updateDOM(words) {
     const [width, _height] = this.sankey.size();
+    const linkClick = this.linkClick.bind(this);
+    const nodeClick = this.nodeClick.bind(this);
+    const nodeMouseOver = this.nodeMouseOver.bind(this);
+    const pathMouseOver = this.pathMouseOver.bind(this);
+    const nodeMouseOut = this.nodeMouseOut.bind(this);
+    const pathMouseOut = this.pathMouseOut.bind(this);
     d3.select(this.links.nativeElement)
       .selectAll('path')
       .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)))
       .join(
-        enter => enter.append('path').call(enterLink => enterLink.append('title'))
+        enter => enter.append('path')
+          .on('click', function(data, eventId, links, ...args) {
+            return linkClick(this, data, eventId, links, ...args);
+          })
+          .on('mouseover', function(data, eventId, links, ...args) {
+            return pathMouseOver(this, data, eventId, links, ...args);
+          })
+          .on('mouseout', function(data, eventId, links, ...args) {
+            return pathMouseOut(this, data, eventId, links, ...args);
+          })
+          .call(enterLink => enterLink.append('title'))
       )
       .attr('d', link => {
         const {value: linkValue, source, target} = link;
@@ -278,8 +366,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .data(words.nodes)
       .join(
         enter => enter.append('g')
+          .on('mouseover', function(data, eventId, links, ...args) {
+            return nodeMouseOver(this, data, eventId, links, ...args);
+          })
+          .on('mouseout', function(data, eventId, links, ...args) {
+            return nodeMouseOut(this, data, eventId, links, ...args);
+          })
           .attr('fill', ({color}) => color)
-          .call(enterNode => enterNode.append('rect'))
+          .call(enterNode => enterNode.append('rect')
+            .on('click', function(data, eventId, links, ...args) {
+              return nodeClick(this, data, eventId, links, ...args);
+            }))
           .call(enterNode =>
             enterNode.append('text')
               .attr('dy', '0.35em')
@@ -301,7 +398,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .call(joined => joined.selectAll('text')
         .attr('x', ({x0}) => x0 - 6)
         .attr('y', ({y0, y1}) => (y1 + y0) / 2)
-        .text(({displayName}) => displayName)
+        .text(({displayName}) => displayName.slice(0, 10) + '...')
         .filter(({x0}) => x0 < width / 2)
         .attr('x', ({x1}) => x1 + 6)
         .attr('text-anchor', 'start')
