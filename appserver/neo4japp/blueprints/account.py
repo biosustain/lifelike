@@ -4,6 +4,7 @@ from flask import Blueprint, g, jsonify
 from flask.views import MethodView
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
@@ -12,6 +13,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
+from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
@@ -54,6 +56,7 @@ class AccountView(MethodView):
             t_appuser.c.email,
             t_appuser.c.first_name,
             t_appuser.c.last_name,
+            t_appuser.c.failed_login_count,
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
@@ -85,9 +88,10 @@ class AccountView(MethodView):
                 'email': email,
                 'first_name': first_name,
                 'last_name': last_name,
+                'locked': failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES,
                 'roles': roles.split(',')
-            } for id, hash_id, username, email,
-            first_name, last_name, roles in db.session.execute(query).fetchall()]
+            } for id, hash_id, username, email, first_name,
+            last_name, failed_login_count, roles in db.session.execute(query).fetchall()]
 
         return jsonify(UserProfileListSchema().dump({
             'total': len(results),
@@ -118,7 +122,8 @@ class AccountView(MethodView):
             username=params['username'],
             email=params['email'],
             first_name=params['first_name'],
-            last_name=params['last_name']
+            last_name=params['last_name'],
+            failed_login_count=0,
         )
         app_user.set_password(params['password'])
         if not params.get('roles'):
@@ -202,6 +207,54 @@ def update_password(params: dict, hash_id):
             db.session.rollback()
             raise
     return jsonify(dict(result='')), 204
+
+
+bp.add_url_rule('/<string:email>', view_func=account_view, methods=['GET'])
+
+
+@bp.route('/<string:email>/reset-password', methods=['GET'])
+def reset_password(email: str):
+    try:
+        target = AppUser.query.filter_by(email=email).one()
+    except NoResultFound:
+        raise ServerException(
+            title='Failed to find account',
+            message='No account registered to provided email address.',
+            code=404)
+
+    target.set_password('newTempPass')
+    try:
+        db.session.add(target)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise
+    return jsonify(dict(result='')), 204
+
+
+@bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
+@auth.login_required
+def unlock_user(hash_id):
+    if g.current_user.has_role('admin') is False:
+        raise NotAuthorized(
+            title='Failed to Unlock User',
+            message='You do not have sufficient privileges.')
+    else:
+        target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+        if target.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
+            target.failed_login_count = 0
+        else:
+            raise ServerException(
+                title='Failed to Unlock User',
+                message='User was not locked!')
+        try:
+            db.session.add(target)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+    return jsonify(dict(result='')), 204
+
 
 
 class AccountSearchView(MethodView):

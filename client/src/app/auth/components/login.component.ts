@@ -72,24 +72,24 @@ export class LoginComponent {
           status: 'Sending request...',
         })),
       });
-      this.snackBar.open(
-        `You are trying to reset pass for ${email}!!`,
-        'close',
-        {duration: 5000},
-      );
-    //   this.accountService.resetPassword(email)
-    //     .pipe(this.errorHandler.create({label: 'Reset password'}))
-    //     .subscribe(() => {
-    //       progressDialogRef.close();
-    //       this.snackBar.open(
-    //         `Email sent!!`,
-    //         'close',
-    //         {duration: 5000},
-    //       );
-    //     }, () => {
-    //       progressDialogRef.close();
-    //     });
-    // }, () => {
+      // this.snackBar.open(
+      //   `You are trying to reset pass for ${email}!!`,
+      //   'close',
+      //   {duration: 5000},
+      // );
+      this.accountService.resetPassword(email.email)
+        .pipe(this.errorHandler.create({label: 'Reset password'}))
+        .subscribe(() => {
+          progressDialogRef.close();
+          this.snackBar.open(
+            `Email sent!!`,
+            'close',
+            {duration: 5000},
+          );
+        }, () => {
+          progressDialogRef.close();
+        });
+    }, () => {
     });
   }
 }

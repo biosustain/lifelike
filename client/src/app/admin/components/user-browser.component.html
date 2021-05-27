@@ -92,6 +92,11 @@
       <td class="align-middle d-none d-lg-table-cell text-truncate">
         {{ user.email }}
       </td>
+      <td class="align-middle d-none d-md-table-cell text-truncate">
+        <button class="btn btn-secondary ml-2" [disabled]="!user.locked" (click)="displayUnlockUserDialog(user)">
+          Unlock user
+        </button>
+      </td>
     </tr>
     </tbody>
   </table>
