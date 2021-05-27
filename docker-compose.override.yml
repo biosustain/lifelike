@@ -135,7 +135,7 @@ services:
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
         volumes:
-            - ./cache-invalidator:/app
+            - ./cache-invalidator:/home/lifelike
         networks:
             - backend
         depends_on:
