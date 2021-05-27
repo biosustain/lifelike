@@ -1,5 +1,9 @@
 <div #wrapper
      class="h-100 w-100 overflow-hidden min-h-100-l wrapper"
+     *ngIf="(UIState | async) as status"
+     [ngStyle]="{
+         transform: 'scale(' + status.zoom + ') translate(' + -status.panX + 'px, ' + -status.panY + 'px)'
+     }"
 >
     <svg #svg>
         <g #links class="links"></g>
