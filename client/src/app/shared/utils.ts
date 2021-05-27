@@ -4,6 +4,15 @@ import { from, Observable, throwError, pipe } from 'rxjs';
 import { UnaryFunction } from 'rxjs/src/internal/types';
 import { HttpErrorResponse } from '@angular/common/http';
 
+export function toTitleCase(str: string) {
+  return str.replace(
+    /\w\S*/g,
+    (txt: string) => {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+  );
+}
+
 export function getRandomColor() {
   const letters = '0123456789ABCDEF';
   let color = '#';
