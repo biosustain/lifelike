@@ -302,7 +302,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                 'label': '\n'.join(textwrap.TextWrapper(
                     width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
                     replace_whitespace=False).wrap(node['display_name'])),
-                'pos': f"{node['data']['x'] / SCALING_FACTOR},{-node['data']['y'] / SCALING_FACTOR}!",
+                'pos': (
+                   f"{node['data']['x'] / SCALING_FACTOR},"
+                   f"{-node['data']['y'] / SCALING_FACTOR}!"
+                    ),
                 'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
                 'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
                 'shape': 'box',
