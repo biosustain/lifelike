@@ -150,4 +150,30 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  displayUnlockUserDialog(user: AppUser) {
+    event.stopPropagation();
+    if (confirm('Unlock user ' + user.username + '?')) {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Unlocking User`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Unlocking user...',
+        })),
+      });
+      this.accountService.unlockUser(user.hashId)
+        .pipe(this.errorHandler.create({label: 'Unlock user'}))
+        .subscribe(() => {
+          progressDialogRef.close();
+          this.snackBar.open(
+            `User unlocked!!`,
+            'close',
+            {duration: 5000},
+          );
+          user.locked = false;
+        }, () => {
+          progressDialogRef.close();
+        });
+
+    }
+  }
+
 }

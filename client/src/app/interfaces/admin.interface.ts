@@ -13,9 +13,3 @@ export interface UserUpdateRequest {
   firstName: string;
   lastName: string;
 }
-
-export interface UserResetPasswordRequest {
-  email: string;
-}
-
-
