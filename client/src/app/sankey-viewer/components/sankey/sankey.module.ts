@@ -1,9 +1,10 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import {SharedModule} from 'app/shared/shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
-import {SankeyComponent} from './sankey.component';
+import { SankeyComponent } from './sankey.component';
+import { ClipboardService } from '../../../shared/services/clipboard.service';
 
 const components = [
   SankeyComponent
@@ -16,6 +17,7 @@ const components = [
     SharedModule,
   ],
   exports: components,
+  providers: [ClipboardService]
 })
 export class SankeyModule {
 }
