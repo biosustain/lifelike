@@ -11,4 +11,4 @@ echo "Setting up neo4j indexes"
 echo "Set up the indexes manually by running"
 # Sets up the pipeline for elasticsearch
 echo "Configuring Elasticsearch"
-flask seed-elastic
+flask reset-elastic

@@ -51,6 +51,7 @@ class LogEventType(Enum):
     ELASTIC = 'elastic'
     ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
+    FILESYSTEM = 'filesystem'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
     SENTRY_HANDLED = 'handled_exception'
