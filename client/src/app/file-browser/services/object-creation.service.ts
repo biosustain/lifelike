@@ -1,5 +1,5 @@
-import { PDFAnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
+import { BehaviorSubject, Observable, iif, of, merge } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
 import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
@@ -17,6 +17,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from './filesystem.service';
+import { ResultMapping } from 'app/shared/schemas/common';
+import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
 @Injectable()
 export class ObjectCreationService {
@@ -47,6 +49,7 @@ export class ObjectCreationService {
       title: `Creating '${request.filename}'`,
       progressObservable,
     });
+    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
 
     return this.filesystemService.create(request)
       .pipe(
@@ -74,15 +77,26 @@ export class ObjectCreationService {
           // we can't actually show a progress percentage)
           progressObservable.next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Saved; identifying annotations...',
+            status: 'Saved; Parsing and identifying annotations...',
           }));
-          return this.annotationsService.generateAnnotations(
+          const annotationsService = this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
-          ).pipe(
-            map(() => object), // This method returns the object
+          ).pipe(map(result => {
+            results = [[object], [result]];
+            const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+            modalRef.componentInstance.objects = results[0];
+            modalRef.componentInstance.results = results[1];
+            return object;
+          }));
+          return iif(
+            () => object.isAnnotatable,
+            merge(annotationsService),
+            of(object)
           );
         }),
-        finalize(() => progressDialogRef.close()),
+        finalize(() => {
+          progressDialogRef.close();
+        }),
         this.errorHandler.create({label: 'Create object'}),
       );
   }

@@ -11,24 +11,24 @@ import { FileRecordsComponent } from './components/file-records.component';
 import { GraphSearchComponent } from './components/graph-search.component';
 import { GraphSearchFormComponent } from './components/graph-search-form.component';
 import { HierarchySearchTreeComponent } from './components/hierarchy-search-tree.component';
+import { RejectedSynonymsDialogComponent } from './components/rejected-synonyms-dialog.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
 
 import { ContentSearchService } from './services/content-search.service';
 import { GraphSearchService } from './services/graph-search.service';
 
-
-
 const components = [
   AdvancedSearchDialogComponent,
+  ContentSearchComponent,
+  ContentSearchFormComponent,
+  FileRecordsComponent,
   GraphSearchComponent,
   GraphSearchFormComponent,
   HierarchySearchTreeComponent,
+  RejectedSynonymsDialogComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
-  ContentSearchComponent,
-  ContentSearchFormComponent,
-  FileRecordsComponent
 ];
 
 @NgModule({
@@ -39,6 +39,7 @@ const components = [
   ],
   entryComponents: [
     AdvancedSearchDialogComponent,
+    RejectedSynonymsDialogComponent,
   ],
   declarations: components,
   providers: [

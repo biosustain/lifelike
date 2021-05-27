@@ -2,12 +2,11 @@ import hashlib
 import os
 
 from elasticsearch import Elasticsearch
-from flask import g, current_app
+from flask import g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from neo4j import GraphDatabase, basic_auth
-from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 from neo4japp.utils.flask import scope_flask_app_ctx
@@ -69,50 +68,11 @@ def close_neo4j_db(e=None):
         neo4j_db.close()
 
 
-# NOTE: local network connection to cloud seems to be causing issues
-# Neo4j Lead Dev/Py2neo creator: https://stackoverflow.com/a/63592570
-# https://github.com/technige/py2neo
-# TODO: how to close connection? Py2neo doesn't seem to do this...
-def connect_to_neo4j():
-    if 'neo4j' not in g:
-        protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
-        secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
-        g.neo4j = Graph(
-            name=current_app.config.get('NEO4J_DATABASE'),
-            host=current_app.config.get('NEO4J_HOST'),
-            auth=current_app.config.get('NEO4J_AUTH').split('/'),
-            secure=secure in protocols,
-            port=current_app.config.get('NEO4J_PORT'),
-            scheme=current_app.config.get('NEO4J_SCHEME')
-        )
-    return g.neo4j
-
-
-def connect_to_lmdb():
-    if 'lmdb' not in g:
-        from neo4japp.services.annotations.lmdb_access import LMDBAccess
-        g.lmdb = LMDBAccess()
-        g.lmdb.open_envs()
-    return g.lmdb
-
-
-def close_lmdb(e=None):
-    lmdb = g.pop('lmdb', None)
-    if lmdb:
-        lmdb.close_envs()
-
-
 def _connect_to_elastic():
     return Elasticsearch(
         timeout=180,
         hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
-
-
-class LMDBConnection:
-    def __init__(self):
-        super().__init__()
-        self.session = connect_to_lmdb()
 
 
 class DBConnection:
@@ -203,24 +163,17 @@ def get_enrichment_table_service():
     return g.enrichment_table_service
 
 
-def get_enrichment_visualisation_service():
-    if 'enrichment_visualisation_service' not in g:
-        from neo4japp.services import EnrichmentVisualisationService
-        graph = get_neo4j_db()
-        g.enrichment_visualisation_service = EnrichmentVisualisationService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.enrichment_visualisation_service
-
-
 def get_user_file_import_service():
-    if 'user_file_import_service' not in g:
-        from neo4japp.services import UserFileImportService
-        # TODO Replace with neo4j driver
-        graph = connect_to_neo4j()
-        g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
-    return g.current_user_file_import_service
+    raise NotImplementedError()
+#     if 'user_file_import_service' not in g:
+#         from neo4japp.services import UserFileImportService
+#         # TODO Replace with neo4j driver
+#         graph = connect_to_neo4j()
+#         g.current_user_file_import_service = UserFileImportService(
+#           graph=graph,
+#           session=db.session
+#         )
+#     return g.current_user_file_import_service
 
 
 def get_search_service_dao():

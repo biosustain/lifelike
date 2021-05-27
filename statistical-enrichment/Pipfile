@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "==5.3.5"
+mypy = "==0.770"
+pycodestyle = "==2.5.0"
+
+[packages]
+flask-marshmallow = "==0.11.0"
+Flask = "==1.1.2"
+redis = "==3.5.2"
+pandas = "==1.0.5"
+scipy = "==1.6.1"
+statsmodels = "==0.12.2"
+neo4j = "==4.2.1"
+webargs = "==8.0.0"
+py2neo = "==2021.0.1"
+gunicorn = "==20.0.4"
+
+[requires]
+python_version = "3.8.2"

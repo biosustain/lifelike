@@ -120,13 +120,6 @@ def seed():
         logger.info("Fixtures imported")
 
 
-@app.cli.command("init-neo4j")
-def init_neo4j():
-    # Sets up the proper indexes for Neo4j
-    from db import setup as neo4jsetup
-    neo4jsetup()
-
-
 @app.cli.command("drop_tables")
 def drop_all_tables_and_enums():
     """
