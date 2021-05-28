@@ -1,23 +1,28 @@
+
 .nodes {
   z-index: 1;
-  transition: opacity 250ms 250ms;
-}
 
-.nodes rect {
-  cursor: move;
-  fill-opacity: .9;
-  shape-rendering: crispEdges;
-}
+  g {
+    transition: opacity 250ms 250ms;
 
-.nodes text {
-  text-shadow: 0 1px 0 #fff;
-  font-size: 6px;
-  transition: font-size, fill 250ms;
-  pointer-events: none;
-}
+    rect {
+      cursor: move;
+      fill-opacity: .9;
+      shape-rendering: crispEdges;
+    }
 
-.nodes:hover text {
-  fill: black;
+    text {
+      text-shadow: 0 1px 0 #fff;
+      font-size: 6px;
+      transition: font-size 250ms 250ms, fill 250ms 250ms;
+      pointer-events: none;
+    }
+
+    &:hover text {
+      font-size: 12px;
+      fill: black;
+    }
+  }
 }
 
 .links {
@@ -42,4 +47,8 @@
 
 .wrapper {
   position: relative;
+  //touch-action: none;
+  //user-select: none;
+  transform-origin: 0 0;
 }
+
