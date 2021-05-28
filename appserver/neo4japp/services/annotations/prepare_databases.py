@@ -192,14 +192,14 @@ def prepare_lmdb_proteins_database(filename: str):
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
-            # skip headers
-            # Accession	ID	Name	NameType	TaxID
+            # skip headers (only care for first 3)
+            # id	name	synonym	...
             headers = next(reader)
             for line in reader:
                 # synonyms already have their own line in dataset
                 #
                 protein_id = line[1]
-                protein_name = line[2] if 'Uncharacterized protein' not in line[2] else line[0]  # noqa
+                protein_name = line[2]
                 # changed protein_id to protein_name for now (JIRA LL-671)
                 # will eventually change back to protein_id
                 protein = create_ner_type_protein(
@@ -471,12 +471,3 @@ if __name__ == '__main__':
     # organism
     prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/covid19_taxonomy2.tsv')
-    # # these are no longer needed as they're in the main taxonomy.tsv now
-    # # keep the covid19-taxonomy.tsv as record because one term from it
-    # # is appearing in papers and not in taxonomy.tsv, the rest are now in taxonomy.tsv
-    # prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
-    # prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
-    # prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
-    # prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
-    # prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
-    # prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
