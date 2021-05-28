@@ -135,7 +135,7 @@ class AnnotationService:
             link_search_term = param.token.keyword
 
             # entity here is data structure from LMDB
-            # see services/annotations/util.py for definition
+            # see services/annotations/lmdb_util.py for definition
             if not param.entity_id_hyperlink:
                 # assign to avoid line being too long
                 # can't use multi pycode ignore/noqa...
@@ -348,7 +348,7 @@ class AnnotationService:
             if organism not in self.organism_locations:
                 current_app.logger.error(
                     f'Organism ID {organism} does not exist in {self.organism_locations}.',
-                    extra=EventLog(event_type='annotations').to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
                 continue
 

@@ -40,9 +40,7 @@ services:
             - REDIS_PORT=6379
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
-            - LMDB_HOME_FOLDER=/home/n4j/tests/database/services/annotations
-        volumes:
-            - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
+            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
         networks:
             - frontend
             - backend
