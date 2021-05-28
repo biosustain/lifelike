@@ -1,136 +1,28 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, EventEmitter, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+  EventEmitter,
+  Output,
+  ViewEncapsulation,
+  OnInit
+} from '@angular/core';
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
-import { createMapToColor, normalizeGenerator } from './utils';
+import { createMapToColor, clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
-import * as Hammer from 'hammerjs';
 import { BehaviorSubject } from 'rxjs';
+import { DomSanitizer } from '@angular/platform-browser';
 
 const RELAYOUT_DURATION = 250;
-
-/**
- * Throttles calling `fn` once per animation frame
- * Latest arguments are used on the actual call
- * @param fn - function which calls should be throttled
- */
-export function throttled(fn: (...r: any[]) => void) {
-  let ticking = false;
-  let args = [];
-  return (...rest) => {
-    args = Array.prototype.slice.call(rest);
-    if (!ticking) {
-      ticking = true;
-      window.requestAnimationFrame(() => {
-        ticking = false;
-        fn.apply(window, args);
-      });
-    }
-  };
-}
-
-const calculateLinkPathParams = link => {
-  const {value: linkValue, source, target} = link;
-  const {sourceLinks} = source;
-  const {targetLinks} = target;
-  const sourceValues = sourceLinks.map(({value}) => value);
-  const targetValues = targetLinks.map(({value}) => value);
-  const sourceIndex = sourceLinks.indexOf(link);
-  const targetIndex = targetLinks.indexOf(link);
-  const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
-  const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
-  const sourceX = source.x1;
-  const targetX = target.x0;
-  let sourceY = 0;
-  let targetY = 0;
-  for (let i = 0; i < sourceIndex; i++) {
-    sourceY += sourceLinks[i].value;
-  }
-  for (let i = 0; i < targetIndex; i++) {
-    targetY += targetLinks[i].value;
-  }
-  const sourceHeight = source.y1 - source.y0;
-  const targetHeight = target.y1 - target.y0;
-  // tslint:disable-next-line:no-bitwise
-  const sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + source.y0;
-  // tslint:disable-next-line:no-bitwise
-  const targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + target.y0;
-  // tslint:disable-next-line:no-bitwise
-  const sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
-  // tslint:disable-next-line:no-bitwise
-  const targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
-  // tslint:disable-next-line:no-bitwise
-  const bezierX = (sourceX + targetX) / 2;
-  return {
-    sourceX,
-    sourceY0,
-    sourceY1,
-    targetX,
-    targetY0,
-    targetY1,
-    bezierX
-  };
-};
-
-const composeLinkPath = ({
-                           sourceX,
-                           sourceY0,
-                           sourceY1,
-                           targetX,
-                           targetY0,
-                           targetY1,
-                           bezierX
-                         }) =>
-  `M${sourceX} ${sourceY0}` +
-  `C${bezierX} ${sourceY0},${bezierX} ${targetY0},${targetX} ${targetY0}` +
-  `L${targetX} ${targetY1}` +
-  `C${bezierX} ${targetY1},${bezierX} ${sourceY1},${sourceX} ${sourceY1}` +
-  `Z`;
-
-const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
-
-const createResizeObserver = (callback, container) => {
-  const resize = throttled(async (width, height) => {
-    const w = container.clientWidth;
-    await callback(width, height - 42);
-    if (w < container.clientWidth) {
-      // If the container size shrank during chart resize, let's assume
-      // scrollbar appeared. So we resize again with the scrollbar visible -
-      // effectively making chart smaller and the scrollbar hidden again.
-      // Because we are inside `throttled`, and currently `ticking`, scroll
-      // events are ignored during this whole 2 resize process.
-      // If we assumed wrong and something else happened, we are resizing
-      // twice in a frame (potential performance issue)
-      await callback(container.offsetWidth, container.offsetHeight - 42);
-    }
-  });
-
-  // @ts-ignore until https://github.com/microsoft/TypeScript/issues/37861 implemented
-  const observer = new ResizeObserver(entries => {
-    const entry = entries[0];
-    const width = entry.contentRect.width;
-    const height = entry.contentRect.height;
-    // When its container's display is set to 'none' the callback will be called with a
-    // size of (0, 0), which will cause the chart to lost its original height, so skip
-    // resizing in such case.
-    if (width === 0 && height === 0) {
-      return;
-    }
-    resize(width, height);
-  });
-  // todo
-  observer.observe(container);
-  return observer;
-};
-
-interface SankeyGraph {
-  links: any[];
-  nodes: any[];
-  graph: any;
-}
+const INITIALLY_SHOWN_CHARS = 10;
 
 @Component({
   selector: 'app-sankey',
@@ -138,7 +30,7 @@ interface SankeyGraph {
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeyComponent implements AfterViewInit, OnDestroy {
+export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() set timeInterval(ti) {
     if (this.sankey) {
       this._timeInterval = ti;
@@ -146,24 +38,22 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @ViewChild('popover') public popover: NgbPopover;
-  @ViewChild('popoverAnchor') public popoverAnchor;
+  @ViewChild('popover', {static: false}) public popover: NgbPopover;
+  @ViewChild('popoverAnchor', {static: false}) public popoverAnchor;
 
-  get timeInterval() {
-    return this._timeInterval;
-  }
+  viewTransformation;
 
   constructor(
     private elRef: ElementRef,
     private clipboard: ClipboardService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly domSanitizer: DomSanitizer
   ) {
     this.sankey = d3Sankey.sankey()
       .nodeId(n => n.id)
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
-    this.UIState = new BehaviorSubject(1);
-    this.pan = new BehaviorSubject([0, 0]);
+    this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
   }
 
   @Input('data') set data({links, graph, nodes, ...data}) {
@@ -230,9 +120,27 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   private _timeInterval = Infinity;
 
   selected;
-  UIState;
+  uiState;
   pan;
   size;
+
+  calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
+    const {uiState: {value: {zoom, panX, panY}}, size: {width, height}} = this;
+    const newZoom = clamp(1, 10)(zoom + zoomDelta);
+    return {
+      panX: clamp(0, width * (newZoom - 1))(panX + deltaX),
+      panY: clamp(0, height * (newZoom - 1))(panY + deltaY),
+      zoom: newZoom
+    };
+  }
+
+  ngOnInit() {
+    this.uiState.subscribe(status =>
+      this.viewTransformation = this.domSanitizer.bypassSecurityTrustStyle(
+        'translate(' + -status.panX + 'px, ' + -status.panY + 'px)' + ' scale(' + status.zoom + ')'
+      )
+    );
+  }
 
   ngAfterViewInit() {
     const {width, height} = this.size = this.getCloudSvgDimensions();
@@ -240,37 +148,50 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
 
     this.wrapper.nativeElement.addEventListener('wheel', event => {
-      const {wheelDelta, ctrlKey, deltaX, deltaY, offsetX, offsetY} = event;
-      const {UIState: {value: {zoom = 1, panX = 0, panY = 0}},} = this;
+      const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
       event.preventDefault();
       if (ctrlKey) {
+        // zoom with origin on mouse
         const zoomDelta = wheelDelta / 800;
-        this.UIState.next({
-          panX: panX + offsetX * zoomDelta,
-          panY: panY + offsetY * zoomDelta,
-          zoom: Math.max(0, zoom + zoomDelta)
-        });
+        this.uiState.next(
+          this.calculateNextUIState({
+            deltaX: offsetX * zoomDelta,
+            deltaY: offsetY * zoomDelta,
+            zoomDelta
+          })
+        );
+      } else if (shiftKey) {
+        // shift + wheel to scroll just horizontally
+        this.uiState.next(
+          this.calculateNextUIState({
+            deltaX: deltaY
+          })
+        );
       } else {
-        this.UIState.next({
-          panX: panX + deltaX,
-          panY: panY + deltaY,
-          zoom
-        });
+        // bidirectional scroll
+        this.uiState.next(
+          this.calculateNextUIState({
+            deltaX,
+            deltaY
+          })
+        );
       }
     });
 
-    const hammer = new Hammer(this.wrapper.nativeElement);
-
-    // hammer.get('pinch').set({enable: true});
-
-    const {pan} = this;
-    hammer.on('pan pinch panend', function(e) {
-      // e.target.classList.toggle('expand');
-      console.log('You\'re pressing me!');
-      console.log(e);
-      const currentPan = pan.value;
-      pan.next([currentPan[0] + e.deltaX, currentPan[1] + e.deltaY]);
-    });
+    // todo: figure out panning
+    // const hammer = new Hammer(this.wrapper.nativeElement);
+    //
+    // hammer.on('pan', ({deltaX, deltaY, ...rest}) => {
+    //   const {uiState: {value: {zoom}}} = this;
+    //   console.log(rest)
+    //   this.uiState.next(
+    //     this.calculateNextUIState({
+    //       deltaX: -deltaX / zoom / zoom,
+    //       deltaY: -deltaY / zoom / zoom,
+    //       zoomDelta: 0
+    //     })
+    //   );
+    // });
   }
 
   ngOnDestroy() {
@@ -325,9 +246,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  linkClick(element, data, eventId, links, ...rest) {
+  linkClick(element, data, _eventId, _links, ..._rest) {
     this.selected = data;
-    this.clipboard.writeToClipboard(data.path).then(r =>
+    this.clipboard.writeToClipboard(data.path).then(_ =>
       this.snackBar.open(
         `Path copied to clipboard`,
         undefined,
@@ -338,7 +259,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.showPopOverForSVGElement(element, {link: data});
   }
 
-  nodeClick(element, data, eventId, links, ...rest) {
+  nodeClick(element, data, _eventId, _links, ..._rest) {
     this.showPopOverForSVGElement(element, {node: data});
   }
 
@@ -355,34 +276,47 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.popover.open(context);
   }
 
-  pathMouseOver(element, data, eventId, links, ...rest) {
+  pathMouseOver(_element, data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
       .style('opacity', ({schemaClass}) => schemaClass === data.schemaClass ? 1 : 0.35);
   }
 
-  pathMouseOut(element, data, eventId, links, ...rest) {
+  pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
       .style('opacity', 1);
   }
 
-  nodeMouseOver(element, data, eventId, links, ...rest) {
+  nodeMouseOver(element, data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .style('opacity', ({color}) => color === data.color ? 1 : 0.35);
     d3.select(element).select('text')
-      .text(({displayName}) => displayName);
-    // .style('font-size', '12px');
+      .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
+      // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
+      // .transition().duration(RELAYOUT_DURATION)
+      // .textTween(({displayName}) => {
+      //   const length = displayName.length;
+      //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+      //   return t => t === 1 ? displayName :
+      //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      // });
   }
 
-  nodeMouseOut(element, data, eventId, links, ...rest) {
+  nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .style('opacity', 1);
     d3.select(element).select('text')
-      // .style('font-size', '6px')
-      .text(({displayName}) => displayName.slice(0, 10) + '...');
+      .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
+      // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
+      // .transition().duration(RELAYOUT_DURATION)
+      // .textTween(({displayName}) => {
+      //   const length = displayName.length;
+      //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
+      //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      // });
   }
 
   /**
@@ -424,17 +358,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           }),
         update => update
           .transition().duration(RELAYOUT_DURATION)
-          .attrTween('d', function(link) {
+          .attrTween('d', link => {
             const newPathParams = calculateLinkPathParams(link);
             const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
             return t => {
               const interpolatedParams = paramsInterpolator(t);
-              link.interpolatedParams = interpolatedParams;
+              // save last params on each iterration so we can interpolate from last position upon
+              // animation interrupt/cancel
+              link.calculated_params = interpolatedParams;
               return composeLinkPath(interpolatedParams);
             };
-          })
-          .on('end interrupt cancel', function(link) {
-            link.calculated_params = link.interpolatedParams;
           })
       )
       // .attr('stroke-width', ({width}) => Math.max(1, width))
