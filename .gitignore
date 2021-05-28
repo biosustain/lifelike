@@ -1,3 +1,6 @@
+# liinting
+/**/.husky
+
 # Python
 __pycache__/
 *.pyc
