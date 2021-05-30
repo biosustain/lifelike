@@ -1,4 +1,8 @@
+import random
 import re
+import secrets
+import string
+import time
 
 from flask import Blueprint, g, jsonify
 from flask.views import MethodView
@@ -13,7 +17,17 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
-from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES
+from neo4japp.constants import (
+    MAX_ALLOWED_LOGIN_FAILURES,
+    MESSAGE_SENDER_IDENTITY,
+    REST_PASS_MAIL_CONTENT,
+    MIN_TEMP_PASS_LENGTH,
+    MAX_TEMP_PASS_LENGTH,
+    RESET_PASSWORD_SYMBOLS,
+    RESET_PASSWORD_ALPHABET,
+    SEND_GRID_API_CLIENT,
+    RESET_PASSWORD_EMAIL_TITLE
+)
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
@@ -26,6 +40,9 @@ from neo4japp.schemas.account import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.request import Pagination
+
+from sendgrid.helpers.mail import Mail
+
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
@@ -222,7 +239,30 @@ def reset_password(email: str):
             message='No account registered to provided email address.',
             code=404)
 
-    target.set_password('newTempPass')
+    random.seed(time.time())
+
+    new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
+        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + MIN_TEMP_PASS_LENGTH
+    new_password = ''.join(random.sample([secrets.choice(RESET_PASSWORD_SYMBOLS)] +
+                                         [secrets.choice(string.ascii_uppercase)] +
+                                         [secrets.choice(string.digits)] +
+                                         [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(
+                                             new_length - 3)],
+                                         new_length))
+
+    message = Mail(
+        from_email=MESSAGE_SENDER_IDENTITY,
+        to_emails=email,
+        subject=RESET_PASSWORD_EMAIL_TITLE,
+        html_content=REST_PASS_MAIL_CONTENT.format(name=target.first_name,
+                                                   lastname=target.last_name,
+                                                   password=new_password))
+    try:
+        SEND_GRID_API_CLIENT.send(message)
+    except Exception as e:
+        raise
+
+    target.set_password(new_password)
     try:
         db.session.add(target)
         db.session.commit()
@@ -254,7 +294,6 @@ def unlock_user(hash_id):
             db.session.rollback()
             raise
     return jsonify(dict(result='')), 204
-
 
 
 class AccountSearchView(MethodView):
