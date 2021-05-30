@@ -311,17 +311,14 @@ FRAGMENT_SIZE = 1024
 MAX_ALLOWED_LOGIN_FAILURES = 5
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
+RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
+RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
 # Start email constants
 MESSAGE_SENDER_IDENTITY = "***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio"
-# To be placed in the env variable and retrieved with os.environ.get
-# MAILING_API_KEY = '***REMOVED***'
 MAILING_API_KEY = os.getenv('SEND_GRID_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
-
 REST_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
-
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
-RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
-RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
+
