@@ -186,7 +186,7 @@ class AccountView(MethodView):
             except SQLAlchemyError:
                 db.session.rollback()
                 raise
-        return jsonify(dict(result=target.to_dict()))
+        return jsonify(dict(result='')), 204
 
     def delete(self):
         # TODO: Need to implement soft deletes as well as blocking assets from being viewed

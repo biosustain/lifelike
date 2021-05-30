@@ -36,13 +36,10 @@ export class AccountService implements OnDestroy {
 
     updateUser(request: UserUpdateRequest) {
         return this.http.put<{result: AppUser}>(
-            `${this.accountApi}/${request.hashId}`, request,
-        ).pipe(map(resp => resp.result));
+            `${this.accountApi}/${request.hashId}`, request);
     }
 
     resetPassword(email: string) {
-      console.log(email);
-      console.log("admin@example.com");
         return this.http.get(`${this.accountApi}/${email}/reset-password`);
     }
 
