@@ -75,7 +75,7 @@ interface SankeyGraph {
 export class SankeyComponent implements AfterViewInit, OnDestroy {
   @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('svg', {static: true}) svg!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
   @Output() enter = new EventEmitter();
