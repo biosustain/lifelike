@@ -1,9 +1,6 @@
 import moment from 'moment';
 
 import { isNullOrUndefined } from 'util';
-
-
-
 import {
   KnowledgeMap,
   Source,
@@ -18,7 +15,6 @@ import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
-
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
@@ -446,6 +442,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
    */
   get data(): Directory | KnowledgeMap | PdfFile {
     return this;
+  }
+
+  get new(): boolean {
+    return this.creationDate === this.modifiedDate;
   }
 
   filterChildren(filter: string) {
