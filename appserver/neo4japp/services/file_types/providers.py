@@ -10,9 +10,12 @@ import graphviz
 import requests
 from pdfminer import high_level
 
+import neo4japp.utils.string
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.sankey import validate_sankey
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.constants import (
@@ -31,6 +34,7 @@ from neo4japp.constants import (
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
+from neo4japp.utils.string import extract_text
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -408,6 +412,37 @@ class MapTypeProvider(BaseFileTypeProvider):
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
+
+
+class SankeyTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'vnd.lifelike.document/sankey'
+    SHORTHAND = 'Sankey'
+    mime_types = (MIME_TYPE,)
+
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        try:
+            # If the data validates, I guess it's a map?
+            self.validate_content(buffer)
+            return [(0, self.MIME_TYPE)]
+        except ValueError as e:
+            return []
+        finally:
+            buffer.seek(0)
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
+        validate_sankey(data)
+
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        content_json = json.load(buffer)
+        content = io.StringIO()
+        string_list = set(extract_text(content_json))
+
+        content.write(' '.join(list(string_list)))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):

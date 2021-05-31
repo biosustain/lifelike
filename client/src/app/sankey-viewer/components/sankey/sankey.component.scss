@@ -1,0 +1,24 @@
+.nodes {
+  z-index: 1;
+}
+
+.nodes rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.nodes text {
+  text-shadow: 0 1px 0 #fff;
+  font-size: 6px;
+}
+
+.links {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.links path:hover {
+  stroke-opacity: .5;
+}
