@@ -8,10 +8,8 @@ import { State } from 'app/root-store';
 import { AuthActions } from '../store';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { UserCreateDialogComponent } from '../../admin/components/user-create-dialog.component';
 import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { AppUser } from '../../interfaces';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -72,11 +70,6 @@ export class LoginComponent {
           status: 'Sending request...',
         })),
       });
-      // this.snackBar.open(
-      //   `You are trying to reset pass for ${email}!!`,
-      //   'close',
-      //   {duration: 5000},
-      // );
       this.accountService.resetPassword(email.email)
         .pipe(this.errorHandler.create({label: 'Reset password'}))
         .subscribe(() => {
