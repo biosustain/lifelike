@@ -73,13 +73,11 @@ export class UserProfileComponent implements OnInit  {
           });
     this.accountService.updateUser(this.getValue())
     .pipe(this.errorHandler.create({label: 'Update user'}))
-    .subscribe((user: AppUser) => {
+    .subscribe(() => {
       progressDialogRef.close();
       this.accountService.getUserList();
-      this.user = user;
-      this.reset();
       this.snackBar.open(
-        `User ${user.username} updated!`,
+        `User ${this.user.username} updated!`,
         'close',
         {duration: 5000},
       );

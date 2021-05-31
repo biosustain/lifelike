@@ -320,5 +320,3 @@ MAILING_API_KEY = os.getenv('SEND_GRID_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
 REST_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
-
-
