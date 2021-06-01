@@ -144,38 +144,38 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const {width, height} = this.size = this.getCloudSvgDimensions();
-    this.onResize(width, height).then();
-    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
-
-    this.wrapper.nativeElement.addEventListener('wheel', event => {
-      const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
-      event.preventDefault();
-      if (ctrlKey) {
-        // zoom with origin on mouse
-        const zoomDelta = wheelDelta / 800;
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX: offsetX * zoomDelta,
-            deltaY: offsetY * zoomDelta,
-            zoomDelta
-          })
-        );
-      } else if (shiftKey) {
-        // shift + wheel to scroll just horizontally
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX: deltaY
-          })
-        );
-      } else {
-        // bidirectional scroll
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX,
-            deltaY
-          })
-        );
-      }
+    this.onResize(width, height).then(_ => {
+      this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
+      this.wrapper.nativeElement.addEventListener('wheel', event => {
+        const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
+        event.preventDefault();
+        if (ctrlKey) {
+          // zoom with origin on mouse
+          const zoomDelta = wheelDelta / 800;
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX: offsetX * zoomDelta,
+              deltaY: offsetY * zoomDelta,
+              zoomDelta
+            })
+          );
+        } else if (shiftKey) {
+          // shift + wheel to scroll just horizontally
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX: deltaY
+            })
+          );
+        } else {
+          // bidirectional scroll
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX,
+              deltaY
+            })
+          );
+        }
+      });
     });
 
     // todo: figure out panning
@@ -196,7 +196,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.resizeObserver.disconnect();
-
+    this.uiState.unsubscribe();
     delete this.resizeObserver;
   }
 
@@ -294,14 +294,14 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .style('opacity', ({color}) => color === data.color ? 1 : 0.35);
     d3.select(element).select('text')
       .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
-      // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
-      // .transition().duration(RELAYOUT_DURATION)
-      // .textTween(({displayName}) => {
-      //   const length = displayName.length;
-      //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-      //   return t => t === 1 ? displayName :
-      //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-      // });
+    // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
+    // .transition().duration(RELAYOUT_DURATION)
+    // .textTween(({displayName}) => {
+    //   const length = displayName.length;
+    //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+    //   return t => t === 1 ? displayName :
+    //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+    // });
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
@@ -310,13 +310,13 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .style('opacity', 1);
     d3.select(element).select('text')
       .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
-      // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
-      // .transition().duration(RELAYOUT_DURATION)
-      // .textTween(({displayName}) => {
-      //   const length = displayName.length;
-      //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-      //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-      // });
+    // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
+    // .transition().duration(RELAYOUT_DURATION)
+    // .textTween(({displayName}) => {
+    //   const length = displayName.length;
+    //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
+    //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+    // });
   }
 
   /**
