@@ -219,6 +219,18 @@ def login():
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
+            print({
+                'user': {
+                    'hash_id': user.hash_id,
+                    'email': user.email,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'id': user.id,
+                    'forced_password_reset': True,
+                    'roles': [u.name for u in user.roles],
+                }
+            })
             return jsonify(JWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
@@ -229,8 +241,9 @@ def login():
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                     'id': user.id,
+                    'reset_password': user.forced_password_reset,
+                    'locked': False,
                     'roles': [u.name for u in user.roles],
-                    'force_password_reset': user.force_password_reset
                 },
             }))
         else:
