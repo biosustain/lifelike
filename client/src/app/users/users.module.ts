@@ -11,6 +11,7 @@ import { UserEffects } from './store/effects';
 import { TermsOfServiceDialogComponent } from './components/terms-of-service-dialog.component';
 import { TermsOfServiceComponent } from './components/terms-of-service.component';
 import { TermsOfServiceTextComponent } from './components/terms-of-service-text.component';
+import { ChangePasswordDialogComponent } from './components/change-password-dialog.component';
 
 const components = [
   UserProfileComponent,
@@ -18,6 +19,7 @@ const components = [
   UserSettingsComponent,
   TermsOfServiceTextComponent,
   TermsOfServiceDialogComponent,
+  ChangePasswordDialogComponent,
   TermsOfServiceComponent,
 ];
 
@@ -28,7 +30,7 @@ const components = [
   ],
   declarations: components,
   providers: [AccountService],
-  entryComponents: [TermsOfServiceDialogComponent],
+  entryComponents: [TermsOfServiceDialogComponent, ChangePasswordDialogComponent],
   exports: components,
 })
 export class UserModule {
