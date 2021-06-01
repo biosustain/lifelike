@@ -4,6 +4,7 @@ export interface UserCreationRequest {
     username: string;
     password: string;
     email: string;
+    createdByAdmin: boolean;
     roles: string[];
 }
 

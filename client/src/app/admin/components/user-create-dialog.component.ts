@@ -36,6 +36,7 @@ export class UserCreateDialogComponent extends CommonFormDialogComponent {
   getValue(): UserCreationRequest {
     return {
       ...this.form.value,
+      createdByAdmin: true,
     };
   }
 }
