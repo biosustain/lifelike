@@ -1,7 +1,39 @@
-<div #cloudWrapper class="h-100 w-100 overflow-hidden min-h-100-l">
+<div #wrapper
+     class="h-100 w-100 overflow-hidden min-h-100-l wrapper"
+     [style.transform]="viewTransformation"
+>
     <svg #svg>
         <g #links class="links"></g>
         <g #nodes class="nodes"></g>
     </svg>
+    <small *ngIf="selected">
+        Selected path: {{ selected?.path }}
+    </small>
+    <div class="sankey-popover"
+         #popoverAnchor
+         [ngbPopover]="popoverTmpl"
+         #popover="ngbPopover"
+         triggers="manual"
+         container="body"
+    >
+    </div>
+    <ng-template #popoverTmpl let-link="link" let-node="node">
+        <ng-container *ngIf="node">
+            <span>{{node.displayName}}</span>
+            <dl>
+                <dt>Names:</dt>
+                <dd>
+                    <ol>
+                        <li *ngFor="let name of node.name">{{name}}</li>
+                    </ol>
+                </dd>
+            </dl>
+        </ng-container>
+        <ng-container *ngIf="link">
+            <dl>
+                <dt>Path:</dt>
+                <dd>{{link.path}}</dd>
+            </dl>
+        </ng-container>
+    </ng-template>
 </div>
-<canvas #hiddenTextAreaWrapper style="display: none;"></canvas>
