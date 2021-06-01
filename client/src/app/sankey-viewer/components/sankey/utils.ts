@@ -19,7 +19,7 @@ export const colorPalletGenerator = (
   i => `hsla(${360 * hue(i, size)},${100 * saturation(i, size)}%,${100 * lightness(i, size)}%,${alpha(i, size)})`;
 
 export const createMapToColor = (arr, ...rest) => {
-  const uniq = new Set(arr);
+  const uniq = arr instanceof Set ? arr : new Set(arr);
   const palette = colorPalletGenerator(uniq.size, ...rest);
   return new Map([...uniq].map((v, i) => [v, palette(i)]));
 };
