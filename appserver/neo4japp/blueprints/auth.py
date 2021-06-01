@@ -230,6 +230,7 @@ def login():
                     'last_name': user.last_name,
                     'id': user.id,
                     'roles': [u.name for u in user.roles],
+                    'force_password_reset': user.force_password_reset
                 },
             }))
         else:
