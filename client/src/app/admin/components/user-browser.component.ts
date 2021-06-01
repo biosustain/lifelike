@@ -132,12 +132,12 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
 
           this.accountService.updateUser(updatedUser)
             .pipe(this.errorHandler.create({label: 'Update user'}))
-            .subscribe((user: AppUser) => {
+            .subscribe(() => {
               progressDialogRef.close();
               this.accountService.getUserList();
               this.refresh();
               this.snackBar.open(
-                `User ${user.username} updated!`,
+                `User ${selectedUser.username} updated!`,
                 'close',
                 {duration: 5000},
               );
