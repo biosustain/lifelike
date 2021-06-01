@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  Input,
+  Component, EventEmitter,
+  Input, Output,
 } from '@angular/core';
 import {
   FormGroup,
@@ -14,6 +14,7 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import * as UserActions from '../store/actions';
 import { Store } from '@ngrx/store';
 import { State } from '../../***ARANGO_USERNAME***-store';
+import { emit } from 'cluster';
 
 @Component({
   selector: 'app-user-security',
@@ -22,6 +23,7 @@ import { State } from '../../***ARANGO_USERNAME***-store';
 })
 export class UserSecurityComponent {
   @Input() user: AppUser;
+  @Output() passwordChanged: EventEmitter<boolean> = new EventEmitter();
 
   readonly errors = {
     notMatch: 'Your two passwords don\'t match.',
@@ -53,6 +55,7 @@ export class UserSecurityComponent {
       // TODO: Add progress dialog
       const password = this.form.get('oldPassword').value;
       const newPassword = this.form.get('password').value;
+      console.log('hashid ' + this.user.hashId);
       this.store.dispatch(UserActions.changePassword({
         userUpdates: {
           hashId: this.user.hashId,
@@ -61,6 +64,7 @@ export class UserSecurityComponent {
         },
       }));
       this.form.reset();
+      this.passwordChanged.emit(true);
     } else {
       this.form.markAsDirty();
       this.messageDialog.display({
