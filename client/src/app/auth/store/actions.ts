@@ -55,5 +55,17 @@ export const loginReset = createAction(
     '[Auth] Login Reset'
 );
 
-
 export const logoutSuccess = createAction(LOGOUT_SUCCESS);
+
+export const failedPasswordUpdate = createAction(
+  '[Auth] Initial Password Update Failed'
+);
+
+export const successPasswordUpdate = createAction(
+  '[Auth] Initial Password Updated Successfully'
+);
+
+export const updatePassword = createAction(
+  '[Auth] Changing Initial Password',
+  // props<{credential: Credential}>(),
+);
