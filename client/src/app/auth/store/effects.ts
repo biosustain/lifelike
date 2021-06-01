@@ -65,15 +65,15 @@ export class AuthEffects {
         }, () => {
           this.store$.dispatch(AuthActions.disagreeTermsOfService());
         });
-        return AuthActions.termsOfSerivceAgreeing();
+        return AuthActions.termsOfServiceAgreeing();
       } else {
         return AuthActions.login({credential});
       }
     }),
   ));
 
-  termsOfSerivceAgreeing$ = createEffect(() => this.actions$.pipe(
-    ofType(AuthActions.termsOfSerivceAgreeing),
+  termsOfServiceAgreeing$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.termsOfServiceAgreeing),
   ), {dispatch: false});
 
   agreeTermsOfService$ = createEffect(() => this.actions$.pipe(
