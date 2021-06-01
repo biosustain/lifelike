@@ -15,6 +15,7 @@ class UserCreateSchema(CamelCaseSchema):
     username = fields.String()
     email = fields.Email()
     password = fields.String()
+    created_by_admin = fields.Boolean()
     roles = fields.List(fields.String())
 
 
