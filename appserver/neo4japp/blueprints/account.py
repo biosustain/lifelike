@@ -215,6 +215,10 @@ def update_password(params: dict, hash_id):
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
+            if target.check_password(params['new_password']):
+                raise ServerException(
+                    title='Failed to Update User',
+                    message='New password cannot be the old one.')
             target.set_password(params['new_password'])
             target.forced_password_reset = False
         else:
