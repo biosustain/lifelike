@@ -9,6 +9,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
+import { createMapToColor, SankeyGraph } from './sankey/utils';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -31,6 +32,68 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   sankeyFileLoaded = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
   private currentFileId: any;
+  filtersPanelOpened;
+  filteredSankeyData;
+  filter;
+
+  resolveFilteredNodesLinks(nodes) {
+    let newLinks = [];
+    let oldLinks = [];
+    nodes.forEach(node => {
+      node.sourceLinks.forEach(sl => {
+        node.targetLinks.forEach(tl => {
+          const sourceNode = sl.source;
+          const targetNode = tl.target;
+          const newLink = {...sl};
+          newLink.source = sourceNode;
+          newLink.target = targetNode;
+          newLink.value = (sl.value + tl.value) / 2;
+          newLink.path = `${sl.path} => ${node.display_name} => ${tl.path}`;
+          newLinks.push(newLink);
+          const sourceIndex = sourceNode.sourceLinks.findIndex(l => l === sl);
+          const targetIndex = targetNode.targetLinks.findIndex(l => l === tl);
+          if (sourceIndex !== -1) {
+            sourceNode.sourceLinks[sourceIndex] = newLink;
+          } else {
+            sourceNode.sourceLinks.push(newLink);
+          }
+          if (targetIndex !== -1) {
+            targetNode.targetLinks[targetIndex] = newLink;
+          } else {
+            targetNode.targetLinks.push(newLink);
+          }
+        });
+      });
+      oldLinks = oldLinks.concat(node.sourceLinks, node.targetLinks);
+    });
+    return {
+      newLinks,
+      oldLinks
+    };
+  }
+
+  changeFilter(filter = d => d) {
+    this.filter = filter;
+    const {nodes, links, ...data} = this.sankeyData;
+    const [filteredNodes, filteredOutNodes] = nodes.reduce(([nodes, filtered], n) => {
+      if (filter(n).hidden) {
+        filtered.push(n);
+      } else {
+        nodes.push(n);
+      }
+      return [nodes, filtered];
+    }, [[], []]);
+    const {newLinks, oldLinks} = this.resolveFilteredNodesLinks(filteredOutNodes);
+    this.filteredSankeyData = {
+      ...data,
+      nodes: filteredNodes,
+      links: links.filter(link => !oldLinks.includes(link)).concat(newLinks)
+    };
+  };
+
+  toggleFiltersPanel() {
+    this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -55,7 +118,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                              result: [object, content],
                                                            }) => {
 
-      this.sankeyData = content;
+      this.sankeyData = this.parseData(content);
       this.object = object;
       this.emitModuleProperties();
 
@@ -64,6 +127,41 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
 
     this.loadFromUrl();
+  }
+
+  paths = new Set();
+  nodesColorMap = new Map();
+
+  parseData({links, graph, nodes, ...data}) {
+    const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
+    this.paths = new Set(graph.up2aak1.map(pathIdAccessor));
+    const linksColorMap = createMapToColor(this.paths);
+    graph.up2aak1.forEach(path => {
+      const color = linksColorMap.get(pathIdAccessor(path));
+      path.forEach((nodeId, nodeIdx, p) => {
+        const nextNodeId = p[nodeIdx + 1] || NaN;
+        const link = links.find(({source, target, schemaClass}) => source === nodeId && target === nextNodeId && !schemaClass);
+        if (link) {
+          link.schemaClass = color;
+        } else if (nextNodeId) {
+          // console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
+        }
+      });
+    });
+    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
+    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
+    this.nodesColorMap = createMapToColor(
+      nodeCategories,
+      {
+        hue: () => 0,
+        lightness: (i, n) => (i + 0.5) / n,
+        saturation: () => 0
+      }
+    );
+    nodes.forEach(node => {
+      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
+    });
+    return {...data, nodes, links: links.map((link, i) => ({value: link.pageUp, id: i, ...link}))} as SankeyGraph;
   }
 
   loadFromUrl() {

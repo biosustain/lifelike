@@ -14,7 +14,7 @@ import {
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
-import { createMapToColor, clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
+import { clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
@@ -49,38 +49,20 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
+
+    this.linkClick = this.linkClick.bind(this);
+    this.nodeClick = this.nodeClick.bind(this);
+    this.nodeMouseOver = this.nodeMouseOver.bind(this);
+    this.pathMouseOver = this.pathMouseOver.bind(this);
+    this.nodeMouseOut = this.nodeMouseOut.bind(this);
+    this.pathMouseOut = this.pathMouseOut.bind(this);
+    this.dragmove = this.dragmove.bind(this);
   }
 
-  @Input('data') set data({links, graph, nodes, ...data}) {
-    const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
-    const linksColorMap = createMapToColor(graph.up2aak1.map(pathIdAccessor));
-    graph.up2aak1.forEach(path => {
-      const color = linksColorMap.get(pathIdAccessor(path));
-      path.forEach((nodeId, nodeIdx, p) => {
-        const nextNodeId = p[nodeIdx + 1] || NaN;
-        const link = links.find(({source, target, schemaClass}) => source === nodeId && target === nextNodeId && !schemaClass);
-        if (link) {
-          link.schemaClass = color;
-        } else if (nextNodeId) {
-          // console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
-        }
-      });
-    });
-    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
-    const nodesColorMap = createMapToColor(
-      nodes.map(nodeColorCategoryAccessor),
-      {
-        hue: () => 0,
-        lightness: (i, n) => (i + 0.5) / n,
-        saturation: () => 0
-      }
-    );
-    nodes.forEach(node => {
-      node.color = nodesColorMap.get(nodeColorCategoryAccessor(node));
-    });
-    this._data = {...data, nodes, links: links.map((link, i) => ({value: link.pageUp, id: i, ...link}))} as SankeyGraph;
+  @Input('data') set data(data) {
+    this._data = {...data} as SankeyGraph;
     if (this.svg) {
-      this.updateLayout(this._data).then(this.updateDOM.bind(this));
+      this.updateLayout(this._data).then(data => this.updateDOM(data));
     }
   }
 
@@ -308,6 +290,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
+    console.log(element);
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .style('opacity', 1);
@@ -346,15 +329,50 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         link.calculated_params = newPathParams;
         return composeLinkPath(newPathParams);
       });
-    clearTimeout(this.debounceDragRelayout);
-    this.debounceDragRelayout = setTimeout(() => {
-      this.sankey.update(this.data);
-      Object.assign(d, newPosition);
-      this.updateDOM(this.data);
-    }, 500);
+    // todo: this re-layout technique for whatever reason does not work
+    // clearTimeout(this.debounceDragRelayout);
+    // this.debounceDragRelayout = setTimeout(() => {
+    //   this.sankey.update(this._data);
+    //   Object.assign(d, newPosition);
+    //   d3.select(this.links.nativeElement)
+    //     .selectAll('path')
+    //     .transition().duration(RELAYOUT_DURATION)
+    //     .attrTween('d', link => {
+    //       const newPathParams = calculateLinkPathParams(link);
+    //       const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+    //       return t => {
+    //         const interpolatedParams = paramsInterpolator(t);
+    //         // save last params on each iterration so we can interpolate from last position upon
+    //         // animation interrupt/cancel
+    //         link.calculated_params = interpolatedParams;
+    //         return composeLinkPath(interpolatedParams);
+    //       };
+    //     });
+    //
+    //   d3.select(this.nodes.nativeElement)
+    //     .selectAll('g')
+    //     .transition().duration(RELAYOUT_DURATION)
+    //     .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`);
+    // }, 500);
   }
 
   dragging = false;
+
+  updateNodeRect = rects => rects
+    // .attr('x', ({x0}) => x0)
+    // .attr('y', ({y0}) => y0)
+    .attr('height', ({y0, y1}) => y1 - y0)
+    .attr('width', ({x1, x0}) => x1 - x0);
+
+  get updateNodeText() {
+    const [width, _height] = this.sankey.size();
+    return texts => texts
+      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
+      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
+      .filter(({x0}) => x0 < width / 2)
+      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
+      .attr('text-anchor', 'start');
+  }
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -367,15 +385,12 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    const [width, _height] = this.sankey.size();
-    const linkClick = this.linkClick.bind(this);
-    const nodeClick = this.nodeClick.bind(this);
-    const nodeMouseOver = this.nodeMouseOver.bind(this);
-    const pathMouseOver = this.pathMouseOver.bind(this);
-    const nodeMouseOut = this.nodeMouseOut.bind(this);
-    const pathMouseOut = this.pathMouseOut.bind(this);
-    const dragmove = this.dragmove.bind(this);
-    this.d3links = d3.select(this.links.nativeElement)
+    const {
+      linkClick, nodeClick, nodeMouseOver, pathMouseOver, nodeMouseOut, pathMouseOut, dragmove,
+      links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
+      updateNodeRect, updateNodeText
+    } = this;
+    this.d3links = d3.select(linksRef)
       .selectAll('path')
       .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
@@ -414,19 +429,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         join.selectAll('title')
           .text(({path}) => path)
       );
-    const updateNodeRect = rects => rects
-      // .attr('x', ({x0}) => x0)
-      // .attr('y', ({y0}) => y0)
-      .attr('height', ({y0, y1}) => y1 - y0)
-      .attr('width', ({x1, x0}) => x1 - x0);
-    const updateNodeText = texts => texts
-      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
-      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
-      .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
-      .attr('text-anchor', 'start');
     const self = this;
-    d3.select(this.nodes.nativeElement)
+    d3.select(nodesRef)
       .selectAll('g')
       .data(words.nodes, ({id}) => id)
       .join(
@@ -437,7 +441,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             return nodeMouseOver(this, data, eventId, links, ...args);
           })
-          .on('mouseout', function(data, eventId, links, ...args) {
+          .on('mouseout', (data, eventId, links, ...args) => {
             if (self.dragging) {
               return;
             }
@@ -453,7 +457,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               .on('drag', function(d) {
                 return dragmove(this, d);
               })
-              .on('end', function() {
+              .on('end', _ => {
                 self.dragging = false;
               })
           )
@@ -462,7 +466,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           .call(enterNode =>
             updateNodeRect(
               enterNode.append('rect')
-                .on('click', function(data, eventId, links, ...args) {
+                .on('click', (data, eventId, links, ...args) => {
                   return nodeClick(this, data, eventId, links, ...args);
                 })
             )
