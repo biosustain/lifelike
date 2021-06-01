@@ -167,8 +167,10 @@ export class AuthEffects {
 
   loginSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.loginSuccess),
-    map( _ => {
-      this.store$.dispatch(AuthActions.updatePassword());
+    map( user => {
+      if (user.user.resetPassword) {
+          this.store$.dispatch(AuthActions.updatePassword());
+      }
     }),
     withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
     tap(([_, url]) => this.router.navigate([url])),

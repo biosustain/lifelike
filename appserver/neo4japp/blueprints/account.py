@@ -142,7 +142,7 @@ class AccountView(MethodView):
             first_name=params['first_name'],
             last_name=params['last_name'],
             failed_login_count=0,
-            force_password_reset=params['created_by_admin']
+            forced_password_reset=params['created_by_admin']
         )
         app_user.set_password(params['password'])
         if not params.get('roles'):
@@ -215,7 +215,7 @@ def update_password(params: dict, hash_id):
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             target.set_password(params['new_password'])
-            target.force_password_reset = False
+            target.forced_password_reset = False
         else:
             raise ServerException(
                 title='Failed to Update User',
@@ -266,7 +266,7 @@ def reset_password(email: str):
         raise
 
     target.set_password(new_password)
-    target.force_password_reset = True
+    target.forced_password_reset = True
     try:
         db.session.add(target)
         db.session.commit()

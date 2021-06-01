@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { CommonDialogComponent } from '../../shared/components/dialog/common-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { AppUser } from '../../interfaces';
+import { PrivateAppUser } from '../../interfaces';
 import { AccountService } from '../services/account.service';
 
 @Component({
@@ -12,7 +12,7 @@ import { AccountService } from '../services/account.service';
 })
 export class ChangePasswordDialogComponent extends CommonDialogComponent {
 
-  user: AppUser;
+  user: PrivateAppUser;
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
