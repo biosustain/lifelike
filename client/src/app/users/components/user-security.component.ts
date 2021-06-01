@@ -28,10 +28,14 @@ export class UserSecurityComponent {
   readonly errors = {
     notMatch: 'Your two passwords don\'t match.',
   };
+  readonly  MIN_PASSWORD_LENGTH = 8;
 
   readonly form = new FormGroup({
     oldPassword: new FormControl('', [Validators.required]),
-    password: new FormControl('', [Validators.required]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(this.MIN_PASSWORD_LENGTH),
+    ]),
     passwordConfirm: new FormControl('', [Validators.required]),
   }, {validators: this.passConfirmValidator});
 
