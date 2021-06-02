@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AccountService } from '../services/account.service';
@@ -13,7 +13,7 @@ import { ErrorResponse } from 'app/shared/schemas/common';
 @Injectable()
 export class UserEffects {
     constructor(
-        private actions$: Actions,
+        public actions$: Actions,
         private accountService: AccountService,
     ) {}
 

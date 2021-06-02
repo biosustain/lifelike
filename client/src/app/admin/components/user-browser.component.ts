@@ -172,8 +172,6 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         }, () => {
           progressDialogRef.close();
         });
-
     }
   }
-
 }
