@@ -33,8 +33,6 @@ NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DESCRIPTION, PROP_ALT_ID, PROP_OBSOLETE]
 
 class GoOboParser(OboParser, BaseParser):
     def __init__(self, basedir=None):
-        if not basedir:
-            basedir = os.environ.get('BASE_DATA_DIR', '/Users/rcai/data/')
         BaseParser.__init__(self, 'go', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_GO, PROP_ID)
 
