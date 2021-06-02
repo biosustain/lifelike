@@ -135,8 +135,7 @@ class AccountView(MethodView):
                 message=f'Username {params["username"]} already taken.',
                 code=400)
 
-        print(params)
-        params['created_by_admin'] = params.get('created_by_admin', False)
+        params['created_by_admin'] = params.get('created_by_admin') or False
         app_user = AppUser(
             username=params['username'],
             email=params['email'],
