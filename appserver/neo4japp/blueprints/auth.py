@@ -7,11 +7,9 @@ from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import TypedDict
 
-from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
-from neo4japp.database import db
+from neo4japp.constants import LogEventType
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
@@ -132,6 +130,12 @@ def verify_token(token):
             token = token.split(' ')[-1].strip()
             try:
                 user = AppUser.query_by_email(decoded['sub']).one()
+                current_app.logger.info(
+                    f'Active user: {user.email}',
+                    extra=UserEventLog(
+                        username=user.username,
+                        event_type=LogEventType.LAST_ACTIVE.value).to_dict()
+                )
             except NoResultFound:
                 raise ServerException(
                     title='Failed to Authenticate',
@@ -230,7 +234,6 @@ def login():
                     'last_name': user.last_name,
                     'id': user.id,
                     'reset_password': user.forced_password_reset,
-                    'locked': False,
                     'roles': [u.name for u in user.roles],
                 },
             }))

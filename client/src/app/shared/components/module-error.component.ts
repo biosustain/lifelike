@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { UserError } from '../exceptions';
 import { ErrorHandler } from '../services/error-handler.service';
 import { Observable, of } from 'rxjs';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 @Component({
   selector: 'app-module-error',
@@ -12,14 +13,22 @@ import { Observable, of } from 'rxjs';
 })
 export class ModuleErrorComponent {
   userError$: Observable<UserError>;
+  messageType = MessageType;
+  type: MessageType;
 
   constructor(protected readonly errorHandler: ErrorHandler) {
   }
 
   @Input()
   set error(error: any) {
-    this.userError$ = error != null ? this.errorHandler.createUserError(error, {
-      transactionId: '', // This error is not logged so we don't have a transaction ID
-    }) : of(null);
+    if (error != null) {
+      // This error is not logged so we don't have a transaction ID
+      this.userError$ = this.errorHandler.createUserError(error, {transactionId: ''});
+      if (error.status >= 500) {
+        this.type = this.messageType.Error;
+      }
+    } else {
+      this.userError$ = of(null);
+    }
   }
 }
