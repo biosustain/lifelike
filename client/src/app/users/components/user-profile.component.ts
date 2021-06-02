@@ -75,16 +75,22 @@ export class UserProfileComponent implements OnInit  {
     .pipe(this.errorHandler.create({label: 'Update user'}))
     .subscribe(() => {
       progressDialogRef.close();
-      this.accountService.getUserList();
+      this.accountService.getUsers(this.user.hashId).subscribe(user => {
+        this.user = user.results.pop();
+        this.reset();
+      });
+      this.reset();
+
       this.snackBar.open(
-        `User ${this.user.username} updated!`,
+        `You data has been updated successfully!`,
         'close',
         {duration: 5000},
       );
+
+
     }, () => {
       progressDialogRef.close();
     });
-    this.reset();
   }
 
 }
