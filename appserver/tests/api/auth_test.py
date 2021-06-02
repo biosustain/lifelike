@@ -12,6 +12,8 @@ def user_factory(uid):
         'lastName': f'lastname-{uid}',
         'email': f'appuser-{uid}@***ARANGO_DB_NAME***.bio',
         'roles': ['user'],
+        'failed_login_count': 0,
+        'forced_password_reset': False
     }
 
 
