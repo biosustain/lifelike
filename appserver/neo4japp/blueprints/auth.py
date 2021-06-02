@@ -6,10 +6,12 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.constants import LogEventType
+from neo4japp.database import db
+from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
