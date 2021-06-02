@@ -9,6 +9,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 
 """
 Download ncbi genes from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/.  Parse gene_info file, and gene2go.
+
+For gene synonyms, remove any names with only one letter, and remove names that contain no non-digit characters. 
 """
 
 GENE_INFO_ATTR_MAP = {
@@ -39,14 +41,14 @@ class GeneParser(BaseParser):
         logging.info('parse and load bioinfo')
         self._load_bioinfo_to_neo4j(database, update)
         logging.info('parse and load gene2go')
-        self._load_gene2go_to_neo4j(database)
-        self._update_gene_synonyms_in_neo4j(database)
+        # self._load_gene2go_to_neo4j(database)
+        # self._update_gene_synonyms_in_neo4j(database)
 
     def write_lmdb_annotation_file(self):
         outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
         open(outfile, 'w').close()
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=50000, usecols=gene_info_cols)
+        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=500000, usecols=gene_info_cols)
         count = 0
         header = True
         for chunk in geneinfo_chunks:
@@ -59,16 +61,18 @@ class GeneParser(BaseParser):
             df_names = df[[PROP_ID, PROP_NAME]].copy()
             df_names['synonym'] = df[PROP_NAME]
             df_locus = df[[PROP_ID, PROP_NAME, PROP_LOCUS_TAG]]
-            df_locus.rename(columns={PROP_LOCUS_TAG: 'synonym'})
+            df_locus = df_locus.rename(columns={PROP_LOCUS_TAG: 'synonym'})
             df_syns = pd.concat([df_names, df_locus, df_syn])
             df_syns.drop_duplicates(inplace=True)
-            df_syns = df_syns[df_syns['synonym'].str.len() > 1]
+            # remove synonyms with only one letter, or do not have non-digit chars
+            df_syns = df_syns[df_syns['synonym'].str.len() > 1 & df_syns['synonym'].str.contains('[a-zA-Z]')]
             print(len(df_names), len(df_syn), len(df_syns))
             df_syns[PROP_DATA_SOURCE] = DS_NCBI_GENE
             df_syns.sort_values(by=[PROP_ID], inplace=True)
             count += len(df_syns)
             df_syns.to_csv(outfile, header=header, sep='\t', mode='a', index=False)
             header = False
+            break
         logging.info(f'rows processed: {count}')
 
     def _parse_and_write_gene_info(self):
@@ -128,15 +132,14 @@ class GeneParser(BaseParser):
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
-            df_syn = df_syn[df_syn['synonym'].str.len() > 1]
-
+            df_syn = df_syn[df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
             # add Gene Nodes
             query = get_update_nodes_query(NODE_GENE, PROP_ID,
                                            [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE], [NODE_NCBI])
             if not update:
                 query = get_create_nodes_query(NODE_GENE, PROP_ID,
                                                [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE], [NODE_NCBI])
-            database.load_data_from_dataframe(df, query)
+            # database.load_data_from_dataframe(df, query)
             count_gene += len(df)
 
             # load synonyms
@@ -153,7 +156,7 @@ class GeneParser(BaseParser):
         {batchSize:5000}
         );
         '''
-        database.run_query(query)
+        # database.run_query(query)
 
     def _load_gene2go_to_neo4j(self, database:Database):
         chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])
@@ -175,7 +178,7 @@ class GeneParser(BaseParser):
         '''
         query_add_locustag_as_synonym = '''
         call apoc.periodic.iterate(
-        "match(n:Gene:db_NCBI) where n.locus_tag <> n.name return n",
+        "match(n:Gene:db_NCBI) where exists (n.locus_tag) and n.locus_tag <> '' and n.locus_tag <> n.name return n",
         "merge (s:Synonym {name:n.locus_tag}) merge (n)-[:HAS_SYNONYM]->(s)",
         {batchSize:10000}
         );
@@ -188,6 +191,6 @@ if __name__ == '__main__':
     parser = GeneParser()
     parser.write_lmdb_annotation_file()
     # database = get_database(Neo4jInstance.LOCAL, 'neo4j')
-    # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
+    # # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
     # parser.load_data_to_neo4j(database)
     # database.close()
