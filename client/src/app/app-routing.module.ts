@@ -27,6 +27,9 @@ import { ObjectNavigatorComponent } from './file-navigator/components/object-nav
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
+import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
+import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -124,6 +127,15 @@ const routes: Routes = [
     },
   },
   {
+    path: 'projects/:project_name/sankey/:file_id',
+    canActivate: [AuthGuard],
+    component: SankeyViewComponent,
+    data: {
+      title: 'Sankey',
+      fontAwesomeIcon: 'file-chart-line',
+    },
+  },
+  {
     path: 'kg-visualizer',
     canActivate: [AuthGuard],
     children: [
@@ -206,6 +218,15 @@ const routes: Routes = [
     data: {
       title: 'Projects',
       fontAwesomeIcon: 'layer-group',
+    },
+  },
+  {
+    path: 'files/:hash_id',
+    component: ObjectViewerComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'File',
+      fontAwesomeIcon: 'file',
     },
   },
   {

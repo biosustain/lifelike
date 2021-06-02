@@ -2,21 +2,19 @@ import re
 
 from flask import current_app
 from neo4j import Record as N4jRecord, Transaction as Neo4jTx
-from py2neo import cypher
 from typing import Any, Dict, List
 
 from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
-    FTSReferenceRecord,
     FTSResult,
     FTSTaxonomyRecord
 )
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
-    get_first_known_label_from_node_n4j_driver,
-    get_known_domain_labels_from_node_n4j_driver,
+    get_first_known_label_from_node,
+    get_known_domain_labels_from_node,
     normalize_str
 )
 from neo4japp.utils.logger import EventLog
@@ -47,9 +45,10 @@ class SearchService(GraphBaseDao):
         query = re.sub(lucene_chars, escape, query).strip()
         if not query:
             return query
-        # The cypher escape helps prevent whitespace separated
-        # words from being searched as two individual words.
-        return '{q}'.format(q=cypher.cypher_escape(query))
+
+        # Wrap the query in backticks, doubling existing backticks. This effectively escapes the
+        # query input.
+        return f"`{query.replace('`', '``')}`"
 
     def predictive_search(self, term: str, limit: int = 5):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
@@ -63,11 +62,11 @@ class SearchService(GraphBaseDao):
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
-            graph_node = GraphNode.from_neo4j_driver(
+            graph_node = GraphNode.from_neo4j(
                 node,
                 display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label_from_node_n4j_driver,
-                domain_labels_fn=get_known_domain_labels_from_node_n4j_driver,
+                primary_label_fn=get_first_known_label_from_node,
+                domain_labels_fn=get_known_domain_labels_from_node,
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,

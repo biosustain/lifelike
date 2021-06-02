@@ -12,11 +12,20 @@ import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 
 export interface EnrichWithGOTermsResult {
+  goTerm: string;
+  goId?: number;
   'p-value': any;
-  'goLabel': string[];
-  'geneNames': string[];
-  'gene': string;
+  goLabel: string[];
+  geneNames: string[];
+  gene: string;
 }
+
+const MIN_REPRESENTED_NUMBER = 0.0000000001;
+const addressPrecisionMistake = d => {
+  d['q-value'] = d['q-value'] || MIN_REPRESENTED_NUMBER;
+  d['p-value'] = d['p-value'] || MIN_REPRESENTED_NUMBER;
+  return d;
+};
 
 @Injectable()
 export class EnrichmentVisualisationService {
@@ -86,7 +95,7 @@ export class EnrichmentVisualisationService {
       {geneNames, organism: `${taxID}/${organism}`, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp)
+      map((data: any) => data.map(addressPrecisionMistake))
     );
   }
 }
