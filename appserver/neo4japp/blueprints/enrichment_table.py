@@ -18,6 +18,7 @@ def match_ncbi_nodes():
 
     if organism is not None and gene_names is not None:
         enrichment_table = get_enrichment_table_service()
-        nodes = enrichment_table.match_ncbi_genes(gene_names, organism)
+        # list(dict...) is to drop duplicates, but want to keep order
+        nodes = enrichment_table.match_ncbi_genes(list(dict.fromkeys(gene_names)), organism)
 
     return jsonify({'result': nodes}), 200

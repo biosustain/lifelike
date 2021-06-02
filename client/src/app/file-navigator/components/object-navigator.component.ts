@@ -72,8 +72,8 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     } else if (this.object.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
       const url = this.object.getURL();
       const encodedId = encodeURIComponent(annotation.id);
-      const encodedText = encodeURIComponent(annotation.id);
-      const encodedColor = encodeURIComponent(annotation.id);
+      const encodedText = encodeURIComponent(annotation.text);
+      const encodedColor = encodeURIComponent(annotation.color);
       this.workspaceManager.navigateByUrl(
         `${url}#id=${encodedId}&text=${encodedText}&color=${encodedColor}`, {
           newTab: true,
@@ -90,7 +90,8 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
       this.workspaceManager.navigate(
         ['/search', 'content'], {
           queryParams: {
-            q: useKeyword ? annotation.text : annotation.primaryName,
+            q: '',
+            phrase: useKeyword ? annotation.text : annotation.primaryName,
             projects: this.object.project.name,
           },
           newTab: true,

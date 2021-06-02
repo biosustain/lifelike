@@ -4,13 +4,17 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemObjectData, ProjectData } from 'app/file-browser/schema';
-import { ModelList } from 'app/shared/models';
-import { RankedItem, ResultList } from 'app/shared/schemas/common';
+import { ProjectData } from 'app/file-browser/schema';
 import { ApiService } from 'app/shared/services/api.service';
 
-import { AnnotationRequestOptions, AnnotationResponse, ContentSearchRequest } from '../schema';
+import {
+  AnnotationRequestOptions,
+  AnnotationResponse,
+  ContentSearchRequest,
+  ContentSearchResponse,
+  ContentSearchResponseData
+} from '../schema';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 
 @Injectable()
@@ -29,22 +33,24 @@ export class ContentSearchService {
     );
   }
 
-  search(request: ContentSearchRequest): Observable<ModelList<RankedItem<FilesystemObject>>> {
-    return this.http.post<ResultList<RankedItem<FilesystemObjectData>>>(
+  search(request: ContentSearchRequest): Observable<ContentSearchResponse> {
+    return this.http.post<ContentSearchResponseData>(
       `/api/search/content`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
-        const resultList: ModelList<RankedItem<FilesystemObject>> = new ModelList();
-        resultList.collectionSize = data.total;
-        resultList.results.replace(data.results.map(
-          itemData => ({
-            rank: itemData.rank,
-            item: new FilesystemObject().update(itemData.item),
-          })));
-        resultList.query = data.query;
-        return resultList;
+        return {
+          total: data.total,
+          results: data.results.map(
+            itemData => ({
+              rank: itemData.rank,
+              item: new FilesystemObject().update(itemData.item)
+          })),
+          query: data.query,
+          synonyms: data.synonyms,
+          droppedSynonyms: data.droppedSynonyms
+        };
       }),
     );
   }

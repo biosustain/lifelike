@@ -5,7 +5,7 @@ import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.compo
 import { WorkspaceManager } from '../../../../../shared/workspace-manager';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { paramsToEnrichmentTableLink } from '../../components/link/link.directive';
+import { paramsToEnrichmentTableLink, triggerSearchOnShouldReplaceTab } from '../../components/link/link.directive';
 
 @Component({
   selector: 'app-cloud-viewer',
@@ -35,12 +35,15 @@ export class CloudViewerComponent implements OnChanges {
   }
 
   onClick(d) {
-    this.workspaceManager.navigateByUrl(this.link.appLink.join('/'), {
-      fragment: d.text,
-      sideBySide: true,
-      newTab: true,
-      matchExistingTab: this.link.matchExistingTab
-    });
+    const encodedText = encodeURIComponent(d.text);
+    this.workspaceManager.navigateByUrl(
+      `${this.link.appLink.join('/')}#text=${encodedText}`, {
+        newTab: true,
+        sideBySide: true,
+        matchExistingTab: this.link.matchExistingTab,
+        shouldReplaceTab: triggerSearchOnShouldReplaceTab(d.text)
+      },
+    );
   }
 
   enter(selection) {
