@@ -57,7 +57,7 @@ neo4j = "==4.2.1"
 python-magic = "==0.4.22"
 httpretty = "==1.0.5"
 sendgrid = "==6.7.0"
-werkzeug = "==2.0.1"
+werkzeug = "==0.16.0"
 
 [requires]
 python_version = "3.8.2"
