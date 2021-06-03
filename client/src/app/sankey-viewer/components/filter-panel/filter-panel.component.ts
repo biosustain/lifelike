@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, } from '@angular/core';
+import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges, } from '@angular/core';
 import { FormControl, FormGroup, Validators, } from '@angular/forms';
 
 import { uniqueId } from 'lodash';
@@ -84,7 +84,7 @@ export class FilterPanelComponent implements OnInit, OnDestroy, OnChanges {
     this.legend = new Map<string, string>();
   }
 
-  ngOnChanges({nodeCategories}) {
+  ngOnChanges({nodeCategories}: SimpleChanges) {
     if (nodeCategories && nodeCategories.firstChange) {
       this.filteredNodeCategories = new Set(nodeCategories.currentValue.keys());
     }
