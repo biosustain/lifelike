@@ -128,7 +128,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const {width, height} = this.size = this.getCloudSvgDimensions();
-    this.onResize(width, height).then();
+    this.onResize(width, height).then(_ => {
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
 
     this.wrapper.nativeElement.addEventListener('wheel', event => {
@@ -162,6 +162,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       }
     });
+    });
 
     // todo: figure out panning
     // const hammer = new Hammer(this.wrapper.nativeElement);
@@ -181,7 +182,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.resizeObserver.disconnect();
-
+    this.uiState.unsubscribe();
     delete this.resizeObserver;
   }
 
@@ -468,7 +469,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           .call(enterNode =>
             updateNodeRect(
               enterNode.append('rect')
-                .on('click', (data, eventId, links, ...args) => {
+                .on('click', function(data, eventId, links, ...args) {
                   return nodeClick(this, data, eventId, links, ...args);
                 })
             )
