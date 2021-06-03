@@ -57,6 +57,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     this.nodeMouseOut = this.nodeMouseOut.bind(this);
     this.pathMouseOut = this.pathMouseOut.bind(this);
     this.dragmove = this.dragmove.bind(this);
+
+
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 8]);
   }
 
   @Input('data') set data(data) {
@@ -73,10 +77,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   get updateNodeText() {
     const [width, _height] = this.sankey.size();
     return texts => texts
-      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
+      .attr('x', _ => -6)
       .attr('y', ({y0, y1}) => (y1 - y0) / 2)
       .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
+      .attr('x', ({x0, x1}) => (x1 - x0) + 6)
       .attr('text-anchor', 'start');
   }
 
@@ -88,6 +92,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('g', {static: false}) g!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
   @Output() enter = new EventEmitter();
@@ -120,6 +125,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   debounceDragRelayout;
 
+  zoom;
   dragging = false;
 
   calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
@@ -142,54 +148,16 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const {width, height} = this.size = this.getCloudSvgDimensions();
+
+    // attach zoom behaviour
+    const {g, zoom} = this;
+    const zoomContainer = d3.select(g.nativeElement);
+    zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
+
+    // resize and listen to future resize events
     this.onResize(width, height).then(_ => {
       this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
-
-      this.wrapper.nativeElement.addEventListener('wheel', event => {
-        const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
-        event.preventDefault();
-        if (ctrlKey) {
-          // zoom with origin on mouse
-          const zoomDelta = wheelDelta / 800;
-          this.uiState.next(
-            this.calculateNextUIState({
-              deltaX: offsetX * zoomDelta,
-              deltaY: offsetY * zoomDelta,
-              zoomDelta
-            })
-          );
-        } else if (shiftKey) {
-          // shift + wheel to scroll just horizontally
-          // noinspection JSSuspiciousNameCombination
-          this.uiState.next(
-            this.calculateNextUIState({
-              deltaX: deltaY
-            })
-          );
-        } else {
-          // bidirectional scroll
-          this.uiState.next(
-            this.calculateNextUIState({
-              deltaX,
-              deltaY
-            })
-          );
-        }
-      });
     });
-
-    // const hammer = new Hammer(this.wrapper.nativeElement);
-    //
-    // hammer.on('pan', ({deltaX, deltaY, ...rest}) => {
-    //   const {uiState: {value: {zoom}}} = this;
-    //   this.uiState.next(
-    //     this.calculateNextUIState({
-    //       deltaX: -deltaX / zoom / zoom,
-    //       deltaY: -deltaY / zoom / zoom,
-    //       zoomDelta: 0
-    //     })
-    //   );
-    // });
   }
 
   ngOnDestroy() {
@@ -199,10 +167,17 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onResize(width, height) {
+    const {zoom} = this;
+
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
       .attr('width', width)
-      .attr('height', height);
+      .attr('height', height)
+      .call(
+        zoom
+          .extent([[0, 0], [width, height]])
+          .translateExtent([[0, 0], [width, height]])
+      );
 
     this.sankey.size([width, height]);
 
