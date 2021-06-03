@@ -11,6 +11,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { createMapToColor, SankeyGraph } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
+import * as d3Sankey from 'd3-sankey-circular';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -53,6 +54,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadFromUrl();
   }
+
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
 
   paramsSubscription: Subscription;
@@ -154,23 +156,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       links: filteredLinks
     };
   }
+
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
   parseData({links, graph, nodes, ...data}) {
-    const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
-    this.paths = new Set(graph.up2aak1.map(pathIdAccessor));
+    const traceIdAccessor = trace => trace.group;
+    const traces = graph.trace_networks.reduce((o, n) => o.concat(n.traces), []);
+    this.paths = new Set(traces.map(traceIdAccessor));
     const linksColorMap = createMapToColor(this.paths);
-    graph.up2aak1.forEach(path => {
-      const color = linksColorMap.get(pathIdAccessor(path));
-      path.forEach((nodeId, nodeIdx, p) => {
-        const nextNodeId = p[nodeIdx + 1] || NaN;
-        const link = links.find(({source, target, schemaClass}) => source === nodeId && target === nextNodeId && !schemaClass);
+    traces.forEach(path => {
+      const color = linksColorMap.get(traceIdAccessor(path));
+      path.edges.forEach(([edgeSource, edgeTarget]) => {
+        const link = links.find(({source, target, schemaClass}) => source === edgeSource && target === edgeTarget && !schemaClass);
         if (link) {
           link.schemaClass = color;
-        } else if (nextNodeId) {
-          // console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
         }
       });
     });
@@ -187,18 +188,77 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     nodes.forEach(node => {
       node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
     });
+    // link graph
+    console.log(d3Sankey);
+    links.forEach(l => l.value = 1);
+    d3Sankey.sankeyCircular()
+      .nodeId(n => n.id)
+      .nodePadding(1)
+      .nodePaddingRatio(0.5)
+      .nodeAlign(d3Sankey.sankeyRight)
+      .nodeWidth(10)
+      ({nodes, links});
+    const nodesToTraverse = nodes.reduce((o, n) => {
+      if (graph.node_sets.updown.includes(n.id)) {
+        n.value = 1;
+        o.push(n);
+      } else {
+        n.value = 0.001;
+      }
+      return o;
+    }, []);
+    const traverseNodes = nodes => {
+      const links = nodes.reduce((o, n) => {
+        return o.concat(n.sourceLinks);
+      }, []);
+      traverseLinks(links);
+    };
+    const traverseLinks = links => {
+      const nodes = new Set();
+      links.forEach(link => {
+        const source = link.source;
+        const sourceValue = source.value;
+        link.value = sourceValue / source.sourceLinks.length;
+        link.target.value += link.value;
+        if (!link.circular) {
+          nodes.add(link.target);
+        }
+      });
+      if (nodes.size) {
+        traverseNodes([...nodes]);
+      }
+    };
+    traverseNodes(nodesToTraverse);
     return {
       ...data,
-      nodes: nodes.map(node => ({
-        ...node,
-        initialNode: Object.freeze(node)
-      })),
-      links: links.map(link => ({
-        ...link,
-        id: uuidv4(),
-        value: link.pageUp,
-        initialLink: Object.freeze(link)
-      }))
+      nodes: nodes.map(
+        ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
+          ...node,
+          initialNode: Object.freeze(node)
+        })),
+      links: links.map(
+        ({
+           width,
+           index,
+           circular,
+           circularLinkID,
+           circularLinkType,
+           circularLinkPathData,
+           y0,
+           y1,
+           source,
+           target,
+           value = 0.001,
+           path,
+           ...link
+         }) => ({
+          ...link,
+          source: source.id,
+          target: target.id,
+          id: uuidv4(),
+          initialLink: Object.freeze(link),
+          value
+        }))
     } as SankeyGraph;
   }
 
