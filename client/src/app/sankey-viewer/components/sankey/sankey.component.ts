@@ -207,9 +207,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   updateLayout(data) {
     return new Promise(resolve => {
         // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-        resolve(
-          this.sankey(data)
-        );
+        console.log('relayout start', data);
+        const a = this.sankey(data);
+        console.log('relayout stop');
+        resolve(a);
       }
     )
       ;
@@ -290,7 +291,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
-    console.log(element);
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .style('opacity', 1);
@@ -392,7 +392,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     } = this;
     this.d3links = d3.select(linksRef)
       .selectAll('path')
-      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
+      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id.toString())
       .join(
         enter => enter.append('path')
           .on('click', function(data, eventId, links, ...args) {
@@ -421,7 +421,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               link.calculated_params = interpolatedParams;
               return composeLinkPath(interpolatedParams);
             };
-          })
+          }),
+        // Remove any words that have been removed by either the algorithm or the user
+        exit => exit.remove()
       )
       // .attr('stroke-width', ({width}) => Math.max(1, width))
       .attr('fill', ({schemaClass}) => schemaClass)
@@ -441,7 +443,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             return nodeMouseOver(this, data, eventId, links, ...args);
           })
-          .on('mouseout', (data, eventId, links, ...args) => {
+          .on('mouseout', function(data, eventId, links, ...args) {
             if (self.dragging) {
               return;
             }
