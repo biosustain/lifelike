@@ -51,26 +51,26 @@
                     <app-sankey *ngIf="sankeyData" [data]="sankeyData">
                     </app-sankey>
                 </as-split-area>
-<!--                <as-split-area [visible]="filtersPanelOpened"-->
-<!--                               size="340"-->
-<!--                               [order]="1"-->
-<!--                               [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">-->
-<!--                    <div class="w-100 h-100 p-3">-->
-<!--                        <div class="annotation-filter-btns-container">-->
-<!--                            <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"-->
-<!--                                    type="button"-->
-<!--                                    (click)="toggleFiltersPanel()">-->
-<!--                                <i class="fa fa-close"></i>-->
-<!--                            </button>-->
-<!--                        </div>-->
-<!--                        <app-filter-panel-->
-<!--                                *ngIf="sankeyData"-->
-<!--                                (filter)="changeFilter($event)"-->
-<!--                                [paths]="paths"-->
-<!--                                [nodeCategories]="nodesColorMap"-->
-<!--                        ></app-filter-panel>-->
-<!--                    </div>-->
-<!--                </as-split-area>-->
+                <as-split-area [visible]="filtersPanelOpened"
+                               size="340"
+                               [order]="1"
+                               [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
+                    <div class="w-100 h-100 p-3">
+                        <div class="annotation-filter-btns-container">
+                            <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
+                                    type="button"
+                                    (click)="toggleFiltersPanel()">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <app-filter-panel
+                                *ngIf="sankeyData"
+                                (filter)="changeFilter($event)"
+                                [paths]="paths"
+                                [nodeCategories]="nodesColorMap"
+                        ></app-filter-panel>
+                    </div>
+                </as-split-area>
             </as-split>
         </div>
     </div>

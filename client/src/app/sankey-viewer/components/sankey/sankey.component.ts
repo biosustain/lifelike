@@ -129,47 +129,45 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const {width, height} = this.size = this.getCloudSvgDimensions();
     this.onResize(width, height).then(_ => {
-    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
+      this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
 
-    this.wrapper.nativeElement.addEventListener('wheel', event => {
-      const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
-      event.preventDefault();
-      if (ctrlKey) {
-        // zoom with origin on mouse
-        const zoomDelta = wheelDelta / 800;
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX: offsetX * zoomDelta,
-            deltaY: offsetY * zoomDelta,
-            zoomDelta
-          })
-        );
-      } else if (shiftKey) {
-        // shift + wheel to scroll just horizontally
-        // noinspection JSSuspiciousNameCombination
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX: deltaY
-          })
-        );
-      } else {
-        // bidirectional scroll
-        this.uiState.next(
-          this.calculateNextUIState({
-            deltaX,
-            deltaY
-          })
-        );
-      }
-    });
+      this.wrapper.nativeElement.addEventListener('wheel', event => {
+        const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
+        event.preventDefault();
+        if (ctrlKey) {
+          // zoom with origin on mouse
+          const zoomDelta = wheelDelta / 800;
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX: offsetX * zoomDelta,
+              deltaY: offsetY * zoomDelta,
+              zoomDelta
+            })
+          );
+        } else if (shiftKey) {
+          // shift + wheel to scroll just horizontally
+          // noinspection JSSuspiciousNameCombination
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX: deltaY
+            })
+          );
+        } else {
+          // bidirectional scroll
+          this.uiState.next(
+            this.calculateNextUIState({
+              deltaX,
+              deltaY
+            })
+          );
+        }
+      });
     });
 
-    // todo: figure out panning
     // const hammer = new Hammer(this.wrapper.nativeElement);
     //
     // hammer.on('pan', ({deltaX, deltaY, ...rest}) => {
     //   const {uiState: {value: {zoom}}} = this;
-    //   console.log(rest)
     //   this.uiState.next(
     //     this.calculateNextUIState({
     //       deltaX: -deltaX / zoom / zoom,
@@ -393,7 +391,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     } = this;
     this.d3links = d3.select(linksRef)
       .selectAll('path')
-      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id.toString())
+      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
         enter => enter.append('path')
           .on('click', function(data, eventId, links, ...args) {
