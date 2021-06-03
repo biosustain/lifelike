@@ -41,8 +41,8 @@ class GeneParser(BaseParser):
         logging.info('parse and load bioinfo')
         self._load_bioinfo_to_neo4j(database, update)
         logging.info('parse and load gene2go')
-        # self._load_gene2go_to_neo4j(database)
-        # self._update_gene_synonyms_in_neo4j(database)
+        self._load_gene2go_to_neo4j(database)
+        self._update_gene_synonyms_in_neo4j(database)
 
     def write_lmdb_annotation_file(self):
         outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
@@ -156,7 +156,7 @@ class GeneParser(BaseParser):
         {batchSize:5000}
         );
         '''
-        # database.run_query(query)
+        database.run_query(query)
 
     def _load_gene2go_to_neo4j(self, database:Database):
         chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])
@@ -189,8 +189,7 @@ class GeneParser(BaseParser):
 
 if __name__ == '__main__':
     parser = GeneParser()
-    parser.write_lmdb_annotation_file()
-    # database = get_database(Neo4jInstance.LOCAL, 'neo4j')
-    # # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
-    # parser.load_data_to_neo4j(database)
-    # database.close()
+    database = get_database(Neo4jInstance.LOCAL, 'neo4j')
+    # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
+    parser.load_data_to_neo4j(database)
+    database.close()
