@@ -10,6 +10,7 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { createMapToColor, SankeyGraph } from './sankey/utils';
+import { uuidv4 } from '../../shared/utils';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -40,31 +41,39 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     let newLinks = [];
     let oldLinks = [];
     nodes.forEach(node => {
-      node.sourceLinks.forEach(sl => {
-        node.targetLinks.forEach(tl => {
-          const sourceNode = sl.source;
-          const targetNode = tl.target;
-          const newLink = {...sl};
-          newLink.source = sourceNode;
-          newLink.target = targetNode;
-          newLink.value = (sl.value + tl.value) / 2;
-          newLink.path = `${sl.path} => ${node.display_name} => ${tl.path}`;
-          newLinks.push(newLink);
-          const sourceIndex = sourceNode.sourceLinks.findIndex(l => l === sl);
-          const targetIndex = targetNode.targetLinks.findIndex(l => l === tl);
-          if (sourceIndex !== -1) {
-            sourceNode.sourceLinks[sourceIndex] = newLink;
-          } else {
-            sourceNode.sourceLinks.push(newLink);
-          }
-          if (targetIndex !== -1) {
-            targetNode.targetLinks[targetIndex] = newLink;
-          } else {
-            targetNode.targetLinks.push(newLink);
-          }
-        });
-      });
       oldLinks = oldLinks.concat(node.sourceLinks, node.targetLinks);
+      const nodeNewLinks = node.sourceLinks.reduce((newLinks, sl, sIter) => {
+        const targetNode = sl.target;
+        const targetIndex = targetNode.targetLinks.findIndex(l => l === sl);
+        targetNode.targetLinks.splice(targetIndex, 1);
+        return node.targetLinks.reduce((newLinks, tl, tIter) => {
+          // used for link initial position after creation
+          // const templateLink = sIter % 2 ? sl : tl;
+          const sourceNode = tl.source;
+          const newLink = {
+            // ...templateLink,
+            folded: true,
+            id: uuidv4(),
+            source: sourceNode,
+            target: targetNode,
+            value: ((sl.value + tl.value) / 2) || 1,
+            path: `${tl.path} => ${node.displayName} => ${sl.path}`
+          };
+          newLinks.push(newLink);
+          if (!tIter) {
+            const sourceIndex = sourceNode.sourceLinks.findIndex(l => l === tl);
+            sourceNode.sourceLinks.splice(sourceIndex, 1);
+          }
+          sourceNode.sourceLinks.push(newLink);
+          targetNode.targetLinks.push(newLink);
+          return newLinks;
+        }, newLinks);
+      }, []);
+      newLinks = newLinks.concat(nodeNewLinks);
+      // corner case - starting or ending node
+      if (!nodeNewLinks.length) {
+        // console.log(newLinks, oldLinks);
+      }
     });
     return {
       newLinks,
@@ -75,19 +84,36 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   changeFilter(filter = d => d) {
     this.filter = filter;
     const {nodes, links, ...data} = this.sankeyData;
-    const [filteredNodes, filteredOutNodes] = nodes.reduce(([nodes, filtered], n) => {
+    const [filteredNodes, filteredOutNodes] = nodes.reduce(([filteredNodes, filteredOutNodes], n) => {
       if (filter(n).hidden) {
-        filtered.push(n);
+        filteredOutNodes.push(n);
       } else {
-        nodes.push(n);
+        filteredNodes.push(n);
       }
-      return [nodes, filtered];
+      return [filteredNodes, filteredOutNodes];
     }, [[], []]);
+    console.log('calc start');
     const {newLinks, oldLinks} = this.resolveFilteredNodesLinks(filteredOutNodes);
+    console.log('calc stop');
+    console.table({
+      'link diff': oldLinks.length - newLinks.length,
+      'initial links': links.length,
+      'final links': links.filter(link => !oldLinks.includes(link)).concat(newLinks).length
+    });
+    let filteredLinks = links.concat(newLinks).filter(link => !oldLinks.includes(link));
+    if (links.length - oldLinks.length + newLinks.length !== filteredLinks.length) {
+      const r = {
+        filtfromlinks: links.filter(value => oldLinks.includes(value)),
+        filtfromnew: newLinks.filter(value => oldLinks.find(d => d.path === value.path))
+      };
+      const r2 = oldLinks.filter(value => !r.filtfromlinks.includes(value) && !r.filtfromnew.includes(value));
+      filteredLinks = filteredLinks.filter(value => r2.find(v => v.path === value.path));
+    }
     this.filteredSankeyData = {
       ...data,
       nodes: filteredNodes,
-      links: links.filter(link => !oldLinks.includes(link)).concat(newLinks)
+      // filter after concat newLinks and oldLinks are not mutually exclusive
+      links: filteredLinks
     };
   };
 
@@ -161,7 +187,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     nodes.forEach(node => {
       node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
     });
-    return {...data, nodes, links: links.map((link, i) => ({value: link.pageUp, id: i, ...link}))} as SankeyGraph;
+    return {
+      ...data,
+      nodes: nodes.map(node => ({
+        ...node,
+        initialNode: Object.freeze(node)
+      })),
+      links: links.map(link => ({
+        ...link,
+        id: uuidv4(),
+        value: link.pageUp,
+        initialLink: Object.freeze(link)
+      }))
+    } as SankeyGraph;
   }
 
   loadFromUrl() {

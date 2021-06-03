@@ -63,7 +63,7 @@ export class FilterPanelComponent implements OnInit, OnDestroy, OnChanges {
       filteredNodeCategories.add(cat);
     }
     this.outputSubject.next(node => {
-      node.hidden |= !filteredNodeCategories.has(node.schemaClass);
+      node.hidden = !filteredNodeCategories.has(node.schemaClass);
       return node;
     });
   }
