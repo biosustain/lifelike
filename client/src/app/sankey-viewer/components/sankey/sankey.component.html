@@ -3,8 +3,10 @@
      [style.transform]="viewTransformation"
 >
     <svg #svg>
+        <g #g>
         <g #links class="links"></g>
         <g #nodes class="nodes"></g>
+            </g>
     </svg>
     <small *ngIf="selected">
         Selected path: {{ selected?.path }}
