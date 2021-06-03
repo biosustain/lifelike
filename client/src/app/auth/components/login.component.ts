@@ -16,6 +16,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
 import { AccountService } from '../../users/services/account.service';
+import { catchError } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -71,16 +73,21 @@ export class LoginComponent {
         })),
       });
       this.accountService.resetPassword(email.email)
-        .pipe(this.errorHandler.create({label: 'Reset password'}))
+        .pipe()
         .subscribe(() => {
           progressDialogRef.close();
           this.snackBar.open(
-            `Email sent!!`,
+            `Email sent. Please check your inbox.`,
             'close',
             {duration: 5000},
           );
         }, () => {
           progressDialogRef.close();
+          this.snackBar.open(
+            `No user account affiliated with this email account found.`,
+            'close',
+            {duration: 5000},
+          );
         });
     }, () => {
     });
