@@ -2,7 +2,6 @@ import random
 import re
 import secrets
 import string
-import time
 
 from flask import Blueprint, g, jsonify
 from flask.views import MethodView
@@ -245,7 +244,7 @@ def reset_password(email: str):
             message='No account registered to provided email address.',
             code=404)
 
-    random.seed(time.time())
+    random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
     new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
         (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + MIN_TEMP_PASS_LENGTH
