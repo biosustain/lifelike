@@ -52,6 +52,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.physicsEnabled = true;
     }
 
+    // `config.edges.smooth` can be of either type boolean or type object. Here we're just checking that it is an object before trying to
+    // access its properties.
     if (!isNullOrUndefined(config.edges.smooth) && typeof config.edges.smooth === 'object') {
       this.currentSmooth = config.edges.smooth.type || networkEdgeSmoothers.DYNAMIC;
     }
