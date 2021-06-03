@@ -4,7 +4,7 @@ import logging
 
 def add_annotation_entity_labels(database:Database):
     """
-    Add additional entity labels (e.g. Disease, Anatomy, Phenomonea) to mesh topical description.
+    Add additional entity labels (e.g. Disease, Anatomy, Phenomonea, Food) to mesh topical description.
 
     Disease: MeSH terms under tree number 'C' as Disease, excluding the top two levels (C and Cxx)
     Anatomy: under tree number 'A', and remove the following terms:[Anatomy, Body Region, Animal Structures, Bacterial Structures, Plant Structures, Fungal Structures and Viral Structures]
@@ -58,9 +58,17 @@ def add_annotation_entity_labels(database:Database):
     """
     database.run_query(query_phenomena)
 
+    query_food = """
+    match (n:db_MESH {name:'Food'})-[:HAS_TREENUMBER]-(t:TreeNumber) 
+    with t match (tr:TreeNumber) where tr.id starts with t.id and tr.id <> t.id
+    match (tr)-[:HAS_TREENUMBER]-(m:db_MESH) where m.obsolete = 0
+    with distinct m as term set term:Food
+    """
+    database.run_query(query_food)
 
 if __name__ == "__main__":
-    database = get_database(Neo4jInstance.LOCAL)
+    # database = get_database(Neo4jInstance.LOCAL)
+    database = get_database(Neo4jInstance.GOOGLE_STG)
     add_annotation_entity_labels(database)
     database.close()
 

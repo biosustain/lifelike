@@ -117,6 +117,15 @@ class GeneParser(BaseParser):
             header = False
 
     def _load_bioinfo_to_neo4j(self, database: Database, update=False):
+        query_genes = get_update_nodes_query(NODE_GENE, PROP_ID,
+                                       [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
+                                       [NODE_NCBI])
+        if not update:
+            query_genes = get_create_nodes_query(NODE_GENE, PROP_ID,
+                                           [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
+                                           [NODE_NCBI])
+        query_synonyms = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, 'synonym',
+                                                     NODE_GENE, PROP_ID, PROP_ID, REL_SYNONYM, False)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=10000, usecols=gene_info_cols)
         count_gene = 0
@@ -127,36 +136,26 @@ class GeneParser(BaseParser):
             df = df.replace('-', '').replace('')
             df = df.astype('str')
             df[PROP_DATA_SOURCE] = DS_NCBI_GENE
-            # print(df.dtypes)
-            # break
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
             df_syn = df_syn[df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
             # add Gene Nodes
-            query = get_update_nodes_query(NODE_GENE, PROP_ID,
-                                           [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE], [NODE_NCBI])
-            if not update:
-                query = get_create_nodes_query(NODE_GENE, PROP_ID,
-                                               [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE], [NODE_NCBI])
-            # database.load_data_from_dataframe(df, query)
+            database.load_data_from_dataframe(df, query_genes)
             count_gene += len(df)
-
             # load synonyms
-            query = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, 'synonym',
-                                                         NODE_GENE, PROP_ID, PROP_ID, REL_SYNONYM, False)
-            database.load_data_from_dataframe(df_syn, query)
+            database.load_data_from_dataframe(df_syn, query_synonyms)
             count_gene2syn += len(df_syn)
         logging.info(f'Processed genes: {count_gene}, gene2syns: {count_gene2syn}')
         logging.info('add gene2tax relationships')
-        query = '''
+        query_gene2tax = '''
         call apoc.periodic.iterate(
         "match(n:Gene:db_NCBI), (t:Taxonomy {id:n.tax_id}) return n, t",
         "merge (n)-[:HAS_TAXONOMY]->(t)",
         {batchSize:5000}
         );
         '''
-        database.run_query(query)
+        database.run_query(query_gene2tax)
 
     def _load_gene2go_to_neo4j(self, database:Database):
         chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])

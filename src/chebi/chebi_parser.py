@@ -57,7 +57,6 @@ class ChebiOboParser(OboParser, BaseParser):
             return
         logging.info('add nodes to ' + NODE_GO)
         # database.create_index(NODE_GO, PROP_ID)
-        node_dict = dict()
         self.load_nodes(database, nodes, NODE_CHEBI, NODE_CHEMICAL, PROP_ID, NODE_ATTRS)
         self.load_synonyms(database, nodes, NODE_CHEBI, PROP_ID)
         self.load_edges(database, nodes, NODE_CHEBI, PROP_ID)
