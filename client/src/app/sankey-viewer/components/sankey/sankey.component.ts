@@ -62,12 +62,22 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input('data') set data(data) {
     this._data = {...data} as SankeyGraph;
     if (this.svg) {
-      this.updateLayout(this._data).then(data => this.updateDOM(data));
+      this.updateLayout(this._data).then(d => this.updateDOM(d));
     }
   }
 
   get data() {
     return this._data;
+  }
+
+  get updateNodeText() {
+    const [width, _height] = this.sankey.size();
+    return texts => texts
+      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
+      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
+      .filter(({x0}) => x0 < width / 2)
+      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
+      .attr('text-anchor', 'start');
   }
 
   @ViewChild('popover', {static: false}) public popover: NgbPopover;
@@ -107,6 +117,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   size;
 
   d3links;
+
+  debounceDragRelayout;
+
+  dragging = false;
 
   calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
     const {uiState: {value: {zoom, panX, panY}}, size: {width, height}} = this;
@@ -304,13 +318,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // });
   }
 
-  debounceDragRelayout;
-
   // the function for moving the nodes
   dragmove(element, d) {
     const nodeWidth = d.x1 - d.x0;
     const nodeHeight = d.y1 - d.y0;
-    const oldX = d.x0;
     const newPosition = {
       x0: d.x0 + d3.event.dx,
       x1: d.x0 + d3.event.dx + nodeWidth,
@@ -355,23 +366,11 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // }, 500);
   }
 
-  dragging = false;
-
   updateNodeRect = rects => rects
     // .attr('x', ({x0}) => x0)
     // .attr('y', ({y0}) => y0)
     .attr('height', ({y0, y1}) => y1 - y0)
-    .attr('width', ({x1, x0}) => x1 - x0);
-
-  get updateNodeText() {
-    const [width, _height] = this.sankey.size();
-    return texts => texts
-      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
-      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
-      .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
-      .attr('text-anchor', 'start');
-  }
+    .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
