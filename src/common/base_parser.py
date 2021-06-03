@@ -1,7 +1,9 @@
 import os, gzip
 import pandas as pd
 from common.database import Database
+from common.utils import get_data_dir
 
+DEFAULT_DATADIR = get_data_dir()
 
 class BaseParser:
     REL_LABEL_COL = 'REL_TYPE'
@@ -10,7 +12,7 @@ class BaseParser:
 
     def __init__(self, data_dir_name, base_dir: str = None):
         if not base_dir:
-            base_dir = os.environ.get('BASE_DATA_DIR', '/Users/rcai/data/')
+            base_dir = os.environ.get('BASE_DATA_DIR', DEFAULT_DATADIR)
         self.base_dir = base_dir
         self.download_dir = os.path.join(self.base_dir, 'download', data_dir_name)
         self.output_dir = os.path.join(self.base_dir, 'processed', data_dir_name)
@@ -44,6 +46,7 @@ class BaseParser:
 
     def load_data_to_neo4j(self, database: Database, update=True):
         pass
+
 
 
 
