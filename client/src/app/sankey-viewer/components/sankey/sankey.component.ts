@@ -14,7 +14,7 @@ import {
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
-import { createMapToColor, clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
+import { clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
@@ -38,11 +38,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  @ViewChild('popover', {static: false}) public popover: NgbPopover;
-  @ViewChild('popoverAnchor', {static: false}) public popoverAnchor;
-
-  viewTransformation;
-
   constructor(
     private elRef: ElementRef,
     private clipboard: ClipboardService,
@@ -54,44 +49,41 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
+
+    this.linkClick = this.linkClick.bind(this);
+    this.nodeClick = this.nodeClick.bind(this);
+    this.nodeMouseOver = this.nodeMouseOver.bind(this);
+    this.pathMouseOver = this.pathMouseOver.bind(this);
+    this.nodeMouseOut = this.nodeMouseOut.bind(this);
+    this.pathMouseOut = this.pathMouseOut.bind(this);
+    this.dragmove = this.dragmove.bind(this);
   }
 
-  @Input('data') set data({links, graph, nodes, ...data}) {
-    const pathIdAccessor = path => nodes.find(n => n.id === path[0]).name[0];
-    const linksColorMap = createMapToColor(graph.up2aak1.map(pathIdAccessor));
-    graph.up2aak1.forEach(path => {
-      const color = linksColorMap.get(pathIdAccessor(path));
-      path.forEach((nodeId, nodeIdx, p) => {
-        const nextNodeId = p[nodeIdx + 1] || NaN;
-        const link = links.find(({source, target, schemaClass}) => source === nodeId && target === nextNodeId && !schemaClass);
-        if (link) {
-          link.schemaClass = color;
-        } else if (nextNodeId) {
-          // console.warn(`Link from ${nodeId} to ${nextNodeId} does not exist.`);
-        }
-      });
-    });
-    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
-    const nodesColorMap = createMapToColor(
-      nodes.map(nodeColorCategoryAccessor),
-      {
-        hue: () => 0,
-        lightness: (i, n) => (i + 0.5) / n,
-        saturation: () => 0
-      }
-    );
-    nodes.forEach(node => {
-      node.color = nodesColorMap.get(nodeColorCategoryAccessor(node));
-    });
-    this._data = {...data, nodes, links: links.map(link => ({value: link.pageUp, ...link}))} as SankeyGraph;
+  @Input('data') set data(data) {
+    this._data = {...data} as SankeyGraph;
     if (this.svg) {
-      this.updateLayout(this._data).then(this.updateDOM.bind(this));
+      this.updateLayout(this._data).then(d => this.updateDOM(d));
     }
   }
 
   get data() {
     return this._data;
   }
+
+  get updateNodeText() {
+    const [width, _height] = this.sankey.size();
+    return texts => texts
+      .attr('x', ({x0, x1}) => -(x1 - x0) / 2 - 6)
+      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
+      .filter(({x0}) => x0 < width / 2)
+      .attr('x', ({x0, x1}) => (x1 - x0) / 2 + 6)
+      .attr('text-anchor', 'start');
+  }
+
+  @ViewChild('popover', {static: false}) public popover: NgbPopover;
+  @ViewChild('popoverAnchor', {static: false}) public popoverAnchor;
+
+  viewTransformation;
 
   @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
@@ -124,6 +116,12 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   pan;
   size;
 
+  d3links;
+
+  debounceDragRelayout;
+
+  dragging = false;
+
   calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
     const {uiState: {value: {zoom, panX, panY}}, size: {width, height}} = this;
     const newZoom = clamp(1, 10)(zoom + zoomDelta);
@@ -146,6 +144,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     const {width, height} = this.size = this.getCloudSvgDimensions();
     this.onResize(width, height).then(_ => {
       this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
+
       this.wrapper.nativeElement.addEventListener('wheel', event => {
         const {wheelDelta, ctrlKey, shiftKey, deltaX, deltaY, offsetX, offsetY} = event;
         event.preventDefault();
@@ -161,6 +160,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           );
         } else if (shiftKey) {
           // shift + wheel to scroll just horizontally
+          // noinspection JSSuspiciousNameCombination
           this.uiState.next(
             this.calculateNextUIState({
               deltaX: deltaY
@@ -178,12 +178,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
 
-    // todo: figure out panning
     // const hammer = new Hammer(this.wrapper.nativeElement);
     //
     // hammer.on('pan', ({deltaX, deltaY, ...rest}) => {
     //   const {uiState: {value: {zoom}}} = this;
-    //   console.log(rest)
     //   this.uiState.next(
     //     this.calculateNextUIState({
     //       deltaX: -deltaX / zoom / zoom,
@@ -222,9 +220,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   updateLayout(data) {
     return new Promise(resolve => {
         // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-        resolve(
-          this.sankey(data)
-        );
+        console.log('relayout start', data);
+        const a = this.sankey(data);
+        console.log('relayout stop');
+        resolve(a);
       }
     )
       ;
@@ -319,6 +318,60 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // });
   }
 
+  // the function for moving the nodes
+  dragmove(element, d) {
+    const nodeWidth = d.x1 - d.x0;
+    const nodeHeight = d.y1 - d.y0;
+    const newPosition = {
+      x0: d.x0 + d3.event.dx,
+      x1: d.x0 + d3.event.dx + nodeWidth,
+      y0: d.y0 + d3.event.dy,
+      y1: d.y0 + d3.event.dy + nodeHeight
+    };
+    Object.assign(d, newPosition);
+    d3.select(element).raise().attr('transform', `translate(${d.x0},${d.y0})`);
+    const relatedLinksIds = d.sourceLinks.concat(d.targetLinks).map(({id}) => id);
+    d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .filter(({id}) => relatedLinksIds.includes(id))
+      .attr('d', link => {
+        const newPathParams = calculateLinkPathParams(link);
+        link.calculated_params = newPathParams;
+        return composeLinkPath(newPathParams);
+      });
+    // todo: this re-layout technique for whatever reason does not work
+    // clearTimeout(this.debounceDragRelayout);
+    // this.debounceDragRelayout = setTimeout(() => {
+    //   this.sankey.update(this._data);
+    //   Object.assign(d, newPosition);
+    //   d3.select(this.links.nativeElement)
+    //     .selectAll('path')
+    //     .transition().duration(RELAYOUT_DURATION)
+    //     .attrTween('d', link => {
+    //       const newPathParams = calculateLinkPathParams(link);
+    //       const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+    //       return t => {
+    //         const interpolatedParams = paramsInterpolator(t);
+    //         // save last params on each iterration so we can interpolate from last position upon
+    //         // animation interrupt/cancel
+    //         link.calculated_params = interpolatedParams;
+    //         return composeLinkPath(interpolatedParams);
+    //       };
+    //     });
+    //
+    //   d3.select(this.nodes.nativeElement)
+    //     .selectAll('g')
+    //     .transition().duration(RELAYOUT_DURATION)
+    //     .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`);
+    // }, 500);
+  }
+
+  updateNodeRect = rects => rects
+    // .attr('x', ({x0}) => x0)
+    // .attr('y', ({y0}) => y0)
+    .attr('height', ({y0, y1}) => y1 - y0)
+    .attr('width', ({x1, x0}) => x1 - x0)
+
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
@@ -330,16 +383,14 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    const [width, _height] = this.sankey.size();
-    const linkClick = this.linkClick.bind(this);
-    const nodeClick = this.nodeClick.bind(this);
-    const nodeMouseOver = this.nodeMouseOver.bind(this);
-    const pathMouseOver = this.pathMouseOver.bind(this);
-    const nodeMouseOut = this.nodeMouseOut.bind(this);
-    const pathMouseOut = this.pathMouseOut.bind(this);
-    d3.select(this.links.nativeElement)
+    const {
+      linkClick, nodeClick, nodeMouseOver, pathMouseOver, nodeMouseOut, pathMouseOut, dragmove,
+      links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
+      updateNodeRect, updateNodeText
+    } = this;
+    this.d3links = d3.select(linksRef)
       .selectAll('path')
-      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)))
+      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
         enter => enter.append('path')
           .on('click', function(data, eventId, links, ...args) {
@@ -368,7 +419,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               link.calculated_params = interpolatedParams;
               return composeLinkPath(interpolatedParams);
             };
-          })
+          }),
+        // Remove any words that have been removed by either the algorithm or the user
+        exit => exit.remove()
       )
       // .attr('stroke-width', ({width}) => Math.max(1, width))
       .attr('fill', ({schemaClass}) => schemaClass)
@@ -376,29 +429,40 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         join.selectAll('title')
           .text(({path}) => path)
       );
-    const updateNodeRect = rects => rects
-      .attr('x', ({x0}) => x0)
-      .attr('y', ({y0}) => y0)
-      .attr('height', ({y0, y1}) => y1 - y0)
-      .attr('width', ({x1, x0}) => x1 - x0);
-    const updateNodeText = texts => texts
-      .attr('x', ({x0}) => x0 - 6)
-      .attr('y', ({y0, y1}) => (y1 + y0) / 2)
-      .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x1}) => x1 + 6)
-      .attr('text-anchor', 'start');
-    d3.select(this.nodes.nativeElement)
+    const self = this;
+    d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes)
+      .data(words.nodes, ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {
+            if (self.dragging) {
+              return;
+            }
             return nodeMouseOver(this, data, eventId, links, ...args);
           })
           .on('mouseout', function(data, eventId, links, ...args) {
+            if (self.dragging) {
+              return;
+            }
             return nodeMouseOut(this, data, eventId, links, ...args);
           })
+          .call(
+            d3.drag()
+              .subject(d => d)
+              .on('start', function() {
+                self.dragging = true;
+                this.parentNode.appendChild(this);
+              })
+              .on('drag', function(d) {
+                return dragmove(this, d);
+              })
+              .on('end', _ => {
+                self.dragging = false;
+              })
+          )
           .attr('fill', ({color}) => color)
+          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
           .call(enterNode =>
             updateNodeRect(
               enterNode.append('rect')
@@ -435,7 +499,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           )
           .call(enterNode =>
             enterNode.selectAll('title')
-          ),
+          )
+          .transition().duration(RELAYOUT_DURATION)
+          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )

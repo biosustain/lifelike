@@ -33,6 +33,10 @@
             <dl>
                 <dt>Path:</dt>
                 <dd>{{link.path}}</dd>
+                <ng-container *ngIf="link.folded">
+                    <dt>Folded:</dt>
+                    <dd>True</dd>
+                </ng-container>
             </dl>
         </ng-container>
     </ng-template>
