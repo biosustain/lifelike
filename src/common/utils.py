@@ -1,4 +1,4 @@
-import zipfile
+import zipfile, os, re
 
 
 def file_compress(inp_file_names, out_zip_file):
@@ -21,5 +21,11 @@ def file_compress(inp_file_names, out_zip_file):
         print(f' *** Exception occurred during zip process - {e}')
     finally:
         zf.close()
+
+
+def get_data_dir():
+    basedir = os.getcwd().split('src')[0]
+    return os.path.join(basedir, 'data')
+
 
 
