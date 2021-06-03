@@ -1,4 +1,4 @@
-<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask.status$ | async) as status">
+<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask?.status$ | async) as status">
     <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
                          style="z-index: 2">
         <div>
@@ -11,22 +11,26 @@
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
 
-    <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+    <div class="position-absolute w-100 h-100 d-flex flex-column"
+         [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}">
         <div class="module">
             <div class="module-header">
-                <!-- Breadcrumbs -->
-                <div class="module-breadcrumb-bar mb-1">
-                    <app-object-path [object]="object?.parent" [newTab]="true"></app-object-path>
-                </div>
 
-                <div class="module-title-bar">
-                    <button type="button" class="module-title-bar-back mr-2" [appLink]="returnUrl" *ngIf="returnUrl">
-                        <i class="fa fa-fw fa-arrow-left"></i>
-                    </button>
-                    <h1 class="toolbar-title text-truncate mr-1" draggable="true" (dragstart)="dragStarted($event)">
+                <div class="module-title-bar d-flex justify-content-between">
+                    <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
                         {{ object?.filename }}
                     </h1>
-
+<!--                    <div class="d-flex">-->
+<!--                        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">-->
+<!--                            <button class="btn btn-secondary"-->
+<!--                                    (click)="toggleFiltersPanel()"-->
+<!--                                    ngbTooltip="Show Annotation Filters"-->
+<!--                                    container="body"-->
+<!--                                    placement="bottom top bottom-right top-right">-->
+<!--                                <i class="fa fa-fw fa-filter"></i>-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
                     <div ngbDropdown class="d-inline-block mr-4" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
@@ -40,11 +44,34 @@
                     </div>
                 </div>
             </div>
-            <!-- todo: support scrollbars -->
-            <div class="module-body overflow-hidden flex-grow-1">
-                <app-sankey [data]="sankeyData">
-                </app-sankey>
-            </div>
+            <as-split unit="pixel"
+                      direction="horizontal"
+                      [gutterSize]="5">
+                <as-split-area [order]="0">
+                    <app-sankey *ngIf="sankeyData" [data]="sankeyData">
+                    </app-sankey>
+                </as-split-area>
+                <as-split-area [visible]="filtersPanelOpened"
+                               size="340"
+                               [order]="1"
+                               [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
+                    <div class="w-100 h-100 p-3">
+                        <div class="annotation-filter-btns-container">
+                            <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
+                                    type="button"
+                                    (click)="toggleFiltersPanel()">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <app-filter-panel
+                                *ngIf="sankeyData"
+                                (filter)="changeFilter($event)"
+                                [paths]="paths"
+                                [nodeCategories]="nodesColorMap"
+                        ></app-filter-panel>
+                    </div>
+                </as-split-area>
+            </as-split>
         </div>
     </div>
 </div>
