@@ -224,13 +224,14 @@ class SearchService(GraphBaseDao):
             record for record in tx.run(
                 f"""
                 CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-                YIELD node
+                YIELD node, score
                 MATCH (node)-[]-(n)
                 WHERE {result_filters}
-                WITH n
+                WITH n, score
                 {organism_match_string}
                 RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, n.namespace AS go_class
+                    t.name AS taxonomy_name, n.namespace AS go_class, score
+                ORDER BY score DESC
                 SKIP $amount
                 LIMIT $limit
                 """,
