@@ -93,7 +93,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       const ilinks = itrace.edges.map(iidx => {
         const link = links[iidx];
         link.schemaClass = color;
-        link.trace = iidx;
+        link.trace = idx;
+        link.trace_group = itrace.group;
         return link;
       });
       return o.concat(ilinks);
@@ -191,12 +192,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   applyFilter() {
-    console.log('Asgsdfg');
     if (this.selectedTrace) {
-      const data = {...this.sankeyData};
-      console.log('Fasegawe');
+      this.selectTrace(this.selectedTrace);
+    } else {
+      this.filteredSankeyData = this.sankeyData;
     }
-    this.filteredSankeyData = this.sankeyData;
   }
 
   linkGraph({nodes, links, inNodes}) {
@@ -273,6 +273,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     // set colors for all traces
     const traceIdAccessor = trace => trace;
     this.networkTraces = graph.trace_networks;
+    this.selectedTrace = this.networkTraces[0];
     const traces = graph.trace_networks.reduce((o, n) => o.concat(n.traces), []);
     this.allTraces = new Set(traces.map(traceIdAccessor));
     this.linksColorMap = createMapToColor(this.allTraces);
