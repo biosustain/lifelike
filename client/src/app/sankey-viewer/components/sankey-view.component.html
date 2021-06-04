@@ -31,6 +31,16 @@
 <!--                            </button>-->
 <!--                        </div>-->
 <!--                    </div>-->
+      <div ngbDropdown class="d-inline-block">
+        <button class="btn btn-primary" ngbDropdownToggle>
+          <i class="fa fa-fw fa-file-export"></i>
+          Export
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem (click)="selectTrace(trace)"
+                  *ngFor="let trace in network_traces">{{trace.description}}</button>
+        </div>
+      </div>
                     <div ngbDropdown class="d-inline-block mr-4" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
