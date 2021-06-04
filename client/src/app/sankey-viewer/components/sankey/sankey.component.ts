@@ -347,7 +347,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // .attr('x', ({x0}) => x0)
     // .attr('y', ({y0}) => y0)
     .attr('height', ({y0, y1}) => y1 - y0)
-    .attr('width', ({x1, x0}) => x1 - x0);
+    .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -486,7 +486,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('stroke', '#000')
       )
       .call(joined => joined.selectAll('text')
-        .text(({displayName, ...rest}) => (displayName || console.log(rest) || "").slice(0, 10) + '...')
+        .text(({displayName, ...rest}) => (displayName || console.log(rest) || '').slice(0, 10) + '...')
       )
       .call(joined => joined.selectAll('title')
         .text(({name}) => name)
