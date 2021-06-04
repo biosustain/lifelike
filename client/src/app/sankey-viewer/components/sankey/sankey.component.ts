@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 
 import * as d3 from 'd3';
-import * as d3Sankey from 'd3-sankey';
+import * as d3Sankey from 'd3-sankey-circular';
 import * as d3Interpolate from 'd3-interpolate';
 import { clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -44,8 +44,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly domSanitizer: DomSanitizer
   ) {
-    this.sankey = d3Sankey.sankey()
+    this.sankey = d3Sankey.sankeyCircular()
       .nodeId(n => n.id)
+      .nodePadding(0.05)
+      .nodePaddingRatio(0.00005)
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
@@ -484,7 +486,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         .attr('stroke', '#000')
       )
       .call(joined => joined.selectAll('text')
-        .text(({displayName}) => displayName.slice(0, 10) + '...')
+        .text(({displayName, ...rest}) => (displayName || console.log(rest) || '').slice(0, 10) + '...')
       )
       .call(joined => joined.selectAll('title')
         .text(({name}) => name)
