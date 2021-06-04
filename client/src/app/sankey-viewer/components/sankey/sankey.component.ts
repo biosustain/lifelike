@@ -410,7 +410,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     const self = this;
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0), ({id}) => id)
+      .data(words.nodes, ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {

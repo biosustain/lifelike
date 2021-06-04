@@ -33,12 +33,11 @@
 <!--                    </div>-->
       <div ngbDropdown class="d-inline-block">
         <button class="btn btn-primary" ngbDropdownToggle>
-          <i class="fa fa-fw fa-file-export"></i>
-          Export
+          Select Trace Network
         </button>
         <div ngbDropdownMenu>
           <button ngbDropdownItem (click)="selectTrace(trace)"
-                  *ngFor="let trace in network_traces">{{trace.description}}</button>
+                  *ngFor="let trace of networkTraces">{{trace.description}}</button>
         </div>
       </div>
                     <div ngbDropdown class="d-inline-block mr-4" container="body">
@@ -58,7 +57,7 @@
                       direction="horizontal"
                       [gutterSize]="5">
                 <as-split-area [order]="0">
-                    <app-sankey *ngIf="sankeyData" [data]="sankeyData">
+                    <app-sankey *ngIf="filteredSankeyData" [data]="filteredSankeyData">
                     </app-sankey>
                 </as-split-area>
                 <as-split-area [visible]="filtersPanelOpened"
@@ -76,7 +75,7 @@
                         <app-filter-panel
                                 *ngIf="sankeyData"
                                 (filter)="changeFilter($event)"
-                                [paths]="paths"
+                                [paths]="allTraces"
                                 [nodeCategories]="nodesColorMap"
                         ></app-filter-panel>
                     </div>
