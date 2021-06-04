@@ -360,6 +360,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
+    const rnd = Math.random();
     const {
       linkClick, nodeClick, nodeMouseOver, pathMouseOver, nodeMouseOut, pathMouseOut, dragmove,
       links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
@@ -404,12 +405,12 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('fill', ({schemaClass}) => schemaClass)
       .call(join =>
         join.selectAll('title')
-          .text(({path}) => path)
+          .text(({description}) => description)
       );
     const self = this;
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes, ({id}) => id)
+      .data(words.nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0), ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {
@@ -483,10 +484,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         exit => exit.remove()
       )
       .call(joined => joined.selectAll('rect')
-        .attr('stroke', '#000')
+        .attr('stroke', '#000000')
       )
       .call(joined => joined.selectAll('text')
-        .text(({displayName, ...rest}) => (displayName || console.log(rest) || '').slice(0, 10) + '...')
+        .text((n) => (n.displayName || console.log(n) || console.count('no displayName' + rnd) || '').slice(0, 10) + '...')
       )
       .call(joined => joined.selectAll('title')
         .text(({name}) => name)
