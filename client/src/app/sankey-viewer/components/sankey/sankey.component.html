@@ -39,6 +39,10 @@
                     <dt>Folded:</dt>
                     <dd>True</dd>
                 </ng-container>
+                <ng-container *ngIf="link.trace">
+                    <dt>Trace:</dt>
+                    <dd>{{ link.trace }}</dd>
+                </ng-container>
             </dl>
         </ng-container>
     </ng-template>
