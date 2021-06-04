@@ -168,11 +168,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const linksColorMap = createMapToColor(this.paths);
     traces.forEach(path => {
       const color = linksColorMap.get(traceIdAccessor(path));
-      path.edges.forEach(([edgeSource, edgeTarget]) => {
-        const link = links.find(({source, target, schemaClass}) => source === edgeSource && target === edgeTarget && !schemaClass);
-        if (link) {
-          link.schemaClass = color;
-        }
+      path.edges.forEach(linkIdx => {
+        links[linkIdx].schemaClass = color;
       });
     });
     const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
