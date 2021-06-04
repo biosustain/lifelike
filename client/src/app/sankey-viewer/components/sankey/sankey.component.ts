@@ -46,8 +46,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.sankey = d3Sankey.sankeyCircular()
       .nodeId(n => n.id)
-      .nodePadding(1)
-      .nodePaddingRatio(0.001)
+      .nodePadding(10)
+      .nodePaddingRatio(0.1)
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
@@ -436,7 +436,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               })
               .on('end', function(data) {
                 if (!d3.event.dx && !d3.event.dy) {
-                  nodeClick(this, data, 'eventId', 'links');
+                  nodeClick(d3.select(this).select('rect'), data, 'eventId', 'links');
                 }
                 self.dragging = false;
               })
