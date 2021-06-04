@@ -33,7 +33,7 @@
 <!--                    </div>-->
       <div ngbDropdown class="d-inline-block">
         <button class="btn btn-primary" ngbDropdownToggle>
-          Select Trace Network
+          {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
         </button>
         <div ngbDropdownMenu>
           <button ngbDropdownItem (click)="selectTrace(trace)"
@@ -72,12 +72,12 @@
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-                        <app-filter-panel
-                                *ngIf="sankeyData"
-                                (filter)="changeFilter($event)"
-                                [paths]="allTraces"
-                                [nodeCategories]="nodesColorMap"
-                        ></app-filter-panel>
+<!--                        <app-filter-panel-->
+<!--                                *ngIf="sankeyData"-->
+<!--                                (filter)="changeFilter($event)"-->
+<!--                                [paths]="allTraces"-->
+<!--                                [nodeCategories]="nodesColorMap"-->
+<!--                        ></app-filter-panel>-->
                     </div>
                 </as-split-area>
             </as-split>
