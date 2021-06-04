@@ -207,25 +207,25 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       }
       return o;
     }, []);
-    const traverseNodes = nodes => {
-      const links = nodes.reduce((o, n) => {
+    const traverseNodes = inodes => {
+      const ilinks = inodes.reduce((o, n) => {
         return o.concat(n.sourceLinks);
       }, []);
-      traverseLinks(links);
+      traverseLinks(ilinks);
     };
-    const traverseLinks = links => {
-      const nodes = new Set();
-      links.forEach(link => {
+    const traverseLinks = ilinks => {
+      const inodes = new Set();
+      ilinks.forEach(link => {
         const source = link.source;
         const sourceValue = source.value;
         link.value = sourceValue / source.sourceLinks.length;
         link.target.value += link.value;
         if (!link.circular) {
-          nodes.add(link.target);
+          inodes.add(link.target);
         }
       });
-      if (nodes.size) {
-        traverseNodes([...nodes]);
+      if (inodes.size) {
+        traverseNodes([...inodes]);
       }
     };
     traverseNodes(nodesToTraverse);
