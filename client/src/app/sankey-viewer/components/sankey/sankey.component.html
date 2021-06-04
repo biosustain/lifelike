@@ -34,10 +34,16 @@
         <ng-container *ngIf="link">
             <dl>
                 <dt>Path:</dt>
-                <dd>{{link.path}}</dd>
+                <dd>{{link.description}}</dd>
                 <ng-container *ngIf="link.folded">
                     <dt>Folded:</dt>
                     <dd>True</dd>
+                </ng-container>
+                <ng-container *ngIf="link.trace">
+                    <dt>Trace index:</dt>
+                    <dd>{{ link.trace }}</dd>
+                    <dt>Trace group:</dt>
+                    <dd>{{ link.trace_group }}</dd>
                 </ng-container>
             </dl>
         </ng-container>
