@@ -46,8 +46,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.sankey = d3Sankey.sankeyCircular()
       .nodeId(n => n.id)
-      .nodePadding(0.05)
-      .nodePaddingRatio(0.00005)
+      .nodePadding(1)
+      .nodePaddingRatio(0.001)
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
@@ -197,13 +197,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   updateLayout(data) {
     return new Promise(resolve => {
         // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-        console.log('relayout start', data);
         const a = this.sankey(data);
-        console.log('relayout stop');
         resolve(a);
       }
-    )
-      ;
+    );
   }
 
 
@@ -346,7 +343,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   updateNodeRect = rects => rects
     // .attr('x', ({x0}) => x0)
     // .attr('y', ({y0}) => y0)
-    .attr('height', ({y0, y1}) => y1 - y0)
+    .attr('height', n => {
+      return n.y1 - n.y0;
+    })
     .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
@@ -435,7 +434,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               .on('drag', function(d) {
                 return dragmove(this, d);
               })
-              .on('end', _ => {
+              .on('end', function(data) {
+                if (!d3.event.dx && !d3.event.dy) {
+                  nodeClick(this, data, 'eventId', 'links');
+                }
                 self.dragging = false;
               })
           )
