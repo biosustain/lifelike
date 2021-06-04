@@ -20,7 +20,11 @@ import * as d3Sankey from 'd3-sankey-circular';
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
-
+  network_traces;
+  selectedTrace;
+  selectTrace(trace) {
+    this.selectedTrace = trace;
+  }
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute
@@ -45,6 +49,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                            }) => {
 
       this.sankeyData = this.parseData(content);
+      this.applyFilter();
       this.object = object;
       this.emitModuleProperties();
 
@@ -121,6 +126,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     };
   }
 
+
   changeFilter(filter = d => d) {
     this.filter = filter;
     const {nodes, links, ...data} = this.sankeyData;
@@ -159,6 +165,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
+
+  inNodesId;
+  outNodesId;
+  applyFilter() {
+
   }
 
   parseData({links, graph, nodes, ...data}) {
