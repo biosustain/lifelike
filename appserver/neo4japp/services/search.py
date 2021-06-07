@@ -145,9 +145,8 @@ class SearchService(GraphBaseDao):
         page: int = 1,
         limit: int = 10,
     ) -> FTSResult:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return FTSResult(query_term, [], 0, page, limit)
+        if not term:
+            return FTSResult(term, [], 0, page, limit)
 
         if organism:
             organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {id: $organism})'
@@ -158,7 +157,7 @@ class SearchService(GraphBaseDao):
 
         result = self.graph.read_transaction(
             self.visualizer_search_query,
-            query_term,
+            term,
             organism,
             (page - 1) * limit,
             limit,
@@ -171,7 +170,7 @@ class SearchService(GraphBaseDao):
         total_results = len(
             self.graph.read_transaction(
                 self.visualizer_search_query,
-                query_term,
+                term,
                 organism,
                 0,
                 1001,
@@ -224,13 +223,14 @@ class SearchService(GraphBaseDao):
             record for record in tx.run(
                 f"""
                 CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-                YIELD node
+                YIELD node, score
                 MATCH (node)-[]-(n)
                 WHERE {result_filters}
-                WITH n
+                WITH n, score, toLower(n.name) = toLower($search_term) as matches_input
                 {organism_match_string}
                 RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, n.namespace AS go_class
+                    t.name AS taxonomy_name, n.namespace AS go_class, score, matches_input
+                ORDER BY matches_input DESC, score DESC
                 SKIP $amount
                 LIMIT $limit
                 """,
