@@ -512,7 +512,7 @@ class EntityRecognitionService:
 
         # local inclusions
         # only get the custom species for now
-        local_species_inclusions = [
+        local_species_inclusions: List[dict] = [
             custom for custom in custom_annotations if custom.get(
                 'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
                     'meta', {}).get('includeGlobally')
