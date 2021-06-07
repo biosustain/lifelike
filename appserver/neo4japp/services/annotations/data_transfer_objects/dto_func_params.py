@@ -2,7 +2,7 @@ import attr
 
 from typing import Dict, List
 
-from neo4japp.services.annotations.data_transfer_objects import NLPResults, PDFWord
+from neo4japp.services.annotations.data_transfer_objects import PDFWord
 
 
 """Data Transfer Objects related to consolidating multiple
