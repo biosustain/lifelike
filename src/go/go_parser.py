@@ -71,7 +71,7 @@ class GoOboParser(OboParser, BaseParser):
 if __name__ == '__main__':
     parser = GoOboParser()
     # use the right database
-    database = get_database(Neo4jInstance.LOCAL, 'test')
+    database = get_database(Neo4jInstance.LOCAL, 'neo4j')
     parser.load_data_to_neo4j(database)
     database.close()
 
