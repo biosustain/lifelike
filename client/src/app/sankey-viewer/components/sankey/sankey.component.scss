@@ -32,6 +32,7 @@
 
   path {
     transition: opacity 250ms 250ms;
+    opacity: 0.4;
 
     &:hover {
       stroke-opacity: .5;
