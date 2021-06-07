@@ -129,6 +129,79 @@ class AnnotationGraphService(GraphConnection):
 
         return protein_to_organism_map
 
+    def get_mesh_global_inclusions(self, entity_type: str):
+        return self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s)
+                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+                    AND n.entity_type = $entity_type
+                    RETURN n.id AS entity_id, n.name AS entity_name,
+                        s.name AS synonym, n.data_source AS data_source
+                    """,
+                    entity_type=entity_type
+                )
+            )
+        )
+
+    def get_gene_global_inclusions(self):
+        return self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (n:Gene)-[r:HAS_SYNONYM]-(s)
+                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+                    RETURN n.id AS entity_id, n.name AS entity_name,
+                        s.name AS synonym, n.data_source AS data_source
+                    """
+                )
+            )
+        )
+
+    def get_species_global_inclusions(self):
+        return self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (n:Taxonomy)-[r:HAS_SYNONYM]-(s)
+                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+                    RETURN n.id AS entity_id, n.name AS entity_name,
+                        s.name AS synonym, n.data_source AS data_source
+                    """
+                )
+            )
+        )
+
+    def get_protein_global_inclusions(self):
+        return self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (n:db_UniProt)-[r:HAS_SYNONYM]-(s)
+                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+                    RETURN n.id AS entity_id, n.name AS entity_name,
+                        s.name AS synonym, n.data_source AS data_source
+                    """
+                )
+            )
+        )
+
+    def get_***ARANGO_DB_NAME***_global_inclusions(self, entity_type: str):
+        return self.graph.read_transaction(
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (n:db_Lifelike)
+                    WHERE n.entity_type = $entity_type
+                    RETURN n.id AS entity_id, n.name AS entity_name, n.name AS synonym,
+                        n.data_source AS data_source, n.hyperlink AS hyperlink
+                    """,
+                    entity_type=entity_type
+                )
+            )
+        )
+
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         return self.graph.run(
             self.get_organisms_from_gene_ids_query,
