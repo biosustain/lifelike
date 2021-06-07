@@ -518,16 +518,16 @@ class EntityRecognitionService:
                     'meta', {}).get('includeGlobally')
         ]
 
-        for inclusion in local_species_inclusions:
+        for local_inclusion in local_species_inclusions:
             try:
-                entity_id = inclusion['meta']['id']
-                entity_name = inclusion['meta']['allText']
-                entity_type = inclusion['meta']['type']
-                entity_id_type = inclusion['meta']['idType']
-                entity_id_hyperlink = inclusion['meta']['idHyperlink']
+                entity_id = local_inclusion['meta']['id']
+                entity_name = local_inclusion['meta']['allText']
+                entity_type = local_inclusion['meta']['type']
+                entity_id_type = local_inclusion['meta']['idType']
+                entity_id_hyperlink = local_inclusion['meta']['idHyperlink']
             except KeyError:
                 current_app.logger.error(
-                    f'Error creating annotation inclusion {inclusion} for entity type {entity_type}',  # noqa
+                    f'Error creating annotation inclusion {local_inclusion} for entity type {entity_type}',  # noqa
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
             else:
