@@ -24,6 +24,7 @@ import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import { isNullOrUndefined } from 'util';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { ObjectUpdateRequest } from 'app/file-browser/schema';
 import { ModuleProperties } from 'app/shared/modules';
@@ -84,7 +85,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly enrichmentService: EnrichmentService,
               protected readonly progressDialog: ProgressDialog,
               protected readonly changeDetectorRef: ChangeDetectorRef,
-              protected readonly elementRef: ElementRef) {
+              protected readonly elementRef: ElementRef,
+              protected readonly filesystemObjectActions: FilesystemObjectActions) {
     this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
@@ -254,6 +256,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     });
 
     return observable;
+  }
+
+  openNewWindow(enrichmentTable: FilesystemObject) {
+    return this.filesystemObjectActions.openNewWindow(enrichmentTable);
   }
 
   /**
