@@ -30,7 +30,6 @@
                 (dragstart)="this.dragStarted($event)">
               {{ map?.label }}
             </h1>
-
             <div ngbDropdown class="d-inline-block ml-1" container="body">
               <a href="#" class="dropdown-no-arrow" ngbDropdownToggle
                  (click)="$event.preventDefault()">
@@ -44,7 +43,11 @@
                 </app-object-menu>
               </div>
             </div>
-
+            <div>
+              <button class="btn btn-secondary ml-2" (click)="openNewWindow()">
+                <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+              </button>
+            </div>
             <div *ngIf="unsavedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
