@@ -53,7 +53,8 @@ export class ContentSearchService {
           })),
           query: data.query,
           synonyms: data.synonyms,
-          droppedSynonyms: data.droppedSynonyms
+          droppedSynonyms: data.droppedSynonyms,
+          droppedFolders: data.droppedFolders
         };
       }),
     );

@@ -36,7 +36,7 @@ import {
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
-import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
+import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
@@ -109,7 +109,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     // No point sending a request if the params are completely empty
     if (this.emptyParams) {
-      return of({total: 0, results: [], synonyms: {}, droppedSynonyms: {}});
+      return of({
+        total: 0,
+        results: [],
+        synonyms: {},
+        droppedSynonyms: {},
+        droppedFolders: []
+      });
     }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
@@ -123,12 +129,16 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         });
         this.highlightTerms = [...response.query.phrases, ...Array.from(synonymsSet)];
 
+        const rejectedFolders: string[] = response.droppedFolders;
+        const rejectedSynonyms = new Map<string, string[]>();
         if (Object.keys(response.droppedSynonyms).length) {
-          const rejectedSynonyms = new Map<string, string[]>();
           Object.entries(response.droppedSynonyms).forEach(([***ARANGO_USERNAME***, synonymList]) => {
             rejectedSynonyms.set(***ARANGO_USERNAME***, synonymList);
           });
-          this.openRejectedSynoynms(rejectedSynonyms);
+        }
+
+        if (rejectedFolders.length || rejectedSynonyms.size) {
+          this.openRejectedOptions(rejectedSynonyms, rejectedFolders);
         }
       })
     );
@@ -378,11 +388,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   /**
    * Opens the rejected synonym dialog. This will show the user which, if any, search terms had too many synonyms to search all at once.
    */
-  openRejectedSynoynms(rejectedSynonyms: Map<string, string[]>) {
-    const modalRef = this.modalService.open(RejectedSynonymsDialogComponent, {
+  openRejectedOptions(rejectedSynonyms: Map<string, string[]>, rejectedFolders: string[]) {
+    const modalRef = this.modalService.open(RejectedOptionsDialogComponent, {
       size: 'md',
     });
     // Get the starting options from the content search form query
+    modalRef.componentInstance.rejectedFolders = rejectedFolders;
     modalRef.componentInstance.rejectedSynonyms = rejectedSynonyms;
     modalRef.result
       // Currently there's no "Submit" action on this dialog, but maybe we'll add one later

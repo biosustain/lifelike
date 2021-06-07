@@ -1,10 +1,10 @@
-from marshmallow import fields, validate, ValidationError
+from marshmallow import fields, validate
 
 from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
 from neo4japp.schemas.fields import SearchQuery
-from neo4japp.schemas.filesystem import FileSchema, RankedFileSchema
+from neo4japp.schemas.filesystem import RankedFileSchema
 
 # ========================================
 # Content Search
@@ -33,7 +33,7 @@ class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
     synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
     dropped_synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
-    dropped_folders = fields.List(fields.Nested(FileSchema, only=('hash_id',)))
+    dropped_folders = fields.List(fields.String())
 
 # ========================================
 # Text Annotation API
