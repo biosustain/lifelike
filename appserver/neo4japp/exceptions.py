@@ -192,7 +192,7 @@ class AccessRequestRequiredError(ServerException):
     """
     def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):  # noqa
         message = f'You have "{curr_access}" access. Please request "{req_access}" ' \
-                  f'access at minimum for <{hash_id}>.'
+                  f'access at minimum for this content.'
         super().__init__(
             'You need access',
             message=message,
