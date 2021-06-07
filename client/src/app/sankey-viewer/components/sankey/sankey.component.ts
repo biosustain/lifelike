@@ -365,7 +365,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     .attr('height', n => {
       return n.y1 - n.y0;
     })
-    .attr('width', ({x1, x0}) => x1 - x0);
+    .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -422,12 +422,12 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('fill', ({schemaClass}) => schemaClass)
       .call(join =>
         join.select('title')
-          .text(({trace, trace_group}) => JSON.stringify({trace, trace_group}))
+          .text(({description}) => description)
       );
     const self = this;
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes)//, ({id}) => id)
+      .data(words.nodes, ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {
