@@ -12,17 +12,25 @@ import {
 } from '@angular/core';
 
 import * as d3 from 'd3';
-import * as d3Sankey from 'd3-sankey-circular';
+import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
-import { clamp, SankeyGraph, createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
+import {
+  clamp,
+  SankeyGraph,
+  createResizeObserver,
+  layerWidth,
+  composeLinkPath,
+  calculateLinkPathParams,
+  shortNodeText,
+  nodeLabelAccessor,
+  INITIALLY_SHOWN_CHARS,
+  RELAYOUT_DURATION
+} from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
-
-const RELAYOUT_DURATION = 250;
-const INITIALLY_SHOWN_CHARS = 10;
 
 @Component({
   selector: 'app-sankey',
@@ -44,10 +52,19 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly domSanitizer: DomSanitizer
   ) {
-    this.sankey = d3Sankey.sankeyCircular()
+    this.sankey = d3Sankey.sankey()
       .nodeId(n => n.id)
       .nodePadding(10)
-      .nodePaddingRatio(0.1)
+      // .nodePaddingRatio(0.1)
+      .linkSort((a, b) =>
+        (b.source.index - a.source.index) ||
+        (b.target.index - a.target.index) ||
+        (b.trace_group - a.trace_group)
+      )
+      .nodeSort((a, b) =>
+        (b.depth - a.depth) ||
+        (b.index - a.index)
+      )
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
@@ -258,23 +275,24 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .style('opacity', 1);
+      .style('opacity', 0.45);
   }
 
   nodeMouseOver(element, data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
-      .style('opacity', ({color}) => color === data.color ? 1 : 0.35);
+      .style('opacity', ({color}) => color === data.color ? 0.45 : 0.35);
     d3.select(element).select('text')
-      .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
-    // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
-    // .transition().duration(RELAYOUT_DURATION)
-    // .textTween(({displayName}) => {
-    //   const length = displayName.length;
-    //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-    //   return t => t === 1 ? displayName :
-    //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-    // });
+      .text(shortNodeText)
+      .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+      .transition().duration(RELAYOUT_DURATION)
+      .textTween(n => {
+        const displayName = nodeLabelAccessor(n);
+        const length = displayName.length;
+        const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+        return t => t === 1 ? displayName :
+          (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      });
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
@@ -282,14 +300,15 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .selectAll('g')
       .style('opacity', 1);
     d3.select(element).select('text')
-      .text(({displayName}) => displayName.slice(0, INITIALLY_SHOWN_CHARS));
-    // .filter(({displayName}) => INITIALLY_SHOWN_CHARS < displayName.length)
-    // .transition().duration(RELAYOUT_DURATION)
-    // .textTween(({displayName}) => {
-    //   const length = displayName.length;
-    //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-    //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-    // });
+      .text(shortNodeText)
+      .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+      .transition().duration(RELAYOUT_DURATION)
+      .textTween(n => {
+        const displayName = nodeLabelAccessor(n);
+        const length = displayName.length;
+        const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
+        return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      });
   }
 
   // the function for moving the nodes
@@ -346,7 +365,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     .attr('height', n => {
       return n.y1 - n.y0;
     })
-    .attr('width', ({x1, x0}) => x1 - x0)
+    .attr('width', ({x1, x0}) => x1 - x0);
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -359,7 +378,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    const rnd = Math.random();
     const {
       linkClick, nodeClick, nodeMouseOver, pathMouseOver, nodeMouseOut, pathMouseOut, dragmove,
       links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
@@ -403,13 +421,13 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       // .attr('stroke-width', ({width}) => Math.max(1, width))
       .attr('fill', ({schemaClass}) => schemaClass)
       .call(join =>
-        join.selectAll('title')
-          .text(({description}) => description)
+        join.select('title')
+          .text(({trace, trace_group}) => JSON.stringify({trace, trace_group}))
       );
     const self = this;
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes, ({id}) => id)
+      .data(words.nodes)//, ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {
@@ -434,10 +452,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               .on('drag', function(d) {
                 return dragmove(this, d);
               })
-              .on('end', function(data) {
-                if (!d3.event.dx && !d3.event.dy) {
-                  nodeClick(d3.select(this).select('rect'), data, 'eventId', 'links');
-                }
+              // tslint:disable-next-line:only-arrow-functions
+              .on('end', function() {
                 self.dragging = false;
               })
           )
@@ -465,33 +481,38 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         update => update
           .call(enterNode =>
             updateNodeRect(
-              enterNode.selectAll('rect')
+              enterNode.select('rect')
                 .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
             updateNodeText(
-              enterNode.selectAll('text')
+              enterNode.select('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'end')
                 .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
-            enterNode.selectAll('title')
+            enterNode.select('title')
           )
           .transition().duration(RELAYOUT_DURATION)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      .call(joined => joined.selectAll('rect')
+      .call(enterNode =>
+        updateNodeRect(
+          enterNode.select('rect')
+        )
+      )
+      .call(joined => joined.select('rect')
         .attr('stroke', '#000000')
       )
-      .call(joined => joined.selectAll('text')
-        .text((n) => (n.displayName || console.log(n) || console.count('no displayName' + rnd) || '').slice(0, 10) + '...')
+      .call(joined => joined.select('text')
+        .text(shortNodeText)
       )
-      .call(joined => joined.selectAll('title')
+      .call(joined => joined.select('title')
         .text(({name}) => name)
       );
   }
