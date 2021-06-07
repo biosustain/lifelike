@@ -23,14 +23,14 @@ def add_global_inclusion_test_file(database:Database, file):
     df = pd.read_excel(filepath, names=columns)
     df = df.astype('str')
     df = df.replace('nan', '')
-    # df_mesh = df[df['domain']=='MESH']
-    # load_mesh_terms(database, df_mesh)
-    # df_gene = df[df['data_source'] == 'NCBI Gene']
-    # load_ncbigene_terms(database, df_gene)
-    # df_tax = df[df['data_source'] == 'NCBI Taxonomy']
-    # load_taxonomy_terms(database, df_tax)
-    # df_prot = df[df['domain']=='UniProt']
-    # load_uniprot_terms(database, df_prot)
+    df_mesh = df[df['domain']=='MESH']
+    load_mesh_terms(database, df_mesh)
+    df_gene = df[df['data_source'] == 'NCBI Gene']
+    load_ncbigene_terms(database, df_gene)
+    df_tax = df[df['data_source'] == 'NCBI Taxonomy']
+    load_taxonomy_terms(database, df_tax)
+    df_prot = df[df['domain']=='UniProt']
+    load_uniprot_terms(database, df_prot)
     df_ll = df[df['domain'] == 'Lifelike']
     load_***ARANGO_DB_NAME***_terms_with_datasource(database, df_ll[df_ll['data_source'].str.len() > 0])
     load_***ARANGO_DB_NAME***_terms_without_datasource(database,  df_ll[df_ll['data_source'].str.len() == 0])
