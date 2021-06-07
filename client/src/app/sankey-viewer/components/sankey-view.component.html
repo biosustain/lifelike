@@ -1,0 +1,86 @@
+<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask?.status$ | async) as status">
+    <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
+                         style="z-index: 2">
+        <div>
+            Downloading file...
+        </div>
+    </app-module-progress>
+
+    <app-module-error *ngIf="status.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
+                      [error]="status.error" style="z-index: 2">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+
+    <div class="position-absolute w-100 h-100 d-flex flex-column"
+         [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}">
+        <div class="module">
+            <div class="module-header">
+
+                <div class="module-title-bar d-flex justify-content-between">
+                    <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+                        {{ object?.filename }}
+                    </h1>
+<!--                    <div class="d-flex">-->
+<!--                        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">-->
+<!--                            <button class="btn btn-secondary"-->
+<!--                                    (click)="toggleFiltersPanel()"-->
+<!--                                    ngbTooltip="Show Annotation Filters"-->
+<!--                                    container="body"-->
+<!--                                    placement="bottom top bottom-right top-right">-->
+<!--                                <i class="fa fa-fw fa-filter"></i>-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+      <div ngbDropdown class="d-inline-block">
+        <button class="btn btn-primary" ngbDropdownToggle>
+          {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem (click)="selectTrace(trace)"
+                  *ngFor="let trace of networkTraces">{{trace.description}}</button>
+        </div>
+      </div>
+                    <div ngbDropdown class="d-inline-block mr-4" container="body">
+                        <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+                            <i class="fas fa-chevron-down fa-fw text-icon"></i>
+                        </a>
+                        <div ngbDropdownMenu>
+                            <app-object-menu *ngIf="object" [object]="object" [forEditing]="true"
+                                             [showOpen]="false" [showDelete]="false"
+                                             (objectRefresh)="requestRefresh()">
+                            </app-object-menu>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <as-split unit="pixel"
+                      direction="horizontal"
+                      [gutterSize]="5">
+                <as-split-area [order]="0">
+                    <app-sankey *ngIf="filteredSankeyData" [data]="filteredSankeyData">
+                    </app-sankey>
+                </as-split-area>
+                <as-split-area [visible]="filtersPanelOpened"
+                               size="340"
+                               [order]="1"
+                               [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
+                    <div class="w-100 h-100 p-3">
+                        <div class="annotation-filter-btns-container">
+                            <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
+                                    type="button"
+                                    (click)="toggleFiltersPanel()">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+<!--                        <app-filter-panel-->
+<!--                                *ngIf="sankeyData"-->
+<!--                                (filter)="changeFilter($event)"-->
+<!--                                [paths]="allTraces"-->
+<!--                                [nodeCategories]="nodesColorMap"-->
+<!--                        ></app-filter-panel>-->
+                    </div>
+                </as-split-area>
+            </as-split>
+        </div>
+    </div>
+</div>
