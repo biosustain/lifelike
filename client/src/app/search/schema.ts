@@ -35,6 +35,7 @@ export interface ContentSearchResponse extends ResultList<RankedItem<FilesystemO
   droppedSynonyms: {
     [rootWord: string]: string[]
   };
+  droppedFolders: string[];
 }
 
 // Need an extra interface to accommodate the legacy data
@@ -45,4 +46,5 @@ export interface ContentSearchResponseData extends ResultList<RankedItem<Filesys
   droppedSynonyms: {
     [rootWord: string]: string[]
   };
+  droppedFolders: string[];
 }

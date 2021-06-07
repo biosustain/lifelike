@@ -199,7 +199,7 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
         if file.project in accessible_projects_ids:
             accessible_filepaths.append(file.filepath)
         else:
-            inaccessible_files.append(file)
+            inaccessible_files.append(file.hash_id)
 
     if len(accessible_filepaths):
         return {
