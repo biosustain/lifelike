@@ -61,9 +61,11 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
     if (params.hasOwnProperty('types') && params.types !== []) {
       params.types.forEach(type => q.push(`type:${type.shorthand}`));
     }
-    if (params.hasOwnProperty('folders') && params.folders !== []) {
-      params.folders.forEach(folder => q.push(`folder:${folder}`));
-    }
+    // Disabling this for now, since it looks very awkward. This means users can only access the folder search in the UI from the advanced
+    // options dialog
+    // if (params.hasOwnProperty('folders') && params.folders !== []) {
+    //   params.folders.forEach(folder => q.push(`folder:${folder}`));
+    // }
     // TODO: Add this back if we put synonyms back in the advanced search dialog
     // if (params.hasOwnProperty('synonyms') && !isNullOrUndefined(params.synonyms)) {
     //   q.push(`synonyms:${params.synonyms}`);

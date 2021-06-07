@@ -12,6 +12,12 @@
               "filepath_analyzer": {
                   "tokenizer": "filepath_tokenizer"
               },
+              "custom_path_tree": {
+                "tokenizer": "custom_hierarchy"
+              },
+              "custom_path_tree_reversed": {
+                "tokenizer": "custom_hierarchy_reversed"
+              },
               "default": {
                   "type": "standard"
               }
@@ -19,7 +25,16 @@
             "tokenizer": {
                 "filepath_tokenizer": {
                     "type": "path_hierarchy"
-                  }
+                },
+                "custom_hierarchy": {
+                    "type": "path_hierarchy",
+                    "delimiter": "/"
+                },
+                "custom_hierarchy_reversed": {
+                    "type": "path_hierarchy",
+                    "delimiter": "/",
+                    "reverse": "true"
+                }
             },
             "char_filter": {
               "replace_dot": {
@@ -41,7 +56,16 @@
             },
             "filepath": {
                 "type": "text",
-                "analyzer": "filepath_analyzer"
+                "fields": {
+                    "tree": {
+                        "type": "text",
+                        "analyzer": "custom_path_tree"
+                    },
+                    "tree_reversed": {
+                        "type": "text",
+                        "analyzer": "custom_path_tree_reversed"
+                    }
+                }
             },
             "description": {
                 "type": "text"

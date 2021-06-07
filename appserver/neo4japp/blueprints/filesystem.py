@@ -47,7 +47,7 @@ from neo4japp.schemas.filesystem import (
     FileCreateRequestSchema,
     FileExportRequestSchema,
     FileHierarchyRequestSchema,
-    FileHierarchySchema,
+    FileHierarchyResponseSchema,
     FileListSchema,
     FileLockCreateRequest,
     FileLockDeleteRequest,
@@ -533,27 +533,41 @@ class FileHierarchyView(FilesystemBaseView):
         ***ARANGO_USERNAME*** = {}  # type: ignore
         curr_dir = ***ARANGO_USERNAME***
         for file in hierarchy:
-            curr_dir = ***ARANGO_USERNAME***
-            id_path_list = file.id_path
-            for id in id_path_list[:-1]:
-                if id not in curr_dir:
-                    curr_dir[id] = {}
-                curr_dir = curr_dir[id]
-            # id_path_list[-1] and file.id are the same
-            if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                curr_dir[id_path_list[-1]] = {}
-            else:
-                curr_dir[id_path_list[-1]] = None
+            # Privileges are calculated in `get_nondeleted_recycled_files` above
+            if file and file.calculated_privileges[g.current_user.id].readable:
+                curr_dir = ***ARANGO_USERNAME***
+                id_path_list = file.id_path
+                for id in id_path_list[:-1]:
+                    if id not in curr_dir:
+                        curr_dir[id] = {}
+                    curr_dir = curr_dir[id]
+                # id_path_list[-1] and file.id are the same
+                if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
+                    curr_dir[id_path_list[-1]] = {}
+                else:
+                    curr_dir[id_path_list[-1]] = None
 
         def generate_node_tree(id, children):
             file = db.session.query(Files).get(id)
             if children is None:
                 return {
-                    'data': file,
+                    'data': {
+                        'true_filename': file.true_filename,
+                        'description': file.description,
+                        'mime_type': file.mime_type,
+                        'hash_id': file.hash_id,
+                        'filepath': file.filepath,
+                    },
                     'level': len(file.filepath.split('/')) - 2
                 }
             return {
-                'data': file,
+                'data': {
+                    'true_filename': file.true_filename,
+                    'description': file.description,
+                    'mime_type': file.mime_type,
+                    'hash_id': file.hash_id,
+                    'filepath': file.filepath,
+                },
                 'level': len(file.filepath.split('/')) - 2,
                 'children': [
                     generate_node_tree(id, grandchildren)
@@ -562,8 +576,8 @@ class FileHierarchyView(FilesystemBaseView):
             }
 
         results = [
-            generate_node_tree(project_name, children)
-            for project_name, children in ***ARANGO_USERNAME***.items()
+            generate_node_tree(project_id, children)
+            for project_id, children in ***ARANGO_USERNAME***.items()
         ]
 
         current_app.logger.info(
@@ -573,7 +587,7 @@ class FileHierarchyView(FilesystemBaseView):
                 event_type=LogEventType.FILESYSTEM.value
             ).to_dict()
         )
-        return jsonify(FileHierarchySchema(context={
+        return jsonify(FileHierarchyResponseSchema(context={
             'user_privilege_filter': g.current_user.id,
         }).dump({
             'results': results,

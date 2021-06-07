@@ -105,7 +105,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
         )
 
     @classmethod
-    def user_has_permission_to_projects(cls, user_id: int, projects: List[str]) -> Query:
+    def get_projects_accessible_by_user(cls, user_id: int) -> Query:
         return db.session.query(
             Projects.id
         ).join(

@@ -241,9 +241,24 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def filepath(self):
         current_file = self
         filepath = []
-        while current_file is not None and current_file.parent is not None:
-            filepath.append(current_file.filename)
-            current_file = current_file.parent
+        while current_file is not None and current_file.parent_id is not None:
+            try:
+                filepath.append(current_file.filename)
+                current_file = db.session.query(
+                    Files
+                ).filter(
+                    Files.id == current_file.parent_id
+                ).one()
+            except NoResultFound as e:
+                current_app.logger.error(
+                    f'Could not find parent of file with id: {self.id}',
+                    exc_info=e,
+                    extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+                )
+                raise ServerException(
+                    title=f'Cannot Get Filepath',
+                    message=f'Could not find parent of file {self.filename}.',
+                )
 
         try:
             # Current_file should be the ***ARANGO_USERNAME*** file, so just get the project that points to it
@@ -275,16 +290,39 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         """
         current_file = self
         id_path = []
-        while current_file is not None and current_file.parent is not None:
-            id_path.append(current_file.id)
-            current_file = current_file.parent
+        while current_file is not None and current_file.parent_id is not None:
+            try:
+                id_path.append(current_file.id)
+                current_file = db.session.query(
+                    Files
+                ).filter(
+                    Files.id == current_file.parent_id
+                ).one()
+            except NoResultFound as e:
+                current_app.logger.error(
+                    f'Could not find parent of file with id: {self.id}',
+                    exc_info=e,
+                    extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+                )
+                raise ServerException(
+                    title=f'Cannot Get Filepath',
+                    message=f'Could not find parent of file {self.filename}.',
+                )
+        # the first file in the path should have no parent
+        id_path.append(current_file.id)
+        return id_path[::-1]
 
+    @property
+    def project(self) -> int:
+        """
+        Gets the id of the project this file belongs to
+        """
+        ***ARANGO_USERNAME***_folder = self.id_path[0]
         try:
-            # Current_file should be the ***ARANGO_USERNAME*** file, so just get the project that points to it
-            project_hash = db.session.query(
+            return db.session.query(
                 Projects.id
             ).filter(
-                Projects.***ARANGO_USERNAME***_id == current_file.id
+                Projects.***ARANGO_USERNAME***_id == ***ARANGO_USERNAME***_folder
             ).one()[0]
         except NoResultFound as e:
             current_app.logger.error(
@@ -293,12 +331,9 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                 extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
             )
             raise ServerException(
-                title=f'Cannot Get Filepath',
+                title=f'Cannot Get Project of File',
                 message=f'Could not find project of file {self.filename}.',
             )
-
-        id_path.append(project_hash)
-        return id_path[::-1]
 
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
