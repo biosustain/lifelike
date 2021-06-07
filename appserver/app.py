@@ -299,7 +299,7 @@ def upload_lmdb():
 @click.option('--maps', '-m', multiple=True, type=int)
 @click.option('--filename', '-f', required=True, type=str)
 @click.option('--description', '-d', required=False, type=str)
-def create_user(user_id, filename, description, parent_id, maps):
+def merge_maps(user_id, filename, description, parent_id, maps):
     """
     Merges two or more existing drawing tool maps into a single map.
 
@@ -352,13 +352,6 @@ def create_user(user_id, filename, description, parent_id, maps):
         return min_max_x_y_map
 
     def get_max_width_and_height_of_maps(min_max_x_y_map):
-        """
-        NOTE: This won't get completely accurate results for a couple of reasons:
-            1. If the map is only a single node
-            2. The "bounding" nodes have their own height and width which may exceed the "bounding box"
-        Probably not a huge issue with the current maps, but if we extend this code to be available on production we
-        may need to handle these cases.
-        """
         max_width = 0
         max_height = 0
 
