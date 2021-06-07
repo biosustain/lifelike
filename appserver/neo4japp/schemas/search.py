@@ -4,7 +4,7 @@ from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
 from neo4japp.schemas.fields import SearchQuery
-from neo4japp.schemas.filesystem import RankedFileSchema
+from neo4japp.schemas.filesystem import FileSchema, RankedFileSchema
 
 # ========================================
 # Content Search
@@ -19,8 +19,7 @@ class ContentSearchSchema(CamelCaseSchema):
         required=True,
     )
     types = ma.String(default='', required=False)
-    filepaths = ma.String(default='', required=False)
-    # projects = ma.String(default='', required=False)
+    folders = ma.String(default='', required=False)
     phrase = ma.String(default='', required=False)
     wildcards = ma.String(default='', required=False)
     synonyms = ma.Boolean(default=True, required=False)
@@ -34,7 +33,7 @@ class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
     synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
     dropped_synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
-
+    dropped_folders = fields.List(fields.Nested(FileSchema, only=('hash_id',)))
 
 # ========================================
 # Text Annotation API
