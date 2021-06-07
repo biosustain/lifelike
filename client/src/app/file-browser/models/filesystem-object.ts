@@ -1,9 +1,6 @@
 import moment from 'moment';
 
 import { isNullOrUndefined } from 'util';
-
-
-
 import {
   KnowledgeMap,
   Source,
@@ -18,7 +15,6 @@ import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
-
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
@@ -32,6 +28,7 @@ import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
 const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
+const SANKEY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/sankey';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
 
@@ -166,6 +163,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case DIRECTORY_MIMETYPE:
       case MAP_MIMETYPE:
       case ENRICHMENT_TABLE_MIMETYPE:
+      case SANKEY_MIMETYPE:
       case 'application/pdf':
         return true;
       default:
@@ -297,6 +295,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return 'fa fa-project-diagram';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'fa fa-table';
+      case SANKEY_MIMETYPE:
+        return 'fa fa-file-chart-line';
       case 'application/pdf':
         return 'fa fa-file-pdf';
       default:
@@ -313,6 +313,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return '\uf542';
       case ENRICHMENT_TABLE_MIMETYPE:
         return '\uf0ce';
+      case SANKEY_MIMETYPE:
+        return '\uf659';
       case 'application/pdf':
         return '\uf1c1';
       default:
@@ -442,6 +444,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this;
   }
 
+  get new(): boolean {
+    return this.creationDate === this.modifiedDate;
+  }
+
   filterChildren(filter: string) {
     const normalizedFilter = this.normalizeFilter(filter);
     this.children.filter = normalizedFilter.length ? (item: FilesystemObject) => {
@@ -462,6 +468,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'files', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
+      case SANKEY_MIMETYPE:
+        return ['/projects', projectName, 'sankey', this.hashId];
       default:
         return ['/files', this.hashId];
     }

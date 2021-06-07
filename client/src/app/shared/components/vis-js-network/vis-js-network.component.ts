@@ -6,13 +6,25 @@ import { DataSet } from 'vis-data';
 import { Color, Edge, Network, Node, Options } from 'vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
-import { uuidv4 } from 'app/shared/utils';
+import { toTitleCase, uuidv4 } from 'app/shared/utils';
 
+
+enum networkEdgeSmoothers {
+  DYNAMIC = 'dynamic',
+  CONTINUOUS = 'continuous',
+  DISCRETE = 'discrete',
+  DIAGONAL_CROSS = 'diagonalCross',
+  STRAIGHT_CROSS = 'straightCross',
+  HORIZONTAL = 'horizontal',
+  VERTICAL = 'vertical',
+  CUBIC_BEZIER = 'cubicBezier',
+}
 
 enum networkSolvers {
   BARNES_HUT = 'barnesHut',
   FORCE_ATLAS_2_BASED = 'forceAtlas2Based',
-  HIERARCHICHAL_REPULSION = 'hierarchicalRepulsion',
+  // Disabling this for now, as it seems to require additional configuration that we cannot assume will be present.
+  // HIERARCHICHAL_REPULSION = 'hierarchicalRepulsion',
   REPULSION = 'repulsion'
 }
 
@@ -26,11 +38,24 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.networkConfig = config;
 
     if (!isNullOrUndefined(config.physics)) {
-      this.currentSolver = this.solverMap.get(config.physics.solver || networkSolvers.BARNES_HUT);
+      this.currentSolver = config.physics.solver || networkSolvers.BARNES_HUT;
+
+      if (!isNullOrUndefined(config.physics[this.currentSolver])) {
+        this.currentCentralGravity = config.physics[this.currentSolver].centralGravity;
+      } else {
+        this.currentCentralGravity = 0.1;
+      }
+
       this.physicsEnabled = config.physics.enabled || true;
     } else {
-      this.currentSolver = this.solverMap.get(networkSolvers.BARNES_HUT);
+      this.setDefaultPhysics();
       this.physicsEnabled = true;
+    }
+
+    // `config.edges.smooth` can be of either type boolean or type object. Here we're just checking that it is an object before trying to
+    // access its properties.
+    if (!isNullOrUndefined(config.edges.smooth) && typeof config.edges.smooth === 'object') {
+      this.currentSmooth = config.edges.smooth.type || networkEdgeSmoothers.DYNAMIC;
     }
 
     if (!isNullOrUndefined(this.networkGraph)) {
@@ -59,6 +84,11 @@ export class VisJsNetworkComponent implements AfterViewInit {
   solverMap: Map<string, string>;
   currentSolver: string;
 
+  smoothMap: Map<string, string>;
+  currentSmooth: string;
+
+  currentCentralGravity: number;
+
   currentSearchIndex: number;
   searchResults: Node[];
   searchQuery: string;
@@ -79,7 +109,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.physicsEnabled = true;
 
     this.setupSolverMap();
-    this.currentSolver = this.solverMap.get(networkSolvers.BARNES_HUT);
+    this.setupSmoothMap();
+
+    this.setDefaultPhysics();
+    this.currentSmooth = networkEdgeSmoothers.DYNAMIC;
 
     this.currentSearchIndex = 0;
     this.searchResults = [];
@@ -92,16 +125,37 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.createNetwork();
   }
 
+  setDefaultPhysics() {
+    this.currentSolver = networkSolvers.BARNES_HUT;
+    this.currentCentralGravity = 0.1;
+  }
+
   /**
    * Defines solverMap Map object, where the keys are Vis.js accepted solver types, and the values are UI appropriate strings.
    */
   setupSolverMap() {
     this.solverMap = new Map<string, string>();
-    this.solverMap.set(networkSolvers.BARNES_HUT, 'Barnes Hut');
-    this.solverMap.set(networkSolvers.FORCE_ATLAS_2_BASED, 'Force Atlas');
-    // Disabling this for now, as it seems to require additional configuration that we cannot assume will be present.
-    // this.solverMap.set(networkSolvers.HIERARCHICHAL_REPULSION, 'Hierarchical Repulsion');
-    this.solverMap.set(networkSolvers.REPULSION, 'Repulsion');
+
+    for (const solver in networkSolvers) {
+      // This if suppresses the “for ... in ... statements must be filtered with an if statement”
+      if (networkSolvers[solver]) {
+        this.solverMap.set(networkSolvers[solver], toTitleCase(solver.split('_').join(' ')));
+      }
+    }
+  }
+
+  /**
+   * Defines smoothMap Map object, where the keys are Vis.js accepted edge smooth types, and the values are UI appropriate strings.
+   */
+   setupSmoothMap() {
+    this.smoothMap = new Map<string, string>();
+
+    for (const solver in networkEdgeSmoothers) {
+      // This if suppresses the “for ... in ... statements must be filtered with an if statement”
+      if (networkEdgeSmoothers[solver]) {
+        this.smoothMap.set(networkEdgeSmoothers[solver], toTitleCase(solver.split('_').join(' ')));
+      }
+    }
   }
 
   /**
@@ -147,19 +201,24 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   togglePhysics() {
     this.physicsEnabled = !this.physicsEnabled;
-    this.networkGraph.setOptions({
+    this.networkConfig = {
+      ...this.networkConfig,
       physics: {
-        ...this.networkConfig.physics,
-        enabled: this.physicsEnabled
-      },
+        enabled: this.physicsEnabled,
+      }
+    };
+
+    this.networkGraph.setOptions({
+        ...this.networkConfig,
     });
   }
 
   /**
-   * Udates the Vis.js network to use the provided layout solver. Also updates the currently selected solver, which is reflected in the UI.
+   * Updates the Vis.js network to use the provided layout solver. Also updates the currently selected solver, which is reflected in the UI.
    * @param layoutType string representing the newly selected layout solver, expected to be one of networkSolvers
    */
   updateNetworkLayout(layoutType: string) {
+    this.currentSolver = layoutType;
     this.physicsEnabled = true;
     this.networkConfig = {
       ...this.networkConfig,
@@ -168,8 +227,63 @@ export class VisJsNetworkComponent implements AfterViewInit {
         solver: layoutType,
       }
     };
-    this.currentSolver = this.solverMap.get(layoutType);
     this.createNetwork();
+  }
+
+  /**
+   * Updates the Vis.js network to use the provided edge smoother. Also updates the currently selected smoother, which is reflected in the
+   * UI.
+   * @param smoothType string representing the newly selected layout smoother, expected to be one of networkEdgeSmoothers
+   */
+   updateNetworkEdgeSmooth(smoothType: string) {
+    this.currentSmooth = smoothType;
+
+    let smooth = {
+      enabled: true,
+      type: smoothType,
+      roundness: 0.5,
+    };
+    if (typeof this.networkConfig.edges.smooth === 'object') {
+      smooth = {
+        ...this.networkConfig.edges.smooth,
+        type: smoothType,
+      };
+    }
+
+    this.networkConfig = {
+      ...this.networkConfig,
+      edges: {
+        smooth
+      }
+    };
+
+    this.networkGraph.setOptions({
+        ...this.networkConfig,
+    });
+  }
+
+  updateNetworkCentralGravity(centralGravity: string) {
+    this.currentCentralGravity = parseFloat(centralGravity);
+    this.updateSolverProps();
+  }
+
+  updateSolverProps() {
+    const solver = {
+      centralGravity: this.currentCentralGravity,
+    };
+
+    if (!isNullOrUndefined(this.networkConfig.physics[this.currentSolver])) {
+      this.networkConfig.physics[this.currentSolver] = {
+        ...this.networkConfig.physics[this.currentSolver],
+        ...solver
+      };
+    } else {
+      this.networkConfig.physics[this.currentSolver] = solver;
+    }
+
+    this.networkGraph.setOptions({
+        ...this.networkConfig,
+    });
   }
 
   /**

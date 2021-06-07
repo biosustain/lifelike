@@ -1,0 +1,50 @@
+<div class="border-bottom border-secondary pb-3 mb-3">
+    <form [formGroup]="filtersForm"
+          class="d-flex flex-column justify-content-between">
+        <fieldset class="fieldset-properties mt-2">
+            <legend placement="top left right"
+                    container="body"
+                    ngbTooltip="Click a checkbox to filter annotations of that type">Legend
+            </legend>
+
+            <div *ngFor="let keyvalue of nodeCategories | keyvalue">
+                <div *ngIf="disabledTypeMap.get(keyvalue.key); else notDisabled">
+                    <div class="custom-control custom-checkbox">
+                        <input [id]="id + '-legend-filter-' + keyvalue.key"
+                               class="custom-control-input"
+                               type="checkbox"
+                               value="1"
+                               [checked]="isTypeVisible(keyvalue.key)"
+                               (change)="changeTypeVisibility(keyvalue.key)">
+                        <label class="custom-control-label text-nowrap"
+                               [for]="id + '-legend-filter-' + keyvalue.key"
+                               [autoClose]="false"
+                               container="body"
+                               placement="right bottom top"
+                               ngbTooltip="Entities of this type are not visible with the filters above.">
+                            <span class="entity-type-legend"
+                                  [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+                            <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
+                        </label>
+                    </div>
+                </div>
+                <ng-template #notDisabled>
+                    <div class="custom-control custom-checkbox">
+                        <input [id]="id + '-legend-filter-' + keyvalue.key"
+                               class="custom-control-input"
+                               type="checkbox"
+                               value="1"
+                               [checked]="isTypeVisible(keyvalue.key)"
+                               (change)="changeTypeVisibility(keyvalue.key)">
+                        <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
+                            <span class="entity-type-legend"
+                                  [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+                        </label>
+                    </div>
+                </ng-template>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+
