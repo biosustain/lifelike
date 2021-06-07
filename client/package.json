@@ -9,7 +9,7 @@
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "postinstall": "cd .. && husky install && husky add .husky/pre-commit \"cd client && yarn lint-staged\""
+    "postinstall": "cd .. && mkdir -p .husky && husky install && husky add .husky/pre-commit \"cd client && yarn lint-staged\""
   },
   "lint-staged": {
     "*.ts": "tslint",
