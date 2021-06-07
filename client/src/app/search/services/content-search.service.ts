@@ -33,11 +33,15 @@ export class ContentSearchService {
     );
   }
 
-  search(request: ContentSearchRequest): Observable<ContentSearchResponse> {
-    return this.http.post<ContentSearchResponseData>(
+  search(request: Record<keyof ContentSearchRequest, string>): Observable<ContentSearchResponse> {
+    return this.http.get<ContentSearchResponseData>(
       `/api/search/content`,
-      request,
-      this.apiService.getHttpOptions(true),
+      {
+        ...this.apiService.getHttpOptions(true),
+        params: {
+          ...request
+        }
+      },
     ).pipe(
       map(data => {
         return {

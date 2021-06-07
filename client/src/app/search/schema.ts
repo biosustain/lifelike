@@ -11,7 +11,7 @@ import { RankedItem, ResultList, StandardRequestOptions } from 'app/shared/schem
 
 export interface ContentSearchRequest extends StandardRequestOptions {
   types?: string[];
-  projects?: string[];
+  folders?: string[];
   phrase?: string;
   wildcards?: string;
   synonyms?: boolean;

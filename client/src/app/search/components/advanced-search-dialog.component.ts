@@ -41,6 +41,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
 
   initialCheckedNodes: string[] = [];
   fileHierarchyTree: TreeNode<FileNodeData>[] = [];
+  hierarchyLoaded = false;
 
   resetHierarchyTreeSubject = new Subject<boolean>();
 
@@ -63,6 +64,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   ngOnInit() {
     this.filesystemService.getHierarchy(true).subscribe((resp) => {
       this.fileHierarchyTree = resp.results;
+      this.hierarchyLoaded = true;
     });
   }
 

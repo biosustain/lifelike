@@ -197,7 +197,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return advancedParams;
   }
 
-  serializeParams(params: ContentSearchOptions, restartPagination = false) {
+  serializeParams(params: ContentSearchOptions, restartPagination = false): Record<keyof ContentSearchOptions, string> {
     return {
       ...serializePaginatedParams(params, restartPagination),
       ...this.serializeAdvancedParams(params),
@@ -324,10 +324,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     q = q.replace(/\btype:\S*/g, '');
 
     // Remove 'folders' from q and add to the folders option of the advancedParams
-    const folderMatches = q.match(/\bfolder:\S*/g);
-    const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
-    advancedParams.folders = extractedFilepaths;
-    q = q.replace(/\bfolder:\S*/g, '');
+    // const folderMatches = q.match(/\bfolder:\S*/g);
+    // const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
+    // advancedParams.folders = extractedFilepaths;
+    // q = q.replace(/\bfolder:\S*/g, '');
+    // TODO: If we ever want to put folders back into the query string, uncomment the above
+    advancedParams.folders = this.params.folders || [];
 
     // Remove the first phrase from q and add to the phrase option of the advancedParams
     const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
