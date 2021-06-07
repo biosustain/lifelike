@@ -31,6 +31,15 @@
 <!--                            </button>-->
 <!--                        </div>-->
 <!--                    </div>-->
+      <div ngbDropdown class="d-inline-block">
+        <button class="btn btn-primary" ngbDropdownToggle>
+          {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem (click)="selectTrace(trace)"
+                  *ngFor="let trace of networkTraces">{{trace.description}}</button>
+        </div>
+      </div>
                     <div ngbDropdown class="d-inline-block mr-4" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
@@ -48,7 +57,7 @@
                       direction="horizontal"
                       [gutterSize]="5">
                 <as-split-area [order]="0">
-                    <app-sankey *ngIf="sankeyData" [data]="sankeyData">
+                    <app-sankey *ngIf="filteredSankeyData" [data]="filteredSankeyData">
                     </app-sankey>
                 </as-split-area>
                 <as-split-area [visible]="filtersPanelOpened"
@@ -63,12 +72,12 @@
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-                        <app-filter-panel
-                                *ngIf="sankeyData"
-                                (filter)="changeFilter($event)"
-                                [paths]="paths"
-                                [nodeCategories]="nodesColorMap"
-                        ></app-filter-panel>
+<!--                        <app-filter-panel-->
+<!--                                *ngIf="sankeyData"-->
+<!--                                (filter)="changeFilter($event)"-->
+<!--                                [paths]="allTraces"-->
+<!--                                [nodeCategories]="nodesColorMap"-->
+<!--                        ></app-filter-panel>-->
                     </div>
                 </as-split-area>
             </as-split>

@@ -68,10 +68,7 @@
                     "edges": {
                       "type": "array",
                       "items": {
-                        "type": "array",
-                        "items": {
-                          "type": "integer"
-                        }
+                        "type": "integer"
                       }
                     },
                     "detail_edges": {
@@ -150,7 +147,29 @@
             "enum": [
               "Chemical",
               "Protein",
-              "Entity"
+              "Entity",
+              "Reaction",
+              "Gene",
+              "Compound",
+              "Species",
+              "Study",
+              "Pathway",
+              "Phenotype",
+              "Anatomy",
+              "Lab Strain",
+              "Note",
+              "Cause",
+              "Observation",
+              "Association",
+              "Effect",
+              "Correlation",
+              "Map",
+              "Link",
+              "Lab Sample",
+              "Food",
+              "Phenomena",
+              "Company",
+              "Mutation"
             ]
           },
           "oldStId": {
@@ -213,11 +232,7 @@
         },
         "additionalProperties": true,
         "required": [
-          "id",
-          "labels",
-          "description",
-          "schemaClass",
-          "type"
+          "id"
         ]
       }
     },
@@ -267,10 +282,7 @@
               "types": {
                 "type": "array",
                 "items": {
-                  "type": "string",
-                  "enum": [
-                    "output"
-                  ]
+                  "type": "string"
                 }
               },
               "nodes": {
@@ -297,13 +309,13 @@
             "type": "number"
           },
           "1/pageUpdown": {
-            "type": "number"
+            "type": ["number", "string"]
           },
           "pageMetab": {
             "type": "number"
           },
           "1/pageMetab": {
-            "type": "number"
+            "type": ["number", "string"]
           },
           "NLG": {
             "type": "string"
@@ -316,8 +328,7 @@
         "required": [
           "description",
           "source",
-          "target",
-          "key"
+          "target"
         ]
       }
     }

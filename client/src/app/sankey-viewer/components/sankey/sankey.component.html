@@ -4,9 +4,9 @@
 >
     <svg #svg>
         <g #g>
-        <g #links class="links"></g>
-        <g #nodes class="nodes"></g>
-            </g>
+            <g #links class="links"></g>
+            <g #nodes class="nodes"></g>
+        </g>
     </svg>
     <small *ngIf="selected">
         Selected path: {{ selected?.path }}
@@ -21,23 +21,31 @@
     </div>
     <ng-template #popoverTmpl let-link="link" let-node="node">
         <ng-container *ngIf="node">
-            <span>{{node.displayName}}</span>
+            <span>{{node.description}}</span>
             <dl>
-                <dt>Names:</dt>
-                <dd>
-                    <ol>
-                        <li *ngFor="let name of node.name">{{name}}</li>
-                    </ol>
-                </dd>
+                <ng-container *ngIf="node.labels">
+                    <dt>Labels:</dt>
+                    <dd>
+                        <ul>
+                            <li *ngFor="let label of link.labels">{{label}}</li>
+                        </ul>
+                    </dd>
+                </ng-container>
             </dl>
         </ng-container>
         <ng-container *ngIf="link">
             <dl>
                 <dt>Path:</dt>
-                <dd>{{link.path}}</dd>
+                <dd>{{link.description}}</dd>
                 <ng-container *ngIf="link.folded">
                     <dt>Folded:</dt>
                     <dd>True</dd>
+                </ng-container>
+                <ng-container *ngIf="link.trace">
+                    <dt>Trace index:</dt>
+                    <dd>{{ link.trace }}</dd>
+                    <dt>Trace group:</dt>
+                    <dd>{{ link.trace_group }}</dd>
                 </ng-container>
             </dl>
         </ng-container>

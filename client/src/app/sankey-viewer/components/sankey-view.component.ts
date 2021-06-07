@@ -9,9 +9,10 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { createMapToColor, SankeyGraph } from './sankey/utils';
+import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
+
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -19,7 +20,6 @@ import * as d3Sankey from 'd3-sankey-circular';
   styleUrls: ['./sankey-view.component.scss'],
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
-
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -45,6 +45,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                            }) => {
 
       this.sankeyData = this.parseData(content);
+      this.applyFilter();
       this.object = object;
       this.emitModuleProperties();
 
@@ -54,6 +55,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadFromUrl();
   }
+
+  networkTraces;
+  selectedTrace;
 
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
 
@@ -74,8 +78,38 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   filteredSankeyData;
   filter;
 
-  paths = new Set();
+  allTraces = new Set();
   nodesColorMap = new Map();
+
+  inNodesId;
+  outNodesId;
+
+  linksColorMap;
+
+  selectTrace(trace) {
+    this.linksColorMap = new Map(trace.traces.map((t, i) => [t, christianColors[i]]));
+    this.selectedTrace = trace;
+    const {links, nodes, graph: {node_sets}} = this.sankeyData;
+    const allEdges = trace.traces.reduce((o, itrace, idx) => {
+      const color = this.linksColorMap.get(itrace);
+      const ilinks = itrace.edges.map(iidx => {
+        const link = {
+          ...links[iidx],
+          schemaClass: color,
+          trace: idx,
+          trace_group: itrace.group,
+        };
+        link.id += itrace;
+        return link;
+      });
+      return o.concat(ilinks);
+    }, []);
+    this.filteredSankeyData = this.linkGraph({
+      nodes,
+      links: allEdges,
+      inNodes: node_sets[trace.sources]
+    });
+  }
 
   resolveFilteredNodesLinks(nodes) {
     let newLinks = [];
@@ -97,7 +131,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             source: sourceNode,
             target: targetNode,
             value: ((sl.value + tl.value) / 2) || 1,
-            path: `${tl.path} => ${node.displayName} => ${sl.path}`
+            path: `${tl.path} => ${nodeLabelAccessor(node)} => ${sl.path}`
           };
           iinewLinks.push(newLink);
           if (!tIter) {
@@ -120,6 +154,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       oldLinks
     };
   }
+
 
   changeFilter(filter = d => d) {
     this.filter = filter;
@@ -161,32 +196,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
-  parseData({links, graph, nodes, ...data}) {
-    const traceIdAccessor = trace => trace.group;
-    const traces = graph.trace_networks.reduce((o, n) => o.concat(n.traces), []);
-    this.paths = new Set(traces.map(traceIdAccessor));
-    const linksColorMap = createMapToColor(this.paths);
-    traces.forEach(path => {
-      const color = linksColorMap.get(traceIdAccessor(path));
-      path.edges.forEach(linkIdx => {
-        links[linkIdx].schemaClass = color;
-      });
-    });
-    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
-    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
-    this.nodesColorMap = createMapToColor(
-      nodeCategories,
-      {
-        hue: () => 0,
-        lightness: (i, n) => (i + 0.5) / n,
-        saturation: () => 0
-      }
-    );
-    nodes.forEach(node => {
-      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
-    });
-    // link graph
-    console.log(d3Sankey);
+  applyFilter() {
+    if (this.selectedTrace) {
+      this.selectTrace(this.selectedTrace);
+    } else {
+      this.filteredSankeyData = this.sankeyData;
+    }
+  }
+
+  linkGraph({nodes, links, inNodes}) {
     links.forEach(l => l.value = 1);
     d3Sankey.sankeyCircular()
       .nodeId(n => n.id)
@@ -195,43 +213,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10)
       ({nodes, links});
-    const nodesToTraverse = nodes.reduce((o, n) => {
-      if (graph.node_sets.updown.includes(n.id)) {
+    nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
+      if (inNodes.includes(n.id)) {
         n.value = 1;
-        o.push(n);
       } else {
-        n.value = 0.001;
+        n.value = 0;
       }
-      return o;
-    }, []);
-    const traverseNodes = inodes => {
-      const ilinks = inodes.reduce((o, n) => {
-        return o.concat(n.sourceLinks);
-      }, []);
-      traverseLinks(ilinks);
-    };
-    const traverseLinks = ilinks => {
-      const inodes = new Set();
-      ilinks.forEach(link => {
-        const source = link.source;
-        const sourceValue = source.value;
-        link.value = sourceValue / source.sourceLinks.length;
-        link.target.value += link.value;
-        if (!link.circular) {
-          inodes.add(link.target);
-        }
+      n.value = n.targetLinks.reduce((a, l) => a + l.value, n.value || 0);
+      const outFrac = n.value / n.sourceLinks.length;
+      n.sourceLinks.forEach(l => {
+        l.value = outFrac;
       });
-      if (inodes.size) {
-        traverseNodes([...inodes]);
-      }
-    };
-    traverseNodes(nodesToTraverse);
+    });
     return {
-      ...data,
-      nodes: nodes.map(
+      nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(
         ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
-          ...node,
-          initialNode: Object.freeze(node)
+          ...node
         })),
       links: links.map(
         ({
@@ -253,9 +250,37 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           source: source.id,
           target: target.id,
           id: uuidv4(),
-          initialLink: Object.freeze(link),
           value
         }))
+    };
+  }
+
+  parseData({links, graph, nodes, ...data}) {
+    this.networkTraces = graph.trace_networks;
+    this.selectedTrace = this.networkTraces[0];
+    // set colors for all node types
+    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
+    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
+    this.nodesColorMap = createMapToColor(
+      nodeCategories,
+      {
+        hue: () => 0,
+        lightness: (i, n) => (i + 0.5) / n,
+        saturation: () => 0
+      }
+    );
+    nodes.forEach(node => {
+      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
+    });
+    return {
+      ...data,
+      graph,
+      // link graph
+      ...this.linkGraph({
+        links,
+        nodes,
+        inNodes: graph.node_sets.updown
+      })
     } as SankeyGraph;
   }
 
