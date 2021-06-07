@@ -9,9 +9,10 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { createMapToColor, SankeyGraph } from './sankey/utils';
+import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
+
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -86,15 +87,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   linksColorMap;
 
   selectTrace(trace) {
+    this.linksColorMap = new Map(trace.traces.map((t, i) => [t, christianColors[i]]));
     this.selectedTrace = trace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const allEdges = trace.traces.reduce((o, itrace, idx) => {
       const color = this.linksColorMap.get(itrace);
       const ilinks = itrace.edges.map(iidx => {
-        const link = links[iidx];
-        link.schemaClass = color;
-        link.trace = idx;
-        link.trace_group = itrace.group;
+        const link = {
+          ...links[iidx],
+          schemaClass: color,
+          trace: idx,
+          trace_group: itrace.group,
+        };
+        link.id += itrace;
         return link;
       });
       return o.concat(ilinks);
@@ -126,7 +131,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             source: sourceNode,
             target: targetNode,
             value: ((sl.value + tl.value) / 2) || 1,
-            path: `${tl.path} => ${node.displayName} => ${sl.path}`
+            path: `${tl.path} => ${nodeLabelAccessor(node)} => ${sl.path}`
           };
           iinewLinks.push(newLink);
           if (!tIter) {
@@ -208,37 +213,18 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10)
       ({nodes, links});
-    const nodesToTraverse = nodes.reduce((o, n) => {
+    nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
       if (inNodes.includes(n.id)) {
         n.value = 1;
-        o.push(n);
       } else {
-        n.value = 0.001;
+        n.value = 0;
       }
-      return o;
-    }, []);
-    const traverseNodes = inodes => {
-      const ilinks = inodes.reduce((o, n) => {
-        return o.concat(n.sourceLinks);
-      }, []);
-      traverseLinks(ilinks);
-    };
-    const traverseLinks = ilinks => {
-      const inodes = new Set();
-      ilinks.forEach(link => {
-        const source = link.source;
-        const sourceValue = source.value;
-        link.value = sourceValue / source.sourceLinks.length;
-        link.target.value += link.value;
-        if (!link.circular) {
-          inodes.add(link.target);
-        }
+      n.value = n.targetLinks.reduce((a, l) => a + l.value, n.value || 0);
+      const outFrac = n.value / n.sourceLinks.length;
+      n.sourceLinks.forEach(l => {
+        l.value = outFrac;
       });
-      if (inodes.size) {
-        traverseNodes([...inodes]);
-      }
-    };
-    traverseNodes(nodesToTraverse);
+    });
     return {
       nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(
         ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
@@ -270,19 +256,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   parseData({links, graph, nodes, ...data}) {
-    // set colors for all traces
-    const traceIdAccessor = trace => trace;
     this.networkTraces = graph.trace_networks;
     this.selectedTrace = this.networkTraces[0];
-    const traces = graph.trace_networks.reduce((o, n) => o.concat(n.traces), []);
-    this.allTraces = new Set(traces.map(traceIdAccessor));
-    this.linksColorMap = createMapToColor(this.allTraces);
-    traces.forEach(path => {
-      const color = this.linksColorMap.get(traceIdAccessor(path));
-      path.edges.forEach(linkIdx => {
-        links[linkIdx].schemaClass = color;
-      });
-    });
     // set colors for all node types
     const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
     const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
