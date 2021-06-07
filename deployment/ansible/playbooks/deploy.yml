@@ -11,6 +11,12 @@
       tags: ["docker"]
 
   tasks:
+    - name: Install fail2ban
+      apt:
+        update_cache: yes
+        pkg:
+          - fail2ban
+
     - name: Create Docker Networks
       docker_network:
         name: "{{ item }}"
