@@ -5,19 +5,17 @@ import pytest
 from os import path, remove, walk
 
 from neo4japp.database import DBConnection, GraphConnection
-from neo4japp.models import FileContent, GlobalList
 from neo4japp.services.annotations import (
     AnnotationService,
     AnnotationDBService,
     AnnotationGraphService,
     EntityRecognitionService,
     LMDBService,
-    ManualAnnotationService
+    ManualAnnotationService,
+    Tokenizer
 )
 from neo4japp.services.annotations.constants import (
     DatabaseType,
-    EntityType,
-    ManualAnnotationType,
     OrganismCategory,
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
@@ -84,6 +82,11 @@ def get_manual_annotation_service(graph_service, lmdb_service, request):
     request.addfinalizer(teardown)
 
     return ManualAnnotationService(graph=graph_service)
+
+
+@pytest.fixture(scope='function')
+def get_annotation_tokenizer():
+    return Tokenizer()
 
 
 @pytest.fixture(scope='function')

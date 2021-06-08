@@ -11,7 +11,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
-from neo4japp.services.annotations.pipeline import read_parser_response
+from neo4japp.services.annotations.util import process_parsed_content
 
 
 # reference to this directory
@@ -37,6 +37,7 @@ file system schema, as that gets changed.
 
 
 def annotate_pdf(
+    tokenizer,
     annotation_service,
     entity_service,
     parsed,
@@ -57,7 +58,7 @@ def annotate_pdf(
     entity_results = entity_service.identify(
         excluded_annotations=excluded_annotations,
         custom_annotations=custom_annotations,
-        tokens=parsed,
+        tokens=tokenizer.create(parsed),
         nlp_results=nlp_results
     )
     return annotation_service.create_annotations(
@@ -263,19 +264,22 @@ def test_fix_conflicting_annotations_different_types(
 def test_gene_organism_escherichia_coli_pdf(
     gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(directory, 'pdf_samples/annotations_test/ecoli_gene_test.json')
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -305,19 +309,22 @@ def test_gene_organism_escherichia_coli_pdf(
 def test_protein_organism_escherichia_coli_pdf(
     protein_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(directory, 'pdf_samples/annotations_test/ecoli_protein_test.json')
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -332,11 +339,13 @@ def test_protein_organism_escherichia_coli_pdf(
 def test_local_inclusion_organism_gene_crossmatch(
     default_lmdb_setup,
     mock_general_human_genes,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -372,8 +381,9 @@ def test_local_inclusion_organism_gene_crossmatch(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed,
@@ -386,11 +396,13 @@ def test_local_inclusion_organism_gene_crossmatch(
 
 def test_local_exclusion_organism_gene_crossmatch(
     default_lmdb_setup,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -421,8 +433,9 @@ def test_local_exclusion_organism_gene_crossmatch(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed,
@@ -436,11 +449,13 @@ def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
     human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -449,8 +464,9 @@ def test_human_gene_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -470,11 +486,13 @@ def test_human_gene_pdf(
 
 def test_foods_pdf(
     food_lmdb_setup,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -483,8 +501,9 @@ def test_foods_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -501,11 +520,13 @@ def test_foods_pdf(
 
 def test_anatomy_pdf(
     anatomy_lmdb_setup,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -514,8 +535,9 @@ def test_anatomy_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -540,6 +562,7 @@ def test_anatomy_pdf(
 def test_genes_vs_proteins(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service,
     index,
@@ -547,14 +570,16 @@ def test_genes_vs_proteins(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(directory, fpath)
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -662,11 +687,13 @@ def test_fix_false_positive_protein_annotations(
 def test_gene_annotation_crossmatch_human_fish(
     fish_gene_lmdb_setup,
     mock_gene_to_organism_crossmatch_human_fish,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -675,8 +702,9 @@ def test_gene_annotation_crossmatch_human_fish(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -690,11 +718,13 @@ def test_gene_annotation_crossmatch_human_fish(
 def test_gene_annotation_crossmatch_human_rat(
     human_rat_gene_lmdb_setup,
     mock_gene_to_organism_crossmatch_human_rat,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -703,8 +733,9 @@ def test_gene_annotation_crossmatch_human_rat(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -720,11 +751,13 @@ def test_gene_annotation_crossmatch_human_rat(
 def test_global_excluded_chemical_annotations(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
@@ -734,8 +767,9 @@ def test_global_excluded_chemical_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -748,11 +782,13 @@ def test_global_excluded_chemical_annotations(
 def test_global_excluded_compound_annotations(
     default_lmdb_setup,
     mock_compound_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_compounds = mock_compound_exclusion
 
     pdf = path.join(
@@ -762,8 +798,9 @@ def test_global_excluded_compound_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -776,11 +813,13 @@ def test_global_excluded_compound_annotations(
 def test_global_excluded_disease_annotations(
     default_lmdb_setup,
     mock_disease_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_diseases = mock_disease_exclusion
 
     pdf = path.join(
@@ -790,8 +829,9 @@ def test_global_excluded_disease_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -805,11 +845,13 @@ def test_global_excluded_disease_annotations(
 def test_global_excluded_gene_annotations(
     default_lmdb_setup,
     mock_gene_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_genes = mock_gene_exclusion
 
     pdf = path.join(
@@ -819,8 +861,9 @@ def test_global_excluded_gene_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -833,11 +876,13 @@ def test_global_excluded_gene_annotations(
 def test_global_excluded_phenotype_annotations(
     default_lmdb_setup,
     mock_phenotype_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_phenotypes = mock_phenotype_exclusion
 
     pdf = path.join(
@@ -847,8 +892,9 @@ def test_global_excluded_phenotype_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -861,11 +907,13 @@ def test_global_excluded_phenotype_annotations(
 def test_global_excluded_protein_annotations(
     default_lmdb_setup,
     mock_protein_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_proteins = mock_protein_exclusion
 
     pdf = path.join(
@@ -875,8 +923,9 @@ def test_global_excluded_protein_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -889,11 +938,13 @@ def test_global_excluded_protein_annotations(
 def test_global_excluded_species_annotations(
     default_lmdb_setup,
     mock_species_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_species = mock_species_exclusion
 
     pdf = path.join(
@@ -903,8 +954,9 @@ def test_global_excluded_species_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -917,11 +969,13 @@ def test_global_excluded_species_annotations(
 def test_global_exclusions_does_not_interfere_with_other_entities(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
     entity_service.excluded_chemicals = mock_global_chemical_exclusion
 
     pdf = path.join(
@@ -931,8 +985,9 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -948,11 +1003,13 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 def test_global_chemical_inclusion_annotation(
     default_lmdb_setup,
     mock_global_chemical_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -961,8 +1018,9 @@ def test_global_chemical_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -976,11 +1034,13 @@ def test_global_chemical_inclusion_annotation(
 def test_global_compound_inclusion_annotation(
     default_lmdb_setup,
     mock_global_compound_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -989,8 +1049,9 @@ def test_global_compound_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1007,11 +1068,13 @@ def test_global_gene_inclusion_annotation(
     mock_global_gene_inclusion,
     mock_get_gene_ace2_for_global_gene_inclusion,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1020,8 +1083,9 @@ def test_global_gene_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1037,11 +1101,13 @@ def test_global_gene_inclusion_annotation(
 def test_global_disease_inclusion_annotation(
     default_lmdb_setup,
     mock_global_disease_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1050,8 +1116,9 @@ def test_global_disease_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1065,11 +1132,13 @@ def test_global_disease_inclusion_annotation(
 def test_global_phenomena_inclusion_annotation(
     default_lmdb_setup,
     mock_global_phenomena_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1078,8 +1147,9 @@ def test_global_phenomena_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1093,11 +1163,13 @@ def test_global_phenomena_inclusion_annotation(
 def test_global_phenotype_inclusion_annotation(
     default_lmdb_setup,
     mock_global_phenotype_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1106,8 +1178,9 @@ def test_global_phenotype_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1121,11 +1194,13 @@ def test_global_phenotype_inclusion_annotation(
 def test_global_protein_inclusion_annotation(
     default_lmdb_setup,
     mock_global_protein_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1134,8 +1209,9 @@ def test_global_protein_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1149,11 +1225,13 @@ def test_global_protein_inclusion_annotation(
 def test_global_species_inclusion_annotation(
     default_lmdb_setup,
     mock_global_species_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1162,8 +1240,9 @@ def test_global_species_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1178,11 +1257,13 @@ def test_global_species_inclusion_annotation(
 def test_primary_organism_strain(
     bola_human_monkey_gene,
     mock_get_gene_specified_strain,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1193,8 +1274,9 @@ def test_primary_organism_strain(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1219,11 +1301,13 @@ def test_primary_organism_strain(
 def test_no_annotation_for_abbreviation(
     abbreviation_lmdb_setup,
     mock_gene_organism_abbrev_test,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1232,8 +1316,9 @@ def test_no_annotation_for_abbreviation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed,
@@ -1254,11 +1339,13 @@ def test_no_annotation_for_abbreviation(
 def test_delta_gene_deletion_detected(
     gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1267,8 +1354,9 @@ def test_delta_gene_deletion_detected(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1283,11 +1371,13 @@ def test_delta_gene_deletion_detected(
 def test_gene_primary_name(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1296,8 +1386,9 @@ def test_gene_primary_name(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1309,6 +1400,7 @@ def test_gene_primary_name(
 
 def test_user_source_database_input_priority(
     mock_global_chemical_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
@@ -1325,6 +1417,7 @@ def test_user_source_database_input_priority(
 
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1333,8 +1426,9 @@ def test_user_source_database_input_priority(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1352,11 +1446,13 @@ def test_global_inclusion_normalized_already_in_lmdb(
     mock_global_gene_inclusion,
     mock_gene_to_organism_il8_human_gene,
     mock_get_gene_IL8_CXCL8_for_global_gene_inclusion,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1365,8 +1461,9 @@ def test_global_inclusion_normalized_already_in_lmdb(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1378,11 +1475,13 @@ def test_global_inclusion_normalized_already_in_lmdb(
 def test_gene_matched_to_organism_before_if_closest_is_too_far(
     gene_organism_matching_use_organism_before_lmdb_setup,
     mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1391,8 +1490,9 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed
@@ -1409,11 +1509,13 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
 def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism(
     gene_organism_matching_use_organism_before_lmdb_setup,
     mock_get_gene_to_organism_match_using_organism_before,
+    get_annotation_tokenizer,
     get_annotation_service,
     get_entity_service
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    tokenizer = get_annotation_tokenizer
 
     pdf = path.join(
         directory,
@@ -1422,8 +1524,9 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_parser_response(parsed)
+    _, parsed = process_parsed_content(parsed)
     annotations = annotate_pdf(
+        tokenizer=tokenizer,
         annotation_service=annotation_service,
         entity_service=entity_service,
         parsed=parsed

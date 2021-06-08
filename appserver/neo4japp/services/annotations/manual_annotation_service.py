@@ -12,13 +12,17 @@ from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
 from neo4japp.services.annotations.constants import (
     EntityType,
-    ManualAnnotationType
+    ManualAnnotationType,
+    MAX_ENTITY_WORD_LENGTH,
+    MAX_GENE_WORD_LENGTH,
+    MAX_FOOD_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import PDFWord
-from neo4japp.services.annotations.initializer import get_entity_recognition
+from neo4japp.services.annotations.initializer import get_annotation_tokenizer
 from neo4japp.services.annotations.util import has_center_point
-from neo4japp.services.annotations.pipeline import parse_pdf
 from neo4japp.util import standardize_str
+
+from .util import parse_content
 
 
 class ManualAnnotationService:
@@ -80,21 +84,21 @@ class ManualAnnotationService:
             return False
 
         if annotate_all:
-            recognition = get_entity_recognition()
-            _, parsed = parse_pdf(file.id, False)
+            tokenizer = get_annotation_tokenizer()
+            _, parsed = parse_content(file_id=file.id, exclude_references=False)
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
 
             if custom_annotation['meta']['type'] == EntityType.GENE.value:
-                max_words = recognition.gene_max_words
+                max_words = MAX_GENE_WORD_LENGTH
             elif custom_annotation['meta']['type'] == EntityType.FOOD.value:
-                max_words = recognition.food_max_words
+                max_words = MAX_FOOD_WORD_LENGTH
             else:
-                max_words = recognition.entity_max_words
+                max_words = MAX_ENTITY_WORD_LENGTH
             matches = self.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
                 tokens_list=list(itertools.chain.from_iterable(
-                    [recognition.generate_tokens(
+                    [tokenizer.create(
                         parsed[idx:max_words + idx]) for idx, token in enumerate(parsed)]))
             )
 
