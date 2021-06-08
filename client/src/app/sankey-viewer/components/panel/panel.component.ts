@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges, } from '@angular/core';
+import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges, TemplateRef, } from '@angular/core';
 import { FormControl, FormGroup, Validators, } from '@angular/forms';
 
 import { uniqueId } from 'lodash';
@@ -9,11 +9,11 @@ import { debounceTime } from 'rxjs/operators';
 import { DefaultOrderByOptions, OrderDirection, } from 'app/interfaces/annotation-filter.interface';
 
 @Component({
-  selector: 'app-filter-panel',
-  templateUrl: './filter-panel.component.html',
-  styleUrls: ['./filter-panel.component.scss'],
+  selector: 'app-sankey-panel',
+  templateUrl: './panel.component.html',
+  styleUrls: ['./panel.component.scss'],
 })
-export class FilterPanelComponent implements OnInit, OnDestroy, OnChanges {
+export class SankeyPanelComponent implements OnInit, OnDestroy, OnChanges {
   id = uniqueId('PanelComponent-');
 
   outputSubject: Subject<any>;
@@ -68,6 +68,12 @@ export class FilterPanelComponent implements OnInit, OnDestroy, OnChanges {
       return node;
     });
   }
+
+
+  @Input() details: {
+    template: TemplateRef<any>,
+    data: any
+  };
 
   constructor() {
     this.outputSubject = new Subject<boolean>();

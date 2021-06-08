@@ -47,6 +47,8 @@
                     <dt>Trace group:</dt>
                     <dd>{{ link.trace_group }}</dd>
                 </ng-container>
+                <dt>Details:</dt>
+                <dd><pre>{{ getLinkDetails(link) }}</pre></dd>
             </dl>
         </ng-container>
     </ng-template>
