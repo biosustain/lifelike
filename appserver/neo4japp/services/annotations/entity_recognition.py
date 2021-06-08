@@ -1,8 +1,6 @@
 import json
-import re
 import time
 
-from string import digits, ascii_letters, punctuation, whitespace
 from typing import Dict, List, Set, Tuple
 
 from flask import current_app
@@ -17,12 +15,11 @@ from neo4japp.services.annotations import (
     AnnotationGraphService
 )
 from neo4japp.services.annotations.constants import (
-    ABBREVIATION_WORD_LENGTH,
-    COMMON_WORDS,
-    PDF_NEW_LINE_THRESHOLD,
     EntityType,
     EntityIdStr,
-    ManualAnnotationType
+    ManualAnnotationType,
+    MAX_GENE_WORD_LENGTH,
+    MAX_FOOD_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import (
     RecognizedEntities,
@@ -71,12 +68,6 @@ class EntityRecognitionService:
         self.graph = graph
         self.db = db
 
-        self.token_word_check_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
-
-        self.entity_max_words = 6
-        self.food_max_words = 4
-        self.gene_max_words = 1
-
         self.excluded_anatomy: Set[str] = set()
         self.excluded_chemicals: Set[str] = set()
         self.excluded_compounds: Set[str] = set()
@@ -110,7 +101,6 @@ class EntityRecognitionService:
         self.included_entities: Dict[str, Inclusion] = {}
 
         self.gene_collection: List[Tuple[str, str, str, str, str]] = []
-        self.abbreviations: Set[str] = set()
 
     def _set_excluded_anatomy(
         self,
@@ -225,126 +215,6 @@ class EntityRecognitionService:
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.ENTITY.value:
                 self.excluded_entities.add(exclusion.get('text').lower())  # type: ignore
-
-    def is_anatomy_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_anatomy:
-            # current_app.logger.info(
-            #     f'Found a match in anatomy entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_chemical_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_chemicals:
-            # current_app.logger.info(
-            #     f'Found a match in chemicals entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_compound_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_compounds:
-            # current_app.logger.info(
-            #     f'Found a match in compounds entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_disease_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_diseases:
-            # current_app.logger.info(
-            #     f'Found a match in diseases entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_food_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_foods:
-            # current_app.logger.info(
-            #     f'Found a match in foods entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_gene_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if word in self.excluded_genes or lowered in self.excluded_genes_case_insensitive:
-            # current_app.logger.info(
-            #     f'Found a match in genes entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_phenomena_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_phenomenas:
-            # current_app.logger.info(
-            #     f'Found a match in phenomenas entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_phenotype_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_phenotypes:
-            # current_app.logger.info(
-            #         f'Found a match in phenotypes entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_protein_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if word in self.excluded_proteins or lowered in self.excluded_proteins_case_insensitive:  # noqa
-            # current_app.logger.info(
-            #     f'Found a match in proteins entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_species_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_species:
-            # current_app.logger.info(
-            #     f'Found a match in species entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_company_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_companies:
-            # current_app.logger.info(
-            #     f'Found a match in company entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
-
-    def is_entity_exclusion(self, word) -> bool:
-        lowered = word.lower()
-        if lowered in self.excluded_entities:
-            # current_app.logger.info(
-            #     f'Found a match in entity lookup but token "{word}" is an exclusion.',  # noqa
-            #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            # )
-            return True
-        return False
 
     def set_entity_exclusions(self, excluded_annotations: List[dict]) -> None:
         exclusion_pairs = [
@@ -561,183 +431,13 @@ class EntityRecognitionService:
                             entity_id_hyperlink=entity_id_hyperlink
                         )
 
-    def is_abbrev(self, token: PDFWord) -> bool:
-        """Determine if a word is an abbreviation.
-
-        Start from closest word to abbreviation, and check the first character.
-        """
-        if token.keyword in self.abbreviations:
-            return True
-
-        if len(token.keyword) not in ABBREVIATION_WORD_LENGTH:
-            return False
-
-        # a token will only have previous words
-        # if it is a possible abbreviation
-        # the assumption here is, if an abbreviation
-        # is used the *first time*, it will have previous
-        # words that it is an abbreviation of
-        # any subsequent uses of the abbreviation
-        # will not have the word it is abbreviated from
-        # as a previous word in the document
-        if not token.previous_words:
-            return False
-
-        abbrev = ''
-        len_of_word = len(token.keyword)
-        previous_words = token.previous_words.split(' ')
-        for w in reversed(previous_words):
-            if '-' in w:
-                split = w.split('-')
-                for w2 in reversed(split):
-                    if w2:
-                        abbrev = w2[0].upper() + abbrev
-            elif '/' in w:
-                split = w.split('/')
-                for w2 in reversed(split):
-                    if w2:
-                        abbrev = w2[0].upper() + abbrev
-            else:
-                abbrev = w[0].upper() + abbrev
-        abbrev = abbrev[-len_of_word:]
-
-        if abbrev == token.keyword:
-            self.abbreviations.add(token.keyword)
-            return True
-        return False
-
-    def generate_tokens(self, tokens_list: List[PDFWord]) -> List[PDFWord]:
-        prev_token = None
-        new_tokens = []
-
-        for token in tokens_list:
-            if prev_token is None:
-                # copied from def normalize_str
-                # to avoid function calls, ~7-10 sec faster
-                normalized = token.keyword.lower()
-                normalized = normalized.translate(str.maketrans('', '', punctuation))
-                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
-                new_token = PDFWord(
-                    keyword=token.keyword,
-                    normalized_keyword=normalized_keyword,
-                    page_number=token.page_number,
-                    lo_location_offset=token.lo_location_offset,
-                    hi_location_offset=token.hi_location_offset,
-                    coordinates=token.coordinates,
-                    heights=token.heights,
-                    widths=token.widths,
-                    previous_words=token.previous_words
-                )
-                new_tokens.append(new_token)
-                prev_token = new_token
-            else:
-                words_subset = [prev_token, token]
-                curr_keyword = ' '.join([word.keyword for word in words_subset])
-                coordinates = []
-                heights = []
-                widths = []
-
-                start_lower_x = 0.0
-                start_lower_y = 0.0
-                end_upper_x = 0.0
-                end_upper_y = 0.0
-                prev_height = 0.0
-                for word in words_subset:
-                    # when combining sequential words
-                    # need to merge their coordinates together
-                    # while also keeping in mind words on new lines
-                    for j, coords in enumerate(word.coordinates):
-                        lower_x, lower_y, upper_x, upper_y = coords
-
-                        if (start_lower_x == 0.0 and
-                                start_lower_y == 0.0 and
-                                end_upper_x == 0.0 and
-                                end_upper_y == 0.0):
-                            start_lower_x = lower_x
-                            start_lower_y = lower_y
-                            end_upper_x = upper_x
-                            end_upper_y = upper_y
-                            prev_height = word.heights[j]
-                        else:
-                            if lower_y != start_lower_y:
-                                diff = abs(lower_y - start_lower_y)
-
-                                # if diff is greater than height ratio
-                                # then part of keyword is on a new line
-                                if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
-                                    coordinates.append(
-                                        [start_lower_x, start_lower_y, end_upper_x, end_upper_y])
-
-                                    start_lower_x = lower_x
-                                    start_lower_y = lower_y
-                                    end_upper_x = upper_x
-                                    end_upper_y = upper_y
-                                    prev_height = word.heights[j]
-                                else:
-                                    if upper_y > end_upper_y:
-                                        end_upper_y = upper_y
-
-                                    if upper_x > end_upper_x:
-                                        end_upper_x = upper_x
-                            else:
-                                if upper_y > end_upper_y:
-                                    end_upper_y = upper_y
-
-                                if upper_x > end_upper_x:
-                                    end_upper_x = upper_x
-
-                    heights += word.heights
-                    widths += word.widths
-                coordinates.append([start_lower_x, start_lower_y, end_upper_x, end_upper_y])
-
-                # copied from def normalize_str
-                # to avoid function calls, ~7-10 sec faster
-                normalized = curr_keyword.lower()
-                normalized = normalized.translate(str.maketrans('', '', punctuation))
-                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
-                new_token = PDFWord(
-                    keyword=curr_keyword,
-                    normalized_keyword=normalized_keyword,
-                    # take the page of the first word
-                    # if multi-word, consider it as part
-                    # of page of first word
-                    page_number=words_subset[0].page_number,
-                    lo_location_offset=words_subset[0].lo_location_offset,
-                    hi_location_offset=words_subset[-1].hi_location_offset,
-                    coordinates=coordinates,
-                    heights=heights,
-                    widths=widths,
-                    previous_words=words_subset[0].previous_words,
-                )
-
-                new_tokens.append(new_token)
-                prev_token = new_token
-
-        # remove any keywords that fit the removal
-        # criteria at the end here, e.g common words, digits, ascii_letters etc
-        # because a term could start with them
-        # had we removed earlier, then some terms may possibly
-        # have been missed
-        tokens_to_use = []
-        for token in new_tokens:
-            if (token.keyword.lower() in COMMON_WORDS or
-                self.token_word_check_regex.match(token.keyword) or
-                token.keyword in ascii_letters or
-                token.keyword in digits or
-                len(token.normalized_keyword) <= 2 or
-                self.is_abbrev(token)
-            ):  # noqa
-                continue
-            else:
-                tokens_to_use.append(token)
-        return tokens_to_use
-
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
         dbname = GENES_NCBI_LMDB
         global_inclusion = self.included_genes
-        exclude_token = self.is_gene_exclusion
+        global_exclusion = self.excluded_genes
+        global_exclusion_case_insensitive = self.excluded_genes_case_insensitive
 
         key_results: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
@@ -770,7 +470,11 @@ class EntityRecognitionService:
 
         lmdb_matches = []
         for token in tokens:
-            if token.normalized_keyword in key_results and not exclude_token(token.keyword):
+            if token.normalized_keyword in key_results:
+                lowered = token.keyword.lower()
+                if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:
+                    continue
+
                 match = LMDBMatch(
                     entities=key_results[token.normalized_keyword],
                     token=token,
@@ -794,7 +498,7 @@ class EntityRecognitionService:
         dbname = SPECIES_NCBI_LMDB
         global_inclusion = self.included_species
         local_inclusion = self.included_local_species
-        exclude_token = self.is_species_exclusion
+        global_exclusion = self.excluded_species
 
         key_results: Dict[str, List[dict]] = {}
         key_results_local: Dict[str, List[dict]] = {}
@@ -833,7 +537,7 @@ class EntityRecognitionService:
         lmdb_matches = []
         lmdb_matches_local = []
         for token in tokens:
-            if not exclude_token(token.keyword):
+            if token.keyword.lower() not in global_exclusion:
                 if token.normalized_keyword in key_results:
                     lmdb_matches.append(
                         LMDBMatch(
@@ -864,56 +568,59 @@ class EntityRecognitionService:
             keys = original_keys
             dbname = None
             global_inclusion = None
+            global_exclusion = None
+            global_exclusion_case_insensitive = None
 
             if entity_type == EntityType.ANATOMY.value:
                 dbname = ANATOMY_MESH_LMDB
                 global_inclusion = self.included_anatomy
-                exclude_token = self.is_anatomy_exclusion
+                global_exclusion = self.excluded_anatomy
 
             elif entity_type == EntityType.CHEMICAL.value:
                 dbname = CHEMICALS_CHEBI_LMDB
                 global_inclusion = self.included_chemicals
-                exclude_token = self.is_chemical_exclusion
+                global_exclusion = self.excluded_chemicals
 
             elif entity_type == EntityType.COMPOUND.value:
                 dbname = COMPOUNDS_BIOCYC_LMDB
                 global_inclusion = self.included_compounds
-                exclude_token = self.is_compound_exclusion
+                global_exclusion = self.excluded_compounds
 
             elif entity_type == EntityType.DISEASE.value:
                 dbname = DISEASES_MESH_LMDB
                 global_inclusion = self.included_diseases
-                exclude_token = self.is_disease_exclusion
+                global_exclusion = self.excluded_diseases
 
             elif entity_type == EntityType.FOOD.value:
                 dbname = FOODS_MESH_LMDB
                 global_inclusion = self.included_foods
-                exclude_token = self.is_food_exclusion
+                global_exclusion = self.excluded_foods
                 keys = {token.normalized_keyword for token in tokens
-                        if len(token.keyword.split(' ')) <= self.food_max_words}
+                        if len(token.keyword.split(' ')) <= MAX_FOOD_WORD_LENGTH}
 
             elif entity_type == EntityType.GENE.value:
                 gene_matches = self._check_lmdb_genes(
                     nlp_results=nlp_results,
                     tokens=[token for token in tokens if len(
-                        token.keyword.split(' ')) <= self.gene_max_words])
+                        token.keyword.split(' ')) <= MAX_GENE_WORD_LENGTH])
                 results.recognized_genes = gene_matches
                 continue
 
             elif entity_type == EntityType.PHENOMENA.value:
                 dbname = PHENOMENAS_MESH_LMDB
                 global_inclusion = self.included_phenomenas
-                exclude_token = self.is_phenomena_exclusion
+                global_exclusion = self.excluded_phenomenas
 
             elif entity_type == EntityType.PHENOTYPE.value:
                 dbname = PHENOTYPES_CUSTOM_LMDB
                 global_inclusion = self.included_phenotypes
-                exclude_token = self.is_phenotype_exclusion
+                global_exclusion = self.excluded_phenotypes
 
             elif entity_type == EntityType.PROTEIN.value:
                 dbname = PROTEINS_UNIPROT_LMDB
                 global_inclusion = self.included_proteins
-                exclude_token = self.is_protein_exclusion
+                global_exclusion = self.excluded_proteins
+                global_exclusion_case_insensitive = self.excluded_proteins_case_insensitive
 
             elif entity_type == EntityType.SPECIES.value:
                 species_matches, species_matches_local = self._check_lmdb_species(
@@ -925,7 +632,7 @@ class EntityRecognitionService:
             # non lmdb lookups
             elif entity_type == EntityType.COMPANY.value:
                 global_inclusion = self.included_companies
-                exclude_token = self.is_company_exclusion
+                global_exclusion = self.excluded_companies
                 results.recognized_companies = [
                     LMDBMatch(
                         entities=global_inclusion[token.normalized_keyword].entities,
@@ -933,13 +640,13 @@ class EntityRecognitionService:
                         id_type=global_inclusion[token.normalized_keyword].entity_id_type,
                         id_hyperlink=global_inclusion[token.normalized_keyword].entity_id_hyperlink
                     ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and not exclude_token(token.keyword)]
+                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
             # non lmdb lookups
             elif entity_type == EntityType.ENTITY.value:
                 global_inclusion = self.included_entities
-                exclude_token = self.is_entity_exclusion
+                global_exclusion = self.excluded_entities
                 results.recognized_entities = [
                     LMDBMatch(
                         entities=global_inclusion[token.normalized_keyword].entities,
@@ -947,7 +654,7 @@ class EntityRecognitionService:
                         id_type=global_inclusion[token.normalized_keyword].entity_id_type,
                         id_hyperlink=global_inclusion[token.normalized_keyword].entity_id_hyperlink
                     ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and not exclude_token(token.keyword)]
+                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
             if dbname is not None and global_inclusion is not None:
@@ -976,7 +683,15 @@ class EntityRecognitionService:
 
                 lmdb_matches = []
                 for token in tokens:
-                    if token.normalized_keyword in key_results and not exclude_token(token.keyword):
+                    if token.normalized_keyword in key_results:
+                        lowered = token.keyword.lower()
+                        if global_exclusion_case_insensitive:
+                            if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:
+                                continue
+                        else:
+                            if lowered in global_exclusion:
+                                continue
+
                         match = LMDBMatch(
                             entities=key_results[token.normalized_keyword],
                             token=token,
@@ -1040,14 +755,4 @@ class EntityRecognitionService:
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
 
-        start = time.time()
-        generated_tokens = [
-            current_token for idx, token in enumerate(tokens)
-                for current_token in self.generate_tokens(
-                    tokens[idx:self.entity_max_words + idx])]  # noqa
-        current_app.logger.info(
-            f'Time to create sequential tokens {time.time() - start}.',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-        )
-
-        return self.check_lmdb(nlp_results=nlp_results, tokens=generated_tokens)
+        return self.check_lmdb(nlp_results=nlp_results, tokens=tokens)

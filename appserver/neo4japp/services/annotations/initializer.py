@@ -7,6 +7,7 @@ from neo4japp.services.annotations.bioc_service import BiocDocumentService
 from neo4japp.services.annotations.enrichment_annotation_service import EnrichmentAnnotationService
 from neo4japp.services.annotations.entity_recognition import EntityRecognitionService
 from neo4japp.services.annotations.lmdb_service import LMDBService
+from .tokenizer import Tokenizer
 # from neo4japp.services.annotations.manual_annotation_service import ManualAnnotationService
 
 from .constants import (
@@ -39,6 +40,9 @@ def get_enrichment_annotation_service():
 
 def get_bioc_document_service():
     return BiocDocumentService()
+
+def get_annotation_tokenizer():
+    return Tokenizer()
 
 
 def get_entity_recognition():
