@@ -39,6 +39,7 @@ class ContentSearchResponseSchema(ResultListSchema):
 # Text Annotation API
 # ========================================
 
+
 class AnnotateRequestSchema(ma.Schema):
     texts = fields.List(fields.String(validate=validate.Length(min=1, max=1500)),
                         validate=validate.Length(min=1, max=40))
