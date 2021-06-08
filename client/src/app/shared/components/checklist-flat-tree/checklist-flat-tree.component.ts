@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Input, OnDestroy, OnInit } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 
 import { Subject, Subscription } from 'rxjs';
 
@@ -9,14 +9,24 @@ import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree.component';
 
-export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeComponent<T> implements OnDestroy, OnInit {
-  @Input() resetTree: Subject<boolean>;
+export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeComponent<T> implements OnDestroy {
+  private _resetTree: Subject<boolean>;
+  @Input() set resetTree(resetSubject: Subject<boolean>) {
+    this.completeResetTreeSubject();
+    this._resetTree = resetSubject;
+    if (!isNullOrUndefined(this._resetTree)) {
+      this.resetTree.subscribe(() => this.reset());
+    }
+  }
+
+  private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
   @Input() set initiallyCheckedNodesFilterFn(filterFn: (t: FlatNode<T>) => boolean) {
     this._initiallyCheckedNodesFilterFn = filterFn;
     if (!isNullOrUndefined(this.treeData)) {
       this.checklistInit(this.flatNodes.filter(this._initiallyCheckedNodesFilterFn));
     }
   }
+
   @Input() set treeData(treeData: TreeNode<T>[]) {
     super.treeData = treeData;
     this.checklistInit(this.flatNodes.filter(this._initiallyCheckedNodesFilterFn));
@@ -24,8 +34,6 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   get treeData() {
     return super.treeData;
   }
-
-  private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
 
   selectionChangedSubscription: Subscription;
 
@@ -38,14 +46,16 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
     this._initiallyCheckedNodesFilterFn = (t: FlatNode<T>) => false;
   }
 
-  ngOnInit() {
-    this.resetTree.subscribe(() => this.reset());
-  }
-
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.resetTree.complete();
     this.selectionChangedSubscription.unsubscribe();
+    this.completeResetTreeSubject();
+  }
+
+  completeResetTreeSubject() {
+    if (!isNullOrUndefined(this._resetTree)) {
+      this._resetTree.complete();
+    }
   }
 
   reset() {
