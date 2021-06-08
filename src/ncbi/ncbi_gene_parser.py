@@ -48,13 +48,13 @@ class GeneParser(BaseParser):
         outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
         open(outfile, 'w').close()
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=500000, usecols=gene_info_cols)
+        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=50000, usecols=gene_info_cols)
         count = 0
         header = True
         for chunk in geneinfo_chunks:
             df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
             df = df[df['name'] != 'NEWENTRY']
-            df = df.replace('-', '').replace('')
+            df = df.replace('-', '')
             df_syn = df[[PROP_ID, PROP_NAME, PROP_SYNONYMS]]
             df_syn = df_syn.set_index([PROP_ID, PROP_NAME]).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, PROP_NAME, 'synonym']]
@@ -187,7 +187,7 @@ class GeneParser(BaseParser):
 
 
 if __name__ == '__main__':
-    parser = GeneParser()
+    parser = GeneParser('/Users/rcai/data')
     database = get_database(Neo4jInstance.LOCAL, 'neo4j')
     # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
     parser.load_data_to_neo4j(database)
