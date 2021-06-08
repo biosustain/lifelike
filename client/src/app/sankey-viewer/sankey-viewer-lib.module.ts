@@ -18,11 +18,13 @@ import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
 import { FilterPanelComponent } from './components/filter-panel/filter-panel.component';
+import { SankeyPanelComponent } from './components/panel/panel.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    FilterPanelComponent
+    FilterPanelComponent,
+    SankeyPanelComponent
   ],
   imports: [
     CommonModule,
@@ -51,7 +53,8 @@ import { FilterPanelComponent } from './components/filter-panel/filter-panel.com
   }],
   exports: [
     SankeyViewComponent,
-    FilterPanelComponent
+    FilterPanelComponent,
+    SankeyPanelComponent
   ],
 })
 export class SankeyViewerLibModule {

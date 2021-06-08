@@ -24,7 +24,8 @@ import {
   shortNodeText,
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
-  RELAYOUT_DURATION
+  RELAYOUT_DURATION,
+  representativePositiveNumber
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -44,6 +45,14 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       this._timeInterval = ti;
       this.sankey.timeInterval(ti);
     }
+  }
+
+  @Output('node-clicked') nodeClicked = new EventEmitter();
+  @Output('link-clicked') linkClicked = new EventEmitter();
+
+
+  getLinkDetails({trace, trace_group, folded, description, source, target, ...details}) {
+    return JSON.stringify(details, null, 2);
   }
 
   constructor(
@@ -237,6 +246,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   linkClick(element, data, _eventId, _links, ..._rest) {
+    this.linkClicked.emit(data);
     this.selected = data;
     this.clipboard.writeToClipboard(data.path).then(_ =>
       this.snackBar.open(
@@ -250,7 +260,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nodeClick(element, data, _eventId, _links, ..._rest) {
-    this.showPopOverForSVGElement(element, {node: data});
+    this.nodeClicked.emit(data);
+    if (element) {
+      this.showPopOverForSVGElement(element, {node: data});
+    }
   }
 
   showPopOverForSVGElement(element, context) {
@@ -363,9 +376,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // .attr('x', ({x0}) => x0)
     // .attr('y', ({y0}) => y0)
     .attr('height', n => {
-      return n.y1 - n.y0;
+      return representativePositiveNumber(n.y1 - n.y0);
     })
-    .attr('width', ({x1, x0}) => x1 - x0)
+    .attr('width', ({x1, x0}) => x1 - x0);
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -427,7 +440,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     const self = this;
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes, ({id}) => id)
+      .data(words.nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0), ({id}) => id)
       .join(
         enter => enter.append('g')
           .on('mouseover', function(data, eventId, links, ...args) {
@@ -453,8 +466,12 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
                 return dragmove(this, d);
               })
               // tslint:disable-next-line:only-arrow-functions
-              .on('end', function() {
+              .on('end', function(d) {
                 self.dragging = false;
+                console.log(d3.event);
+                if (d3.event.dx + d3.event.dy < 5) {
+                  nodeClick(undefined, d);
+                }
               })
           )
           .attr('fill', ({color}) => color)

@@ -142,7 +142,7 @@ export interface SankeyGraph {
   graph: any;
 }
 
-export const clamp = (min, max) => value => Math.min(Math.max(min, value), max);
+export const clamp = (min, max) => value => Math.min(Math.max(min, Number(value)), max);
 export const RELAYOUT_DURATION = 250;
 export const INITIALLY_SHOWN_CHARS = 10;
 export const nodeLabelAccessor = ({displayName}) => displayName;
@@ -164,3 +164,5 @@ export const christianColors = [
   '#83AB58', '#001C1E', '#D1F7CE', '#004B28', '#C8D0F6', '#A3A489', '#806C66', '#222800',
   '#BF5650', '#E83000', '#66796D', '#DA007C', '#FF1A59', '#8ADBB4', '#1E0200', '#5B4E51',
   '#C895C5', '#320033', '#FF6832', '#66E1D3', '#CFCDAC', '#D0AC94', '#7ED379', '#012C58'];
+
+export const representativePositiveNumber = clamp(1e-6, 1e36);

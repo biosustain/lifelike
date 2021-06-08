@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription } from 'rxjs';
@@ -9,7 +9,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors } from './sankey/utils';
+import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors, representativePositiveNumber } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
 
@@ -56,6 +56,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
+  @ViewChild('nodeDetails', {static: false}) nodeDetails: TemplateRef<any>;
+  @ViewChild('linkDetails', {static: false}) linkDetails: TemplateRef<any>;
+
   networkTraces;
   selectedTrace;
 
@@ -85,6 +88,66 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   outNodesId;
 
   linksColorMap;
+
+  panelOpened;
+  details;
+
+  valueGenerators = [
+    {
+      description: 'Input count',
+      preprocessing: ({links, nodes, inNodes}) => {
+        links.forEach(l => l.value = 1);
+        d3Sankey.sankeyCircular()
+          .nodeId(n => n.id)
+          .nodePadding(1)
+          .nodePaddingRatio(0.5)
+          .nodeAlign(d3Sankey.sankeyRight)
+          .nodeWidth(10)
+          ({nodes, links});
+        nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
+          if (inNodes.includes(n.id)) {
+            n.value = 1;
+          } else {
+            n.value = 0;
+          }
+          n.value = n.targetLinks.reduce((a, l) => a + l.value, n.value || 0);
+          const outFrac = n.value / n.sourceLinks.length;
+          n.sourceLinks.forEach(l => {
+            l.value = outFrac;
+          });
+        });
+        return {
+          nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(
+            ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
+              ...node
+            })),
+          links: links.map(
+            ({
+               width,
+               index,
+               circular,
+               circularLinkID,
+               circularLinkType,
+               circularLinkPathData,
+               y0,
+               y1,
+               source,
+               target,
+               value = 0.001,
+               path,
+               ...link
+             }) => ({
+              ...link,
+              source: source.id,
+              target: target.id,
+              value
+            }))
+        };
+      }
+    }
+  ];
+  valueAccessors;
+  selectedValueAccessor = this.valueGenerators[0];
 
   selectTrace(trace) {
     this.linksColorMap = new Map(trace.traces.map((t, i) => [t, christianColors[i]]));
@@ -157,43 +220,63 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   changeFilter(filter = d => d) {
-    this.filter = filter;
-    const {nodes, links, ...data} = this.sankeyData;
-    const [filteredNodes, filteredOutNodes] = nodes.reduce(([ifilteredNodes, ifilteredOutNodes], n) => {
-      if (filter(n).hidden) {
-        ifilteredOutNodes.push(n);
-      } else {
-        ifilteredNodes.push(n);
-      }
-      return [ifilteredNodes, ifilteredOutNodes];
-    }, [[], []]);
-    console.log('calc start');
-    const {newLinks, oldLinks} = this.resolveFilteredNodesLinks(filteredOutNodes);
-    console.log('calc stop');
-    console.table({
-      'link diff': oldLinks.length - newLinks.length,
-      'initial links': links.length,
-      'final links': links.filter(link => !oldLinks.includes(link)).concat(newLinks).length
-    });
-    let filteredLinks = links.concat(newLinks).filter(link => !oldLinks.includes(link));
-    if (links.length - oldLinks.length + newLinks.length !== filteredLinks.length) {
-      const r = {
-        filtfromlinks: links.filter(value => oldLinks.includes(value)),
-        filtfromnew: newLinks.filter(value => oldLinks.find(d => d.path === value.path))
-      };
-      const r2 = oldLinks.filter(value => !r.filtfromlinks.includes(value) && !r.filtfromnew.includes(value));
-      filteredLinks = filteredLinks.filter(value => r2.find(v => v.path === value.path));
-    }
-    this.filteredSankeyData = {
-      ...data,
-      nodes: filteredNodes,
-      // filter after concat newLinks and oldLinks are not mutually exclusive
-      links: filteredLinks
-    };
+    // this.filter = filter;
+    // const {nodes, links, ...data} = this.sankeyData;
+    // const [filteredNodes, filteredOutNodes] = nodes.reduce(([ifilteredNodes, ifilteredOutNodes], n) => {
+    //   if (filter(n).hidden) {
+    //     ifilteredOutNodes.push(n);
+    //   } else {
+    //     ifilteredNodes.push(n);
+    //   }
+    //   return [ifilteredNodes, ifilteredOutNodes];
+    // }, [[], []]);
+    // console.log('calc start');
+    // const {newLinks, oldLinks} = this.resolveFilteredNodesLinks(filteredOutNodes);
+    // console.log('calc stop');
+    // console.table({
+    //   'link diff': oldLinks.length - newLinks.length,
+    //   'initial links': links.length,
+    //   'final links': links.filter(link => !oldLinks.includes(link)).concat(newLinks).length
+    // });
+    // let filteredLinks = links.concat(newLinks).filter(link => !oldLinks.includes(link));
+    // if (links.length - oldLinks.length + newLinks.length !== filteredLinks.length) {
+    //   const r = {
+    //     filtfromlinks: links.filter(value => oldLinks.includes(value)),
+    //     filtfromnew: newLinks.filter(value => oldLinks.find(d => d.path === value.path))
+    //   };
+    //   const r2 = oldLinks.filter(value => !r.filtfromlinks.includes(value) && !r.filtfromnew.includes(value));
+    //   filteredLinks = filteredLinks.filter(value => r2.find(v => v.path === value.path));
+    // }
+    // this.filteredSankeyData = {
+    //   ...data,
+    //   nodes: filteredNodes,
+    //   // filter after concat newLinks and oldLinks are not mutually exclusive
+    //   links: filteredLinks
+    // };
   }
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
+
+  getLinkDetails({source, target, description, ...details}) {
+    return JSON.stringify(details, null, 2);
+  }
+
+  getNodeDetails({sourceLinks, targetLinks, description, ...details}) {
+    return JSON.stringify(details, null, 2);
+  }
+
+  openPanel(template, data) {
+    console.log(template, data);
+    this.details = {
+      template, $implicit: data
+    };
+    this.panelOpened = true;
+  }
+
+  closePanel() {
+    this.panelOpened = false;
   }
 
   applyFilter() {
@@ -204,60 +287,38 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  linkGraph({nodes, links, inNodes}) {
-    links.forEach(l => l.value = 1);
-    d3Sankey.sankeyCircular()
-      .nodeId(n => n.id)
-      .nodePadding(1)
-      .nodePaddingRatio(0.5)
-      .nodeAlign(d3Sankey.sankeyRight)
-      .nodeWidth(10)
-      ({nodes, links});
-    nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
-      if (inNodes.includes(n.id)) {
-        n.value = 1;
-      } else {
-        n.value = 0;
-      }
-      n.value = n.targetLinks.reduce((a, l) => a + l.value, n.value || 0);
-      const outFrac = n.value / n.sourceLinks.length;
-      n.sourceLinks.forEach(l => {
-        l.value = outFrac;
-      });
+  linkGraph(data) {
+    data.links.forEach(l => {
+      l.id = uuidv4();
     });
-    return {
-      nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(
-        ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
-          ...node
-        })),
-      links: links.map(
-        ({
-           width,
-           index,
-           circular,
-           circularLinkID,
-           circularLinkType,
-           circularLinkPathData,
-           y0,
-           y1,
-           source,
-           target,
-           value = 0.001,
-           path,
-           ...link
-         }) => ({
-          ...link,
-          source: source.id,
-          target: target.id,
-          id: uuidv4(),
-          value
-        }))
-    };
+    const r = this.selectedValueAccessor.preprocessing(data) || {};
+    return Object.assign(data, r);
   }
+
+  extractLinkValueProperties([link = {}]) {
+    // extract all numeric properties
+    console.log(link);
+    this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
+      if (!isNaN(v as number)) {
+        o.push({
+          description: k,
+          preprocessing: ({links}) => {
+            links.forEach(l => {
+              l.value = representativePositiveNumber(l[k]);
+            });
+            return {links};
+          }
+        });
+      }
+      return o;
+    }, []);
+  }
+
 
   parseData({links, graph, nodes, ...data}) {
     this.networkTraces = graph.trace_networks;
     this.selectedTrace = this.networkTraces[0];
+    this.extractLinkValueProperties(links);
     // set colors for all node types
     const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
     const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
@@ -333,6 +394,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
+  selectValueAccessor($event) {
+    console.log($event);
+    this.selectedValueAccessor = $event;
+    this.selectTrace(this.selectedTrace);
+  }
+
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', this.object.filename);
@@ -352,5 +419,18 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  openNodeDetails(node) {
+    this.openPanel(this.nodeDetails, node);
+  }
+
+  openLinkDetails(link) {
+    this.openPanel(this.linkDetails, link);
+  }
+
+  changeLinkSize($event: any) {
+    this.selectedValueAccessor = $event;
+    this.selectTrace(this.selectedTrace);
   }
 }
