@@ -15,7 +15,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
     this.completeResetTreeSubject();
     this._resetTree = resetSubject;
     if (!isNullOrUndefined(this._resetTree)) {
-      this.resetTree.subscribe(() => this.reset());
+      this._resetTree.subscribe(() => this.reset());
     }
   }
 

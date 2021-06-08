@@ -137,7 +137,7 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
-    filepath = fields.String()
+    file_path = fields.String()
     true_filename = fields.String()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
@@ -303,7 +303,7 @@ class FileNodeData(CamelCaseSchema):
     description = fields.String()
     mime_type = fields.String()
     hash_id = fields.String()
-    filepath = fields.String()
+    file_path = fields.String()
 
 
 class FileNode(CamelCaseSchema):

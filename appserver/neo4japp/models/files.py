@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from flask import current_app
 from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import ARRAY, TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
@@ -238,18 +238,21 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         return self.recycled or self.parent_recycled
 
     @property
-    def filepath(self):
+    def file_path(self):
+        """
+        Gets a list of Files representing the path to this file.
+        """
         current_file = self
-        filepath = []
-        while current_file is not None and current_file.parent_id is not None:
+        file_path: List[Files] = []
+        while current_file is not None:
             try:
-                filepath.append(current_file.filename)
+                file_path.append(current_file)
                 current_file = db.session.query(
                     Files
                 ).filter(
                     Files.id == current_file.parent_id
-                ).one()
-            except NoResultFound as e:
+                ).one_or_none()
+            except MultipleResultsFound as e:
                 current_app.logger.error(
                     f'Could not find parent of file with id: {self.id}',
                     exc_info=e,
@@ -259,71 +262,20 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                     title=f'Cannot Get Filepath',
                     message=f'Could not find parent of file {self.filename}.',
                 )
-
-        try:
-            # Current_file should be the root file, so just get the project that points to it
-            project_name = db.session.query(
-                Projects.name
-            ).filter(
-                Projects.root_id == current_file.id
-            ).one()[0]
-        except NoResultFound as e:
-            current_app.logger.error(
-                f'Could not find project of file with id: {self.id}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
-            )
-            raise ServerException(
-                title=f'Cannot Get Filepath',
-                message=f'Could not find project of file {self.filename}.',
-            )
-
-        filepath.append(project_name)
-        return f'/{"/".join(filepath[::-1])}'
+        return file_path[::-1]
 
     @property
-    def id_path(self) -> List[int]:
+    def project(self) -> Projects:
         """
-        List representing a path of ids from the root project of this file, down to the file
-        itself. Similar to filepath, but useful if we want to quickly get the data of any of the
-        files in the path.
+        Gets the Project this file belongs to.
         """
-        current_file = self
-        id_path = []
-        while current_file is not None and current_file.parent_id is not None:
-            try:
-                id_path.append(current_file.id)
-                current_file = db.session.query(
-                    Files
-                ).filter(
-                    Files.id == current_file.parent_id
-                ).one()
-            except NoResultFound as e:
-                current_app.logger.error(
-                    f'Could not find parent of file with id: {self.id}',
-                    exc_info=e,
-                    extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
-                )
-                raise ServerException(
-                    title=f'Cannot Get Filepath',
-                    message=f'Could not find parent of file {self.filename}.',
-                )
-        # the first file in the path should have no parent
-        id_path.append(current_file.id)
-        return id_path[::-1]
-
-    @property
-    def project(self) -> int:
-        """
-        Gets the id of the project this file belongs to
-        """
-        root_folder = self.id_path[0]
+        root_folder = self.file_path[0].id
         try:
             return db.session.query(
-                Projects.id
+                Projects
             ).filter(
                 Projects.root_id == root_folder
-            ).one()[0]
+            ).one()
         except NoResultFound as e:
             current_app.logger.error(
                 f'Could not find project of file with id: {self.id}',
@@ -339,24 +291,19 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # as a helper for getting the real name of a root file.
     @property
     def true_filename(self):
-        if self.parent is not None:
+        if self.parent_id is not None:
             return self.filename
-        try:
-            return db.session.query(
-                Projects.name
-            ).filter(
-                Projects.root_id == self.id
-            ).one()[0]
-        except NoResultFound as e:
-            current_app.logger.error(
-                f'Could not find project of file with id: {self.id}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
-            )
-            raise ServerException(
-                title=f'Cannot Get Filepath',
-                message=f'Could not find project of file {self.filename}.',
-            )
+        return self.project.name
+
+    @property
+    def filename_path(self):
+        file_path = self.file_path
+        project_name = file_path.pop(0).true_filename
+        filename_path = [project_name]
+
+        for file in file_path:
+            filename_path.append(file.filename)
+        return f'/{"/".join(filename_path)}'
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
@@ -484,7 +431,7 @@ def file_update(mapper, connection, target: Files):
             )
             # TODO: Change this to an update operation, and only update what has changed
             # TODO: Only need to update children if the folder name changes (is this true? any
-            # other cases where we would do this? Maybe safer to just always update filepath
+            # other cases where we would do this? Maybe safer to just always update file path
             # any time the parent changes...)
             elastic_service.index_files(files_to_update)
     except Exception as e:

@@ -196,8 +196,8 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
     accessible_filepaths = []
     inaccessible_files = []
     for file in accessible_folders:
-        if file.project in accessible_projects_ids:
-            accessible_filepaths.append(file.filepath)
+        if file.project.id in accessible_projects_ids:
+            accessible_filepaths.append(file.filename_path)
         else:
             inaccessible_files.append(file.hash_id)
 
@@ -207,10 +207,10 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
                 'should': [
                     {
                         "term": {
-                            "filepath.tree": filepath
+                            "file_path.tree": file_path
                         }
                     }
-                    for filepath in accessible_filepaths
+                    for file_path in accessible_filepaths
                 ]
             }
         }, inaccessible_files

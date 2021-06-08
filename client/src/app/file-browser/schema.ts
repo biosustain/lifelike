@@ -181,7 +181,7 @@ export interface FileNodeData {
   trueFilename: string;
   description: string;
   mimeType: string;
-  filepath: string;
+  filePath: string;
   hashId: string;
   parent: number;
 }

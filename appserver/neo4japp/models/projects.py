@@ -234,7 +234,7 @@ def file_update(mapper, connection, target: Projects):
             f'{files_to_update}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        # TODO: Change this to an update operation, and only update filepath
+        # TODO: Change this to an update operation, and only update file path
         elastic_service.index_files(files_to_update)
     except Exception as e:
         current_app.logger.error(
