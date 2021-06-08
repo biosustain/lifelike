@@ -4,15 +4,12 @@ import requests
 import time
 
 from flask import current_app
-from typing import Dict, List, Set, Tuple
-from string import punctuation
+from typing import Dict, List, Set
 
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import AnnotationError
-from neo4japp.services.annotations.constants import (
-    EntityType,
-    MAX_ABBREVIATION_WORD_LENGTH
-)
+from neo4japp.services.annotations.constants import EntityType
+
 from neo4japp.services.annotations.data_transfer_objects import (
     NLPResults,
     PDFWord,
@@ -22,10 +19,13 @@ from neo4japp.services.annotations.initializer import (
     get_annotation_service,
     get_bioc_document_service,
     get_enrichment_annotation_service,
-    get_entity_recognition
+    get_entity_recognition,
+    get_annotation_tokenizer
 )
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
+
+from .util import parse_content
 
 
 """File is to put helper functions that abstract away
@@ -121,67 +121,6 @@ def get_nlp_entities(text: str, entities: Set[str]):
     )
 
 
-def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
-    parsed = []
-    pdf_text = ''
-
-    for page in resp['pages']:
-        prev_words: List[str] = []
-        pdf_text += page['pageText']
-        for token in page['tokens']:
-            # for now ignore any rotated words
-            if token['text'] not in punctuation and all([rect['rotation'] == 0 for rect in token['rects']]):  # noqa
-                pdf_word = PDFWord(
-                    keyword=token['text'],
-                    normalized_keyword=token['text'],  # don't need to normalize yet
-                    page_number=page['pageNo'],
-                    lo_location_offset=token['pgIdx'],
-                    hi_location_offset=token['pgIdx'] if len(
-                        token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
-                    heights=[rect['height'] for rect in token['rects']],
-                    widths=[rect['width'] for rect in token['rects']],
-                    coordinates=[
-                        [
-                            rect['lowerLeftPt']['x'],
-                            rect['lowerLeftPt']['y'],
-                            rect['lowerLeftPt']['x'] + rect['width'],
-                            rect['lowerLeftPt']['y'] + rect['height']
-                        ] for rect in token['rects']
-                    ],
-                    previous_words=' '.join(
-                        prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
-                )
-                parsed.append(pdf_word)
-                prev_words.append(token['text'])
-                if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
-                    prev_words = prev_words[1:]
-    return pdf_text, parsed
-
-
-def parse_pdf(file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
-    req = requests.post(
-        f'http://pdfparser:7600/token/rect/json/',
-        data={
-            'fileUrl': f'http://appserver:5000/annotations/files/{file_id}',
-            'excludeReferences': exclude_references
-        }, timeout=60)
-    resp = req.json()
-    req.close()
-
-    pdf_text, parsed = read_parser_response(resp)
-    return pdf_text, parsed
-
-
-def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
-    req = requests.post(
-        f'http://pdfparser:7600/token/rect/text/json', data={'text': text}, timeout=30)
-    resp = req.json()
-    req.close()
-
-    pdf_text, parsed = read_parser_response(resp)
-    return pdf_text, parsed
-
-
 def _create_fallback_organism(
     specified_organism_synonym: str,
     specified_organism_tax_id: str
@@ -218,6 +157,7 @@ def _identify_entities(
     annotation_method: Dict[str, dict]
 ):
     entity_recog = get_entity_recognition()
+    tokenizer = get_annotation_tokenizer()
 
     # identify entities w/ NLP first
     try:
@@ -235,10 +175,17 @@ def _identify_entities(
             'An unexpected error occurred with the NLP service.')
 
     start = time.time()
+    tokens = tokenizer.create(parsed)
+    current_app.logger.info(
+        f'Time to tokenize PDF words {time.time() - start}.',
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+    )
+
+    start = time.time()
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
-        tokens=parsed,
+        tokens=tokens,
         nlp_results=nlp_results
     )
     current_app.logger.info(
@@ -263,7 +210,9 @@ def create_annotations_from_pdf(
 
     start = time.time()
     try:
-        pdf_text, parsed = parse_pdf(document.id, annotation_configs['exclude_references'])
+        pdf_text, parsed = parse_content(
+            file_id=document.id,
+            exclude_references=annotation_configs['exclude_references'])
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'Unable to Annotate',
@@ -326,7 +275,7 @@ def create_annotations_from_text(
 
     start = time.time()
     try:
-        pdf_text, parsed = parse_text(text)
+        pdf_text, parsed = parse_content('text', text=text)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'Unable to Annotate',
@@ -390,7 +339,7 @@ def create_annotations_from_enrichment_table(
 
     start = time.time()
     try:
-        pdf_text, parsed = parse_text(text)
+        pdf_text, parsed = parse_content('text', text=text)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'Unable to Annotate',
