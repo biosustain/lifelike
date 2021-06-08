@@ -20,27 +20,18 @@
                     <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
                         {{ object?.filename }}
                     </h1>
-<!--                    <div class="d-flex">-->
-<!--                        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">-->
-<!--                            <button class="btn btn-secondary"-->
-<!--                                    (click)="toggleFiltersPanel()"-->
-<!--                                    ngbTooltip="Show Annotation Filters"-->
-<!--                                    container="body"-->
-<!--                                    placement="bottom top bottom-right top-right">-->
-<!--                                <i class="fa fa-fw fa-filter"></i>-->
-<!--                            </button>-->
-<!--                        </div>-->
-<!--                    </div>-->
-      <div ngbDropdown class="d-inline-block">
-        <button class="btn btn-primary" ngbDropdownToggle>
-          {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
-        </button>
-        <div ngbDropdownMenu>
-          <button ngbDropdownItem (click)="selectTrace(trace)"
-                  *ngFor="let trace of networkTraces">{{trace.description}}</button>
-        </div>
-      </div>
-                    <div ngbDropdown class="d-inline-block mr-4" container="body">
+                    <!--                    <div class="d-flex">-->
+                    <!--                        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">-->
+                    <!--                            <button class="btn btn-secondary"-->
+                    <!--                                    (click)="toggleFiltersPanel()"-->
+                    <!--                                    ngbTooltip="Show Annotation Filters"-->
+                    <!--                                    container="body"-->
+                    <!--                                    placement="bottom top bottom-right top-right">-->
+                    <!--                                <i class="fa fa-fw fa-filter"></i>-->
+                    <!--                            </button>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+                    <div ngbDropdown class="d-inline-block mr-4 flex-grow-0" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
                         </a>
@@ -51,36 +42,152 @@
                             </app-object-menu>
                         </div>
                     </div>
+                    <div ngbDropdown class="d-inline-block">
+                        <button class="btn btn-primary" ngbDropdownToggle>
+                            {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button ngbDropdownItem (click)="selectTrace(trace)"
+                                    *ngFor="let trace of networkTraces">{{trace.description}}</button>
+                        </div>
+                    </div>
+                    <div ngbDropdown class="d-inline-block">
+                        <button class="btn btn-primary" ngbDropdownToggle>
+                            {{ selectedValueAccessor ? selectedValueAccessor.description : 'Select Value Accessor' }}
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
+                                    *ngFor="let valueAccessor of valueGenerators">{{valueAccessor.description}}</button>
+                            <div class="dropdown-divider"></div>
+                            <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
+                                    *ngFor="let valueAccessor of valueAccessors">{{valueAccessor.description}}</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <as-split unit="pixel"
                       direction="horizontal"
                       [gutterSize]="5">
                 <as-split-area [order]="0">
-                    <app-sankey *ngIf="filteredSankeyData" [data]="filteredSankeyData">
+                    <app-sankey
+                            *ngIf="filteredSankeyData"
+                            [data]="filteredSankeyData"
+                            (node-clicked)="openNodeDetails($event)"
+                            (link-clicked)="openLinkDetails($event)"
+                    >
                     </app-sankey>
                 </as-split-area>
-                <as-split-area [visible]="filtersPanelOpened"
+                <as-split-area [visible]="panelOpened"
                                size="340"
                                [order]="1"
-                               [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
+                               [class]="panelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
                     <div class="w-100 h-100 p-3">
                         <div class="annotation-filter-btns-container">
                             <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
                                     type="button"
-                                    (click)="toggleFiltersPanel()">
+                                    (click)="closePanel()">
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-<!--                        <app-filter-panel-->
-<!--                                *ngIf="sankeyData"-->
-<!--                                (filter)="changeFilter($event)"-->
-<!--                                [paths]="allTraces"-->
-<!--                                [nodeCategories]="nodesColorMap"-->
-<!--                        ></app-filter-panel>-->
+                        <!--                        <app-filter-panel-->
+                        <!--                                *ngIf="sankeyData"-->
+                        <!--                                (filter)="changeFilter($event)"-->
+                        <!--                                (link-size)="changeLinkSize($event)"-->
+                        <!--                                [paths]="allTraces"-->
+                        <!--                                [nodeCategories]="nodesColorMap"-->
+                        <!--                        ></app-filter-panel>-->
+                        <app-sankey-panel *ngIf="details" [details]="details"></app-sankey-panel>
                     </div>
                 </as-split-area>
             </as-split>
         </div>
     </div>
 </div>
+
+<ng-template #RAWContent let-title="title" let-content>
+</ng-template>
+<ng-template #linkDetails let-link>
+    <form class="d-flex flex-column justify-content-between">
+        <fieldset class="fieldset-properties mt-2">
+            <legend placement="top left right"
+                    container="body"
+                    ngbTooltip="Click a checkbox to filter annotations of that type">Link
+                Details:
+            </legend>
+            <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-1">
+                <ngb-panel title="Description">
+                    <ng-template ngbPanelContent>
+                        <p [innerHTML]="link.description">
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel title="Properties" cardClass="filled-card">
+                    <ng-template ngbPanelContent>
+                        <ul class="list-group list-group-flush">
+                            <li *ngFor="let property of valueAccessors"
+                                [ngClass]="{
+                                'list-group-item': true,
+                                 'd-flex': true,
+                                 'justify-content-between': true,
+                                active: property === selectedValueAccessor
+                              }"
+                            ><b>{{ property.description }}</b>{{link[property.description]}}</li>
+                            <li *ngIf="link.folded"
+                                class="list-group-item d-flex justify-content-between"
+                            >
+                                <b>Folded</b>
+                                True
+                            </li>
+                            <li *ngIf="link.trace"
+                                class="list-group-item d-flex justify-content-between"
+                            >
+                                <b>Trace index</b>{{ link.trace }}
+                            <li *ngIf="link.trace_group"
+                                class="list-group-item d-flex justify-content-between"
+                            >
+                                <b>Trace group</b>{{ link.trace_group }}
+                            </li>
+                        </ul>
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel title="RAW link content">
+                    <ng-template ngbPanelContent>
+                        <pre [style.marginBottom]="0">{{ getLinkDetails(link) }}</pre>
+                    </ng-template>
+                </ngb-panel>
+            </ngb-accordion>
+        </fieldset>
+    </form>
+</ng-template>
+<ng-template #nodeDetails let-node>
+    <form
+            class="d-flex flex-column justify-content-between">
+        <fieldset class="fieldset-properties mt-2">
+            <legend placement="top left right"
+                    container="body"
+                    ngbTooltip="Click a checkbox to filter annotations of that type">Node
+                Details:
+            </legend>
+            <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-1">
+                <ngb-panel title="Description">
+                    <ng-template ngbPanelContent>
+                        <p [innerHTML]="node.description">
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel title="Labels" cardClass="filled-card">
+                    <ng-template ngbPanelContent>
+                        <ul class="list-group list-group-flush">
+                            <li *ngFor="let label of node.labels"
+                                class="list-group-item"
+                            >{{ label }}</li>
+                        </ul>
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel title="RAW node content">
+                    <ng-template ngbPanelContent>
+                        <pre [style.marginBottom]="0">{{ getNodeDetails(node) }}</pre>
+                    </ng-template>
+                </ngb-panel>
+            </ngb-accordion>
+        </fieldset>
+    </form>
+</ng-template>
