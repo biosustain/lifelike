@@ -296,7 +296,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   extractLinkValueProperties([link = {}]) {
-    // extract all numeric properties
+    // extract all numeric properties //
     console.log(link);
     this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
       if (!isNaN(v as number)) {
