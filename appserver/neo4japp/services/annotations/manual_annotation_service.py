@@ -137,7 +137,8 @@ class ManualAnnotationService:
             self.add_to_global_list(
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
-                file.content_id
+                file.content_id,
+                user
             )
 
         version = FileAnnotationsVersion()
@@ -207,7 +208,8 @@ class ManualAnnotationService:
             self.add_to_global_list(
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
-                file.content_id
+                file.content_id,
+                user
             )
 
         version = FileAnnotationsVersion()
@@ -289,11 +291,11 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def add_to_global_list(self, annotation, annotation_type, file_id):
+    def add_to_global_list(self, annotation, annotation_type, file_id, user):
         """ Adds inclusion or exclusion to a global_list table
         Checks for duplicates and discards them
         """
-        if self._global_annotation_exists(annotation, annotation_type):
+        if self._global_annotation_exists(annotation, annotation_type, user):
             return
 
         global_list_annotation = GlobalList(
@@ -305,7 +307,54 @@ class ManualAnnotationService:
         db.session.add(global_list_annotation)
         db.session.commit()
 
-    def _global_annotation_exists(self, annotation, annotation_type):
+    # TODO: this is a test function, after confirm it works
+    # move it into add_to_global and make this function an exist check
+    # if already in KG
+    def _global_annotation_exists_in_kg(self, annotation, annotation_type, user):
+        entity_type = annotation['meta']['type']
+        entity_id = annotation['meta']['id']
+        synonym = annotation['meta']['allText']
+        inclusion_date = annotation['inclusion_date']
+        user_full_name = f'{user.first_name} {user.last_name}'
+
+        result = None
+        createval = {
+            'entity_type': entity_type,
+            'entity_id': entity_id,
+            'synonym': synonym,
+            'inclusion_date': inclusion_date,
+            'user': user_full_name
+        }
+
+        if entity_type in {
+            EntityType.ANATOMY.value,
+            EntityType.DISEASE.value,
+            EntityType.FOOD.value,
+            EntityType.PHENOMENA
+        }:
+            result = self.graph.create_global_inclusion(
+                self.graph.create_mesh_global_inclusion_query,
+                createval)
+        elif entity_type == EntityType.PROTEIN.value:
+            result = self.graph.create_global_inclusion(
+                self.graph.create_protein_global_inclusion_query,
+                createval)
+        elif entity_type == EntityType.GENE.value:
+            result = self.graph.create_global_inclusion(
+                self.graph.create_gene_global_inclusion_query,
+                createval)
+        elif entity_type == EntityType.SPECIES.value:
+            result = self.graph.create_global_inclusion(
+                self.graph.create_species_global_inclusion_query,
+                createval)
+
+        if not result:
+            # did not match to any existing, so add to Lifelike
+            result = self.graph.create_global_inclusion(
+                self.graph.create_lifelike_global_inclusion_query,
+                createval)
+
+    def _global_annotation_exists(self, annotation, annotation_type, user):
         global_annotations = GlobalList.query.filter_by(
             type=annotation_type
         ).all()

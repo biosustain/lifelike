@@ -145,6 +145,23 @@ class AnnotationGraphService(GraphConnection):
             )
         )
 
+    def create_global_inclusion(self, query: str, values: dict):
+        return self.graph.write_transaction(
+            lambda tx: tx.run(query, dict=values))
+
+    @property
+    def create_mesh_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        MATCH (n:db_MESH) WHERE n.id = 'MESH:' + row.entity_id
+        SET n.entity_type = row.entity_type,
+            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            n.user = row.user
+        MERGE (s: Synonym {name: row.synonym})
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
+
     def get_gene_global_inclusions(self):
         return self.graph.read_transaction(
             lambda tx: list(
@@ -158,6 +175,18 @@ class AnnotationGraphService(GraphConnection):
                 )
             )
         )
+
+    @property
+    def create_gene_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        MATCH (n:Gene) WHERE n.id = row.entity_id
+        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            n.user = row.user
+        MERGE (s: Synonym {name: row.synonym})
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
 
     def get_species_global_inclusions(self):
         return self.graph.read_transaction(
@@ -173,6 +202,19 @@ class AnnotationGraphService(GraphConnection):
             )
         )
 
+    @property
+    def create_species_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        MATCH (n:Taxonomy) WHERE n.id = row.entity_id
+        SET n.entity_type = row.entity_type,
+            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            n.user = row.user
+        MERGE (s: Synonym {name: row.synonym})
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
+
     def get_protein_global_inclusions(self):
         return self.graph.read_transaction(
             lambda tx: list(
@@ -186,6 +228,18 @@ class AnnotationGraphService(GraphConnection):
                 )
             )
         )
+
+    @property
+    def create_protein_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        MATCH (n:db_UniProt) WHERE n.id = row.entity_id
+        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            n.user = row.user
+        MERGE (s: Synonym {name: row.synonym})
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
 
     def get_lifelike_global_inclusions(self, entity_type: str):
         return self.graph.read_transaction(
@@ -201,6 +255,11 @@ class AnnotationGraphService(GraphConnection):
                 )
             )
         )
+
+    # TODO:
+    @property
+    def create_lifelike_global_inclusion_query(self):
+        raise NotImplementedError
 
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         return self.graph.run(
