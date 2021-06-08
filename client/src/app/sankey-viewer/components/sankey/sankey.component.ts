@@ -47,14 +47,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  @Output('node-clicked') nodeClicked = new EventEmitter();
-  @Output('link-clicked') linkClicked = new EventEmitter();
-
-
-  getLinkDetails({trace, trace_group, folded, description, source, target, ...details}) {
-    return JSON.stringify(details, null, 2);
-  }
-
   constructor(
     private elRef: ElementRef,
     private clipboard: ClipboardService,
@@ -112,6 +104,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('text-anchor', 'start');
   }
 
+  @Output() nodeClicked = new EventEmitter();
+  @Output() linkClicked = new EventEmitter();
+
   @ViewChild('popover', {static: false}) public popover: NgbPopover;
   @ViewChild('popoverAnchor', {static: false}) public popoverAnchor;
 
@@ -155,6 +150,11 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   zoom;
   dragging = false;
+
+
+  getLinkDetails({trace, trace_group, folded, description, source, target, ...details}) {
+    return JSON.stringify(details, null, 2);
+  }
 
   calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
     const {uiState: {value: {zoom, panX, panY}}, size: {width, height}} = this;
@@ -256,14 +256,14 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       )
     );
 
-    this.showPopOverForSVGElement(element, {link: data});
+    // this.showPopOverForSVGElement(element, {link: data});
   }
 
   nodeClick(element, data, _eventId, _links, ..._rest) {
     this.nodeClicked.emit(data);
-    if (element) {
-      this.showPopOverForSVGElement(element, {node: data});
-    }
+    // if (element) {
+    //   this.showPopOverForSVGElement(element, {node: data});
+    // }
   }
 
   showPopOverForSVGElement(element, context) {
@@ -378,7 +378,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     .attr('height', n => {
       return representativePositiveNumber(n.y1 - n.y0);
     })
-    .attr('width', ({x1, x0}) => x1 - x0);
+    .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -470,7 +470,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
                 self.dragging = false;
                 console.log(d3.event);
                 if (d3.event.dx + d3.event.dy < 5) {
-                  nodeClick(undefined, d);
+                  nodeClick(undefined, d, undefined, undefined);
                 }
               })
           )

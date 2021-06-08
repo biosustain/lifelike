@@ -50,6 +50,11 @@ export class SankeyPanelComponent implements OnInit, OnDestroy, OnChanges {
   @Input() paths;
   @Input() nodeCategories;
 
+  @Input() details: {
+    template: TemplateRef<any>,
+    data: any
+  };
+
   filteredNodeCategories = new Set();
 
   isTypeVisible(cat) {
@@ -68,12 +73,6 @@ export class SankeyPanelComponent implements OnInit, OnDestroy, OnChanges {
       return node;
     });
   }
-
-
-  @Input() details: {
-    template: TemplateRef<any>,
-    data: any
-  };
 
   constructor() {
     this.outputSubject = new Subject<boolean>();
