@@ -72,8 +72,8 @@
                     <app-sankey
                             *ngIf="filteredSankeyData"
                             [data]="filteredSankeyData"
-                            (node-clicked)="openNodeDetails($event)"
-                            (link-clicked)="openLinkDetails($event)"
+                            (nodeClicked)="openNodeDetails($event)"
+                            (linkClicked)="openLinkDetails($event)"
                     >
                     </app-sankey>
                 </as-split-area>
@@ -114,10 +114,18 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Link
                 Details:
             </legend>
-            <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-1">
+            <ngb-accordion #acclink="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
                 <ngb-panel title="Description">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="link.description">
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel [disabled]="true">
+                    <ng-template ngbPanelTitle>
+                        <div class="d-flex justify-content-between">
+                            <b>Value</b>
+                            {{ link.value }}
+                        </div>
                     </ng-template>
                 </ngb-panel>
                 <ngb-panel title="Properties" cardClass="filled-card">
@@ -167,11 +175,28 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Node
                 Details:
             </legend>
-            <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-1">
+            <ngb-accordion #accnode="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
                 <ngb-panel title="Description">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="node.description">
                     </ng-template>
+                </ngb-panel>
+                <ngb-panel>
+
+                    <ng-template ngbPanelHeader let-opened="opened">
+                        <button ngbPanelToggle disabled="true"
+                                class="btn btn-link p-0 w-100 d-flex align-items-center justify-content-between">
+                            <b>Value</b>
+                            {{ node.value }}
+                        </button>
+                    </ng-template>
+                    <!--                    <ng-template ngbPanelTitle>-->
+                    <!--                                <button ngbPanelToggle class="btn btn-link p-0">Toggle first</button>-->
+                    <!--                        <div class="d-flex justify-content-between">-->
+                    <!--                            <b>Value</b>-->
+                    <!--                            {{ node.value }}-->
+                    <!--                        </div>-->
+                    <!--                    </ng-template>-->
                 </ngb-panel>
                 <ngb-panel title="Labels" cardClass="filled-card">
                     <ng-template ngbPanelContent>
