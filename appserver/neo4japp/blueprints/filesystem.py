@@ -536,7 +536,7 @@ class FileHierarchyView(FilesystemBaseView):
             # Privileges are calculated in `get_nondeleted_recycled_files` above
             if file and file.calculated_privileges[g.current_user.id].readable:
                 curr_dir = root
-                id_path_list = file.id_path
+                id_path_list = [f.id for f in file.file_path]
                 for id in id_path_list[:-1]:
                     if id not in curr_dir:
                         curr_dir[id] = {}
@@ -549,6 +549,7 @@ class FileHierarchyView(FilesystemBaseView):
 
         def generate_node_tree(id, children):
             file = db.session.query(Files).get(id)
+            filename_path = file.filename_path
             if children is None:
                 return {
                     'data': {
@@ -556,9 +557,9 @@ class FileHierarchyView(FilesystemBaseView):
                         'description': file.description,
                         'mime_type': file.mime_type,
                         'hash_id': file.hash_id,
-                        'filepath': file.filepath,
+                        'file_path': filename_path,
                     },
-                    'level': len(file.filepath.split('/')) - 2
+                    'level': len(filename_path.split('/')) - 2
                 }
             return {
                 'data': {
@@ -566,9 +567,9 @@ class FileHierarchyView(FilesystemBaseView):
                     'description': file.description,
                     'mime_type': file.mime_type,
                     'hash_id': file.hash_id,
-                    'filepath': file.filepath,
+                    'file_path': filename_path,
                 },
-                'level': len(file.filepath.split('/')) - 2,
+                'level': len(filename_path.split('/')) - 2,
                 'children': [
                     generate_node_tree(id, grandchildren)
                     for id, grandchildren in children.items()

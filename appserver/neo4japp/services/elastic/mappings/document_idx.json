@@ -54,7 +54,7 @@
                 "type": "text",
                 "analyzer": "filename_analyzer"
             },
-            "filepath": {
+            "file_path": {
                 "type": "text",
                 "fields": {
                     "tree": {
