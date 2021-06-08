@@ -395,7 +395,8 @@ class EntityRecognitionService:
         if entity_type_to_include in {
             EntityType.ANATOMY.value,
             EntityType.DISEASE.value,
-            EntityType.PHENOTYPE.value
+            EntityType.FOOD.value,
+            EntityType.PHENOMENA.value
         }:
             global_inclusions = self.graph.get_mesh_global_inclusions(entity_type_to_include)
         else:
