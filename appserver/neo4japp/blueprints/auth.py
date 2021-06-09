@@ -214,7 +214,8 @@ def login():
         if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
             raise ServerException(
                 title='Failed to Login',
-                message='The account is suspended, Please contact administrator!',
+                message='The account has been suspended after too many failed login attempts.\
+                Please contact an administrator for help.',
                 code=423)
         elif user.check_password(data.get('password')):
             current_app.logger.info(
