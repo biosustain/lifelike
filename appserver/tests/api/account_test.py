@@ -37,6 +37,7 @@ def test_admin_can_create_user(client, fix_admin_user):
             'lastName': 'yoda',
             'roles': 'admin',
             'password': 'iluvmando',
+            'createdByAdmin': True
         }),
         content_type='application/json'
     )
