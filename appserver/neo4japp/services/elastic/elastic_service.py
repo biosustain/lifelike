@@ -638,7 +638,8 @@ class ElasticService(ElasticConnection, GraphConnection):
             },
             'fields': fields,
             'highlight': highlight,
-            '_source': False,  # Set `_source` to False so we only return the properties specified in `fields`
+            # Set `_source` to False so we only return the properties specified in `fields`
+            '_source': False,
         }, phrases + words + wildcards, synonym_map, dropped_synonyms
 
     def search(
