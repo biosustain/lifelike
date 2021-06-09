@@ -3,7 +3,7 @@ import re
 import secrets
 import string
 
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, current_app
 from flask.views import MethodView
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.exc import SQLAlchemyError
@@ -25,7 +25,7 @@ from neo4japp.constants import (
     RESET_PASSWORD_SYMBOLS,
     RESET_PASSWORD_ALPHABET,
     SEND_GRID_API_CLIENT,
-    RESET_PASSWORD_EMAIL_TITLE
+    RESET_PASSWORD_EMAIL_TITLE, LogEventType
 )
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
@@ -42,6 +42,7 @@ from neo4japp.utils.request import Pagination
 
 from sendgrid.helpers.mail import Mail
 
+from utils import UserEventLog, EventLog
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
@@ -238,11 +239,19 @@ def reset_password(email: str):
     try:
         target = AppUser.query.filter_by(email=email).one()
     except NoResultFound:
-        raise ServerException(
-            title='Failed to find account',
-            message='No account registered to provided email address.',
-            code=404)
+        current_app.logger.info(
+            f'Invalid email: {email} provided in password reset request.',
+            extra=EventLog(
+                event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+        )
+        return jsonify(dict(result='')), 204
 
+    current_app.logger.info(
+        f'User: {target.username} password reset.',
+        extra=UserEventLog(
+            username=target.username,
+            event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+    )
     random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
     new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
