@@ -286,12 +286,7 @@ def unlock_user(hash_id):
             message='You do not have sufficient privileges.')
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-        if target.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
-            target.failed_login_count = 0
-        else:
-            raise ServerException(
-                title='Failed to Unlock User',
-                message='User was not locked!')
+        target.failed_login_count = 0
         try:
             db.session.add(target)
             db.session.commit()
