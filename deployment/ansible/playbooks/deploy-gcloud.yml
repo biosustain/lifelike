@@ -10,6 +10,12 @@
       tags: ["docker"]
 
   tasks:
+    - name: Install fail2ban
+      apt:
+        update_cache: yes
+        pkg:
+          - fail2ban
+
     - name: Log into Docker Registry
       docker_login:
         registry_url: ***ARANGO_DB_NAME***.azurecr.io
