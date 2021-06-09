@@ -22,17 +22,17 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets azure-secrets container-login docker-build lmdb
+init: azure-secrets ansible-secrets container-login docker-build lmdb
 
 docker-build:
 	docker-compose build
 
 # Runs enough containers for the application to function
-docker-run: container-login azure-secrets lmdb
+docker-run: azure-secrets container-login lmdb
 	docker-compose up -d
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
-docker-run-all: container-login azure-secrets lmdb
+docker-run-all: azure-secrets container-login lmdb
 	docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
 
 docker-stop:
