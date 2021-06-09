@@ -84,7 +84,8 @@ export class LoginComponent {
         }, () => {
           progressDialogRef.close();
           this.snackBar.open(
-            `No user account affiliated with this email account found.`,
+            `Unable to reset the password due to the error.\n
+            Please try again or contact the administration if the issue persist.`,
             'close',
             {duration: 5000},
           );
