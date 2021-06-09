@@ -39,10 +39,9 @@ from neo4japp.schemas.account import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.request import Pagination
+from neo4japp.utils.logger import EventLog, UserEventLog
 
 from sendgrid.helpers.mail import Mail
-
-from utils import UserEventLog, EventLog
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
