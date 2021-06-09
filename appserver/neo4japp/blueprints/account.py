@@ -19,7 +19,7 @@ from neo4japp.models import AppUser, AppRole
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MESSAGE_SENDER_IDENTITY,
-    REST_PASS_MAIL_CONTENT,
+    RESET_PASS_MAIL_CONTENT,
     MIN_TEMP_PASS_LENGTH,
     MAX_TEMP_PASS_LENGTH,
     RESET_PASSWORD_SYMBOLS,
@@ -134,7 +134,6 @@ class AccountView(MethodView):
                 message=f'Username {params["username"]} already taken.',
                 code=400)
 
-        params['created_by_admin'] = params.get('created_by_admin') or False
         app_user = AppUser(
             username=params['username'],
             email=params['email'],
@@ -259,9 +258,9 @@ def reset_password(email: str):
         from_email=MESSAGE_SENDER_IDENTITY,
         to_emails=email,
         subject=RESET_PASSWORD_EMAIL_TITLE,
-        html_content=REST_PASS_MAIL_CONTENT.format(name=target.first_name,
-                                                   lastname=target.last_name,
-                                                   password=new_password))
+        html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
+                                                    lastname=target.last_name,
+                                                    password=new_password))
     try:
         SEND_GRID_API_CLIENT.send(message)
     except Exception as e:
