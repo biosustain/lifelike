@@ -405,7 +405,8 @@ class EntityRecognitionService:
                 # use lifelike_global_inclusions
                 pass
 
-        global_inclusions += self.graph.get_lifelike_global_inclusions(entity_type_to_include)
+        if not global_inclusions:
+            global_inclusions = self.graph.get_lifelike_global_inclusions(entity_type_to_include)
 
         for inclusion in global_inclusions:
             normalized_entity_name = normalize_str(inclusion['synonym'])
