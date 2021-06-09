@@ -8,7 +8,7 @@ RUN dnf install htop postgresql graphviz python-pip python3-devel \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 
-RUN wget https://download.documentfoundation.org/libreoffice/stable/7.1.2/rpm/x86_64/LibreOffice_7.1.2_Linux_x86-64_rpm.tar.gz
+RUN wget https://download.documentfoundation.org/libreoffice/stable/7.1.3/rpm/x86_64/LibreOffice_7.1.3_Linux_x86-64_rpm.tar.gz
 RUN tar -xvf LibreOffice_*_Linux_x86-64_rpm.tar.gz
 RUN cd LibreOffice_*_Linux_x86-64_rpm && dnf install -y RPMS/*.rpm
 
