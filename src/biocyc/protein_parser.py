@@ -13,6 +13,7 @@ ATTR_NAMES = {
     'MOLECULAR-WEIGHT-KD': (PROP_MOL_WEIGHT_KD, 'str'),
     'PI': (PROP_PI, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str'),
+    'LOCATIONS': (PROP_LOCATION, 'str'),
     'GO-TERMS': (DB_GO, 'str')
 }
 REL_NAMES = {
@@ -29,8 +30,8 @@ MODIFIED_PROTEINS = 'Modified-Proteins'
 COMPLEXES = 'Complexes'
 
 class ProteinParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile):
-        BaseDataFileParser.__init__(self,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
         self.attrs = [PROP_BIOCYC_ID, PROP_COMMON_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD, PROP_PI]
 
     def create_synonym_rels(self) -> bool:

@@ -17,8 +17,8 @@ REL_NAMES = {
 
 
 class EnzymeReactionParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile):
-        BaseDataFileParser.__init__(self,  db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION,ATTR_NAMES, REL_NAMES)
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION,ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_COMMON_NAME]
 
     def create_synonym_rels(self) -> bool:

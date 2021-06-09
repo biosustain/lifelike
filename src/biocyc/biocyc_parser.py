@@ -29,33 +29,36 @@ DB_FILE_DICT = {DB_ECOCYC: 'ecoli.tar.gz',
 
 
 class BiocycParser(object):
+    def __init__(self, base_data_dir: str = None):
+        self.base_data_dir = base_data_dir
+
     def get_parser(self, entity_name: str, biocyc_dbname, filename):
         if entity_name == NODE_CLASS:
-            return class_parser.ClassParser(biocyc_dbname, filename)
+            return class_parser.ClassParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_COMPOUND:
-            return compound_parser.CompoundParser(biocyc_dbname, filename)
+            return compound_parser.CompoundParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_DNA_BINDING_SITE:
-            return dnabindsite_parser.DnaBindSiteParser(biocyc_dbname, filename)
+            return dnabindsite_parser.DnaBindSiteParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_ENZ_REACTION:
-            return enzymereaction_parser.EnzymeReactionParser(biocyc_dbname, filename)
+            return enzymereaction_parser.EnzymeReactionParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_GENE:
-            return gene_parser.GeneParser(biocyc_dbname, filename)
+            return gene_parser.GeneParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_PATHWAY:
-            return pathway_parser.PathwayParser(biocyc_dbname, filename)
+            return pathway_parser.PathwayParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_PROMOTER:
-            return promoter_parser.PromoterParser(biocyc_dbname, filename)
+            return promoter_parser.PromoterParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_PROTEIN:
-            return protein_parser.ProteinParser(biocyc_dbname, filename)
+            return protein_parser.ProteinParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_REACTION:
-            return reaction_parser.ReactionParser(biocyc_dbname, filename)
+            return reaction_parser.ReactionParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_REGULATION:
-            return regulation_parser.RegulationParser(biocyc_dbname, filename)
+            return regulation_parser.RegulationParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_RNA:
-            return rna_parser.RnaParser(biocyc_dbname, filename)
+            return rna_parser.RnaParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_TERMINATOR:
-            return terminator_parser.TerminatorParser(biocyc_dbname, filename)
+            return terminator_parser.TerminatorParser(biocyc_dbname, filename, self.base_data_dir)
         if entity_name == NODE_TRANS_UNIT:
-            return transcripitionunit_parser.TranscriptionUnitParser(biocyc_dbname, filename)
+            return transcripitionunit_parser.TranscriptionUnitParser(biocyc_dbname, filename, self.base_data_dir)
 
     def link_genes(self, database:Database):
         # there is not ncbi genes for pput160488
@@ -176,6 +179,13 @@ class BiocycParser(object):
         database.run_query(query)
 
     def load_data_into_neo4j(self, database: Database, entities=ENTITIES, db_files=DB_FILE_DICT, initial_load=False):
+        """
+        Use the default ENTITIES and DB_FILE_DICT to load all 4 biocyc databases into KG database
+        :param database: the neo4j database to load data
+        :param entities: List of entity node labels to load
+        :param db_files: dict for biocyc database name  and data file name
+        :param initial_load: set False for updates.
+        """
         if initial_load:
             database.create_constraint(NODE_BIOCYC, PROP_BIOCYC_ID, 'constraint_biocyc_biocycId')
             database.create_index(
@@ -221,11 +231,10 @@ class BiocycParser(object):
 
 
 if __name__ == '__main__':
-    # parser = BiocycParser('ecocyc-plus')
-    # parser.load_data_to_graphdb(ENTITIES, {DB_ECOCYC: 'ecoli.tar.gz'}, True)
-    parser = BiocycParser()
-    database = get_database(Neo4jInstance.LOCAL, 'humancyc')
-    parser.load_data_into_neo4j(database, ENTITIES, {DB_HUMANCYC: 'humancyc.tar.gz'}, True)
+    datadir = '/Users/rcai/data'
+    parser = BiocycParser(datadir)
+    database = get_database(Neo4jInstance.LOCAL, 'ecocyc')
+    parser.load_data_into_neo4j(database, ENTITIES, {DB_ECOCYC: 'ecoli.tar.gz'}, True)
     database.close()
 
 
