@@ -18,8 +18,8 @@ REL_NAMES = {
 }
 
 class RegulationParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile):
-        BaseDataFileParser.__init__(self, db_name, tarfile, 'regulation.dat', NODE_REGULATION,ATTR_NAMES, REL_NAMES)
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'regulation.dat', NODE_REGULATION,ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_MODE, PROP_MECHANISM]
 
 

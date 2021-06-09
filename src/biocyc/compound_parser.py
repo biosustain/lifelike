@@ -24,8 +24,8 @@ REL_NAMES = {
 DB_LINK_SOURCES = {'CHEBI':True}
 
 class CompoundParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile):
-        BaseDataFileParser.__init__(self, db_name, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
         self.attrs = [PROP_BIOCYC_ID, PROP_COMMON_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
 
     def create_synonym_rels(self) -> bool:

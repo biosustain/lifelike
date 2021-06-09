@@ -16,7 +16,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 
 
 class BaseDataFileParser(BaseParser):
-    def __init__(self, biocyc_dbname, tar_file, datafile_name, entity_name, attr_names:dict, rel_names:dict, db_link_sources:dict=None):
+    def __init__(self, base_data_dir: str, biocyc_dbname, tar_file, datafile_name, entity_name, attr_names:dict, rel_names:dict,
+                 db_link_sources: dict=None):
         """
         :param biocyc_dbname: biocyc database name, eg. DB_ECOCYC, DB_HUMANCYC
         :param tar_file: tar file downloaded from biocyc website
@@ -26,7 +27,7 @@ class BaseDataFileParser(BaseParser):
         :param rel_names:  mapping for tagName and relName
         :param db_link_sources:  mapping for tagName and linkRel
         """
-        BaseParser.__init__(self, DB_BIOCYC.lower())
+        BaseParser.__init__(self, DB_BIOCYC.lower(), base_data_dir)
         self.input_zip = os.path.join(self.download_dir, tar_file)
         self.db_output_dir = os.path.join(self.output_dir, biocyc_dbname.lower())
         self.datafile = datafile_name
@@ -63,44 +64,48 @@ class BaseDataFileParser(BaseParser):
                     f = utf8reader(tar.extractfile(tarinfo.name))
                     nodes = []
                     node = None
-                    is_comment = False
+                    prev_line_is_comment = False
                     for line in f:
-                        try:
-                            line = biocyc_utils.cleanhtml(line)
-                            if line.startswith(UNIQUE_ID):
-                                node = NodeData(self.node_labels.copy(), PROP_BIOCYC_ID)
-                                nodes.append(node)
-                            if node and PROP_COMMENT in self.attr_name_map and is_comment and line.startswith('/'):
-                                line = line[1:].strip()
-                                node.add_attribute(PROP_COMMENT, line, 'str')
-                            elif node:
-                                attr, val = biocyc_utils.get_attr_val_from_line(line)
-                                if attr:
-                                    if attr.lower() != PROP_COMMENT:
-                                        # reset comment
-                                        is_comment = False
-                                    else:
-                                        is_comment = True
-                                    if attr in self.attr_name_map:
-                                        prop_name, data_type = biocyc_utils.get_property_name_type(attr, self.attr_name_map)
-                                        node.add_attribute(prop_name, val, data_type)
-                                        if attr == UNIQUE_ID:
-                                            node.add_attribute(PROP_ID, val, data_type)
-                                    if attr in self.rel_name_map:
-                                        # some rel could also be an attribute, e.g. types
-                                        if attr == 'DBLINKS':
-                                            tokens = val.split(' ')
-                                            if len(tokens) > 1:
-                                                db_name = tokens[0].lstrip('(')
-                                                reference_id = tokens[1].strip(')').strip('"')
-                                                add_prefix = tokens[1]
-                                                self.add_dblink(node, db_name, reference_id, )
-                                        else:
-                                            rel_type = self.rel_name_map.get(attr)
-                                            node.add_edge_type(rel_type, val)
-                        except Exception as ex:
-                            print('line:', line)
+                        line = biocyc_utils.cleanhtml(line)
+                        node, prev_line_is_comment = self.parse_line(line, node, nodes, prev_line_is_comment)
                     return nodes
+
+    def parse_line(self, line, node, nodes, prev_line_is_comment):
+        try:
+            if line.startswith(UNIQUE_ID):
+                node = NodeData(self.node_labels.copy(), PROP_BIOCYC_ID)
+                nodes.append(node)
+            if node and PROP_COMMENT in self.attr_name_map and prev_line_is_comment and line.startswith('/'):
+                line = line[1:].strip()
+                node.add_attribute(PROP_COMMENT, line, 'str')
+            elif node:
+                attr, val = biocyc_utils.get_attr_val_from_line(line)
+                if attr:
+                    if attr.lower() != PROP_COMMENT:
+                        # reset comment
+                        prev_line_is_comment = False
+                    else:
+                        prev_line_is_comment = True
+                    if attr in self.attr_name_map:
+                        prop_name, data_type = biocyc_utils.get_property_name_type(attr, self.attr_name_map)
+                        node.add_attribute(prop_name, val, data_type)
+                        if attr == UNIQUE_ID:
+                            node.add_attribute(PROP_ID, val, data_type)
+                    if attr in self.rel_name_map:
+                        # some rel could also be an attribute, e.g. types
+                        if attr == 'DBLINKS':
+                            tokens = val.split(' ')
+                            if len(tokens) > 1:
+                                db_name = tokens[0].lstrip('(')
+                                reference_id = tokens[1].strip(')').strip('"')
+                                add_prefix = tokens[1]
+                                self.add_dblink(node, db_name, reference_id, )
+                        else:
+                            rel_type = self.rel_name_map.get(attr)
+                            node.add_edge_type(rel_type, val)
+        except Exception as ex:
+            print('line:', line)
+        return node, prev_line_is_comment
 
     def add_dblink(self, node:NodeData, db_name, reference_id):
         link_node = NodeData(NODE_DBLINK, PROP_REF_ID)
