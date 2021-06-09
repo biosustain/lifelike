@@ -58,6 +58,7 @@ class LogEventType(Enum):
     ENRICHMENT = 'enrichment_table'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
+    RESET_PASSWORD = 'reset_password'
     SENTRY_HANDLED = 'handled_exception'
     SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
