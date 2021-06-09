@@ -4,11 +4,11 @@ LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
 
 # Fetches the password to unlock Ansible vault files
 ansible-secrets:
-	az storage blob download --account-name lifelike --container-name lifelike-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw
+	az storage blob download --account-name lifelike --container-name lifelike-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw --auth-mode login
 
 # Fetches the credentials (env file) for Azure services
 azure-secrets:
-	az storage blob download --account-name lifelike --container-name lifelike-secrets --name azure-secrets.env --file ./azure-secrets.env
+	az storage blob download --account-name lifelike --container-name lifelike-secrets --name azure-secrets.env --file ./azure-secrets.env --auth-mode login
 
 # Log into azure container registry
 container-login:
