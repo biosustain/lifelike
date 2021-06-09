@@ -80,7 +80,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
     this.zoom = d3.zoom()
-      .scaleExtent([1, 8]);
+      .scaleExtent([0.1, 8]);
   }
 
   @Input('data') set data(data) {
@@ -195,7 +195,9 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onResize(width, height) {
-    const {zoom} = this;
+    const {zoom, margin} = this;
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
 
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
@@ -204,10 +206,10 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .call(
         zoom
           .extent([[0, 0], [width, height]])
-          .translateExtent([[0, 0], [width, height]])
+          // .translateExtent([[0, 0], [width, height]])
       );
 
-    this.sankey.size([width, height]);
+    this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }

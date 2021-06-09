@@ -12,6 +12,8 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors, representativePositiveNumber } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { GraphData } from '../../interfaces/vis-js.interface';
 
 
 @Component({
@@ -23,7 +25,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   constructor(
     protected readonly filesystemService: FilesystemService,
-    protected readonly route: ActivatedRoute
+    protected readonly route: ActivatedRoute,
+    private modalService: NgbModal
   ) {
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
@@ -34,6 +37,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         )
       );
     });
+
+    this.traceDetailsGraph = new WeakMap();
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -149,6 +154,40 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   valueAccessors;
   selectedValueAccessor = this.valueGenerators[0];
 
+  traceDetailsGraph;
+
+  getNodeById(nodeId) {
+    return this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {};
+  }
+
+
+  open(content) {
+    this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', windowClass: 'fillHeightModal', size: 'xl'}).result
+      .then((result) => {
+      });
+  }
+
+  getTraceDetailsGraph(trace) {
+    let r = this.traceDetailsGraph.get(trace);
+    if (!r) {
+      const nodesIds = [].concat(...trace.node_paths);
+      r = {
+        edges: trace.detail_edges.map(([from, to, d]) => ({
+          from, to, id: uuidv4(), arrows: 'to', label: d.type, ...(d || {})
+        })),
+        nodes:
+          this.filteredSankeyData.nodes.filter(({id}) => nodesIds.includes(id)).map(n => ({
+            ...n,
+            color: undefined,
+            databaseLabel: n.type,
+            label: n.name[0]
+          }))
+      } as GraphData;
+      this.traceDetailsGraph.set(trace, r);
+    }
+    return r;
+  }
+
   selectTrace(trace) {
     this.linksColorMap = new Map(trace.traces.map((t, i) => [t, christianColors[i]]));
     this.selectedTrace = trace;
@@ -159,16 +198,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         const link = {
           ...links[iidx],
           schemaClass: color,
-          trace: idx,
-          trace_group: itrace.group,
+          trace: itrace
         };
         link.id += itrace;
         return link;
       });
       return o.concat(ilinks);
     }, []);
+    const allNodesIds = trace.traces.reduce((o, itrace, idx) =>
+        itrace.node_paths.reduce((io, n) =>
+            io.concat(n)
+          , o)
+      , []
+    );
+    const allNodes = [...(new Set(allNodesIds))].map(idx => nodes.find(({id}) => id === idx));
     this.filteredSankeyData = this.linkGraph({
-      nodes,
+      nodes: allNodes,
       links: allEdges,
       inNodes: node_sets[trace.sources]
     });
@@ -259,7 +304,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
-  getLinkDetails({source, target, description, ...details}) {
+  getLinkDetails({source, target, description, trace, ...details}) {
     return JSON.stringify(details, null, 2);
   }
 
