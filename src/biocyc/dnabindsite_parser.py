@@ -16,8 +16,8 @@ ATTR_NAMES = {
 
 
 class DnaBindSiteParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile):
-        BaseDataFileParser.__init__(self,  db_name, tarfile, 'dnabindsites.dat', NODE_DNA_BINDING_SITE,ATTR_NAMES, [] )
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'dnabindsites.dat', NODE_DNA_BINDING_SITE,ATTR_NAMES, [] )
         self.attrs = [PROP_BIOCYC_ID, PROP_POS, PROP_LEN]
 
     def create_synonym_rels(self) -> bool:
