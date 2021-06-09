@@ -3,6 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import { AppUser, PrivateAppUser, Credential } from 'app/interfaces';
 import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
+
 export const checkTermsOfService = createAction(
     '[Auth] Check Terms Of Service',
     props<{credential: Credential}>(),
@@ -67,4 +68,9 @@ export const successPasswordUpdate = createAction(
 
 export const updatePassword = createAction(
   '[Auth] Changing Initial Password',
+);
+
+export const userUpdated = createAction(
+    '[Auth] Updated user',
+    props<{user: PrivateAppUser}>(),
 );

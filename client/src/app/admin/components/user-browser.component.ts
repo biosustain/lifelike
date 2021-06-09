@@ -13,6 +13,9 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
+import { AuthActions } from '../../auth/store';
+import { Store } from '@ngrx/store';
+import { State } from '../../***ARANGO_USERNAME***-store';
 
 
 @Component({
@@ -31,7 +34,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
               private readonly modalService: NgbModal,
               private readonly progressDialog: ProgressDialog,
               private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler) {
+              private readonly errorHandler: ErrorHandler,
+              private store: Store<State> ) {
   }
 
   ngOnInit() {
@@ -134,6 +138,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             .pipe(this.errorHandler.create({label: 'Update user'}))
             .subscribe(() => {
               progressDialogRef.close();
+              this.store.dispatch(AuthActions.userUpdated(
+                      {user: updatedUser},
+                    ));
               this.accountService.getUserList();
               this.refresh();
               this.snackBar.open(
