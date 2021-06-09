@@ -181,7 +181,7 @@ export class AuthEffects {
     ofType(AuthActions.logout),
     map(_ => {
       this.authService.logout();
-      this.router.navigate(['/']);
+      this.router.navigate(['/login']);
       return SnackbarActions.displaySnackbar(
         {
           payload: {
