@@ -110,16 +110,12 @@ export class AuthEffects {
         const modalRef = this.modalService.open(ChangePasswordDialogComponent);
         modalRef.result.then(() => {
           const timeStamp = TERMS_OF_SERVICE.updateTimestamp;
-          // console.log('Credenatial in update pass');
-          // console.log(credential);
-          // this.store$.dispatch(AuthActions.login({credential}));
           return AuthActions.successPasswordUpdate();
 
         }, () => {
           this.store$.dispatch(AuthActions.failedPasswordUpdate());
           return this.store$.dispatch(AuthActions.logout());
         });
-        // return AuthActions.login({credential});
         return AuthActions.successPasswordUpdate();
     }),
   ));
