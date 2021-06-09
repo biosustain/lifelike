@@ -576,6 +576,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
             use_synonyms: Dict[str, str],
+            fields: List[str],
             query_filter,
             highlight,
     ):
@@ -635,7 +636,9 @@ class ElasticService(ElasticConnection, GraphConnection):
                     ],
                 }
             },
-            'highlight': highlight
+            'fields': fields,
+            'highlight': highlight,
+            '_source': False,  # Set `_source` to False so we only return the properties specified in `fields`
         }, phrases + words + wildcards, synonym_map, dropped_synonyms
 
     def search(
@@ -647,6 +650,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
             use_synonyms: Dict[str, str],
+            fields: List[str],
             offset: int = 0,
             limit: int = 10,
             query_filter=None,
@@ -658,6 +662,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            fields=fields,
             query_filter=query_filter,
             highlight=highlight,
             use_synonyms=use_synonyms,
