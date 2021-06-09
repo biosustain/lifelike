@@ -121,16 +121,57 @@
                     </ng-template>
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
-                    <ng-template ngbPanelTitle>
-                        <div class="d-flex justify-content-between">
+                    <ng-template ngbPanelHeader let-opened="opened" disabled="true">
+                        <button ngbPanelToggle
+                                class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
                             {{ link.value }}
-                        </div>
+                        </button>
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel title="Trace" *ngIf="link.trace" cardClass="filled-card">
+                    <ng-template ngbPanelContent>
+                        <ul class="list-group list-group-flush cancel-out-card-padding">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <b>Source</b>
+                                {{ getNodeById(link.trace.source).description }}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <b>Target</b>
+                                {{ getNodeById(link.trace.target).description }}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <b>Group</b>
+                                {{ link.trace.group }}
+                            </li>
+                            <li class="list-group-item">
+                                <ng-template #content let-modal>
+                                    <div class="modal-header">
+                                        <h4 class="modal-title" id="modal-basic-title">Trace details</h4>
+                                        <button type="button" class="close" aria-label="Close"
+                                                (click)="modal.dismiss('Cross click')">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body vh-75">
+                                        <app-vis-js-network
+                                                [data]="getTraceDetailsGraph(link.trace)"
+                                        >
+
+                                        </app-vis-js-network>
+                                        {{ link.trace.edge_details }}
+                                    </div>
+                                </ng-template>
+                                <button class="btn btn-outline-primary" (click)="open(content)">Show detailed
+                                    network
+                                </button>
+                            </li>
+                        </ul>
                     </ng-template>
                 </ngb-panel>
                 <ngb-panel title="Properties" cardClass="filled-card">
                     <ng-template ngbPanelContent>
-                        <ul class="list-group list-group-flush">
+                        <ul class="list-group list-group-flush cancel-out-card-padding">
                             <li *ngFor="let property of valueAccessors"
                                 [ngClass]="{
                                 'list-group-item': true,
@@ -144,15 +185,6 @@
                             >
                                 <b>Folded</b>
                                 True
-                            </li>
-                            <li *ngIf="link.trace"
-                                class="list-group-item d-flex justify-content-between"
-                            >
-                                <b>Trace index</b>{{ link.trace }}
-                            <li *ngIf="link.trace_group"
-                                class="list-group-item d-flex justify-content-between"
-                            >
-                                <b>Trace group</b>{{ link.trace_group }}
                             </li>
                         </ul>
                     </ng-template>
@@ -183,9 +215,9 @@
                 </ngb-panel>
                 <ngb-panel>
 
-                    <ng-template ngbPanelHeader let-opened="opened">
-                        <button ngbPanelToggle disabled="true"
-                                class="btn btn-link p-0 w-100 d-flex align-items-center justify-content-between">
+                    <ng-template ngbPanelHeader let-opened="opened" disabled="true">
+                        <button ngbPanelToggle
+                                class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
                             {{ node.value }}
                         </button>
@@ -200,7 +232,7 @@
                 </ngb-panel>
                 <ngb-panel title="Labels" cardClass="filled-card">
                     <ng-template ngbPanelContent>
-                        <ul class="list-group list-group-flush">
+                        <ul class="list-group list-group-flush cancel-out-card-padding">
                             <li *ngFor="let label of node.labels"
                                 class="list-group-item"
                             >{{ label }}</li>
