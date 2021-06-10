@@ -124,8 +124,8 @@
                 <div class="mt-2">
                   <div class="custom-control custom-checkbox">
                     <input type="checkbox" [(ngModel)]="showExcludedAnnotations"
-                           class="custom-control-input" id="showExcludedAnnotations">
-                    <label class="custom-control-label" for="showExcludedAnnotations">Show excluded
+                           class="custom-control-input" [id]="id + '-showExcludedAnnotations'">
+                    <label class="custom-control-label" [for]="id + '-showExcludedAnnotations'">Show excluded
                       annotations</label>
                   </div>
                 </div>
@@ -166,7 +166,7 @@
             </div>
           </div>
         </div>
-        <div class="flex-fill overflow-auto" id="pdf-viewer-lib-wrapper">
+        <div class="flex-fill overflow-auto pdf-viewer-lib-wrapper" [id]="id + '-pdf-viewer-lib-wrapper'">
           <div *ngIf="ready">
             <!-- PDF Viewer -->
             <lib-pdf-viewer-lib

@@ -94,6 +94,17 @@ jobs:
           context: ./cache-invalidator
           dockerfile: ./Dockerfile
 
+      - name: Build statistical-enrichment image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: lifelike.azurecr.io
+          image_name: kg-statistical-enrichment
+          image_tag: ${{ github.sha }},latest
+          context: ./statistical-enrichment
+          dockerfile: ./Dockerfile
+
   deploy:
     name: Deploy
     needs: build

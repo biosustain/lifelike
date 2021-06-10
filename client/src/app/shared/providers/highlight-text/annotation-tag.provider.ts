@@ -83,7 +83,7 @@ export class AnnotationTagHandler extends TagHandler {
       const hyperlinks: Hyperlink[] = [];
 
       if (object != null) {
-        sources.push(...object.getGraphEntitySources());
+        sources.push(...object.getGraphEntitySources(meta));
       }
 
       search = Object.keys(meta.links || []).map(k => {

@@ -1,27 +1,6 @@
-import json
-
-from typing import List
-
-from neo4japp.exceptions import LMDBError
-from neo4japp.database import LMDBConnection
+from .lmdb_connector import LMDBConnector
 
 
-class LMDBService(LMDBConnection):
-    def get_lmdb_values(self, txn, key, token_type) -> List[dict]:
-        """Return all values for an lmdb key."""
-        lookup_key = key.encode('utf-8')
-        cursor = txn.cursor()
-        values = []
-        if cursor.set_key(lookup_key):
-            try:
-                values = [json.loads(v) for v in cursor.iternext_dup()]
-            except Exception:
-                raise LMDBError(
-                    title='Cannot Connect to LMDB',
-                    message=f'Failed token lookup for type <{token_type}>.')
-            cursor.close()
-        return values
-
-    def new_lmdb(self):
-        # TODO: JIRA LL-315 from LL-256
-        raise NotImplementedError
+class LMDBService(LMDBConnector):
+    def __init__(self, dirpath: str, **kwargs) -> None:
+        super().__init__(dirpath, **kwargs)

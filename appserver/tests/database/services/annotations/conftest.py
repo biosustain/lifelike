@@ -2,7 +2,7 @@ import lmdb
 import json
 import pytest
 
-from os import environ, path, remove, walk
+from os import path, remove, walk
 
 from neo4japp.database import DBConnection, GraphConnection
 from neo4japp.models import FileContent, GlobalList
@@ -11,7 +11,6 @@ from neo4japp.services.annotations import (
     AnnotationDBService,
     AnnotationGraphService,
     EntityRecognitionService,
-    LMDBAccess,
     LMDBService,
     ManualAnnotationService
 )
@@ -29,7 +28,6 @@ from neo4japp.services.annotations.constants import (
     PHENOMENAS_MESH_LMDB,
     PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
-    CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
 )
 from neo4japp.util import normalize_str
@@ -101,7 +99,7 @@ def get_entity_service(db_service, graph_service, lmdb_service, request):
 
 @pytest.fixture(scope='function')
 def lmdb_service():
-    for db_name, entity in [
+    configs = [
         (ANATOMY_MESH_LMDB, 'anatomy'),
         (CHEMICALS_CHEBI_LMDB, 'chemicals'),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
@@ -112,44 +110,18 @@ def lmdb_service():
         (PHENOMENAS_MESH_LMDB, 'phenomenas'),
         (PHENOTYPES_CUSTOM_LMDB, 'phenotypes'),
         (SPECIES_NCBI_LMDB, 'species'),
-    ]:
+    ]
+
+    for db_name, entity in configs:
         create_empty_lmdb(f'lmdb/{entity}', db_name)
 
-    anatomy_lmdb_path = path.join(directory, 'lmdb/anatomy')
-    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
-    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
-    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
-    foods_lmdb_path = path.join(directory, 'lmdb/foods')
-    genes_lmdb_path = path.join(directory, 'lmdb/genes')
-    phenomenas_lmdb_path = path.join(directory, 'lmdb/phenomenas')
-    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
-    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
-    species_lmdb_path = path.join(directory, 'lmdb/species')
+    class MockLMDBService(LMDBService):
+        def __init__(self, dirpath, **kwargs):
+            super().__init__(dirpath, **kwargs)
 
-    lmdb = LMDBAccess(
-        genes_lmdb_path=genes_lmdb_path,
-        anatomy_lmdb_path=anatomy_lmdb_path,
-        chemicals_lmdb_path=chemicals_lmdb_path,
-        compounds_lmdb_path=compounds_lmdb_path,
-        proteins_lmdb_path=proteins_lmdb_path,
-        species_lmdb_path=species_lmdb_path,
-        diseases_lmdb_path=diseases_lmdb_path,
-        phenomenas_lmdb_path=phenomenas_lmdb_path,
-        phenotypes_lmdb_path=phenotypes_lmdb_path,
-        foods_lmdb_path=foods_lmdb_path
-    )
-    lmdb.open_envs()
-
-    class MockLMDBConnection:
-        def __init__(self):
-            super().__init__()
-            self.session = lmdb
-
-    class MockLMDBService(MockLMDBConnection, LMDBService):
-        def __init__(self):
-            super().__init__()
-
-    return MockLMDBService()
+    return MockLMDBService(
+        f'{directory}/lmdb/',
+        **{db_name: path for db_name, path in configs})
 
 
 # Start LMDB Data Helpers

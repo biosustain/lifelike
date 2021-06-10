@@ -290,7 +290,7 @@ class ContentSearchView(FilesystemBaseView):
         }
 
         elastic_service = get_elastic_service()
-        elastic_result, search_phrases, synonym_map = elastic_service.search(
+        elastic_result, search_phrases, synonym_map, dropped_synonyms = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
@@ -348,7 +348,8 @@ class ContentSearchView(FilesystemBaseView):
             'total': elastic_result['total'],
             'query': ResultQuery(phrases=search_phrases),
             'results': results,
-            'synonyms': synonym_map
+            'synonyms': synonym_map,
+            'dropped_synonyms': dropped_synonyms
         }))
 
 
