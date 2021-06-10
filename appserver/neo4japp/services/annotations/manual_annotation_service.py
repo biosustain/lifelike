@@ -338,23 +338,23 @@ class ManualAnnotationService:
 
             if not self._global_annotation_exists(createval):
                 queries = {
-                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion_query,
-                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion_query,
-                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion_query,
-                    EntityType.GENE.value: self.graph.create_gene_global_inclusion_query,
-                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion_query,
-                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion_query,
-                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion_query
+                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion,
+                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion,
+                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion,
+                    EntityType.GENE.value: self.graph.create_gene_global_inclusion,
+                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion,
+                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion,
+                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion
                 }
 
                 query = queries.get(entity_type, '')
                 try:
-                    result = self.graph.create_global_inclusion(query, createval) if query else None  # noqa
+                    result = self.graph.exec_write_query(query, createval) if query else None  # noqa
 
                     if not result:
                         # did not match to any existing, so add to Lifelike
-                        query = self.graph.create_lifelike_global_inclusion_query
-                        result = self.graph.create_global_inclusion(query, createval)
+                        query = self.graph.create_lifelike_global_inclusion
+                        result = self.graph.exec_write_query(query, createval)
                 except Exception:
                     current_app.logger.error(
                         f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
@@ -387,23 +387,23 @@ class ManualAnnotationService:
 
     def _global_annotation_exists_in_kg(self, values: dict):
         queries = {
-            EntityType.ANATOMY.value: self.graph.exist_mesh_global_inclusion_query,
-            EntityType.DISEASE.value: self.graph.exist_mesh_global_inclusion_query,
-            EntityType.FOOD.value: self.graph.exist_mesh_global_inclusion_query,
-            EntityType.GENE.value: self.graph.exist_gene_global_inclusion_query,
-            EntityType.PHENOMENA.value: self.graph.exist_mesh_global_inclusion_query,
-            EntityType.PROTEIN.value: self.graph.exist_protein_global_inclusion_query,
-            EntityType.SPECIES.value: self.graph.exist_species_global_inclusion_query
+            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist,
+            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist,
+            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist,
+            EntityType.GENE.value: self.graph.gene_global_inclusion_exist,
+            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist,
+            EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist,
+            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist
         }
 
         query = queries.get(values['entity_type'], '')
-        result = self.graph.exist_global_inclusion(query, values) if query else {'exist': False}
+        result = self.graph.exec_read_query(query, values) if query else {'exist': False}
 
         if result['exist'] is True:
             return result['exist']
         else:
-            result = self.graph.exist_global_inclusion(
-                self.graph.exist_lifelike_global_inclusion_query,
+            result = self.graph.exec_read_query(
+                self.graph.lifelike_global_inclusion_exist,
                 values)
 
         return result['exist']

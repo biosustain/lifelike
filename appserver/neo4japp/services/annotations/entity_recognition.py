@@ -262,13 +262,15 @@ class EntityRecognitionService:
         Used for entity custom annotation lookups.
         """
         global_inclusions = []
+        params = {'entity_type': entity_type_to_include}
         if entity_type_to_include in {
             EntityType.ANATOMY.value,
             EntityType.DISEASE.value,
             EntityType.FOOD.value,
             EntityType.PHENOMENA.value
         }:
-            global_inclusions = self.graph.get_mesh_global_inclusions(entity_type_to_include)
+            global_inclusions = self.graph.exec_read_query_with_params(
+                self.graph.get_mesh_global_inclusions_by_type, params)
         else:
             try:
                 global_inclusions = graph_global_inclusions[entity_type_to_include]
@@ -276,8 +278,11 @@ class EntityRecognitionService:
                 # use lifelike_global_inclusions
                 pass
 
-        if not global_inclusions:
-            global_inclusions = self.graph.get_lifelike_global_inclusions(entity_type_to_include)
+        # need to append here because an inclusion
+        # might've not been matched to an existing entity
+        # so look for it in Lifelike
+        global_inclusions += self.graph.exec_read_query_with_params(
+            self.graph.get_lifelike_global_inclusions_by_type, params)
 
         for inclusion in global_inclusions:
             normalized_entity_name = normalize_str(inclusion['synonym'])
@@ -368,9 +373,9 @@ class EntityRecognitionService:
         ]
 
         graph_global_inclusions = {
-            EntityType.GENE.value: self.graph.get_gene_global_inclusions(),
-            EntityType.SPECIES.value: self.graph.get_species_global_inclusions(),
-            EntityType.PROTEIN.value: self.graph.get_protein_global_inclusions()
+            EntityType.GENE.value: self.graph.exec_read_query(self.graph.get_gene_global_inclusions),
+            EntityType.SPECIES.value: self.graph.exec_read_query(self.graph.get_species_global_inclusions),
+            EntityType.PROTEIN.value: self.graph.exec_read_query(self.graph.get_protein_global_inclusions)
         }
 
         for entity_type, entity_id_str, inclusion, createfunc in global_inclusion_pairs:

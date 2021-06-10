@@ -1333,7 +1333,7 @@ def mock_global_chemical_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_lifelike_global_inclusions',
+        'exec_read_query_with_params',
         get_inclusions,
     )
 
@@ -1353,7 +1353,7 @@ def mock_global_compound_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_lifelike_global_inclusions',
+        'exec_read_query_with_params',
         get_inclusions,
     )
 
@@ -1378,7 +1378,7 @@ def mock_global_gene_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_gene_global_inclusions',
+        'exec_read_query',
         get_inclusions,
     )
 
@@ -1454,7 +1454,7 @@ def mock_global_protein_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_protein_global_inclusions',
+        'exec_read_query',
         get_inclusions,
     )
 
@@ -1473,6 +1473,6 @@ def mock_global_species_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_species_global_inclusions',
+        'exec_read_query',
         get_inclusions,
     )
