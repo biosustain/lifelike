@@ -308,30 +308,34 @@ class ManualAnnotationService:
         If there is no match with an existing entity, then a new node is created
         with the Lifelike domain/node label.
         """
-        try:
-            entity_type = annotation['meta']['type']
-            entity_id = annotation['meta']['id']
-            data_source = annotation['meta']['idType']
-            synonym = annotation['meta']['allText']
-            inclusion_date = annotation['inclusion_date']
-            hyperlink = annotation['meta']['idHyperlink']
-            user_full_name = f'{user.first_name} {user.last_name}'
-        except KeyError:
-            raise AnnotationError(
-                title='Failed to Create Custom Annotation',
-                message='Could not create global inclusion/exclusion, the data is corrupted. Please try again.', code=400)  # noqa
-
-        createval = {
-            'entity_type': entity_type,
-            'entity_id': entity_id,
-            'synonym': synonym,
-            'inclusion_date': inclusion_date,
-            'user': user_full_name,
-            'data_source': data_source,
-            'hyperlink': hyperlink
-        }
-
         if annotation_type == ManualAnnotationType.INCLUSION.value:
+            try:
+                entity_type = annotation['meta']['type']
+                entity_id = annotation['meta']['id']
+                data_source = annotation['meta']['idType']
+                common_name = annotation['primaryName']
+                synonym = annotation['meta']['allText']
+                inclusion_date = annotation['inclusion_date']
+                hyperlink = annotation['meta']['idHyperlink']
+                user_full_name = f'{user.first_name} {user.last_name}'
+            except KeyError:
+                raise AnnotationError(
+                    title='Failed to Create Custom Annotation',
+                    message='Could not create global inclusion/exclusion, '
+                            'the data is corrupted. Please try again.',
+                    code=500)
+
+            createval = {
+                'entity_type': entity_type,
+                'entity_id': entity_id,
+                'synonym': synonym,
+                'inclusion_date': inclusion_date,
+                'user': user_full_name,
+                'data_source': data_source,
+                'hyperlink': hyperlink,
+                'common_name': common_name
+            }
+
             if not self._global_annotation_exists(createval):
                 queries = {
                     EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion_query,
@@ -345,7 +349,7 @@ class ManualAnnotationService:
 
                 query = queries.get(entity_type, '')
                 try:
-                    result = self.graph.create_global_inclusion(query, createval) if query else None
+                    result = self.graph.create_global_inclusion(query, createval) if query else None  # noqa
 
                     if not result:
                         # did not match to any existing, so add to Lifelike
@@ -358,17 +362,28 @@ class ManualAnnotationService:
                     )
                     raise AnnotationError(
                         title='Failed to Create Custom Annotation',
-                        message='Knowledge graph failed executing query to create global inclusion.', code=500)  # noqa
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
         else:
-            # global exclusion
-            global_list_annotation = GlobalList(
-                annotation=annotation,
-                type=annotation_type,
-                file_id=file_id,
-            )
+            if not self._global_annotation_exists(annotation, annotation_type):
+                # global exclusion
+                global_list_annotation = GlobalList(
+                    annotation=annotation,
+                    type=annotation_type,
+                    file_id=file_id,
+                )
 
-            db.session.add(global_list_annotation)
-            db.session.commit()
+                try:
+                    db.session.add(global_list_annotation)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
 
     def _global_annotation_exists_in_kg(self, values: dict):
         queries = {
@@ -393,27 +408,27 @@ class ManualAnnotationService:
 
         return result['exist']
 
-    # def _global_annotation_exists(self, annotation, annotation_type, user):
-    #     global_annotations = GlobalList.query.filter_by(
-    #         type=annotation_type
-    #     ).all()
-    #     for global_annotation in global_annotations:
-    #         if annotation_type == ManualAnnotationType.INCLUSION.value:
-    #             existing_term = global_annotation.annotation['meta']['allText']
-    #             existing_type = global_annotation.annotation['meta']['type']
-    #             new_term = annotation['meta']['allText']
-    #             new_type = annotation['meta']['type']
-    #             is_case_insensitive = annotation['meta']['isCaseInsensitive']
-    #         else:
-    #             existing_term = global_annotation.annotation['text']
-    #             existing_type = global_annotation.annotation['type']
-    #             new_term = annotation['text']
-    #             new_type = annotation['type']
-    #             is_case_insensitive = annotation['isCaseInsensitive']
-    #         if new_type == existing_type and \
-    #                 self._terms_match(new_term, existing_term, is_case_insensitive):
-    #             return True
-    #     return False
+    def _global_annotation_exists(self, annotation, annotation_type):
+        global_annotations = GlobalList.query.filter_by(
+            type=annotation_type
+        ).all()
+        for global_annotation in global_annotations:
+            if annotation_type == ManualAnnotationType.INCLUSION.value:
+                existing_term = global_annotation.annotation['meta']['allText']
+                existing_type = global_annotation.annotation['meta']['type']
+                new_term = annotation['meta']['allText']
+                new_type = annotation['meta']['type']
+                is_case_insensitive = annotation['meta']['isCaseInsensitive']
+            else:
+                existing_term = global_annotation.annotation['text']
+                existing_type = global_annotation.annotation['type']
+                new_term = annotation['text']
+                new_type = annotation['type']
+                is_case_insensitive = annotation['isCaseInsensitive']
+            if new_type == existing_type and \
+                    self._terms_match(new_term, existing_term, is_case_insensitive):
+                return True
+        return False
 
     def _terms_match(self, term1, term2, is_case_insensitive):
         if is_case_insensitive:
