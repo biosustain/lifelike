@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Template of script is used for running git hook and recusing to services hooks.
 
 # Path from shell to folder containing this file
