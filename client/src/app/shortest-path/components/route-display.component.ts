@@ -81,6 +81,9 @@ export class RouteDisplayComponent {
           },
         },
         shape: 'box',
+        widthConstraint: {
+          maximum: 180,
+        },
       },
     };
 

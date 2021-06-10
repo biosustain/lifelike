@@ -433,7 +433,8 @@ class KgService(HybridDBDao):
             'Min Mean Short Metabs top10',
             'Min Mean Short Updown Acetate',
             'Min Mean Short Updown Butyrate',
-            'AAK1 to Metab noOct'
+            'AAK1 to Metab noOct',
+            'FosB to PER1'
             # 'nagA (ALE Mutation Data)',
         ]
         return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
@@ -487,7 +488,8 @@ class KgService(HybridDBDao):
             'cytoscape_data/minMeanShort_metabs_top10_graphml.json',
             'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
             'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json',
-            'cytoscape_data/aak1_to_metab_noOct_graphml.json'
+            'cytoscape_data/aak1_to_metab_noOct_graphml.json',
+            'cytoscape_data/FosB to PER1_vis_js.json'
             # 'ale_mutation_data/nagA.json',
         ]
 

@@ -32,6 +32,7 @@ class ContentSearchSchema(CamelCaseSchema):
 class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
     synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
+    dropped_synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
 
 
 # ========================================

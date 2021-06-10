@@ -19,13 +19,14 @@ RUN addgroup --system wheel && \
 WORKDIR $_HOME
 
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
-COPY --chown=$UID:$GID Pipfile* .
+COPY --chown=$UID:$GID Pipfile .
+COPY --chown=$UID:$GID Pipfile.lock .
+
 RUN pipenv install --dev --deploy --system
 
 ENV FLASK_APP=statistical_enrichment
 
-COPY --chown=$UID:$GID statistical_enrichment .
-COPY --chown=$UID:$GID bin .
+COPY --chown=$UID:$GID . .
 
 USER $_USER
 

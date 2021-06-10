@@ -2,7 +2,7 @@ import hashlib
 import os
 
 from elasticsearch import Elasticsearch
-from flask import g, current_app
+from flask import g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -68,31 +68,11 @@ def close_neo4j_db(e=None):
         neo4j_db.close()
 
 
-def connect_to_lmdb():
-    if 'lmdb' not in g:
-        from neo4japp.services.annotations.lmdb_access import LMDBAccess
-        g.lmdb = LMDBAccess()
-        g.lmdb.open_envs()
-    return g.lmdb
-
-
-def close_lmdb(e=None):
-    lmdb = g.pop('lmdb', None)
-    if lmdb:
-        lmdb.close_envs()
-
-
 def _connect_to_elastic():
     return Elasticsearch(
         timeout=180,
         hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
-
-
-class LMDBConnection:
-    def __init__(self):
-        super().__init__()
-        self.session = connect_to_lmdb()
 
 
 class DBConnection:
@@ -162,13 +142,14 @@ def get_file_type_service():
     """
     from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
     from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
+        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider, SankeyTypeProvider
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
     service.register(PDFTypeProvider())
     service.register(MapTypeProvider())
     service.register(EnrichmentTableTypeProvider())
+    service.register(SankeyTypeProvider())
     return service
 
 

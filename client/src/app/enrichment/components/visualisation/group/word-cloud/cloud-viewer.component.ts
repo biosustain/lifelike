@@ -35,13 +35,15 @@ export class CloudViewerComponent implements OnChanges {
   }
 
   onClick(d) {
-    this.workspaceManager.navigateByUrl(this.link.appLink.join('/'), {
-      fragment: d.text,
-      sideBySide: true,
-      newTab: true,
-      matchExistingTab: this.link.matchExistingTab,
-      shouldReplaceTab: triggerSearchOnShouldReplaceTab(d.text)
-    });
+    const encodedText = encodeURIComponent(d.text);
+    this.workspaceManager.navigateByUrl(
+      `${this.link.appLink.join('/')}#text=${encodedText}`, {
+        newTab: true,
+        sideBySide: true,
+        matchExistingTab: this.link.matchExistingTab,
+        shouldReplaceTab: triggerSearchOnShouldReplaceTab(d.text)
+      },
+    );
   }
 
   enter(selection) {

@@ -28,7 +28,7 @@ from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import db, ma, migrate, close_lmdb, close_neo4j_db
+from neo4japp.database import db, ma, migrate, close_neo4j_db
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
@@ -162,7 +162,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
-    app.teardown_appcontext_funcs = [close_lmdb, close_neo4j_db]
+    app.teardown_appcontext_funcs = [close_neo4j_db]
 
     cors.init_app(app)
     db.init_app(app)

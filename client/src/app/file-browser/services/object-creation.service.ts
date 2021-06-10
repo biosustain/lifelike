@@ -1,5 +1,5 @@
 import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, iif, of, merge } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
 import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
@@ -79,20 +79,23 @@ export class ObjectCreationService {
             mode: ProgressMode.Indeterminate,
             status: 'Saved; Parsing and identifying annotations...',
           }));
-          return this.annotationsService.generateAnnotations(
+          const annotationsService = this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
-          ).pipe(
-            map(result => {
-              results = [[object], [result]];
-              return object;
-            }), // This method returns the object
+          ).pipe(map(result => {
+            results = [[object], [result]];
+            const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+            modalRef.componentInstance.objects = results[0];
+            modalRef.componentInstance.results = results[1];
+            return object;
+          }));
+          return iif(
+            () => object.isAnnotatable,
+            merge(annotationsService),
+            of(object)
           );
         }),
         finalize(() => {
           progressDialogRef.close();
-          const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
-          modalRef.componentInstance.objects = results[0];
-          modalRef.componentInstance.results = results[1];
         }),
         this.errorHandler.create({label: 'Create object'}),
       );
