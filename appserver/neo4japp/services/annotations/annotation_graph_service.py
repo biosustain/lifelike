@@ -170,8 +170,8 @@ class AnnotationGraphService(GraphConnection):
     def exist_mesh_global_inclusion_query(self):
         return """
         WITH $dict AS row
-        OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
+        OPTIONAL MATCH (n:db_MESH:TopicalDescriptor)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = 'MESH:' + row.entity_id AND s.name = row.synonym
         RETURN s IS NOT NULL AS exist
         """
 
@@ -302,14 +302,23 @@ class AnnotationGraphService(GraphConnection):
         WITH $dict AS row
         MERGE (n:db_Lifelike {id:row.data_source + ':' + row.entity_id})
         SET n.data_source = row.data_source, n.external_id = row.entity_id,
-            n.name = row.synonym, n.entity_type = row.entity_type, n.hyperlink = row.hyperlink,
+            n.name = row.common_name, n.entity_type = row.entity_type, n.hyperlink = row.hyperlink,
             n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             n.user = row.user
+        MERGE (s: Synonym {name: row.synonym})
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = n.inclusion_date, r.user = n.user
         """
 
     @property
     def exist_lifelike_global_inclusion_query(self):
-        raise NotImplementedError
+        return """
+        WITH $dict AS row
+        OPTIONAL MATCH (n:db_Lifelike)-[:HAS_SYNONYM]->(s)
+        WHERE n.external_id = row.entity_id AND n.data_source = row.data_source
+        AND s.name = row.synonym
+        RETURN s IS NOT NULL AS exist
+        """
 
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         return self.graph.run(
