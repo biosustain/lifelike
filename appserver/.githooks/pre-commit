@@ -1,11 +1,9 @@
 #!/bin/sh
 
 # Runs linting on only files that are staged
-staged_files=$(git diff --cached --name-status --diff-filter=AM | grep -E '\.(py)$' | cut -f 2 | grep -E 'appserver' | sed 's/appserver\///g')
-staged_renamed_files=$(git diff --cached --name-status --diff-filter=R | grep -E '\.(py)$' | cut -f 3 | grep -E 'appserver' | sed 's/appserver\///g')
-all_staged_files="${staged_files}\n${staged_renamed_files}"
+staged_files=$(getStaged appserver '\.(py)$')
 
 echo "> 🥧 Running mypy..."
-echo ${all_staged_files} | xargs docker exec appserver mypy
+echo ${staged_files} | xargs docker exec appserver mypy
 echo "> 🐍 Running pycodestyle..."
-echo ${all_staged_files} | xargs docker exec appserver pycodestyle
+echo ${staged_files} | xargs docker exec appserver pycodestyle
