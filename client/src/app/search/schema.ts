@@ -2,6 +2,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectData } from 'app/file-browser/schema';
 import { RankedItem, ResultList, StandardRequestOptions } from 'app/shared/schemas/common';
 
+import { SynonymData } from './shared';
+
 // ========================================
 // Content Search
 // ========================================
@@ -45,4 +47,8 @@ export interface ContentSearchResponseData extends ResultList<RankedItem<Filesys
   droppedSynonyms: {
     [rootWord: string]: string[]
   };
+}
+
+export interface SynonymSearchResponse {
+  synonyms: SynonymData[];
 }

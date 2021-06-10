@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten } from 'lodash';
 
 import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -37,6 +37,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
+import { SynonymSearchComponent } from './synonym-search.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
@@ -55,7 +56,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   private readonly defaultLimit = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
-  public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
+
+  results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
@@ -64,6 +66,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
 
+  queryString = '';
   contentSearchFormVal: SearchableRequestOptions;
 
   useSynonyms = true;
@@ -97,6 +100,16 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
       this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
     });
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+
+    this.subscriptions.add(this.route.queryParams.pipe(
+      mergeMap(params => this.deserializeParams(params))
+    ).subscribe(params => {
+      this.queryString = this.getQueryStringFromParams(params);
+    }));
   }
 
   valueChanged(value: ContentSearchOptions) {
@@ -141,6 +154,31 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       sort: '+name',
       q: '',
     };
+  }
+
+  getQueryStringFromParams(params: ContentSearchOptions) {
+    const q = [];
+    if (params.hasOwnProperty('q') && params.q !== '') {
+      q.push(params.q);
+    }
+    if (params.hasOwnProperty('wildcards') && params.wildcards !== '') {
+      q.push(params.wildcards);
+    }
+    if (params.hasOwnProperty('phrase') && params.phrase !== '') {
+      q.push(`"${params.phrase}"`);
+    }
+    if (params.hasOwnProperty('types') && params.types !== []) {
+      params.types.forEach(type => q.push(`type:${type.shorthand}`));
+    }
+    if (params.hasOwnProperty('projects') && params.projects !== []) {
+      params.projects.forEach(project => q.push(`project:${project}`));
+    }
+    // TODO: Add this back if we put synonyms back in the advanced search dialog
+    // if (params.hasOwnProperty('synonyms') && !isNullOrUndefined(params.synonyms)) {
+    //   q.push(`synonyms:${params.synonyms}`);
+    // }
+
+    return q.join(' ');
   }
 
   deserializeAdvancedParams(params) {
@@ -370,7 +408,26 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         this.advancedSearch(params);
       })
       // Advanced search dialog was dismissed or rejected
-      .catch(() => {});
+      .catch((params) => {
+        this.queryString = this.getQueryStringFromParams(params);
+      });
+  }
+
+  /**
+   * Opens the synonym search dialog. Users can search for synonyms of a term and add them to the current query.
+   */
+   openSynonymSearch() {
+    const modalRef = this.modalService.open(SynonymSearchComponent, {
+      size: 'md',
+    });
+    modalRef.result
+      // Synonym search was submitted
+      .then((synonymsToAdd: string[]) => {
+        this.queryString = synonymsToAdd.join(' ') + (isNullOrUndefined(this.queryString) ? '' : ` ${this.queryString}`);
+      })
+      // Synonym search dialog was dismissed or rejected
+      .catch(() => {
+      });
   }
 
   /**

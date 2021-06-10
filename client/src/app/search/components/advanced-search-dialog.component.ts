@@ -67,7 +67,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   }
 
   dismiss() {
-    this.modal.dismiss();
+    this.modal.dismiss(this.form.value);
   }
 
   close() {
