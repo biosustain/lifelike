@@ -4,11 +4,11 @@ LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
 
 # Fetches the password to unlock Ansible vault files
 ansible-secrets:
-	az storage blob download --account-name ***ARANGO_DB_NAME*** --container-name ***ARANGO_DB_NAME***-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw
+	az storage blob download --account-name ***ARANGO_DB_NAME*** --container-name ***ARANGO_DB_NAME***-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw --auth-mode login
 
 # Fetches the credentials (env file) for Azure services
 azure-secrets:
-	az storage blob download --account-name ***ARANGO_DB_NAME*** --container-name ***ARANGO_DB_NAME***-secrets --name azure-secrets.env --file ./azure-secrets.env
+	az storage blob download --account-name ***ARANGO_DB_NAME*** --container-name ***ARANGO_DB_NAME***-secrets --name azure-secrets.env --file ./azure-secrets.env --auth-mode login
 
 # Log into azure container registry
 container-login:
@@ -32,11 +32,11 @@ docker-build:
 	docker-compose build
 
 # Runs enough containers for the application to function
-docker-run: container-login azure-secrets lmdb
+docker-run: azure-secrets container-login lmdb
 	docker-compose up -d
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
-docker-run-all: container-login azure-secrets lmdb
+docker-run-all: azure-secrets container-login lmdb
 	docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
 
 docker-stop:
