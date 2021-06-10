@@ -1,38 +1,42 @@
-<app-grid-virtual-scroll-viewport [itemSize]="itemSize"
-                                  [style.height.px]="(itemSize[0]*2.5 + 8.5)*27"
-                                  [style.width.perc]="100">
-    <div class="columnHeader" #columnHeader>
-        <ng-template appVirtualFor [appVirtualForOf]="columnHeaders" let-goTerm [secondary]="true">
-            <div [style.left.px]="goTerm.x*itemSize[0]"
-                 class="rotatedHeader"
-            >
-                <ng-template #tooltip>
-                    {{goTerm.goTerm}} {{goTerm.goId && '(' + goTerm.goId + ')'}}
-                </ng-template>
-                <span [ngbTooltip]="tooltip"
-                      container="body"
-                      tooltipClass="rotatedTooltip"
-                      placement="bottom-left bottom-right"
-                >{{goTerm.goTerm}}</span>
-            </div>
-        </ng-template>
-    </div>
-    <div class="scrollSpacer" #scrollSpacer></div>
-    <div class="rowHeader" #rowHeader>
-        <ng-template appVirtualFor [appVirtualForOf]="rowHeaders" let-entry [secondary]="true">
-            <div [appSELink]="entry.key"
-                 [style.top.px]="entry.y*itemSize[1]"
-            >{{entry.key}}</div>
-        </ng-template>
-    </div>
-    <div class="content" #content>
-        <div *appVirtualFor="let entry of cells"
-             [ngClass]="entry.value ? 'others' : 'match'"
-             [style.backgroundColor]="entry.value || geneColor"
-             [ngStyle]="{
-                    left: entry.x*itemSize[0]+'px',
-                    top: entry.y*itemSize[1]+'px'
-                 }"
-        >{{entry.value}}</div>
-    </div>
-</app-grid-virtual-scroll-viewport>
+<div class="clustergram-wrapper" [style.height.em]="genes.size*2.5 + 8.5">
+  <table class="table table-striped column-hover">
+      <thead>
+      <tr>
+          <th></th>
+          <th scope="col" *ngFor="let goTerm of goTerms">
+              <div>
+                  <ng-template #tooltip>
+                      {{goTerm.goTerm}} ({{goTerm.goId}})
+                  </ng-template>
+                  <span [ngbTooltip]="tooltip"
+                        container="body"
+                        tooltipClass="rotatedTooltip"
+                        placement="bottom-left bottom-right">
+                      {{goTerm.goTerm}}</span>
+              </div>
+          </th>
+          <th scope="col" *ngIf="others" class="others">
+              <div>
+                  <span>others</span>
+              </div>
+          </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let entry of genes | keyvalue: rowOrder">
+          <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>
+          <td *ngFor="let value of entry.value.values"
+              [ngClass]="{match:value}"
+              [style.backgroundColor]="value && geneColor"
+          ></td>
+          <td *ngIf="others"
+              class="match others">{{entry.value.others || ''}}</td>
+      </tr>
+      <tr *ngIf="others">
+          <th scope="row">others</th>
+          <td *ngFor="let value of others.values"></td>
+          <td class="match others">{{others.others}}</td>
+      </tr>
+      </tbody>
+  </table>
+</div>
