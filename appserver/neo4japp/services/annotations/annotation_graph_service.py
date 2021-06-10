@@ -129,6 +129,14 @@ class AnnotationGraphService(GraphConnection):
 
         return protein_to_organism_map
 
+    def exist_global_inclusion(self, query: str, values: dict):
+        return self.graph.read_transaction(
+            lambda tx: tx.run(query, dict=values))
+
+    def create_global_inclusion(self, query: str, values: dict):
+        return self.graph.write_transaction(
+            lambda tx: tx.run(query, dict=values))
+
     def get_mesh_global_inclusions(self, entity_type: str):
         return self.graph.read_transaction(
             lambda tx: list(
@@ -145,10 +153,6 @@ class AnnotationGraphService(GraphConnection):
             )
         )
 
-    def create_global_inclusion(self, query: str, values: dict):
-        return self.graph.write_transaction(
-            lambda tx: tx.run(query, dict=values))
-
     @property
     def create_mesh_global_inclusion_query(self):
         return """
@@ -160,6 +164,15 @@ class AnnotationGraphService(GraphConnection):
         MERGE (s: Synonym {name: row.synonym})
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
+
+    @property
+    def exist_mesh_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id AND s.name = row.synonym
+        RETURN s IS NOT NULL AS exist
         """
 
     def get_gene_global_inclusions(self):
@@ -188,6 +201,15 @@ class AnnotationGraphService(GraphConnection):
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
         """
 
+    @property
+    def exist_gene_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id AND s.name = row.synonym
+        RETURN s IS NOT NULL AS exist
+        """
+
     def get_species_global_inclusions(self):
         return self.graph.read_transaction(
             lambda tx: list(
@@ -210,9 +232,18 @@ class AnnotationGraphService(GraphConnection):
         SET n.entity_type = row.entity_type,
             n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
+        MERGE (s:Synonym {name: row.synonym})
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        """
+
+    @property
+    def exist_species_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        OPTIONAL MATCH (n:Taxonomy)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id AND s.name = row.synonym
+        RETURN s IS NOT NULL AS exist
         """
 
     def get_protein_global_inclusions(self):
@@ -241,6 +272,15 @@ class AnnotationGraphService(GraphConnection):
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
         """
 
+    @property
+    def exist_protein_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        OPTIONAL MATCH (n:db_UniProt)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id AND s.name = row.synonym
+        RETURN s IS NOT NULL AS exist
+        """
+
     def get_lifelike_global_inclusions(self, entity_type: str):
         return self.graph.read_transaction(
             lambda tx: list(
@@ -256,9 +296,19 @@ class AnnotationGraphService(GraphConnection):
             )
         )
 
-    # TODO:
     @property
     def create_lifelike_global_inclusion_query(self):
+        return """
+        WITH $dict AS row
+        MERGE (n:db_Lifelike {id:row.data_source + ':' + row.entity_id})
+        SET n.data_source = row.data_source, n.external_id = row.entity_id,
+            n.name = row.synonym, n.entity_type = row.entity_type, n.hyperlink = row.hyperlink,
+            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            n.user = row.user
+        """
+
+    @property
+    def exist_lifelike_global_inclusion_query(self):
         raise NotImplementedError
 
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
