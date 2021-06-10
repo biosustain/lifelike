@@ -225,8 +225,13 @@ export class FilesystemObjectActions {
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
     const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/${object.getURL(forEditing)}`;
+    modalRef.componentInstance.url = `${window.location.origin}${object.getURL(forEditing)}`;
     return modalRef.result;
+  }
+
+  openNewWindow(object: FilesystemObject, forEditing = false) {
+    const objectPath = `${object.getURL(forEditing)}`;
+    return window.open(objectPath);
   }
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
