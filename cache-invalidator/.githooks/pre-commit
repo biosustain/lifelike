@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# Runs linting on only files that are staged
-staged_files=$(getStaged appserver '\.(py)$')
-
-echo "> 🥧 Running mypy..."
-echo ${staged_files} | xargs docker exec cache-invalidator mypy
-echo "> 🐍 Running pycodestyle..."
-echo ${staged_files} | xargs docker exec cache-invalidator pycodestyle

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Common utils used in git-hook scripts
 
 # Formatting
@@ -24,7 +24,19 @@ getStaged () {
     | grep -E "${matching_pattern}"
 }
 
+# Printout system information
+environmentInfo () {
+  echo "Shell: ${SHELL}"
+  echo "Shell version: $($SHELL --version)"
+  echo "OS:"
+  cat /etc/os-release  2> /dev/null || systeminfo  2> /dev/null || sw_vers 2> /dev/null
+  echo "Docker: $(docker --version)"
+  echo "Docker compose: $(docker-compose --version)"
+}
+
+# Provide debugging insight
 debug () {
+  environmentInfo
   set -xv && echo $-
 }
 
@@ -65,3 +77,9 @@ recurseHook () {
     fi
   done
 }
+
+# Turn debugging on by the flag
+if [[ -n $DEBUG_HOOKS ]];
+then
+  debug
+fi
