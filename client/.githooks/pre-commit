@@ -1,18 +1,9 @@
 #!/bin/sh
 
 echo "> 🧶 Running yarn lint.."
-yarn lint-staged
-exit_code=$?
-if [ $exit_code != 0 ]; then
-  yarn why lint-staged
-  exit_code=$?
-  if [ $exit_code != 0 ]; then
-    echo "Lint-staged not installed, Installing..."
-    yarn install
-    echo "Rerun linter"
-    yarn lint-staged
-  fi
-fi
+echo "This code assumes lint-stages being installed in client or globally."
+echo "In case the command has not been found please run 'yarn install' in client folder"
+cd client && yarn lint-staged
 
 # ALTERNATIVELY - without extra dependencies and consistent with other services
 #
