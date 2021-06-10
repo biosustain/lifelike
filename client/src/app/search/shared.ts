@@ -3,3 +3,10 @@ export interface SearchType {
   shorthand: string;
   name: string;
 }
+
+export interface SynonymData {
+  type: string;
+  description: string;
+  organism: string;
+  aliases: string[];
+}
