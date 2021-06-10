@@ -370,15 +370,17 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if 'hyperlink' in node['data'] and node['data']['hyperlink']:
-                params['href'] = node['data']['hyperlink']
-            if 'source' in node['data'] and node['data']['source']:
-                params['href'] = node['data']['source']
-
             if node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][0].get('url')
             elif node['data'].get('sources'):
-                params['href'] = node['data']['sources'][0].get('url')
+                if any(src.get('domain') == 'DOI' for src in node['data'].get('sources')):
+                    for src in node['data'].get('sources'):
+                        if src.get('domain') == 'DOI':
+                            params['href'] = src.get('url')
+                else:
+                    # We need to add a way of omitting links to the Lifelike file browser as
+                    # those fails
+                    params['href'] = node['data']['sources'][0].get('url')
 
             graph.node(**params)
 
