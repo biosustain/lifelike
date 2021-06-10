@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, TemplateRef, ViewChild, isDevMode } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription } from 'rxjs';
@@ -11,9 +11,10 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors, representativePositiveNumber } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
-import * as d3Sankey from 'd3-sankey-circular';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GraphData } from '../../interfaces/vis-js.interface';
+import { computeNodeLinks, computeNodeDepths, computeNodeLayers } from './sankey/d3-sankey';
+import { identifyCircles } from './sankey/d3-sankey-circular';
 
 
 @Component({
@@ -101,14 +102,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     {
       description: 'Input count',
       preprocessing: ({links, nodes, inNodes}) => {
-        links.forEach(l => l.value = 1);
-        d3Sankey.sankeyCircular()
-          .nodeId(n => n.id)
-          .nodePadding(1)
-          .nodePaddingRatio(0.5)
-          .nodeAlign(d3Sankey.sankeyRight)
-          .nodeWidth(10)
-          ({nodes, links});
+        // just link graph instead of calculating whole layout
+        computeNodeLinks({nodes, links});
+        identifyCircles({nodes, links});
+        computeNodeDepths({nodes});
+        computeNodeLayers({nodes});
         nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
           if (inNodes.includes(n.id)) {
             n.value = 1;
@@ -122,31 +120,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           });
         });
         return {
-          nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(
-            ({x0, x1, y0, y1, partOfCycle, circularLinkType, height, column, depth, index, value, targetLinks, sourceLinks, ...node}) => ({
-              ...node
-            })),
-          links: links.map(
-            ({
-               width,
-               index,
-               circular,
-               circularLinkID,
-               circularLinkType,
-               circularLinkPathData,
-               y0,
-               y1,
-               source,
-               target,
-               value = 0.001,
-               path,
-               ...link
-             }) => ({
-              ...link,
-              source: source.id,
-              target: target.id,
-              value
-            }))
+          nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0).map(({value, ...node}) => (node)),
+          links: links.map(({
+                              source,
+                              target,
+                              value = 0.001,
+                              path,
+                              ...link
+                            }) => ({
+            ...link,
+            source: source.id,
+            target: target.id,
+            value
+          }))
         };
       }
     }
@@ -165,6 +151,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', windowClass: 'fillHeightModal', size: 'xl'}).result
       .then((result) => {
       });
+  }
+
+  filterIsolated({links, nodes, ...graph}) {
+    computeNodeLinks({links, nodes, ...graph}, ({id}) => id);
+    if (isDevMode()) {
+      console.table({
+        links: links.filter(({source, target}) => !(source && target)),
+        nodes: nodes.filter(({sourceLinks, targetLinks}) => !(sourceLinks.length + targetLinks.length > 0))
+      });
+    }
+    return {
+      ...graph,
+      links: links.filter(({source, target}) => source && target),
+      nodes: nodes.filter(({sourceLinks, targetLinks}) => sourceLinks.length + targetLinks.length > 0)
+    };
   }
 
   getTraceDetailsGraph(trace) {
