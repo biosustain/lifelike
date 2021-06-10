@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ProjectData } from 'app/file-browser/schema';
 import { ApiService } from 'app/shared/services/api.service';
 
@@ -14,7 +15,7 @@ import {
   ContentSearchResponse,
   ContentSearchResponseData
 } from '../schema';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { SynonymData } from '../shared';
 
 
 @Injectable()
@@ -61,5 +62,25 @@ export class ContentSearchService {
         ...this.apiService.getHttpOptions(true),
       },
     ).pipe(map(resp => resp.results));
+  }
+
+  getSynoynms(): Observable<SynonymData[]> {
+    // TODO: Implement service!
+    return of([
+      {type: 'Gene', description: 'alae sublatae', organism: 'fruit fly', aliases: ['als', 'ALS', 'Mps1']},
+      {
+        type: 'Gene', description: 'nicotinic Acetylcholine Receptor alpha1', organism: 'fruit fly', aliases: [
+        'nAChRalpha1', 'Dmel_CG5610', 'AChRalpha1', 'ALS', 'ALs', 'Acr96A', 'Acr96Aa', 'AcrB']
+      },
+      {type: 'Gene', description: 'superoxide dismutase 1', organism: 'human', aliases: [
+        'SOD1', 'ALS', 'ALS1', 'HEL-S-44', 'IPOA', 'SOD', 'STAHP', 'hSod1', 'homodimer']
+      },
+      {type: 'Gene', description: 'insulin like growth factor binding protein acid labile subunit', organism: 'human', aliases: [
+        'GFALS', 'ACLSD', 'ALS']
+      },
+      {type: 'Disease', description: '<Primary Name>', organism: 'N/A', aliases: [
+        'ALS', 'Amyotrophic Lateral Sclerosis', `Gehrig's Disease`]
+      },
+    ]);
   }
 }
