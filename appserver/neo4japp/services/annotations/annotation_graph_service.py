@@ -1,10 +1,10 @@
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from typing import Dict, List
 
-from neo4japp.database import GraphConnection
+from .mixins.graph_mixin import GraphMixin
 
 
-class AnnotationGraphService(GraphConnection):
+class AnnotationGraphService(GraphMixin):
     def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
         result = self.graph.read_transaction(
             self.get_chemicals_from_chemical_ids_query,
@@ -80,11 +80,8 @@ class AnnotationGraphService(GraphConnection):
     ) -> Dict[str, Dict[str, Dict[str, str]]]:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
 
-        result = self.graph.read_transaction(
-            self.get_gene_to_organism_query,
-            genes,
-            organisms,
-        )
+        result = self.exec_read_query_with_params(
+            self.get_gene_to_organism, {'genes': genes, 'organisms': organisms})
 
         for row in result:
             gene_name = row['gene_name']
@@ -129,223 +126,10 @@ class AnnotationGraphService(GraphConnection):
 
         return protein_to_organism_map
 
-    def exist_global_inclusion(self, query: str, values: dict):
-        return self.graph.read_transaction(
-            lambda tx: tx.run(query, dict=values))
-
-    def create_global_inclusion(self, query: str, values: dict):
-        return self.graph.write_transaction(
-            lambda tx: tx.run(query, dict=values))
-
-    def get_mesh_global_inclusions(self, entity_type: str):
-        return self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s)
-                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
-                    AND n.entity_type = $entity_type
-                    RETURN n.id AS entity_id, n.name AS entity_name,
-                        s.name AS synonym, n.data_source AS data_source
-                    """,
-                    entity_type=entity_type
-                )
-            )
-        )
-
-    @property
-    def create_mesh_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        MATCH (n:db_MESH) WHERE n.id = 'MESH:' + row.entity_id
-        SET n.entity_type = row.entity_type,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
-        MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
-
-    @property
-    def exist_mesh_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        OPTIONAL MATCH (n:db_MESH:TopicalDescriptor)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = 'MESH:' + row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
-        """
-
-    def get_gene_global_inclusions(self):
-        return self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (n:Gene)-[r:HAS_SYNONYM]-(s)
-                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
-                    RETURN n.id AS entity_id, n.name AS entity_name,
-                        s.name AS synonym, n.data_source AS data_source
-                    """
-                )
-            )
-        )
-
-    @property
-    def create_gene_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        MATCH (n:Gene) WHERE n.id = row.entity_id
-        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
-        MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
-
-    @property
-    def exist_gene_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
-        """
-
-    def get_species_global_inclusions(self):
-        return self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (n:Taxonomy)-[r:HAS_SYNONYM]-(s)
-                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
-                    RETURN n.id AS entity_id, n.name AS entity_name,
-                        s.name AS synonym, n.data_source AS data_source
-                    """
-                )
-            )
-        )
-
-    @property
-    def create_species_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        MATCH (n:Taxonomy) WHERE n.id = row.entity_id
-        SET n.entity_type = row.entity_type,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s:Synonym {name: row.synonym})
-        MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
-
-    @property
-    def exist_species_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        OPTIONAL MATCH (n:Taxonomy)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
-        """
-
-    def get_protein_global_inclusions(self):
-        return self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (n:db_UniProt)-[r:HAS_SYNONYM]-(s)
-                    WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
-                    RETURN n.id AS entity_id, n.name AS entity_name,
-                        s.name AS synonym, n.data_source AS data_source
-                    """
-                )
-            )
-        )
-
-    @property
-    def create_protein_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        MATCH (n:db_UniProt) WHERE n.id = row.entity_id
-        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
-        MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
-
-    @property
-    def exist_protein_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        OPTIONAL MATCH (n:db_UniProt)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
-        """
-
-    def get_***ARANGO_DB_NAME***_global_inclusions(self, entity_type: str):
-        return self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (n:db_Lifelike)
-                    WHERE n.entity_type = $entity_type
-                    RETURN n.id AS entity_id, n.name AS entity_name, n.name AS synonym,
-                        n.data_source AS data_source, n.hyperlink AS hyperlink
-                    """,
-                    entity_type=entity_type
-                )
-            )
-        )
-
-    @property
-    def create_***ARANGO_DB_NAME***_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        MERGE (n:db_Lifelike {id:row.data_source + ':' + row.entity_id})
-        SET n.data_source = row.data_source, n.external_id = row.entity_id,
-            n.name = row.common_name, n.entity_type = row.entity_type, n.hyperlink = row.hyperlink,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
-        MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
-
-    @property
-    def exist_***ARANGO_DB_NAME***_global_inclusion_query(self):
-        return """
-        WITH $dict AS row
-        OPTIONAL MATCH (n:db_Lifelike)-[:HAS_SYNONYM]->(s)
-        WHERE n.external_id = row.entity_id AND n.data_source = row.data_source
-        AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
-        """
-
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         return self.graph.run(
             self.get_organisms_from_gene_ids_query,
             gene_ids
-        )
-
-    def get_gene_to_organism_query(
-        self,
-        tx: Neo4jTx,
-        genes: List[str],
-        organisms: List[str]
-    ) -> List[Neo4jRecord]:
-        """Retrieves a list of all the genes with a given name
-        in a particular organism."""
-        return list(
-            tx.run(
-                """
-                MATCH (s:Synonym)-[]-(g:Gene)
-                WHERE s.name IN $genes
-                WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-                WHERE p.id IN $organisms
-                RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id,
-                    p.id AS organism_id
-                """,
-                genes=genes, organisms=organisms
-            )
         )
 
     def get_protein_to_organism_query(
