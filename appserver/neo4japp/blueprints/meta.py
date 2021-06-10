@@ -1,7 +1,6 @@
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, jsonify
 from neo4japp.data_transfer_objects import BuildInformation
 from neo4japp.util import SuccessResponse, jsonify_with_class
-
 
 bp = Blueprint('meta', __name__, url_prefix='/meta')
 

@@ -8,6 +8,8 @@ import { ObjectNavigatorComponent } from './components/object-navigator.componen
 import { AssociatedMapsComponent } from './components/associated-maps.component';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 
+
+
 @NgModule({
   declarations: [
     ObjectNavigatorComponent,

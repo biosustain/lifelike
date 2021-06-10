@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
 import { MatSnackBar } from '@angular/material/snack-bar';
-//
+
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(private readonly accountService: AccountService,
