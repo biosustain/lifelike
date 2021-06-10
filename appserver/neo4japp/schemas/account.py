@@ -8,6 +8,7 @@ from neo4japp.schemas.common import ResultListSchema
 # ========================================
 # Users
 # ========================================
+
 class UserCreateSchema(CamelCaseSchema):
     first_name = fields.String()
     last_name = fields.String()

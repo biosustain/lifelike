@@ -135,7 +135,7 @@ services:
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
         volumes:
-            - ./cache-invalidator:/home/***ARANGO_DB_NAME***
+            - ./cache-invalidator:/app
         networks:
             - backend
         depends_on:
