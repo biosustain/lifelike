@@ -45,6 +45,18 @@ from neo4japp.services.annotations.lmdb_util import (
     create_ner_type_company,
     create_ner_type_entity
 )
+from .constants import (
+    ANATOMY_MESH_LMDB,
+    CHEMICALS_CHEBI_LMDB,
+    COMPOUNDS_BIOCYC_LMDB,
+    DISEASES_MESH_LMDB,
+    FOODS_MESH_LMDB,
+    GENES_NCBI_LMDB,
+    PHENOMENAS_MESH_LMDB,
+    PHENOTYPES_CUSTOM_LMDB,
+    PROTEINS_UNIPROT_LMDB,
+    SPECIES_NCBI_LMDB,
+)
 
 
 class EntityRecognitionService:
@@ -387,7 +399,7 @@ class EntityRecognitionService:
                 entity_id_type = inclusion['meta']['idType']
                 entity_id_hyperlink = inclusion['meta']['idHyperlink']
             except KeyError:
-                current_app.logger.info(
+                current_app.logger.error(
                     f'Error creating annotation inclusion {inclusion} for entity type {entity_type}',  # noqa
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
@@ -714,21 +726,23 @@ class EntityRecognitionService:
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        cursor = self.lmdb.session.genes_txn.cursor()
+        dbname = GENES_NCBI_LMDB
         global_inclusion = self.included_genes
         exclude_token = self.is_gene_exclusion
 
-        matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
-        cursor.close()
         key_results: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        for key, value in matched_results:
-            decoded_key = key.decode('utf-8')
-            match_list = key_results.get(decoded_key, [])
-            match_list.append(json.loads(value))
-            key_results[decoded_key] = match_list
+        with self.lmdb.open_db(dbname) as txn:
+            cursor = txn.cursor()
+            matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+
+            for key, value in matched_results:
+                decoded_key = key.decode('utf-8')
+                match_list = key_results.get(decoded_key, [])
+                match_list.append(json.loads(value))
+                key_results[decoded_key] = match_list
 
         # gene is a bit different
         # we want both from lmdb and inclusions
@@ -768,23 +782,25 @@ class EntityRecognitionService:
     def _check_lmdb_species(self, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        cursor = self.lmdb.session.species_txn.cursor()
+        dbname = SPECIES_NCBI_LMDB
         global_inclusion = self.included_species
         local_inclusion = self.included_local_species
         exclude_token = self.is_species_exclusion
 
-        matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
-        cursor.close()
         key_results: Dict[str, List[dict]] = {}
         key_results_local: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        for key, value in matched_results:
-            decoded_key = key.decode('utf-8')
-            match_list = key_results.get(decoded_key, [])
-            match_list.append(json.loads(value))
-            key_results[decoded_key] = match_list
+        with self.lmdb.open_db(dbname) as txn:
+            cursor = txn.cursor()
+            matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+
+            for key, value in matched_results:
+                decoded_key = key.decode('utf-8')
+                match_list = key_results.get(decoded_key, [])
+                match_list.append(json.loads(value))
+                key_results[decoded_key] = match_list
 
         unmatched_keys = keys - set(key_results)
 
@@ -837,33 +853,31 @@ class EntityRecognitionService:
             # because an entity type can create its own set of keys
             # need to reset for next iteration
             keys = original_keys
-            cursor = None
+            dbname = None
             global_inclusion = None
-            id_type = None
-            id_hyperlink = None
 
             if entity_type == EntityType.ANATOMY.value:
-                cursor = self.lmdb.session.anatomy_txn.cursor()
+                dbname = ANATOMY_MESH_LMDB
                 global_inclusion = self.included_anatomy
                 exclude_token = self.is_anatomy_exclusion
 
             elif entity_type == EntityType.CHEMICAL.value:
-                cursor = self.lmdb.session.chemicals_txn.cursor()
+                dbname = CHEMICALS_CHEBI_LMDB
                 global_inclusion = self.included_chemicals
                 exclude_token = self.is_chemical_exclusion
 
             elif entity_type == EntityType.COMPOUND.value:
-                cursor = self.lmdb.session.compounds_txn.cursor()
+                dbname = COMPOUNDS_BIOCYC_LMDB
                 global_inclusion = self.included_compounds
                 exclude_token = self.is_compound_exclusion
 
             elif entity_type == EntityType.DISEASE.value:
-                cursor = self.lmdb.session.diseases_txn.cursor()
+                dbname = DISEASES_MESH_LMDB
                 global_inclusion = self.included_diseases
                 exclude_token = self.is_disease_exclusion
 
             elif entity_type == EntityType.FOOD.value:
-                cursor = self.lmdb.session.foods_txn.cursor()
+                dbname = FOODS_MESH_LMDB
                 global_inclusion = self.included_foods
                 exclude_token = self.is_food_exclusion
                 keys = {token.normalized_keyword for token in tokens
@@ -878,17 +892,17 @@ class EntityRecognitionService:
                 continue
 
             elif entity_type == EntityType.PHENOMENA.value:
-                cursor = self.lmdb.session.phenomenas_txn.cursor()
+                dbname = PHENOMENAS_MESH_LMDB
                 global_inclusion = self.included_phenomenas
                 exclude_token = self.is_phenomena_exclusion
 
             elif entity_type == EntityType.PHENOTYPE.value:
-                cursor = self.lmdb.session.phenotypes_txn.cursor()
+                dbname = PHENOTYPES_CUSTOM_LMDB
                 global_inclusion = self.included_phenotypes
                 exclude_token = self.is_phenotype_exclusion
 
             elif entity_type == EntityType.PROTEIN.value:
-                cursor = self.lmdb.session.proteins_txn.cursor()
+                dbname = PROTEINS_UNIPROT_LMDB
                 global_inclusion = self.included_proteins
                 exclude_token = self.is_protein_exclusion
 
@@ -927,18 +941,20 @@ class EntityRecognitionService:
                         token.normalized_keyword) and not exclude_token(token.keyword)]
                 continue
 
-            if cursor is not None and global_inclusion is not None:
-                matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
-                cursor.close()
+            if dbname is not None and global_inclusion is not None:
                 key_results: Dict[str, List[dict]] = {}
                 key_id_type: Dict[str, str] = {}
                 key_id_hyperlink: Dict[str, str] = {}
 
-                for key, value in matched_results:
-                    decoded_key = key.decode('utf-8')
-                    match_list = key_results.get(decoded_key, [])
-                    match_list.append(json.loads(value))
-                    key_results[decoded_key] = match_list
+                with self.lmdb.open_db(dbname) as txn:
+                    cursor = txn.cursor()
+                    matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)  # noqa
+
+                    for key, value in matched_results:
+                        decoded_key = key.decode('utf-8')
+                        match_list = key_results.get(decoded_key, [])
+                        match_list.append(json.loads(value))
+                        key_results[decoded_key] = match_list
 
                 unmatched_keys = keys - set(key_results)
 

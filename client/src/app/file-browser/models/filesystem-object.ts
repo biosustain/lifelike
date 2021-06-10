@@ -1,29 +1,34 @@
-import { Directory, Project } from '../services/project-space.service';
-import { CollectionModel } from 'app/shared/utils/collection-model';
-import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import moment from 'moment';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
+
+import { isNullOrUndefined } from 'util';
 import {
   KnowledgeMap,
   Source,
   UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
-} from '../../drawing-tool/services/interfaces';
-import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
-import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
+} from 'app/drawing-tool/services/interfaces';
+import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { Meta } from 'app/pdf-viewer/annotation-type';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData,
 } from '../providers/data-transfer-data/filesystem-object-data.provider';
+import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
+import { Directory, Project } from '../services/project-space.service';
+import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
 const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.lifelike.document/map';
+const SANKEY_MIMETYPE = 'vnd.lifelike.document/sankey';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
 
@@ -158,6 +163,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case DIRECTORY_MIMETYPE:
       case MAP_MIMETYPE:
       case ENRICHMENT_TABLE_MIMETYPE:
+      case SANKEY_MIMETYPE:
       case 'application/pdf':
         return true;
       default:
@@ -289,6 +295,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return 'fa fa-project-diagram';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'fa fa-table';
+      case SANKEY_MIMETYPE:
+        return 'fa fa-file-chart-line';
       case 'application/pdf':
         return 'fa fa-file-pdf';
       default:
@@ -305,6 +313,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return '\uf542';
       case ENRICHMENT_TABLE_MIMETYPE:
         return '\uf0ce';
+      case SANKEY_MIMETYPE:
+        return '\uf659';
       case 'application/pdf':
         return '\uf1c1';
       default:
@@ -434,6 +444,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this;
   }
 
+  get new(): boolean {
+    return this.creationDate === this.modifiedDate;
+  }
+
   filterChildren(filter: string) {
     const normalizedFilter = this.normalizeFilter(filter);
     this.children.filter = normalizedFilter.length ? (item: FilesystemObject) => {
@@ -454,24 +468,41 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'files', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
+      case SANKEY_MIMETYPE:
+        return ['/projects', projectName, 'sankey', this.hashId];
       default:
         return ['/files', this.hashId];
     }
   }
 
-  getURL(forEditing = true): string {
+  getURL(forEditing = true, meta?: Meta): string {
     // TODO: Move this method to ObjectTypeProvider
-    return '/' + this.getCommands(forEditing).map(item => {
+    const url = '/' + this.getCommands(forEditing).map(item => {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
+
+    switch (this.mimeType) {
+      case ENRICHMENT_TABLE_MIMETYPE:
+        let fragment = '';
+        if (!isNullOrUndefined(meta)) {
+          fragment = '#' + [
+            `id=${encodeURIComponent(meta.id)}`,
+            `text=${encodeURIComponent(meta.allText)}`,
+            `color=${encodeURIComponent(annotationTypesMap.get(meta.type.toLowerCase()).color)}`
+          ].join('&');
+        }
+        return url + fragment;
+      default:
+        return url;
+    }
   }
 
-  getGraphEntitySources(): Source[] {
+  getGraphEntitySources(meta?: Meta): Source[] {
     const sources = [];
 
     sources.push({
       domain: this.filename,
-      url: this.getURL(false),
+      url: this.getURL(false, meta),
     });
 
     if (this.doi != null) {

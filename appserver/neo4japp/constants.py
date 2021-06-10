@@ -204,15 +204,20 @@ ANNOTATION_STYLES_DICT = {
     },
     'link': {
         'label': 'link',
-        'color': '#669999'
+        'color': '#000000',
+        'bgcolor': '#dcf1f1',
+        'defaultimagecolor': '#669999'
     },
     'map': {
         'label': 'map',
-        'color': '#0277BD'
+        'color': '#0277bd',
+        'defaultimagecolor': '#0277bd'
     },
     'note': {
         'label': 'note',
-        'color': '#EDC949'
+        'color': '#000000',
+        'bgcolor': '#fff6d5',
+        'defaultimagecolor': '#edc949'
     },
     'reaction': {
         'label': 'reaction',
@@ -255,7 +260,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'correlation',
         'color': '#d7d9f8'
     },
-    'label': {
+    'cause': {
         'label': 'cause',
         'color': '#d7d9f8'
     },
@@ -300,6 +305,38 @@ ANNOTATION_STYLES_DICT = {
         'color': '#e5a731',
         'label': 'terminator'
     }
+}
+
+# Style constants
+DEFAULT_FONT_SIZE = 14.0
+DEFAULT_BORDER_COLOR = '#2B7CE9'
+DEFAULT_NODE_WIDTH = 41.25
+DEFAULT_NODE_HEIGHT = 27.5
+MAX_LINE_WIDTH = 50
+BASE_IMAGE_HEIGHT = 0.8
+IMAGE_HEIGHT_INCREMENT = 0.23
+SCALING_FACTOR = 55
+BORDER_STYLES_DICT = {
+    'dashed': 'dashed',
+    'dotted': 'dotted',
+    # Currently not implemented in Graphviz
+    'double-dashed': 'dashed',
+    'long-dashed': 'dashed'
+}
+
+ARROW_STYLE_DICT = {
+    'none': 'none',
+    'diamond': 'diamond',
+    'arrow': 'normal',
+    'square': 'box',
+    'circle': 'dot',
+    'cross-axis': 'tee',
+    # 'none' ensures spacing between the symbols.
+    # It is required only for arrows -'normal' type.
+    'cross-axis-arrow': 'normalnonetee',
+    'double-cross-axis': 'teetee',
+    'square-arrow': 'normalnonebox',
+    'circle-arrow': 'normalnonedot'
 }
 
 # Start shared Elastic constants

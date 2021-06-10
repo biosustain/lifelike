@@ -1,8 +1,8 @@
 <ng-container *ngIf="userError$ | async as userError; else errorLoading">
   <div style="max-width: 500px" class="card bg-light">
     <div class="card-body">
-      <div>
-        <i class="fa fa-exclamation-circle fa-3x text-danger"></i>
+      <div [ngSwitch]="type">
+        <i *ngSwitchCase="messageType.Error" class="fa fa-exclamation-circle fa-3x text-danger"></i>
       </div>
       <ng-container *ngIf="userError != null">
         <div class="mt-4">
@@ -17,9 +17,6 @@
           <p>{{msg}}</p>
         </div>
 
-        <div class="mt-3 text-muted" *ngIf="userError.transactionId">
-          <p>Reference ID: {{userError.transactionId}}</p>
-        </div>
       </ng-container>
       <div class="mt-4">
         <ng-content></ng-content>

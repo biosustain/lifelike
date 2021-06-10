@@ -2,3 +2,22 @@
 
 echo "> 🧶 Running yarn lint.."
 yarn lint-staged
+exit_code=$?
+if [ $exit_code != 0 ]; then
+  yarn why lint-staged
+  exit_code=$?
+  if [ $exit_code != 0 ]; then
+    echo "Lint-staged not installed, Installing..."
+    yarn install
+    echo "Rerun linter"
+    yarn lint-staged
+  fi
+fi
+
+# ALTERNATIVELY - without extra dependencies and consistent with other services
+#
+## Runs linting on only files that are staged
+#staged_files=$(getStaged client '\.(ts)$')
+#
+#echo "> 🧶 Running yarn lint.."
+#echo ${staged_files} | xargs ng lint -- --tsConfig=tsconfig.json
