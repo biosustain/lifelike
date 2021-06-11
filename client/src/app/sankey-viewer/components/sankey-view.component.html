@@ -139,7 +139,7 @@
             <ngb-accordion #acclink="ngbAccordion" activeIds="desc">
                 <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
-                        <p [innerHTML]="link.description">
+                        <p [style.whiteSpace]="'pre-wrap'" [innerHTML]="link.description"></p>
                     </ng-template>
                 </ngb-panel>
                 <ngb-panel [disabled]="true" *ngIf="!link.multiple_values else multipleValues">
@@ -257,7 +257,7 @@
             <ngb-accordion #accnode="ngbAccordion" activeIds="desc">
                 <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
-                        <p [innerHTML]="node.description">
+                        <p [style.whiteSpace]="'pre-wrap'" [innerHTML]="node.description"></p>
                     </ng-template>
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
