@@ -50,17 +50,6 @@ jobs:
           context: ./appserver
           dockerfile: ./Dockerfile
 
-      - name: Build statistical-enrichment image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: ***ARANGO_DB_NAME***.azurecr.io
-          image_name: kg-statistical-enrichment
-          image_tag: ${{ github.sha }},latest
-          context: ./statistical-enrichment
-          dockerfile: ./Dockerfile
-
       - name: Build Client and Nginx Image
         uses: whoan/docker-build-with-cache-action@v5
         with:
