@@ -28,6 +28,17 @@ from neo4japp.services.annotations.constants import (
     PROTEINS_UNIPROT_LMDB,
     SPECIES_NCBI_LMDB,
 )
+from neo4japp.services.annotations.data_transfer_objects import Inclusion
+from neo4japp.services.annotations.lmdb_util import (
+    create_ner_type_chemical,
+    create_ner_type_compound,
+    create_ner_type_disease,
+    create_ner_type_gene,
+    create_ner_type_phenomena,
+    create_ner_type_phenotype,
+    create_ner_type_protein,
+    create_ner_type_species
+)
 from neo4japp.util import normalize_str
 
 
@@ -1124,7 +1135,10 @@ def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'ACE2': {'ACE2': {'9606': '59272'}}}
+        return {
+            'ACE2': {'ACE2': {'9606': '59272'}},
+            'gene-(12345)': {'ACE2': {'9606': '59272'}}
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1136,7 +1150,10 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_gene_to_organism_il8_human_gene(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'CXCL8': {'CXCL8': {'9606': '3576'}}}
+        return {
+            'IL8': {'CXCL8': {'9606': '3576'}},
+            'IL-8': {'CXCL8': {'9606': '3576'}}
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1312,167 +1329,181 @@ def mock_get_gene_specified_strain(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_global_chemical_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'CHEBI:Fake',
-                'entity_name': 'fake-chemical-(12345)',
-                'synonym': 'fake-chemical-(12345)',
-                'data_source': 'CHEBI',
-                'hyperlink': ''
-            },
-            {
-                'entity_id': 'CHEBI:Fake',
-                'entity_name': 'Carbon',
-                'synonym': 'Carbon',
-                'data_source': 'MESH',
-                'hyperlink': 'http://fake'
-            }
-        ]
+def mock_global_chemical_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'CHEBI:Fake',
+            'entity_name': 'fake-chemical-(12345)',
+            'synonym': 'fake-chemical-(12345)',
+            'data_source': 'CHEBI',
+            'hyperlink': ''
+        },
+        {
+            'entity_id': 'CHEBI:Fake',
+            'entity_name': 'Carbon',
+            'synonym': 'Carbon',
+            'data_source': 'MESH',
+            'hyperlink': 'http://fake'
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'exec_read_query_with_params',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_compound_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'BIOC:Fake',
-                'entity_name': 'compound-(12345)',
-                'synonym': 'compound-(12345)',
-                'data_source': 'PUBCHEM',
-                'hyperlink': ''
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'exec_read_query_with_params',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_chemical(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc['hyperlink']
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_gene_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': '59272',
-                'entity_name': 'gene-(12345)',
-                'synonym': 'gene-(12345)',
-                'data_source': 'NCBI Gene'
-            },
-            {
-                'entity_id': '3576',
-                'entity_name': 'IL-8',
-                'synonym': 'IL-8',
-                'data_source': 'NCBI Gene'
-            }
-        ]
+def mock_global_compound_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'BIOC:Fake',
+            'entity_name': 'compound-(12345)',
+            'synonym': 'compound-(12345)',
+            'data_source': 'PUBCHEM',
+            'hyperlink': ''
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'exec_read_query',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_compound(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_disease_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'disease-(12345)',
-                'synonym': 'disease-(12345)',
-                'data_source': 'MESH',
-            }
-        ]
+def mock_global_gene_inclusion():
+    inclusions = [
+        {
+            'entity_id': '59272',
+            'entity_name': 'gene-(12345)',
+            'synonym': 'gene-(12345)',
+            'data_source': 'NCBI Gene'
+        },
+        {
+            'entity_id': '3576',
+            'entity_name': 'CXCL8',
+            'synonym': 'IL-8',
+            'data_source': 'NCBI Gene'
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_phenomena_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Fake',
-                'entity_name': 'fake-phenomena',
-                'synonym': 'fake-phenomena',
-                'data_source': 'MESH',
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_phenotype_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Fake',
-                'entity_name': 'phenotype-(12345)',
-                'synonym': 'phenotype-(12345)',
-                'data_source': 'CUSTOM',
-            }
-        ]
+def mock_global_disease_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'Ncbi:Fake',
+            'entity_name': 'disease-(12345)',
+            'synonym': 'disease-(12345)',
+            'data_source': 'MESH',
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_protein_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'protein-(12345)',
-                'synonym': 'protein-(12345)',
-                'data_source': 'UNIPROT',
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'exec_read_query',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_disease(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_species_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'species-(12345)',
-                'synonym': 'species-(12345)',
-                'data_source': 'NCBI Taxonomy',
-            }
-        ]
+def mock_global_phenomena_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'Fake',
+            'entity_name': 'fake-phenomena',
+            'synonym': 'fake-phenomena',
+            'data_source': 'MESH',
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'exec_read_query',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_phenomena(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'Fake',
+            'entity_name': 'phenotype-(12345)',
+            'synonym': 'phenotype-(12345)',
+            'data_source': 'CUSTOM',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_phenotype(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'Ncbi:Fake',
+            'entity_name': 'protein-(12345)',
+            'synonym': 'protein-(12345)',
+            'data_source': 'UNIPROT',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_protein(inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_inclusion():
+    inclusions = [
+        {
+            'entity_id': 'Ncbi:Fake',
+            'entity_name': 'species-(12345)',
+            'synonym': 'species-(12345)',
+            'data_source': 'NCBI Taxonomy',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_species(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
