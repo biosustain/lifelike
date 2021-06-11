@@ -504,7 +504,7 @@ class AnnotationService:
 
         for match in matches_list:
             for entity in match.entities:
-                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+                entity_synonym = entity['synonym']
                 gene_names.add(entity_synonym)
                 entity_token_pairs.append(
                     (entity, match.id_type, match.id_hyperlink, match.token))
@@ -545,68 +545,65 @@ class AnnotationService:
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
-            try:
-                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
-            except KeyError:
-                continue
-            else:
-                organisms_to_match: Dict[str, str] = {}
-                if entity_synonym in gene_organism_matches:
-                    try:
-                        # prioritize common name match over synonym
-                        organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
-                    except KeyError:
-                        # only take the first gene for the organism
-                        # no way for us to infer which to use
-                        for d in list(gene_organism_matches[entity_synonym].values()):
-                            key = next(iter(d))
-                            if key not in organisms_to_match:
-                                organisms_to_match[key] = d[key]
 
-                    best_match = self._find_best_organism_match(
+            entity_synonym = entity['synonym']
+            organisms_to_match: Dict[str, str] = {}
+            if entity_synonym in gene_organism_matches:
+                try:
+                    # prioritize common name match over synonym
+                    organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
+                except KeyError:
+                    # only take the first gene for the organism
+                    # no way for us to infer which to use
+                    for d in list(gene_organism_matches[entity_synonym].values()):
+                        key = next(iter(d))
+                        if key not in organisms_to_match:
+                            organisms_to_match[key] = d[key]
+
+                best_match = self._find_best_organism_match(
+                    token=token,
+                    entity_synonym=entity_synonym,
+                    organisms_to_match=organisms_to_match,
+                    fallback_organism_matches=fallback_gene_organism_matches,
+                    entity_type=EntityType.GENE.value)
+
+                if isinf(best_match.closest_distance):
+                    # didn't find a suitable organism in organisms_to_match
+                    continue
+
+                gene_id = best_match.entity_id
+                organism_id = best_match.organism_id
+                specified_organism_id = best_match.specified_organism_id
+                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+            elif entity_synonym in fallback_gene_organism_matches:
+                try:
+                    # prioritize common name match over synonym
+                    organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
+                except KeyError:
+                    # only take the first gene for the organism
+                    # no way for us to infer which to use
+                    for d in list(fallback_gene_organism_matches[entity_synonym].values()):
+                        key = next(iter(d))
+                        if key not in organisms_to_match:
+                            organisms_to_match[key] = d[key]
+                try:
+                    gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
+                    category = self.specified_organism.category
+                except KeyError:
+                    continue
+
+            if gene_id and category:
+                entities_to_create.append(
+                    CreateAnnotationObjParams(
                         token=token,
-                        entity_synonym=entity_synonym,
-                        organisms_to_match=organisms_to_match,
-                        fallback_organism_matches=fallback_gene_organism_matches,
-                        entity_type=EntityType.GENE.value)
-
-                    if isinf(best_match.closest_distance):
-                        # didn't find a suitable organism in organisms_to_match
-                        continue
-
-                    gene_id = best_match.entity_id
-                    organism_id = best_match.organism_id
-                    specified_organism_id = best_match.specified_organism_id
-                    category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
-                elif entity_synonym in fallback_gene_organism_matches:
-                    try:
-                        # prioritize common name match over synonym
-                        organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
-                    except KeyError:
-                        # only take the first gene for the organism
-                        # no way for us to infer which to use
-                        for d in list(fallback_gene_organism_matches[entity_synonym].values()):
-                            key = next(iter(d))
-                            if key not in organisms_to_match:
-                                organisms_to_match[key] = d[key]
-                    try:
-                        gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
-                        category = self.specified_organism.category
-                    except KeyError:
-                        continue
-
-                if gene_id and category:
-                    entities_to_create.append(
-                        CreateAnnotationObjParams(
-                            token=token,
-                            token_type=EntityType.GENE.value,
-                            entity=entity,
-                            entity_id=gene_id,
-                            entity_id_type=entity_id_type,
-                            entity_id_hyperlink=entity_id_hyperlink,
-                            entity_category=category
-                        )
+                        token_type=EntityType.GENE.value,
+                        entity=entity,
+                        entity_id=gene_id,
+                        entity_id_type=entity_id_type,
+                        entity_id_hyperlink=entity_id_hyperlink,
+                        entity_category=category
                     )
+                )
         return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_protein(
@@ -661,46 +658,43 @@ class AnnotationService:
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
-            try:
-                protein_id = entity[EntityIdStr.PROTEIN.value]
-                entity_synonym = entity['synonym']
-            except KeyError:
-                continue
-            else:
-                if entity_synonym in protein_organism_matches:
-                    best_match = self._find_best_organism_match(
-                        token=token,
-                        entity_synonym=entity_synonym,
-                        organisms_to_match=protein_organism_matches[entity_synonym],
-                        fallback_organism_matches=fallback_protein_organism_matches,
-                        entity_type=EntityType.PROTEIN.value)
+            protein_id = entity[EntityIdStr.PROTEIN.value]
+            entity_synonym = entity['synonym']
 
-                    if isinf(best_match.closest_distance):
-                        # didn't find a suitable organism in organisms_to_match
-                        continue
+            if entity_synonym in protein_organism_matches:
+                best_match = self._find_best_organism_match(
+                    token=token,
+                    entity_synonym=entity_synonym,
+                    organisms_to_match=protein_organism_matches[entity_synonym],
+                    fallback_organism_matches=fallback_protein_organism_matches,
+                    entity_type=EntityType.PROTEIN.value)
 
-                    protein_id = best_match.entity_id
-                    organism_id = best_match.organism_id
-                    specified_organism_id = best_match.specified_organism_id
-                    category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
-                elif entity_synonym in fallback_protein_organism_matches:
-                    try:
-                        protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                        category = self.specified_organism.category
-                    except KeyError:
-                        continue
+                if isinf(best_match.closest_distance):
+                    # didn't find a suitable organism in organisms_to_match
+                    continue
 
-                entities_to_create.append(
-                    CreateAnnotationObjParams(
-                        token=token,
-                        token_type=EntityType.PROTEIN.value,
-                        entity=entity,
-                        entity_id=protein_id,
-                        entity_id_type=entity_id_type,
-                        entity_id_hyperlink=entity_id_hyperlink,
-                        entity_category=category
-                    )
+                protein_id = best_match.entity_id
+                organism_id = best_match.organism_id
+                specified_organism_id = best_match.specified_organism_id
+                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+            elif entity_synonym in fallback_protein_organism_matches:
+                try:
+                    protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                    category = self.specified_organism.category
+                except KeyError:
+                    continue
+
+            entities_to_create.append(
+                CreateAnnotationObjParams(
+                    token=token,
+                    token_type=EntityType.PROTEIN.value,
+                    entity=entity,
+                    entity_id=protein_id,
+                    entity_id_type=entity_id_type,
+                    entity_id_hyperlink=entity_id_hyperlink,
+                    entity_category=category
                 )
+            )
         return self._create_annotation_object(entities_to_create)
 
     def _annotate_local_species(
@@ -1040,6 +1034,7 @@ class AnnotationService:
                 if anno.meta.id_type not in anno.meta.id:
                     # update annotation id
                     anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
+
         return annotations
 
     def fix_conflicting_annotations(

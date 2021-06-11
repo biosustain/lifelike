@@ -292,14 +292,10 @@ class EntityRecognitionService:
                     name=inclusion['entity_name'],
                     synonym=inclusion['synonym']
                 )
-                # differentiate between LMDB
-                entity['inclusion'] = True
             else:
                 if entity_type_to_include == EntityType.PROTEIN.value:
                     entity = create_entity_ner_func(
                         name=inclusion['entity_name'], synonym=inclusion['synonym'])
-                    # differentiate between LMDB
-                    entity['inclusion'] = True
                 elif entity_type_to_include == EntityType.GENE.value:
                     self.gene_collection.append(
                         (
@@ -343,8 +339,6 @@ class EntityRecognitionService:
                     name=gene_names[gene_id],
                     synonym=entity_name
                 )
-                # differentiate between LMDB
-                entity['inclusion'] = True
 
                 if normalized_name in gene_inclusion:
                     gene_inclusion[normalized_name].entities.append(entity)
@@ -424,9 +418,6 @@ class EntityRecognitionService:
                         name=entity_name,
                         synonym=entity_name
                     )
-
-                    # differentiate between LMDB
-                    entity['inclusion'] = True
 
                     if normalized_entity_name in self.included_local_species:
                         self.included_local_species[normalized_entity_name].entities.append(entity)

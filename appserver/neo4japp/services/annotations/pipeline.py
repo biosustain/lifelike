@@ -160,19 +160,21 @@ def _identify_entities(
     tokenizer = get_annotation_tokenizer()
 
     # identify entities w/ NLP first
-    try:
-        nlp_start_time = time.time()
-        nlp_results = get_nlp_entities(
-            text=pdf_text,
-            entities=set(k for k, v in annotation_method.items() if v['nlp']))
-        current_app.logger.info(
-            f'Total NLP processing time {time.time() - nlp_start_time}',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-        )
-    except Exception:
-        raise AnnotationError(
-            'Unable to Annotate',
-            'An unexpected error occurred with the NLP service.')
+    entities_to_run_nlp = set(k for k, v in annotation_method.items() if v['nlp'])
+    if entities_to_run_nlp:
+        try:
+            nlp_start_time = time.time()
+            nlp_results = get_nlp_entities(
+                text=pdf_text,
+                entities=entities_to_run_nlp)
+            current_app.logger.info(
+                f'Total NLP processing time {time.time() - nlp_start_time}',
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
+        except Exception:
+            raise AnnotationError(
+                'Unable to Annotate',
+                'An unexpected error occurred with the NLP service.')
 
     start = time.time()
     tokens = tokenizer.create(parsed)
