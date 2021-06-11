@@ -90,6 +90,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  @Input() normalizeLinks = true;
+
   get data() {
     return this._data;
   }
@@ -343,7 +345,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .selectAll('path')
       .filter(({id}) => relatedLinksIds.includes(id))
       .attr('d', link => {
-        const newPathParams = calculateLinkPathParams(link);
+        const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
         link.calculated_params = newPathParams;
         return composeLinkPath(newPathParams);
       });
@@ -414,13 +416,13 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           })
           .call(enterLink => enterLink.append('title'))
           .attr('d', link => {
-            link.calculated_params = calculateLinkPathParams(link);
+            link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
             return composeLinkPath(link.calculated_params);
           }),
         update => update
           .transition().duration(RELAYOUT_DURATION)
           .attrTween('d', link => {
-            const newPathParams = calculateLinkPathParams(link);
+            const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
             const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
             return t => {
               const interpolatedParams = paramsInterpolator(t);
