@@ -443,7 +443,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             links.forEach(l => {
               const [v1, v2] = l[k];
               l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d) / l.adjacent_divider);
-              l.value = d3.sum(l.multiple_values) / 2;
+              // take max for layer calculation
+              l.value = Math.max(l.multiple_values);
             });
             return {links};
           }

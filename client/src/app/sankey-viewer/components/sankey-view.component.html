@@ -136,13 +136,13 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Link
                 Details:
             </legend>
-            <ngb-accordion #acclink="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
-                <ngb-panel title="Description">
+            <ngb-accordion #acclink="ngbAccordion" activeIds="desc">
+                <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="link.description">
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel [disabled]="true">
+                <ngb-panel [disabled]="true" *ngIf="!link.multiple_values else multipleValues">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
@@ -151,6 +151,26 @@
                         </button>
                     </ng-template>
                 </ngb-panel>
+                <ng-template #multipleValues>
+                    <ngb-panel title="Value">
+                        <ng-template ngbPanelContent>
+                            <ul class="list-group list-group-flush cancel-out-card-padding">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <b>Source value</b>
+                                    {{ link.multiple_values[0] }}
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <b>Target value</b>
+                                    {{ link.multiple_values[1] }}
+                                </li>
+<!--                                <li class="list-group-item d-flex justify-content-between small">-->
+<!--                                    <b>Layout calculation helper value</b>-->
+<!--                                    {{ link.value }}-->
+<!--                                </li>-->
+                            </ul>
+                        </ng-template>
+                    </ngb-panel>
+                </ng-template>
                 <ngb-panel title="Trace" *ngIf="link.trace" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
@@ -229,14 +249,13 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Node
                 Details:
             </legend>
-            <ngb-accordion #accnode="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
-                <ngb-panel title="Description">
+            <ngb-accordion #accnode="ngbAccordion" activeIds="desc">
+                <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="node.description">
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel>
-
+                <ngb-panel [disabled]="true">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
