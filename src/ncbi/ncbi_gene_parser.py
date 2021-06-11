@@ -38,6 +38,12 @@ class GeneParser(BaseParser):
         self._parse_and_write_gene2go()
 
     def load_data_to_neo4j(self, database: Database, update=True):
+        """
+        2021-06-08 23:44:05,201 Processed genes: 32227060, gene2syns: 6159188
+        :param database:
+        :param update: if False, initial load, otherwise, update data
+        :return:
+        """
         logging.info('parse and load bioinfo')
         self._load_bioinfo_to_neo4j(database, update)
         logging.info('parse and load gene2go')
@@ -45,10 +51,14 @@ class GeneParser(BaseParser):
         self._update_gene_synonyms_in_neo4j(database)
 
     def write_lmdb_annotation_file(self):
+        """
+        2021-06-08 14:28:36,984 rows processed: 43259367
+        :return:
+        """
         outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
         open(outfile, 'w').close()
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=50000, usecols=gene_info_cols)
+        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
         count = 0
         header = True
         for chunk in geneinfo_chunks:
@@ -58,8 +68,8 @@ class GeneParser(BaseParser):
             df_syn = df[[PROP_ID, PROP_NAME, PROP_SYNONYMS]]
             df_syn = df_syn.set_index([PROP_ID, PROP_NAME]).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, PROP_NAME, 'synonym']]
-            df_names = df[[PROP_ID, PROP_NAME]].copy()
-            df_names['synonym'] = df[PROP_NAME]
+            df_names = df[[PROP_ID, PROP_NAME]]
+            df_names['synonym'] = df_names[PROP_NAME]
             df_locus = df[[PROP_ID, PROP_NAME, PROP_LOCUS_TAG]]
             df_locus = df_locus.rename(columns={PROP_LOCUS_TAG: 'synonym'})
             df_syns = pd.concat([df_names, df_locus, df_syn])
@@ -72,8 +82,23 @@ class GeneParser(BaseParser):
             count += len(df_syns)
             df_syns.to_csv(outfile, header=header, sep='\t', mode='a', index=False)
             header = False
-            break
         logging.info(f'rows processed: {count}')
+
+    def extract_organism_geneinfo(self, tax_id):
+        gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
+        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
+        df_org = pd.DataFrame()
+        process = False
+        for chunk in geneinfo_chunks:
+            df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
+            df = df[df[PROP_TAX_ID] == tax_id]
+            if len(df) > 0:
+                process = True
+                df = df[df['name'] != 'NEWENTRY']
+                df_org = pd.concat([df_org, df])
+            elif process:
+                break
+        return df_org
 
     def _parse_and_write_gene_info(self):
         # create new empty output files
@@ -125,7 +150,8 @@ class GeneParser(BaseParser):
                                            [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
                                            [NODE_NCBI])
         query_synonyms = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, 'synonym',
-                                                     NODE_GENE, PROP_ID, PROP_ID, REL_SYNONYM, False)
+                                                     NODE_GENE, PROP_ID, PROP_ID, REL_SYNONYM, False, '', [PROP_LOWERCASE_NAME])
+        print(query_synonyms)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=10000, usecols=gene_info_cols)
         count_gene = 0
@@ -133,13 +159,14 @@ class GeneParser(BaseParser):
         for chunk in geneinfo_chunks:
             df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
             df = df[df['name'] != 'NEWENTRY']
-            df = df.replace('-', '').replace('')
+            df = df.replace('-', '')
             df = df.astype('str')
             df[PROP_DATA_SOURCE] = DS_NCBI_GENE
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
             df_syn = df_syn[df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
+            df_syn[PROP_LOWERCASE_NAME] = df_syn['synonym'].str.lower()
             # add Gene Nodes
             database.load_data_from_dataframe(df, query_genes)
             count_gene += len(df)
@@ -171,18 +198,20 @@ class GeneParser(BaseParser):
         query_add_name_as_synonym = '''
         call apoc.periodic.iterate(
         "match (n:Gene:db_NCBI) return n",
-        "merge (s:Synonym {name:n.name}) merge (n)-[:HAS_SYNONYM]->(s)",
+        "merge (s:Synonym {name:n.name}) set s.lowercase_name = toLower(n.name) merge (n)-[:HAS_SYNONYM]->(s)",
         {batchSize:10000}
         );
         '''
         query_add_locustag_as_synonym = '''
         call apoc.periodic.iterate(
         "match(n:Gene:db_NCBI) where exists (n.locus_tag) and n.locus_tag <> '' and n.locus_tag <> n.name return n",
-        "merge (s:Synonym {name:n.locus_tag}) merge (n)-[:HAS_SYNONYM]->(s)",
+        "merge (s:Synonym {name:n.locus_tag}) set s.lowercase_name = toLower(n.locus_tag) merge (n)-[:HAS_SYNONYM]->(s)",
         {batchSize:10000}
         );
         '''
+        logging.info('add gene name as synonym')
         database.run_query(query_add_name_as_synonym)
+        logging.info('add locustag as synonym')
         database.run_query(query_add_locustag_as_synonym)
 
 
