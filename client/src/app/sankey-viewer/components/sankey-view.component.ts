@@ -275,7 +275,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       return o.concat(ilinks);
     }, []);
 
-    console.log(traceBasedLinkSplitMap);
     for (const adjacentLinkGroup of traceBasedLinkSplitMap.values()) {
       const adjacentLinkGroupLength = adjacentLinkGroup.length;
       // normalise only if multiple (skip /1)
@@ -393,7 +392,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   openPanel(template, data) {
-    console.log(template, data);
     this.details = {
       template, $implicit: data
     };
@@ -422,8 +420,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   extractLinkValueProperties([link = {}]) {
-    // extract all numeric properties //
-    console.log(link);
+    // extract all numeric properties
     this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
       if (!isNaN(v as number)) {
         o.push({
@@ -454,8 +451,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   extractNodeValueProperties([node = {}]) {
-    // extract all numeric properties //
-    console.log(node);
+    // extract all numeric properties
     this.nodeValueAccessors = Object.entries(node).reduce((o, [k, v]) => {
       if (!isNaN(v as number)) {
         o.push({
@@ -554,13 +550,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   selectValueAccessor($event) {
-    console.log($event);
     this.selectedValueAccessor = $event;
     this.selectTrace(this.selectedTrace);
   }
 
   selectNodeValueAccessor($event) {
-    console.log($event);
     this.selectedNodeValueAccessor = $event;
     this.selectTrace(this.selectedTrace);
   }

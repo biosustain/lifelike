@@ -471,7 +471,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               // tslint:disable-next-line:only-arrow-functions
               .on('end', function(d) {
                 self.dragging = false;
-                console.log(d3.event);
                 if (d3.event.dx + d3.event.dy < 5) {
                   nodeClick(undefined, d, undefined, undefined);
                 }
