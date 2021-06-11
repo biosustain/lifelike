@@ -259,12 +259,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   selectTrace(trace) {
-    this.linksColorMap = new Map(trace.traces.map((t, i) => [t, christianColors[i]]));
+    this.linksColorMap = new Map(trace.traces.map(({group}, i) => [group, christianColors[i]]));
     this.selectedTrace = trace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const traceBasedLinkSplitMap = new Map();
     const allEdges = trace.traces.reduce((o, itrace, idx) => {
-      const color = this.linksColorMap.get(itrace);
+      const color = this.linksColorMap.get(itrace.group);
       const ilinks = itrace.edges.map(iidx => {
         const originLink = links[iidx];
         const link = {
