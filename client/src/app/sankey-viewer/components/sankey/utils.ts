@@ -45,38 +45,90 @@ export function throttled(fn: (...r: any[]) => void) {
   };
 }
 
-export const calculateLinkPathParams = link => {
-  const {value: linkValue, source, target} = link;
-  const {sourceLinks} = source;
-  const {targetLinks} = target;
-  const sourceValues = sourceLinks.map(({value}) => value);
-  const targetValues = targetLinks.map(({value}) => value);
-  const sourceIndex = sourceLinks.indexOf(link);
-  const targetIndex = targetLinks.indexOf(link);
-  const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
-  const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
+export const calculateLinkPathParams = (link, normalize = true) => {
+  const {source, target, multiple_values} = link;
+  let {value: linkValue} = link;
+  linkValue = linkValue || 1e-4;
   const sourceX = source.x1;
   const targetX = target.x0;
-  let sourceY = 0;
-  let targetY = 0;
-  for (let i = 0; i < sourceIndex; i++) {
-    sourceY += sourceLinks[i].value;
-  }
-  for (let i = 0; i < targetIndex; i++) {
-    targetY += targetLinks[i].value;
-  }
-  const sourceHeight = source.y1 - source.y0;
-  const targetHeight = target.y1 - target.y0;
-  // tslint:disable-next-line:no-bitwise
-  const sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + source.y0;
-  // tslint:disable-next-line:no-bitwise
-  const targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + target.y0;
-  // tslint:disable-next-line:no-bitwise
-  const sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
-  // tslint:disable-next-line:no-bitwise
-  const targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
+  const {sourceLinks} = source;
+  const {targetLinks} = target;
+  const sourceIndex = sourceLinks.indexOf(link);
+  const targetIndex = targetLinks.indexOf(link);
   // tslint:disable-next-line:no-bitwise
   const bezierX = (sourceX + targetX) / 2;
+  let sourceY0;
+  let sourceY1;
+  let targetY0;
+  let targetY1;
+  let sourceY = 0;
+  let targetY = 0;
+
+  if (multiple_values) {
+    for (let i = 0; i < sourceIndex; i++) {
+      sourceY += sourceLinks[i].multiple_values[0];
+    }
+    for (let i = 0; i < targetIndex; i++) {
+      targetY += targetLinks[i].multiple_values[1];
+    }
+  } else {
+    for (let i = 0; i < sourceIndex; i++) {
+      sourceY += sourceLinks[i].value;
+    }
+    for (let i = 0; i < targetIndex; i++) {
+      targetY += targetLinks[i].value;
+    }
+  }
+
+  if (normalize) {
+    let sourceValues, targetValues;
+    if (multiple_values) {
+      sourceValues = sourceLinks.map(({multiple_values: [value]}) => value);
+      targetValues = targetLinks.map(({multiple_values: [_, value]}) => value);
+    } else {
+      sourceValues = sourceLinks.map(({value}) => value);
+      targetValues = targetLinks.map(({value}) => value);
+    }
+    const sourceNormalizer = sourceLinks.normalizer || (sourceLinks.normalizer = normalizeGenerator(sourceValues));
+    const targetNormalizer = targetLinks.normalizer || (targetLinks.normalizer = normalizeGenerator(targetValues));
+    const sourceHeight = source.y1 - source.y0;
+    const targetHeight = target.y1 - target.y0;
+    // tslint:disable-next-line:no-bitwise
+    sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + source.y0;
+    // tslint:disable-next-line:no-bitwise
+    targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + target.y0;
+    if (multiple_values) {
+      // tslint:disable-next-line:no-bitwise
+      sourceY1 = (sourceNormalizer.normalize(multiple_values[0]) * sourceHeight) + sourceY0;
+      // tslint:disable-next-line:no-bitwise
+      targetY1 = (targetNormalizer.normalize(multiple_values[1]) * targetHeight) + targetY0;
+    } else {
+      // tslint:disable-next-line:no-bitwise
+      sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
+      // tslint:disable-next-line:no-bitwise
+      targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
+    }
+  } else {
+    let {width} = link;
+    width = width || 1e-4;
+    const valueScaler = width / linkValue;
+
+    // tslint:disable-next-line:no-bitwise
+    sourceY0 = sourceY * valueScaler + source.y0;
+    // tslint:disable-next-line:no-bitwise
+    targetY0 = targetY * valueScaler + target.y0;
+    if (multiple_values) {
+      // tslint:disable-next-line:no-bitwise
+      sourceY1 = multiple_values[0] * valueScaler + sourceY0;
+      // tslint:disable-next-line:no-bitwise
+      targetY1 = multiple_values[1] * valueScaler + targetY0;
+    } else {
+      // tslint:disable-next-line:no-bitwise
+      sourceY1 = linkValue * valueScaler + sourceY0;
+      // tslint:disable-next-line:no-bitwise
+      targetY1 = linkValue * valueScaler + targetY0;
+    }
+  }
   return {
     sourceX,
     sourceY0,
@@ -165,4 +217,5 @@ export const christianColors = [
   '#BF5650', '#E83000', '#66796D', '#DA007C', '#FF1A59', '#8ADBB4', '#1E0200', '#5B4E51',
   '#C895C5', '#320033', '#FF6832', '#66E1D3', '#CFCDAC', '#D0AC94', '#7ED379', '#012C58'];
 
-export const representativePositiveNumber = clamp(1e-4, 1e4);
+export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
+
