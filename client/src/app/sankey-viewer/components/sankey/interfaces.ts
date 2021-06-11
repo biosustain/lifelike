@@ -11,6 +11,7 @@ interface Node {
   value?: number;
   fixedValue?: number;
   layer?: number;
+  description?: string;
 }
 
 interface Link {
