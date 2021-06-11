@@ -38,10 +38,10 @@ function find(nodeById, id) {
   if (!node) {
     throw new Error('missing: ' + id);
   }
-  return node;
+  return node as Node;
 }
 
-export function defaultId(d) {
+export function defaultId(d, _ = null, __ = null) {
   return d.id;
 }
 
@@ -117,7 +117,7 @@ export function sankey(graph) {
   computeNodeBreadths(graph);
   computeLinkBreadths(graph);
   return graph;
-};
+}
 
 function computeNodeValues({nodes}: SankeyData) {
   for (const node of nodes) {
@@ -136,7 +136,7 @@ export function computeNodeDepths({nodes}: SankeyData) {
     for (const node of current) {
       node.depth = x;
       for (const {target} of node.sourceLinks) {
-        next.add(target);
+        next.add(target as Node);
       }
     }
     if (++x > n) {
@@ -157,7 +157,7 @@ function computeNodeHeights({nodes}: SankeyData) {
       // noinspection JSSuspiciousNameCombination
       node.height = x;
       for (const {source} of node.targetLinks) {
-        next.add(source);
+        next.add(source as Node);
       }
     }
     if (++x > n) {
@@ -167,6 +167,8 @@ function computeNodeHeights({nodes}: SankeyData) {
     next = new Set();
   }
 }
+
+const sort = console.error;
 
 export function computeNodeLayers({nodes}: SankeyData) {
   const x = max(nodes, d => d.depth) + 1;
