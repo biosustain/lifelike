@@ -321,7 +321,7 @@ class ManualAnnotationService:
             except KeyError:
                 raise AnnotationError(
                     title='Failed to Create Custom Annotation',
-                    message='Could not create global inclusion/exclusion, '
+                    message='Could not create global annotation inclusion/exclusion, '
                             'the data is corrupted. Please try again.',
                     code=500)
 
@@ -336,7 +336,7 @@ class ManualAnnotationService:
                 'common_name': common_name
             }
 
-            if not self._global_annotation_exists(createval):
+            if not self._global_annotation_exists_in_kg(createval):
                 queries = {
                     EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion,
                     EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion,
@@ -355,6 +355,12 @@ class ManualAnnotationService:
                         # did not match to any existing, so add to Lifelike
                         query = self.graph.create_lifelike_global_inclusion
                         result = self.graph.exec_write_query(query, createval)
+                except BrokenPipeError:
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='The graph connection became stale while processing data, '
+                                'Please refresh the browser and try again.',
+                        code=500)
                 except Exception:
                     current_app.logger.error(
                         f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
