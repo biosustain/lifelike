@@ -449,9 +449,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return v;
   }
 
+  excludedProperties = new Set(['source', 'target']);
+
   extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
     this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
+      if (this.excludedProperties.has(k)) {
+        return o;
+      }
       if (!isNaN(v as number)) {
         o.push({
           description: k,
@@ -481,6 +486,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   extractNodeValueProperties([node = {}]) {
     // extract all numeric properties
     this.nodeValueAccessors = Object.entries(node).reduce((o, [k, v]) => {
+      if (this.excludedProperties.has(k)) {
+        return o;
+      }
       if (!isNaN(v as number)) {
         o.push({
           description: k,
