@@ -104,7 +104,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   panelOpened;
   details;
-  normalizeLinks = {value: true};
+  normalizeLinks = {value: false};
 
   valueGenerators = [
     {
