@@ -6,52 +6,37 @@ from .mixins.graph_mixin import GraphMixin
 
 class AnnotationGraphService(GraphMixin):
     def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_chemicals_from_chemical_ids_query,
-            chemical_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_chemicals_by_ids, {'ids': chemical_ids})
         return {row['chemical_id']: row['chemical_name'] for row in result}
 
     def get_compounds_from_compound_ids(self, compound_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_compounds_from_compound_ids_query,
-            compound_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_compounds_by_ids, {'ids': compound_ids})
         return {row['compound_id']: row['compound_name'] for row in result}
 
     def get_diseases_from_disease_ids(self, disease_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_diseases_from_disease_ids_query,
-            disease_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_diseases_by_ids, {'ids': disease_ids})
         return {row['disease_id']: row['disease_name'] for row in result}
 
     def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_genes_from_gene_ids_query,
-            gene_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_genes_by_ids, {'ids': gene_ids})
         return {row['gene_id']: row['gene_name'] for row in result}
 
     def get_proteins_from_protein_ids(self, protein_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_proteins_from_protein_ids_query,
-            protein_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_proteins_by_ids, {'ids': protein_ids})
         return {row['protein_id']: row['protein_name'] for row in result}
 
     def get_organisms_from_organism_ids(self, organism_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_organisms_from_organism_ids_query,
-            organism_ids
-        )
+        result = self.exec_read_query_with_params(
+            self.get_species_by_ids, {'ids': organism_ids})
         return {row['organism_id']: row['organism_name'] for row in result}
 
     def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_mesh_from_mesh_ids_query,
-            mesh_ids
-        )
+        result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
 
     def get_gene_to_organism_match_result(
@@ -106,11 +91,8 @@ class AnnotationGraphService(GraphMixin):
     ) -> Dict[str, Dict[str, str]]:
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
-        result = self.graph.read_transaction(
-            self.get_protein_to_organism_query,
-            proteins,
-            organisms,
-        )
+        result = self.exec_read_query_with_params(
+            self.get_protein_to_organism, {'proteins': proteins, 'organisms': organisms})
 
         for row in result:
             protein_name: str = row['protein']
@@ -130,128 +112,6 @@ class AnnotationGraphService(GraphMixin):
         return self.graph.run(
             self.get_organisms_from_gene_ids_query,
             gene_ids
-        )
-
-    def get_protein_to_organism_query(
-        self,
-        tx: Neo4jTx,
-        proteins: List[str],
-        organisms: List[str]
-    ) -> List[Neo4jRecord]:
-        """Retrieves a list of all the protein with a given name
-        in a particular organism."""
-        return list(
-            tx.run(
-                """
-                MATCH (s:Synonym)-[]-(g:db_UniProt)
-                WHERE s.name IN $proteins
-                WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-                WHERE p.id IN $organisms
-                RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
-                """,
-                proteins=proteins, organisms=organisms
-            )
-        )
-
-    def get_mesh_from_mesh_ids_query(self, tx: Neo4jTx, mesh_ids: List[str]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $mesh_ids
-                RETURN n.id AS mesh_id, n.name AS mesh_name
-                """,
-                mesh_ids=mesh_ids
-            )
-        )
-
-    def get_chemicals_from_chemical_ids_query(
-        self,
-        tx: Neo4jTx,
-        chemical_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (c:Chemical) WHERE c.id IN $chemical_ids
-                RETURN c.id AS chemical_id, c.name AS chemical_name
-                """,
-                chemical_ids=chemical_ids
-            )
-        )
-
-    def get_compounds_from_compound_ids_query(
-        self,
-        tx: Neo4jTx,
-        compound_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (c:Compound) WHERE c.biocyc_id IN $compound_ids
-                RETURN c.biocyc_id AS compound_id, c.name AS compound_name
-                """,
-                compound_ids=compound_ids
-            )
-        )
-
-    def get_diseases_from_disease_ids_query(
-        self,
-        tx: Neo4jTx,
-        disease_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (d:Disease) WHERE d.id IN $disease_ids
-                RETURN d.id AS disease_id, d.name AS disease_name
-                """,
-                disease_ids=disease_ids
-            )
-        )
-
-    def get_genes_from_gene_ids_query(
-        self,
-        tx: Neo4jTx,
-        gene_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene) WHERE g.id IN $gene_ids
-                RETURN g.id AS gene_id, g.name AS gene_name
-                """,
-                gene_ids=gene_ids
-            )
-        )
-
-    def get_proteins_from_protein_ids_query(
-        self,
-        tx: Neo4jTx,
-        protein_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (p:db_UniProt) WHERE p.id IN $protein_ids
-                RETURN p.id AS protein_id, p.name AS protein_name
-                """,
-                protein_ids=protein_ids
-            )
-        )
-
-    def get_organisms_from_organism_ids_query(
-        self,
-        tx: Neo4jTx,
-        organism_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (t:Taxonomy) WHERE t.id IN $organism_ids
-                RETURN t.id AS organism_id, t.name AS organism_name
-                """,
-                organism_ids=organism_ids
-            )
         )
 
     def get_organisms_from_gene_ids_query(

@@ -27,10 +27,70 @@ class GraphMixin(GraphConnection):
         """
 
     @property
+    def get_protein_to_organism(self):
+        return """
+        WITH $values AS row
+        MATCH (s:Synonym)-[]-(g:db_UniProt)
+        WHERE s.name IN row.proteins
+        WITH row, s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
+        WHERE p.id IN row.organisms
+        RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
+        """
+
+    @property
+    def get_chemicals_by_ids(self):
+        return """
+        MATCH (c:Chemical) WHERE c.id IN $values.ids
+        RETURN c.id AS chemical_id, c.name AS chemical_name
+        """
+
+    @property
+    def get_compounds_by_ids(self):
+        return """
+        MATCH (c:Compound) WHERE c.biocyc_id IN $values.ids
+        RETURN c.biocyc_id AS compound_id, c.name AS compound_name
+        """
+
+    @property
+    def get_diseases_by_ids(self):
+        return """
+        MATCH (d:Disease) WHERE d.id IN $values.ids
+        RETURN d.id AS disease_id, d.name AS disease_name
+        """
+
+    @property
+    def get_genes_by_ids(self):
+        return """
+        MATCH (g:Gene) WHERE g.id IN $values.ids
+        RETURN g.id AS gene_id, g.name AS gene_name
+        """
+
+    @property
+    def get_mesh_by_ids(self):
+        return """
+        MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $values.ids
+        RETURN n.id AS mesh_id, n.name AS mesh_name
+        """
+
+    @property
+    def get_proteins_by_ids(self):
+        return """
+        MATCH (p:db_UniProt) WHERE p.id IN $values.ids
+        RETURN p.id AS protein_id, p.name AS protein_name
+        """
+
+    @property
+    def get_species_by_ids(self):
+        return """
+        MATCH (t:Taxonomy) WHERE t.id IN $values.ids
+        RETURN t.id AS organism_id, t.name AS organism_name
+        """
+
+    @property
     def get_mesh_global_inclusions_by_type(self):
         return """
         WITH $values AS row
-        MATCH (n:db_MESH:TopicalDescriptor)-[r:HAS_SYNONYM]-(s)
+        MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s)
         WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
         AND n.entity_type = row.entity_type
         RETURN n.id AS entity_id, n.name AS entity_name,
@@ -78,7 +138,7 @@ class GraphMixin(GraphConnection):
     def mesh_global_inclusion_exist(self):
         return """
         WITH $values AS row
-        OPTIONAL MATCH (n:db_MESH:TopicalDescriptor)-[:HAS_SYNONYM]->(s)
+        OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
         WHERE n.id = 'MESH:' + row.entity_id AND s.name = row.synonym
         RETURN s IS NOT NULL AS exist
         """
