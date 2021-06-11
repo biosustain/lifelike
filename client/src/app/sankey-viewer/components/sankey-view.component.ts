@@ -14,7 +14,6 @@ import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GraphData } from '../../interfaces/vis-js.interface';
-import * as d3 from 'd3';
 
 @Component({
   selector: 'app-sankey-viewer',
