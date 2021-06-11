@@ -424,7 +424,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return Object.assign(data, preprocessedLinks, preprocessedNodes);
   }
 
-  parseProperty(v, propertyName = true) {
+  parseProperty(v, propertyName: string | boolean = true) {
     if (!isNaN(v)) {
       return formatNumber(v, 'en-US', '1.0-6');
     }
