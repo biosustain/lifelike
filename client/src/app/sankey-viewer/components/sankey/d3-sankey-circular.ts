@@ -24,7 +24,7 @@
 // SOFTWARE.
 
 import { defaultId } from './d3-sankey';
-import findCircuits from "elementary-circuits-directed-graph";
+import findCircuits from 'elementary-circuits-directed-graph';
 
 export function identifyCircles(graph: SankeyData, id = defaultId, sortNodes = null) {
   let circularLinkID = 0;
@@ -33,8 +33,8 @@ export function identifyCircles(graph: SankeyData, id = defaultId, sortNodes = n
     // Building adjacency graph
     const adjList = [];
     graph.links.forEach(link => {
-      const source = link.source.index;
-      const target = link.target.index;
+      const source = (link.source as Node).index;
+      const target = (link.target as Node).index;
       if (!adjList[source]) {
         adjList[source] = [];
       }
@@ -64,8 +64,8 @@ export function identifyCircles(graph: SankeyData, id = defaultId, sortNodes = n
     }
 
     graph.links.forEach(link => {
-      const target = link.target.index;
-      const source = link.source.index;
+      const target = (link.target as Node).index;
+      const source = (link.source as Node).index;
       // If self-linking or a back-edge
       if (target === source || (circularLinks[source] && circularLinks[source][target])) {
         link.circular = true;

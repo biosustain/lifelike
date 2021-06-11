@@ -81,7 +81,8 @@ export const calculateLinkPathParams = (link, normalize = true) => {
   }
 
   if (normalize) {
-    let sourceValues, targetValues;
+    let sourceValues;
+    let targetValues;
     if (multiple_values) {
       sourceValues = sourceLinks.map(({multiple_values: [value]}) => value);
       targetValues = targetLinks.map(({multiple_values: [_, value]}) => value);
@@ -187,12 +188,6 @@ export const createResizeObserver = (callback, container) => {
   observer.observe(container);
   return observer;
 };
-
-export interface SankeyGraph {
-  links: any[];
-  nodes: any[];
-  graph: any;
-}
 
 export const clamp = (min, max) => value => Math.min(Math.max(min, Number(value)), max);
 export const RELAYOUT_DURATION = 250;
