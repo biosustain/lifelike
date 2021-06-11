@@ -147,7 +147,7 @@
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
-                            {{ link.value }}
+                            {{ parseProperty(link.value) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -155,13 +155,13 @@
                     <ngb-panel title="Value">
                         <ng-template ngbPanelContent>
                             <ul class="list-group list-group-flush cancel-out-card-padding">
-                                <li class="list-group-item d-flex justify-content-between">
+                                <li class="list-group-item d-flex flex-wrap justify-content-between">
                                     <b>Source value</b>
-                                    {{ link.multiple_values[0] }}
+                                    {{ parseProperty(link.multiple_values[0]) }}
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between">
+                                <li class="list-group-item d-flex flex-wrap justify-content-between">
                                     <b>Target value</b>
-                                    {{ link.multiple_values[1] }}
+                                    {{ parseProperty(link.multiple_values[1]) }}
                                 </li>
 <!--                                <li class="list-group-item d-flex justify-content-between small">-->
 <!--                                    <b>Layout calculation helper value</b>-->
@@ -174,15 +174,15 @@
                 <ngb-panel title="Trace" *ngIf="link.trace" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Source</b>
                                 {{ getNodeById(link.trace.source).description }}
                             </li>
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Target</b>
                                 {{ getNodeById(link.trace.target).description }}
                             </li>
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Group</b>
                                 {{ link.trace.group }}
                             </li>
@@ -201,7 +201,6 @@
                                         >
 
                                         </app-vis-js-network>
-                                        {{ link.trace.edge_details }}
                                     </div>
                                 </ng-template>
                                 <button class="btn btn-outline-primary" (click)="open(content)">Show detailed
@@ -218,10 +217,11 @@
                                 [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
+                                 'flex-wrap': true,
                                  'justify-content-between': true,
                                 active: property === selectedValueAccessor
                               }"
-                            ><b>{{ property.description }}</b>{{link[property.description]}}</li>
+                            ><b>{{ property.description }}</b>{{parseProperty(link[property.description])}}</li>
                             <li *ngIf="link.folded"
                                 class="list-group-item d-flex justify-content-between"
                             >
@@ -233,7 +233,12 @@
                 </ngb-panel>
                 <ngb-panel title="RAW link content">
                     <ng-template ngbPanelContent>
-                        <pre [style.marginBottom]="0">{{ getLinkDetails(link) }}</pre>
+                        <pre [style.marginBottom]="0">{{ getJSONDetails(link) }}</pre>
+                        <small>This view contains reduced object representation. Nested objects has been mapped to
+                            their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                            numbers
+                            has been
+                            limited to 6 digits after comma.</small>
                     </ng-template>
                 </ngb-panel>
             </ngb-accordion>
@@ -260,7 +265,7 @@
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
-                            {{ node.value }}
+                            {{ parseProperty(node.value) }}
                         </button>
                     </ng-template>
                     <!--                    <ng-template ngbPanelTitle>-->
@@ -280,9 +285,29 @@
                         </ul>
                     </ng-template>
                 </ngb-panel>
+                <ngb-panel title="Properties" cardClass="filled-card">
+                    <ng-template ngbPanelContent>
+                        <ul class="list-group list-group-flush cancel-out-card-padding">
+                            <li *ngFor="let property of nodeValueAccessors"
+                                [ngClass]="{
+                                'list-group-item': true,
+                                 'd-flex': true,
+                                 'flex-wrap': true,
+                                 'justify-content-between': true,
+                                active: property === selectedNodeValueAccessor
+                              }"
+                            ><b>{{ property.description }}</b>{{parseProperty(node[property.description])}}</li>
+                        </ul>
+                    </ng-template>
+                </ngb-panel>
                 <ngb-panel title="RAW node content">
                     <ng-template ngbPanelContent>
-                        <pre [style.marginBottom]="0">{{ getNodeDetails(node) }}</pre>
+                        <pre [style.marginBottom]="0">{{ getJSONDetails(node) }}</pre>
+                        <small>This view contains reduced object representation. Nested objects has been mapped to
+                            their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                            numbers
+                            has been
+                            limited to 6 digits after comma.</small>
                     </ng-template>
                 </ngb-panel>
             </ngb-accordion>
