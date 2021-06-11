@@ -61,6 +61,7 @@ export class SankeyPanelComponent implements OnInit, OnDestroy, OnChanges {
     return this.filteredNodeCategories.has(cat);
   }
 
+
   changeTypeVisibility(cat) {
     const {filteredNodeCategories} = this;
     if (filteredNodeCategories.has(cat)) {

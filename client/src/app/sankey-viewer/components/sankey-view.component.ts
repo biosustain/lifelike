@@ -14,6 +14,15 @@ import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GraphData } from '../../interfaces/vis-js.interface';
+import { formatNumber } from '@angular/common';
+
+export function isIterable(obj) {
+  // checks for null and undefined
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
+}
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -206,7 +215,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         nodes.forEach(n => {
           delete n.fixedValue;
         });
-        return {nodes};
+        return undefined;
       }
     }
   ];
@@ -383,12 +392,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
-  getLinkDetails({source, target, description, trace, ...details}) {
-    return JSON.stringify(details, null, 2);
-  }
-
-  getNodeDetails({sourceLinks, targetLinks, description, ...details}) {
-    return JSON.stringify(details, null, 2);
+  getJSONDetails(details) {
+    return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
   }
 
   openPanel(template, data) {
@@ -419,6 +424,31 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return Object.assign(data, preprocessedLinks, preprocessedNodes);
   }
 
+  parseProperty(v, propertyName = true) {
+    if (!isNaN(v)) {
+      return formatNumber(v, 'en-US', '1.0-6');
+    }
+    if (typeof v === 'string' || v instanceof String) {
+      return v;
+    }
+    if (typeof v === 'object' && propertyName) {
+      if (isIterable(v)) {
+        // propertyName === true -- if was not called by JSON parser
+        if (propertyName === true) {
+          return v.map(n => this.parseProperty(n)).join(', ');
+        }
+        return v.slice(0, 3);
+      }
+      if (v.id) {
+        return `{ id: ${v.id}, ... }`;
+      }
+      if (v.index) {
+        return `{ index: ${v.index}, ... }`;
+      }
+    }
+    return v;
+  }
+
   extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
     this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
@@ -427,9 +457,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           description: k,
           preprocessing: ({links}) => {
             links.forEach(l => {
-              l.value = representativePositiveNumber(l[k]) / l.adjacent_divider;
+              l.value = representativePositiveNumber(l[k]) / (l.adjacent_divider || 1);
             });
-            return {links};
           }
         });
       } else if (Array.isArray(v) && v.length >= 2 && !isNaN(v[0]) && !isNaN(v[1])) {
@@ -438,11 +467,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           preprocessing: ({links}) => {
             links.forEach(l => {
               const [v1, v2] = l[k];
-              l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d) / l.adjacent_divider);
+              l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d) / (l.adjacent_divider || 1));
               // take max for layer calculation
-              l.value = Math.max(l.multiple_values);
+              l.value = Math.max(...l.multiple_values);
             });
-            return {links};
           }
         });
       }
@@ -460,7 +488,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             nodes.forEach(n => {
               n.fixedValue = representativePositiveNumber(n[k]);
             });
-            return {nodes};
           }
         });
       }
