@@ -11,6 +11,7 @@ interface Node {
   value?: number;
   fixedValue?: number;
   layer?: number;
+  description?: string;
 }
 
 interface Link {
@@ -20,6 +21,9 @@ interface Link {
   width?: number;
   y0?: number;
   y1?: number;
+  multiple_values?: [number, number];
+  circularLinkID?: number;
+  circular?: boolean;
 }
 
 interface SankeyData {

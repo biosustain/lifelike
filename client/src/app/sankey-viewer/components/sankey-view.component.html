@@ -42,25 +42,46 @@
                             </app-object-menu>
                         </div>
                     </div>
-                    <div ngbDropdown class="d-inline-block">
-                        <button class="btn btn-primary" ngbDropdownToggle>
-                            {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
-                        </button>
-                        <div ngbDropdownMenu>
-                            <button ngbDropdownItem (click)="selectTrace(trace)"
-                                    *ngFor="let trace of networkTraces">{{trace.description}}</button>
+                    <div class="btn-group btn-group-toggle">
+                        <div ngbDropdown class="btn-group d-inline-block" title="Select Trace Network">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
+                            </button>
+                            <div ngbDropdownMenu>
+                                <button ngbDropdownItem (click)="selectTrace(trace)"
+                                        *ngFor="let trace of networkTraces">{{trace.description}}</button>
+                            </div>
                         </div>
-                    </div>
-                    <div ngbDropdown class="d-inline-block">
-                        <button class="btn btn-primary" ngbDropdownToggle>
-                            {{ selectedValueAccessor ? selectedValueAccessor.description : 'Select Value Accessor' }}
-                        </button>
-                        <div ngbDropdownMenu>
-                            <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
-                                    *ngFor="let valueAccessor of valueGenerators">{{valueAccessor.description}}</button>
-                            <div class="dropdown-divider"></div>
-                            <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
-                                    *ngFor="let valueAccessor of valueAccessors">{{valueAccessor.description}}</button>
+                        <div ngbDropdown class="btn-group d-inline-block" title="Link size">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                {{ selectedValueAccessor ? selectedValueAccessor.description : 'Select Value Accessor' }}
+                            </button>
+                            <div ngbDropdownMenu>
+                                <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
+                                        *ngFor="let valueAccessor of valueGenerators"
+                                        [disabled]="valueAccessor.disabled && valueAccessor.disabled()"
+                                >{{valueAccessor.description}}</button>
+                                <div class="dropdown-divider"></div>
+                                <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
+                                        *ngFor="let valueAccessor of valueAccessors">{{valueAccessor.description}}</button>
+                            </div>
+                        </div>
+                        <label class="btn-primary" ngbButtonLabel>
+                            <input type="checkbox" ngbButton [(ngModel)]="normalizeLinks.value"
+                                   (ngModelChange)="updateNormalize()">normalize links
+                        </label>
+                        <div ngbDropdown class="btn-group d-inline-block" title="Node fixed size">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                {{ selectedNodeValueAccessor ? selectedNodeValueAccessor.description :
+                                'Select Value Accessor' }}
+                            </button>
+                            <div ngbDropdownMenu>
+                                <button ngbDropdownItem (click)="selectNodeValueAccessor(nodeValueAccessor)"
+                                        *ngFor="let nodeValueAccessor of nodeValueGenerators">{{nodeValueAccessor.description}}</button>
+                                <div class="dropdown-divider"></div>
+                                <button ngbDropdownItem (click)="selectNodeValueAccessor(nodeValueAccessor)"
+                                        *ngFor="let nodeValueAccessor of nodeValueAccessors">{{nodeValueAccessor.description}}</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -72,6 +93,7 @@
                     <app-sankey
                             *ngIf="filteredSankeyData"
                             [data]="filteredSankeyData"
+                            [normalizeLinks]="normalizeLinks.value"
                             (nodeClicked)="openNodeDetails($event)"
                             (linkClicked)="openLinkDetails($event)"
                     >
@@ -114,33 +136,53 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Link
                 Details:
             </legend>
-            <ngb-accordion #acclink="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
-                <ngb-panel title="Description">
+            <ngb-accordion #acclink="ngbAccordion" activeIds="desc">
+                <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="link.description">
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel [disabled]="true">
+                <ngb-panel [disabled]="true" *ngIf="!link.multiple_values else multipleValues">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
-                            {{ link.value }}
+                            {{ parseProperty(link.value) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
+                <ng-template #multipleValues>
+                    <ngb-panel title="Value">
+                        <ng-template ngbPanelContent>
+                            <ul class="list-group list-group-flush cancel-out-card-padding">
+                                <li class="list-group-item d-flex flex-wrap justify-content-between">
+                                    <b>Source value</b>
+                                    {{ parseProperty(link.multiple_values[0]) }}
+                                </li>
+                                <li class="list-group-item d-flex flex-wrap justify-content-between">
+                                    <b>Target value</b>
+                                    {{ parseProperty(link.multiple_values[1]) }}
+                                </li>
+<!--                                <li class="list-group-item d-flex justify-content-between small">-->
+<!--                                    <b>Layout calculation helper value</b>-->
+<!--                                    {{ link.value }}-->
+<!--                                </li>-->
+                            </ul>
+                        </ng-template>
+                    </ngb-panel>
+                </ng-template>
                 <ngb-panel title="Trace" *ngIf="link.trace" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Source</b>
                                 {{ getNodeById(link.trace.source).description }}
                             </li>
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Target</b>
                                 {{ getNodeById(link.trace.target).description }}
                             </li>
-                            <li class="list-group-item d-flex justify-content-between">
+                            <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Group</b>
                                 {{ link.trace.group }}
                             </li>
@@ -159,7 +201,6 @@
                                         >
 
                                         </app-vis-js-network>
-                                        {{ link.trace.edge_details }}
                                     </div>
                                 </ng-template>
                                 <button class="btn btn-outline-primary" (click)="open(content)">Show detailed
@@ -176,10 +217,11 @@
                                 [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
+                                 'flex-wrap': true,
                                  'justify-content-between': true,
                                 active: property === selectedValueAccessor
                               }"
-                            ><b>{{ property.description }}</b>{{link[property.description]}}</li>
+                            ><b>{{ property.description }}</b>{{parseProperty(link[property.description])}}</li>
                             <li *ngIf="link.folded"
                                 class="list-group-item d-flex justify-content-between"
                             >
@@ -191,7 +233,12 @@
                 </ngb-panel>
                 <ngb-panel title="RAW link content">
                     <ng-template ngbPanelContent>
-                        <pre [style.marginBottom]="0">{{ getLinkDetails(link) }}</pre>
+                        <pre [style.marginBottom]="0">{{ getJSONDetails(link) }}</pre>
+                        <small>This view contains reduced object representation. Nested objects has been mapped to
+                            their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                            numbers
+                            has been
+                            limited to 6 digits after comma.</small>
                     </ng-template>
                 </ngb-panel>
             </ngb-accordion>
@@ -207,19 +254,18 @@
                     ngbTooltip="Click a checkbox to filter annotations of that type">Node
                 Details:
             </legend>
-            <ngb-accordion #accnode="ngbAccordion" activeIds="ngb-panel-0, ngb-panel-2">
-                <ngb-panel title="Description">
+            <ngb-accordion #accnode="ngbAccordion" activeIds="desc">
+                <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
                         <p [innerHTML]="node.description">
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel>
-
+                <ngb-panel [disabled]="true">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
-                            {{ node.value }}
+                            {{ parseProperty(node.value) }}
                         </button>
                     </ng-template>
                     <!--                    <ng-template ngbPanelTitle>-->
@@ -239,9 +285,29 @@
                         </ul>
                     </ng-template>
                 </ngb-panel>
+                <ngb-panel title="Properties" cardClass="filled-card">
+                    <ng-template ngbPanelContent>
+                        <ul class="list-group list-group-flush cancel-out-card-padding">
+                            <li *ngFor="let property of nodeValueAccessors"
+                                [ngClass]="{
+                                'list-group-item': true,
+                                 'd-flex': true,
+                                 'flex-wrap': true,
+                                 'justify-content-between': true,
+                                active: property === selectedNodeValueAccessor
+                              }"
+                            ><b>{{ property.description }}</b>{{parseProperty(node[property.description])}}</li>
+                        </ul>
+                    </ng-template>
+                </ngb-panel>
                 <ngb-panel title="RAW node content">
                     <ng-template ngbPanelContent>
-                        <pre [style.marginBottom]="0">{{ getNodeDetails(node) }}</pre>
+                        <pre [style.marginBottom]="0">{{ getJSONDetails(node) }}</pre>
+                        <small>This view contains reduced object representation. Nested objects has been mapped to
+                            their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                            numbers
+                            has been
+                            limited to 6 digits after comma.</small>
                     </ng-template>
                 </ngb-panel>
             </ngb-accordion>
