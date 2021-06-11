@@ -16,7 +16,6 @@ import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
 import {
   clamp,
-  SankeyGraph,
   createResizeObserver,
   layerWidth,
   composeLinkPath,
@@ -84,7 +83,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input('data') set data(data) {
-    this._data = {...data} as SankeyGraph;
+    this._data = {...data} as SankeyData;
     if (this.svg) {
       this.updateLayout(this._data).then(d => this.updateDOM(d));
     }
@@ -93,6 +92,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   get data() {
     return this._data;
   }
+
+  @Input() normalizeLinks = true;
 
   get updateNodeText() {
     const [width, _height] = this.sankey.size();
@@ -120,7 +121,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('links', {static: false}) links!: ElementRef;
   @Output() enter = new EventEmitter();
 
-  private _data: SankeyGraph = {} as SankeyGraph;
+  private _data: SankeyData = {} as SankeyData;
 
   MARGIN = 10;
 
@@ -300,14 +301,16 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     d3.select(element).select('text')
       .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
-      .transition().duration(RELAYOUT_DURATION)
-      .textTween(n => {
-        const displayName = nodeLabelAccessor(n);
-        const length = displayName.length;
-        const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-        return t => t === 1 ? displayName :
-          (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-      });
+      // todo: reenable when performance improves
+      // .transition().duration(RELAYOUT_DURATION)
+      // .textTween(n => {
+      //   const displayName = nodeLabelAccessor(n);
+      //   const length = displayName.length;
+      //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+      //   return t => t === 1 ? displayName :
+      //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      // })
+      .text(n => nodeLabelAccessor(n));
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
@@ -317,13 +320,15 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     d3.select(element).select('text')
       .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
-      .transition().duration(RELAYOUT_DURATION)
-      .textTween(n => {
-        const displayName = nodeLabelAccessor(n);
-        const length = displayName.length;
-        const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-        return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-      });
+      // todo: reenable when performance improves
+      // .transition().duration(RELAYOUT_DURATION)
+      // .textTween(n => {
+      //   const displayName = nodeLabelAccessor(n);
+      //   const length = displayName.length;
+      //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
+      //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      // });
+      .text(n => nodeLabelAccessor(n).slice(0, INITIALLY_SHOWN_CHARS));
   }
 
   // the function for moving the nodes
@@ -343,7 +348,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .selectAll('path')
       .filter(({id}) => relatedLinksIds.includes(id))
       .attr('d', link => {
-        const newPathParams = calculateLinkPathParams(link);
+        const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
         link.calculated_params = newPathParams;
         return composeLinkPath(newPathParams);
       });
@@ -414,21 +419,26 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           })
           .call(enterLink => enterLink.append('title'))
           .attr('d', link => {
-            link.calculated_params = calculateLinkPathParams(link);
+            link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
             return composeLinkPath(link.calculated_params);
           }),
         update => update
-          .transition().duration(RELAYOUT_DURATION)
-          .attrTween('d', link => {
-            const newPathParams = calculateLinkPathParams(link);
-            const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
-            return t => {
-              const interpolatedParams = paramsInterpolator(t);
-              // save last params on each iterration so we can interpolate from last position upon
-              // animation interrupt/cancel
-              link.calculated_params = interpolatedParams;
-              return composeLinkPath(interpolatedParams);
-            };
+          // todo: reenable when performance improves
+          // .transition().duration(RELAYOUT_DURATION)
+          // .attrTween('d', link => {
+          //   const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
+          //   const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+          //   return t => {
+          //     const interpolatedParams = paramsInterpolator(t);
+          //     // save last params on each iterration so we can interpolate from last position upon
+          //     // animation interrupt/cancel
+          //     link.calculated_params = interpolatedParams;
+          //     return composeLinkPath(interpolatedParams);
+          //   };
+          // })
+          .attr('d', link => {
+            link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
+            return composeLinkPath(link.calculated_params);
           }),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
@@ -470,7 +480,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               // tslint:disable-next-line:only-arrow-functions
               .on('end', function(d) {
                 self.dragging = false;
-                console.log(d3.event);
                 if (d3.event.dx + d3.event.dy < 5) {
                   nodeClick(undefined, d, undefined, undefined);
                 }
@@ -501,7 +510,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           .call(enterNode =>
             updateNodeRect(
               enterNode.select('rect')
-                .transition().duration(RELAYOUT_DURATION)
+                // todo: reenable when performance improves
+                // .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
@@ -509,13 +519,15 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               enterNode.select('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'end')
-                .transition().duration(RELAYOUT_DURATION)
+                // todo: reenable when performance improves
+                // .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
             enterNode.select('title')
           )
-          .transition().duration(RELAYOUT_DURATION)
+          // todo: reenable when performance improves
+          // .transition().duration(RELAYOUT_DURATION)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
