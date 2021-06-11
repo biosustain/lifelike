@@ -501,7 +501,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         nodes,
         inNodes: graph.node_sets.updown
       })
-    } as SankeyGraph;
+    } as SankeyData;
   }
 
   loadFromUrl() {
