@@ -20,6 +20,9 @@ interface Link {
   width?: number;
   y0?: number;
   y1?: number;
+  multiple_values?: [number, number];
+  circularLinkID?: number;
+  circular?: boolean;
 }
 
 interface SankeyData {

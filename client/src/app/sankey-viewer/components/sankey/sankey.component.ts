@@ -16,7 +16,6 @@ import * as d3Sankey from 'd3-sankey';
 import * as d3Interpolate from 'd3-interpolate';
 import {
   clamp,
-  SankeyGraph,
   createResizeObserver,
   layerWidth,
   composeLinkPath,
@@ -84,17 +83,17 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input('data') set data(data) {
-    this._data = {...data} as SankeyGraph;
+    this._data = {...data} as SankeyData;
     if (this.svg) {
       this.updateLayout(this._data).then(d => this.updateDOM(d));
     }
   }
 
-  @Input() normalizeLinks = true;
-
   get data() {
     return this._data;
   }
+
+  @Input() normalizeLinks = true;
 
   get updateNodeText() {
     const [width, _height] = this.sankey.size();
@@ -122,7 +121,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('links', {static: false}) links!: ElementRef;
   @Output() enter = new EventEmitter();
 
-  private _data: SankeyGraph = {} as SankeyGraph;
+  private _data: SankeyData = {} as SankeyData;
 
   MARGIN = 10;
 
