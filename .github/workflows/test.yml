@@ -35,17 +35,6 @@ jobs:
         id: buildversion
         run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
-      - name: Build statistical-enrichment image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-statistical-enrichment
-          image_tag: ${{ github.sha }},latest
-          context: ./statistical-enrichment
-          dockerfile: ./Dockerfile
-
       - name: Build appserver image
         uses: whoan/docker-build-with-cache-action@v5
         with:

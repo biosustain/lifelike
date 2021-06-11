@@ -2,11 +2,10 @@ name: Azure Production Deployment
 
 on:
   push:
-    # TODO: Re enable once we migrate to Azure
-    # release:
-    #   types: [published]
+    release:
+      types: [published]
     tags:
-      - azureprod
+      - prod
 
 jobs:
   build:
@@ -47,17 +46,6 @@ jobs:
           image_name: kg-appserver
           image_tag: ${{ github.sha }},latest
           context: ./appserver
-          dockerfile: ./Dockerfile
-
-      - name: Build statistical-enrichment image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-statistical-enrichment
-          image_tag: ${{ github.sha }},latest
-          context: ./statistical-enrichment
           dockerfile: ./Dockerfile
 
       - name: Build Client and Nginx Image

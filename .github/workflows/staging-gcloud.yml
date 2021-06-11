@@ -38,71 +38,48 @@ jobs:
         id: buildversion
         run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
+      # Setup gcloud CLI
+      # https://github.com/GoogleCloudPlatform/github-actions
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "286.0.0"
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
+
+      # Configure Docker to use gcloud command line tool
+      - run: |-
+          gcloud --quiet auth configure-docker
       - name: Build appserver image
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-appserver
-          image_tag: ${{ github.sha }},latest
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_tag: ${{ github.sha }}
           context: ./appserver
           dockerfile: ./Dockerfile
 
       - name: Build Client and Nginx Image
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-webserver
-          image_tag: ${{ github.sha }},latest
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_tag: ${{ github.sha }}
           context: ./client
           dockerfile: ./Dockerfile
 
-      - name: Build Filebeat Image
+      - name: Build Redis
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: filebeat
-          image_tag: ${{ github.sha }},latest
-          context: ./filebeat
-          dockerfile: ./Dockerfile
-          build_extra_args: "--build-arg=CONFIG_FILE=filebeat.prod.yml"
-
-      - name: Build Metricbeat Image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: metricbeat
-          image_tag: ${{ github.sha }},latest
-          context: ./metricbeat
-          dockerfile: ./Dockerfile
-
-      - name: Build Cache Invalidator
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-cache-service
-          image_tag: ${{ github.sha }},latest
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+          image_tag: ${{ github.sha }}
           context: ./cache-invalidator
-          dockerfile: ./Dockerfile
-
-      - name: Build statistical-enrichment image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-statistical-enrichment
-          image_tag: ${{ github.sha }},latest
-          context: ./statistical-enrichment
           dockerfile: ./Dockerfile
 
   deploy:
