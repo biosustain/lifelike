@@ -42,7 +42,7 @@ jobs:
 
             - name: Pytests
               run: |-
-                docker-compose -f docker-compose.ci-test.yml exec -T -u ***ARANGO_USERNAME*** appserver pytest tests -p no:warnings
+                docker-compose -f docker-compose.ci-test.yml exec -T appserver pytest tests -p no:warnings
 
             - name: Migration Integrity Check
               run: |-
