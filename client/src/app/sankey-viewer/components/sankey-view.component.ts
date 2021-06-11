@@ -9,7 +9,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { createMapToColor, SankeyGraph, nodeLabelAccessor, christianColors, representativePositiveNumber } from './sankey/utils';
+import { createMapToColor, nodeLabelAccessor, christianColors, representativePositiveNumber } from './sankey/utils';
 import { uuidv4 } from '../../shared/utils';
 import * as d3Sankey from 'd3-sankey-circular';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
