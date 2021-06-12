@@ -1,14 +1,13 @@
 from os import environ
 
-from neo4japp.services.annotations.annotation_service import AnnotationService
-from neo4japp.services.annotations.annotation_db_service import AnnotationDBService
-from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
-from neo4japp.services.annotations.bioc_service import BiocDocumentService
-from neo4japp.services.annotations.enrichment_annotation_service import EnrichmentAnnotationService
-from neo4japp.services.annotations.entity_recognition import EntityRecognitionService
-from neo4japp.services.annotations.lmdb_service import LMDBService
+from .annotation_service import AnnotationService
+from .annotation_db_service import AnnotationDBService
+from .annotation_graph_service import AnnotationGraphService
+from .bioc_service import BiocDocumentService
+from .enrichment_annotation_service import EnrichmentAnnotationService
+from .entity_recognition import EntityRecognitionService
+from .lmdb_service import LMDBService
 from .tokenizer import Tokenizer
-# from neo4japp.services.annotations.manual_annotation_service import ManualAnnotationService
 
 from .constants import (
     ANATOMY_MESH_LMDB,
@@ -24,11 +23,36 @@ from .constants import (
 )
 
 
+# config identifies the subdir that has LMDB file
+# once each entity type starts having multiple sources
+# they will go in as subdirs (e.g chemicals/chebi, chemicals/pubchem)
+configs = {
+    ANATOMY_MESH_LMDB: 'anatomy',
+    CHEMICALS_CHEBI_LMDB: 'chemicals',
+    COMPOUNDS_BIOCYC_LMDB: 'compounds',
+    DISEASES_MESH_LMDB: 'diseases',
+    FOODS_MESH_LMDB: 'foods',
+    GENES_NCBI_LMDB: 'genes',
+    PHENOMENAS_MESH_LMDB: 'phenomenas',
+    PHENOTYPES_CUSTOM_LMDB: 'phenotypes',
+    PROTEINS_UNIPROT_LMDB: 'proteins',
+    SPECIES_NCBI_LMDB: 'species'
+}
+
+
 def get_annotation_service():
     return AnnotationService(
         db=AnnotationDBService(),
         graph=AnnotationGraphService()
     )
+
+
+def get_annotation_db_service():
+    return AnnotationDBService()
+
+
+def get_annotation_graph_service():
+    return AnnotationGraphService()
 
 
 def get_enrichment_annotation_service():
@@ -41,28 +65,18 @@ def get_enrichment_annotation_service():
 def get_bioc_document_service():
     return BiocDocumentService()
 
+
 def get_annotation_tokenizer():
     return Tokenizer()
 
 
-def get_entity_recognition():
-    # config identifies the subdir that has LMDB file
-    # once each entity type starts having multiple sources
-    # they will go in as subdirs (e.g chemicals/chebi, chemicals/pubchem)
-    configs = {
-        ANATOMY_MESH_LMDB: 'anatomy',
-        CHEMICALS_CHEBI_LMDB: 'chemicals',
-        COMPOUNDS_BIOCYC_LMDB: 'compounds',
-        DISEASES_MESH_LMDB: 'diseases',
-        FOODS_MESH_LMDB: 'foods',
-        GENES_NCBI_LMDB: 'genes',
-        PHENOMENAS_MESH_LMDB: 'phenomenas',
-        PHENOTYPES_CUSTOM_LMDB: 'phenotypes',
-        PROTEINS_UNIPROT_LMDB: 'proteins',
-        SPECIES_NCBI_LMDB: 'species'
-    }
+def get_lmdb_service():
+    return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+
+
+def get_entity_recognition(exclusions, inclusions):
     return EntityRecognitionService(
-        lmdb=LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs),
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService()
+        exclusions=exclusions,
+        inclusions=inclusions,
+        lmdb=LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
     )

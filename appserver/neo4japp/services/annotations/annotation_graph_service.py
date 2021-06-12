@@ -1,7 +1,17 @@
-from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from collections import defaultdict
 from typing import Dict, List
 
+from flask import current_app
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from neo4japp.constants import LogEventType
+from neo4japp.util import normalize_str
+from neo4japp.utils.logger import EventLog
+
 from .mixins.graph_mixin import GraphMixin
+
+from .constants import EntityType
+from .data_transfer_objects import GlobalInclusions, Inclusion
+from .lmdb_util import *
 
 
 class AnnotationGraphService(GraphMixin):
@@ -38,6 +48,167 @@ class AnnotationGraphService(GraphMixin):
     def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
         result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
+
+    def _create_entity_inclusion(
+        self,
+        entity_type: str,
+        inclusion_dict: dict,
+        static_global_inclusions: dict
+    ) -> None:
+        createfuncs = {
+            EntityType.ANATOMY.value: create_ner_type_anatomy,
+            EntityType.CHEMICAL.value: create_ner_type_chemical,
+            EntityType.COMPOUND.value: create_ner_type_compound,
+            EntityType.DISEASE.value: create_ner_type_disease,
+            EntityType.FOOD.value: create_ner_type_food,
+            EntityType.GENE.value: create_ner_type_gene,
+            EntityType.PHENOMENA.value: create_ner_type_phenomena,
+            EntityType.PHENOTYPE.value: create_ner_type_phenotype,
+            EntityType.PROTEIN.value: create_ner_type_protein,
+            EntityType.SPECIES.value: create_ner_type_species,
+            EntityType.COMPANY.value: create_ner_type_company,
+            EntityType.ENTITY.value: create_ner_type_entity
+        }
+
+        global_inclusions = []
+        params = {'entity_type': entity_type}
+
+        if entity_type in {
+            EntityType.ANATOMY.value,
+            EntityType.DISEASE.value,
+            EntityType.FOOD.value,
+            EntityType.PHENOMENA.value
+        }:
+            global_inclusions = self.exec_read_query_with_params(
+                self.get_mesh_global_inclusions_by_type, params)
+        else:
+            try:
+                global_inclusions = static_global_inclusions[entity_type]
+            except KeyError:
+                # use lifelike_global_inclusions
+                pass
+
+        # need to append here because an inclusion
+        # might've not been matched to an existing entity
+        # so look for it in Lifelike
+        global_inclusions += self.exec_read_query_with_params(
+            self.get_lifelike_global_inclusions_by_type, params)
+
+        for inclusion in global_inclusions:
+            normalized_synonym = normalize_str(inclusion['synonym'])
+            if entity_type != EntityType.GENE.value and entity_type != EntityType.PROTEIN.value:
+                entity = createfuncs[entity_type](
+                    id_=inclusion['entity_id'],
+                    name=inclusion['entity_name'],
+                    synonym=inclusion['synonym']
+                )
+            else:
+                entity = createfuncs[entity_type](
+                    name=inclusion['entity_name'], synonym=inclusion['synonym'])
+
+            if normalized_synonym in inclusion_dict:
+                inclusion_dict[normalized_synonym].entities.append(entity)
+            else:
+                inclusion_dict[normalized_synonym] = Inclusion(
+                    entities=[entity],
+                    entity_id_type=inclusion['data_source'],
+                    entity_id_hyperlink=inclusion.get('hyperlink', '')
+                )
+
+    def get_entity_inclusions(self, inclusions: List[dict]) -> GlobalInclusions:
+        """Returns global inclusions for each entity type.
+        For species (taxonomy), also return the local inclusions.
+
+        :param inclusions:  custom annotations relative to file
+            - need to be filtered for local inclusions
+        """
+        inclusion_dicts = {
+            EntityType.ANATOMY.value: defaultdict(list),
+            EntityType.CHEMICAL.value: defaultdict(list),
+            EntityType.COMPOUND.value: defaultdict(list),
+            EntityType.DISEASE.value: defaultdict(list),
+            EntityType.FOOD.value: defaultdict(list),
+            EntityType.GENE.value: defaultdict(list),
+            EntityType.PHENOMENA.value: defaultdict(list),
+            EntityType.PHENOTYPE.value: defaultdict(list),
+            EntityType.PROTEIN.value: defaultdict(list),
+            EntityType.SPECIES.value: defaultdict(list),
+            EntityType.COMPANY.value: defaultdict(list),
+            EntityType.ENTITY.value: defaultdict(list)
+        }
+
+        local_inclusion_dicts = {
+            EntityType.SPECIES.value: defaultdict(list)
+        }
+
+        static_global_inclusions_by_type = {
+            EntityType.GENE.value: self.exec_read_query(self.get_gene_global_inclusions),
+            EntityType.SPECIES.value: self.exec_read_query(self.get_species_global_inclusions),
+            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions)
+        }
+
+        for k, v in inclusion_dicts.items():
+            self._create_entity_inclusion(k, v, static_global_inclusions_by_type)
+
+        local_species_inclusions = [
+            local for local in inclusions if local.get(
+                'meta', {}).get('type') == EntityType.SPECIES.value and not local.get(
+                    'meta', {}).get('includeGlobally', False)  # safe to default to False?
+        ]
+
+        for local_inclusion in local_species_inclusions:
+            entity_type = EntityType.SPECIES.value
+            try:
+                entity_id = local_inclusion['meta']['id']
+                entity_id_type = local_inclusion['meta']['idType']
+                entity_id_hyperlink = local_inclusion['meta']['idHyperlink']
+                synonym = local_inclusion['meta']['allText']
+            except KeyError:
+                current_app.logger.error(
+                    f'Error creating local inclusion {local_inclusion} for {entity_type}',
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            else:
+                # entity_name could be empty strings
+                # probably a result of testing
+                # but will keep here just in case
+                if entity_id and synonym:
+                    normalized_synonym = normalize_str(synonym)
+
+                    if not entity_id:
+                        # ID is required for global inclusions
+                        # but we also include local species inclusion
+                        entity_id = synonym
+
+                    entity = create_ner_type_species(
+                        id_=entity_id,
+                        name=synonym,
+                        synonym=synonym
+                    )
+
+                    if normalized_synonym in local_inclusion_dicts[entity_type]:
+                        local_inclusion_dicts[entity_type][normalized_synonym].entities.append(entity)  # noqa
+                    else:
+                        local_inclusion_dicts[entity_type][normalized_synonym] = Inclusion(
+                            entities=[entity],
+                            entity_id_type=entity_id_type,
+                            entity_id_hyperlink=entity_id_hyperlink
+                        )
+        return GlobalInclusions(
+            included_anatomy=inclusion_dicts[EntityType.ANATOMY.value],
+            included_chemicals=inclusion_dicts[EntityType.CHEMICAL.value],
+            included_compounds=inclusion_dicts[EntityType.COMPOUND.value],
+            included_diseases=inclusion_dicts[EntityType.DISEASE.value],
+            included_foods=inclusion_dicts[EntityType.FOOD.value],
+            included_genes=inclusion_dicts[EntityType.GENE.value],
+            included_phenomenas=inclusion_dicts[EntityType.PHENOMENA.value],
+            included_phenotypes=inclusion_dicts[EntityType.PHENOTYPE.value],
+            included_proteins=inclusion_dicts[EntityType.PROTEIN.value],
+            included_species=inclusion_dicts[EntityType.SPECIES.value],
+            included_local_species=local_inclusion_dicts[EntityType.SPECIES.value],
+            included_companies=inclusion_dicts[EntityType.COMPANY.value],
+            included_entities=inclusion_dicts[EntityType.ENTITY.value],
+        )
 
     def get_gene_to_organism_match_result(
         self,

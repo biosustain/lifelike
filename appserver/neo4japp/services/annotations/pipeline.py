@@ -8,23 +8,16 @@ from typing import Dict, List, Set
 
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import AnnotationError
-from neo4japp.services.annotations.constants import EntityType
+from neo4japp.util import normalize_str
+from neo4japp.utils.logger import EventLog
 
-from neo4japp.services.annotations.data_transfer_objects import (
+from .constants import EntityType, SPECIES_NCBI_LMDB
+from .data_transfer_objects import (
     NLPResults,
     PDFWord,
     SpecifiedOrganismStrain
 )
-from neo4japp.services.annotations.initializer import (
-    get_annotation_service,
-    get_bioc_document_service,
-    get_enrichment_annotation_service,
-    get_entity_recognition,
-    get_annotation_tokenizer
-)
-from neo4japp.util import normalize_str
-from neo4japp.utils.logger import EventLog
-
+from .initializer import *
 from .util import parse_content
 
 
@@ -129,15 +122,15 @@ def _create_fallback_organism(
     entity_id = ''
     entity_category = ''
 
-    entity_recog = get_entity_recognition()
+    lmdb_service = get_lmdb_service()
 
     if specified_organism_synonym and specified_organism_tax_id:
         entity_synonym = normalize_str(specified_organism_synonym)
         entity_id = specified_organism_tax_id
         try:
-            entity_category = json.loads(
-                entity_recog.lmdb.session.species_txn.get(
-                    entity_synonym.encode('utf-8')))['category']
+            with lmdb_service.open_db(SPECIES_NCBI_LMDB) as txn:
+                entity_category = json.loads(
+                    txn.get(entity_synonym.encode('utf-8')))['category']
         except (TypeError, Exception):
             # could not get data from lmdb
             current_app.logger.info(
@@ -156,40 +149,45 @@ def _identify_entities(
     custom_annotations: List[dict],
     annotation_method: Dict[str, dict]
 ):
-    entity_recog = get_entity_recognition()
+    db_service = get_annotation_db_service()
+    graph_service = get_annotation_graph_service()
+
+    start = time.time()
+    exclusions = db_service.get_entity_exclusions(excluded_annotations)
+    inclusions = graph_service.get_entity_inclusions(custom_annotations)
+    current_app.logger.info(
+        f'Time to process entity exclusions/inclusions {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+    )
+
+    entity_recog = get_entity_recognition(exclusions=exclusions, inclusions=inclusions)
     tokenizer = get_annotation_tokenizer()
 
     # identify entities w/ NLP first
     entities_to_run_nlp = set(k for k, v in annotation_method.items() if v['nlp'])
-    if entities_to_run_nlp:
-        try:
-            nlp_start_time = time.time()
-            nlp_results = get_nlp_entities(
-                text=pdf_text,
-                entities=entities_to_run_nlp)
-            current_app.logger.info(
-                f'Total NLP processing time {time.time() - nlp_start_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
-        except Exception:
-            raise AnnotationError(
-                'Unable to Annotate',
-                'An unexpected error occurred with the NLP service.')
+    try:
+        nlp_start_time = time.time()
+        nlp_results = get_nlp_entities(
+            text=pdf_text,
+            entities=entities_to_run_nlp)
+        current_app.logger.info(
+            f'Total NLP processing time {time.time() - nlp_start_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
+    except Exception:
+        raise AnnotationError(
+            'Unable to Annotate',
+            'An unexpected error occurred with the NLP service.')
 
     start = time.time()
     tokens = tokenizer.create(parsed)
     current_app.logger.info(
-        f'Time to tokenize PDF words {time.time() - start}.',
+        f'Time to tokenize PDF words {time.time() - start}',
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
     start = time.time()
-    entity_results = entity_recog.identify(
-        custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
-        tokens=tokens,
-        nlp_results=nlp_results
-    )
+    entity_results = entity_recog.identify(tokens=tokens, nlp_results=nlp_results)
     current_app.logger.info(
         f'Total LMDB lookup time {time.time() - start}',
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
