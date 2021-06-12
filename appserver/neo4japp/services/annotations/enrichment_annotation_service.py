@@ -59,7 +59,7 @@ class EnrichmentAnnotationService(AnnotationService):
         fallback_gene_organism_matches = \
             self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
-                postgres_genes=self.db.get_genes(
+                postgres_genes=self.db.get_organism_genes(
                     genes=gene_names_list, organism_ids=organism_ids),
                 matched_organism_ids=[self.specified_organism.organism_id],
             )
