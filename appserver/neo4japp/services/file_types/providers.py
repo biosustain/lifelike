@@ -371,16 +371,14 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['style'] += ',filled'
 
             if node['data'].get('sources'):
-                if any(src.get('domain') == 'DOI' for src in node['data'].get('sources')):
-                    for src in node['data'].get('sources'):
-                        if src.get('domain') == 'DOI':
-                            params['href'] = src.get('url')
+                doi_index = next((index for (index, src) in enumerate(
+                    node['data'].get('sources')) if src.get('domain') == "DOI"), None)
+                if doi_index is not None:
+                    params['href'] = node['data']['sources'][doi_index].get('url')
                 else:
-                    # We need to add a way of omitting links to the Lifelike file browser as
-                    # those fails
-                    params['href'] = node['data']['sources'][0].get('url')
+                    params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][0].get('url')
+                params['href'] = node['data']['hyperlinks'][-1].get('url')
 
             graph.node(**params)
 
