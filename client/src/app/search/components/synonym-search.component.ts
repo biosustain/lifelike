@@ -20,7 +20,12 @@ export class SynonymSearchComponent {
     q: new FormControl('', Validators.required),
   });
 
+  SYNONYM_SEARCH_LIMIT = 15;
+  page = 1;
+  total: number;
+
   loading = false;
+  error: any;
 
   constructor(
     private readonly modal: NgbActiveModal,
@@ -31,22 +36,35 @@ export class SynonymSearchComponent {
     this.modal.dismiss();
   }
 
-  search() {
+  submitSearch() {
+    this.error = null;
     if (this.form.valid) {
-      this.loading = true;
-      this.contentSearchService.getSynoynms().subscribe((result) => {
-        this.loading = false;
-        this.synonymData = result;
-      });
+      this.page = 1;
+      this.searchSynonyms();
     }
     this.form.markAsDirty();
+  }
+
+  searchSynonyms() {
+    this.loading = true;
+    this.synonymData = [];
+    this.contentSearchService.getSynoynms(this.form.value.q, this.page, this.SYNONYM_SEARCH_LIMIT).subscribe(
+      (result) => {
+        this.loading = false;
+        this.synonymData = result.synonyms;
+        this.total = result.count;
+      },
+      (error) => {
+        this.loading = false;
+        this.error = error;
+      }
+    );
   }
 
   submit() {
     const synonymsToAdd = new Set<string>();
     this.synonymData.forEach(entity => {
       if (this.checklistSelection.isSelected(entity)) {
-        // /\W+/g
         const regex = /\W+/g;
         entity.aliases.forEach((alias: string) => {
           const aliasHasNonWordChars = alias.match(regex);
@@ -59,5 +77,10 @@ export class SynonymSearchComponent {
 
   toggleSelection(entity: any) {
     this.checklistSelection.toggle(entity);
+  }
+
+  goToPage(page: number) {
+    this.page = page;
+    this.searchSynonyms();
   }
 }

@@ -1,37 +1,34 @@
 import html
-import json
 import re
 from typing import List, Optional
 
 
-import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
-from sqlalchemy.orm import aliased
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
-from neo4japp.data_transfer_objects import GeneFilteredRequest
-from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
+from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
-    db,
     get_search_service_dao,
     get_elastic_service,
     get_file_type_service
 )
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
+    Files,
     Projects,
-    AppRole,
-    projects_collaborator_role, Files
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
     ContentSearchSchema,
+    ContentSearchResponseSchema,
     OrganismSearchSchema,
+    SynonymSearchSchema,
+    SynonymSearchResponseSchema,
     VizSearchSchema,
-    ContentSearchResponseSchema
 )
 from neo4japp.services.file_types.providers import (
     EnrichmentTableTypeProvider,
@@ -97,23 +94,6 @@ def content_search_params_are_empty(params):
     elif 'types' in params and params['types']:
         return False
     return True
-
-
-def get_synonyms_from_params(q, advanced_args):
-    # By default, synonyms is true
-    use_synonyms = True
-    if 'synonyms' in advanced_args and advanced_args['synonyms'] is not None:
-        use_synonyms = advanced_args['synonyms']
-
-    # Even if `synonyms` is in the advanced args, expect `q` might also contain synonyms. In this
-    # case, the value found in q takes precedence.
-    extracted_synonyms = re.findall(r'\bsynonyms:\S*', q)
-
-    if len(extracted_synonyms) > 0:
-        q = re.sub(r'\bsynonyms:\S*', '', q)
-        use_synonyms = extracted_synonyms[-1].split(':')[1] == 'true'
-
-    return q, use_synonyms
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
@@ -255,7 +235,6 @@ class ContentSearchView(FilesystemBaseView):
         q, projects = get_projects_from_params(q, params)
         q = get_wildcards_from_params(q, params)
         q = get_phrase_from_params(q, params)
-        q, use_synonyms = get_synonyms_from_params(q, params)
 
         # Set the search term once we've parsed 'q' for all advanced options
         search_term = q.strip()
@@ -290,7 +269,7 @@ class ContentSearchView(FilesystemBaseView):
         }
 
         elastic_service = get_elastic_service()
-        elastic_result, search_phrases, synonym_map, dropped_synonyms = elastic_service.search(
+        elastic_result, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
@@ -299,7 +278,6 @@ class ContentSearchView(FilesystemBaseView):
             text_field_boosts=text_field_boosts,
             keyword_fields=[],
             keyword_field_boosts={},
-            use_synonyms=use_synonyms,
             query_filter=query_filter,
             highlight=highlight
         )
@@ -348,12 +326,50 @@ class ContentSearchView(FilesystemBaseView):
             'total': elastic_result['total'],
             'query': ResultQuery(phrases=search_phrases),
             'results': results,
-            'synonyms': synonym_map,
-            'dropped_synonyms': dropped_synonyms
+        }))
+
+
+class SynonymSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(SynonymSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def get(self, params, pagination: Pagination):
+        search_term = params.get('term', None)
+
+        if search_term is None:
+            return jsonify(SynonymSearchResponseSchema().dump({
+                'synonyms': [],
+            }))
+
+        page = pagination.page
+        limit = pagination.limit
+        offset = (page - 1) * limit
+
+        try:
+            search_dao = get_search_service_dao()
+            results = search_dao.get_synonyms(search_term, offset, limit)
+            count = search_dao.get_synonyms_count(search_term)
+        except Exception as e:
+            current_app.logger.error(
+                f'Failed to get synonym data for term: {search_term}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.CONTENT_SEARCH.value).to_dict()
+            )
+            raise ServerException(
+                title='Unexpected error during synonym search',
+                message='An unknown error occurred during the synonym search. Please check your ' +
+                        'internet connection and try again.'
+            )
+
+        return jsonify(SynonymSearchResponseSchema().dump({
+            'synonyms': results,
+            'count': count
         }))
 
 
 bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))
+bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'))
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])

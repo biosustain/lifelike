@@ -1,19 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
+import { Observable} from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ProjectData } from 'app/file-browser/schema';
+import { FilesystemObjectData, ProjectData } from 'app/file-browser/schema';
+import { RankedItem, ResultList } from 'app/shared/schemas/common';
 import { ApiService } from 'app/shared/services/api.service';
 
 import {
   AnnotationRequestOptions,
   AnnotationResponse,
   ContentSearchRequest,
-  ContentSearchResponse,
-  ContentSearchResponseData
+  SynonymSearchResponse,
 } from '../schema';
 import { SynonymData } from '../shared';
 
@@ -34,8 +34,8 @@ export class ContentSearchService {
     );
   }
 
-  search(request: ContentSearchRequest): Observable<ContentSearchResponse> {
-    return this.http.post<ContentSearchResponseData>(
+  search(request: ContentSearchRequest): Observable<ResultList<RankedItem<FilesystemObject>>> {
+    return this.http.post<ResultList<RankedItem<FilesystemObjectData>>>(
       `/api/search/content`,
       request,
       this.apiService.getHttpOptions(true),
@@ -49,8 +49,6 @@ export class ContentSearchService {
               item: new FilesystemObject().update(itemData.item)
           })),
           query: data.query,
-          synonyms: data.synonyms,
-          droppedSynonyms: data.droppedSynonyms
         };
       }),
     );
@@ -64,23 +62,16 @@ export class ContentSearchService {
     ).pipe(map(resp => resp.results));
   }
 
-  getSynoynms(): Observable<SynonymData[]> {
-    // TODO: Implement service!
-    return of([
-      {type: 'Gene', description: 'alae sublatae', organism: 'fruit fly', aliases: ['als', 'ALS', 'Mps1']},
-      {
-        type: 'Gene', description: 'nicotinic Acetylcholine Receptor alpha1', organism: 'fruit fly', aliases: [
-        'nAChRalpha1', 'Dmel_CG5610', 'AChRalpha1', 'ALS', 'ALs', 'Acr96A', 'Acr96Aa', 'AcrB']
+  getSynoynms(searchTerm: string, page: number, limit: number): Observable<SynonymSearchResponse> {
+    return this.http.get<SynonymSearchResponse>(
+      `/api/search/synonyms`, {
+        ...this.apiService.getHttpOptions(true),
+        params: {
+          term: searchTerm,
+          page: page.toString(),
+          limit: limit.toString(),
+        }
       },
-      {type: 'Gene', description: 'superoxide dismutase 1', organism: 'human', aliases: [
-        'SOD1', 'ALS', 'ALS1', 'HEL-S-44', 'IPOA', 'SOD', 'STAHP', 'hSod1', 'homodimer']
-      },
-      {type: 'Gene', description: 'insulin like growth factor binding protein acid labile subunit', organism: 'human', aliases: [
-        'GFALS', 'ACLSD', 'ALS']
-      },
-      {type: 'Disease', description: '<Primary Name>', organism: 'N/A', aliases: [
-        'ALS', 'Amyotrophic Lateral Sclerosis', `Gehrig's Disease`]
-      },
-    ]);
+    );
   }
 }
