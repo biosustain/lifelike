@@ -1,6 +1,7 @@
 import io
 import json
 import re
+import os
 import typing
 from io import BufferedIOBase
 from typing import Optional, List, Dict
@@ -10,8 +11,6 @@ import graphviz
 import requests
 from pdfminer import high_level
 
-import neo4japp.utils.string
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -422,8 +421,10 @@ class SankeyTypeProvider(BaseFileTypeProvider):
     def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
-            self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            if os.path.splitext(buffer.filename)[1] == '.sankey':
+                return [(0, self.MIME_TYPE)]
+            else:
+                return []
         except ValueError as e:
             return []
         finally:

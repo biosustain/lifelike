@@ -13,7 +13,6 @@ import {
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
-import * as d3Interpolate from 'd3-interpolate';
 import {
   clamp,
   createResizeObserver,
@@ -23,7 +22,6 @@ import {
   shortNodeText,
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
-  RELAYOUT_DURATION,
   representativePositiveNumber
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -31,6 +29,28 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
+
+const uniqueBy = (arr, accessor) =>
+  arr.reduce((identifiers, elem) => {
+    const identifier = accessor(elem);
+    if (identifiers.has(identifier)) {
+      return identifiers;
+    } else {
+      identifiers.set(identifier, elem);
+      return identifiers;
+    }
+  }, new Map());
+
+function symmetricDifference(setA, setB, accessor) {
+  return [...uniqueBy(setB, accessor).entries()].reduce((difference, [identifier, elem]) => {
+    if (difference.has(identifier)) {
+      difference.delete(identifier);
+    } else {
+      difference.set(identifier, elem);
+    }
+    return difference;
+  }, uniqueBy(setA, accessor));
+}
 
 @Component({
   selector: 'app-sankey',
@@ -56,15 +76,15 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .nodeId(n => n.id)
       .nodePadding(10)
       // .nodePaddingRatio(0.1)
-      .linkSort((a, b) =>
-        (b.source.index - a.source.index) ||
-        (b.target.index - a.target.index) ||
-        (b.trace_group - a.trace_group)
-      )
-      .nodeSort((a, b) =>
-        (b.depth - a.depth) ||
-        (b.index - a.index)
-      )
+      // .linkSort((a, b) =>
+      //   (b.source.index - a.source.index) ||
+      //   (b.target.index - a.target.index) ||
+      //   (b.trace_group - a.trace_group)
+      // )
+      // .nodeSort((a, b) =>
+      //   (b.depth - a.depth) ||
+      //   (b.index - a.index)
+      // )
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
     this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
@@ -80,6 +100,26 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 8]);
+  }
+
+  @Input() set selectedNodes(nodes) {
+    this.nodes && d3.select(this.nodes.nativeElement)
+      .selectAll('g')
+      .filter(node => nodes.has(node))
+      .style('opacity', node => {
+        node.selected = true;
+        return 1;
+      });
+  }
+
+  @Input() set selectedLinks(links) {
+    this.links && d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .filter(link => links.has(link))
+      .style('opacity', node => {
+        node.selected = true;
+        return 1;
+      });
   }
 
   @Input('data') set data(data) {
@@ -140,7 +180,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _timeInterval = Infinity;
 
-  selected;
   uiState;
   pan;
   size;
@@ -207,7 +246,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       .call(
         zoom
           .extent([[0, 0], [width, height]])
-          // .translateExtent([[0, 0], [width, height]])
+        // .translateExtent([[0, 0], [width, height]])
       );
 
     this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
@@ -250,7 +289,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   linkClick(element, data, _eventId, _links, ..._rest) {
     this.linkClicked.emit(data);
-    this.selected = data;
     this.clipboard.writeToClipboard(data.path).then(_ =>
       this.snackBar.open(
         `Path copied to clipboard`,
@@ -285,18 +323,20 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   pathMouseOver(_element, data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .style('opacity', ({schemaClass}) => schemaClass === data.schemaClass ? 1 : 0.35);
+      .style('opacity', ({schemaClass, selected}) => schemaClass === data.schemaClass || selected ? 1 : 0.35);
   }
 
   pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
+      .filter(({selected}) => !selected)
       .style('opacity', 0.45);
   }
 
   nodeMouseOver(element, data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
+      .filter(({selected}) => !selected)
       .style('opacity', ({color}) => color === data.color ? 0.45 : 0.35);
     d3.select(element).select('text')
       .text(shortNodeText)
@@ -385,7 +425,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     .attr('height', n => {
       return representativePositiveNumber(n.y1 - n.y0);
     })
-    .attr('width', ({x1, x0}) => x1 - x0)
+    .attr('width', ({x1, x0}) => x1 - x0);
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -485,7 +525,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
               })
           )
-          .attr('fill', ({color}) => color)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
           .call(enterNode =>
             updateNodeRect(
@@ -510,8 +549,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           .call(enterNode =>
             updateNodeRect(
               enterNode.select('rect')
-                // todo: reenable when performance improves
-                // .transition().duration(RELAYOUT_DURATION)
+              // todo: reenable when performance improves
+              // .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
@@ -519,8 +558,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
               enterNode.select('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'end')
-                // todo: reenable when performance improves
-                // .transition().duration(RELAYOUT_DURATION)
+              // todo: reenable when performance improves
+              // .transition().duration(RELAYOUT_DURATION)
             )
           )
           .call(enterNode =>
@@ -537,6 +576,20 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
           enterNode.select('rect')
         )
       )
+      .attr('fill', (node: Node) => {
+        const {color, sourceLinks, targetLinks, selected} = node;
+        const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace.group);
+        if (difference.size === 1) {
+          const [link] = difference.values();
+          const traceColor = link.schemaClass;
+          const labColor = d3.cubehelix(color);
+          const calcColor = d3.cubehelix(traceColor);
+          calcColor.l = labColor.l;
+          calcColor.opacity = selected ? 1 : labColor.opacity;
+          return calcColor;
+        }
+        return color;
+      })
       .call(joined => joined.select('rect')
         .attr('stroke', '#000000')
       )
