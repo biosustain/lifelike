@@ -60,3 +60,6 @@ lmdb = "==1.2.1"
 
 [requires]
 python_version = "3.8.2"
+
+[scripts]
+lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle .'"
