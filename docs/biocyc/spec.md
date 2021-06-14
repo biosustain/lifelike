@@ -1,11 +1,20 @@
 # BioCyc Spec for Knowledge Graph
 The BioCyc database collection is an assortment of organism specific Pathway/ Genome Databases (PGDBs). They provide 
-reference to genome and metabolic pathway information for thousands of organisms. Currently we loaded the following 
-databases:
-- EcoCyc: for E. coli strain K-12 MG1655 with tax_id 511145 
-- HumanCyc: for Homo sapiens with tax_id 9606
-- YeastCyc: for Saccharomyces cerevisiae S288C with tax_id 559292
-- PseudomonasCyc: for Pseudomonas putida with tax_id 160488
+reference to genome and metabolic pathway information for thousands of organisms. 
+Download site: https://brg-files.ai.sri.com/public/dist/.  Search for the specific organism data for download.
+
+Currently we loaded the following databases:
+- EcoCyc:  Escherichia coli K-12 substr. MG1655 (tax_id 511145)  
+http://brg-files.ai.sri.com/public/dist/ecoli.tar.gz
+
+- HumanCyc: Homo sapiens  (tax_id 9606)  
+http://brg-files.ai.sri.com/public/dist/human.tar.gz
+
+- YeastCyc: Saccharomyces cerevisiae S288C (tax_id 559292)   
+http://brg-files.ai.sri.com/public/dist/yeastcyc.tar.gz
+
+- PseudomonasCyc: for Pseudomonas putida KT2440 (tax_id 160488)  
+http://brg-files.ai.sri.com/public/dist/pput160488cyc.tar.gz
 
 In Lifelike graph database, each node in BioCyc was labeled as db_BioCyc, and nodes for each biocyc database was 
 labeled as additional database name, such as db_EcoCyc, db_HumanCyc.  Therefore for any EcoCyc, there are 3 labels: 
@@ -19,12 +28,10 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 
 | Node Label | Attribute|      
 |-----:|-----------:|        
-| Class | abbrev_name |	
 | Class | biocyc_id |	
 | Class | data_source |	
 | Class | displayName |	
 | Class | id |	
-| Class | inchi_key |	
 | Class | name |	
 | Class | synonyms |	
 | Compound | abbrev_name |	
