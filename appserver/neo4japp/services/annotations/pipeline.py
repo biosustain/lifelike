@@ -160,7 +160,7 @@ def _identify_entities(
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
-    entity_recog = get_entity_recognition(exclusions=exclusions, inclusions=inclusions)
+    entity_recog = get_recognition_service(exclusions=exclusions, inclusions=inclusions)
     tokenizer = get_annotation_tokenizer()
 
     # identify entities w/ NLP first
