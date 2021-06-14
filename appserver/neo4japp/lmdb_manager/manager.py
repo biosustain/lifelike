@@ -15,7 +15,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 
+logging.basicConfig()
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 logging.getLogger('azure').setLevel(logging.WARNING)
 
 
@@ -257,6 +259,8 @@ class LMDBManager:
             data_mdb_path = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
             data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, hashlib.md5)
             try:
+                self.cloud_provider.create_remote_dir(
+                    'lmdb', os.path.dirname(lmdb_file.data_mdb_path))
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
             except RecordNotFound:
