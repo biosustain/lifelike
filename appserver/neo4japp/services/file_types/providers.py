@@ -371,7 +371,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['style'] += ',filled'
 
             if node['data'].get('sources'):
-                doi_src = next((src for src in node['data'].get('sources') if src.get('domain') == "DOI"), None)
+                doi_src = next((src for src in node['data'].get('sources') if src.get(
+                    'domain') == "DOI"), None)
                 if doi_src:
                     params['href'] = doi_src.get('url')
                 else:
