@@ -6,7 +6,7 @@
         Enter a term below and click the search button to find synonyms for the term.
       </p>
     </div>
-    <form [formGroup]="form" (ngSubmit)="search()">
+    <form [formGroup]="form" (ngSubmit)="submitSearch()">
       <div class="form-group">
         <div class="input-group">
           <input class="form-control py-2 border" formControlName="q"
@@ -43,6 +43,15 @@
     </div>
   </div>
 
+  <div *ngIf="error">
+    <div>
+      <p>
+        <i class="fas fa-exclamation-circle text-danger"></i>
+        {{ error.error.message }}
+      </p>
+    </div>
+  </div>
+
   <div *ngIf="synonymData && synonymData.length">
     <div>
       <p>
@@ -64,7 +73,11 @@
           <tr *ngFor="let entity of synonymData; let i = index">
             <th scope="row">
               <div class="custom-control custom-checkbox">
-                <input [id]="'synonym-row-' + i" type="checkbox" class="custom-control-input" (change)="toggleSelection(entity)">
+                <input [id]="'synonym-row-' + i"
+                       type="checkbox"
+                       class="custom-control-input"
+                       [checked]="checklistSelection.isSelected(entity)"
+                       (change)="toggleSelection(entity)">
                 <label class="custom-control-label" [for]="'synonym-row-' + i"></label>
               </div>
             </th>
@@ -80,6 +93,14 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="mt-4">
+      <ngb-pagination
+        [page]="page"
+        [pageSize]="SYNONYM_SEARCH_LIMIT"
+        [collectionSize]="total"
+        (pageChange)="goToPage($event)">
+      </ngb-pagination>
     </div>
   </div>
 </app-modal-body>
