@@ -1,9 +1,13 @@
+import random
 import re
+import secrets
+import string
 
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, current_app
 from flask.views import MethodView
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
@@ -12,6 +16,17 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
+from neo4japp.constants import (
+    MAX_ALLOWED_LOGIN_FAILURES,
+    MESSAGE_SENDER_IDENTITY,
+    RESET_PASS_MAIL_CONTENT,
+    MIN_TEMP_PASS_LENGTH,
+    MAX_TEMP_PASS_LENGTH,
+    RESET_PASSWORD_SYMBOLS,
+    RESET_PASSWORD_ALPHABET,
+    SEND_GRID_API_CLIENT,
+    RESET_PASSWORD_EMAIL_TITLE, LogEventType
+)
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
@@ -24,6 +39,9 @@ from neo4japp.schemas.account import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.request import Pagination
+from neo4japp.utils.logger import EventLog, UserEventLog
+
+from sendgrid.helpers.mail import Mail
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
@@ -54,6 +72,7 @@ class AccountView(MethodView):
             t_appuser.c.email,
             t_appuser.c.first_name,
             t_appuser.c.last_name,
+            t_appuser.c.failed_login_count,
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
@@ -85,9 +104,10 @@ class AccountView(MethodView):
                 'email': email,
                 'first_name': first_name,
                 'last_name': last_name,
+                'locked': failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES,
                 'roles': roles.split(',')
-            } for id, hash_id, username, email,
-            first_name, last_name, roles in db.session.execute(query).fetchall()]
+            } for id, hash_id, username, email, first_name,
+            last_name, failed_login_count, roles in db.session.execute(query).fetchall()]
 
         return jsonify(UserProfileListSchema().dump({
             'total': len(results),
@@ -97,7 +117,7 @@ class AccountView(MethodView):
     @use_args(UserCreateSchema)
     def post(self, params: dict):
         admin_or_private_access = g.current_user.has_role('admin') or \
-            g.current_user.has_role('private-data-access')
+                                  g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
             raise NotAuthorized(
                 title='Cannot Create New User',
@@ -118,10 +138,10 @@ class AccountView(MethodView):
             username=params['username'],
             email=params['email'],
             first_name=params['first_name'],
-            last_name=params['last_name']
+            last_name=params['last_name'],
+            forced_password_reset=params['created_by_admin']
         )
         app_user.set_password(params['password'])
-
         if not params.get('roles'):
             # Add default role
             app_user.roles.append(self.get_or_create_role('user'))
@@ -147,6 +167,15 @@ class AccountView(MethodView):
                 message='You do not have sufficient privileges.')
         else:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+            params['username'] = params.get('username') or target.username
+            if target.username != params.get('username'):
+                if db.session.query(AppUser.query_by_username(params["username"]).exists()
+                                    ).scalar():
+                    raise ServerException(
+                        title='Cannot Update The User',
+                        message=f'Username {params["username"]} already taken.',
+                        code=400)
+
             for attribute, new_value in params.items():
                 setattr(target, attribute, new_value)
 
@@ -174,7 +203,7 @@ bp.add_url_rule('/<string:hash_id>', view_func=account_view, methods=['GET', 'PU
 @use_args(UserChangePasswordSchema)
 def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
-        g.current_user.has_role('private-data-access')
+                              g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
         raise NotAuthorized(
             title='Failed to Update User',
@@ -182,11 +211,90 @@ def update_password(params: dict, hash_id):
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
+            if target.check_password(params['new_password']):
+                raise ServerException(
+                    title='Failed to Update User',
+                    message='New password cannot be the old one.')
             target.set_password(params['new_password'])
+            target.forced_password_reset = False
         else:
             raise ServerException(
                 title='Failed to Update User',
                 message='Old password is invalid.')
+        try:
+            db.session.add(target)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+    return jsonify(dict(result='')), 204
+
+
+bp.add_url_rule('/<string:email>', view_func=account_view, methods=['GET'])
+
+
+@bp.route('/<string:email>/reset-password', methods=['GET'])
+def reset_password(email: str):
+    try:
+        target = AppUser.query.filter_by(email=email).one()
+    except NoResultFound:
+        current_app.logger.info(
+            f'Invalid email: {email} provided in password reset request.',
+            extra=EventLog(
+                event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+        )
+        return jsonify(dict(result='')), 204
+
+    current_app.logger.info(
+        f'User: {target.username} password reset.',
+        extra=UserEventLog(
+            username=target.username,
+            event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+    )
+    random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
+
+    new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
+        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + MIN_TEMP_PASS_LENGTH
+    new_password = ''.join(random.sample([secrets.choice(RESET_PASSWORD_SYMBOLS)] +
+                                         [secrets.choice(string.ascii_uppercase)] +
+                                         [secrets.choice(string.digits)] +
+                                         [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(
+                                             new_length - 3)],
+                                         new_length))
+
+    message = Mail(
+        from_email=MESSAGE_SENDER_IDENTITY,
+        to_emails=email,
+        subject=RESET_PASSWORD_EMAIL_TITLE,
+        html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
+                                                    lastname=target.last_name,
+                                                    password=new_password))
+    try:
+        SEND_GRID_API_CLIENT.send(message)
+    except Exception as e:
+        raise
+
+    target.set_password(new_password)
+    target.forced_password_reset = True
+    try:
+        db.session.add(target)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise
+    return jsonify(dict(result='')), 204
+
+
+@bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
+@auth.login_required
+def unlock_user(hash_id):
+    if g.current_user.has_role('admin') is False:
+        raise NotAuthorized(
+            title='Failed to Unlock User',
+            message='You do not have sufficient privileges.')
+    else:
+        target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+        target.failed_login_count = 0
         try:
             db.session.add(target)
             db.session.commit()
