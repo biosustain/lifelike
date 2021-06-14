@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
@@ -36,6 +36,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly route: ActivatedRoute,
     private modalService: NgbModal
   ) {
+    this.selectedNodes = new BehaviorSubject(new Set());
+    this.selectedLinks = new BehaviorSubject(new Set());
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
         this.filesystemService.get(hashId),
@@ -300,6 +302,23 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       , []
     );
     const allNodes = [...(new Set(allNodesIds))].map(idx => nodes.find(({id}) => id === idx));
+
+    // set colors for all node types
+    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
+    const nodeCategories = new Set(allNodes.map(nodeColorCategoryAccessor));
+    this.nodesColorMap = createMapToColor(
+      nodeCategories,
+      {
+        hue: () => 0,
+        lightness: (i, n) => {
+          return (i + 1) / (n + 2);
+        },
+        saturation: () => 0
+      }
+    );
+    allNodes.forEach(node => {
+      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
+    });
     this.filteredSankeyData = this.linkGraph({
       nodes: allNodes,
       links: allEdges,
@@ -437,7 +456,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         if (propertyName === true) {
           return v.map(n => this.parseProperty(n)).join(', ');
         }
-        return v.slice(0, 3);
+        return [...v].slice(0, 3);
       }
       if (v.id) {
         return `{ id: ${v.id}, ... }`;
@@ -509,20 +528,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.selectedTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
-    // set colors for all node types
-    const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
-    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
-    this.nodesColorMap = createMapToColor(
-      nodeCategories,
-      {
-        hue: () => 0,
-        lightness: (i, n) => (i + 0.5) / n,
-        saturation: () => 0
-      }
-    );
-    nodes.forEach(node => {
-      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
-    });
     return {
       ...data,
       graph,
@@ -619,11 +624,28 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>));
   }
 
+  selectedNodes;
+  selectedLinks;
+
+  selectNode(node) {
+    const selectedNodes = this.selectedNodes.value;
+    selectedNodes.add(node);
+    this.selectedNodes.next(new Set(selectedNodes));
+  }
+
+  selectLink(link) {
+    const selectedLinks = this.selectedLinks.value;
+    selectedLinks.add(link);
+    this.selectedLinks.next(new Set(selectedLinks));
+  }
+
   openNodeDetails(node) {
+    this.selectNode(node);
     this.openPanel(this.nodeDetails, node);
   }
 
   openLinkDetails(link) {
+    this.selectLink(link);
     this.openPanel(this.linkDetails, link);
   }
 
