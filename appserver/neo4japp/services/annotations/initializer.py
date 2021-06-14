@@ -74,7 +74,7 @@ def get_lmdb_service():
     return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
 
 
-def get_entity_recognition(exclusions, inclusions):
+def get_recognition_service(exclusions, inclusions):
     return EntityRecognitionService(
         exclusions=exclusions,
         inclusions=inclusions,

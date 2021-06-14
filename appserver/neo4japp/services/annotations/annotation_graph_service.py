@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict, List
 
 from flask import current_app
@@ -123,22 +122,22 @@ class AnnotationGraphService(GraphMixin):
             - need to be filtered for local inclusions
         """
         inclusion_dicts = {
-            EntityType.ANATOMY.value: defaultdict(list),
-            EntityType.CHEMICAL.value: defaultdict(list),
-            EntityType.COMPOUND.value: defaultdict(list),
-            EntityType.DISEASE.value: defaultdict(list),
-            EntityType.FOOD.value: defaultdict(list),
-            EntityType.GENE.value: defaultdict(list),
-            EntityType.PHENOMENA.value: defaultdict(list),
-            EntityType.PHENOTYPE.value: defaultdict(list),
-            EntityType.PROTEIN.value: defaultdict(list),
-            EntityType.SPECIES.value: defaultdict(list),
-            EntityType.COMPANY.value: defaultdict(list),
-            EntityType.ENTITY.value: defaultdict(list)
+            EntityType.ANATOMY.value: {},
+            EntityType.CHEMICAL.value: {},
+            EntityType.COMPOUND.value: {},
+            EntityType.DISEASE.value: {},
+            EntityType.FOOD.value: {},
+            EntityType.GENE.value: {},
+            EntityType.PHENOMENA.value: {},
+            EntityType.PHENOTYPE.value: {},
+            EntityType.PROTEIN.value: {},
+            EntityType.SPECIES.value: {},
+            EntityType.COMPANY.value: {},
+            EntityType.ENTITY.value: {}
         }
 
         local_inclusion_dicts = {
-            EntityType.SPECIES.value: defaultdict(list)
+            EntityType.SPECIES.value: {}
         }
 
         static_global_inclusions_by_type = {

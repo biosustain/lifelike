@@ -272,7 +272,6 @@ class AnnotationService:
 
         Returns list of matched annotations
         """
-        matches: List[Annotation] = []
         tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)  # noqa
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
@@ -744,6 +743,12 @@ class AnnotationService:
 
         local_species_annotations = self._annotate_local_species(recognized_entities)
 
+        # TODO: think about this
+        # if a user creates a local inclusion for a species,
+        # even if they chose to only annotate one occurrence of that word,
+        # should all other occurrences be considered when annotating?
+        # or could the same situation with gene/protein occur?
+        # e.g case sensitive mean different things
         local_inclusions = [
             custom for custom in custom_annotations if custom.get(
                 'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
@@ -986,7 +991,7 @@ class AnnotationService:
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
         # duplicates/overlapping intervals are removed
-        return self.add_primary_name(annotations=cleaned)
+        return self._add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,
@@ -1000,7 +1005,8 @@ class AnnotationService:
             unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
 
-    def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
+    # TODO: move this to AnnotationGraphService
+    def _add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
         """Apply the primary name to the annotations based on the returned data
         from the knowledge graph. Done to Gene and Protein due to organism
         matching may change the id/name.
