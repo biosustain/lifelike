@@ -264,7 +264,8 @@ class LMDBManager:
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
             except RecordNotFound:
-                upload_file = False
+                log.debug(
+                    f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}')
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:
                     upload_file = False
