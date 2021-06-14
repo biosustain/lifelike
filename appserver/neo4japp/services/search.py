@@ -206,6 +206,43 @@ class SearchService(GraphBaseDao):
             'total': len(nodes),
         }
 
+    def get_synonyms(
+        self,
+        search_term: str,
+        page: int,
+        limit: int
+    ) -> List[dict]:
+        results = self.graph.read_transaction(self.get_synonyms_query, search_term, page, limit)
+        synonym_data = []
+
+        for row in results:
+            type = get_first_known_label_from_node(row['entity'])
+            description = ''
+            organism = None
+
+            if row['t'] is not None:
+                organism = row['t'].get('name', None)
+
+            if row['entity'].get('description', None) is not None:
+                description = row['entity']['description']
+            elif row['entity'].get('full_name', None) is not None:
+                description = row['entity']['full_name']
+
+            synonym_data.append({
+                'type': type,
+                'description': description,
+                'organism': organism,
+                'aliases': list(set([search_term] + row['other_synonyms'])),
+            })
+        return synonym_data
+
+    def get_synonyms_count(
+        self,
+        search_term: str,
+    ) -> List[dict]:
+        results = self.graph.read_transaction(self.get_synonyms_count_query, search_term)
+        return results[0]['count']
+
     def visualizer_search_query(
         self,
         tx: Neo4jTx,
@@ -266,3 +303,70 @@ class SearchService(GraphBaseDao):
                 term=term, limit=limit
             ).data()
         ]
+
+    def get_synonyms_query(
+        self,
+        tx: Neo4jTx,
+        search_term: str,
+        page: int,
+        limit: int
+    ) -> List[N4jRecord]:
+        """
+        Gets a list of synoynm data for a given search term. Data includes any matched entities, as
+        well as any linked organism, if there is one.
+        """
+        return list(
+            tx.run(
+                """
+                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})
+                CALL {
+                    WITH synonym
+                    OPTIONAL MATCH
+                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                    WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
+                    RETURN entity, other_synonym.name AS other_synonym
+                }
+                WITH
+                    entity,
+                    other_synonym,
+                    toLower(entity.name) = toLower($search_term) as matches_term
+                ORDER BY size(other_synonym) DESC
+                OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)
+                RETURN
+                    entity,
+                    t,
+                    collect(DISTINCT other_synonym) AS other_synonyms,
+                    COUNT(DISTINCT other_synonym) AS synonym_count,
+                    matches_term
+                ORDER BY matches_term DESC
+                SKIP $page
+                LIMIT $limit
+                """,
+                search_term=search_term,
+                page=page,
+                limit=limit
+            )
+        )
+
+    def get_synonyms_count_query(
+        self,
+        tx: Neo4jTx,
+        search_term: str,
+    ) -> List[N4jRecord]:
+        """
+        Gets the count of synoynm data for a given search term.
+        """
+        return tx.run(
+            """
+            OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})
+            CALL {
+                WITH synonym
+                OPTIONAL MATCH
+                    (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
+                WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
+                RETURN entity
+            }
+            RETURN count(distinct entity) as count
+            """,
+            search_term=search_term,
+        ).data()
