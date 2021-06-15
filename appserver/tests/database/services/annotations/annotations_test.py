@@ -998,7 +998,7 @@ def test_global_compound_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'compound-(12345)'
-    assert annotations[0].meta.id == 'BIOCYC:BIOC:Fake'
+    assert annotations[0].meta.id == 'PUBCHEM:BIOC:Fake'
 
 
 def test_global_gene_inclusion_annotation(
@@ -1031,7 +1031,7 @@ def test_global_gene_inclusion_annotation(
     # new gene should be considered a synonym of
     # main gene with 59272 id (e.g ACE2)
     assert annotations[0].keyword == 'gene-(12345)'
-    assert annotations[0].meta.id == 'NCBI:59272'
+    assert annotations[0].meta.id == 'NCBI Gene:59272'
 
 
 def test_global_disease_inclusion_annotation(
@@ -1171,7 +1171,7 @@ def test_global_species_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
-    assert annotations[0].meta.id == 'NCBI:Ncbi:Fake'
+    assert annotations[0].meta.id == 'NCBI Taxonomy:Ncbi:Fake'
 
 
 @pytest.mark.skip(reason='Need to figure out how to mock service to return different values')

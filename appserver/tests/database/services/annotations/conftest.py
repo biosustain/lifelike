@@ -1309,256 +1309,167 @@ def mock_get_gene_specified_strain(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_global_chemical_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'CHEBI:Fake',
-            'type': EntityType.CHEMICAL.value,
-            'allText': 'fake-chemical-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_chemical_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'CHEBI:Fake',
+                'entity_name': 'fake-chemical-(12345)',
+                'synonym': 'fake-chemical-(12345)',
+                'data_source': 'CHEBI',
+                'hyperlink': ''
+            },
+            {
+                'entity_id': 'CHEBI:Fake',
+                'entity_name': 'Carbon',
+                'synonym': 'Carbon',
+                'data_source': 'MESH',
+                'hyperlink': 'http://fake'
+            }
+        ]
 
-    annotation2 = {
-        'meta': {
-            'id': 'CHEBI:Fake',
-            'type': EntityType.CHEMICAL.value,
-            'allText': 'Carbon',
-            'idType': 'MESH',
-            'idHyperlink': 'http://fake'
-        }
-    }
-
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    for anno in [annotation, annotation2]:
-        inclusion = GlobalList(
-            annotation=anno,
-            type=ManualAnnotationType.INCLUSION.value,
-            file_id=file_content.id,
-            reviewed=True,
-            approved=True,
-        )
-
-        session.add(inclusion)
-        session.flush()
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_***ARANGO_DB_NAME***_global_inclusions',
+        get_inclusions,
+    )
 
 
 @pytest.fixture(scope='function')
-def mock_global_compound_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'BIOC:Fake',
-            'type': EntityType.COMPOUND.value,
-            'allText': 'compound-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_compound_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'BIOC:Fake',
+                'entity_name': 'compound-(12345)',
+                'synonym': 'compound-(12345)',
+                'data_source': 'PUBCHEM',
+                'hyperlink': ''
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_***ARANGO_DB_NAME***_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_gene_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': '59272',
-            'type': EntityType.GENE.value,
-            'allText': 'gene-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_gene_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': '59272',
+                'entity_name': 'gene-(12345)',
+                'synonym': 'gene-(12345)',
+                'data_source': 'NCBI Gene'
+            },
+            {
+                'entity_id': '3576',
+                'entity_name': 'IL-8',
+                'synonym': 'IL-8',
+                'data_source': 'NCBI Gene'
+            }
+        ]
 
-    annotation2 = {
-        'meta': {
-            'id': '3576',
-            'type': EntityType.GENE.value,
-            'allText': 'IL-8',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
-
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_gene_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
-
-    inclusion2 = GlobalList(
-        annotation=annotation2,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
-    )
-
-    session.add(inclusion2)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_disease_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'Ncbi:Fake',
-            'type': EntityType.DISEASE.value,
-            'allText': 'disease-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_disease_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'Ncbi:Fake',
+                'entity_name': 'disease-(12345)',
+                'synonym': 'disease-(12345)',
+                'data_source': 'MESH',
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_mesh_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_phenomena_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'Fake',
-            'type': EntityType.PHENOMENA.value,
-            'allText': 'fake-phenomena',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_phenomena_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'Fake',
+                'entity_name': 'fake-phenomena',
+                'synonym': 'fake-phenomena',
+                'data_source': 'MESH',
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_mesh_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_phenotype_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'Fake',
-            'type': EntityType.PHENOTYPE.value,
-            'allText': 'phenotype-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_phenotype_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'Fake',
+                'entity_name': 'phenotype-(12345)',
+                'synonym': 'phenotype-(12345)',
+                'data_source': 'CUSTOM',
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_mesh_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_protein_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'Ncbi:Fake',
-            'type': EntityType.PROTEIN.value,
-            'allText': 'protein-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_protein_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'Ncbi:Fake',
+                'entity_name': 'protein-(12345)',
+                'synonym': 'protein-(12345)',
+                'data_source': 'UNIPROT',
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_protein_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()
 
 
 @pytest.fixture(scope='function')
-def mock_global_species_inclusion(session):
-    annotation = {
-        'meta': {
-            'id': 'Ncbi:Fake',
-            'type': EntityType.SPECIES.value,
-            'allText': 'species-(12345)',
-            'idType': '',
-            'idHyperlink': ''
-        }
-    }
+def mock_global_species_inclusion(monkeypatch):
+    def get_inclusions(*args, **kwargs):
+        return [
+            {
+                'entity_id': 'Ncbi:Fake',
+                'entity_name': 'species-(12345)',
+                'synonym': 'species-(12345)',
+                'data_source': 'NCBI Taxonomy',
+            }
+        ]
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
-    session.add(file_content)
-    session.flush()
-
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_species_global_inclusions',
+        get_inclusions,
     )
-
-    session.add(inclusion)
-    session.flush()

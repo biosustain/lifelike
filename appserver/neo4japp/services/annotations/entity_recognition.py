@@ -1,5 +1,6 @@
 import json
 import re
+import time
 
 from string import digits, ascii_letters, punctuation, whitespace
 from typing import Dict, List, Set, Tuple
@@ -382,88 +383,67 @@ class EntityRecognitionService:
 
     def _create_annotation_inclusions(
         self,
-        annotations_to_include: List[dict],
         entity_type_to_include: str,
-        entity_id_str: str,
         inclusion_collection: Dict[str, Inclusion],
         create_entity_ner_func,
+        graph_global_inclusions
     ) -> None:
         """Creates a dictionary structured very similar to LMDB.
         Used for entity custom annotation lookups.
         """
-        for inclusion in annotations_to_include:
+        global_inclusions = []
+        if entity_type_to_include in {
+            EntityType.ANATOMY.value,
+            EntityType.DISEASE.value,
+            EntityType.PHENOTYPE.value
+        }:
+            global_inclusions = self.graph.get_mesh_global_inclusions(entity_type_to_include)
+        else:
             try:
-                entity_id = inclusion['meta']['id']
-                entity_name = inclusion['meta']['allText']
-                entity_type = inclusion['meta']['type']
-                entity_id_type = inclusion['meta']['idType']
-                entity_id_hyperlink = inclusion['meta']['idHyperlink']
+                global_inclusions = graph_global_inclusions[entity_type_to_include]
             except KeyError:
-                current_app.logger.error(
-                    f'Error creating annotation inclusion {inclusion} for entity type {entity_type}',  # noqa
-                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                # use ***ARANGO_DB_NAME***_global_inclusions
+                pass
+
+        if not global_inclusions:
+            global_inclusions = self.graph.get_***ARANGO_DB_NAME***_global_inclusions(entity_type_to_include)
+
+        for inclusion in global_inclusions:
+            normalized_entity_name = normalize_str(inclusion['synonym'])
+            if entity_type_to_include not in {EntityType.GENE.value, EntityType.PROTEIN.value}:
+                entity = create_entity_ner_func(
+                    id_=inclusion['entity_id'],
+                    name=inclusion['entity_name'],
+                    synonym=inclusion['synonym']
                 )
+                # differentiate between LMDB
+                entity['inclusion'] = True
             else:
-                normalized_entity_name = normalize_str(entity_name)
-
-                if not entity_id:
-                    # ID is required for global inclusions
-                    # but we also include local species inclusion
-                    entity_id = entity_name
-
-                # entity_name could be empty strings
-                # probably a result of testing
-                # but will keep here just in case
-                if entity_id and entity_name and entity_type == entity_type_to_include:
-                    entity = {}
-                    if entity_type in {
-                        EntityType.ANATOMY.value,
-                        EntityType.CHEMICAL.value,
-                        EntityType.COMPOUND.value,
-                        EntityType.DISEASE.value,
-                        EntityType.FOOD.value,
-                        EntityType.PHENOMENA.value,
-                        EntityType.PHENOTYPE.value,
-                        EntityType.SPECIES.value
-                    }:
-                        entity = create_entity_ner_func(
-                            id_=entity_id,
-                            name=entity_name,
-                            synonym=entity_name
-                        )
-                    elif entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value}:
-                        entity = create_entity_ner_func(
-                            id_=entity_id, name=entity_name, synonym=entity_name)
-                    else:
-                        if entity_type == EntityType.GENE.value:
-                            self.gene_collection.append(
-                                (
-                                    entity_id,
-                                    entity_id_type,
-                                    entity_id_hyperlink,
-                                    entity_name,
-                                    normalized_entity_name
-                                )
-                            )
-                            continue
-                        elif entity_type == EntityType.PROTEIN.value:
-                            # protein is a bit different for now
-                            entity = create_entity_ner_func(
-                                name=entity_name,
-                                synonym=entity_name
-                            )
-
+                if entity_type_to_include == EntityType.PROTEIN.value:
+                    entity = create_entity_ner_func(
+                        name=inclusion['entity_name'], synonym=inclusion['synonym'])
                     # differentiate between LMDB
                     entity['inclusion'] = True
-
-                    if normalized_entity_name in inclusion_collection:
-                        inclusion_collection[normalized_entity_name].entities.append(entity)
-                    else:
-                        inclusion_collection[normalized_entity_name] = Inclusion(
-                            entities=[entity],
-                            entity_id_type=entity_id_type,
-                            entity_id_hyperlink=entity_id_hyperlink
+                elif entity_type_to_include == EntityType.GENE.value:
+                    self.gene_collection.append(
+                        (
+                            inclusion['entity_id'],
+                            inclusion['data_source'],
+                            inclusion.get('hyperlink', ''),
+                            inclusion['entity_name'],
+                            normalized_entity_name
                         )
+                    )
+                    continue
+
+            if normalized_entity_name in inclusion_collection:
+                inclusion_collection[normalized_entity_name].entities.append(entity)
+            else:
+                inclusion_collection[normalized_entity_name] = Inclusion(
+                    entities=[entity],
+                    entity_id_type=inclusion['data_source'],
+                    entity_id_hyperlink=inclusion.get('hyperlink', '')
+                )
 
     def _query_genes_from_kg(
         self,
@@ -516,41 +496,70 @@ class EntityRecognitionService:
             (EntityType.ENTITY.value, EntityIdStr.ENTITY.value, self.included_entities, create_ner_type_entity)  # noqa
         ]
 
-        global_annotations_to_include = [
-            inclusion for inclusion, in self.db.session.query(
-                GlobalList.annotation).filter(
-                    and_(
-                        GlobalList.type == ManualAnnotationType.INCLUSION.value,
-                        # TODO: Uncomment once feature to review is there
-                        # GlobalList.reviewed.is_(True),
-                    )
-                )
-            ]
+        graph_global_inclusions = {
+            EntityType.GENE.value: self.graph.get_gene_global_inclusions(),
+            EntityType.SPECIES.value: self.graph.get_species_global_inclusions(),
+            EntityType.PROTEIN.value: self.graph.get_protein_global_inclusions()
+        }
 
         for entity_type, entity_id_str, inclusion, createfunc in global_inclusion_pairs:
             self._create_annotation_inclusions(
-                annotations_to_include=global_annotations_to_include,
                 entity_type_to_include=entity_type,
-                entity_id_str=entity_id_str,
                 inclusion_collection=inclusion,
-                create_entity_ner_func=createfunc
+                create_entity_ner_func=createfunc,
+                graph_global_inclusions=graph_global_inclusions
             )
         self._query_genes_from_kg(self.included_genes)
 
         # local inclusions
         # only get the custom species for now
-        local_species_inclusions = [
+        local_species_inclusions: List[dict] = [
             custom for custom in custom_annotations if custom.get(
                 'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
                     'meta', {}).get('includeGlobally')
         ]
-        self._create_annotation_inclusions(
-            annotations_to_include=local_species_inclusions,
-            entity_type_to_include=EntityType.SPECIES.value,
-            entity_id_str=EntityIdStr.SPECIES.value,
-            inclusion_collection=self.included_local_species,
-            create_entity_ner_func=create_ner_type_species
-        )
+
+        for local_inclusion in local_species_inclusions:
+            try:
+                entity_id = local_inclusion['meta']['id']
+                entity_name = local_inclusion['meta']['allText']
+                entity_type = local_inclusion['meta']['type']
+                entity_id_type = local_inclusion['meta']['idType']
+                entity_id_hyperlink = local_inclusion['meta']['idHyperlink']
+            except KeyError:
+                current_app.logger.error(
+                    f'Error creating annotation inclusion {local_inclusion} for entity type {entity_type}',  # noqa
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            else:
+                # entity_name could be empty strings
+                # probably a result of testing
+                # but will keep here just in case
+                if entity_id and entity_name and entity_type == EntityType.SPECIES.value:
+                    normalized_entity_name = normalize_str(entity_name)
+
+                    if not entity_id:
+                        # ID is required for global inclusions
+                        # but we also include local species inclusion
+                        entity_id = entity_name
+
+                    entity = create_ner_type_species(
+                        id_=entity_id,
+                        name=entity_name,
+                        synonym=entity_name
+                    )
+
+                    # differentiate between LMDB
+                    entity['inclusion'] = True
+
+                    if normalized_entity_name in self.included_local_species:
+                        self.included_local_species[normalized_entity_name].entities.append(entity)
+                    else:
+                        self.included_local_species[normalized_entity_name] = Inclusion(
+                            entities=[entity],
+                            entity_id_type=entity_id_type,
+                            entity_id_hyperlink=entity_id_hyperlink
+                        )
 
     def is_abbrev(self, token: PDFWord) -> bool:
         """Determine if a word is an abbreviation.
@@ -1024,11 +1033,21 @@ class EntityRecognitionService:
         nlp_results: NLPResults
     ) -> RecognizedEntities:
         self.set_entity_exclusions(excluded_annotations)
+        start = time.time()
         self.set_entity_inclusions(custom_annotations)
+        current_app.logger.info(
+            f'Time to create entity inclusions {time.time() - start}.',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
+        start = time.time()
         generated_tokens = [
             current_token for idx, token in enumerate(tokens)
                 for current_token in self.generate_tokens(
                     tokens[idx:self.entity_max_words + idx])]  # noqa
+        current_app.logger.info(
+            f'Time to create sequential tokens {time.time() - start}.',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
 
         return self.check_lmdb(nlp_results=nlp_results, tokens=generated_tokens)
