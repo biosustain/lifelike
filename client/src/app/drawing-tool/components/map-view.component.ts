@@ -123,6 +123,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     return this.filesystemObjectActions.openShareDialog(this.map);
   }
 
+  openNewWindow() {
+    return this.filesystemObjectActions.openNewWindow(this.map);
+  }
+
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
       if (confirm('Leave editor? Changes you made may not be saved.')) {

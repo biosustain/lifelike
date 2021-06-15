@@ -221,7 +221,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
           const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.geneNeo4jId);
           return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(neo4jIds, taxID)
+            .getNCBIEnrichmentDomains(neo4jIds, taxID, domains)
             .pipe(
               map((domainResults: EnrichmentWrapper): EnrichmentResult => {
                 // a gene can point to 2 different synonyms
@@ -286,7 +286,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '3',
+                  version: '4',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -449,7 +449,7 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '3';
+  version: '4';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }
