@@ -27,6 +27,8 @@ import {
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
+import { successPasswordUpdate } from './actions';
+import { ChangePasswordDialogComponent } from '../../users/components/change-password-dialog.component';
 
 @Injectable()
 export class AuthEffects {
@@ -63,15 +65,15 @@ export class AuthEffects {
         }, () => {
           this.store$.dispatch(AuthActions.disagreeTermsOfService());
         });
-        return AuthActions.termsOfSerivceAgreeing();
+        return AuthActions.termsOfServiceAgreeing();
       } else {
         return AuthActions.login({credential});
       }
     }),
   ));
 
-  termsOfSerivceAgreeing$ = createEffect(() => this.actions$.pipe(
-    ofType(AuthActions.termsOfSerivceAgreeing),
+  termsOfServiceAgreeing$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.termsOfServiceAgreeing),
   ), {dispatch: false});
 
   agreeTermsOfService$ = createEffect(() => this.actions$.pipe(
@@ -102,6 +104,41 @@ export class AuthEffects {
     }),
   ));
 
+  updatePassword$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.updatePassword),
+    map(() => {
+        const modalRef = this.modalService.open(ChangePasswordDialogComponent);
+        modalRef.result.then(() => {
+          const timeStamp = TERMS_OF_SERVICE.updateTimestamp;
+          return AuthActions.successPasswordUpdate();
+
+        }, () => {
+          this.store$.dispatch(AuthActions.failedPasswordUpdate());
+          return this.store$.dispatch(AuthActions.logout());
+        });
+        return AuthActions.successPasswordUpdate();
+    }),
+  ));
+
+  failedPasswordUpdate$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.failedPasswordUpdate),
+    exhaustMap(() => {
+      return from([
+        SnackbarActions.displaySnackbar({
+          payload: {
+            message: 'Access can not be granted until the password is changed',
+            action: 'Dismiss',
+            config: {duration: 10000},
+          },
+        }),
+      ]);
+    }),
+  ));
+
+  successPasswordUpdate$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.successPasswordUpdate),
+  ), {dispatch: false});
+
   login$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.login),
     exhaustMap(({credential}) => {
@@ -121,11 +158,16 @@ export class AuthEffects {
           ]);
         }),
       );
-    }),
-  ));
+    })),
+  );
 
   loginSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.loginSuccess),
+    map( user => {
+      if (user.user.resetPassword) {
+          this.store$.dispatch(AuthActions.updatePassword());
+      }
+    }),
     withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
     tap(([_, url]) => this.router.navigate([url])),
   ), {dispatch: false});
@@ -139,7 +181,7 @@ export class AuthEffects {
     ofType(AuthActions.logout),
     map(_ => {
       this.authService.logout();
-      this.router.navigate(['/']);
+      this.router.navigate(['/login']);
       return SnackbarActions.displaySnackbar(
         {
           payload: {

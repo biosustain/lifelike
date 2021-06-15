@@ -12,6 +12,10 @@ import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { UserUpdateDialogComponent } from './user-update-dialog.component';
+import { AuthActions } from '../../auth/store';
+import { Store } from '@ngrx/store';
+import { State } from '../../root-store';
 
 
 @Component({
@@ -30,7 +34,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
               private readonly modalService: NgbModal,
               private readonly progressDialog: ProgressDialog,
               private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler) {
+              private readonly errorHandler: ErrorHandler,
+              private store: Store<State> ) {
   }
 
   ngOnInit() {
@@ -61,6 +66,18 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       }
     }
     return true;
+  }
+
+  isOneSelected(): boolean {
+    if (!this.selection.selected.length) {
+      return false;
+    }
+    for (const item of this.shownUsers) {
+      if (this.selection.isSelected(item)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   toggleAllSelected(): void {
@@ -101,5 +118,67 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
     }, () => {
     });
+  }
+
+
+  displayUpdateDialog() {
+    for (const selectedUser of this.shownUsers.reverse()) {
+      if (this.selection.isSelected(selectedUser)) {
+        const modalRef = this.modalService.open(UserUpdateDialogComponent);
+        modalRef.componentInstance.setUser(selectedUser);
+        modalRef.result.then(updatedUser => {
+          const progressDialogRef = this.progressDialog.display({
+            title: `Updating User`,
+            progressObservable: new BehaviorSubject<Progress>(new Progress({
+              status: 'Updating user...',
+            })),
+          });
+
+          this.accountService.updateUser(updatedUser)
+            .pipe(this.errorHandler.create({label: 'Update user'}))
+            .subscribe(() => {
+              progressDialogRef.close();
+              this.store.dispatch(AuthActions.userUpdated(
+                      {user: updatedUser},
+                    ));
+              this.accountService.getUserList();
+              this.refresh();
+              this.snackBar.open(
+                `User ${selectedUser.username} updated!`,
+                'close',
+                {duration: 5000},
+              );
+            }, () => {
+              progressDialogRef.close();
+            });
+        }, () => {
+        });
+      }
+    }
+  }
+
+  displayUnlockUserDialog(user: AppUser) {
+    event.stopPropagation();
+    if (confirm('Unlock user ' + user.username + '?')) {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Unlocking User`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Unlocking user...',
+        })),
+      });
+      this.accountService.unlockUser(user.hashId)
+        .pipe(this.errorHandler.create({label: 'Unlock user'}))
+        .subscribe(() => {
+          progressDialogRef.close();
+          this.snackBar.open(
+            `User unlocked!!`,
+            'close',
+            {duration: 5000},
+          );
+          user.locked = false;
+        }, () => {
+          progressDialogRef.close();
+        });
+    }
   }
 }
