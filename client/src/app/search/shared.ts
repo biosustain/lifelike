@@ -6,7 +6,7 @@ export interface SearchType {
 
 export interface SynonymData {
   type: string;
-  description: string;
+  fullName: string;
   organism: string;
   aliases: string[];
 }

@@ -218,20 +218,20 @@ class SearchService(GraphBaseDao):
         for row in results:
             type = get_first_known_label_from_node(row['entity'])
             aliases = row['synonyms']
-            description = ''
+            full_name = ''
             organism = None
 
             if row['t'] is not None:
                 organism = row['t'].get('name', None)
 
-            if row['entity'].get('description', None) is not None:
-                description = row['entity']['description']
-            elif row['entity'].get('full_name', None) is not None:
-                description = row['entity']['full_name']
+            if row['entity'].get('full_name', None) is not None:
+                full_name = row['entity']['full_name']
+            elif row['entity'].get('description', None) is not None:
+                full_name = row['entity']['description']
 
             synonym_data.append({
                 'type': type,
-                'description': description,
+                'full_name': full_name,
                 'organism': organism,
                 'aliases': aliases,
             })

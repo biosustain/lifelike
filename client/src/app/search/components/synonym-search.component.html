@@ -25,7 +25,7 @@
           <tr>
             <th scope="col">Select</th>
             <th scope="col">Type</th>
-            <th scope="col">Description</th>
+            <th scope="col">Full Name</th>
             <th scope="col">Organism</th>
             <th scope="col">Aliases</th>
           </tr>
@@ -65,7 +65,7 @@
             <tr>
               <th scope="col">Select</th>
               <th scope="col">Type</th>
-              <th scope="col">Description</th>
+              <th scope="col">Full Name</th>
               <th scope="col">Organism</th>
               <th scope="col">Aliases</th>
             </tr>
@@ -84,7 +84,7 @@
               </th>
               <!-- TODO: Could add style="white-space: nowrap;" to these to make the rows evenly spaced, but the table is also much longer...should experiment with this -->
               <td>{{ entity.type }}</td>
-              <td>{{ entity.description }}</td>
+              <td>{{ entity.fullName }}</td>
               <td>{{entity.organism }}</td>
               <td>
                 <div *ngFor="let a of entity.aliases; let j = index" class="mr-2" style="display: inline-block;">
