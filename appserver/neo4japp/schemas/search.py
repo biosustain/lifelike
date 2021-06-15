@@ -35,7 +35,7 @@ class ContentSearchResponseSchema(ResultListSchema):
 
 class SynonymData(CamelCaseSchema):
     type = fields.String()
-    description = fields.String()
+    full_name = fields.String()
     organism = fields.String()
     aliases = fields.List(fields.String())
 
