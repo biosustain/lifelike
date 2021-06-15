@@ -94,6 +94,8 @@
                             *ngIf="filteredSankeyData"
                             [data]="filteredSankeyData"
                             [normalizeLinks]="normalizeLinks.value"
+                            [selectedNodes]="selectedNodes | async"
+                            [selectedLinks]="selectedLinks | async"
                             (nodeClicked)="openNodeDetails($event)"
                             (linkClicked)="openLinkDetails($event)"
                     >
