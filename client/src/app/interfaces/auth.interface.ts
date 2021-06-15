@@ -11,6 +11,8 @@ export interface AppUser {
   firstName: string;
   lastName: string;
   username: string;
+  locked: boolean;
+
   /**
    * @deprecated
    */
@@ -28,6 +30,8 @@ export interface PrivateAppUser {
   firstName: string;
   lastName: string;
   username: string;
+  resetPassword: boolean;
+  locked: boolean;
   roles: string[];
 }
 

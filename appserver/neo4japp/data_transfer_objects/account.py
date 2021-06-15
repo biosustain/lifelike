@@ -14,6 +14,7 @@ class UserRequest(CamelDictMixin):
     first_name: str = attr.ib()
     last_name: str = attr.ib()
     email: str = attr.ib()
+    # failed_login_count: int = attr.ib()
     roles: List[str] = attr.ib(default=attr.Factory(list))
 
 

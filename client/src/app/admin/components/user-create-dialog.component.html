@@ -23,6 +23,12 @@
     <app-form-row for="last-name" label="Last Name" [control]="form.get('lastName')">
       <input type="text" formControlName="lastName" id="last-name" [appFormInput]="form.get('lastName')">
     </app-form-row>
+    <app-form-row for="user-roles" label="User roles" [control]="form.get('roles')">
+      <select class="custom-select" formControlName="roles" id="user-roles" [appFormInput]="form.get('roles')">
+         <option value="user">User</option>
+         <option value="admin">Admin</option>
+     </select>
+    </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>

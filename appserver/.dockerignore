@@ -9,3 +9,4 @@ neo4japp/services/annotations/datasets/*.tsv
 **/*.tar.ggz
 **/*.env
 *.git*
+.githooks/
