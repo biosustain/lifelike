@@ -1,6 +1,7 @@
 name: GCP Staging Deployment
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "staging-gcp"
