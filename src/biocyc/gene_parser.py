@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
-    'COMMON-NAME': (PROP_COMMON_NAME, 'str'),
+    'COMMON-NAME': (PROP_NAME, 'str'),
     'ACCESSION-1': (PROP_ACCESSION, 'str'),
     'LEFT-END-POSITION': (PROP_POS_LEFT, 'str'),
     'RIGHT-END-POSITION': (PROP_POS_RIGHT, 'str'),
@@ -26,7 +26,7 @@ DB_LINK_SOURCES = {'NCBI-GENE':False}
 class GeneParser(BaseDataFileParser):
     def __init__(self, db_name, tarfile, base_data_dir):
         BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_COMMON_NAME, PROP_ACCESSION, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
 
     def create_synonym_rels(self) -> bool:
         return True
