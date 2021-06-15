@@ -33,7 +33,7 @@
 import { max, min, sum } from 'd3-array';
 import { sankeyJustify as justify } from 'd3-sankey';
 
-function find(nodeById, id) {
+export function find(nodeById, id) {
   const node = nodeById.get(id);
   if (!node) {
     throw new Error('missing: ' + id);
