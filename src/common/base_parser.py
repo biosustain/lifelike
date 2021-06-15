@@ -26,6 +26,10 @@ class BaseParser:
             self.database.close()
 
     def output_sample_import_file(self):
+        """
+        This is for exam data only.  Some files are too big to view.
+        Read all files in the download folder and write the fist 5000 lines to a .s file
+        """
         for file in os.listdir(self.download_dir):
             if file.endswith('.gz'):
                 inputfilename = os.path.join(self.download_dir, file)

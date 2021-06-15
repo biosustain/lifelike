@@ -16,12 +16,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 
 
 class BaseDataFileParser(BaseParser):
+    """
+    Base parser for Biocyc .dat files.
+    """
     def __init__(self, base_data_dir: str, biocyc_dbname, tar_file, datafile_name, entity_name, attr_names:dict, rel_names:dict,
                  db_link_sources: dict=None):
         """
+        :param base_data_dir: the data file base directory, that is the parent folder for 'download'
         :param biocyc_dbname: biocyc database name, eg. DB_ECOCYC, DB_HUMANCYC
         :param tar_file: tar file downloaded from biocyc website
-        :param datafile_name: the data file to process (in tar_file)
+        :param datafile_name: the data file name to process (in tar_file), e.g. genes.dat
         :param entity_name: The entity to process, e.g. Gene, Protein etc.
         :param attr_names: mapping for tagName and attrName
         :param rel_names:  mapping for tagName and relName
@@ -43,6 +47,11 @@ class BaseDataFileParser(BaseParser):
         return False
 
     def get_db_version(self, tar:TarFile):
+        """
+        find the latest version of data in the tar file.  Sometimes a tar file has multiple version data.
+        :param tar:
+        :return:
+        """
         versions = []
         for file in tar.getmembers():
             if '/data' in file.name:

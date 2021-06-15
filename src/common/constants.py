@@ -2,7 +2,8 @@ import os
 
 """NODES"""
 NODE_ASSOCIATION = 'Association'
-NODE_CLASS = 'Class'
+# Rename 'Class' to 'BioCycClass'
+NODE_CLASS = 'BioCycClass'
 NODE_CHEMICAL = 'Chemical'
 NODE_COMPOUND = 'Compound'
 NODE_COMPLEX = 'Complex'
@@ -129,7 +130,6 @@ PROP_BIOCYC_ID = 'biocyc_id'
 PROP_CHEBI_ID = 'chebi_id'
 PROP_ARO_ID = 'aro_id'
 PROP_COMMENT = 'comment'
-PROP_COMMON_NAME = 'name'
 PROP_COMPARTMENT = 'compartment'
 PROP_ABBREV_NAME = 'abbrev_name'
 PROP_DATA_SOURCE = 'data_source'
@@ -149,6 +149,7 @@ PROP_INCHI_KEY = 'inchi_key'
 PROP_INCLUSION_DATE = 'inclusion_date'
 PROP_LOCATION = 'location'
 PROP_LOCUS_TAG = 'locus_tag'
+PROP_LOWERCASE_NAME = 'lowercase_name'
 PROP_MECHANISM = 'mechanism'
 PROP_MODE = 'mode'
 PROP_MOL_WEIGHT_KD = 'molecular_weight_kd'
@@ -181,7 +182,7 @@ EDGE_START_POS = 'start_pos'
 EDGE_END_POS = 'end_pos'
 
 INDEXED_FIELDS = [PROP_ACCESSION, PROP_ALT_ID, PROP_BIOCYC_ID, PROP_CHEBI_ID, PROP_TAX_ID,
-                  PROP_COMMON_NAME, PROP_EC_NUMBER, PROP_ID, PROP_LOCUS_TAG,
+                  PROP_NAME, PROP_EC_NUMBER, PROP_ID, PROP_LOCUS_TAG,
                   PROP_NAME, PROP_SCIENTIFIC_NAME, PROP_SYMBOL, PROP_SYNONYMS]
 
 

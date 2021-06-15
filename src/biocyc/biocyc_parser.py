@@ -61,7 +61,13 @@ class BiocycParser(object):
             return transcripitionunit_parser.TranscriptionUnitParser(biocyc_dbname, filename, self.base_data_dir)
 
     def link_genes(self, database:Database):
-        # there is not ncbi genes for pput160488
+        """
+        Link biocyc genes to NCBI genes using accession number to match NCBI gene locustag.  Since human genes don't have
+        accession, use gene name match.
+        There is no Peusomonas (tax 160488) genes in NCBI.
+        :param database:
+        :return:
+        """
         logging.info('link ecocyc genes with ncbi genes')
         query_ecoli = """
         match (g:Gene:db_EcoCyc) 
@@ -81,11 +87,11 @@ class BiocycParser(object):
         database.run_query(query_yeast)
         database.run_query(query_human)
 
-    def set_id_and_display_names(self, database:Database):
-        logging.info('set id')
-        query = "match (n:db_BioCyc) set n.id = n.biocyc_id"
-        database.run_query(query)
-
+    def set_display_names(self, database:Database):
+        """
+        Set node display name.  node 'id' property is already set to be same as biocyc_id when loading the nodes
+        :param database: the database to run the queries
+        """
         logging.info('set Regulation display name')
         query = """
         MATCH (n:Regulation)-[:TYPE_OF]->(t) 
@@ -147,6 +153,11 @@ class BiocycParser(object):
         database.run_query(query)
 
     def set_descriptions(self, database:Database):
+        """
+        Set node discription, that is very useful for data analysis and annotation. We may need to add all those descriptions
+        in file biocyc/create_ecocyc_mod_database_for_GDS.md to the lifelike database in the future.
+        :param database: the database to run the query
+        """
         logging.info('set description for genes')
         query = """
         match (n:Gene:db_EcoCyc)-[:IS]-(g:Gene:db_NCBI) set n.description = g.full_name;
@@ -159,6 +170,12 @@ class BiocycParser(object):
         database.run_query(query)
 
     def set_gene_property_for_enrichment(self, database: Database):
+        """
+        Add 'pathways' property to biocyc genes. Since the pathways and genes are organism specific, but not reactions,
+        we need specify the db_name label for the genes and pathways.
+        :param database:
+        :return:
+        """
         query = """
         match (n:$db_name:Gene) 
             with n match
@@ -171,6 +188,10 @@ class BiocycParser(object):
             database.run_query(myquery)
 
     def add_protein_synonyms(self, database: Database):
+        """
+        Add BioCyc protein abbrev_name as its synonym
+        :param database: the database to run query
+        """
         query = """
         match(n:db_BioCyc:Protein) where exists (n.abbrev_name) 
         merge(s:Synonym {name:n.abbrev_name})
@@ -184,7 +205,7 @@ class BiocycParser(object):
         :param database: the neo4j database to load data
         :param entities: List of entity node labels to load
         :param db_files: dict for biocyc database name  and data file name
-        :param initial_load: set False for updates.
+        :param initial_load: if False, update the database (no need to create indexes).
         """
         if initial_load:
             database.create_constraint(NODE_BIOCYC, PROP_BIOCYC_ID, 'constraint_biocyc_biocycId')
