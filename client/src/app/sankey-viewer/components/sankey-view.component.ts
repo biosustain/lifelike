@@ -640,12 +640,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   openNodeDetails(node) {
-    this.selectNode(node);
+    // this.selectNode(node);
     this.openPanel(this.nodeDetails, node);
   }
 
   openLinkDetails(link) {
-    this.selectLink(link);
+    // this.selectLink(link);
     this.openPanel(this.linkDetails, link);
   }
 
