@@ -52,64 +52,65 @@
     </div>
   </div>
 
-  <div *ngIf="synonymData && synonymData.length">
-    <div>
-      <p>
-        Select any number of rows below and submit to add the terms in the "aliases" column to your content search query. Duplicates will be removed.
-      </p>
+  <div *ngIf="!loading && !errorMsg && synonymData">
+    <div *ngIf="synonymData.length; else noResults">
+      <div>
+        <p>
+          Select any number of rows below and submit to add the terms in the "aliases" column to your content search query. Duplicates will be removed.
+        </p>
+      </div>
+      <div class="synonym-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Select</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Organism</th>
+              <th scope="col">Aliases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entity of synonymData; let i = index">
+              <th scope="row">
+                <div class="custom-control custom-checkbox">
+                  <input [id]="'synonym-row-' + i"
+                         type="checkbox"
+                         class="custom-control-input"
+                         [checked]="checklistSelection.isSelected(entity)"
+                         (change)="toggleSelection(entity)">
+                  <label class="custom-control-label" [for]="'synonym-row-' + i"></label>
+                </div>
+              </th>
+              <!-- TODO: Could add style="white-space: nowrap;" to these to make the rows evenly spaced, but the table is also much longer...should experiment with this -->
+              <td>{{ entity.type }}</td>
+              <td>{{ entity.description }}</td>
+              <td>{{entity.organism }}</td>
+              <td>
+                <div *ngFor="let a of entity.aliases; let j = index" class="mr-2" style="display: inline-block;">
+                  {{a + (j < entity.aliases.length - 1 ? ';' : '')}}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4">
+        <ngb-pagination
+          [page]="page"
+          [pageSize]="SYNONYM_SEARCH_LIMIT"
+          [collectionSize]="total"
+          (pageChange)="goToPage($event)">
+        </ngb-pagination>
+      </div>
     </div>
-    <div class="synonym-table">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Select</th>
-            <th scope="col">Type</th>
-            <th scope="col">Description</th>
-            <th scope="col">Organism</th>
-            <th scope="col">Aliases</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let entity of synonymData; let i = index">
-            <th scope="row">
-              <div class="custom-control custom-checkbox">
-                <input [id]="'synonym-row-' + i"
-                       type="checkbox"
-                       class="custom-control-input"
-                       [checked]="checklistSelection.isSelected(entity)"
-                       (change)="toggleSelection(entity)">
-                <label class="custom-control-label" [for]="'synonym-row-' + i"></label>
-              </div>
-            </th>
-            <!-- TODO: Could add style="white-space: nowrap;" to these to make the rows evenly spaced, but the table is also much longer...should experiment with this -->
-            <td>{{ entity.type }}</td>
-            <td>{{ entity.description }}</td>
-            <td>{{entity.organism }}</td>
-            <td>
-              <div *ngFor="let a of entity.aliases; let j = index" class="mr-2" style="display: inline-block;">
-                {{a + (j < entity.aliases.length - 1 ? ';' : '')}}
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="mt-4">
-      <ngb-pagination
-        [page]="page"
-        [pageSize]="SYNONYM_SEARCH_LIMIT"
-        [collectionSize]="total"
-        (pageChange)="goToPage($event)">
-      </ngb-pagination>
-    </div>
-  </div>
-
-  <div *ngIf="!errorMsg && !loading && synonymData">
-    <div>
-      <p>
-        No synonyms were found for the term "{{ form.value.q }}".
-      </p>
-    </div>
+    <ng-template #noResults>
+      <div>
+        <p>
+          No synonyms were found for the term "{{ form.value.q }}".
+        </p>
+      </div>
+    </ng-template>
   </div>
 </app-modal-body>
 <app-modal-footer>
