@@ -1,11 +1,12 @@
 name: GCP QA Deployment
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     tags:
-      - qa-gcp
+      - qa
 
 jobs:
   build:
