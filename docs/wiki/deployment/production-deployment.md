@@ -245,7 +245,12 @@ gsutil cp gs://kg-secrets/ansible.pub .
 ```
 **NOTE:** If you're using an operation system that's not Linux or a variation of it such as OSX, the following steps will have to be revised.
 
-3. Add the *private* and *public* keys into `~/.ssh/` OR modify the `ansible.cfg` file to another directory of your choice 
+**NOTE:** If you get a permission warning for the files, you'll need to configure the permission levels accordingly. For example, on Linux, you can do
+```bash
+chmod 600 ansible
+```
+
+3. Add the *private* and *public* keys into `~/.ssh/` OR modify the `ansible.cfg` file to another directory of your choice
 
 **ansible.cfg**
 ```
