@@ -4,6 +4,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { uuidv4 } from 'app/shared/utils';
+
 import { ContentSearchService } from '../services/content-search.service';
 import { SynonymData } from '../shared';
 
@@ -13,6 +15,8 @@ import { SynonymData } from '../shared';
   styleUrls: ['./synonym-search.component.scss']
 })
 export class SynonymSearchComponent {
+  id = uuidv4();
+
   synonymData: SynonymData[];
   checklistSelection = new SelectionModel<any>(true /* multiple */);
 
@@ -81,6 +85,21 @@ export class SynonymSearchComponent {
 
   toggleSelection(entity: any) {
     this.checklistSelection.toggle(entity);
+  }
+
+  allChecked() {
+    return this.synonymData.every((entity) => this.checklistSelection.isSelected(entity));
+  }
+
+  toggleAll() {
+    // Just get the current state of the checkbox so we don't have to check the synonym data unnecessarily
+    const checkboxHeader = document.getElementById(this.id + '-synonym-checklist-header') as HTMLInputElement;
+
+    if (checkboxHeader.checked) {
+      this.synonymData.forEach(entity => this.checklistSelection.select(entity));
+    } else {
+      this.synonymData.forEach(entity => this.checklistSelection.deselect(entity));
+    }
   }
 
   goToPage(page: number) {

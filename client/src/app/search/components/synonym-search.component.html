@@ -59,11 +59,21 @@
           Select any number of rows below and submit to add the terms in the "aliases" column to your content search query. Duplicates will be removed.
         </p>
       </div>
+      <!-- TODO: Turn this into a standalone "checklist table" component -->
       <div class="synonym-table">
         <table class="table">
           <thead>
             <tr>
-              <th scope="col">Select</th>
+              <th scope="col">
+                <div class="custom-control custom-checkbox">
+                  <input [id]="id + '-synonym-checklist-header'"
+                         type="checkbox"
+                         class="custom-control-input"
+                         [checked]="allChecked()"
+                         (change)="toggleAll()">
+                  <label class="custom-control-label" [for]="id + '-synonym-checklist-header'"></label>
+                </div>
+              </th>
               <th scope="col">Type</th>
               <th scope="col">Full Name</th>
               <th scope="col">Organism</th>
@@ -71,15 +81,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let entity of synonymData; let i = index">
+            <tr *ngFor="let entity of synonymData; let i = index" (click)="toggleSelection(entity)">
               <th scope="row">
                 <div class="custom-control custom-checkbox">
-                  <input [id]="'synonym-row-' + i"
+                  <input [id]="id + '-synonym-row-' + i"
                          type="checkbox"
                          class="custom-control-input"
                          [checked]="checklistSelection.isSelected(entity)"
                          (change)="toggleSelection(entity)">
-                  <label class="custom-control-label" [for]="'synonym-row-' + i"></label>
+                  <label class="custom-control-label" [for]="id + '-synonym-row-' + i"></label>
                 </div>
               </th>
               <!-- TODO: Could add style="white-space: nowrap;" to these to make the rows evenly spaced, but the table is also much longer...should experiment with this -->
@@ -114,5 +124,7 @@
   </div>
 </app-modal-body>
 <app-modal-footer>
-  <button *ngIf="!checklistSelection.isEmpty()" type="submit" class="btn btn-primary" (click)="submit()">Add Selected Synoynms to Search</button>
+  <div *ngIf="!loading && !errorMsg && synonymData && synonymData.length">
+    <button [disabled]="checklistSelection.isEmpty()" type="submit" class="btn btn-primary" (click)="submit()">Add Selected Synoynms to Search</button>
+  </div>
 </app-modal-footer>
