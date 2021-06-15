@@ -12,6 +12,8 @@ interface Node {
   fixedValue?: number;
   layer?: number;
   description?: string;
+  color?: string;
+  selected?: boolean;
 }
 
 interface Link {
