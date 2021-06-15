@@ -20,7 +20,7 @@ export class SynonymSearchComponent {
     q: new FormControl('', Validators.required),
   });
 
-  SYNONYM_SEARCH_LIMIT = 15;
+  SYNONYM_SEARCH_LIMIT = 100;
   page = 1;
   total: number;
 
