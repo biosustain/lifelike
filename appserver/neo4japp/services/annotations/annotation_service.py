@@ -1037,7 +1037,12 @@ class AnnotationService:
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
             finally:
-                if anno.meta.id_type not in anno.meta.id:
+                # TODO: need to rethink this...
+                # if an inclusion is in Lifelike domain/label in KG
+                # that means the primary/common name did not exist
+                # in the KG in the actual source (e.g MECH, etc)
+                # Should it still have the original source or stay as Lifelike?
+                if anno.meta.id_type not in anno.meta.id and 'Lifelike' not in anno.meta.id:
                     # update annotation id
                     anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
 

@@ -1,7 +1,38 @@
 from neo4japp.database import GraphConnection
 
+from ..constants import EntityType
+
 
 class GraphMixin(GraphConnection):
+    def __init__(self) -> None:
+        super().__init__()
+        self.node_labels = {
+            EntityType.ANATOMY.value: 'db_MESH:Anatomy',
+            EntityType.DISEASE.value: 'db_MESH:Disease',
+            EntityType.FOOD.value: 'db_MESH:Food',
+            EntityType.PHENOMENA.value: 'db_MESH:Phenomena',
+            EntityType.CHEMICAL.value: 'db_CHEBI:Chemical',
+            EntityType.COMPOUND.value: 'db_BioCyc:Compound',
+            EntityType.GENE.value: 'db_NCBI:Gene',
+            EntityType.SPECIES.value: 'db_NCBI:Taxonomy',
+            EntityType.PROTEIN.value: 'db_UniProt:Protein'
+        }
+
+        self.***ARANGO_DB_NAME***_node_labels = {
+            EntityType.ANATOMY.value: 'Anatomy',
+            EntityType.DISEASE.value: 'Disease',
+            EntityType.FOOD.value: 'Food',
+            EntityType.PHENOMENA.value: 'Phenomena',
+            EntityType.CHEMICAL.value: 'Chemical',
+            EntityType.COMPOUND.value: 'Compound',
+            EntityType.GENE.value: 'Gene',
+            EntityType.SPECIES.value: 'Organism',
+            EntityType.PROTEIN.value: 'Protein',
+            EntityType.PHENOTYPE.value: 'Phenotype',
+            EntityType.ENTITY.value: 'Entity',
+            EntityType.COMPANY.value: 'Company'
+        }
+
     def exec_read_query(self, query: str):
         return self.graph.read_transaction(lambda tx: list(tx.run(query)))
 
@@ -14,11 +45,13 @@ class GraphMixin(GraphConnection):
     def exec_write_query_with_params(self, query: str, values: dict):
         return self.graph.write_transaction(lambda tx: list(tx.run(query, values=values)))
 
+    # TODO: these two <type>_to_organism queries need to change
+    # now need to also query Lifelike nodes to also get taxonomy (global inclusions)
     @property
     def get_gene_to_organism(self):
         return """
         WITH $values AS row
-        MATCH (s:Synonym)-[]-(g:Gene)
+        MATCH (s:Synonym)-[]-(g:db_NCBI:Gene)
         WHERE s.name IN row.genes
         WITH row, s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
         WHERE p.id IN row.organisms
@@ -86,160 +119,213 @@ class GraphMixin(GraphConnection):
         RETURN t.id AS organism_id, t.name AS organism_name
         """
 
-    @property
-    def get_mesh_global_inclusions_by_type(self):
-        return """
+    def get_mesh_global_inclusions_by_type(self, entity_type):
+        query_label = self.node_labels[entity_type]
+        return f"""
         WITH $values AS row
-        MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s)
-        WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
-        AND n.entity_type = row.entity_type
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
         RETURN n.id AS entity_id, n.name AS entity_name,
             s.name AS synonym, n.data_source AS data_source
         """
 
-    @property
+    def get_chemical_global_inclusions(self):
+        return """
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_CHEBI:Chemical)
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
+        RETURN n.id AS entity_id, n.name AS entity_name,
+            s.name AS synonym, n.data_source AS data_source
+        """
+
+    def get_compound_global_inclusions(self):
+        return """
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_BioCyc:Compound)
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
+        RETURN n.id AS entity_id, n.name AS entity_name,
+            s.name AS synonym, n.data_source AS data_source
+        """
+
     def get_gene_global_inclusions(self):
         return """
-        MATCH (n:Gene)-[r:HAS_SYNONYM]-(s)
-        WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_NCBI:Gene)
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
         RETURN n.id AS entity_id, n.name AS entity_name,
             s.name AS synonym, n.data_source AS data_source
         """
 
-    @property
     def get_protein_global_inclusions(self):
         return """
-        MATCH (n:db_UniProt)-[r:HAS_SYNONYM]-(s)
-        WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_UniProt:Protein)
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
         RETURN n.id AS entity_id, n.name AS entity_name,
             s.name AS synonym, n.data_source AS data_source
         """
 
-    @property
     def get_species_global_inclusions(self):
         return """
-        MATCH (n:Taxonomy)-[r:HAS_SYNONYM]-(s)
-        WHERE exists(n.inclusion_date) AND exists(r.inclusion_date)
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_NCBI:Taxonomy)
+        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
         RETURN n.id AS entity_id, n.name AS entity_name,
             s.name AS synonym, n.data_source AS data_source
         """
 
-    @property
-    def get_***ARANGO_DB_NAME***_global_inclusions_by_type(self):
-        return """
-        WITH $values AS row
-        MATCH (n:db_Lifelike)
-        WHERE n.entity_type = row.entity_type
-        RETURN n.id AS entity_id, n.name AS entity_name, n.name AS synonym,
+    def get_***ARANGO_DB_NAME***_global_inclusions_by_type(self, entity_type):
+        query_label = self.***ARANGO_DB_NAME***_node_labels[entity_type]
+        return f"""
+        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
+        RETURN n.id AS entity_id, n.name AS entity_name, s.name AS synonym,
             n.data_source AS data_source, n.hyperlink AS hyperlink
         """
 
-    @property
-    def mesh_global_inclusion_exist(self):
-        return """
+    def mesh_global_inclusion_exist(self, entity_type):
+        query_label = self.node_labels[entity_type]
+        return f"""
         WITH $values AS row
-        OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = 'MESH:' + row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
+        OPTIONAL MATCH (n:{query_label})-[:HAS_SYNONYM]->(s)
+        WHERE n.id = 'MESH:' + row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
-    @property
+    def chemical_global_inclusion_exist(self):
+        return """
+        WITH $values AS row
+        OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+        """
+
+    def compound_global_inclusion_exist(self):
+        return """
+        WITH $values AS row
+        OPTIONAL MATCH (n:db_BioCyc:Compound)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+        """
+
     def gene_global_inclusion_exist(self):
         return """
         WITH $values AS row
-        OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
+        OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
-    @property
     def protein_global_inclusion_exist(self):
         return """
         WITH $values AS row
-        OPTIONAL MATCH (n:db_UniProt)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
+        OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
-    @property
     def species_global_inclusion_exist(self):
         return """
         WITH $values AS row
-        OPTIONAL MATCH (n:Taxonomy)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = row.entity_id AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
+        OPTIONAL MATCH (n:db_NCBI:Taxonomy)-[:HAS_SYNONYM]->(s)
+        WHERE n.id = row.entity_id
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
-    @property
-    def ***ARANGO_DB_NAME***_global_inclusion_exist(self):
-        return """
+    def ***ARANGO_DB_NAME***_global_inclusion_exist(self, entity_type):
+        query_label = self.***ARANGO_DB_NAME***_node_labels[entity_type]
+        return f"""
         WITH $values AS row
-        OPTIONAL MATCH (n:db_Lifelike)-[:HAS_SYNONYM]->(s)
+        OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
         WHERE n.external_id = row.entity_id AND n.data_source = row.data_source
-        AND s.name = row.synonym
-        RETURN s IS NOT NULL AS exist
+        RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
-    @property
-    def create_mesh_global_inclusion(self):
+    def create_mesh_global_inclusion(self, entity_type):
+        query_label = self.node_labels[entity_type]
         return """
         WITH $values AS row
-        MATCH (n:db_MESH) WHERE n.id = 'MESH:' + row.entity_id
-        SET n.entity_type = row.entity_type,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
+        MATCH (n:replace_with_param) WHERE n.id = 'MESH:' + row.entity_id
         MERGE (s: Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
+        """.replace('replace_with_param', query_label)
+
+    def create_chemical_global_inclusion(self):
+        return """
+        WITH $values AS row
+        MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + row.entity_id
+        MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
         """
 
-    @property
+    def create_compound_global_inclusion(self):
+        return """
+        WITH $values AS row
+        MATCH (n:db_BioCyc:Compound) WHERE n.id = row.entity_id
+        MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
+        MERGE (n)-[r:HAS_SYNONYM]->(s)
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
+        """
+
     def create_gene_global_inclusion(self):
         return """
         WITH $values AS row
-        MATCH (n:Gene) WHERE n.id = row.entity_id
-        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
+        MATCH (n:db_NCBI:Gene) WHERE n.id = row.entity_id
+        MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
         """
 
-    @property
     def create_species_global_inclusion(self):
         return """
         WITH $values AS row
-        MATCH (n:Taxonomy) WHERE n.id = row.entity_id
-        SET n.entity_type = row.entity_type,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
+        MATCH (n:db_NCBI:Taxonomy) WHERE n.id = row.entity_id
         MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
         """
 
-    @property
     def create_protein_global_inclusion(self):
         return """
         WITH $values AS row
-        MATCH (n:db_UniProt) WHERE n.id = row.entity_id
-        SET n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
-            n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
+        MATCH (n:db_UniProt:Protein) WHERE n.id = row.entity_id
+        MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
-        SET r.inclusion_date = n.inclusion_date, r.user = n.user
+        SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
+            r.user = row.user
         """
 
-    @property
-    def create_***ARANGO_DB_NAME***_global_inclusion(self):
+    def create_***ARANGO_DB_NAME***_global_inclusion(self, entity_type):
+        query_label = self.***ARANGO_DB_NAME***_node_labels[entity_type]
         return """
         WITH $values AS row
-        MERGE (n:db_Lifelike {id:row.data_source + ':' + row.entity_id})
-        SET n.data_source = row.data_source, n.external_id = row.entity_id,
-            n.name = row.common_name, n.entity_type = row.entity_type, n.hyperlink = row.hyperlink,
+        MERGE (n:db_Lifelike {id:'Lifelike:' + row.entity_id})
+        ON CREATE
+        SET n:replace_with_param,
+            n.data_source = row.data_source,
+            n.external_id = row.entity_id,
+            n.name = row.common_name,
+            n.entity_type = row.entity_type,
+            n.hyperlink = row.hyperlink,
             n.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             n.user = row.user
-        MERGE (s: Synonym {name: row.synonym})
+        WITH n, row
+        MERGE (s:Synonym {name: row.synonym})
+        SET s.global_inclusion = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
-        """
+        """.replace('replace_with_param', query_label)
