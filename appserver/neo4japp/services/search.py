@@ -217,6 +217,7 @@ class SearchService(GraphBaseDao):
 
         for row in results:
             type = get_first_known_label_from_node(row['entity'])
+            aliases = row['synonyms']
             description = ''
             organism = None
 
@@ -232,7 +233,7 @@ class SearchService(GraphBaseDao):
                 'type': type,
                 'description': description,
                 'organism': organism,
-                'aliases': list(set([search_term] + row['other_synonyms'])),
+                'aliases': aliases,
             })
         return synonym_data
 
@@ -318,25 +319,23 @@ class SearchService(GraphBaseDao):
         return list(
             tx.run(
                 """
-                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})
-                CALL {
-                    WITH synonym
-                    OPTIONAL MATCH
-                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                    WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
-                    RETURN entity, other_synonym.name AS other_synonym
-                }
+                MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})<-[:HAS_SYNONYM]-(entity)
+                WHERE NOT 'Protein' IN LABELS(entity)
+                MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
+                WHERE
+                    size(synonyms.name) > 2 OR
+                    any(x IN LABELS(entity) WHERE x IN ['Chemical', 'Compound'])
                 WITH
                     entity,
-                    other_synonym,
+                    synonyms.name AS synonyms,
                     toLower(entity.name) = toLower($search_term) as matches_term
-                ORDER BY size(other_synonym) DESC
+                ORDER BY size(synonyms) DESC
                 OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)
                 RETURN
                     entity,
                     t,
-                    collect(DISTINCT other_synonym) AS other_synonyms,
-                    COUNT(DISTINCT other_synonym) AS synonym_count,
+                    collect(DISTINCT synonyms) AS synonyms,
+                    COUNT(DISTINCT synonyms) AS synonym_count,
                     matches_term
                 ORDER BY matches_term DESC
                 SKIP $page
@@ -358,14 +357,12 @@ class SearchService(GraphBaseDao):
         """
         return tx.run(
             """
-            OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})
-            CALL {
-                WITH synonym
-                OPTIONAL MATCH
-                    (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
-                RETURN entity
-            }
+            MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})<-[:HAS_SYNONYM]-(entity)
+            WHERE NOT 'Protein' IN LABELS(entity)
+            MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
+            WHERE
+                size(synonyms.name) > 2 OR
+                any(x IN LABELS(entity) WHERE x IN ['Chemical', 'Compound'])
             RETURN count(distinct entity) as count
             """,
             search_term=search_term,
