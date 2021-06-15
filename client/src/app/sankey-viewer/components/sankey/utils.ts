@@ -1,3 +1,5 @@
+import * as d3 from 'd3';
+
 export const normalizeGenerator = values => {
   const min = Math.min(...values);
   const max = values.reduce((o, n) => o + n, 0);
@@ -11,13 +13,20 @@ export const normalizeGenerator = values => {
 export const colorPalletGenerator = (
   size,
   {
-    hue = (i, n) => 360 * i / n,
+    hue = (i, n) => i / n,
     saturation = (_i, _n) => 0.75,
     lightness = (_i, _n) => 0.75,
     alpha = (_i, _n) => 0.75
   } = {}
-) =>
-  i => `hsla(${hue(i, size)},${100 * saturation(i, size)}%,${100 * lightness(i, size)}%,${alpha(i, size)})`;
+) => {
+  const zeroIndexedSize = size - 1;
+  return i => d3.cubehelix(
+    360 * hue(i, zeroIndexedSize),
+    2 * saturation(i, zeroIndexedSize),
+    lightness(i, zeroIndexedSize),
+    alpha(i, zeroIndexedSize)
+  );
+};
 
 export const createMapToColor = (arr, ...rest) => {
   const uniq = arr instanceof Set ? arr : new Set(arr);
