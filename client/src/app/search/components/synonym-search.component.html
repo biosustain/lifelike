@@ -43,11 +43,11 @@
     </div>
   </div>
 
-  <div *ngIf="error">
+  <div *ngIf="errorMsg">
     <div>
       <p>
         <i class="fas fa-exclamation-circle text-danger"></i>
-        {{ error.error.message }}
+        {{ errorMsg }}
       </p>
     </div>
   </div>
@@ -101,6 +101,14 @@
         [collectionSize]="total"
         (pageChange)="goToPage($event)">
       </ngb-pagination>
+    </div>
+  </div>
+
+  <div *ngIf="!errorMsg && !loading && synonymData">
+    <div>
+      <p>
+        No synonyms were found for the term "{{ form.value.q }}".
+      </p>
     </div>
   </div>
 </app-modal-body>

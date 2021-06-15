@@ -25,7 +25,7 @@ export class SynonymSearchComponent {
   total: number;
 
   loading = false;
-  error: any;
+  errorMsg: string = null;
 
   constructor(
     private readonly modal: NgbActiveModal,
@@ -37,7 +37,7 @@ export class SynonymSearchComponent {
   }
 
   submitSearch() {
-    this.error = null;
+    this.errorMsg = null;
     if (this.form.valid) {
       this.page = 1;
       this.searchSynonyms();
@@ -56,7 +56,11 @@ export class SynonymSearchComponent {
       },
       (error) => {
         this.loading = false;
-        this.error = error;
+        try {
+          this.errorMsg = error.error.message;
+        } catch (err) {
+          this.errorMsg = 'An unknown error occurred during the synonym search. Please check your internet connection and try again.';
+        }
       }
     );
   }
