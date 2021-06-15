@@ -85,10 +85,6 @@ def content_search_params_are_empty(params):
     """
     if 'q' in params and params['q']:
         return False
-    elif 'phrase' in params and params['phrase']:
-        return False
-    elif 'wildcards' in params and params['wildcards']:
-        return False
     elif 'projects' in params and params['projects']:
         return False
     elif 'types' in params and params['types']:
@@ -146,22 +142,6 @@ def get_projects_from_params(q, advanced_args):
             projects.append(extracted_type.split(':')[1])
 
     return q, projects
-
-
-def get_wildcards_from_params(q, advanced_args):
-    # Get wildcards from `wildcards`
-    wildcards = []
-    if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
-        wildcards = advanced_args['wildcards'].split(';')
-
-    return ' '.join([q] + wildcards)
-
-
-def get_phrase_from_params(q, advanced_args):
-    if 'phrase' in advanced_args and advanced_args['phrase'] != '':
-        q += ' "' + advanced_args['phrase'] + '"'
-
-    return q
 
 
 def get_projects_filter(user_id: int, projects: List[str]):
@@ -233,8 +213,6 @@ class ContentSearchView(FilesystemBaseView):
         q = params['q']
         q, types = get_types_from_params(q, params, file_type_service)
         q, projects = get_projects_from_params(q, params)
-        q = get_wildcards_from_params(q, params)
-        q = get_phrase_from_params(q, params)
 
         # Set the search term once we've parsed 'q' for all advanced options
         search_term = q.strip()

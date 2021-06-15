@@ -74,10 +74,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
     const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
     const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
-    const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
-    const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
 
-    return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
+    return !(qExists || typesExists || projectsExists);
   }
 
   constructor(private modalService: NgbModal,
@@ -139,12 +137,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('q') && params.q !== '') {
       q.push(params.q);
     }
-    if (params.hasOwnProperty('wildcards') && params.wildcards !== '') {
-      q.push(params.wildcards);
-    }
-    if (params.hasOwnProperty('phrase') && params.phrase !== '') {
-      q.push(`"${params.phrase}"`);
-    }
     if (params.hasOwnProperty('types') && params.types !== []) {
       params.types.forEach(type => q.push(`type:${type.shorthand}`));
     }
@@ -189,12 +181,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     if (params.hasOwnProperty('projects')) {
       advancedParams.projects = params.projects.join(';');
-    }
-    if (params.hasOwnProperty('phrase')) {
-      advancedParams.phrase = params.phrase;
-    }
-    if (params.hasOwnProperty('wildcards')) {
-      advancedParams.wildcards = params.wildcards;
     }
     return advancedParams;
   }
@@ -330,18 +316,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const extractedProjects = projectMatches === null ? [] : projectMatches.map(projectVal => projectVal.split(':')[1]);
     advancedParams.projects = extractedProjects;
     q = q.replace(/\bproject:\S*/g, '');
-
-    // Remove the first phrase from q and add to the phrase option of the advancedParams
-    const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
-    // Group 2 of the match should be the `"` enclosed string, hence the `phraseMatch[1]` here
-    advancedParams.phrase = phraseMatch !== null ? phraseMatch[1] : '';
-    q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '');
-
-    // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
-    const wildcardMatches = q.match(/\S*(\?|\*)\S*/g);
-    const extractedWildcards = wildcardMatches === null ? [] : wildcardMatches;
-    advancedParams.wildcards = extractedWildcards.join(' ').trim();
-    q = q.replace(/\S*(\?|\*)\S*/g, '');
 
     // Do one last whitespace replacement to clean up the query string
     q = q.replace(/\s+/g, ' ').trim();

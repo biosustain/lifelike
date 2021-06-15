@@ -15,7 +15,6 @@ import {
   ContentSearchRequest,
   SynonymSearchResponse,
 } from '../schema';
-import { SynonymData } from '../shared';
 
 
 @Injectable()

@@ -12,8 +12,6 @@ import { SynonymData } from './shared';
 export interface ContentSearchRequest extends StandardRequestOptions {
   types?: string[];
   projects?: string[];
-  phrase?: string;
-  wildcards?: string;
 }
 
 export interface AnnotationRequestOptions {
