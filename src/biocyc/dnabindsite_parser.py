@@ -21,6 +21,7 @@ class DnaBindSiteParser(BaseDataFileParser):
         self.attrs = [PROP_BIOCYC_ID, PROP_POS, PROP_LEN]
 
     def create_synonym_rels(self) -> bool:
+        # ignore DNA binding site synonyms
         return False
 
 

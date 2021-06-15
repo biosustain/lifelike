@@ -11,6 +11,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
 
 class OboParser(object):
+    """
+    Base parser to parse obo format files.
+    """
     def __init__(self, attributes_map: dict, relationships_map: dict, node_labels, node_id_attr_name: str):
         self.attributes_map = attributes_map
         self.relationships_map = relationships_map
@@ -59,7 +62,7 @@ class OboParser(object):
             match = re.search(r'".+"', attr_val)
             if match:
                 value = match.group(0).replace('"', '').strip()
-                if value != node.get_attribute(PROP_COMMON_NAME):
+                if value != node.get_attribute(PROP_NAME):
                     node.add_attribute(PROP_SYNONYMS, value, 'str')
         elif attr_name in self.attributes_map:
             attr_type = self.attributes_map[attr_name]

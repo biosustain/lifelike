@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
-    'COMMON-NAME': (PROP_COMMON_NAME, 'str'),
+    'COMMON-NAME': (PROP_NAME, 'str'),
     'ABBREV-NAME': (PROP_ABBREV_NAME, 'str'),
     'MOLECULAR-WEIGHT-KD': (PROP_MOL_WEIGHT_KD, 'str'),
     'PI': (PROP_PI, 'str'),
@@ -32,12 +32,18 @@ COMPLEXES = 'Complexes'
 class ProteinParser(BaseDataFileParser):
     def __init__(self, db_name, tarfile, base_data_dir):
         BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_COMMON_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD, PROP_PI]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD, PROP_PI]
 
     def create_synonym_rels(self) -> bool:
         return True
 
     def parse_data_file(self):
+        """
+        protligandcplxes.dat contains protein complex data. However, the information were mostly also in proteins.dat.
+        In case there is any additional information.  In additiona, the 'TYPE_OF' relationship for general type
+        (e.g. polyperptide, modified protein, complex) were removed since we don't have a use case to use them now and
+        it made the relationships more complicated.  Those can be added later if needed by deleting the code for edge removing.
+        """
         nodes = BaseDataFileParser.parse_data_file(self)
         self.datafile = 'protligandcplxes.dat'
         nodes2 = BaseDataFileParser.parse_data_file(self)

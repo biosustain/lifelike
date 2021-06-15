@@ -16,7 +16,7 @@ PROD_URI = 'bolt://35.225.248.203:7687'
 PROD_PASSWORD = 'Lifelike0.9prod'
 
 LOCAL_URI = 'bolt://localhost:7687'
-LOCAL_PASSWORD = 'rcai'
+LOCAL_PASSWORD = os.environ.get('NEO4J_LOCAL_PASSWORD', 'rcai')
 
 DTU_URI = "bolt+s://neo4j.***ARANGO_DB_NAME***.bio:7687"
 DTU_USER = "robin"
@@ -34,6 +34,7 @@ class Neo4jInstance(Enum):
 
 def get_database(neo4j: Neo4jInstance, dbname='neo4j'):
     """
+    Get database instance with pre-set KG connections
     :param neo4j: preset Neo4jInstance
     :param dbname: graphdb name to use (for the neo4j instance), e.g. ***ARANGO_DB_NAME***, ***ARANGO_DB_NAME***-stg, reactome
     :return: database instance
@@ -64,6 +65,12 @@ class Database:
             logging(info.counters)
 
     def create_constraint(self, label: str, property_name: str, constrain_name=''):
+        """
+        Create neo4j constraint
+        :param label: node label
+        :param property_name: node property
+        :param constrain_name: the name for the constraint (optional)
+        """
         if not constrain_name:
             constrain_name = 'constraint_' + label.lower() + '_' + property_name
         query = get_create_constraint_query(label, property_name, constrain_name)
@@ -75,6 +82,12 @@ class Database:
                 logging.warning('constrain already exists: ' + query)
 
     def create_index(self, label: str, property_name, index_name=''):
+        """
+        Create neo4j index
+        :param label: node label
+        :param property_name: node property
+        :param index_name: the name for the index (optional)
+        """
         if not index_name:
             index_name = 'index_' + label.lower() + '_' + property_name
         query = get_create_index_query(label, property_name, index_name)
@@ -94,11 +107,12 @@ class Database:
 
     def run_query(self, query, params: dict = None):
         """
-        Run query with parameters (in params format)
-        :param query:
-        :param params:
-        :param db_name: database name
-        :return: None or list of records
+        Run query with parameter dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
+        e.g. for $dict = {'rows':[{'id': '123a', 'name':'abc'}, {'id':'456', 'name': 'xyz'}]}, the id_name should be 'id',
+        and properties=['name']
+        :param query: the cypher query with $dict parameter (see query_builder.py)
+        :param params: the parameter in the format as described
+        :return: None
         """
         with self.driver.session(database=self.dbname) as session:
             try:
@@ -107,7 +121,13 @@ class Database:
             except Neo4jError as ex:
                 logging.error(ex.message)
 
-    def get_data(self, query:str, params: dict = {}):
+    def get_data(self, query:str, params: dict = {}) -> pd.DataFrame:
+        """
+        Run query to get data as dataframe
+        :param query: the query with parameter $dict (see query_builder.py)
+        :param params: value passed to $dict, in format {'rows':[]} where the [] is a list of prop_name-value pairs.
+        :return: dataframe for the result
+        """
         with self.driver.session(database=self.dbname) as session:
             results = session.run(query, params)
             # df = pd.DataFrame([dict(record) for record in results])
@@ -115,17 +135,30 @@ class Database:
         return df
 
     def load_data_from_rows(self, query: str, data_rows: []):
+        """
+        run the query by passing data rows
+        :param query: the query with $dict parameter (see query_builder.py)
+        :param data_rows: list of dict that can get from a dataframe as rows = dataframe.to_dict('records')
+        :return: none
+        """
         with self.driver.session(database=self.dbname) as session:
             rows_dict = {'rows': data_rows}
             result = session.run(query, dict=rows_dict).consume()
             logging.info(result.counters)
 
-    def load_data_from_dataframe(self, data_frame: pd.DataFrame, query: str, truncksize=None):
+    def load_data_from_dataframe(self, data_frame: pd.DataFrame, query: str, chunksize=None):
+        """
+        Run query by passing dataframe
+        :param data_frame: the dataframe to load
+        :param query: the query with $dict parameter (see query_builder.py)
+        :param chunksize: if set, the dataframe will be loaded in chunks.
+        :return: none
+        """
         with self.driver.session(database=self.dbname) as session:
-            if truncksize:
-                trunks = [data_frame[i:i + truncksize] for i in range(0, data_frame.shape[0], truncksize)]
-                for trunk in trunks:
-                    rows_dict = {'rows': trunk.fillna(value="").to_dict('records')}
+            if chunksize:
+                chunks = [data_frame[i:i + chunksize] for i in range(0, data_frame.shape[0], chunksize)]
+                for chunk in chunks:
+                    rows_dict = {'rows': chunk.fillna(value="").to_dict('records')}
                     session.run(query, dict=rows_dict)
                 logging.info('rows processed:' + str(len(data_frame)))
             else:
@@ -139,11 +172,11 @@ class Database:
         load csv file to neo4j database
         :param data_file: path to the file
         :param col_names: file headers (match database properties)
-        :param query:  cypher query
+        :param query:  the query with $dict parameter (see query_builder.py)
         :param skip_lines: number of rows skipped for reading
         :param separator: csv file delimiter
         :param chunk_size: number of rows to read for each chunk
-        :param apply_str_columns: columns to convert values to str, e.g. gene_id
+        :param apply_str_columns: columns to convert values to str, e.g. gene_id, tax_id
         :return:
         """
         # converters = {}
