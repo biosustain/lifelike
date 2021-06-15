@@ -1,22 +1,16 @@
 import io
 import json
-import re
 import os
-import typing
-from io import BufferedIOBase
-from typing import Optional, List, Dict
-
+import re
 import textwrap
+import typing
+from typing import Optional, List
+
 import graphviz
 import requests
 from pdfminer import high_level
+from werkzeug.datastructures import FileStorage
 
-from neo4japp.models import Files
-from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.sankey import validate_sankey
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
-from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -29,8 +23,13 @@ from neo4japp.constants import (
     BASE_IMAGE_HEIGHT,
     IMAGE_HEIGHT_INCREMENT,
     SCALING_FACTOR
-    )
-
+)
+from neo4japp.models import Files
+from neo4japp.schemas.formats.drawing_tool import validate_map
+from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.sankey import validate_sankey
+from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.services.file_types.service import BaseFileTypeProvider
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
@@ -54,10 +53,10 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileStorage):
         # Figure out file size
-        buffer.seek(0, io.SEEK_END)
-        size = buffer.tell()
+        buffer.stream.seek(0, io.SEEK_END)
+        size = buffer.stream.tell()
 
         if size > 0:
             raise ValueError("Directories can't have content")
@@ -68,19 +67,19 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
-        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
+    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
+        return [(0, self.MIME_TYPE)] if buffer.stream.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileStorage):
         # TODO: Actually validate PDF content
         pass
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
-        data = buffer.read()
-        buffer.seek(0)
+    def extract_doi(self, buffer: FileStorage) -> Optional[str]:
+        data = buffer.stream.read()
+        buffer.stream.seek(0)
 
         # Attempt 1: search through the first N bytes (most probably containing only metadata)
         chunk = data[:2 ** 17]
@@ -226,7 +225,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
             pass
         return None
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileStorage):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
@@ -238,7 +237,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
@@ -246,16 +245,16 @@ class MapTypeProvider(BaseFileTypeProvider):
         except ValueError:
             return []
         finally:
-            buffer.seek(0)
+            buffer.stream.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        graph = json.loads(buffer.read())
+    def validate_content(self, buffer: FileStorage):
+        graph = json.loads(buffer.stream.read())
         validate_map(graph)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileStorage):
         content_json = json.load(buffer)
         content = io.StringIO()
         string_list = []
@@ -275,7 +274,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
@@ -303,24 +302,24 @@ class MapTypeProvider(BaseFileTypeProvider):
             params = {
                 'name': node['hash'],
                 'label': '\n'.join(textwrap.TextWrapper(
-                    width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-                    replace_whitespace=False).wrap(node['display_name'])),
+                        width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+                        replace_whitespace=False).wrap(node['display_name'])),
                 'pos': (
-                   f"{node['data']['x'] / SCALING_FACTOR},"
-                   f"{-node['data']['y'] / SCALING_FACTOR}!"
-                    ),
+                    f"{node['data']['x'] / SCALING_FACTOR},"
+                    f"{-node['data']['y'] / SCALING_FACTOR}!"
+                ),
                 'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
                 'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
                 'shape': 'box',
                 'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
                 'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
                 'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
-                    node['label'], {'color': 'black'}).get('color'),
+                        node['label'], {'color': 'black'}).get('color'),
                 'fontname': 'sans-serif',
                 'margin': "0.2,0.0",
                 'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
                 'penwidth': f"{style.get('lineWidthScale', 1.0)}"
-                            if style.get('lineType') != 'none' else '0.0'
+                if style.get('lineType') != 'none' else '0.0'
             }
 
             if node['label'] in ['map', 'link', 'note']:
@@ -329,9 +328,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
                     params['label'] = '\n'.join(
-                        textwrap.TextWrapper(
-                            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                            replace_whitespace=False).wrap(detail_text))
+                            textwrap.TextWrapper(
+                                    width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+                                    replace_whitespace=False).wrap(detail_text))
                     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                      {'bgcolor': 'black'}
                                                                      ).get('bgcolor')
@@ -342,9 +341,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
                     params['image'] = (
-                            f'/home/n4j/assets/{label}'
-                            f'_{style.get("fillColor") or default_icon_color}.png'
-                        )
+                        f'/home/n4j/assets/{label}'
+                        f'_{style.get("fillColor") or default_icon_color}.png'
+                    )
                     params['imagepos'] = 'tc'
                     params['labelloc'] = 'b'
                     # Prevents the upper part of the label and image from overlapping
@@ -360,8 +359,8 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 default_color = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['color'] = style.get('strokeColor') or default_color
                 if style.get('fillColor'):
                     params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
@@ -371,7 +370,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['data'].get('sources'):
                 doi_src = next((src for src in node['data'].get('sources') if src.get(
-                    'domain') == "DOI"), None)
+                        'domain') == "DOI"), None)
                 if doi_src:
                     params['href'] = doi_src.get('url')
                 else:
@@ -385,22 +384,26 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
-            if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-                   item in ['link', 'note']):
+            if any(item in [
+                node_hash_type_dict[edge['from']],
+                node_hash_type_dict[edge['to']]
+            ] for item in ['link', 'note']):
                 default_line_style = 'dashed'
                 default_arrow_head = 'none'
             graph.edge(
-                edge['from'],
-                edge['to'],
-                edge['label'],
-                dir='both',
-                color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
-                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType') or default_arrow_head),
-                penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
+                    edge['from'],
+                    edge['to'],
+                    edge['label'],
+                    dir='both',
+                    color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                    arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+                    arrowhead=ARROW_STYLE_DICT.get(
+                            style.get('targetHeadType') or default_arrow_head),
+                    penwidth=str(style.get('lineWidthScale', 1.0)) if style.get(
+                            'lineType') != 'none'
                     else '0.0',
-                fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
+                    fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+                    style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
 
             )
 
@@ -418,32 +421,33 @@ class SankeyTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'Sankey'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
+
         try:
             # If the data validates, I guess it's a map?
-            if os.path.splitext(buffer.filename)[1] == '.sankey':
+            if os.path.splitext(str(buffer.filename))[1] == '.sankey':
                 return [(0, self.MIME_TYPE)]
             else:
                 return []
         except ValueError as e:
             return []
         finally:
-            buffer.seek(0)
+            buffer.stream.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        data = json.loads(buffer.read())
+    def validate_content(self, buffer: FileStorage):
+        data = json.loads(buffer.stream.read())
         validate_sankey(data)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileStorage):
         content_json = json.load(buffer)
         content = io.StringIO()
         string_list = set(extract_text(content_json))
 
         content.write(' '.join(list(string_list)))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
@@ -451,7 +455,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
@@ -461,16 +465,16 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         except ValueError:
             return []
         finally:
-            buffer.seek(0)
+            buffer.stream.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        data = json.loads(buffer.read())
+    def validate_content(self, buffer: FileStorage):
+        data = json.loads(buffer.stream.read())
         validate_enrichment_table(data)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileStorage):
         data = json.load(buffer)
         content = io.StringIO()
 
@@ -502,7 +506,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
                                 content.write(value['text'])
                 content.write('.\r\n\r\n')
 
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def should_highlight_content_text_matches(self) -> bool:
         return True

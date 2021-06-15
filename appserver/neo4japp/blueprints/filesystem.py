@@ -4,11 +4,10 @@ import itertools
 import re
 import typing
 import urllib.request
-
 from collections import defaultdict
 from datetime import datetime, timedelta
+from io import BufferedIOBase
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
-from urllib.error import URLError
 
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
@@ -82,7 +81,7 @@ def get_all_enrichment_tables():
         raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
 
     query = db.session.query(Files.hash_id).filter(
-        Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
+            Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
     results = [hash_id[0] for hash_id in query.all()]
     return jsonify(dict(result=results)), 200
 
@@ -113,14 +112,19 @@ class FilesystemBaseView(MethodView):
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content, attr_excl=attr_excl)
         if not len(files):
             raise RecordNotFound(
-                title='File Not Found',
-                message='The requested file object could not be found.',
-                code=404)
+                    title='File Not Found',
+                    message='The requested file object could not be found.',
+                    code=404)
         return files[0]
 
-    def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
-                                      require_hash_ids: List[str] = None,
-                                      sort=None, attr_excl: List[str] = None) -> List[Files]:
+    def get_nondeleted_recycled_files(
+            self,
+            filter,
+            lazy_load_content=False,
+            require_hash_ids: List[str] = None,
+            sort=None,
+            attr_excl: List[str] = None
+    ) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -152,8 +156,8 @@ class FilesystemBaseView(MethodView):
         # the following generated query does. In the future, we MAY want to cache the project of
         # a file on every file row to make a lot of queries a lot simpler.
         query = build_file_hierarchy_query(and_(
-            filter,
-            Files.deletion_date.is_(None)
+                filter,
+                Files.deletion_date.is_(None)
         ), t_project, t_file, file_attr_excl=attr_excl) \
             .options(raiseload('*'),
                      joinedload(t_file.user),
@@ -168,7 +172,7 @@ class FilesystemBaseView(MethodView):
         # Thankfully, we just loaded all parent folders and the project above, and so we'll use
         # the handy FileHierarchy class later to calculate this permission information.
         private_data_access = get_authorization_service().has_role(
-            current_user, 'private-data-access'
+                current_user, 'private-data-access'
         )
         query = add_project_user_role_columns(query, t_project, current_user.id,
                                               access_override=private_data_access)
@@ -207,16 +211,20 @@ class FilesystemBaseView(MethodView):
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
-                    title='File Not Found',
-                    message=f"The request specified one or more file or directory "
-                            f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404)
+                        title='File Not Found',
+                        message=f"The request specified one or more file or directory "
+                                f"({', '.join(missing_hash_ids)}) that could not be found.",
+                        code=404)
 
         # In the end, we just return a list of Files instances!
         return files
 
-    def get_nondeleted_recycled_children(self, filter, children_filter=None,
-                                         lazy_load_content=False) -> List[Files]:
+    def get_nondeleted_recycled_children(
+            self,
+            filter,
+            children_filter=None,
+            lazy_load_content=False
+    ) -> List[Files]:
         """
         Retrieve all files that match the provided filter, including the children of those
         files, even if those children do not match the filter. The files returned by
@@ -227,8 +235,8 @@ class FilesystemBaseView(MethodView):
         :return: the result, which may be an empty list
         """
         q_hierarchy = build_file_children_cte(and_(
-            filter,
-            Files.deletion_date.is_(None)
+                filter,
+                Files.deletion_date.is_(None)
         ))
 
         t_parent_files = aliased(Files)
@@ -250,8 +258,14 @@ class FilesystemBaseView(MethodView):
 
         return query.all()
 
-    def check_file_permissions(self, files: List[Files], user: AppUser,
-                               require_permissions: List[str], *, permit_recycled: bool):
+    def check_file_permissions(
+            self,
+            files: List[Files],
+            user: AppUser,
+            require_permissions: List[str],
+            *,
+            permit_recycled: bool
+    ):
         """
         Helper method to check permissions on the provided files and other properties
         that you may want to check for. On error, an exception is thrown.
@@ -271,28 +285,28 @@ class FilesystemBaseView(MethodView):
 
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                            curr_access='no',
-                            req_access='readable',
-                            hash_id=file.hash_id
+                                curr_access='no',
+                                req_access='readable',
+                                hash_id=file.hash_id
                         )
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                curr_access='commentable',
-                                req_access='writable',
-                                hash_id=file.hash_id
+                                    curr_access='commentable',
+                                    req_access='writable',
+                                    hash_id=file.hash_id
                             )
                         else:
                             raise AccessRequestRequiredError(
-                                curr_access='readable',
-                                req_access='writable',
-                                hash_id=file.hash_id
+                                    curr_access='readable',
+                                    req_access='writable',
+                                    hash_id=file.hash_id
                             )
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
-                    f"The file or directory '{file.filename}' has been trashed and "
-                    "must be restored first.")
+                        f"The file or directory '{file.filename}' has been trashed and "
+                        "must be restored first.")
 
     def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
         """
@@ -348,7 +362,7 @@ class FilesystemBaseView(MethodView):
             # We don't allow multiple files to be changed due to a potential deadlock
             # in FileContent.get_or_create(), and also because it's a weird use case
             raise NotImplementedError(
-                "Cannot update the content of multiple files with this method")
+                    "Cannot update the content of multiple files with this method")
 
         if params.get('fallback_organism'):
             db.session.add(params['fallback_organism'])
@@ -381,9 +395,9 @@ class FilesystemBaseView(MethodView):
                     while current_parent:
                         if current_parent.hash_id == file.hash_id:
                             raise ValidationError(
-                                f"If the parent of '{file.filename}' was set to "
-                                f"'{parent_file.filename}', it would result in circular"
-                                f"inheritance.", "parent_hash_id")
+                                    f"If the parent of '{file.filename}' was set to "
+                                    f"'{parent_file.filename}', it would result in circular"
+                                    f"inheritance.", "parent_hash_id")
                         current_parent = current_parent.parent
 
                     file.parent = parent_file
@@ -420,8 +434,8 @@ class FilesystemBaseView(MethodView):
 
                     if size > self.file_max_size:
                         raise ValidationError(
-                            'Your file could not be processed because it is too large.',
-                            "content_value")
+                                'Your file could not be processed because it is too large.',
+                                "content_value")
 
                     # Get the provider
                     provider = file_type_service.get(file)
@@ -476,14 +490,14 @@ class FilesystemBaseView(MethodView):
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
 
         return_file = self.get_nondeleted_recycled_file(
-            Files.hash_id == hash_id,
-            attr_excl=EXCLUDE_FIELDS
+                Files.hash_id == hash_id,
+                attr_excl=EXCLUDE_FIELDS
         )
         self.check_file_permissions([return_file], user, ['readable'], permit_recycled=True)
 
         children = self.get_nondeleted_recycled_files(and_(
-            Files.parent_id == return_file.id,
-            Files.recycling_date.is_(None),
+                Files.parent_id == return_file.id,
+                Files.recycling_date.is_(None),
         ), attr_excl=EXCLUDE_FIELDS)
         # Note: We don't check permissions here, but there are no negate permissions
         return_file.calculated_children = children
@@ -496,8 +510,13 @@ class FilesystemBaseView(MethodView):
             'result': return_file,
         }))
 
-    def get_bulk_file_response(self, hash_ids: List[str], user: AppUser, *,
-                               missing_hash_ids: Iterable[str] = None):
+    def get_bulk_file_response(
+            self,
+            hash_ids: List[str],
+            user: AppUser,
+            *,
+            missing_hash_ids: Iterable[str] = None
+    ):
         """
         Fetch several files and return a response that can be sent to the client. Could
         possibly return a response with an empty list if there were no matches. Permissions
@@ -517,14 +536,21 @@ class FilesystemBaseView(MethodView):
             if file.calculated_privileges[user.id].readable:
                 returned_files[file.hash_id] = file
 
-        return jsonify(MultipleFileResponseSchema(context={
-            'user_privilege_filter': user.id,
-        }, exclude=(
-            'mapping.children',
-        )).dump(dict(
-            mapping=returned_files,
-            missing=list(missing_hash_ids) if missing_hash_ids is not None else [],
-        )))
+        return jsonify(
+            MultipleFileResponseSchema(
+                context={
+                    'user_privilege_filter': user.id,
+                },
+                exclude=(
+                    'mapping.children',
+                )
+            ).dump(
+                dict(
+                    mapping=returned_files,
+                    missing=list(missing_hash_ids) if missing_hash_ids is not None else [],
+                )
+            )
+        )
 
     def get_missing_hash_ids(self, expected_hash_ids: Iterable[str], files: Iterable[Files]):
         found_hash_ids = set(file.hash_id for file in files)
@@ -621,7 +647,7 @@ class FileListView(FilesystemBaseView):
             # Check max file size
             if size > self.file_max_size:
                 raise ValidationError(
-                    'Your file could not be processed because it is too large.')
+                        'Your file could not be processed because it is too large.')
 
             # Save the URL
             file.upload_url = url
@@ -684,12 +710,12 @@ class FileListView(FilesystemBaseView):
                     file.filename = file.generate_non_conflicting_filename()
                 except ValueError:
                     raise ValidationError(
-                        'Filename conflicts with an existing file in the same folder.',
-                        "filename")
+                            'Filename conflicts with an existing file in the same folder.',
+                            "filename")
             elif trial == 3:  # Give up
                 raise ValidationError(
-                    'Filename conflicts with an existing file in the same folder.',
-                    "filename")
+                        'Filename conflicts with an existing file in the same folder.',
+                        "filename")
 
             try:
                 db.session.begin_nested()
@@ -738,8 +764,8 @@ class FileListView(FilesystemBaseView):
 
         for file in files:
             children = self.get_nondeleted_recycled_files(and_(
-                Files.parent_id == file.id,
-                Files.recycling_date.is_(None),
+                    Files.parent_id == file.id,
+                    Files.recycling_date.is_(None),
             ))
 
             # For now, we won't let people delete non-empty folders (although this code
@@ -771,8 +797,8 @@ class FileListView(FilesystemBaseView):
         # ========================================
 
         return jsonify(MultipleFileResponseSchema().dump(dict(
-            mapping={},
-            missing=[],
+                mapping={},
+                missing=[],
         )))
 
     def _get_content_from_params(self, params: dict) -> Tuple[FileStorage, Optional[str]]:
@@ -783,12 +809,12 @@ class FileListView(FilesystemBaseView):
         if url is not None:
             try:
                 buffer = read_url(
-                    urllib.request.Request(url, headers={
-                        'User-Agent': self.url_fetch_user_agent,
-                    }),
-                    max_length=self.file_max_size,
-                    timeout=self.url_fetch_timeout,
-                    prefer_direct_downloads=True
+                        urllib.request.Request(url, headers={
+                            'User-Agent': self.url_fetch_user_agent,
+                        }),
+                        max_length=self.file_max_size,
+                        timeout=self.url_fetch_timeout,
+                        prefer_direct_downloads=True
                 )
             except Exception:
                 raise ValidationError('Your file could not be downloaded, either because it is '
@@ -983,11 +1009,11 @@ class FileContentView(FilesystemBaseView):
             etag = hashlib.sha256(content).digest()
 
         return make_cacheable_file_response(
-            request,
-            content,
-            etag=etag,
-            filename=file.filename,
-            mime_type=file.mime_type
+                request,
+                content,
+                etag=etag,
+                filename=file.filename,
+                mime_type=file.mime_type
         )
 
 
@@ -1011,11 +1037,11 @@ class FileExportView(FilesystemBaseView):
             checksum_sha256 = hashlib.sha256(export_content).digest()
 
             return make_cacheable_file_response(
-                request,
-                export_content,
-                etag=checksum_sha256.hex(),
-                filename=export.filename,
-                mime_type=export.mime_type,
+                    request,
+                    export_content,
+                    etag=checksum_sha256.hex(),
+                    filename=export.filename,
+                    mime_type=export.mime_type,
             )
         except ExportFormatError:
             raise ValidationError("Unknown or invalid export format for the requested file.",
@@ -1055,8 +1081,9 @@ class FileBackupView(FilesystemBaseView):
 
         file_backup_table = FileBackup.__table__
         db.session.execute(
-            file_backup_table.delete().where(and_(file_backup_table.c.file_id == file.id,
-                                                  file_backup_table.c.user_id == current_user.id))
+                file_backup_table.delete().where(and_(file_backup_table.c.file_id == file.id,
+                                                      file_backup_table.c.user_id ==
+                                                      current_user.id))
         )
         db.session.commit()
 
@@ -1085,19 +1112,19 @@ class FileBackupContentView(FilesystemBaseView):
 
         if backup is None:
             raise RecordNotFound(
-                title='Failed to Get File Backup',
-                message='No backup stored for this file.',
-                code=404)
+                    title='Failed to Get File Backup',
+                    message='No backup stored for this file.',
+                    code=404)
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
 
         return make_cacheable_file_response(
-            request,
-            content,
-            etag=etag,
-            filename=file.filename,
-            mime_type=file.mime_type
+                request,
+                content,
+                etag=etag,
+                filename=file.filename,
+                mime_type=file.mime_type
         )
 
 
@@ -1198,23 +1225,23 @@ class FileLockListView(FileLockBaseView):
 
         file_lock_table = FileLock.__table__
         stmt = insert(file_lock_table).returning(
-            file_lock_table.c.user_id,
+                file_lock_table.c.user_id,
         ).values(hash_id=file.hash_id,
                  user_id=current_user.id,
                  acquire_date=acquire_date
                  ).on_conflict_do_update(
-            index_elements=[
-                file_lock_table.c.hash_id,
-            ],
-            set_={
-                'acquire_date': datetime.now(),
-                'user_id': current_user.id,
-            },
-            where=and_(
-                file_lock_table.c.hash_id == hash_id,
-                or_(file_lock_table.c.user_id == current_user.id,
-                    file_lock_table.c.acquire_date < cutoff_date)
-            ),
+                index_elements=[
+                    file_lock_table.c.hash_id,
+                ],
+                set_={
+                    'acquire_date': datetime.now(),
+                    'user_id': current_user.id,
+                },
+                where=and_(
+                        file_lock_table.c.hash_id == hash_id,
+                        or_(file_lock_table.c.user_id == current_user.id,
+                            file_lock_table.c.acquire_date < cutoff_date)
+                ),
         )
 
         result = db.session.execute(stmt)
@@ -1235,9 +1262,9 @@ class FileLockListView(FileLockBaseView):
 
         file_lock_table = FileLock.__table__
         db.session.execute(
-            file_lock_table.delete().where(and_(
-                file_lock_table.c.hash_id == file.hash_id,
-                file_lock_table.c.user_id == current_user.id))
+                file_lock_table.delete().where(and_(
+                        file_lock_table.c.hash_id == file.hash_id,
+                        file_lock_table.c.user_id == current_user.id))
         )
         db.session.commit()
 
@@ -1267,8 +1294,8 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         total = query.order_by(None).count()
         if page == 1:
             items = itertools.chain(
-                [file],
-                query.limit(per_page).offset((page - 1) * per_page)
+                    [file],
+                    query.limit(per_page).offset((page - 1) * per_page)
             )
         else:
             items = query.limit(per_page + 1).offset((page - 1) * per_page - 1)
@@ -1281,9 +1308,9 @@ class FileAnnotationHistoryView(FilesystemBaseView):
                 'user': newer.user,
                 'cause': older.cause,
                 'inclusion_changes': self._get_annotation_changes(
-                    older.custom_annotations, newer.custom_annotations, 'inclusion'),
+                        older.custom_annotations, newer.custom_annotations, 'inclusion'),
                 'exclusion_changes': self._get_annotation_changes(
-                    older.excluded_annotations, newer.excluded_annotations, 'exclusion'),
+                        older.excluded_annotations, newer.excluded_annotations, 'exclusion'),
             })
 
         return jsonify(FileAnnotationHistoryResponseSchema().dump({
@@ -1291,11 +1318,12 @@ class FileAnnotationHistoryView(FilesystemBaseView):
             'results': results,
         }))
 
-    def _get_annotation_changes(self,
-                                older: List[Union[FileAnnotationsVersion, Files]],
-                                newer: List[Union[FileAnnotationsVersion, Files]],
-                                type: Union[Literal['inclusion'], Literal['exclusion']]
-                                ) -> Iterable[Dict]:
+    def _get_annotation_changes(
+            self,
+            older: List[Union[FileAnnotationsVersion, Files]],
+            newer: List[Union[FileAnnotationsVersion, Files]],
+            type: Union[Literal['inclusion'], Literal['exclusion']]
+    ) -> Iterable[Dict]:
         changes: Dict[str, Dict] = {}
 
         if older is None and newer is not None:
@@ -1313,8 +1341,13 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
         return changes.values()
 
-    def _add_change(self, changes: Dict[str, Dict], action: str, annotation: Dict,
-                    type: Union[Literal['inclusion'], Literal['exclusion']]) -> None:
+    def _add_change(
+            self,
+            changes: Dict[str, Dict],
+            action: str,
+            annotation: Dict,
+            type: Union[Literal['inclusion'], Literal['exclusion']]
+    ) -> None:
         meta = annotation['meta'] if type == 'inclusion' else annotation
         id = meta['id'] if len(meta['id']) else f"@@{meta['allText']}"
 
