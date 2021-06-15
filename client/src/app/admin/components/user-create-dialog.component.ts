@@ -26,6 +26,7 @@ export class UserCreateDialogComponent extends CommonFormDialogComponent {
       Validators.minLength(this.MIN_PASSWORD_LENGTH),
     ]),
     email: new FormControl('', [Validators.required, Validators.email]),
+    roles: new FormControl('user', Validators.required)
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
@@ -35,7 +36,7 @@ export class UserCreateDialogComponent extends CommonFormDialogComponent {
   getValue(): UserCreationRequest {
     return {
       ...this.form.value,
-      roles: [],
+      createdByAdmin: true,
     };
   }
 }

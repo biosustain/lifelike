@@ -277,6 +277,9 @@ class ContentSearchView(FilesystemBaseView):
             'number_of_fragments': 100,
         }
 
+        # These are the document fields that will be returned by elastic
+        fields = ['id']
+
         query_filter = {
             'bool': {
                 'must': [
@@ -300,6 +303,7 @@ class ContentSearchView(FilesystemBaseView):
             keyword_fields=[],
             keyword_field_boosts={},
             use_synonyms=use_synonyms,
+            fields=fields,
             query_filter=query_filter,
             highlight=highlight
         )
@@ -311,7 +315,7 @@ class ContentSearchView(FilesystemBaseView):
         # So while we have the results from Elasticsearch, they don't contain up to date or
         # complete data about the matched files, so we'll take the hash IDs returned by Elastic
         # and query our database
-        file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
+        file_ids = [doc['fields']['id'][0] for doc in elastic_result['hits']]
         file_map = {
             file.id: file
             for file in self.get_nondeleted_recycled_files(
@@ -322,7 +326,7 @@ class ContentSearchView(FilesystemBaseView):
 
         results = []
         for document in elastic_result['hits']:
-            file_id = document['_source']['id']
+            file_id = document['fields']['id'][0]
             file: Optional[Files] = file_map.get(file_id)
 
             if file and file.calculated_privileges[current_user.id].readable:

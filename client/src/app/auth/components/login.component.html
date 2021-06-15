@@ -12,10 +12,13 @@
         <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
       </app-form-row>
 
-      <button type="submit" class="btn btn-primary">
+      <button type="submit" class="btn btn-primary btn-block">
         Login
       </button>
     </form>
+    <button (click)="displayResetDialog()" class="btn btn-secondary btn-block mt-3 ">
+      Reset password
+    </button>
   </div>
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
