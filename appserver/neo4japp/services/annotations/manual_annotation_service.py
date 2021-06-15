@@ -10,19 +10,20 @@ from neo4japp.database import db
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
-from neo4japp.services.annotations.constants import (
+from neo4japp.util import standardize_str
+from neo4japp.utils.logger import EventLog
+
+from .annotation_graph_service import AnnotationGraphService
+from .constants import (
     EntityType,
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
     MAX_GENE_WORD_LENGTH,
     MAX_FOOD_WORD_LENGTH
 )
-from neo4japp.services.annotations.data_transfer_objects import PDFWord
-from neo4japp.services.annotations.initializer import get_annotation_tokenizer
-from neo4japp.services.annotations.util import has_center_point
-from neo4japp.util import standardize_str
-from neo4japp.utils.logger import EventLog
+from .data_transfer_objects import PDFWord
+from .initializer import get_annotation_tokenizer
+from .util import has_center_point
 
 from .util import parse_content
 
@@ -317,6 +318,7 @@ class ManualAnnotationService:
                 synonym = annotation['meta']['allText']
                 inclusion_date = annotation['inclusion_date']
                 hyperlink = annotation['meta']['idHyperlink']
+                is_case_insensitive = annotation['meta']['isCaseInsensitive']
                 user_full_name = f'{user.first_name} {user.last_name}'
             except KeyError:
                 raise AnnotationError(
@@ -328,7 +330,7 @@ class ManualAnnotationService:
             createval = {
                 'entity_type': entity_type,
                 'entity_id': entity_id,
-                'synonym': synonym,
+                'synonym': synonym.lower() if is_case_insensitive else synonym,
                 'inclusion_date': inclusion_date,
                 'user': user_full_name,
                 'data_source': data_source,
@@ -336,25 +338,54 @@ class ManualAnnotationService:
                 'common_name': common_name
             }
 
-            if not self._global_annotation_exists_in_kg(createval):
+            # NOTE:
+            # definition of `main node`: the node that contains the common/primary name
+            # e. g `Homo sapiens` is the common/primary name, while `human` is the synonym
+            check = self._global_annotation_exists_in_kg(createval)
+            # several possible scenarios
+            # 1. main node exists and synonym exists
+            # 2. main node exists and synonym does not exists
+            # 3. main node does not exists
+
+            entity_type_query_param = entity_type
+
+            if check['node_exist'] and not check['synonym_exist']:
                 queries = {
-                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion,
-                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion,
-                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion,
-                    EntityType.GENE.value: self.graph.create_gene_global_inclusion,
-                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion,
-                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion,
-                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion
+                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
+                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
+                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
+                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
+                    EntityType.CHEMICAL.value: self.graph.create_chemical_global_inclusion(),
+                    EntityType.COMPOUND.value: self.graph.create_compound_global_inclusion(),
+                    EntityType.GENE.value: self.graph.create_gene_global_inclusion(),
+                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion(),
+                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion(),
+                    EntityType.PHENOMENA.value: self.graph.create_lifelike_global_inclusion(entity_type_query_param)  # noqa
                 }
 
-                query = queries.get(entity_type, '')
+                query = queries[entity_type]
                 try:
-                    result = self.graph.exec_write_query(query, createval) if query else None  # noqa
-
-                    if not result:
-                        # did not match to any existing, so add to Lifelike
-                        query = self.graph.create_lifelike_global_inclusion
-                        result = self.graph.exec_write_query(query, createval)
+                    self.graph.exec_write_query_with_params(query, createval)
+                except BrokenPipeError:
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='The graph connection became stale while processing data, '
+                                'Please refresh the browser and try again.',
+                        code=500)
+                except Exception:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
+            elif not check['node_exist'] and not check['synonym_exist']:
+                try:
+                    query = self.graph.create_lifelike_global_inclusion(entity_type_query_param)
+                    self.graph.exec_write_query_with_params(query, createval)
                 except BrokenPipeError:
                     raise AnnotationError(
                         title='Failed to Create Custom Annotation',
@@ -392,27 +423,33 @@ class ManualAnnotationService:
                         code=500)
 
     def _global_annotation_exists_in_kg(self, values: dict):
+        entity_type_query_param = values['entity_type']
+
         queries = {
-            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist,
-            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist,
-            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist,
-            EntityType.GENE.value: self.graph.gene_global_inclusion_exist,
-            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist,
-            EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist,
-            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist
+            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
+            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
+            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),
+            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
+            EntityType.CHEMICAL.value: self.graph.chemical_global_inclusion_exist(),
+            EntityType.COMPOUND.value: self.graph.compound_global_inclusion_exist(),
+            EntityType.GENE.value: self.graph.gene_global_inclusion_exist(),
+            EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist(),
+            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist(),
+            EntityType.PHENOMENA.value: self.graph.lifelike_global_inclusion_exist(entity_type_query_param)  # noqa
         }
 
+        # query can be empty string because some entity types
+        # do not exist in the normal domain/labels
         query = queries.get(values['entity_type'], '')
-        result = self.graph.exec_read_query(query, values) if query else {'exist': False}
+        result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
 
-        if result['exist'] is True:
-            return result['exist']
+        if result['node_exist']:
+            return result
         else:
-            result = self.graph.exec_read_query(
-                self.graph.lifelike_global_inclusion_exist,
-                values)
+            query = self.graph.lifelike_global_inclusion_exist(entity_type_query_param)
+            result = self.graph.exec_read_query_with_params(query, values)[0]
 
-        return result['exist']
+        return result
 
     def _global_annotation_exists(self, annotation, annotation_type):
         global_annotations = GlobalList.query.filter_by(

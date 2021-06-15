@@ -1,5 +1,7 @@
 import { Hyperlink } from '../drawing-tool/services/interfaces';
 
+// TODO: remove the isDatabase since we will switch to a dropdown
+// and will allow all of these?
 export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   domain: 'NCBI',
   url: 'https://www.ncbi.nlm.nih.gov/gene/?term=%s',
@@ -23,9 +25,9 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
 }, {
   domain: 'Wikipedia',
   url: 'https://www.google.com/search?q=site:+wikipedia.org+%s',
-  isDatabase: false,
+  isDatabase: true,
 }, {
   domain: 'Google',
   url: 'https://www.google.com/search?q=%s',
-  isDatabase: false,
+  isDatabase: true,
 }].map(item => Object.freeze(item)));
