@@ -228,6 +228,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   traceDetailsGraph;
 
+  excludedProperties = new Set(['source', 'target']);
+
+  selectedNodes;
+  selectedLinks;
+
   getNodeById(nodeId) {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as Node;
   }
@@ -468,8 +473,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return v;
   }
 
-  excludedProperties = new Set(['source', 'target']);
-
   extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
     this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
@@ -623,9 +626,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>));
   }
-
-  selectedNodes;
-  selectedLinks;
 
   selectNode(node) {
     const selectedNodes = this.selectedNodes.value;
