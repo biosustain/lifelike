@@ -658,6 +658,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
+  openNewWindow() {
+    return this.fileObjectActions.openNewWindow(this.object);
+  }
+
   isPendingScroll() {
     return this.pendingScroll != null && this.pendingScroll.pageNumber != null;
   }

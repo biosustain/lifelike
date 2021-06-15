@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  Input,
+  Component, EventEmitter,
+  Input, Output,
 } from '@angular/core';
 import {
   FormGroup,
@@ -14,6 +14,7 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import * as UserActions from '../store/actions';
 import { Store } from '@ngrx/store';
 import { State } from '../../root-store';
+import { emit } from 'cluster';
 
 @Component({
   selector: 'app-user-security',
@@ -22,14 +23,19 @@ import { State } from '../../root-store';
 })
 export class UserSecurityComponent {
   @Input() user: AppUser;
+  @Output() passwordChanged: EventEmitter<boolean> = new EventEmitter();
 
   readonly errors = {
     notMatch: 'Your two passwords don\'t match.',
   };
+  readonly  MIN_PASSWORD_LENGTH = 8;
 
   readonly form = new FormGroup({
     oldPassword: new FormControl('', [Validators.required]),
-    password: new FormControl('', [Validators.required]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(this.MIN_PASSWORD_LENGTH),
+    ]),
     passwordConfirm: new FormControl('', [Validators.required]),
   }, {validators: this.passConfirmValidator});
 
@@ -61,6 +67,7 @@ export class UserSecurityComponent {
         },
       }));
       this.form.reset();
+      this.passwordChanged.emit(true);
     } else {
       this.form.markAsDirty();
       this.messageDialog.display({

@@ -4,6 +4,23 @@ import { from, Observable, throwError, pipe } from 'rxjs';
 import { UnaryFunction } from 'rxjs/src/internal/types';
 import { HttpErrorResponse } from '@angular/common/http';
 
+/**
+ * Takes an input string and returns the title-cased version of that string. E.g., 'lazy dog' becomes 'Lazy Dog'.
+ *
+ * TODO: This could be smarter, since cases like '$foobar' or '"lazy dog"' have somewhat unexpected results ('$foobar' and '"lazy Dog"'
+ * respectively).
+ * @param str string to convert to title-case
+ * @returns the title-cased version of the input string
+ */
+export function toTitleCase(str: string) {
+  return str.replace(
+    /\w\S*/g,
+    (txt: string) => {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+  );
+}
+
 export function getRandomColor() {
   const letters = '0123456789ABCDEF';
   let color = '#';
