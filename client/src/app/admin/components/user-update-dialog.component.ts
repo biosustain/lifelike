@@ -1,42 +1,48 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import {
   FormGroup,
   FormControl,
-  Validators,
+  Validators, ValidatorFn, AbstractControl,
 } from '@angular/forms';
+
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { UserCreationRequest } from '../../interfaces';
+import { AppUser, UserUpdateRequest } from '../../interfaces';
 
 @Component({
-  selector: 'app-user-create-dialog',
-  templateUrl: 'user-create-dialog.component.html',
+  selector: 'app-user-update-dialog',
+  templateUrl: './user-update-dialog.component.html',
 })
-export class UserCreateDialogComponent extends CommonFormDialogComponent {
-  readonly MIN_PASSWORD_LENGTH = 8;
+export class UserUpdateDialogComponent extends CommonFormDialogComponent {
+  user: AppUser;
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.minLength(this.MIN_PASSWORD_LENGTH),
-    ]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    roles: new FormControl('user', Validators.required)
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  getValue(): UserCreationRequest {
-    return {
+  getValue(): UserUpdateRequest {
+        return {
+        hashId: this.user.hashId,
       ...this.form.value,
-      createdByAdmin: true,
     };
   }
+
+  setUser(user: AppUser) {
+    this.user = user;
+    this.form.reset({
+      username: this.user.username,
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+    });
+  }
+
 }
+
