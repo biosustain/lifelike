@@ -79,7 +79,7 @@ class AnnotationGraphService(GraphMixin):
             EntityType.PHENOMENA.value
         }:
             global_inclusions = self.exec_read_query_with_params(
-                self.get_mesh_global_inclusions_by_type, params)
+                self.get_mesh_global_inclusions_by_type(entity_type), params)
         else:
             try:
                 global_inclusions = static_global_inclusions[entity_type]
@@ -91,7 +91,7 @@ class AnnotationGraphService(GraphMixin):
         # might've not been matched to an existing entity
         # so look for it in Lifelike
         global_inclusions += self.exec_read_query_with_params(
-            self.get_lifelike_global_inclusions_by_type, params)
+            self.get_lifelike_global_inclusions_by_type(entity_type), params)
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
@@ -141,9 +141,13 @@ class AnnotationGraphService(GraphMixin):
         }
 
         static_global_inclusions_by_type = {
-            EntityType.GENE.value: self.exec_read_query(self.get_gene_global_inclusions),
-            EntityType.SPECIES.value: self.exec_read_query(self.get_species_global_inclusions),
-            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions)
+            EntityType.CHEMICAL.value: self.exec_read_query(self.get_chemical_global_inclusions()),
+            EntityType.COMPOUND.value: self.exec_read_query(self.get_compound_global_inclusions()),
+            EntityType.GENE.value: self.exec_read_query(self.get_gene_global_inclusions()),
+            EntityType.SPECIES.value: self.exec_read_query(self.get_species_global_inclusions()),
+            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions()),
+            EntityType.PHENOTYPE.value: self.exec_read_query(
+                self.get_lifelike_global_inclusions_by_type(EntityType.PHENOTYPE.value))
         }
 
         for k, v in inclusion_dicts.items():
