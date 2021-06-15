@@ -15,6 +15,7 @@ import * as d3Sankey from 'd3-sankey-circular';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GraphData } from '../../interfaces/vis-js.interface';
 import { formatNumber } from '@angular/common';
+import { defaultId, find } from './sankey/d3-sankey';
 
 export function isIterable(obj) {
   // checks for null and undefined
@@ -75,7 +76,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('linkDetails', {static: false}) linkDetails: TemplateRef<any>;
 
   networkTraces;
-  selectedTrace;
+  selectedNetworkTrace;
 
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
 
@@ -94,21 +95,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   private currentFileId: any;
   filtersPanelOpened;
   filteredSankeyData;
-  filter;
 
-  allTraces = new Set();
   nodesColorMap = new Map();
 
-  inNodesId;
-  outNodesId;
-
-  linksColorMap;
+  traceGroupColorMap;
 
   panelOpened;
   details;
   normalizeLinks = {value: false};
 
-  valueGenerators = [
+  linkValueGenerators = [
     {
       description: 'Fraction of fixed node value',
       disabled: () => this.selectedNodeValueAccessor === this.nodeValueGenerators[0],
@@ -221,8 +217,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       }
     }
   ];
-  valueAccessors;
-  selectedValueAccessor = this.valueGenerators[1];
+  linkValueAccessors;
+  selectedLinkValueAccessor = this.linkValueGenerators[1];
   nodeValueAccessors;
   selectedNodeValueAccessor = this.nodeValueGenerators[0];
 
@@ -265,30 +261,33 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return r;
   }
 
-  selectTrace(trace) {
-    this.linksColorMap = new Map(trace.traces.map(({group}, i) => [group, christianColors[i]]));
-    this.selectedTrace = trace;
+  selectNetworkTrace(networkTrace) {
+    this.traceGroupColorMap = new Map(
+      networkTrace.traces.map(({group}, i) => [group, christianColors[i]])
+    );
+    this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const traceBasedLinkSplitMap = new Map();
-    const allEdges = trace.traces.reduce((o, itrace, idx) => {
-      const color = this.linksColorMap.get(itrace.group);
-      const ilinks = itrace.edges.map(iidx => {
-        const originLink = links[iidx];
-        const link = {
-          ...originLink,
-          schemaClass: color,
-          trace: itrace
-        };
-        link.id += itrace;
-        let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
-        if (!adjacentLinks) {
-          adjacentLinks = [];
-          traceBasedLinkSplitMap.set(originLink, adjacentLinks);
-        }
-        adjacentLinks.push(link);
-        return link;
-      });
-      return o.concat(ilinks);
+    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
+      const color = this.traceGroupColorMap.get(trace.group);
+      return o.concat(
+        trace.edges.map(linkIdx => {
+          const originLink = links[linkIdx];
+          const link = {
+            ...originLink,
+            _color: color,
+            _trace: trace
+          };
+          link.id += trace.group;
+          let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
+          if (!adjacentLinks) {
+            adjacentLinks = [];
+            traceBasedLinkSplitMap.set(originLink, adjacentLinks);
+          }
+          adjacentLinks.push(link);
+          return link;
+        })
+      );
     }, []);
 
     for (const adjacentLinkGroup of traceBasedLinkSplitMap.values()) {
@@ -296,21 +295,26 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       // normalise only if multiple (skip /1)
       if (adjacentLinkGroupLength) {
         adjacentLinkGroup.forEach(l => {
-          l.adjacent_divider = adjacentLinkGroupLength;
+          l._adjacent_divider = adjacentLinkGroupLength;
         });
       }
     }
-    const allNodesIds = trace.traces.reduce((o, itrace, idx) =>
-        itrace.node_paths.reduce((io, n) =>
-            io.concat(n)
-          , o)
-      , []
-    );
-    const allNodes = [...(new Set(allNodesIds))].map(idx => nodes.find(({id}) => id === idx));
-
+    const id = defaultId;
+    const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
+    const networkTraceNodes = [...networkTraceLinks.reduce((o, {source, target}) => {
+      if (typeof source !== 'object') {
+        source = find(nodeById, source);
+      }
+      if (typeof target !== 'object') {
+        target = find(nodeById, target);
+      }
+      o.add(source);
+      o.add(target);
+      return o;
+    }, new Set())];
     // set colors for all node types
     const nodeColorCategoryAccessor = ({schemaClass}) => schemaClass;
-    const nodeCategories = new Set(allNodes.map(nodeColorCategoryAccessor));
+    const nodeCategories = new Set(networkTraceNodes.map(nodeColorCategoryAccessor));
     this.nodesColorMap = createMapToColor(
       nodeCategories,
       {
@@ -321,13 +325,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         saturation: () => 0
       }
     );
-    allNodes.forEach(node => {
-      node.color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
+    networkTraceNodes.forEach(node => {
+      node._color = this.nodesColorMap.get(nodeColorCategoryAccessor(node));
     });
     this.filteredSankeyData = this.linkGraph({
-      nodes: allNodes,
-      links: allEdges,
-      inNodes: node_sets[trace.sources]
+      nodes: networkTraceNodes,
+      links: networkTraceLinks,
+      inNodes: node_sets[networkTrace.sources]
     });
   }
 
@@ -432,8 +436,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   applyFilter() {
-    if (this.selectedTrace) {
-      this.selectTrace(this.selectedTrace);
+    if (this.selectedNetworkTrace) {
+      this.selectNetworkTrace(this.selectedNetworkTrace);
     } else {
       this.filteredSankeyData = this.sankeyData;
     }
@@ -444,7 +448,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       l.id = uuidv4();
     });
     const preprocessedNodes = this.selectedNodeValueAccessor.preprocessing(data) || {};
-    const preprocessedLinks = this.selectedValueAccessor.preprocessing(data) || {};
+    const preprocessedLinks = this.selectedLinkValueAccessor.preprocessing(data) || {};
     return Object.assign(data, preprocessedLinks, preprocessedNodes);
   }
 
@@ -475,7 +479,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
-    this.valueAccessors = Object.entries(link).reduce((o, [k, v]) => {
+    this.linkValueAccessors = Object.entries(link).reduce((o, [k, v]) => {
       if (this.excludedProperties.has(k)) {
         return o;
       }
@@ -528,7 +532,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   parseData({links, graph, nodes, ...data}) {
     this.networkTraces = graph.trace_networks;
-    this.selectedTrace = this.networkTraces[0];
+    this.selectedNetworkTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     return {
@@ -593,17 +597,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   selectValueAccessor($event) {
-    this.selectedValueAccessor = $event;
-    this.selectTrace(this.selectedTrace);
+    this.selectedLinkValueAccessor = $event;
+    this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
   selectNodeValueAccessor($event) {
     this.selectedNodeValueAccessor = $event;
-    this.selectTrace(this.selectedTrace);
+    this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
   updateNormalize() {
-    this.selectTrace(this.selectedTrace);
+    this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
   dragStarted(event: DragEvent) {
@@ -650,7 +654,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   changeLinkSize($event: any) {
-    this.selectedValueAccessor = $event;
-    this.selectTrace(this.selectedTrace);
+    this.selectedLinkValueAccessor = $event;
+    this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 }
