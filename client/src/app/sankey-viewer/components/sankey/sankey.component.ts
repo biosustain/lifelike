@@ -103,6 +103,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() set selectedNodes(nodes) {
+    // tslint:disable-next-line:no-unused-expression
     this.nodes && d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .filter(node => nodes.has(node))
@@ -113,6 +114,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() set selectedLinks(links) {
+    // tslint:disable-next-line:no-unused-expression
     this.links && d3.select(this.links.nativeElement)
       .selectAll('path')
       .filter(link => links.has(link))
@@ -425,7 +427,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     .attr('height', n => {
       return representativePositiveNumber(n.y1 - n.y0);
     })
-    .attr('width', ({x1, x0}) => x1 - x0);
+    .attr('width', ({x1, x0}) => x1 - x0)
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -577,7 +579,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         )
       )
       .attr('fill', (node: Node) => {
-        const {color, sourceLinks, targetLinks, selected} = node;
+        const { color, sourceLinks, targetLinks, selected } = node;
         const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace.group);
         if (difference.size === 1) {
           const [link] = difference.values();
