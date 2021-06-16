@@ -6,7 +6,7 @@ import re
 import shutil
 import typing
 from io import BufferedIOBase
-from typing import Optional
+from typing import Optional, List
 
 import bioc
 import textwrap
