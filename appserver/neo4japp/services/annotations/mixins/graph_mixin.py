@@ -45,8 +45,9 @@ class GraphMixin(GraphConnection):
     def exec_write_query_with_params(self, query: str, values: dict):
         return self.graph.write_transaction(lambda tx: list(tx.run(query, values=values)))
 
-    # TODO: these two <type>_to_organism queries need to change
-    # now need to also query Lifelike nodes to also get taxonomy (global inclusions)
+    # TODO: these two <type>_to_organism queries do not
+    # need to change, because when we add to db_Lifelike, we
+    # do not know what gene/taxonomy to create a relationship with.
     @property
     def get_gene_to_organism(self):
         return """
@@ -120,6 +121,9 @@ class GraphMixin(GraphConnection):
         """
 
     def get_mesh_global_inclusions_by_type(self, entity_type):
+        if entity_type not in self.node_labels:
+            return ''
+
         query_label = self.node_labels[entity_type]
         return f"""
         WITH $values AS row
@@ -170,6 +174,9 @@ class GraphMixin(GraphConnection):
         """
 
     def get_lifelike_global_inclusions_by_type(self, entity_type):
+        if entity_type not in self.lifelike_node_labels:
+            return ''
+
         query_label = self.lifelike_node_labels[entity_type]
         return f"""
         MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
@@ -178,6 +185,9 @@ class GraphMixin(GraphConnection):
         """
 
     def mesh_global_inclusion_exist(self, entity_type):
+        if entity_type not in self.node_labels:
+            return ''
+
         query_label = self.node_labels[entity_type]
         return f"""
         WITH $values AS row
@@ -233,6 +243,9 @@ class GraphMixin(GraphConnection):
         """
 
     def lifelike_global_inclusion_exist(self, entity_type):
+        if entity_type not in self.lifelike_node_labels:
+            return ''
+
         query_label = self.lifelike_node_labels[entity_type]
         return f"""
         WITH $values AS row
@@ -243,6 +256,9 @@ class GraphMixin(GraphConnection):
         """
 
     def create_mesh_global_inclusion(self, entity_type):
+        if entity_type not in self.node_labels:
+            return ''
+
         query_label = self.node_labels[entity_type]
         return """
         WITH $values AS row
@@ -310,6 +326,9 @@ class GraphMixin(GraphConnection):
         """
 
     def create_lifelike_global_inclusion(self, entity_type):
+        if entity_type not in self.lifelike_node_labels:
+            return ''
+
         query_label = self.lifelike_node_labels[entity_type]
         return """
         WITH $values AS row

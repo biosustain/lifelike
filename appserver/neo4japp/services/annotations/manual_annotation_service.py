@@ -360,29 +360,30 @@ class ManualAnnotationService:
                     EntityType.GENE.value: self.graph.create_gene_global_inclusion(),
                     EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion(),
                     EntityType.SPECIES.value: self.graph.create_species_global_inclusion(),
-                    EntityType.PHENOMENA.value: self.graph.create_lifelike_global_inclusion(entity_type_query_param)  # noqa
+                    EntityType.PHENOTYPE.value: self.graph.create_lifelike_global_inclusion(entity_type_query_param)  # noqa
                 }
 
                 query = queries[entity_type]
-                try:
-                    self.graph.exec_write_query_with_params(query, createval)
-                except BrokenPipeError:
-                    raise AnnotationError(
-                        title='Failed to Create Custom Annotation',
-                        message='The graph connection became stale while processing data, '
-                                'Please refresh the browser and try again.',
-                        code=500)
-                except Exception:
-                    current_app.logger.error(
-                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
-                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-                    )
-                    raise AnnotationError(
-                        title='Failed to Create Custom Annotation',
-                        message='A system error occurred while creating the annotation, '
-                                'we are working on a solution. Please try again later.',
-                        code=500)
-            elif not check['node_exist'] and not check['synonym_exist']:
+                if query:
+                    try:
+                        self.graph.exec_write_query_with_params(query, createval)
+                    except BrokenPipeError:
+                        raise AnnotationError(
+                            title='Failed to Create Custom Annotation',
+                            message='The graph connection became stale while processing data, '
+                                    'Please refresh the browser and try again.',
+                            code=500)
+                    except Exception:
+                        current_app.logger.error(
+                            f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                        )
+                        raise AnnotationError(
+                            title='Failed to Create Custom Annotation',
+                            message='A system error occurred while creating the annotation, '
+                                    'we are working on a solution. Please try again later.',
+                            code=500)
+            elif not check['node_exist']:
                 try:
                     query = self.graph.create_lifelike_global_inclusion(entity_type_query_param)
                     self.graph.exec_write_query_with_params(query, createval)
@@ -435,7 +436,7 @@ class ManualAnnotationService:
             EntityType.GENE.value: self.graph.gene_global_inclusion_exist(),
             EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist(),
             EntityType.SPECIES.value: self.graph.species_global_inclusion_exist(),
-            EntityType.PHENOMENA.value: self.graph.lifelike_global_inclusion_exist(entity_type_query_param)  # noqa
+            EntityType.PHENOTYPE.value: self.graph.lifelike_global_inclusion_exist(entity_type_query_param)  # noqa
         }
 
         # query can be empty string because some entity types
