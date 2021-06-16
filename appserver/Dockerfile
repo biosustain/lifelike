@@ -1,20 +1,9 @@
 FROM fedora:32 as base
 
 # Install dependencies
-RUN dnf install htop postgresql graphviz python-pip python3-devel \
-    which wget libX11-xcb java-latest-openjdk.x86_64 pandoc texlive-collection-latexextra \
-    texlive-scheme-small texlive-collection-xetex texlive-collection-fontsrecommended \
-    texlive-collection-genericrecommended -y \
+RUN dnf install htop postgresql graphviz python-pip python3-devel which -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
-
-RUN wget https://download.documentfoundation.org/libreoffice/stable/7.1.3/rpm/x86_64/LibreOffice_7.1.3_Linux_x86-64_rpm.tar.gz
-RUN tar -xvf LibreOffice_*_Linux_x86-64_rpm.tar.gz
-RUN cd LibreOffice_*_Linux_x86-64_rpm && dnf install -y RPMS/*.rpm
-
-COPY Module1.xba /opt/libreoffice7.1/presets/basic/Standard/
-COPY registrymodifications.xcu .config/libreoffice/4/user
-
 RUN pip install pipenv
 
 ENV N4J_USER n4j
