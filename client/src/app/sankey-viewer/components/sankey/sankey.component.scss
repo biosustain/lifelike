@@ -10,6 +10,7 @@
       cursor: move;
       fill-opacity: .9;
       shape-rendering: crispEdges;
+      stroke: #000000;
     }
 
     text {
@@ -41,12 +42,6 @@
       stroke-opacity: .5;
     }
   }
-}
-
-.sankey-popover {
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .wrapper {

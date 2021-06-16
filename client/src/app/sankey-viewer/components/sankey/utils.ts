@@ -223,3 +223,24 @@ export const christianColors = [
 
 export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
 
+const uniqueBy = (arr, accessor) =>
+  arr.reduce((identifiers, elem) => {
+    const identifier = accessor(elem);
+    if (identifiers.has(identifier)) {
+      return identifiers;
+    } else {
+      identifiers.set(identifier, elem);
+      return identifiers;
+    }
+  }, new Map());
+
+export function symmetricDifference(setA, setB, accessor) {
+  return [...uniqueBy(setB, accessor).entries()].reduce((difference, [identifier, elem]) => {
+    if (difference.has(identifier)) {
+      difference.delete(identifier);
+    } else {
+      difference.set(identifier, elem);
+    }
+    return difference;
+  }, uniqueBy(setA, accessor));
+}
