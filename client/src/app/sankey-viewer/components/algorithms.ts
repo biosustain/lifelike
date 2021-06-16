@@ -2,6 +2,7 @@ import * as d3Sankey from 'd3-sankey-circular';
 import { uuidv4 } from '../../shared/utils';
 import { nodeLabelAccessor, christianColors, createMapToColor, representativePositiveNumber } from './sankey/utils';
 import { find, defaultId } from './sankey/d3-sankey';
+import { GraphData } from '../../interfaces/vis-js.interface';
 
 export const fractionOfFixedNodeValue = ({links, nodes}) => {
   links.forEach(l => l.value = 1);
@@ -247,4 +248,41 @@ export const colorNodes = (nodes, nodeColorCategoryAccessor = ({schemaClass}) =>
   nodes.forEach(node => {
     node._color = nodesColorMap.get(nodeColorCategoryAccessor(node));
   });
+};
+
+export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
+  const edges = trace.detail_edges.map(([from, to, d]) => ({
+    from,
+    to,
+    id: uuidv4(),
+    arrows: 'to',
+    label: d.type,
+    ...(d || {})
+  }));
+  const nodeIds = [...edges.reduce((nodesSet, {from, to}) => {
+    nodesSet.add(from);
+    nodesSet.add(to);
+    return nodesSet;
+  }, new Set())];
+  const nodes = nodeIds.map((nodeId, idx) => {
+    const node = mainNodes[nodeId];
+    if (node) {
+      return {
+        ...node,
+        databaseLabel: node.type,
+        label: node.name[0]
+      };
+    } else {
+      return {
+        id: nodeId
+      };
+    }
+  });
+  return {
+    edges,
+    nodes: nodes.map(n => ({
+      ...n,
+      color: undefined
+    }))
+  } as GraphData;
 };
