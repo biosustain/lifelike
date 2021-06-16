@@ -32,7 +32,6 @@ const SANKEY_MIMETYPE = 'vnd.lifelike.document/sankey';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
 const BIOC_MIMETYPE = 'vnd.lifelike.document/bioc';
-const HTML_MIMETYPE = 'application/html';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -477,8 +476,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'files', this.hashId];
       case BIOC_MIMETYPE:
         return ['/projects', projectName, 'bioc', this.hashId];
-      case HTML_MIMETYPE:
-        return ['/projects', projectName, 'html', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
       case SANKEY_MIMETYPE:
