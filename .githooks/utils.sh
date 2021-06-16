@@ -67,7 +67,7 @@ recurseHook () {
     then
       HEADER "🤖  Running hook ($hook_name) checks for $code_path"
       # Execute hook
-      "$code_path/$hook_name"
+      "$code_path/$hook_name" | sed 's/^/		/g'
       exit_code=$?
 
       if [ $exit_code != 0 ]; then
