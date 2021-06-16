@@ -28,7 +28,6 @@ import { ShortestPathComponent } from './shortest-path/containers/shortest-path.
 import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
 import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component';
-import { HtmlViewComponent } from './html-viewer/components/html-view.component';
 import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
 import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
 import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
@@ -238,15 +237,6 @@ const routes: Routes = [
     data: {
       title: 'PDF Viewer',
       fontAwesomeIcon: 'file-pdf',
-    },
-  },
-  {
-    path: 'projects/:project_name/html/:file_id',
-    component: HtmlViewComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'HTML Viewer',
-      fontAwesomeIcon: 'file-code',
     },
   },
   {
