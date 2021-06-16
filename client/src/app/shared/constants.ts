@@ -64,3 +64,24 @@ export const LINK_NODE_ICON_OBJECT = {
 };
 
 export const DEFAULT_CLUSTER_ROWS = 5;
+
+export const ORGANISM_SHORTLIST = new Map<string, string>([
+  ['Escherichia coli	K12 MG1655',	'511145'],
+  ['Saccharomyces cerevisiae	S288C',	'559292'],
+  ['Pseudomonas aeruginosa	PAO1',	'208964'],
+  ['Clostridium difficile	Strain 630',	'272563'],
+  ['Staphylococcus aureus	USA300',	'367830']
+]);
+
+export const KG_VIZ_FILTER_TYPES = [
+  'Biological Process',
+  'Cellular Component',
+  'Chemical',
+  'Disease',
+  'Gene',
+  'Molecular Function',
+  'Protein',
+  'Taxonomy'
+];
+
+export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
