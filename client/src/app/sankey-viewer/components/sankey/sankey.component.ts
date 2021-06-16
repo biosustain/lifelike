@@ -61,7 +61,6 @@ function symmetricDifference(setA, setB, accessor) {
 export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() set timeInterval(ti) {
     if (this.sankey) {
-      this._timeInterval = ti;
       this.sankey.timeInterval(ti);
     }
   }
@@ -180,15 +179,11 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly sankey: any;
   resizeObserver: any;
 
-  private _timeInterval = Infinity;
-
   uiState;
-  pan;
   size;
 
   d3links;
 
-  debounceDragRelayout;
 
   zoom;
   dragging = false;
@@ -325,21 +320,21 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   pathMouseOver(_element, data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .style('opacity', ({schemaClass, selected}) => schemaClass === data.schemaClass || selected ? 1 : 0.35);
+      .style('opacity', ({_color, _selected}) => _color === data._color || _selected ? 1 : 0.35);
   }
 
   pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .filter(({selected}) => !selected)
+      .filter(({_selected}) => !_selected)
       .style('opacity', 0.45);
   }
 
   nodeMouseOver(element, data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
-      .filter(({selected}) => !selected)
-      .style('opacity', ({color}) => color === data.color ? 0.45 : 0.35);
+      .filter(({_selected}) => !_selected)
+      .style('opacity', ({_color}) => _color === data._color ? 0.45 : 0.35);
     d3.select(element).select('text')
       .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
@@ -486,7 +481,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         exit => exit.remove()
       )
       // .attr('stroke-width', ({width}) => Math.max(1, width))
-      .attr('fill', ({schemaClass}) => schemaClass)
+      .attr('fill', ({_color}) => _color)
       .call(join =>
         join.select('title')
           .text(({description}) => description)
@@ -579,24 +574,37 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
         )
       )
       .attr('fill', (node: Node) => {
-        const { color, sourceLinks, targetLinks, selected } = node;
-        const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace.group);
+        const {_color, sourceLinks, targetLinks, _selected} = node;
+        const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
         if (difference.size === 1) {
           const [link] = difference.values();
-          const traceColor = link.schemaClass;
-          const labColor = d3.cubehelix(color);
+          const traceColor = link._color;
+          const labColor = d3.cubehelix(_color);
           const calcColor = d3.cubehelix(traceColor);
           calcColor.l = labColor.l;
-          calcColor.opacity = selected ? 1 : labColor.opacity;
+          calcColor.opacity = _selected ? 1 : labColor.opacity;
           return calcColor;
         }
-        return color;
+        return _color;
       })
       .call(joined => joined.select('rect')
         .attr('stroke', '#000000')
       )
       .call(joined => joined.select('text')
         .text(shortNodeText)
+        // .attr('fill', (node: Node) => {
+        //   const {_color, sourceLinks, targetLinks, _selected} = node;
+        //   const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
+        //   if (difference.size === 1) {
+        //     const [link] = difference.values();
+        //     const traceColor = link._color;
+        //     const labColor = d3.cubehelix(_color);
+        //     const calcColor = d3.cubehelix(traceColor);
+        //     calcColor.l = (labColor.l + 0.6) % 1;
+        //     return calcColor;
+        //   }
+        //   return _color;
+        // })
       )
       .call(joined => joined.select('title')
         .text(({name}) => name)

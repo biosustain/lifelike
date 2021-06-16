@@ -12,8 +12,8 @@ interface Node {
   fixedValue?: number;
   layer?: number;
   description?: string;
-  color?: string;
-  selected?: boolean;
+  _color?: string;
+  _selected?: boolean;
 }
 
 interface Link {
@@ -23,9 +23,10 @@ interface Link {
   width?: number;
   y0?: number;
   y1?: number;
-  multiple_values?: [number, number];
+  _multiple_values?: [number, number];
   circularLinkID?: number;
   circular?: boolean;
+  _folded?: boolean;
 }
 
 interface SankeyData {
