@@ -1,10 +1,13 @@
 import { Component, Input } from '@angular/core';
+
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
+import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+
+import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
-import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-search-record-node',
@@ -34,6 +37,17 @@ export class SearchRecordNodeComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
+    let url: URL | string;
+    let domain = '';
+    try {
+      url = new URL(getLink(this.node));
+      domain = this.getNodeDomain(url.hostname);
+    } catch {
+      // Expect a TypeError here if the url was invalid
+      url = getLink(this.node);
+      domain = 'Knowledge Graph';
+    }
+
     dataTransfer.setData('text/plain', this.node.node.displayName);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: this.node.node.displayName,
@@ -41,8 +55,8 @@ export class SearchRecordNodeComponent {
       sub_labels: [],
       data: {
         hyperlinks: [{
-          domain: 'Knowledge Graph',
-          url: getLink(this.node),
+          domain,
+          url: url.toString()
         }],
         references: [{
           type: 'DATABASE',
@@ -50,6 +64,21 @@ export class SearchRecordNodeComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  getNodeDomain(hostname: string): string {
+    switch (hostname) {
+      case DBHostname.UniProt:
+        return 'UniProt';
+      case DBHostname.NCBI:
+        return 'NCBI';
+      case DBHostname.ChEBI:
+        return 'ChEBI';
+      case DBHostname.GO:
+        return 'GO';
+      default:
+        return 'Knowledge Graph';
+    }
   }
 
   getVisualizerQueryParams(params) {

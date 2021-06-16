@@ -87,10 +87,10 @@ class AnnotationGraphService(GraphConnection):
         )
 
         for row in result:
-            gene_name: str = row['gene_name']
-            gene_synonym: str = row['gene_synonym']
-            gene_id: str = row['gene_id']
-            organism_id: str = row['organism_id']
+            gene_name = row['gene_name']
+            gene_synonym = row['gene_synonym']
+            gene_id = row['gene_id']
+            organism_id = row['organism_id']
 
             if gene_to_organism_map.get(gene_synonym, None) is not None:
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):

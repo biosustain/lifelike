@@ -6,4 +6,3 @@ from .account import AccountService
 from .projects import ProjectsService
 from .visualizer import VisualizerService
 from neo4japp.services.enrichment.enrichment_table import EnrichmentTableService
-from neo4japp.services.enrichment.enrichment_visualisation import EnrichmentVisualisationService

@@ -1,66 +1,71 @@
 import json
-from dataclasses import dataclass
-from functools import partial
+import logging
+import os
 
+import requests
 from flask import (
-    Blueprint
+    Blueprint, request, Response
 )
-from flask_marshmallow import Schema
-from marshmallow import fields, ValidationError
-from marshmallow.validate import Regexp, OneOf
+
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_enrichment_visualisation_service
-from neo4japp.services.rcache import redis_cached
-from webargs.flaskparser import use_args
+from neo4japp.exceptions import StatisticalEnrichmentError
+from requests.exceptions import ConnectionError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-
-@dataclass
-class Organism:
-    id: int
-    name: str
-
-    def __str__(self):
-        return f"{self.id}/{self.name}"
+host = os.getenv('SE_HOST', 'statistical-enrichment')
+port = os.getenv('SE_PORT', '5010')
 
 
-class OrganismField(fields.Field):
-    validators = [Regexp(r'\d+/.+')]
-    default_error_messages = {
-        "required": "Missing data for required field.",
-        "null": "Field may not be null.",
-        "validator_failed": "Organism must be defined as 'taxID/name'.",
-    }
+def forward_request():
+    host_port = f'{host}:{port}'
+    url = f'{request.scheme}://{request.path.replace(bp.url_prefix, host_port)}'
+    try:
+        resp = requests.request(
+                method=request.method,
+                url=url,
+                headers={key: value for (key, value) in request.headers if key != 'Host'},
+                data=request.get_data(),
+                cookies=request.cookies,
+                allow_redirects=False
+        )
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [
+            (name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers
+        ]
+    except ConnectionError as e:
+        raise StatisticalEnrichmentError(
+            'Unable to process request',
+            'An unexpected connection error occurred to statistical enrichment service.'
+        )
 
-    def _serialize(self, value, attr, obj, **kwargs):
-        return str(value)
-
-    def _deserialize(self, value, attr, data, **kwargs):
+    # 500 should contain message from service so we try to include it
+    if resp.status_code == 500:
         try:
-            return Organism(*value.split('/'))
-        except ValueError as error:
-            raise ValidationError("Organism field must be filled as taxID/name") from error
+            decoded_error_message = json.loads(resp.content)['message']
+        except Exception as e:
+            # log and proceed so general error can be raised
+            logging.exception(e)
+        else:
+            raise StatisticalEnrichmentError(
+                    'Statistical enrichment error',
+                    decoded_error_message,
+                    code=resp.status_code
+            )
 
+    # All errors including failure to parse internal error message
+    if 400 <= resp.status_code < 600:
+        raise StatisticalEnrichmentError(
+                'Unable to process request',
+                'An internal error of statistical enrichment service occurred.',
+                code=resp.status_code
+        )
 
-class GeneOrganismSchema(Schema):
-    geneNames = fields.List(fields.Str)
-    organism = OrganismField()
-
-
-class EnrichmentSchema(GeneOrganismSchema):
-    analysis = fields.Str(validate=OneOf(['fisher']))
+    return Response(resp.content, resp.status_code, headers)
 
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
-@use_args(EnrichmentSchema)
-def enrich_go(args):
-    gene_names = args['geneNames']
-    organism = args['organism']
-    analysis = args['analysis']
-    cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
-    enrichment_visualisation = get_enrichment_visualisation_service()
-    return redis_cached(
-            cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
-    ), dict(mimetype='application/json')
+def enrich_go():
+    return forward_request()

@@ -16,6 +16,7 @@ export class BaseEnrichmentDocument {
     'String',
     'GO',
     'Biocyc',
+    'KEGG'
   ];
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
@@ -38,7 +39,7 @@ export class BaseEnrichmentDocument {
 
     // parse for column order/domain input
     if (domains == null) {
-      domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
+      domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc', 'KEGG'];
     }
 
     const duplicateGenes = this.getDuplicates(rawImportGenes);
@@ -220,7 +221,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
           const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.geneNeo4jId);
           return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(neo4jIds, taxID)
+            .getNCBIEnrichmentDomains(neo4jIds, taxID, domains)
             .pipe(
               map((domainResults: EnrichmentWrapper): EnrichmentResult => {
                 // a gene can point to 2 different synonyms
@@ -285,7 +286,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '3',
+                  version: '4',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -294,6 +295,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     String: {labels: ['Annotation']},
                     GO: {labels: ['Annotation']},
                     Biocyc: {labels: ['Pathways']},
+                    KEGG: {labels: ['Pathways']}
                   },
                   genes: genesList,
                 };
@@ -368,7 +370,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('GO')) {
       if (wrapper.go !== null) {
-        const text = this.processGoWrapper(wrapper.go.result);
+        const text = this.shortenTerms(wrapper.go.result);
         results.GO = {
           Annotation: {
             text,
@@ -382,11 +384,25 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('Biocyc')) {
       if (wrapper.biocyc !== null) {
+        const text = wrapper.biocyc.result ? wrapper.biocyc.result.join('; ') : '';
         results.Biocyc = {
           Pathways: {
-            text: wrapper.biocyc.result.pathways ? wrapper.biocyc.result.pathways.join('; ') : '',
-            annotatedText: wrapper.biocyc.result.pathways ? wrapper.biocyc.result.pathways.join('; ') : '',
+            text,
+            annotatedText: text,
             link: wrapper.biocyc.link,
+          },
+        };
+      }
+    }
+
+    if (domains.includes('KEGG')) {
+      if (wrapper.kegg !== null) {
+        const text = this.shortenTerms(wrapper.kegg.result);
+        results.KEGG = {
+          Pathways: {
+            text,
+            annotatedText: text,
+            link: wrapper.kegg.link,
           },
         };
       }
@@ -395,11 +411,11 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
     return results;
   }
 
-  private processGoWrapper(goTerms: string[]): string {
-    return goTerms
+  private shortenTerms(terms: string[]): string {
+    return terms
       .map(name => name)
       .slice(0, 5)
-      .join('; ') + (goTerms.length > 5 ? '...' : '');
+      .join('; ') + (terms.length > 5 ? '...' : '');
   }
 }
 
@@ -433,7 +449,7 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '3';
+  version: '4';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }

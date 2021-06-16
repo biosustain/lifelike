@@ -22,9 +22,7 @@
             <span *ngIf="entry.text && entry.text.indexOf('snippet') > -1; else noHighlight">
               <app-highlight-text [highlight]="entry.text" [object]="object" [eventSubscriptions]="false"></app-highlight-text>
             </span>
-            <ng-template #noHighlight>
-              {{ entry.text }}
-            </ng-template>
+            <ng-template #noHighlight>{{ entry.text }}</ng-template>
           </div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">

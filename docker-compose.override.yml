@@ -64,9 +64,12 @@ services:
             - REDIS_PORT=6379
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
+            # StatisticalEnrichment
+            - SE_HOST=statistical-enrichment
+            - SE_PORT=5010
             # Other
             - DOMAIN=http://localhost
-            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
+            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
@@ -82,6 +85,39 @@ services:
             - pgdatabase
             - redis
             - pdfparser
+
+    statistical-enrichment:
+        container_name: statistical-enrichment
+        build: ./statistical-enrichment
+        ports:
+            - "5010:5010"
+        environment:
+            # Flask
+            - FLASK_APP=statistical_enrichment
+            - FLASK_APP_CONFIG=Development
+            - FLASK_DEBUG=1
+            - FLASK_ENV=development
+            # Neo4j
+            - NEO4J_SCHEME=bolt
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            - NEO4J_PORT=7687
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=false
+        # Allow debugging w/ IPython or pdb
+        stdin_open: true
+        tty: true
+        # End debugging section
+        volumes:
+            - ./statistical-enrichment:/home/user
+        networks:
+            - backend
+        depends_on:
+            - database
+            - redis
 
     cache-invalidator:
         container_name: cache-invalidator

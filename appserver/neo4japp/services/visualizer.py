@@ -19,8 +19,8 @@ from neo4japp.data_transfer_objects.visualization import (
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import KgService
 from neo4japp.util import (
-    get_first_known_label_from_node,
-    get_first_known_label_from_node_n4j_driver
+
+    get_first_known_label_from_node
 )
 
 
@@ -152,15 +152,15 @@ class VisualizerService(KgService):
             for reference in row['references']:
                 snippets.append(
                     Snippet(
-                        reference=GraphNode.from_neo4j_driver(
+                        reference=GraphNode.from_neo4j(
                             reference['snippet'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['snippet'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label_from_node,
                         ),
-                        publication=GraphNode.from_neo4j_driver(
+                        publication=GraphNode.from_neo4j(
                             reference['publication'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['publication'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label_from_node,
                         ),
                         raw_score=reference['raw_score'],
                         normalized_score=reference['normalized_score']
@@ -209,15 +209,15 @@ class VisualizerService(KgService):
                 to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_neo4j_driver(
+                    reference=GraphNode.from_neo4j(
                         reference['snippet'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['snippet'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     ),
-                    publication=GraphNode.from_neo4j_driver(
+                    publication=GraphNode.from_neo4j(
                         reference['publication'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['publication'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     ),
                     raw_score=reference['raw_score'],
                     normalized_score=reference['normalized_score']
@@ -272,15 +272,15 @@ class VisualizerService(KgService):
                 to_node_id=to_id,
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_neo4j_driver(
+                    reference=GraphNode.from_neo4j(
                         reference['snippet'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['snippet'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     ),
-                    publication=GraphNode.from_neo4j_driver(
+                    publication=GraphNode.from_neo4j(
                         reference['publication'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(reference['publication'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     ),
                     raw_score=reference['raw_score'],
                     normalized_score=reference['normalized_score']

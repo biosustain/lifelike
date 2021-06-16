@@ -1,17 +1,81 @@
-version: '3.8'
+version: '2.4'
 
 services:
     appserver:
+        container_name: appserver
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
-
-    cache-invalidator:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-service:${GITHUB_HASH:-latest}
-
-    redis:
-        image: redis:6.0.3-alpine
+        ports:
+            - 5000:5000
+        env_file:
+            - ./.env
+        volumes:
+            - ${LMDB_DIR:-/home/ansible/lmdb}:/home/n4j/neo4japp/services/annotations/lmdb
+        networks:
+            - frontend
+            - backend
+        restart: always
 
     webserver:
+        container_name: webserver
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
+        ports:
+            - 80:80
+            - 443:443
+        networks:
+            - frontend
+        depends_on:
+            - appserver
+        restart: always
+
+    statistical-enrichment:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
+        # not truly exposing using as a note on which port does service respond in internal network
+        expose:
+          - 5010
+        env_file:
+          - ./.env
+        networks:
+          - backend
 
     pdfparser:
+        container_name: pdfparser
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
+        ports:
+            - "7600:7600"
+        # tty: true - this is a hack for grizzly as it expects input;
+        # without it, container will exit right away due to docker not accepting input by default
+        tty: true
+        networks:
+            - backend
+
+    cache-invalidator:
+        container_name: cache-invalidator
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-service:${GITHUB_HASH:-latest}
+        env_file:
+            - ./.env
+        networks:
+            - backend
+        depends_on:
+            - redis
+
+    redis:
+        container_name: redis
+        image: redis:6.0.3-alpine
+        command: redis-server --requirepass ${REDIS_PASSWORD}
+        networks:
+            - backend
+
+    metricbeat:
+        container_name: metricbeat
+        user: ***ARANGO_USERNAME***
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/metricbeat:${GITHUB_HASH:-latest}
+        env_file:
+            - ./.env
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+            - /proc:/hostfs/proc:ro
+            - /:/hostfs:ro
+networks:
+    frontend:
+    backend:

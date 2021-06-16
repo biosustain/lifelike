@@ -4,10 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+mypy = "==0.812"
+pycodestyle = "==2.7.0"
 
 [packages]
 redis = "==3.5.2"
-py2neo = "==2020.0.0"
+neo4j = "==4.2.1"
 
 [requires]
 python_version = "3.8"

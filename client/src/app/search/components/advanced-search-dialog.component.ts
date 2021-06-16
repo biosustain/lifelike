@@ -21,10 +21,11 @@ export class AdvancedSearchDialogComponent implements OnInit {
         params.q,
         params.phrase ? `"${params.phrase}"` : '',
         params.wildcards ? params.wildcards : ''
-      ].join(' '),
+      ].join(' ').trim(),
       // Advanced Params
       types: params.types ? params.types : [],
       projects: params.projects ? params.projects : [],
+      // synonyms: params.synonyms ? params.synonyms : false,
       // phrase: params.phrase ? params.phrase : '',
       // wildcards: params.wildcards ? params.wildcards : '',
     });
@@ -39,6 +40,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
     q: new FormControl(''),
     types: new FormControl([]),
     projects: new FormControl([]),
+    // synonyms: new FormControl(true),
     // phrase: new FormControl(''),
     // wildcards: new FormControl(''),
   });

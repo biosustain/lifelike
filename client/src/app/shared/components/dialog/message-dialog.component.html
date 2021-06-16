@@ -13,12 +13,6 @@
       <p>{{msg}}</p>
     </div>
 
-    <!-- This is only empty if its a client side error only
-    TODO: Make mandatory once JS SentrySDK integrated -->
-    <div *ngIf="transactionId" class="mt-4 text-muted">
-      Reference ID: {{transactionId}}
-    </div>
-
     <div *ngIf="stacktrace" class="detail">
       <div class="detail-title">Technical Details</div>
       <pre>{{stacktrace}}</pre>

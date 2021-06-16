@@ -1,10 +1,12 @@
-from collections import defaultdict
-from py2neo import Graph
-import os
-import time
-import redis
 import json
 import logging
+import os
+import redis
+import time
+
+from collections import defaultdict
+from neo4j import GraphDatabase, basic_auth
+
 
 logger = logging.getLogger(__name__)
 log_level = os.environ.get('LOG_LEVEL')
@@ -35,18 +37,12 @@ redis_server = redis.Redis(
     connection_pool=redis.BlockingConnectionPool.from_url(connection_url))
 
 # Establish Neo4j Connection
-
-protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
-secure = os.environ.get('NEO4J_SCHEME', 'bolt')
-
-neo4j_conn = Graph(
-    name=os.environ.get('NEO4J_DATABASE'),
-    host=os.environ.get('NEO4J_HOST'),
-    auth=os.environ.get('NEO4J_AUTH').split('/'),
-    secure=secure in protocols,
-    port=os.environ.get('NEO4J_PORT'),
-    scheme=os.environ.get('NEO4J_SCHEME')
-)
+host = os.getenv('NEO4J_HOST', '0.0.0.0')
+scheme = os.getenv('NEO4J_SCHEME', 'bolt')
+port = os.getenv('NEO4J_PORT', '7687')
+url = f'{scheme}://{host}:{port}'
+username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+neo4j_driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
 
 def main():
     next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
@@ -76,9 +72,9 @@ def main():
 
 def get_kg_statistics():
     logger.debug("Getting Kg Statistics")
-    graph = neo4j_conn
+    graph = neo4j_driver.session()
     logger.debug("Kg Statistics Query start...")
-    results = graph.run('CALL db.labels()').data()
+    results = graph.read_transaction(lambda tx: tx.run('call db.labels()').data())
     logger.debug("Kg Statistics Query finished")
     domain_labels = []
     entity_labels = []
@@ -93,40 +89,47 @@ def get_kg_statistics():
         for entity in entity_labels:
             query = f'MATCH (:`{domain}`:`{entity}`) RETURN count(*) as count'
             logger.debug(f"NEO4J QUERY: {query}")
-            count = graph.run(query).evaluate()
+            result = graph.read_transaction(lambda tx: tx.run(query).data())
+            count = result[0]['count']
             if count != 0:
                 statistics[domain.replace('db_', '', 1)][entity] = count
+    graph.close()
     return statistics
 
 
 def precalculateGO():
     logger.debug("Precalculating GO...")
-    graph = neo4j_conn
+    graph = neo4j_driver.session()
 
-    def fetchOrganismGO(organism):
+    def fetch_organism_go_query(tx, organism):
         logger.debug(f"Precomputing GO for {organism['name']} ({organism['id']})")
-        return graph.run(
-                """
-                MATCH (g:Gene)-[:GO_LINK {tax_id:$id}]-(go:db_GO)
-                WITH go, collect(distinct g) as genes
-                RETURN go.id as goId,
-                    go.name as goTerm,
-                    [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
-                    [g in genes |g.name] as geneNames
-                """,
-                id=organism['id']
+        return tx.run(
+            """
+            MATCH (g:Gene)-[:GO_LINK {tax_id:$id}]-(go:db_GO)
+            WITH go, collect(distinct g) as genes
+            RETURN go.id as goId,
+                go.name as goTerm,
+                [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
+                [g in genes |g.name] as geneNames
+            """,
+            id=organism['id']
         ).data()
 
-    for organism in graph.run(
-            """
-            MATCH (t:Taxonomy)-[:HAS_TAXONOMY]-(:Gene)-[:GO_LINK]-(go:db_GO)
-            with t, count(go) as c
-            where c > 0
-            RETURN t.id as id, t.name as name
-            """
-    ).data():
+    organisms = graph.read_transaction(
+            lambda tx: tx.run(
+                """
+                MATCH (t:Taxonomy)-[:HAS_TAXONOMY]-(:Gene)-[:GO_LINK]-(go:db_GO)
+                with t, count(go) as c
+                where c > 0
+                RETURN t.id as id, t.name as name
+                """
+            ).data()
+    )
+
+    for organism in organisms:
         logging.debug(f'Catching data for organism: {organism}')
-        cache_data(f"GO_for_{organism['id']}", fetchOrganismGO(organism))
+        cache_data(f"GO_for_{organism['id']}", graph.read_transaction(fetch_organism_go_query, organism))
+    graph.close()
 
 
 def cache_data(key, value):

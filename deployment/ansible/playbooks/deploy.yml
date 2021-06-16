@@ -11,6 +11,12 @@
       tags: ["docker"]
 
   tasks:
+    - name: Install fail2ban
+      apt:
+        update_cache: yes
+        pkg:
+          - fail2ban
+
     - name: Create Docker Networks
       docker_network:
         name: "{{ item }}"
@@ -160,6 +166,40 @@
           - name: frontend
             aliases:
               - filebeat
+      tags:
+        - deploy
+
+    - name: StatisticalEnrichment Container Deployment
+      docker_container:
+        name: statistical-enrichment
+        state: started
+        pull: yes
+        restart: yes
+        restart_policy: on-failure
+        restart_retries: 3
+        image: "{{ container_registry }}/kg-statistical-enrichment:{{ docker_img_hash }}"
+        expose:
+          - 5010
+        env:
+          NEO4J_HOST: "{{ NEO4J_HOST }}"
+          NEO4J_AUTH: "{{ NEO4J_AUTH }}"
+          NEO4J_SCHEME: "{{ NEO4J_SCHEME }}"
+          NEO4J_PORT: "{{ NEO4J_PORT|quote }}"
+          NEO4J_DATABASE: "{{ NEO4J_DATABASE }}"
+          FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
+          FLASK_ENV: "{{ FLASK_ENV }}"
+          REDIS_HOST: "{{ REDIS_HOST }}"
+          REDIS_PORT: "{{ REDIS_PORT|quote }}"
+          REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
+          REDIS_SSL: "{{ REDIS_SSL }}"
+        comparisons:
+          image: strict
+          env: strict
+        memory: 5G
+        networks:
+          - name: backend
+            aliases:
+              - statistical-enrichment
       tags:
         - deploy
 

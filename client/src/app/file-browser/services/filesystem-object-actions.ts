@@ -225,12 +225,17 @@ export class FilesystemObjectActions {
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
     const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/${object.getURL(forEditing)}`;
+    modalRef.componentInstance.url = `${window.location.origin}${object.getURL(forEditing)}`;
     return modalRef.result;
   }
 
+  openNewWindow(object: FilesystemObject, forEditing = false) {
+    const objectPath = `${object.getURL(forEditing)}`;
+    return window.open(objectPath);
+  }
+
   reannotate(targets: FilesystemObject[]): Promise<any> {
-    const progressDialogRef = this.createProgressDialog('Identifying annotations...');
+    const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
     const annotationRequests = targets.map(

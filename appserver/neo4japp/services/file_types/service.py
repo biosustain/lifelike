@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Tuple
 
 import typing
 
+import magic
+
 from neo4japp.models import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 
@@ -22,9 +24,11 @@ class BaseFileTypeProvider:
     # in this list are lowercase
     mime_types = ('application/octet-stream',)
 
-    def handles(self, file: Files) -> bool:
+    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
         """
-        Test whether this provider is for the given type of file.
+        Given the file, return a list of possible providers with confidence levels.
+        Larger numbers indicate a higher confidence and negative
+        numbers are supported, while a zero indicates a neutral position.
 
         Most implementations should just compare the file's mime type and generally you
         should not override this method.
@@ -32,18 +36,16 @@ class BaseFileTypeProvider:
         :param file: the file
         :return: whether this provide should be used
         """
-        return file.mime_type.lower() in self.mime_types
+        return [(0, self)] if file.mime_type.lower() in self.mime_types else []
 
     def convert(self, buffer):
         raise NotImplementedError
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
         """
-        Given the byte buffer, return a confidence level indicating
-        whether the file could possibly be of this file type. Larger numbers
-        indicate a higher confidence and negative numbers are supported, while
-        a zero indicates a neutral position. If the provided buffer is
-        definitely not of this file type, None should be returned.
+        Given the byte buffer, return a list of possible mime types with
+        confidence levels. Larger numbers indicate a higher confidence and negative
+        numbers are supported, while a zero indicates a neutral position.
 
         This method is called when the user uploads a file from their computer and
         we need to figure out what kind of file type it is. This method does not have
@@ -52,18 +54,9 @@ class BaseFileTypeProvider:
         file type when uploading a file (as of writing).
 
         :param buffer: the file buffer
-        :return: a confidence level or None
+        :return: a list of mime types and their confidence levels
         """
-        try:
-            # If the data validates, I guess it's an enrichment table?
-            # The enrichment table schema is very simple though so this is very simplistic
-            # and will cause problems in the future
-            self.validate_content(buffer)
-            return 0
-        except Exception as e:
-            return None
-        finally:
-            buffer.seek(0)
+        return []
 
     def can_create(self) -> bool:
         """
@@ -152,15 +145,46 @@ class BaseFileTypeProvider:
         """
 
 
+class GenericFileTypeProvider(BaseFileTypeProvider):
+    """
+    A generic file type provider that handles all miscellaneous types of files.
+    """
+    def __init__(self, mime_type='application/octet-stream'):
+        self.mime_type = mime_type
+        self.mime_types = (mime_type,)
+
+    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
+        return [(-100, GenericFileTypeProvider(file.mime_type))]
+
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
+        mime_type = magic.from_buffer(buffer.read(2048), mime=True)
+        return [(-100, mime_type)]
+
+    def validate_content(self, buffer: BufferedIOBase):
+        return
+
+    def can_create(self) -> bool:
+        return True
+
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        if self.mime_type.startswith('text/'):
+            return buffer  # Have Elasticsearch index these files
+        else:
+            return typing.cast(BufferedIOBase, BytesIO())
+
+    def should_highlight_content_text_matches(self) -> bool:
+        if self.mime_type.startswith('text/'):
+            return True
+        else:
+            return False
+
+
 class DefaultFileTypeProvider(BaseFileTypeProvider):
     """
-    A generic file type provider that is returned when we don't know what
+    A fallback file type provider that is returned when we don't know what
     type of file it is or we don't support it.
     """
     mime_types = ('application/octet-stream',)
-
-    def handles(self, file: Files) -> bool:
-        return True
 
 
 class FileTypeService:
@@ -187,31 +211,32 @@ class FileTypeService:
         :param file: the file
         :return: a provider, which may be the default one
         """
+        results: List[Tuple[float, BaseFileTypeProvider]] = []
         for provider in self.providers:
-            if provider.handles(file):
-                return provider
+            results.extend(provider.detect_provider(file))
+        if len(results):
+            results.sort(key=lambda item: item[0])
+            return results[-1][1]
         return self.default_provider
 
-    def detect_type(self, buffer: BufferedIOBase) -> BaseFileTypeProvider:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> str:
         """
         Detect the file type based on the file's contents. A provider
         will be returned regardless, although it may be the default one.
         :param buffer: the file's contents
         :return: a provider
         """
-        results: List[Tuple[BaseFileTypeProvider, float]] = []
+        results: List[Tuple[float, str]] = []
         for provider in self.providers:
             try:
-                confidence = provider.detect_content_confidence(buffer)
-                if confidence is not None:
-                    results.append((provider, confidence))
+                results.extend(provider.detect_mime_type(buffer))
             finally:
                 buffer.seek(0)
         if len(results):
-            results.sort(key=lambda item: item[1])
-            return results[-1][0]
+            results.sort(key=lambda item: item[0])
+            return results[-1][1]
         else:
-            return self.default_provider
+            return 'application/octet-stream'
 
     def get_shorthand_to_mime_type_map(self) -> Dict[str, str]:
         d = {}

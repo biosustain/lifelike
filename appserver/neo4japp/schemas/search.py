@@ -22,6 +22,7 @@ class ContentSearchSchema(CamelCaseSchema):
     projects = ma.String(default='', required=False)
     phrase = ma.String(default='', required=False)
     wildcards = ma.String(default='', required=False)
+    synonyms = ma.Boolean(default=True, required=False)
 
 
 # Response
@@ -30,6 +31,8 @@ class ContentSearchSchema(CamelCaseSchema):
 
 class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
+    synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
+    dropped_synonyms = fields.Dict(keys=fields.String(), values=fields.List(fields.String()))
 
 
 # ========================================
