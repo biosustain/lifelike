@@ -9,7 +9,7 @@ import { Annotation } from '../bioc-view.component';
 })
 export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   @Input() text;
-  @Input() annotations : Annotation[];
+  @Input() annotations: Annotation[];
   @Input() offset;
 
   parts: (string | Annotation)[];
