@@ -223,7 +223,7 @@ export const christianColors = [
 
 export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
 
-const uniqueBy = (arr, accessor) =>
+export const uniqueBy = (arr, accessor) =>
   arr.reduce((identifiers, elem) => {
     const identifier = accessor(elem);
     if (identifiers.has(identifier)) {

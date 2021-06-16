@@ -11,7 +11,7 @@ import {
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
   representativePositiveNumber,
-  symmetricDifference
+  symmetricDifference, uniqueBy
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -504,11 +504,19 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       )
       .attr('fill', (node: Node) => {
         const {_color, sourceLinks, targetLinks, _selected} = node;
-        // only when exactly one trace group starts/ends at the node
-        const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
-        if (difference.size === 1) {
-          const [link] = difference.values();
-          const traceColor = link._color;
+        let traceLink;
+        const allGroups = uniqueBy([].concat(sourceLinks, targetLinks), ({_trace: {group}}) => group);
+        if (allGroups.size === 1) {
+          traceLink = allGroups.values().next().value;
+        } else {
+          // only when exactly one trace group starts/ends at the node
+          const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
+          if (difference.size === 1) {
+            traceLink = difference.values().next().value;
+          }
+        }
+        if (traceLink) {
+          const traceColor = traceLink._color;
           const labColor = d3.cubehelix(_color);
           const calcColor = d3.cubehelix(traceColor);
           calcColor.l = labColor.l;
