@@ -100,10 +100,10 @@ class AnnotationGraphService(GraphMixin):
                     id_=inclusion['entity_id'],
                     name=inclusion['entity_name'],
                     synonym=inclusion['synonym']
-                )
+                )  # type: ignore
             else:
                 entity = createfuncs[entity_type](
-                    name=inclusion['entity_name'], synonym=inclusion['synonym'])
+                    name=inclusion['entity_name'], synonym=inclusion['synonym'])  # type: ignore
 
             if normalized_synonym in inclusion_dict:
                 inclusion_dict[normalized_synonym].entities.append(entity)
@@ -121,7 +121,7 @@ class AnnotationGraphService(GraphMixin):
         :param inclusions:  custom annotations relative to file
             - need to be filtered for local inclusions
         """
-        inclusion_dicts = {
+        inclusion_dicts: Dict[str, dict] = {
             EntityType.ANATOMY.value: {},
             EntityType.CHEMICAL.value: {},
             EntityType.COMPOUND.value: {},
@@ -136,7 +136,7 @@ class AnnotationGraphService(GraphMixin):
             EntityType.ENTITY.value: {}
         }
 
-        local_inclusion_dicts = {
+        local_inclusion_dicts: Dict[str, dict] = {
             EntityType.SPECIES.value: {}
         }
 

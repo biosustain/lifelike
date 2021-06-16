@@ -22,7 +22,7 @@ class AnnotationDBService(DBConnection):
         :param exclusions:  excluded annotations relative to file
             - need to be filtered for local exclusions
         """
-        exclusion_sets = {
+        exclusion_sets: Dict[str, set] = {
             EntityType.ANATOMY.value: set(),
             EntityType.CHEMICAL.value: set(),
             EntityType.COMPOUND.value: set(),
@@ -37,7 +37,7 @@ class AnnotationDBService(DBConnection):
             EntityType.ENTITY.value: set()
         }
 
-        exclusion_sets_case_insensitive = {
+        exclusion_sets_case_insensitive: Dict[str, set] = {
             EntityType.GENE.value: set(),
             EntityType.PROTEIN.value: set()
         }
