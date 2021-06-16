@@ -252,11 +252,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
 def should_highlight_content_text_matches(self) -> bool:
     return True
 
-
-class NotHTMLError(AssertionError):
-    pass
-
-
 class BiocTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/bioc'
     SHORTHAND = 'BioC'
