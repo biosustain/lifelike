@@ -40,7 +40,9 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     const decodedText = this.decodeHTML(this.text);
     this.parts = this.annotations.reduce((acc, annotation) => {
       return annotation.locations.reduce((iacc, location) => {
-        let part, offset = 0, idx;
+        let part = 0;
+        let offset = 0;
+        let idx = 0;
         for (idx = 0; idx < iacc.length; idx++) {
           part = iacc[idx];
           const localOffset = part.location ? part.location.length : part.length;
@@ -59,22 +61,22 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           }
         }
         offset += globalOffset;
-        const start_offset = -offset + location.offset;
-        const end_offset = -offset + location.offset + location.length;
-        const raw_text = part.slice(start_offset, end_offset);
-        if (raw_text.length < location.length) {
+        const startOffset = -offset + location.offset;
+        const endOffset = -offset + location.offset + location.length;
+        const rawText = part.slice(startOffset, endOffset);
+        if (rawText.length < location.length) {
           console.error('Ran out of index!', part, location, offset);
           return iacc;
         }
-        if (part.slice(start_offset, end_offset) != annotation.text) {
+        if (part.slice(startOffset, endOffset) !== annotation.text) {
           console.warn(
-            `${part.slice(start_offset, end_offset)} != ${annotation.text}`,
+            `${part.slice(startOffset, endOffset)} != ${annotation.text}`,
             part,
             annotation,
             location
           );
           for (let i = 0; i < part.length; i++) {
-            if (part.slice(start_offset - i, end_offset - i) == annotation.text) {
+            if (part.slice(startOffset - i, endOffset - i) === annotation.text) {
               console.warn(
                 `Correct for ${-i}`,
                 part.idx,
@@ -84,7 +86,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
               );
               break;
             }
-            if (part.slice(start_offset + i, end_offset + i) == annotation.text) {
+            if (part.slice(startOffset + i, endOffset + i) === annotation.text) {
               console.warn(
                 `Correct for ${-i}`,
                 part.idx,
@@ -100,9 +102,9 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
         return iacc
           .slice(0, idx)
           .concat([
-            part.slice(0, start_offset),
+            part.slice(0, startOffset),
             {...annotation, location},
-            part.slice(end_offset)
+            part.slice(endOffset)
           ])
           .concat(iacc.slice(idx + 1));
       }, acc);
