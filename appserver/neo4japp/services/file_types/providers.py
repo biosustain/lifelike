@@ -13,7 +13,6 @@ import graphviz
 import requests
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
-from nbconvert import HTMLExporter, PDFExporter
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
