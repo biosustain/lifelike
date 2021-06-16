@@ -107,6 +107,6 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           .concat(iacc.slice(idx + 1));
       }, acc);
     }, [decodedText]);
-    // console.log(this.text, this.parts);
+    //console.log(this.text, this.parts);
   }
 }
