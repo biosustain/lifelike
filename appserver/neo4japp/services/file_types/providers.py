@@ -120,7 +120,7 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
                                 )
                         )
                     if is_valid_doi(doi):
-                            return doi
+                        return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
                     doi = _search_doi_in_pdf(
@@ -183,7 +183,6 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
     except Exception as e:
         pass
     return None
-
 
 
 def search_doi_in_text(content: bytes) -> Optional[str]:
@@ -378,10 +377,11 @@ class BiocTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc'
     SHORTHAND = 'BioC'
     mime_types = (MIME_TYPE,)
+    ALLOWED_TYPES = ['.json', '.xml', '', 'bioc']
 
     def handles(self, file: Files) -> bool:
-        return super().handles(file) and os.path.splitext(file.filename)[1].lower() in ['.json',
-            '.xml', '']
+        ext = os.path.splitext(file.filename)[1].lower()
+        return super().handles(file) and ext in self.ALLOWED_TYPES
 
     def can_create(self) -> bool:
         return True
