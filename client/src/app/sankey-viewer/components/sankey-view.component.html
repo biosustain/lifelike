@@ -20,17 +20,6 @@
                     <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
                         {{ object?.filename }}
                     </h1>
-                    <!--                    <div class="d-flex">-->
-                    <!--                        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">-->
-                    <!--                            <button class="btn btn-secondary"-->
-                    <!--                                    (click)="toggleFiltersPanel()"-->
-                    <!--                                    ngbTooltip="Show Annotation Filters"-->
-                    <!--                                    container="body"-->
-                    <!--                                    placement="bottom top bottom-right top-right">-->
-                    <!--                                <i class="fa fa-fw fa-filter"></i>-->
-                    <!--                            </button>-->
-                    <!--                        </div>-->
-                    <!--                    </div>-->
                     <div ngbDropdown class="d-inline-block mr-4 flex-grow-0" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
@@ -45,25 +34,25 @@
                     <div class="btn-group btn-group-toggle">
                         <div ngbDropdown class="btn-group d-inline-block" title="Select Trace Network">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedTrace ? selectedTrace.description : 'Select Trace Network' }}
+                                {{ selectedNetworkTrace ? selectedNetworkTrace.description : 'Select Trace Network' }}
                             </button>
                             <div ngbDropdownMenu>
-                                <button ngbDropdownItem (click)="selectTrace(trace)"
+                                <button ngbDropdownItem (click)="selectNetworkTrace(trace)"
                                         *ngFor="let trace of networkTraces">{{trace.description}}</button>
                             </div>
                         </div>
                         <div ngbDropdown class="btn-group d-inline-block" title="Link size">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedValueAccessor ? selectedValueAccessor.description : 'Select Value Accessor' }}
+                                {{ selectedLinkValueAccessor ? selectedLinkValueAccessor.description : 'Select Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
                                 <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
-                                        *ngFor="let valueAccessor of valueGenerators"
+                                        *ngFor="let valueAccessor of linkValueGenerators"
                                         [disabled]="valueAccessor.disabled && valueAccessor.disabled()"
                                 >{{valueAccessor.description}}</button>
                                 <div class="dropdown-divider"></div>
                                 <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
-                                        *ngFor="let valueAccessor of valueAccessors">{{valueAccessor.description}}</button>
+                                        *ngFor="let valueAccessor of linkValueAccessors">{{valueAccessor.description}}</button>
                             </div>
                         </div>
                         <label class="btn-primary" ngbButtonLabel>
@@ -113,13 +102,6 @@
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-                        <!--                        <app-filter-panel-->
-                        <!--                                *ngIf="sankeyData"-->
-                        <!--                                (filter)="changeFilter($event)"-->
-                        <!--                                (link-size)="changeLinkSize($event)"-->
-                        <!--                                [paths]="allTraces"-->
-                        <!--                                [nodeCategories]="nodesColorMap"-->
-                        <!--                        ></app-filter-panel>-->
                         <app-sankey-panel *ngIf="details" [details]="details"></app-sankey-panel>
                     </div>
                 </as-split-area>
@@ -130,7 +112,7 @@
 
 <ng-template #RAWContent let-title="title" let-content>
 </ng-template>
-<ng-template #linkDetails let-link>
+<ng-template #linkDetails let-graphLink>
     <form class="d-flex flex-column justify-content-between">
         <fieldset class="fieldset-properties mt-2">
             <legend placement="top left right"
@@ -141,15 +123,15 @@
             <ngb-accordion #acclink="ngbAccordion" activeIds="desc">
                 <ngb-panel title="Description" id="desc">
                     <ng-template ngbPanelContent>
-                        <p [style.whiteSpace]="'pre-wrap'" [innerHTML]="link.description"></p>
+                        <p [style.whiteSpace]="'pre-wrap'" [innerHTML]="graphLink.description"></p>
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel [disabled]="true" *ngIf="!link.multiple_values else multipleValues">
+                <ngb-panel [disabled]="true" *ngIf="!graphLink._multiple_values else multipleValues">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
-                            {{ parseProperty(link.value) }}
+                            {{ parseProperty(graphLink.value) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -159,34 +141,30 @@
                             <ul class="list-group list-group-flush cancel-out-card-padding">
                                 <li class="list-group-item d-flex flex-wrap justify-content-between">
                                     <b>Source value</b>
-                                    {{ parseProperty(link.multiple_values[0]) }}
+                                    {{ parseProperty(graphLink._multiple_values[0]) }}
                                 </li>
                                 <li class="list-group-item d-flex flex-wrap justify-content-between">
                                     <b>Target value</b>
-                                    {{ parseProperty(link.multiple_values[1]) }}
+                                    {{ parseProperty(graphLink._multiple_values[1]) }}
                                 </li>
-<!--                                <li class="list-group-item d-flex justify-content-between small">-->
-<!--                                    <b>Layout calculation helper value</b>-->
-<!--                                    {{ link.value }}-->
-<!--                                </li>-->
                             </ul>
                         </ng-template>
                     </ngb-panel>
                 </ng-template>
-                <ngb-panel title="Trace" *ngIf="link.trace" cardClass="filled-card">
+                <ngb-panel title="Trace" *ngIf="graphLink._trace" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
                             <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Source</b>
-                                {{ getNodeById(link.trace.source).description }}
+                                {{ getNodeById(graphLink._trace.source).description }}
                             </li>
                             <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Target</b>
-                                {{ getNodeById(link.trace.target).description }}
+                                {{ getNodeById(graphLink._trace.target).description }}
                             </li>
                             <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Group</b>
-                                {{ link.trace.group }}
+                                {{ graphLink._trace.group }}
                             </li>
                             <li class="list-group-item">
                                 <ng-template #content let-modal>
@@ -199,7 +177,7 @@
                                     </div>
                                     <div class="modal-body vh-75">
                                         <app-vis-js-network
-                                                [data]="getTraceDetailsGraph(link.trace)"
+                                                [data]="getTraceDetailsGraph(graphLink.trace)"
                                         >
 
                                         </app-vis-js-network>
@@ -215,16 +193,16 @@
                 <ngb-panel title="Properties" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
-                            <li *ngFor="let property of valueAccessors"
+                            <li *ngFor="let property of linkValueAccessors"
                                 [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
                                  'flex-wrap': true,
                                  'justify-content-between': true,
-                                active: property === selectedValueAccessor
+                                active: property === selectedLinkValueAccessor
                               }"
-                            ><b>{{ property.description }}</b>{{parseProperty(link[property.description])}}</li>
-                            <li *ngIf="link.folded"
+                            ><b>{{ property.description }}</b>{{parseProperty(graphLink[property.description])}}</li>
+                            <li *ngIf="graphLink._folded"
                                 class="list-group-item d-flex justify-content-between"
                             >
                                 <b>Folded</b>
@@ -235,7 +213,7 @@
                 </ngb-panel>
                 <ngb-panel title="RAW link content">
                     <ng-template ngbPanelContent>
-                        <pre [style.marginBottom]="0">{{ getJSONDetails(link) }}</pre>
+                        <pre [style.marginBottom]="0">{{ getJSONDetails(graphLink) }}</pre>
                         <small>This view contains reduced object representation. Nested objects has been mapped to
                             their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
                             numbers
@@ -270,13 +248,6 @@
                             {{ parseProperty(node.value) }}
                         </button>
                     </ng-template>
-                    <!--                    <ng-template ngbPanelTitle>-->
-                    <!--                                <button ngbPanelToggle class="btn btn-link p-0">Toggle first</button>-->
-                    <!--                        <div class="d-flex justify-content-between">-->
-                    <!--                            <b>Value</b>-->
-                    <!--                            {{ node.value }}-->
-                    <!--                        </div>-->
-                    <!--                    </ng-template>-->
                 </ngb-panel>
                 <ngb-panel title="Labels" cardClass="filled-card">
                     <ng-template ngbPanelContent>

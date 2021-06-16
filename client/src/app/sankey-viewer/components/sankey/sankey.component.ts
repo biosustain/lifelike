@@ -1,20 +1,8 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  ViewChild,
-  EventEmitter,
-  Output,
-  ViewEncapsulation,
-  OnInit
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
 import {
-  clamp,
   createResizeObserver,
   layerWidth,
   composeLinkPath,
@@ -22,35 +10,11 @@ import {
   shortNodeText,
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
-  representativePositiveNumber
+  representativePositiveNumber,
+  symmetricDifference
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject } from 'rxjs';
-import { DomSanitizer } from '@angular/platform-browser';
-
-const uniqueBy = (arr, accessor) =>
-  arr.reduce((identifiers, elem) => {
-    const identifier = accessor(elem);
-    if (identifiers.has(identifier)) {
-      return identifiers;
-    } else {
-      identifiers.set(identifier, elem);
-      return identifiers;
-    }
-  }, new Map());
-
-function symmetricDifference(setA, setB, accessor) {
-  return [...uniqueBy(setB, accessor).entries()].reduce((difference, [identifier, elem]) => {
-    if (difference.has(identifier)) {
-      difference.delete(identifier);
-    } else {
-      difference.set(identifier, elem);
-    }
-    return difference;
-  }, uniqueBy(setA, accessor));
-}
 
 @Component({
   selector: 'app-sankey',
@@ -58,10 +22,9 @@ function symmetricDifference(setA, setB, accessor) {
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SankeyComponent implements AfterViewInit, OnDestroy {
   @Input() set timeInterval(ti) {
     if (this.sankey) {
-      this._timeInterval = ti;
       this.sankey.timeInterval(ti);
     }
   }
@@ -69,8 +32,7 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private elRef: ElementRef,
     private clipboard: ClipboardService,
-    private readonly snackBar: MatSnackBar,
-    private readonly domSanitizer: DomSanitizer
+    private readonly snackBar: MatSnackBar
   ) {
     this.sankey = d3Sankey.sankey()
       .nodeId(n => n.id)
@@ -87,7 +49,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
       // )
       .nodeAlign(d3Sankey.sankeyRight)
       .nodeWidth(10);
-    this.uiState = new BehaviorSubject({panX: 0, panY: 0, zoom: 1});
 
     this.linkClick = this.linkClick.bind(this);
     this.nodeClick = this.nodeClick.bind(this);
@@ -96,7 +57,8 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     this.nodeMouseOut = this.nodeMouseOut.bind(this);
     this.pathMouseOut = this.pathMouseOut.bind(this);
     this.dragmove = this.dragmove.bind(this);
-
+    this.attachLinkEvents = this.attachLinkEvents.bind(this);
+    this.attachNodeEvents = this.attachNodeEvents.bind(this);
 
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 8]);
@@ -137,30 +99,15 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() normalizeLinks = true;
 
-  get updateNodeText() {
-    const [width, _height] = this.sankey.size();
-    return texts => texts
-      .attr('x', _ => -6)
-      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
-      .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x0, x1}) => (x1 - x0) + 6)
-      .attr('text-anchor', 'start');
-  }
-
-  @Output() nodeClicked = new EventEmitter();
-  @Output() linkClicked = new EventEmitter();
-
-  @ViewChild('popover', {static: false}) public popover: NgbPopover;
-  @ViewChild('popoverAnchor', {static: false}) public popoverAnchor;
-
-  viewTransformation;
-
   @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
+
+  @Output() nodeClicked = new EventEmitter();
+  @Output() linkClicked = new EventEmitter();
   @Output() enter = new EventEmitter();
 
   private _data: SankeyData = {} as SankeyData;
@@ -180,40 +127,22 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly sankey: any;
   resizeObserver: any;
 
-  private _timeInterval = Infinity;
-
-  uiState;
-  pan;
   size;
-
-  d3links;
-
-  debounceDragRelayout;
 
   zoom;
   dragging = false;
 
 
-  getLinkDetails({trace, trace_group, folded, description, source, target, ...details}) {
-    return JSON.stringify(details, null, 2);
-  }
-
-  calculateNextUIState({deltaX = 0, deltaY = 0, zoomDelta = 0}) {
-    const {uiState: {value: {zoom, panX, panY}}, size: {width, height}} = this;
-    const newZoom = clamp(1, 10)(zoom + zoomDelta);
-    return {
-      panX: clamp(0, width * (newZoom - 1))(panX + deltaX),
-      panY: clamp(0, height * (newZoom - 1))(panY + deltaY),
-      zoom: newZoom
-    };
-  }
-
-  ngOnInit() {
-    this.uiState.subscribe(status =>
-      this.viewTransformation = this.domSanitizer.bypassSecurityTrustStyle(
-        'translate(' + -status.panX + 'px, ' + -status.panY + 'px)' + ' scale(' + status.zoom + ')'
-      )
-    );
+  get updateNodeText() {
+    // noinspection JSUnusedLocalSymbols
+    const [width, _height] = this.sankey.size();
+    return texts => texts
+      .attr('x', _ => -6)
+      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
+      .attr('text-anchor', 'end')
+      .filter(({x0}) => x0 < width / 2)
+      .attr('x', ({x0, x1}) => (x1 - x0) + 6)
+      .attr('text-anchor', 'start');
   }
 
   ngAfterViewInit() {
@@ -232,7 +161,6 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.resizeObserver.disconnect();
-    this.uiState.unsubscribe();
     delete this.resizeObserver;
   }
 
@@ -309,37 +237,24 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
     // }
   }
 
-  showPopOverForSVGElement(element, context) {
-    const bbox = element.getBBox();
-    if (this.popover.isOpen()) {
-      this.popover.close();
-    }
-    const popoverAnchorStyle = this.popoverAnchor.nativeElement.style;
-    popoverAnchorStyle.left = bbox.x + 'px';
-    popoverAnchorStyle.top = bbox.y + 'px';
-    popoverAnchorStyle.width = bbox.width + 'px';
-    popoverAnchorStyle.height = bbox.height + 'px';
-    this.popover.open(context);
-  }
-
   pathMouseOver(_element, data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .style('opacity', ({schemaClass, selected}) => schemaClass === data.schemaClass || selected ? 1 : 0.35);
+      .style('opacity', ({_color, _selected}) => _color === data._color || _selected ? 1 : 0.35);
   }
 
   pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
     d3.select(this.links.nativeElement)
       .selectAll('path')
-      .filter(({selected}) => !selected)
+      .filter(({_selected}) => !_selected)
       .style('opacity', 0.45);
   }
 
   nodeMouseOver(element, data, _eventId, _links, ..._rest) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
-      .filter(({selected}) => !selected)
-      .style('opacity', ({color}) => color === data.color ? 0.45 : 0.35);
+      .filter(({_selected}) => !_selected)
+      .style('opacity', ({_color}) => _color === data._color ? 0.45 : 0.35);
     d3.select(element).select('text')
       .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
@@ -422,12 +337,62 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateNodeRect = rects => rects
-    // .attr('x', ({x0}) => x0)
-    // .attr('y', ({y0}) => y0)
-    .attr('height', n => {
-      return representativePositiveNumber(n.y1 - n.y0);
-    })
+    .attr('height', n => representativePositiveNumber(n.y1 - n.y0))
     .attr('width', ({x1, x0}) => x1 - x0)
+
+  attachLinkEvents(d3Links) {
+    const {linkClick, pathMouseOver, pathMouseOut} = this;
+    d3Links
+      .on('click', function(data, eventId, links, ...args) {
+        return linkClick(this, data, eventId, links, ...args);
+      })
+      .on('mouseover', function(data, eventId, links, ...args) {
+        return pathMouseOver(this, data, eventId, links, ...args);
+      })
+      .on('mouseout', function(data, eventId, links, ...args) {
+        return pathMouseOut(this, data, eventId, links, ...args);
+      });
+  }
+
+  attachNodeEvents(d3Nodes) {
+    const {dragmove, nodeClick, nodeMouseOver, nodeMouseOut} = this;
+    const self = this;
+    d3Nodes
+      .on('mouseover', function(data, eventId, links, ...args) {
+        if (self.dragging) {
+          return;
+        }
+        return nodeMouseOver(this, data, eventId, links, ...args);
+      })
+      .on('mouseout', function(data, eventId, links, ...args) {
+        if (self.dragging) {
+          return;
+        }
+        return nodeMouseOut(this, data, eventId, links, ...args);
+      })
+      .call(
+        d3.drag()
+          .subject(d => d)
+          .on('start', function() {
+            self.dragging = true;
+            this.parentNode.appendChild(this);
+          })
+          .on('drag', function(d) {
+            return dragmove(this, d);
+          })
+          // tslint:disable-next-line:only-arrow-functions
+          .on('end', function(d) {
+            self.dragging = false;
+            if (d3.event.dx + d3.event.dy < 5) {
+              nodeClick(undefined, d, undefined, undefined);
+            }
+          })
+      )
+      .select('rect')
+      .on('click', function(data, eventId, links, ...args) {
+        return nodeClick(this, data, eventId, links, ...args);
+      });
+  }
 
   /**
    * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
@@ -441,29 +406,24 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private updateDOM(words) {
     const {
-      linkClick, nodeClick, nodeMouseOver, pathMouseOver, nodeMouseOut, pathMouseOut, dragmove,
       links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
       updateNodeRect, updateNodeText
     } = this;
-    this.d3links = d3.select(linksRef)
+
+    d3.select(linksRef)
       .selectAll('path')
       .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
-        enter => enter.append('path')
-          .on('click', function(data, eventId, links, ...args) {
-            return linkClick(this, data, eventId, links, ...args);
-          })
-          .on('mouseover', function(data, eventId, links, ...args) {
-            return pathMouseOver(this, data, eventId, links, ...args);
-          })
-          .on('mouseout', function(data, eventId, links, ...args) {
-            return pathMouseOut(this, data, eventId, links, ...args);
-          })
-          .call(enterLink => enterLink.append('title'))
+        enter => enter
+          .append('path')
+          .call(this.attachLinkEvents)
           .attr('d', link => {
             link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
             return composeLinkPath(link.calculated_params);
-          }),
+          })
+          .call(path =>
+            path.append('title')
+          ),
         update => update
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
@@ -482,124 +442,87 @@ export class SankeyComponent implements OnInit, AfterViewInit, OnDestroy {
             link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
             return composeLinkPath(link.calculated_params);
           }),
-        // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      // .attr('stroke-width', ({width}) => Math.max(1, width))
-      .attr('fill', ({schemaClass}) => schemaClass)
+      .attr('fill', ({_color}) => _color)
       .call(join =>
         join.select('title')
           .text(({description}) => description)
       );
-    const self = this;
+
     d3.select(nodesRef)
       .selectAll('g')
-      .data(words.nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0), ({id}) => id)
+      .data(
+        words.nodes.filter(
+          // should no longer be an issue but leaving as sanity check
+          // (if not satisfied visualisation brakes)
+          n => n.sourceLinks.length + n.targetLinks.length > 0
+        ),
+        ({id}) => id
+      )
       .join(
         enter => enter.append('g')
-          .on('mouseover', function(data, eventId, links, ...args) {
-            if (self.dragging) {
-              return;
-            }
-            return nodeMouseOver(this, data, eventId, links, ...args);
-          })
-          .on('mouseout', function(data, eventId, links, ...args) {
-            if (self.dragging) {
-              return;
-            }
-            return nodeMouseOut(this, data, eventId, links, ...args);
-          })
-          .call(
-            d3.drag()
-              .subject(d => d)
-              .on('start', function() {
-                self.dragging = true;
-                this.parentNode.appendChild(this);
-              })
-              .on('drag', function(d) {
-                return dragmove(this, d);
-              })
-              // tslint:disable-next-line:only-arrow-functions
-              .on('end', function(d) {
-                self.dragging = false;
-                if (d3.event.dx + d3.event.dy < 5) {
-                  nodeClick(undefined, d, undefined, undefined);
-                }
-              })
-          )
-          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
           .call(enterNode =>
             updateNodeRect(
               enterNode.append('rect')
-                .on('click', function(data, eventId, links, ...args) {
-                  return nodeClick(this, data, eventId, links, ...args);
-                })
             )
           )
+          .call(this.attachNodeEvents)
+          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
           .call(enterNode =>
             updateNodeText(
-              enterNode.append('text')
+              enterNode
+                .append('text')
                 .attr('dy', '0.35em')
-                .attr('text-anchor', 'end')
             )
           )
           .call(enterNode =>
             enterNode.append('title')
+              .text(({name}) => name.join('\n'))
           )
           .call(e => this.enter.emit(e)),
         update => update
-          .call(enterNode =>
+          .call(enterNode => {
             updateNodeRect(
               enterNode.select('rect')
               // todo: reenable when performance improves
               // .transition().duration(RELAYOUT_DURATION)
-            )
-          )
-          .call(enterNode =>
+            );
             updateNodeText(
               enterNode.select('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'end')
               // todo: reenable when performance improves
               // .transition().duration(RELAYOUT_DURATION)
-            )
-          )
-          .call(enterNode =>
-            enterNode.select('title')
-          )
+            );
+          })
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      .call(enterNode =>
-        updateNodeRect(
-          enterNode.select('rect')
-        )
-      )
       .attr('fill', (node: Node) => {
-        const { color, sourceLinks, targetLinks, selected } = node;
-        const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace.group);
+        const {_color, sourceLinks, targetLinks, _selected} = node;
+        // only when exactly one trace group starts/ends at the node
+        const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
         if (difference.size === 1) {
           const [link] = difference.values();
-          const traceColor = link.schemaClass;
-          const labColor = d3.cubehelix(color);
+          const traceColor = link._color;
+          const labColor = d3.cubehelix(_color);
           const calcColor = d3.cubehelix(traceColor);
           calcColor.l = labColor.l;
-          calcColor.opacity = selected ? 1 : labColor.opacity;
+          calcColor.opacity = _selected ? 1 : labColor.opacity;
           return calcColor;
         }
-        return color;
+        return _color;
       })
-      .call(joined => joined.select('rect')
-        .attr('stroke', '#000000')
-      )
-      .call(joined => joined.select('text')
-        .text(shortNodeText)
-      )
-      .call(joined => joined.select('title')
-        .text(({name}) => name)
-      );
+      .call(joined => {
+        updateNodeRect(
+          joined.select('rect')
+        );
+        joined.select('text')
+          .text(shortNodeText);
+      });
   }
 }
