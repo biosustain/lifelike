@@ -11,7 +11,6 @@ from typing import Optional
 import bioc
 import textwrap
 import graphviz
-import html2text
 import nbformat
 import requests
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
