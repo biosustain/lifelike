@@ -61,7 +61,7 @@
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
             [newTab]="true" [sideBySide]="true">
-      Open{{ nameEntity && object.isDirectory ? ' folder' : ''}} in navigator
+      Open file navigator
     </button>
   </ng-container>
 </ng-container>

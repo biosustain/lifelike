@@ -34,6 +34,7 @@ import { EnrichmentTablesModule } from './enrichment/enrichment-tables.module';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
 import { HtmlViewerLibModule } from './html-viewer/html-viewer-lib.module';
 import { BiocViewerLibModule } from './bioc-viewer/bioc-viewer-lib.module';
+import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -65,6 +66,7 @@ import { BiocViewerLibModule } from './bioc-viewer/bioc-viewer-lib.module';
     SearchModule,
     ChartsModule,
     DrawingToolModule,
+    SankeyViewerLibModule,
     NgbModule,
     FileNavigatorModule,
     BiocViewerLibModule,

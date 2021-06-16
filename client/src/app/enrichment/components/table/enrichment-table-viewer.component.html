@@ -44,6 +44,12 @@
                 </div>
               </div>
 
+              <div>
+                <button class="btn btn-secondary ml-2" (click)="openNewWindow(result.object.value)">
+                  <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+                </button>
+              </div>
+
               <div *ngIf="queuedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
@@ -96,9 +102,9 @@
                             result.object.value.project.name,
                             result.object.value.hashId
                         ]"
-                      [newTab]="true" [sideBySide]="true">
+                      [newTab]="true" [sideBySide]="true"
+                      ngbTooltip="File Navigator" placement="bottom">
                 <i class="fas fa-fw fa-compass"></i>
-                Open in Navigator
               </button>
             </div>
 

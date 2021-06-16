@@ -19,8 +19,8 @@ from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 directory = os.path.realpath(os.path.dirname(__file__))
 
 
-ORGANISM_SYNONYM = 'Homo Sapiens'
-ORGANISM_TAX_ID = '9606'
+ORGANISM_SYNONYM = ''
+ORGANISM_TAX_ID = ''
 
 
 @contextlib.contextmanager
@@ -77,7 +77,11 @@ def main():
         f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
         with cprofiled():
             annotations = create_annotations_from_pdf(
-                DEFAULT_ANNOTATION_CONFIGS, ORGANISM_SYNONYM, ORGANISM_TAX_ID, f, f.filename)
+                annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                specified_organism_synonym=ORGANISM_SYNONYM,
+                specified_organism_tax_id=ORGANISM_TAX_ID,
+                document=f,
+                filename=f.filename)
 
 
 if __name__ == '__main__':

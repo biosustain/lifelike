@@ -16,7 +16,7 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
   _results: ResultMapping<AnnotationGenerationResultData>[] = [];
 
   success: string[] = [];
-  failed: string[] = [];
+  failed: object[] = [];
   // TODO: show missing files?
 
   constructor(modal: NgbActiveModal,
@@ -45,7 +45,7 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
         if (result.success) {
           this.success.push(f.filename);
         } else {
-          this.failed.push(f.filename);
+          this.failed.push({filename: f.filename, error: result.error});
         }
       }
     }

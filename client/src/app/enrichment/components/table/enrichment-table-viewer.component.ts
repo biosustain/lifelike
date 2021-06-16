@@ -24,9 +24,9 @@ import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import { isNullOrUndefined } from 'util';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { ObjectUpdateRequest } from 'app/file-browser/schema';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -37,13 +37,9 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from './dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { EnrichmentService } from '../../services/enrichment.service';
-import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -89,13 +85,17 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly enrichmentService: EnrichmentService,
               protected readonly progressDialog: ProgressDialog,
               protected readonly changeDetectorRef: ChangeDetectorRef,
-              protected readonly elementRef: ElementRef) {
+              protected readonly elementRef: ElementRef,
+              protected readonly filesystemObjectActions: FilesystemObjectActions) {
     this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
+
+    // If the url fragment contains entity id info, assume we're looking for a specific annotation. Otherwise just search text.
     this.findController = new AsyncElementFind(
       null, // We'll update this later, once the table is rendered
       this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
     );
+    this.findController.query = this.annotation.id.length ? this.annotation.id : this.annotation.text;
   }
 
   ngOnInit() {
@@ -134,7 +134,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   ngAfterViewInit() {
     this.findTargetChangesSub = this.findTarget.changes.subscribe({
       next: () => {
-        if (this.findTarget.first) {
+        // If the enrichment table is rendered, and we haven't already set the findController target, set it
+        if (this.findTarget.first && this.findController.target === null) {
           this.findController.target = this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0];
           // This may seem like an anti-pattern -- and it probably is -- but there is seemingingly no other way around Angular's
           // `ExpressionChangedAfterItHasBeenCheckedError` here. Even Angular seems to think so, as they use this exact pattern in their
@@ -144,8 +145,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             // Actually not sure if this the desired behavior.
             this.findController.start();
           }, 0);
-        } else {
+        // Only reset the findController target when the table is reset
+        } else if (isNullOrUndefined(this.findTarget.first)) {
           this.findController.target = null;
+          setTimeout(() => {
+            this.findController.stop();
+          }, 0);
         }
       }
     });
@@ -253,6 +258,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     return observable;
   }
 
+  openNewWindow(enrichmentTable: FilesystemObject) {
+    return this.filesystemObjectActions.openNewWindow(enrichmentTable);
+  }
+
   /**
    * Opens EnrichmentTableOrderDialog that gives new column order.
    */
@@ -319,7 +328,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.annotation = {id: '', text: '', color: ''};
     this.findController.stop();
     this.findController = new AsyncElementFind(
-      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.findController.target,
       this.generateTextFindQueue
     );
   }
@@ -328,7 +337,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.annotation = {id, text, color};
     this.findController.stop();
     this.findController = new AsyncElementFind(
-      this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0],
+      this.findController.target,
       this.generateAnnotationFindQueue
     );
   }
@@ -336,6 +345,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
     this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
     this.findController.query = annotationId;
+    this.findController.start();
+  }
+
+  startTextFind(text: string) {
+    this.switchToTextFind();
+    this.findController.query = text;
     this.findController.start();
   }
 

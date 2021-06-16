@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
 import { map } from 'rxjs/operators';
+import { EnrichmentTableViewerComponent } from '../../../table/enrichment-table-viewer.component';
 
 export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
   appLink: [
@@ -15,6 +16,15 @@ export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
     file_id +
     '([?#].*)?'
 });
+
+// just coping the patter how it has been implemented for file navigator...
+export function triggerSearchOnShouldReplaceTab(text) {
+  return component => {
+    const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+    enrichmentTableViewerComponent.startTextFind(text);
+    return false;
+  };
+}
 
 /**
  * Implements a version of [LinkWithoutHrefDirective] that automatically resolves path to related
@@ -39,10 +49,14 @@ export class SELinkDirective extends LinkWithoutHrefDirective {
   sideBySide = true;
   newTab = true;
 
+  get shouldReplaceTab() {
+    return triggerSearchOnShouldReplaceTab(this.appSELink);
+  }
+
   appLink;
   matchExistingTab;
 
   get fragment() {
-    return this.appSELink;
+    return `text=${this.appSELink}`;
   }
 }

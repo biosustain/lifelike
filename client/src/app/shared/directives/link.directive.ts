@@ -41,6 +41,10 @@ export class AbstractLinkDirective {
     }
   }
 
+  shouldReplaceTab(component) {
+    return true;
+  }
+
   @HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey'])
   onClick(button: number, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean): boolean {
     if (!this.handleClick) {
@@ -65,6 +69,7 @@ export class AbstractLinkDirective {
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,
       preferStartupPane: this.preferStartupPane,
+      shouldReplaceTab: this.shouldReplaceTab
     };
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
 

@@ -5,8 +5,8 @@
         <i class="fa fa-fw fa-plus"></i>
         Create User
       </button>
-      <div class="d-inline-block" ngbTooltip="Not yet implemented.">
-        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+      <div class="d-inline-block" ngbTooltip="Under construction!">
+        <button class="btn btn-secondary ml-2" [disabled]="!isOneSelected()" (click)="displayUpdateDialog()" >
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
         <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
@@ -91,6 +91,11 @@
       </td>
       <td class="align-middle d-none d-lg-table-cell text-truncate">
         {{ user.email }}
+      </td>
+      <td class="align-middle d-none d-md-table-cell text-truncate">
+        <button class="btn btn-secondary ml-2" [disabled]="!user.locked" (click)="displayUnlockUserDialog(user)">
+          Unlock user
+        </button>
       </td>
     </tr>
     </tbody>

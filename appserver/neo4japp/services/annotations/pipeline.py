@@ -21,6 +21,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
 from neo4japp.services.annotations.initializer import (
     get_annotation_service,
     get_bioc_document_service,
+    get_enrichment_annotation_service,
     get_entity_recognition
 )
 from neo4japp.util import normalize_str
@@ -181,43 +182,15 @@ def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def _create_annotations(
+def _create_fallback_organism(
     specified_organism_synonym: str,
-    specified_organism_tax_id: str,
-    filename: str,
-    parsed: List[PDFWord],
-    pdf_text: str,
-    excluded_annotations: List[dict],
-    custom_annotations: List[dict],
-    annotation_method: Dict[str, dict],
-    enrichment_mappings: List[Tuple[int, dict]] = None
+    specified_organism_tax_id: str
 ):
-    annotator = get_annotation_service()
-    bioc_service = get_bioc_document_service()
-    entity_recog = get_entity_recognition()
-
-    start = time.time()
-
-    # identify entities w/ NLP first
-    nlp_results = get_nlp_entities(
-        text=pdf_text,
-        entities=set(k for k, v in annotation_method.items() if v['nlp']))
-
-    start_lmdb_time = time.time()
-    entity_results = entity_recog.identify(
-        custom_annotations=custom_annotations,
-        excluded_annotations=excluded_annotations,
-        tokens=parsed,
-        nlp_results=nlp_results
-    )
-    current_app.logger.info(
-        f'Total LMDB lookup time {time.time() - start_lmdb_time}',
-        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-    )
-
     entity_synonym = ''
     entity_id = ''
     entity_category = ''
+
+    entity_recog = get_entity_recognition()
 
     if specified_organism_synonym and specified_organism_tax_id:
         entity_synonym = normalize_str(specified_organism_synonym)
@@ -233,24 +206,46 @@ def _create_annotations(
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             entity_category = 'Uncategorized'
+    return SpecifiedOrganismStrain(
+        synonym=entity_synonym, organism_id=entity_id, category=entity_category)
 
-    annotations = annotator.create_annotations(
+
+def _identify_entities(
+    parsed: List[PDFWord],
+    pdf_text: str,
+    excluded_annotations: List[dict],
+    custom_annotations: List[dict],
+    annotation_method: Dict[str, dict]
+):
+    entity_recog = get_entity_recognition()
+
+    # identify entities w/ NLP first
+    try:
+        nlp_start_time = time.time()
+        nlp_results = get_nlp_entities(
+            text=pdf_text,
+            entities=set(k for k, v in annotation_method.items() if v['nlp']))
+        current_app.logger.info(
+            f'Total NLP processing time {time.time() - nlp_start_time}',
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+        )
+    except Exception:
+        raise AnnotationError(
+            'Unable to Annotate',
+            'An unexpected error occurred with the NLP service.')
+
+    start = time.time()
+    entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
-        entity_results=entity_results,
-        entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
-        specified_organism=SpecifiedOrganismStrain(
-            synonym=entity_synonym, organism_id=entity_id, category=entity_category),
-        enrichment_mappings=enrichment_mappings
+        tokens=parsed,
+        nlp_results=nlp_results
     )
-
-    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-
     current_app.logger.info(
-        f'Time to create annotations {time.time() - start}',
+        f'Total LMDB lookup time {time.time() - start}',
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    return entity_results
 
 
 def create_annotations_from_pdf(
@@ -260,6 +255,9 @@ def create_annotations_from_pdf(
     document,
     filename
 ):
+    annotator = get_annotation_service()
+    bioc_service = get_bioc_document_service()
+
     pdf_text = ''
     parsed = None
 
@@ -284,17 +282,34 @@ def create_annotations_from_pdf(
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
-    annotations = _create_annotations(
-        annotation_method=annotation_configs['annotation_methods'],
-        specified_organism_synonym=specified_organism_synonym,
-        specified_organism_tax_id=specified_organism_tax_id,
-        filename=filename,
+    entities = _identify_entities(
         parsed=parsed,
         pdf_text=pdf_text,
+        excluded_annotations=document.excluded_annotations,
         custom_annotations=document.custom_annotations,
-        excluded_annotations=document.excluded_annotations
+        annotation_method=annotation_configs['annotation_methods']
     )
-    return annotations
+
+    fallback_organism = _create_fallback_organism(
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id
+    )
+
+    start = time.time()
+    annotations = annotator.create_annotations(
+        custom_annotations=document.custom_annotations,
+        entity_results=entities,
+        entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+        specified_organism=fallback_organism
+    )
+
+    current_app.logger.info(
+        f'Time to create annotations {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+    )
+
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def create_annotations_from_text(
@@ -303,6 +318,9 @@ def create_annotations_from_text(
     specified_organism_tax_id,
     text
 ):
+    annotator = get_annotation_service()
+    bioc_service = get_bioc_document_service()
+
     pdf_text = ''
     parsed = None
 
@@ -327,17 +345,34 @@ def create_annotations_from_text(
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
 
-    annotations = _create_annotations(
-        annotation_method=annotation_configs['annotation_methods'],
-        specified_organism_synonym=specified_organism_synonym,
-        specified_organism_tax_id=specified_organism_tax_id,
-        filename='text-extract',
+    entities = _identify_entities(
         parsed=parsed,
         pdf_text=pdf_text,
+        excluded_annotations=[],
         custom_annotations=[],
-        excluded_annotations=[]
+        annotation_method=annotation_configs['annotation_methods']
     )
-    return annotations
+
+    fallback_organism = _create_fallback_organism(
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id
+    )
+
+    start = time.time()
+    annotations = annotator.create_annotations(
+        custom_annotations=[],
+        entity_results=entities,
+        entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+        specified_organism=fallback_organism
+    )
+
+    current_app.logger.info(
+        f'Time to create annotations {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+    )
+
+    bioc = bioc_service.read(text=pdf_text, file_uri='text-extract')
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def create_annotations_from_enrichment_table(
@@ -347,6 +382,9 @@ def create_annotations_from_enrichment_table(
     enrichment_mappings,
     text
 ):
+    annotator = get_enrichment_annotation_service()
+    bioc_service = get_bioc_document_service()
+
     pdf_text = ''
     parsed = None
 
@@ -370,15 +408,33 @@ def create_annotations_from_enrichment_table(
         f'Time to parse text {time.time() - start}',
         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
     )
-    annotations = _create_annotations(
-        annotation_method=annotation_configs['annotation_methods'],
-        specified_organism_synonym=specified_organism_synonym,
-        specified_organism_tax_id=specified_organism_tax_id,
-        filename='text-extract',
+
+    entities = _identify_entities(
         parsed=parsed,
         pdf_text=pdf_text,
         custom_annotations=[],
         excluded_annotations=[],
+        annotation_method=annotation_configs['annotation_methods']
+    )
+
+    fallback_organism = _create_fallback_organism(
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id
+    )
+
+    start = time.time()
+    annotations = annotator.create_annotations(
+        custom_annotations=[],
+        entity_results=entities,
+        entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+        specified_organism=fallback_organism,
         enrichment_mappings=enrichment_mappings
     )
-    return annotations
+
+    current_app.logger.info(
+        f'Time to create annotations {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+    )
+
+    bioc = bioc_service.read(text=pdf_text, file_uri='text-extract')
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)

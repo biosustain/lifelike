@@ -62,7 +62,7 @@ export class ErrorHandler {
     return errorResponse$.pipe(
       mergeMap(errorResponse => {
         let title = 'We\'re sorry!';
-        let message = 'Looks like something went wrong! Please try again in a moment.';
+        let message = 'Looks like something went wrong on our end! Please try again in a moment.';
         let additionalMsgs = [];
         let stacktrace = null;
         // A transaction id for log audits with Sentry (Sentry.io)
@@ -81,7 +81,7 @@ export class ErrorHandler {
           }
 
           // Override some fields for some error codes
-          if (httpErrorResponse.status === 403 || httpErrorResponse.status === 404) {
+          if (httpErrorResponse.status === 404) {
             message = 'The page that you are looking for does not exist. You may have ' +
               'followed a broken link or the page may have been removed.';
           } else if (httpErrorResponse.status === 413) {

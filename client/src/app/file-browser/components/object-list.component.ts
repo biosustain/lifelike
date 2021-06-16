@@ -13,6 +13,10 @@ import { CollectionModel } from 'app/shared/utils/collection-model';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { BehaviorSubject } from 'rxjs';
+import { Progress } from '../../interfaces/common-dialog.interface';
+import { finalize, map, tap } from 'rxjs/operators';
+import { openDownloadForBlob } from '../../shared/utils/files';
 
 @Component({
   selector: 'app-object-list',
@@ -63,5 +67,34 @@ export class ObjectListComponent {
       });
     }, () => {
     });
+  }
+
+  openObject(target: FilesystemObject) {
+    this.objectOpen.next(target);
+
+    if (this.appLinks) {
+      if (target.isOpenable) {
+        this.workspaceManager.navigate(target.getCommands(), {
+          newTab: !target.isDirectory,
+        });
+      } else {
+        const progressDialogRef = this.progressDialog.display({
+          title: `Download ${getObjectLabel(target)}`,
+          progressObservable: new BehaviorSubject<Progress>(new Progress({
+            status: 'Generating download...',
+          })),
+        });
+        this.filesystemService.getContent(target.hashId).pipe(
+          map(blob => {
+            return new File([blob], target.filename);
+          }),
+          tap(file => {
+            openDownloadForBlob(file, file.name);
+          }),
+          finalize(() => progressDialogRef.close()),
+          this.errorHandler.create({label: 'Download file'}),
+        ).subscribe();
+      }
+    }
   }
 }

@@ -4,6 +4,8 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
+// import { isNullOrUndefined } from 'util';
+
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormComponent } from 'app/shared/components/base/form.component';
 
@@ -62,6 +64,10 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
     if (params.hasOwnProperty('projects') && params.projects !== []) {
       params.projects.forEach(project => q.push(`project:${project}`));
     }
+    // TODO: Add this back if we put synonyms back in the advanced search dialog
+    // if (params.hasOwnProperty('synonyms') && !isNullOrUndefined(params.synonyms)) {
+    //   q.push(`synonyms:${params.synonyms}`);
+    // }
 
     return q.join(' ');
   }

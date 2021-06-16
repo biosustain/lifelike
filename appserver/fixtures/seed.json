@@ -47,6 +47,7 @@
         "password": "password",
         "first_name": "John",
         "last_name": "Doe",
+        "failed_login_count": 0,
         "roles": [
           {
             "name": "admin"
@@ -61,6 +62,7 @@
         "password": "password",
         "first_name": "Michelle",
         "last_name": "Doe",
+        "failed_login_count": 3,
         "roles": [
           {
             "name": "user"
