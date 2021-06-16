@@ -24,7 +24,7 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
   });
 }
 
-export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T | undefined> {
+export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, any | undefined> {
   return map((data: ArrayBuffer | undefined) => {
     if (data == null) {
       return null;
