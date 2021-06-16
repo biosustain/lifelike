@@ -110,11 +110,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     this.openbiocSub = this.loadTask.results$.subscribe(({
       result: [object, content],
       value: [file],
-    }) => {
-      //      console.log(object);
-      //      console.log(content);                                             
+    }) => {                                            
       this.biocData = content.splice(0, 1);
-      console.log(this.biocData);
       this.object = object;
       this.emitModuleProperties();
 
@@ -132,9 +129,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     let sectionType = infons.section_type;
     let type = infons.type;
     let res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
-    if (!res) {
-      //console.log(passage);
-    }
     return res;
   }
 
