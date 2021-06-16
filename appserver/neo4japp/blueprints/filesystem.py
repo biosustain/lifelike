@@ -625,7 +625,6 @@ class FileListView(FilesystemBaseView):
             # Save the URL
             file.upload_url = url
 
-
             mime_type = params.get('mime_type')
 
             # Detect mime type

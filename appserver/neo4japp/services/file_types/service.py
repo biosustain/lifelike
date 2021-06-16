@@ -34,7 +34,6 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-
     def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
