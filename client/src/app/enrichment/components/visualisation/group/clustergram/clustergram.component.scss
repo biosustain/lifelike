@@ -9,10 +9,6 @@ $tooltip-arrow-width: 2*$tooltip-arrow-height;
 $background-color: white;
 
 
-cdk-virtual-scroll-viewport {
-  height: 70vh;
-}
-
 :host {
   position: relative;
   height: 100%;
