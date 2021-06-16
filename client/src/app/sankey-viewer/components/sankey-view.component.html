@@ -177,7 +177,8 @@
                                     </div>
                                     <div class="modal-body vh-75">
                                         <app-vis-js-network
-                                                [data]="getTraceDetailsGraph(graphLink.trace)"
+                                                [data]="getTraceDetailsGraph(graphLink._trace)"
+                                                [config]="traceDetailsConfig"
                                         >
 
                                         </app-vis-js-network>
