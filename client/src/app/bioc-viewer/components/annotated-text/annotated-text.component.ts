@@ -9,7 +9,7 @@ import { Annotation } from '../bioc-view.component';
 })
 export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   @Input() text;
-  @Input() annotations;
+  @Input() annotations : Annotation[];
   @Input() offset;
 
   parts: (string | Annotation)[];
@@ -40,7 +40,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     const decodedText = this.decodeHTML(this.text);
     this.parts = this.annotations.reduce((acc, annotation) => {
       return annotation.locations.reduce((iacc, location) => {
-        let part = 0;
+        let part;
         let offset = 0;
         let idx = 0;
         for (idx = 0; idx < iacc.length; idx++) {
