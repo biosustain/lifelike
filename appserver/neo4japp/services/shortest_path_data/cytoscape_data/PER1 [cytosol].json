@@ -1145,14 +1145,14 @@
             "label": "Regulation of protein ISGylation by ISG15 deconjugating enzyme USP18",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -1809,10 +1809,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3029,10 +3029,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -4189,10 +4189,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -5329,10 +5329,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -6449,10 +6449,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",

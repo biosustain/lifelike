@@ -1145,14 +1145,14 @@
             "label": "FKBP1A [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2929,10 +2929,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -4109,10 +4109,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -5289,10 +5289,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -6409,10 +6409,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7529,10 +7529,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",

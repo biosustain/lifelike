@@ -965,14 +965,14 @@
             "label": "Dissociation of RAS:RAF complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -1405,14 +1405,14 @@
             "label": "NF-kappaB p50:c-Rel [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2725,14 +2725,14 @@
             "label": "G-protein beta-gamma complex [plasma membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2745,14 +2745,14 @@
             "label": "G-alpha(t):G-beta-gamma:Opsins complex dissociates to active G-alpha(t)",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2765,14 +2765,14 @@
             "label": "GATA3 [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2785,14 +2785,14 @@
             "label": "FOXA1 and GATA3 bind to CCND1 promoter",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2805,14 +2805,14 @@
             "label": "CIN85 dissociates from EGF:p-6Y-EGFR:CBL:Beta-Pix:CDC42:GTP:CIN85",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2825,14 +2825,14 @@
             "label": "BTRC [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2845,14 +2845,14 @@
             "label": "ISGylation of E2 conjugating enzymes",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2865,14 +2865,14 @@
             "label": "E2-mediated FOS gene expression",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2885,14 +2885,14 @@
             "label": "RAB1:GTP:USO1:coatomer:PalmC-YKT6:p24 dimers:cargo:spectrin:anykrin [transport vesicle]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2905,14 +2905,14 @@
             "label": "Dissociation of oncogenic RAS:RAF complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2925,14 +2925,14 @@
             "label": "Vesicle is tethered through binding GOLGA2:GORASP1, GOLGB1 and the COG complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2949,10 +2949,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2965,14 +2965,14 @@
             "label": "p-4Y-PLCG1 dissociates from activated FGFR2",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2985,14 +2985,14 @@
             "label": "Negative regulation of DDX58/IFIH1 signaling by RNF216",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3005,14 +3005,14 @@
             "label": "Phosphorylated heterodimers of ERBB2 KD mutants and EGFR phosphorylate PLCG1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3025,14 +3025,14 @@
             "label": "Activation of Latent HCMV Genome",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3045,14 +3045,14 @@
             "label": "PPARG:Fatty Acid:RXRA:Mediator:Coactivator Complex [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3065,14 +3065,14 @@
             "label": "GDI1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3085,14 +3085,14 @@
             "label": "NF-kappaB translocates from the cytosol to the nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3101,8 +3101,8 @@
             }
         },
         {
-            "id": "9773",
-            "label": "Fusion of viral membrane with host cell membrane",
+            "id": "9792",
+            "label": "K63polyUb [cytosol]",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -3125,14 +3125,14 @@
             "label": "HDAC3 [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3145,14 +3145,14 @@
             "label": "FGF2(10-155) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3165,14 +3165,14 @@
             "label": "Separation of sister chromatids",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3185,14 +3185,14 @@
             "label": "Fatty acid ligands activate PPARA",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3205,14 +3205,14 @@
             "label": "Equilibrative transport (export) of adenosine and biogenic amines by solute carrier family 29 (nucleoside transporters), member 4",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3225,14 +3225,14 @@
             "label": "HSP90:ATP:p23:FKBP52:SHR:SH translocates to the nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3245,14 +3245,14 @@
             "label": "HSP90:ATP:PTGES3:FKBP52:SHR:SH [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3265,14 +3265,14 @@
             "label": "HBEGF(63-148) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3285,14 +3285,14 @@
             "label": "p-Y-STATs translocate to nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3345,14 +3345,14 @@
             "label": "SLC8A1,2,3 exchange 3Na+ for Ca2+",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#e1a8a5"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#e1a8a5",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#e1a8a5"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3365,14 +3365,14 @@
             "label": "p-Y1105-ARHGAP35 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3385,14 +3385,14 @@
             "label": "LACT [extracellular region]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3425,14 +3425,14 @@
             "label": "CBFB binds RUNX1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3445,14 +3445,14 @@
             "label": "Phosphorylation of CTLA-4",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3465,14 +3465,14 @@
             "label": "p-Y705-STAT3 dimer translocates from cytosol to nucleoplasm",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3485,14 +3485,14 @@
             "label": "Fusion of viral membrane with host cell membrane",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3505,14 +3505,14 @@
             "label": "Viral core surrounded by Matrix layer [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3525,14 +3525,14 @@
             "label": "p-Y-STATs dissociate",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3545,14 +3545,14 @@
             "label": "SLC7A11-mediated exchange of extracellular cysteine and cytosolic glutamate",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3565,14 +3565,14 @@
             "label": "EXO1 interacting with MSH2:MSH3 excises DNA strand containing an insertion/deletion loop (IDL)",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3585,14 +3585,14 @@
             "label": "p-4Y-PLCG1 dissociates from activated FGFR4 mutants",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3605,14 +3605,14 @@
             "label": "CIN85:endophilin [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3625,14 +3625,14 @@
             "label": "BMAL1:CLOCK,NPAS2 heterodimer is phosphorylated and translocates to the nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3645,14 +3645,14 @@
             "label": "myristoylated nef [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3665,14 +3665,14 @@
             "label": "HSP90:ATP:PTGES3:FKBP52:NR3C1:SH [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3689,10 +3689,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7905,14 +7905,14 @@
             "label": "LPAR1,2,3,5:LPA [plasma membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7921,8 +7921,8 @@
             }
         },
         {
-            "id": "9701",
-            "label": "CGA [extracellular region]",
+            "id": "9551",
+            "label": "PolyUb-Misfolded Proteins [cytosol]",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -7945,14 +7945,14 @@
             "label": "PolyUb-misfolded nascent CFTR [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7965,14 +7965,14 @@
             "label": "NF-kB migrates to the nucleus and turns on transcription",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7981,8 +7981,8 @@
             }
         },
         {
-            "id": "9696",
-            "label": "p-T235-CEBPB [nucleoplasm]",
+            "id": "9548",
+            "label": "ISG15 E3 ligases [cytosol]",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -8005,14 +8005,14 @@
             "label": "RUNX3 translocates to the nucleus",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8025,14 +8025,14 @@
             "label": "ARIH1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8045,14 +8045,14 @@
             "label": "Dissociation of phosphorylated PLCG1 from ligand-responsive p-6Y-EGFR mutants",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8065,14 +8065,14 @@
             "label": "PXLP-K314-GPT transaminates PYR to form L-Ala",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8085,14 +8085,14 @@
             "label": "AGTR1 [clathrin-coated endocytic vesicle membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8105,14 +8105,14 @@
             "label": "G-protein alpha (q/11): GTP [plasma membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8125,14 +8125,14 @@
             "label": "RIPK3 is phosphorylated",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8149,10 +8149,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8165,14 +8165,14 @@
             "label": "Phosphorylated SMAD2/3 dissociates from TGFBR",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8185,14 +8185,14 @@
             "label": "p-T325,T331,S362,S374-FOS [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8205,14 +8205,14 @@
             "label": "MAPK3 (ERK1) and MAPK1 (ERK2) phosphorylate CEBPB",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8225,14 +8225,14 @@
             "label": "CEBPB [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8245,14 +8245,14 @@
             "label": "BSG:MCTs cotransport LACT, H+ from cytosol to extracellular region",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8265,14 +8265,14 @@
             "label": "FGFR1OP-FGFR1 phosphorylates STAT1 and STAT3",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8285,14 +8285,14 @@
             "label": "GYS1 catalyzes the incorporation of phosphoglucose into glycogen-GYG1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8325,14 +8325,14 @@
             "label": "SAA1(19-122) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8345,14 +8345,14 @@
             "label": "PF4 gene transcription is stimulated by RUNX1:CBFB",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8365,14 +8365,14 @@
             "label": "PF4(48-101) [platelet alpha granule lumen]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8385,14 +8385,14 @@
             "label": "p-Y705-STAT3 dimer [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8405,14 +8405,14 @@
             "label": "Vesicle budding",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8425,14 +8425,14 @@
             "label": "COPI vesicle uncoating at the ER",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8445,14 +8445,14 @@
             "label": "RAB1:GTP:coatomer:p24 dimers:SEC22B:cargo:NBAS:RINT1:ZW10:STX18:USE1L:BNIP1 [endoplasmic reticulum membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8465,14 +8465,14 @@
             "label": "C3AR1 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8485,14 +8485,14 @@
             "label": "2OG [cytosol]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8509,10 +8509,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8525,14 +8525,14 @@
             "label": "The Ligand:GPCR:G12/13 complex dissociates",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8545,14 +8545,14 @@
             "label": "L-Glu [cytosol]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8565,14 +8565,14 @@
             "label": "RIPK3 binds RIPK1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8585,14 +8585,14 @@
             "label": "TGFA precursor [endoplasmic reticulum membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8605,14 +8605,14 @@
             "label": "ADORA2B:Ade-Rib:GsGTP dissociates",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8645,14 +8645,14 @@
             "label": "p-Y705-STAT3 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8665,14 +8665,14 @@
             "label": "Dissociation of the PAR:Gq complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8685,14 +8685,14 @@
             "label": "Dissociation of Rho GTP:GDP from GDI complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8705,14 +8705,14 @@
             "label": "AREG precursor [endoplasmic reticulum membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8725,14 +8725,14 @@
             "label": "PPARG [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8745,14 +8745,14 @@
             "label": "MON1:CCZ1 exchanges GTP for GDP on RAB7",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8765,14 +8765,14 @@
             "label": "Release of GABA at the synapse",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8785,14 +8785,14 @@
             "label": "c-FOS activation by phospho ERK1/2",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8805,14 +8805,14 @@
             "label": "CXCR4 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8825,14 +8825,14 @@
             "label": "GPR84 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8845,14 +8845,14 @@
             "label": "RNF4 ubiquitinates MDC1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8869,10 +8869,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8885,14 +8885,14 @@
             "label": "TMED2:TMED10 tetramer:GPI-CD59, GPI-FOLR1 [endoplasmic reticulum-Golgi intermediate compartment membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8905,14 +8905,14 @@
             "label": "PolyUb:misfolded proteins dissociate from PRKN:UBE2N:UBE2V1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8925,14 +8925,14 @@
             "label": "SEC22B [endoplasmic reticulum membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8945,14 +8945,14 @@
             "label": "p-BMAL1:p-CLOCK,NPAS2 [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8965,14 +8965,14 @@
             "label": "RHO [photoreceptor disc membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8981,8 +8981,8 @@
             }
         },
         {
-            "id": "9599",
-            "label": "p-4Y-PLCG1 [plasma membrane]",
+            "id": "9498",
+            "label": "Activated TRAF6 synthesizes unanchored polyubiquitin chains upon TLR stimulation",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -9005,14 +9005,14 @@
             "label": "Exocytosis of specific granule membrane proteins",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9021,18 +9021,18 @@
             }
         },
         {
-            "id": "9596",
-            "label": "L-Glu [extracellular region]",
-            "databaseLabel": "DatabaseObject",
+            "id": "9496",
+            "label": "Auxilin recruits HSPA8:ATP to the clathrin-coated vesicle",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
                 "border": "#0000ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#0000ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9041,18 +9041,18 @@
             }
         },
         {
-            "id": "9595",
-            "label": "SEC22B:STX18:USE1:BNIP1L:3xSNAPs:NSF hexamer [endoplasmic reticulum membrane]",
-            "databaseLabel": "DatabaseObject",
+            "id": "9495",
+            "label": "PI(4)P:p-T156 AP-2:clathrin:ITSNs:EPS15:REPS1:SGIP1:NECAPs:AAK1:CLASP proteins:cargo:F-BAR proteins:BAR domain proteins:ARP2/3 complex:WASL:f-actin:HIP dimers:DNM:GDP:SYNJs:auxilin [clathrin-coated endocytic vesicle membrane]",
+            "databaseLabel": "Complex",
             "font": {
                 "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9065,14 +9065,14 @@
             "label": "FGL2 [ficolin-1-rich granule lumen]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9085,14 +9085,14 @@
             "label": "The Ligand:GPCR:Gz complex dissociates",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9105,14 +9105,14 @@
             "label": "DNA DNA DSBs:p-MRN:p-S1981,Ac-K3016-ATM:KAT5:K63PolyUb-K14,K16,p-S139-H2AFX,Me2K21-HIST1H4A-Nucleosome:SUMO2:K1840,p-5T-MDC1:p-S102-WHSC1:RNF8:Zn2+:SUMO1:p-T4827-HERC2:UBE2N:UBE2V2:RNF168:PIAS4:p-S25,S1778-TP53BP1:p-5S,2T-BRCA1-A complex [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9125,14 +9125,14 @@
             "label": "Release of p-PLCG1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9145,14 +9145,14 @@
             "label": "Stimulation of IL8 transcription in senescent cells",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9165,14 +9165,14 @@
             "label": "TACR1 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9185,14 +9185,14 @@
             "label": "Dissociation of phosphorylated PLC-gamma 1 from p-EGFRvIII mutant",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9205,14 +9205,14 @@
             "label": "PPBP(35-128) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9221,8 +9221,8 @@
             }
         },
         {
-            "id": "9577",
-            "label": "ASH2L [nucleoplasm]",
+            "id": "9486",
+            "label": "PolyUb-Misfolded cilia proteins [cytosol]",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -9245,14 +9245,14 @@
             "label": "PolyUb-Misfolded CETN1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9265,14 +9265,14 @@
             "label": "Retinoic acid activates HOXB1 chromatin",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9285,14 +9285,14 @@
             "label": "Dissociation of the PAR:G12/13 complex",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9305,14 +9305,14 @@
             "label": "RNF8:Zn2+ [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9325,14 +9325,14 @@
             "label": "KIFC1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9345,14 +9345,14 @@
             "label": "K48PolyUb-K21,22-p-S32,36-IkBA:NF-kB complex [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9365,14 +9365,14 @@
             "label": "TP53 and AP-1 stimulate MSH2 expression",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9385,14 +9385,14 @@
             "label": "Phosphorylation and activation of PLCG due to FCGR3A effect",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9405,14 +9405,14 @@
             "label": "Hypophosphorylation of RNA Pol II CTD by FCP1P protein",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9421,22 +9421,22 @@
             }
         },
         {
-            "id": "9558",
-            "label": "p-4Y-PLCG1 dissociates from activated FGFR3 mutants",
-            "databaseLabel": "DatabaseObject",
+            "id": "9476",
+            "label": "Clathrin recruits auxilins to the clathrin-coated vesicle",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 }
             }
         },
@@ -9445,14 +9445,14 @@
             "label": "Dissociation of high activity BRAF complexes",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9465,14 +9465,14 @@
             "label": "AcCho [extracellular region]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9485,14 +9485,14 @@
             "label": "LDH tetramer reduces PYR to LACT",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9505,14 +9505,14 @@
             "label": "Acyl Ghrelin and C-Ghrelin are secreted",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9525,14 +9525,14 @@
             "label": "p190RhoGEF exchanges GTP for GDP on RHOA, activating it",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9545,14 +9545,14 @@
             "label": "DNA polymerase delta polymerizes DNA across single stranded gap",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9565,14 +9565,14 @@
             "label": "RPA:DNA containing single strand gap [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9585,14 +9585,14 @@
             "label": "RBBP5 [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9605,14 +9605,14 @@
             "label": "ZFYVE9-1 [early endosome membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9625,14 +9625,14 @@
             "label": "Activation of NIK",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9645,14 +9645,14 @@
             "label": "UBE2N:UBE2V1 [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9669,10 +9669,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9685,14 +9685,14 @@
             "label": "DNA DSB:p-MRN:p-S1981,Ac-K3016-ATM:KAT5 [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9705,14 +9705,14 @@
             "label": "GABA [extracellular region]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9725,14 +9725,14 @@
             "label": "BET1:GOSR2:STX5 bind v-SNARES on tethered vesicle",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9745,14 +9745,14 @@
             "label": "Ca2+ [extracellular region]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9765,14 +9765,14 @@
             "label": "PF4(48-101) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9785,14 +9785,14 @@
             "label": "The Ligand:GPCR:Gi complex dissociates",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9805,14 +9805,14 @@
             "label": "F2RL3 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9825,14 +9825,14 @@
             "label": "SLC24A1-4 exchange extracellular 4Na+ for cytosolic Ca2+, K+",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9845,14 +9845,14 @@
             "label": "SNAP25 [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9865,14 +9865,14 @@
             "label": "Dissociation of clathrin-associated proteins",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9885,14 +9885,14 @@
             "label": "NFKB1:RELA translocates from the cytosol to the nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9905,14 +9905,14 @@
             "label": "NFKB1(1-433):RELA [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9925,14 +9925,14 @@
             "label": "Cytosolic DUSPs dephosphorylate MAPKs",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9945,14 +9945,14 @@
             "label": "EXO1 interacting with MSH2:MSH6 excises single strand DNA containing a mismatch",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9965,14 +9965,14 @@
             "label": "Core histone octamer [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9985,14 +9985,14 @@
             "label": "EDNRB [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10005,14 +10005,14 @@
             "label": "Polyglutamylated microtubule [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10029,10 +10029,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10061,28 +10061,8 @@
             }
         },
         {
-            "id": "9495",
-            "label": "PI(4)P:p-T156 AP-2:clathrin:ITSNs:EPS15:REPS1:SGIP1:NECAPs:AAK1:CLASP proteins:cargo:F-BAR proteins:BAR domain proteins:ARP2/3 complex:WASL:f-actin:HIP dimers:DNM:GDP:SYNJs:auxilin [clathrin-coated endocytic vesicle membrane]",
-            "databaseLabel": "Complex",
-            "font": {
-                "color": "#e1a8a5"
-            },
-            "color": {
-                "background": "#FFFFFF",
-                "border": "#e1a8a5",
-                "hover": {
-                    "background": "#FFFFFF",
-                    "border": "#e1a8a5"
-                },
-                "highlight": {
-                    "background": "#FFFFFF",
-                    "border": "#e1a8a5"
-                }
-            }
-        },
-        {
-            "id": "9494",
-            "label": "FGL2 [ficolin-1-rich granule lumen]",
+            "id": "9444",
+            "label": "Acyl Ghrelin [extracellular region]",
             "databaseLabel": "DatabaseObject",
             "font": {
                 "color": "#0a96b4"
@@ -10105,14 +10085,14 @@
             "label": "O-octanoyl-L-serine-GHRL-1(24-50) [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10125,14 +10105,14 @@
             "label": "Release of PLCG from FCGR3A",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10145,14 +10125,14 @@
             "label": "IgG:Leishmania surface:p-FCGR3A:p-6Y-SYK:p-3Y-PLCG [plasma membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10165,14 +10145,14 @@
             "label": "TGFA precursor [ER to Golgi transport vesicle membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10185,14 +10165,14 @@
             "label": "HDAC1 [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10205,14 +10185,14 @@
             "label": "AREG precursor [ER to Golgi transport vesicle membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10225,14 +10205,14 @@
             "label": "PolyUb-Misfolded IFT88 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10245,14 +10225,14 @@
             "label": "CLOCK [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10265,14 +10245,14 @@
             "label": "RNF152 polyubiquitinates RRAGA",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#ebb434"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#ebb434",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#ebb434"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10305,14 +10285,14 @@
             "label": "NPAS2 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10325,14 +10305,14 @@
             "label": "UBE2N:UBE2V2 [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10345,14 +10325,14 @@
             "label": "Ca2+ [cytosol]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10365,14 +10345,14 @@
             "label": "CASP8(217-374) [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10385,14 +10365,14 @@
             "label": "PPARG:RXRA heterodimer binds to fatty acid-like ligands",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10405,14 +10385,14 @@
             "label": "GYS2 catalyzes the incorporation of phosphoglucose into glycogen-GYG2",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10425,14 +10405,14 @@
             "label": "UBE2L6 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10445,14 +10425,14 @@
             "label": "Transfer of NEDD8 to AcM-UBE2M",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10485,14 +10465,14 @@
             "label": "Activated FGFR4:p-FRS:p-PTPN11 activates RAS nucleotide exchange",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10525,14 +10505,14 @@
             "label": "TRAF6 binding leads to IRAK1:TRAF6 release",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10565,14 +10545,14 @@
             "label": "p-2S,S376,T,T209,T387-IRAK1:TRAF6 [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10585,14 +10565,14 @@
             "label": "PP2A dephosphorylates p-RHO to RHO",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10605,14 +10585,14 @@
             "label": "Estrogen-responsive CCND1 gene expression",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10625,14 +10605,14 @@
             "label": "NR4A2 [nucleoplasm]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10645,14 +10625,14 @@
             "label": "KDM1A demethylates monomethylated H3K9 (MeK-10-H3) at KLK2 and KLK3 promoters",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10665,14 +10645,14 @@
             "label": "PIAS4 SUMOylates MDC1",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10685,14 +10665,14 @@
             "label": "LEP [extracellular region]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10705,14 +10685,14 @@
             "label": "CCND1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10725,14 +10705,14 @@
             "label": "SUMO2:UBE2I [nucleoplasm]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10745,14 +10725,14 @@
             "label": "CBL [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10765,14 +10745,14 @@
             "label": "SRC autophosphorylation is positively regulated by InlA-bound CDH1",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10805,14 +10785,14 @@
             "label": "STAT1 and STAT3 dimers translocate to the nucleus",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10825,14 +10805,14 @@
             "label": "WNT5A:FZD4 is endocytosed",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10845,14 +10825,14 @@
             "label": "viral dsRNA:IFIH1, viral dsRNA:K63polyUb-DDX58:MAVS [mitochondrial outer membrane]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10865,14 +10845,14 @@
             "label": "p-Y701-STAT1 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10885,14 +10865,14 @@
             "label": "PL [plasma membrane]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10905,14 +10885,14 @@
             "label": "TNFRSF1B [plasma membrane]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10925,14 +10905,14 @@
             "label": "AP-2 Complex [cytosol]",
             "databaseLabel": "Complex",
             "font": {
-                "color": "#0a96b4"
+                "color": "#CC0066"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#CC0066",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#CC0066"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10945,14 +10925,14 @@
             "label": "Overexpressed HIST1H2AC and ESR1:ESTG bind MYC and BCL2 genes",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10965,14 +10945,14 @@
             "label": "UBE2N [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10985,14 +10965,14 @@
             "label": "MAP3K14 [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11005,14 +10985,14 @@
             "label": "PolyUb-Misfolded ARL13B [cytosol]",
             "databaseLabel": "EntityWithAccessionedSequence",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ff33ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11025,14 +11005,14 @@
             "label": "TRAF6 is K63 poly-ubiquitinated",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11045,14 +11025,14 @@
             "label": "Retinoic acid activates HOXD4 chromatin",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11065,14 +11045,14 @@
             "label": "Expression of PPARG",
             "databaseLabel": "BlackBoxEvent",
             "font": {
-                "color": "#0a96b4"
+                "color": "#9999ff"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11085,14 +11065,14 @@
             "label": "TGFBR2 is recruited to tight junctions after TGF-beta stimulation",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11105,14 +11085,14 @@
             "label": "SPAST (spastin) mediates the severing of microtubules at chromosome attachment sites",
             "databaseLabel": "Reaction",
             "font": {
-                "color": "#0a96b4"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -11125,14 +11105,14 @@
             "label": "GMP [cytosol]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",

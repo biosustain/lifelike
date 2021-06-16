@@ -1145,14 +1145,14 @@
             "label": "UMP [cytosol]",
             "databaseLabel": "SimpleEntity",
             "font": {
-                "color": "#0a96b4"
+                "color": "#43bf49"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#43bf49",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#43bf49"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -2849,10 +2849,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -3989,10 +3989,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff0000",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff0000"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -5109,10 +5109,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#9999ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#9999ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -6269,10 +6269,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -7409,10 +7409,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -8609,10 +8609,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -9769,10 +9769,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
@@ -10909,10 +10909,10 @@
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#0a96b4",
+                "border": "#ff33ff",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#0a96b4"
+                    "border": "#ff33ff"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
