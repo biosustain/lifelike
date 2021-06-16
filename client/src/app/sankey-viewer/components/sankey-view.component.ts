@@ -11,7 +11,6 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { uuidv4 } from '../../shared/utils';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { GraphData } from '../../interfaces/vis-js.interface';
 import { parseForRendering } from './utils';
 import {
   fractionOfFixedNodeValue,
@@ -22,8 +21,10 @@ import {
   colorNodes,
   linkSizeByProperty,
   linkSizeByArrayProperty,
-  nodeValueByProperty
+  nodeValueByProperty,
+  getTraceDetailsGraph
 } from './algorithms';
+import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -132,6 +133,27 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedLinks;
   selectedTraces;
 
+  traceDetailsConfig = {
+    physics: {
+      enabled: false,
+      barnesHut: {
+        avoidOverlap: 0.2,
+        centralGravity: 0.1,
+        damping: 0.9,
+        gravitationalConstant: -10000,
+        springLength: 250,
+      },
+      stabilization: {
+        enabled: false
+      }
+    },
+    edges: {
+      smooth: {
+        type: networkEdgeSmoothers.DYNAMIC
+      }
+    }
+  };
+
   parseProperty = parseForRendering;
 
   getNodeById(nodeId) {
@@ -147,19 +169,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   getTraceDetailsGraph(trace) {
     let r = this.traceDetailsGraph.get(trace);
     if (!r) {
-      const nodesIds = [].concat(...trace.node_paths);
-      r = {
-        edges: trace.detail_edges.map(([from, to, d]) => ({
-          from, to, id: uuidv4(), arrows: 'to', label: d.type, ...(d || {})
-        })),
-        nodes:
-          this.filteredSankeyData.nodes.filter(({id}) => nodesIds.includes(id)).map(n => ({
-            ...n,
-            color: undefined,
-            databaseLabel: n.type,
-            label: n.name[0]
-          }))
-      } as GraphData;
+      r = getTraceDetailsGraph(trace, this.sankeyData);
       this.traceDetailsGraph.set(trace, r);
     }
     return r;

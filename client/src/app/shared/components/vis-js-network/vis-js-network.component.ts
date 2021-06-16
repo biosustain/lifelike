@@ -9,7 +9,7 @@ import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
 
 
-enum networkEdgeSmoothers {
+export enum networkEdgeSmoothers {
   DYNAMIC = 'dynamic',
   CONTINUOUS = 'continuous',
   DISCRETE = 'discrete',
