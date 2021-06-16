@@ -92,7 +92,7 @@ export const noneNodeValue = ({nodes}) => {
 
 export const linkSizeByProperty = property => ({links}) => {
   links.forEach(l => {
-    l.value = representativePositiveNumber(l[property]) / (l.adjacent_divider || 1);
+    l.value = representativePositiveNumber(l[property]) / (l._adjacent_divider || 1);
   });
   return {
     _sets: {
@@ -106,7 +106,7 @@ export const linkSizeByProperty = property => ({links}) => {
 export const linkSizeByArrayProperty = property => ({links}) => {
   links.forEach(l => {
     const [v1, v2] = l[property];
-    l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d) / (l.adjacent_divider || 1));
+    l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d) / (l._adjacent_divider || 1));
     // take max for layer calculation
     l.value = Math.max(...l.multiple_values);
   });
