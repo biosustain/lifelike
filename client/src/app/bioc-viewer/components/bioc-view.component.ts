@@ -30,7 +30,7 @@ import { SearchControlComponent } from 'app/shared/components/search-control.com
   styleUrls: ['./bioc-view.component.scss'],
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
     read: SearchControlComponent,
@@ -108,11 +108,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openbiocSub = this.loadTask.results$.subscribe(({
-                                                           result: [object, content],
-                                                           value: [file],
-                                                         }) => {
-
-      this.biocData = content;
+      result: [object, content],
+      value: [file],
+    }) => {
+      //      console.log(object);
+      //      console.log(content);                                             
+      this.biocData = content.splice(0, 1);
+      console.log(this.biocData);
       this.object = object;
       this.emitModuleProperties();
 
@@ -121,6 +123,37 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     });
 
     this.loadFromUrl();
+  }
+
+  isSubHeader(passage) {
+    const subSections = ["INTRO", "ABSTRACT"];
+    const ALLOWED_TYPES = ["title_1", "abstract_title_1"];
+    let infons = passage.infons || {};
+    let sectionType = infons.section_type;
+    let type = infons.type;
+    let res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
+    if (!res) {
+      //console.log(passage);
+    }
+    return res;
+  }
+
+  isTitle2(passage) {
+    const subSections = ["INTRO", "ABSTRACT"];
+    const ALLOWED_TYPES = ["title_2"];
+    let infons = passage.infons || {};
+    let sectionType = infons.section_type;
+    let type = infons.type;
+    let res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
+    return res;
+  }
+
+  isParagraph(passage) {
+    const TYPES = ["paragraph", "abstract"];
+    let infons = passage.infons || {};
+    let type = infons.type;
+    let res = TYPES.includes(type);
+    return res;
   }
 
   title(doc) {
@@ -273,7 +306,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+    this.workSpaceManager.navigateByUrl(url, { sideBySide: true, newTab: true });
   }
 
   dragStarted(event: DragEvent) {
