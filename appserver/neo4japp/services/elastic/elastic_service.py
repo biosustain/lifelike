@@ -176,9 +176,8 @@ class ElasticService(ElasticConnection, GraphConnection):
         self.elastic_client.indices.refresh(index_id)
 
     def index_or_delete_files(self, hash_ids: List[str]):
-        # self._delete_files(hash_ids)
-        # self._index_files(hash_ids)
-        pass
+        self._delete_files(hash_ids)
+        self._index_files(hash_ids)
 
     def _delete_files(self, hash_ids: List[str]):
         self.delete_documents(hash_ids, FILE_INDEX_ID)
