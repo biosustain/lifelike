@@ -342,6 +342,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
+                    if label == 'link':
+                        if node['data'].get('sources') or node.data.get('hyperlinks'):
+                            data = node['data'].get('sources') or [] \
+                                   + node['data'].get('hyperlinks') or []
+                            if any(link.get('url').lstrip().startswith('mailto:') for link in data):
+                                label = 'email'
                     params['image'] = (
                             f'/home/n4j/assets/{label}'
                             f'_{style.get("fillColor") or default_icon_color}.png'
