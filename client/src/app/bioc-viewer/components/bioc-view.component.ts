@@ -110,7 +110,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     this.openbiocSub = this.loadTask.results$.subscribe(({
       result: [object, content],
       value: [file],
-    }) => {                                            
+    }) => {
       this.biocData = content.splice(0, 1);
       this.object = object;
       this.emitModuleProperties();
@@ -123,30 +123,30 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isSubHeader(passage) {
-    const subSections = ["INTRO", "ABSTRACT"];
-    const ALLOWED_TYPES = ["title_1", "abstract_title_1"];
-    let infons = passage.infons || {};
-    let sectionType = infons.section_type;
-    let type = infons.type;
-    let res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
+    const subSections = ['INTRO', 'ABSTRACT'];
+    const ALLOWED_TYPES = ['title_1', 'abstract_title_1'];
+    const infons = passage.infons || {};
+    const sectionType = infons.section_type;
+    const type = infons.type;
+    const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
     return res;
   }
 
   isTitle2(passage) {
-    const subSections = ["INTRO", "ABSTRACT"];
-    const ALLOWED_TYPES = ["title_2"];
-    let infons = passage.infons || {};
-    let sectionType = infons.section_type;
-    let type = infons.type;
-    let res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
+    const subSections = ['INTRO', 'ABSTRACT'];
+    const ALLOWED_TYPES = ['title_2'];
+    const infons = passage.infons || {};
+    const sectionType = infons.section_type;
+    const type = infons.type;
+    const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
     return res;
   }
 
   isParagraph(passage) {
-    const TYPES = ["paragraph", "abstract"];
-    let infons = passage.infons || {};
-    let type = infons.type;
-    let res = TYPES.includes(type);
+    const TYPES = ['paragraph', 'abstract'];
+    const infons = passage.infons || {};
+    const type = infons.type;
+    const res = TYPES.includes(type);
     return res;
   }
 
