@@ -264,7 +264,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:replace_with_param) WHERE n.id = 'MESH:' + row.entity_id
         MERGE (s: Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -275,7 +275,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + row.entity_id
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -286,7 +286,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:db_BioCyc:Compound) WHERE n.id = row.entity_id
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -297,7 +297,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:db_NCBI:Gene) WHERE n.id = row.entity_id
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -308,7 +308,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:db_NCBI:Taxonomy) WHERE n.id = row.entity_id
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -319,7 +319,7 @@ class GraphMixin(GraphConnection):
         WITH $values AS row
         MATCH (n:db_UniProt:Protein) WHERE n.id = row.entity_id
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = apoc.date.parseAsZonedDateTime(row.inclusion_date),
             r.user = row.user
@@ -335,6 +335,7 @@ class GraphMixin(GraphConnection):
         MERGE (n:db_Lifelike {id:'Lifelike:' + row.entity_id})
         ON CREATE
         SET n:replace_with_param,
+            n.need_review = 1,
             n.data_source = row.data_source,
             n.external_id = row.entity_id,
             n.name = row.common_name,
@@ -344,7 +345,7 @@ class GraphMixin(GraphConnection):
             n.user = row.user
         WITH n, row
         MERGE (s:Synonym {name: row.synonym})
-        SET s.global_inclusion = 1
+        SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
         SET r.inclusion_date = n.inclusion_date, r.user = n.user
         """.replace('replace_with_param', query_label)
