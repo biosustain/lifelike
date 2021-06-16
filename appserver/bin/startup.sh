@@ -20,7 +20,7 @@ if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development"
     touch .READY
     flask run --host 0.0.0.0
 elif [ "${FLASK_APP_CONFIG}" = "Production" ] || [ "${FLASK_APP_CONFIG}" = "Staging" ] || [ "${FLASK_APP_CONFIG}" = "QA" ]; then
-    gunicorn -b 0.0.0.0:5000 --workers=9 --threads=25 app:app --timeout 1200
+    gunicorn -b 0.0.0.0:5000 --workers=9 --threads=10 --timeout 1200 --max-requests 200 app:app
 else
     echo "No environment setup for ${FLASK_ENV}"
 fi

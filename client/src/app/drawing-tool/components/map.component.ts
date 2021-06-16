@@ -3,9 +3,11 @@ import {
   Component,
   EventEmitter,
   Input,
-  NgZone, OnChanges,
+  NgZone,
+  OnChanges,
   OnDestroy,
-  Output, SimpleChanges,
+  Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -26,10 +28,11 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
+import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 
 @Component({
   selector: 'app-map',
@@ -75,6 +78,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly errorHandler: ErrorHandler,
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly dataTransferDataService: DataTransferDataService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -84,8 +88,15 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       ]);
     });
 
+    const isInEditMode = this.isInEditMode.bind(this);
+
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, blob, extra], value}) => {
       this.map = result;
+
+      if (result.new && result.privileges.writable && !isInEditMode()) {
+        this.workspaceManager.navigate(['/projects', this.map.project.name, 'maps', this.map.hashId, 'edit']);
+      }
+
       this.contentValue = blob;
       this.initializeMap();
       this.handleExtra(extra);
@@ -146,6 +157,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if ('map' in changes || 'contentValue' in changes) {
       this.initializeMap();
     }
+  }
+
+  private isInEditMode() {
+    const {path = ''} = this.route.snapshot.url[4] || {};
+    return path === 'edit';
   }
 
   private initializeMap() {

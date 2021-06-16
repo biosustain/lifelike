@@ -9,6 +9,7 @@ from io import BufferedIOBase
 from typing import Optional
 
 import bioc
+import textwrap
 import graphviz
 import html2text
 import nbformat
@@ -18,15 +19,31 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from nbconvert import HTMLExporter, PDFExporter
 from pdfminer import high_level
 
+import neo4japp.utils.string
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.sankey import validate_sankey
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.constants import (
+    ANNOTATION_STYLES_DICT,
+    ARROW_STYLE_DICT,
+    BORDER_STYLES_DICT,
+    DEFAULT_BORDER_COLOR,
+    DEFAULT_FONT_SIZE,
+    DEFAULT_NODE_WIDTH,
+    DEFAULT_NODE_HEIGHT,
+    MAX_LINE_WIDTH,
+    BASE_IMAGE_HEIGHT,
+    IMAGE_HEIGHT_INCREMENT,
+    SCALING_FACTOR
+    )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
+from neo4japp.utils.string import extract_text
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -199,8 +216,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def handles(self, file: Files) -> bool:
-        return super().handles(file) and os.path.splitext(file.filename)[1].lower() == '.pdf'
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
@@ -392,6 +409,11 @@ class IPythonNotebookHTMLTypeProvider(IPythonNotebookTypeProvider, HTMLTypeProvi
 
 class IPythonNotebookPDFTypeProvider(IPythonNotebookTypeProvider, PDFTypeProvider):
     exporter = PDFExporter()
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        return buffer  # Elasticsearch can index PDF files directly
+
+    def should_highlight_content_text_matches(self) -> bool:
+        return True
 
     def convert(self, buffer):
         data = buffer.read().decode('utf-8')
@@ -404,13 +426,13 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 
@@ -428,13 +450,17 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for node in content_json.get('nodes', []):
             node_data = node.get('data', {})
-            string_list.append(node.get('display_name', ''))
-            string_list.append(node_data.get('detail', '') if node_data else '')
+            display_name = node.get('display_name', '')
+            detail = node_data.get('detail', '') if node_data else ''
+            string_list.append('' if display_name is None else display_name)
+            string_list.append('' if detail is None else detail)
 
         for edge in content_json.get('edges', []):
             edge_data = edge.get('data', {})
-            string_list.append(edge.get('label', ''))
-            string_list.append(edge_data.get('detail', '') if edge_data else '')
+            label = edge.get('label', '')
+            detail = edge_data.get('detail', '') if edge_data else ''
+            string_list.append('' if label is None else label)
+            string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
@@ -456,50 +482,114 @@ class MapTypeProvider(BaseFileTypeProvider):
                 graph_attr=graph_attr,
                 format=format)
 
+        node_hash_type_dict = {}
+
         for node in json_graph['nodes']:
+            style = node.get('style', {})
+            # Store node hash->label for faster edge default type evaluation
+            node_hash_type_dict[node['hash']] = node['label']
             params = {
                 'name': node['hash'],
-                'label': node['display_name'],
-                'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
+                'label': '\n'.join(textwrap.TextWrapper(
+                    width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+                    replace_whitespace=False).wrap(node['display_name'])),
+                'pos': (
+                   f"{node['data']['x'] / SCALING_FACTOR},"
+                   f"{-node['data']['y'] / SCALING_FACTOR}!"
+                    ),
+                'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+                'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
                 'shape': 'box',
-                'style': 'rounded',
-                'color': '#2B7CE9',
-                'fontcolor': ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color'],
+                'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+                'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
+                    node['label'], {'color': 'black'}).get('color'),
                 'fontname': 'sans-serif',
-                'margin': "0.2,0.0"
+                'margin': "0.2,0.0",
+                'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+                'penwidth': f"{style.get('lineWidthScale', 1.0)}"
+                            if style.get('lineType') != 'none' else '0.0'
             }
 
             if node['label'] in ['map', 'link', 'note']:
                 label = node['label']
-                params['image'] = f'/home/n4j/assets/{label}.png'
-                params['labelloc'] = 'b'
-                params['forcelabels'] = "true"
-                params['imagescale'] = "both"
-                params['color'] = '#ffffff00'
+                if style.get('showDetail'):
+                    params['style'] += ',filled'
+                    detail_text = node['data'].get('detail', ' ')
+                    params['label'] = '\n'.join(
+                        textwrap.TextWrapper(
+                            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+                            replace_whitespace=False).wrap(detail_text))
+                    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                                     {'bgcolor': 'black'}
+                                                                     ).get('bgcolor')
+                    if not style.get('strokeColor'):
+                        params['penwidth'] = '0.0'
+                else:
+                    default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                                    {'defaultimagecolor': 'black'}
+                                                                    )['defaultimagecolor']
+                    params['image'] = (
+                            f'/home/n4j/assets/{label}'
+                            f'_{style.get("fillColor") or default_icon_color}.png'
+                        )
+                    params['imagepos'] = 'tc'
+                    params['labelloc'] = 'b'
+                    # Prevents the upper part of the label and image from overlapping
+                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
+                                           * IMAGE_HEIGHT_INCREMENT + 0.25 *
+                                           (style.get('fontSizeScale', 1.0) - 1.0))
+                    params['width'] = '0.6'
+                    params['fixedsize'] = 'true'
+                    params['imagescale'] = 'true'
+                    params['forcelabels'] = "true"
+                    params['penwidth'] = '0.0'
+                    params['fontcolor'] = style.get("fillColor") or default_icon_color
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
-                params['color'] = ANNOTATION_STYLES_DICT.get(
-                        node['label'],
-                        {'color': 'black'})['color']
-                params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                        node['label'],
-                        {'color': 'black'})['color']
-                params['fontcolor'] = 'black'
-                params['style'] = 'rounded,filled'
+                default_color = ANNOTATION_STYLES_DICT.get(
+                    node['label'],
+                    {'color': 'black'})['color']
+                params['color'] = style.get('strokeColor') or default_color
+                if style.get('fillColor'):
+                    params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
+                params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+                params['fontcolor'] = style.get('fillColor') or 'black'
+                params['style'] += ',filled'
 
-            if 'hyperlink' in node['data'] and node['data']['hyperlink']:
-                params['href'] = node['data']['hyperlink']
-            if 'source' in node['data'] and node['data']['source']:
-                params['href'] = node['data']['source']
+            if node['data'].get('sources'):
+                doi_src = next((src for src in node['data'].get('sources') if src.get(
+                    'domain') == "DOI"), None)
+                if doi_src:
+                    params['href'] = doi_src.get('url')
+                else:
+                    params['href'] = node['data']['sources'][-1].get('url')
+            elif node['data'].get('hyperlinks'):
+                params['href'] = node['data']['hyperlinks'][-1].get('url')
 
             graph.node(**params)
 
         for edge in json_graph['edges']:
+            style = edge.get('style', {})
+            default_line_style = 'solid'
+            default_arrow_head = 'arrow'
+            if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
+                   item in ['link', 'note']):
+                default_line_style = 'dashed'
+                default_arrow_head = 'none'
             graph.edge(
-                    edge['from'],
-                    edge['to'],
-                    edge['label'],
-                    color='#2B7CE9'
+                edge['from'],
+                edge['to'],
+                edge['label'],
+                dir='both',
+                color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType') or default_arrow_head),
+                penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
+                    else '0.0',
+                fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+                style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
+
             )
 
         ext = f".{format}"
@@ -511,20 +601,51 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
 
+class SankeyTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'vnd.lifelike.document/sankey'
+    SHORTHAND = 'Sankey'
+    mime_types = (MIME_TYPE,)
+
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        try:
+            # If the data validates, I guess it's a map?
+            self.validate_content(buffer)
+            return [(0, self.MIME_TYPE)]
+        except ValueError as e:
+            return []
+        finally:
+            buffer.seek(0)
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
+        validate_sankey(data)
+
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        content_json = json.load(buffer)
+        content = io.StringIO()
+        string_list = set(extract_text(content_json))
+
+        content.write(' '.join(list(string_list)))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+
+
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/enrichment-table'
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
             self.validate_content(buffer)
-            return 0
+            return [(0, self.MIME_TYPE)]
         except ValueError:
-            return None
+            return []
         finally:
             buffer.seek(0)
 

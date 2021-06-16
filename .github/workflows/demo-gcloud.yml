@@ -1,12 +1,6 @@
 name: GCP Demo Deployment
 
-on:
-  push:
-    tags:
-      - "demo-gcp"
-    branches:
-      # only trigger when branches match refs/heads/staging/
-      - "demo-gcp/**"
+on: workflow_dispatch
 
 jobs:
   build:
@@ -72,6 +66,17 @@ jobs:
           dockerfile: ./Dockerfile
           build_extra_args: "--build-arg=CONFIG_FILE=filebeat.prod.yml"
 
+      - name: Build Metricbeat Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: lifelike.azurecr.io
+          image_name: metricbeat
+          image_tag: ${{ github.sha }},latest
+          context: ./metricbeat
+          dockerfile: ./Dockerfile
+
       - name: Build Cache Invalidator
         uses: whoan/docker-build-with-cache-action@v5
         with:
@@ -81,6 +86,17 @@ jobs:
           image_name: kg-cache-service
           image_tag: ${{ github.sha }},latest
           context: ./cache-invalidator
+          dockerfile: ./Dockerfile
+
+      - name: Build statistical-enrichment image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: lifelike.azurecr.io
+          image_name: kg-statistical-enrichment
+          image_tag: ${{ github.sha }},latest
+          context: ./statistical-enrichment
           dockerfile: ./Dockerfile
 
   deploy:

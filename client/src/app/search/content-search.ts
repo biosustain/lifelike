@@ -6,4 +6,5 @@ export interface ContentSearchOptions extends StandardRequestOptions {
   projects?: string[];
   phrase?: string;
   wildcards?: string;
+  synonyms?: boolean;
 }

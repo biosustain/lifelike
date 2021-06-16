@@ -17,15 +17,6 @@ from openpyxl.worksheet.worksheet import Worksheet
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import Session
 
-from py2neo import (
-    Graph,
-    Node,
-    Transaction,
-    Relationship,
-    cypher_escape,
-    cypher_repr
-)
-
 from neo4japp.data_transfer_objects.user_file_import import (
     FileNameAndSheets,
     GraphCreationMapping,
@@ -41,13 +32,12 @@ from neo4japp.exceptions import ServerException
 from neo4japp.factory import cache
 from neo4japp.models import FileContent, Worksheet
 from neo4japp.services.common import HybridDBDao
-from neo4japp.util import compute_hash
 
 
 class UserFileImportService(HybridDBDao):
     def __init__(
         self,
-        graph: Graph,
+        graph,
         session: Session
     ):
         super().__init__(graph=graph, session=session)
@@ -345,110 +335,112 @@ class UserFileImportService(HybridDBDao):
             new_nodes=nodes_to_create, new_relationships=relationships_to_create)
 
     def save_node_to_neo4j(self, node_mappings: GraphCreationMapping) -> None:
-        tx = self.graph.begin()
+        raise NotImplementedError()
+        # tx = self.graph.begin()
 
-        # needed because haven't committed yet
-        # so the match would not return a node
-        created_nodes = set()  # type: ignore
-        created_domains = {}  # type: ignore
+        # # needed because haven't committed yet
+        # # so the match would not return a node
+        # created_nodes = set()  # type: ignore
+        # created_domains = {}  # type: ignore
 
-        for node in node_mappings.new_nodes:
-            # can't use cipher parameters due to the dynamic map keys in filtering
-            # e.g merge (n:TYPE {map...})
-            # neo4j guy: https://stackoverflow.com/a/28784921
-            node_type = node.node_type
-            mapped_node_prop = node.mapped_node_prop
-            mapped_node_prop_value = node.mapped_node_prop_value
-            kg_mapped_node_prop = node.kg_mapped_node_prop
-            node_properties = node.node_properties
-            kg_mapped_node_type = node.kg_mapped_node_type
-            edge_label = node.edge_label
+        # for node in node_mappings.new_nodes:
+        #     # can't use cipher parameters due to the dynamic map keys in filtering
+        #     # e.g merge (n:TYPE {map...})
+        #     # neo4j guy: https://stackoverflow.com/a/28784921
+        #     node_type = node.node_type
+        #     mapped_node_prop = node.mapped_node_prop
+        #     mapped_node_prop_value = node.mapped_node_prop_value
+        #     kg_mapped_node_prop = node.kg_mapped_node_prop
+        #     node_properties = node.node_properties
+        #     kg_mapped_node_type = node.kg_mapped_node_type
+        #     edge_label = node.edge_label
 
-            filter_property = {mapped_node_prop: mapped_node_prop_value}
-            kg_filter_property = {kg_mapped_node_prop: mapped_node_prop_value}
+        #     filter_property = {mapped_node_prop: mapped_node_prop_value}
+        #     kg_filter_property = {kg_mapped_node_prop: mapped_node_prop_value}
 
-            domain_name = node.domain
+        #     domain_name = node.domain
 
-            if domain_name not in created_domains:
-                domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
+        #     if domain_name not in created_domains:
+        #         domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
 
-                if not domain_node:
-                    domain_node = Node(domain_name, **{'name': domain_name})
-                    tx.create(domain_node)
-                created_domains[domain_name] = domain_node
-            else:
-                domain_node = created_domains[domain_name]
+        #         if not domain_node:
+        #             domain_node = Node(domain_name, **{'name': domain_name})
+        #             tx.create(domain_node)
+        #         created_domains[domain_name] = domain_node
+        #     else:
+        #         domain_node = created_domains[domain_name]
 
-            if mapped_node_prop_value not in created_nodes:
-                created_nodes.add(mapped_node_prop_value)
-                # user experimental data node
-                # TODO: currently filter_property is all node properties
-                # of a node because there are no unique constraints
-                # and we can't tell which "column" a user expects to
-                # be unique versus what we have as unique in our database
-                exp_node = self.graph.nodes.match(node_type, **filter_property).first()
+        #     if mapped_node_prop_value not in created_nodes:
+        #         created_nodes.add(mapped_node_prop_value)
+        #         # user experimental data node
+        #         # TODO: currently filter_property is all node properties
+        #         # of a node because there are no unique constraints
+        #         # and we can't tell which "column" a user expects to
+        #         # be unique versus what we have as unique in our database
+        #         exp_node = self.graph.nodes.match(node_type, **filter_property).first()
 
-                if exp_node:
-                    # TODO: check if node properties match incoming node_properties
-                    # also do in frontend - keep set of values from unique column
-                    # if see again, check if node_properties are different
-                    # if not, throw exception to let user know (check JIRA issue LL-81)
-                    # but what if user wants to create duplicate - would they?
-                    continue
-                else:
-                    exp_node = Node(node_type, **node_properties)
-                    tx.create(exp_node)
+        #         if exp_node:
+        #             # TODO: check if node properties match incoming node_properties
+        #             # also do in frontend - keep set of values from unique column
+        #             # if see again, check if node_properties are different
+        #             # if not, throw exception to let user know (check JIRA issue LL-81)
+        #             # but what if user wants to create duplicate - would they?
+        #             continue
+        #         else:
+        #             exp_node = Node(node_type, **node_properties)
+        #             tx.create(exp_node)
 
-                # create relationship between user experimental data node with
-                # domain node
-                relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
-                tx.create(relationship)
+        #         # create relationship between user experimental data node with
+        #         # domain node
+        #         relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
+        #         tx.create(relationship)
 
-                # create relationship between user experimental data node with
-                # existing nodes in knowledge graph
-                if kg_mapped_node_type:
-                    kg_node = self.graph.nodes.match(kg_mapped_node_type, **kg_filter_property).first()  # noqa
-                    if kg_node:
-                        relationship = Relationship(exp_node, edge_label, kg_node, **{})
-                        tx.create(relationship)
+        #         # create relationship between user experimental data node with
+        #         # existing nodes in knowledge graph
+        #         if kg_mapped_node_type:
+        #             kg_node = self.graph.nodes.match(kg_mapped_node_type, **kg_filter_property).first()  # noqa
+        #             if kg_node:
+        #                 relationship = Relationship(exp_node, edge_label, kg_node, **{})
+        #                 tx.create(relationship)
 
-        tx.commit()
-        print('Done creating relationship of new nodes to existing KG')
-        print('Done creating nodes')
+        # tx.commit()
+        # print('Done creating relationship of new nodes to existing KG')
+        # print('Done creating nodes')
 
     def save_relationship_to_neo4j(self, node_mappings: GraphCreationMapping) -> None:
-        tx = self.graph.begin()
+        raise NotImplementedError()
+        # tx = self.graph.begin()
 
-        for relation in node_mappings.new_relationships:
-            source_node_label = relation.source_node_label
-            source_node_prop_label = relation.source_node_prop_label
-            source_node_prop_value = relation.source_node_prop_value
-            target_node_label = relation.target_node_label
-            target_node_prop_label = relation.target_node_prop_label
-            target_node_prop_value = relation.target_node_prop_value
-            edge_label = relation.edge_label
+        # for relation in node_mappings.new_relationships:
+        #     source_node_label = relation.source_node_label
+        #     source_node_prop_label = relation.source_node_prop_label
+        #     source_node_prop_value = relation.source_node_prop_value
+        #     target_node_label = relation.target_node_label
+        #     target_node_prop_label = relation.target_node_prop_label
+        #     target_node_prop_value = relation.target_node_prop_value
+        #     edge_label = relation.edge_label
 
-            # source_filter_property = {source_node_prop_label: source_node_prop_value}
-            # TODO: need to use node_properties here because the filter
-            # might not be unique also see above in save_node_to_neo4j()
-            source_filter_property = relation.source_node_properties
-            target_filter_property = {target_node_prop_label: target_node_prop_value}
+        #     # source_filter_property = {source_node_prop_label: source_node_prop_value}
+        #     # TODO: need to use node_properties here because the filter
+        #     # might not be unique also see above in save_node_to_neo4j()
+        #     source_filter_property = relation.source_node_properties
+        #     target_filter_property = {target_node_prop_label: target_node_prop_value}
 
-            # TODO: if nodes not found throw exception or create?
-            # TODO: LL-81: if user selects a column to be a node property
-            # it is possible the node label appears multiple times in different rows
-            # and the column that is the node property have different values
-            # in that case, won't get a source_node here
-            # probably fix is to create new node
-            # referenced above already (search for LL-81)
-            source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()  # noqa
-            if source_node:
-                target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()  # noqa
-                if target_node:
-                    # TODO: the **{} should be edge properties
-                    tx.create(Relationship(source_node, edge_label, target_node, **{}))
-        tx.commit()
-        print('Done creating relationships between new nodes')
+        #     # TODO: if nodes not found throw exception or create?
+        #     # TODO: LL-81: if user selects a column to be a node property
+        #     # it is possible the node label appears multiple times in different rows
+        #     # and the column that is the node property have different values
+        #     # in that case, won't get a source_node here
+        #     # probably fix is to create new node
+        #     # referenced above already (search for LL-81)
+        #     source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()  # noqa
+        #     if source_node:
+        #         target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()  # noqa
+        #         if target_node:
+        #             # TODO: the **{} should be edge properties
+        #             tx.create(Relationship(source_node, edge_label, target_node, **{}))
+        # tx.commit()
+        # print('Done creating relationships between new nodes')
 
     def get_props_str_from_propnames_and_varname(self, varname: str, propnames: List[str]):
         if (len(propnames) == 0):
@@ -595,162 +587,163 @@ class UserFileImportService(HybridDBDao):
         worksheet_node_name: str,
         relationships: List[GeneImportRelationship],
     ):
-        worksheet = self.get_worksheet(file_name, sheet_name)
-        max_row = len(list(worksheet.rows))
-        curr_row = 2  # start at the second row because we don't want to include headers
+        raise NotImplementedError()
+        # worksheet = self.get_worksheet(file_name, sheet_name)
+        # max_row = len(list(worksheet.rows))
+        # curr_row = 2  # start at the second row because we don't want to include headers
 
-        relationship_hashes = []
-        rel_hash_map: Dict[str, Relationship] = {}
-        col_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict, Dict]]] = {}
-        gene_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict]]] = {}
+        # relationship_hashes = []
+        # rel_hash_map: Dict[str, Relationship] = {}
+        # col_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict, Dict]]] = {}
+        # gene_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict]]] = {}
 
-        # Setup hash maps
-        for relationship in relationships:
-            # TODO: One problem with this approach is that it's difficult to
-            # maintain, e.g. when we add/remove a property from the GeneImportRelationship
-            rel_hash = f'{relationship.column_index1}-' + \
-                f'{relationship.column_index2}-' + \
-                f'{relationship.node_label1}-' + \
-                f'{relationship.node_label2}-' + \
-                f'{relationship.node_properties1}-' + \
-                f'{relationship.node_properties2}-' + \
-                f'{relationship.relationship_label}-' + \
-                f'{relationship.relationship_direction}-' + \
-                f'{relationship.relationship_properties}-' + \
-                f'{relationship.species_selection}-' + \
-                f'{relationship.gene_matching_property}'
-            relationship_hashes.append(rel_hash)
+        # # Setup hash maps
+        # for relationship in relationships:
+        #     # TODO: One problem with this approach is that it's difficult to
+        #     # maintain, e.g. when we add/remove a property from the GeneImportRelationship
+        #     rel_hash = f'{relationship.column_index1}-' + \
+        #         f'{relationship.column_index2}-' + \
+        #         f'{relationship.node_label1}-' + \
+        #         f'{relationship.node_label2}-' + \
+        #         f'{relationship.node_properties1}-' + \
+        #         f'{relationship.node_properties2}-' + \
+        #         f'{relationship.relationship_label}-' + \
+        #         f'{relationship.relationship_direction}-' + \
+        #         f'{relationship.relationship_properties}-' + \
+        #         f'{relationship.species_selection}-' + \
+        #         f'{relationship.gene_matching_property}'
+        #     relationship_hashes.append(rel_hash)
 
-            rel_hash_map[rel_hash] = relationship
+        #     rel_hash_map[rel_hash] = relationship
 
-            if col_match_prop_tuples.get(rel_hash, None) is None:
-                col_match_prop_tuples[rel_hash] = []
-            if gene_match_prop_tuples.get(rel_hash, None) is None:
-                gene_match_prop_tuples[rel_hash] = []
+        #     if col_match_prop_tuples.get(rel_hash, None) is None:
+        #         col_match_prop_tuples[rel_hash] = []
+        #     if gene_match_prop_tuples.get(rel_hash, None) is None:
+        #         gene_match_prop_tuples[rel_hash] = []
 
-        # Setup lists of property tuples by reading data from the spreadsheet.
-        while curr_row <= max_row:
-            for rel_hash in relationship_hashes:
-                relationship = rel_hash_map[rel_hash]
-                relationship_props = self.get_props_obj_from_worksheet(
-                    worksheet=worksheet,
-                    props=relationship.relationship_properties,
-                    row=curr_row,
-                )
+        # # Setup lists of property tuples by reading data from the spreadsheet.
+        # while curr_row <= max_row:
+        #     for rel_hash in relationship_hashes:
+        #         relationship = rel_hash_map[rel_hash]
+        #         relationship_props = self.get_props_obj_from_worksheet(
+        #             worksheet=worksheet,
+        #             props=relationship.relationship_properties,
+        #             row=curr_row,
+        #         )
 
-                # openpyxl is 1-based, so add 1 to the column_index
-                node1_val = worksheet.cell(row=curr_row, column=int(relationship.column_index1)+1).value  # noqa
-                node_props1 = {
-                    'cell_value': node1_val or '',
-                }
-                node_props1.update(
-                    self.get_props_obj_from_worksheet(
-                        worksheet=worksheet,
-                        props=relationship.node_properties1,
-                        row=curr_row,
-                    )
-                )
+        #         # openpyxl is 1-based, so add 1 to the column_index
+        #         node1_val = worksheet.cell(row=curr_row, column=int(relationship.column_index1)+1).value  # noqa
+        #         node_props1 = {
+        #             'cell_value': node1_val or '',
+        #         }
+        #         node_props1.update(
+        #             self.get_props_obj_from_worksheet(
+        #                 worksheet=worksheet,
+        #                 props=relationship.node_properties1,
+        #                 row=curr_row,
+        #             )
+        #         )
 
-                # If either species_selection or gene_matching_property are null, then this
-                # relationship is a column-to-column relationship.
-                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
-                    node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
-                    node_props2 = {
-                        'cell_value': node2_val or '',
-                    }
-                    node_props2.update(
-                        self.get_props_obj_from_worksheet(
-                            worksheet=worksheet,
-                            props=relationship.node_properties2,
-                            row=curr_row,
-                        )
-                    )
-                    col_match_prop_tuples[rel_hash].append(
-                        (node_props1, node_props2, relationship_props)
-                    )
-                else:
-                    gene_match_prop_tuples[rel_hash].append(
-                        (node_props1, relationship_props)
-                    )
-            curr_row += 1
+        #         # If either species_selection or gene_matching_property are null, then this
+        #         # relationship is a column-to-column relationship.
+        #         if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+        #             node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
+        #             node_props2 = {
+        #                 'cell_value': node2_val or '',
+        #             }
+        #             node_props2.update(
+        #                 self.get_props_obj_from_worksheet(
+        #                     worksheet=worksheet,
+        #                     props=relationship.node_properties2,
+        #                     row=curr_row,
+        #                 )
+        #             )
+        #             col_match_prop_tuples[rel_hash].append(
+        #                 (node_props1, node_props2, relationship_props)
+        #             )
+        #         else:
+        #             gene_match_prop_tuples[rel_hash].append(
+        #                 (node_props1, relationship_props)
+        #             )
+        #     curr_row += 1
 
-        tx = self.graph.begin()
-        try:
-            # Merge (get or create) the worksheet node, and get the ID of the merged node
-            merge_worksheet_query = self.get_merge_worksheet_node_query()
-            worksheet_node_id = tx.run(
-                merge_worksheet_query,
-                {
-                    'worksheet_node_name': worksheet_node_name
-                }
-            ).evaluate()
+        # tx = self.graph.begin()
+        # try:
+        #     # Merge (get or create) the worksheet node, and get the ID of the merged node
+        #     merge_worksheet_query = self.get_merge_worksheet_node_query()
+        #     worksheet_node_id = tx.run(
+        #         merge_worksheet_query,
+        #         {
+        #             'worksheet_node_name': worksheet_node_name
+        #         }
+        #     ).evaluate()
 
-            for rel_hash in relationship_hashes:
-                relationship = rel_hash_map[rel_hash]
-                relationship_label = relationship.relationship_label
-                relationship_propnames = [
-                    prop.property_name for prop in relationship.relationship_properties
-                ]
-                relationship_direction = relationship.relationship_direction
-                node_label1 = relationship.node_label1
-                node_label2 = relationship.node_label2
+        #     for rel_hash in relationship_hashes:
+        #         relationship = rel_hash_map[rel_hash]
+        #         relationship_label = relationship.relationship_label
+        #         relationship_propnames = [
+        #             prop.property_name for prop in relationship.relationship_properties
+        #         ]
+        #         relationship_direction = relationship.relationship_direction
+        #         node_label1 = relationship.node_label1
+        #         node_label2 = relationship.node_label2
 
-                # If this relationship describes a column-to-column mapping, merge the two new nodes
-                # and map them to each other.
-                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
-                    merge_col_match_query = self.get_merge_col_match_query(
-                        node_label1,
-                        node_label2,
-                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
-                        [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
-                        relationship_label,
-                        relationship_propnames,
-                        relationship_direction
-                    )
+        #         # If this relationship describes a column-to-column mapping, merge the two new
+        #         # nodes and map them to each other.
+        #         if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+        #             merge_col_match_query = self.get_merge_col_match_query(
+        #                 node_label1,
+        #                 node_label2,
+        #                 [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+        #                 [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
+        #                 relationship_label,
+        #                 relationship_propnames,
+        #                 relationship_direction
+        #             )
 
-                    # Running the merges in batches gives a noticeable performance increase
-                    batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
-                    for batch in batches:
-                        tx.run(
-                            merge_col_match_query,
-                            {
-                                'col_match_prop_tuples': batch,
-                                'worksheet_node_id': worksheet_node_id
-                            }
-                        )
-                # If this relationship describes a column-to-KG-gene mapping, merge the column node,
-                # and map it to the corresponding KG node.
-                else:
-                    merge_gene_match_query = self.get_merge_gene_match_query(
-                        node_label1,
-                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
-                        relationship_label,
-                        relationship_propnames,
-                        relationship.gene_matching_property,
-                        relationship_direction
-                    )
+        #             # Running the merges in batches gives a noticeable performance increase
+        #             batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
+        #             for batch in batches:
+        #                 tx.run(
+        #                     merge_col_match_query,
+        #                     {
+        #                         'col_match_prop_tuples': batch,
+        #                         'worksheet_node_id': worksheet_node_id
+        #                     }
+        #                 )
+        #         # If this relationship describes a column-to-KG-gene mapping, merge the column
+        #         # node, and map it to the corresponding KG node.
+        #         else:
+        #             merge_gene_match_query = self.get_merge_gene_match_query(
+        #                 node_label1,
+        #                 [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+        #                 relationship_label,
+        #                 relationship_propnames,
+        #                 relationship.gene_matching_property,
+        #                 relationship_direction
+        #             )
 
-                    # Running the merges in batches gives a noticeable performance increase
-                    batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
-                    for batch in batches:
-                        tx.run(
-                            merge_gene_match_query,
-                            {
-                                'gene_match_prop_tuples': batch,
-                                'tax_id': int(relationship.species_selection),
-                                'worksheet_node_id': worksheet_node_id
-                            }
-                        )
-        except Exception:
-            # TODO: Not sure what the most common practice is for terminating open py2neo
-            # transactions, haven't found any advice for this topic in the docs. Just to
-            # be safe, we rollback the transaction here.
-            tx.rollback()
-            raise
-        else:
-            tx.commit()
+        #             # Running the merges in batches gives a noticeable performance increase
+        #             batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
+        #             for batch in batches:
+        #                 tx.run(
+        #                     merge_gene_match_query,
+        #                     {
+        #                         'gene_match_prop_tuples': batch,
+        #                         'tax_id': int(relationship.species_selection),
+        #                         'worksheet_node_id': worksheet_node_id
+        #                     }
+        #                 )
+        # except Exception:
+        #     # TODO: Not sure what the most common practice is for terminating open py2neo
+        #     # transactions, haven't found any advice for this topic in the docs. Just to
+        #     # be safe, we rollback the transaction here.
+        #     tx.rollback()
+        #     raise
+        # else:
+        #     tx.commit()
 
-        return worksheet_node_id
+        # return worksheet_node_id
 
     def detach_and_delete_worksheet(self, worksheet_node_id: int):
         detach_and_delete_worksheet_query = self.get_detach_and_delete_worksheet_query()
@@ -771,7 +764,7 @@ class UserFileImportService(HybridDBDao):
         worksheet: FileStorage,
         worksheet_node_id: int
     ):
-        worksheet_content = worksheet.read()
+        worksheet_content = worksheet.stream.read()
         worksheet.stream.seek(0)
 
         checksum_sha256 = hashlib.sha256(worksheet_content).digest()

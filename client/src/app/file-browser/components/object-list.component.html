@@ -118,8 +118,8 @@
                 </div>
 
                 <div class="d-inline-block text-truncate">
-                  <a [appLink]="object.getCommands(forEditing)" [handleClick]="appLinks"
-                     (click)="objectOpen.next(object); $event.preventDefault()">
+                  <a [appLink]="object.getCommands(forEditing)" [handleClick]="false"
+                     (click)="openObject(object); $event.preventDefault()">
                     <ng-container *ngIf="!object.isDirectory; else dirLabel">
                       {{ object.filename }}
                     </ng-container>
@@ -189,7 +189,7 @@
               </button>
               <div ngbDropdownMenu>
                 <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="true"
-                                 (objectOpen)="this.objectOpen.next($event)"
+                                 (objectOpen)="this.openObject($event)"
                                  (refreshRequest)="this.refreshRequest.next($event)">
                 </app-object-menu>
               </div>
@@ -209,7 +209,7 @@
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
     <app-object-info [object]="objects.lastSelection" [forEditing]="forEditing" [showDelete]="true"
-                     (objectOpen)="this.objectOpen.next($event)"
+                     (objectOpen)="this.openObject($event)"
                      (refreshRequest)="this.refreshRequest.next($event)"
                      *ngIf="objects != null && objects.selection.length"></app-object-info>
   </div>

@@ -54,7 +54,6 @@ export class ObjectPreviewComponent implements OnChanges {
       this.object$.next(this.object);
     }
   }
-
 }
 
 @Component({

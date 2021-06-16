@@ -219,6 +219,7 @@ export interface ObjectLockData {
 export interface AnnotationGenerationResultData {
   attempted: boolean;
   success: boolean;
+  error: string;
 }
 
 // Requests

@@ -159,6 +159,7 @@ const components = [
     ApiService,
     AccountsService,
     DataTransferDataService,
+    GenericDataProvider,
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: GenericDataProvider,

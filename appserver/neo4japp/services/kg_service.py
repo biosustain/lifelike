@@ -3,9 +3,8 @@ import os
 import time
 
 from flask import current_app
-from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from py2neo import Node, Relationship
 from typing import Dict, List
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
@@ -25,8 +24,7 @@ from neo4japp.constants import (
     TYPE_DISEASE,
 )
 from neo4japp.util import (
-    get_first_known_label_from_node,
-    get_first_known_label_from_node_n4j_driver
+    get_first_known_label_from_node
 )
 from neo4japp.utils.logger import EventLog
 
@@ -39,7 +37,7 @@ class KgService(HybridDBDao):
         """Given a node and a map of domains -> URLs, returns the appropriate
         URL formatted with the node entity identifier.
         """
-        label = get_first_known_label_from_node_n4j_driver(node)
+        label = get_first_known_label_from_node(node)
         entity_id = node.get('id')
 
         # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
@@ -106,16 +104,16 @@ class KgService(HybridDBDao):
         }
 
         for node in nodes:
-            graph_node = GraphNode.from_neo4j_driver(
+            graph_node = GraphNode.from_neo4j(
                 node,
                 url_fn=lambda x: self._get_uri_of_node_entity(x, url_map),
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node_n4j_driver(x)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label_from_node_n4j_driver,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label_from_node,
             )
             node_dict[graph_node.id] = graph_node
 
         for rel in relationships:
-            graph_rel = GraphRelationship.from_neo4j_driver(rel)
+            graph_rel = GraphRelationship.from_neo4j(rel)
             rel_dict[graph_rel.id] = graph_rel
         return {
             'nodes': [n.to_dict() for n in node_dict.values()],
@@ -261,7 +259,7 @@ class KgService(HybridDBDao):
 
         return {
             result['node_id']: {
-                'result': {'id': result['biocyc_id'], 'pathways': result['pathways']},
+                'result': result['pathways'],
                 'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
                     if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"  # noqa
             } for result in results}
@@ -302,6 +300,24 @@ class KgService(HybridDBDao):
                 'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"  # noqa
             } for result in results}
 
+    def get_kegg_genes(self, ncbi_gene_ids: List[int]):
+        start = time.time()
+        results = self.graph.read_transaction(
+            self.get_kegg_genes_query,
+            ncbi_gene_ids
+        )
+
+        current_app.logger.info(
+            f'Enrichment KEGG KG query time {time.time() - start}',
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        )
+
+        return {
+            result['node_id']: {
+                'result': result['pathway'],
+                'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
+            } for result in results}
+
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
         node_ids = set()
@@ -320,7 +336,7 @@ class KgService(HybridDBDao):
                             node_display_name = node_as_dict['name']
 
                         try:
-                            node_label = get_first_known_label_from_node_n4j_driver(node)
+                            node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
                         except ValueError:
                             node_label = 'Unknown'
@@ -374,6 +390,9 @@ class KgService(HybridDBDao):
             '3-hydroxyisobutyric Acid to pykF using BioCyc',
             'icd to rhsE',
             'Two pathways using BioCyc',
+            # 'Glycolisis Regulon',
+            # 'SIRT5 to NFE2L2 Using Literature Data',
+            # 'CTNNB1 to Diarrhea Using Literature Data',
         ]
         file_pathway_names = [
             'Serine SP Pathway',
@@ -413,11 +432,10 @@ class KgService(HybridDBDao):
             'Min Mean Short Metabs Serotonin',
             'Min Mean Short Metabs top10',
             'Min Mean Short Updown Acetate',
-            'Min Mean Short Updown Butyrate'
+            'Min Mean Short Updown Butyrate',
+            'AAK1 to Metab noOct',
+            'FosB to PER1'
             # 'nagA (ALE Mutation Data)',
-            # 'Glycolisis Regulon',
-            # 'SIRT5 to NFE2L2 Using Literature Data',
-            # 'CTNNB1 to Diarrhea Using Literature Data',
         ]
         return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
 
@@ -469,7 +487,9 @@ class KgService(HybridDBDao):
             'cytoscape_data/minMeanShort_metabs_Serotonin_graphml.json',
             'cytoscape_data/minMeanShort_metabs_top10_graphml.json',
             'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
-            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json'
+            'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json',
+            'cytoscape_data/aak1_to_metab_noOct_graphml.json',
+            'cytoscape_data/FosB to PER1_vis_js.json'
             # 'ale_mutation_data/nagA.json',
         ]
 
@@ -549,6 +569,20 @@ class KgService(HybridDBDao):
             MATCH (g)-[:IS]-(x:db_RegulonDB)
             WHERE id(g)=node_id
             RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
+            """,
+            ncbi_gene_ids=ncbi_gene_ids
+        ).data()
+
+    def get_kegg_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+        return tx.run(
+            """
+            UNWIND $ncbi_gene_ids AS node_id
+            MATCH (g)-[:IS]-(x:db_KEGG)
+            WHERE id(g)=node_id
+            WITH node_id, x
+            MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)-[:HAS_PATHWAY]-(gen:Genome)
+            WHERE gen.id = x.genome
+            RETURN node_id, x.id AS kegg_id, collect(p.name) AS pathway
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()

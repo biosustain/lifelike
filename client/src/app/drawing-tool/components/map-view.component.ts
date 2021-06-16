@@ -17,6 +17,7 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
+import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 
 @Component({
   selector: 'app-map-view',
@@ -42,9 +43,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
               filesystemObjectActions: FilesystemObjectActions,
+              dataTransferDataService: DataTransferDataService,
               protected readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
-      errorHandler, workspaceManager, filesystemObjectActions);
+      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -119,6 +121,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   openShareDialog() {
     return this.filesystemObjectActions.openShareDialog(this.map);
+  }
+
+  openNewWindow() {
+    return this.filesystemObjectActions.openNewWindow(this.map);
   }
 
   goToReturnUrl() {

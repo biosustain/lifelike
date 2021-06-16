@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { FindOptions } from 'app/shared/utils/find';
+import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
   selector: 'app-object-info',
@@ -60,6 +61,13 @@ export class ObjectInfoComponent implements OnInit {
       limit: Math.min(this.highlightLimit,
         this.object.highlight != null ? this.object.highlight.length : 0),
     });
+  }
+
+  highlightDragStart(event: DragEvent) {
+    GenericDataProvider.setURIs(event.dataTransfer, [{
+      title: this.object.filename,
+      uri: new URL(this.object.getURL(false), window.location.href).href,
+    }], {action: 'append'});
   }
 }
 

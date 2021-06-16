@@ -1,7 +1,12 @@
 import os
+import codecs
+import string
 
 from datetime import timezone
 from enum import Enum
+
+
+from sendgrid import SendGridAPIClient
 
 
 TIMEZONE = timezone.utc
@@ -49,9 +54,11 @@ class LogEventType(Enum):
     AUTHENTICATION = 'authentication'
     CONTENT_SEARCH = 'content_search'
     ELASTIC = 'elastic'
+    ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
+    RESET_PASSWORD = 'reset_password'
     SENTRY_HANDLED = 'handled_exception'
     SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
@@ -203,15 +210,20 @@ ANNOTATION_STYLES_DICT = {
     },
     'link': {
         'label': 'link',
-        'color': '#669999'
+        'color': '#000000',
+        'bgcolor': '#dcf1f1',
+        'defaultimagecolor': '#669999'
     },
     'map': {
         'label': 'map',
-        'color': '#0277BD'
+        'color': '#0277bd',
+        'defaultimagecolor': '#0277bd'
     },
     'note': {
         'label': 'note',
-        'color': '#EDC949'
+        'color': '#000000',
+        'bgcolor': '#fff6d5',
+        'defaultimagecolor': '#edc949'
     },
     'reaction': {
         'label': 'reaction',
@@ -254,7 +266,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'correlation',
         'color': '#d7d9f8'
     },
-    'label': {
+    'cause': {
         'label': 'cause',
         'color': '#d7d9f8'
     },
@@ -300,6 +312,52 @@ ANNOTATION_STYLES_DICT = {
         'label': 'terminator'
     }
 }
+
+# Style constants
+DEFAULT_FONT_SIZE = 14.0
+DEFAULT_BORDER_COLOR = '#2B7CE9'
+DEFAULT_NODE_WIDTH = 41.25
+DEFAULT_NODE_HEIGHT = 27.5
+MAX_LINE_WIDTH = 50
+BASE_IMAGE_HEIGHT = 0.8
+IMAGE_HEIGHT_INCREMENT = 0.23
+SCALING_FACTOR = 55
+BORDER_STYLES_DICT = {
+    'dashed': 'dashed',
+    'dotted': 'dotted',
+    # Currently not implemented in Graphviz
+    'double-dashed': 'dashed',
+    'long-dashed': 'dashed'
+}
+
+ARROW_STYLE_DICT = {
+    'none': 'none',
+    'diamond': 'diamond',
+    'arrow': 'normal',
+    'square': 'box',
+    'circle': 'dot',
+    'cross-axis': 'tee',
+    # 'none' ensures spacing between the symbols.
+    # It is required only for arrows -'normal' type.
+    'cross-axis-arrow': 'normalnonetee',
+    'double-cross-axis': 'teetee',
+    'square-arrow': 'normalnonebox',
+    'circle-arrow': 'normalnonedot'
+}
+
+# Start shared security constants
+MAX_ALLOWED_LOGIN_FAILURES = 5
+MIN_TEMP_PASS_LENGTH = 18
+MAX_TEMP_PASS_LENGTH = 24
+RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
+RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
+
+# Start email constants
+MESSAGE_SENDER_IDENTITY = "lifelike-account-service@lifelike.bio"
+MAILING_API_KEY = os.getenv('SEND_GRID_API_KEY')
+RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
+RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
+SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']

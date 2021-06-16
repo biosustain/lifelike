@@ -20,7 +20,6 @@ def test_expand_node_gets_no_results_for_node_with_no_relationships(
     assert expand_query_result['edges'] == []
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_reference_table_data(
     visualizer_service,
     gas_gangrene_treatment_cluster_node_edge_pairs,
@@ -41,7 +40,6 @@ def test_get_reference_table_data(
     assert reference_table_rows[1].snippet_count == 2
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_edge(
     visualizer_service,
     gas_gangrene_treatement_edge_data,
@@ -86,7 +84,6 @@ def test_get_snippets_for_edge(
         assert False
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_edge_low_limit(
     visualizer_service,
     gas_gangrene_treatement_edge_data,
@@ -112,7 +109,6 @@ def test_get_snippets_for_edge_low_limit(
     assert result.snippets[0].reference.data['sentence'] in sentences
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_edge_orders_by_pub_year(
     visualizer_service,
     gas_gangrene_alleviates_edge_data,
@@ -137,7 +133,6 @@ def test_get_snippets_for_edge_orders_by_pub_year(
     assert 'penicillin was found to reduce' in reference_node2['data']['sentence']
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_cluster(
     visualizer_service,
     gas_gangrene_treatement_duplicate_edge_data,
@@ -186,7 +181,6 @@ def test_get_snippets_for_cluster(
         assert False
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_cluster_low_limit(
     visualizer_service,
     gas_gangrene_treatement_duplicate_edge_data,
@@ -216,7 +210,6 @@ def test_get_snippets_for_cluster_low_limit(
     assert result.snippets[0].reference.data['sentence'] in sentences
 
 
-@pytest.mark.skip(reason='Skipping until conftest is updated to use new driver')
 def test_get_snippets_for_cluster_orders_by_pub_year(
     visualizer_service,
     gas_gangrene_alleviates_duplicate_edge_data,

@@ -6,10 +6,12 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.constants import LogEventType
+from neo4japp.database import db
+from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
@@ -209,17 +211,21 @@ def login():
             message='There was a problem authenticating, please try again.',
             code=404)
     else:
-        if user.check_password(data.get('password')):
+        if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
+            raise ServerException(
+                title='Failed to Login',
+                message='The account has been suspended after too many failed login attempts.\
+                Please contact an administrator for help.',
+                code=423)
+        elif user.check_password(data.get('password')):
             current_app.logger.info(
-                f'Authenticating {user.email}',
-                extra=UserEventLog(
+                UserEventLog(
                     username=user.username,
-                    event_type=LogEventType.AUTHENTICATION.value
-                ).to_dict()
-            )
+                    event_type=LogEventType.AUTHENTICATION.value).to_dict())
             token_service = TokenService(current_app.config['SECRET_KEY'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
+            user.failed_login_count = 0
             return jsonify(JWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
@@ -230,10 +236,19 @@ def login():
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                     'id': user.id,
+                    'reset_password': user.forced_password_reset,
                     'roles': [u.name for u in user.roles],
                 },
             }))
         else:
+            user.failed_login_count += 1
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
+
             raise ServerException(
                 title='Failed to Authenticate',
                 message='There was a problem authenticating, please try again.',

@@ -3,10 +3,10 @@ Dockerfile
 **/*.pyc
 **/.cache
 **/.mypy_cache
-**/lmdb
 neo4japp/services/annotations/lmdb/**/*.mdb
 neo4japp/services/annotations/datasets/*.csv
 neo4japp/services/annotations/datasets/*.tsv
 **/*.tar.ggz
 **/*.env
 *.git*
+.githooks/
