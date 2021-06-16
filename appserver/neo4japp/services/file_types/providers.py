@@ -15,7 +15,6 @@ import nbformat
 import requests
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
-from nbconvert import HTMLExporter, PDFExporter
 from pdfminer import high_level
 
 import neo4japp.utils.string
