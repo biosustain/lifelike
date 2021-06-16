@@ -17,13 +17,11 @@ import { RouterModule } from '@angular/router';
 import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
-import { FilterPanelComponent } from './components/filter-panel/filter-panel.component';
 import { SankeyPanelComponent } from './components/panel/panel.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    FilterPanelComponent,
     SankeyPanelComponent
   ],
   imports: [
@@ -53,7 +51,6 @@ import { SankeyPanelComponent } from './components/panel/panel.component';
   }],
   exports: [
     SankeyViewComponent,
-    FilterPanelComponent,
     SankeyPanelComponent
   ],
 })

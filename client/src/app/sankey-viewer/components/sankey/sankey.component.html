@@ -1,6 +1,5 @@
 <div #wrapper
      class="h-100 w-100 overflow-hidden min-h-100-l wrapper"
-     [style.transform]="viewTransformation"
 >
     <svg #svg>
         <g #g>
@@ -8,48 +7,4 @@
             <g #nodes class="nodes"></g>
         </g>
     </svg>
-<!--    <small *ngIf="selected">-->
-<!--        Selected path: {{ selected?.path }}-->
-<!--    </small>-->
-    <div class="sankey-popover"
-         #popoverAnchor
-         [ngbPopover]="popoverTmpl"
-         #popover="ngbPopover"
-         triggers="manual"
-         container="body"
-    >
-    </div>
-    <ng-template #popoverTmpl let-link="link" let-node="node">
-        <ng-container *ngIf="node">
-            <span>{{node.description}}</span>
-            <dl>
-                <ng-container *ngIf="node.labels">
-                    <dt>Labels:</dt>
-                    <dd>
-                        <ul>
-                            <li *ngFor="let label of link.labels">{{label}}</li>
-                        </ul>
-                    </dd>
-                </ng-container>
-            </dl>
-        </ng-container>
-        <ng-container *ngIf="link">
-            <dl>
-                <dt>Path:</dt>
-                <dd>{{link.description}}</dd>
-                <ng-container *ngIf="link.folded">
-                    <dt>Folded:</dt>
-                    <dd>True</dd>
-                </ng-container>
-                <ng-container *ngIf="link.trace">
-                    <dt>Trace index:</dt>
-                    <dd>{{ link.trace }}</dd>
-                    <dt>Trace group:</dt>
-                    <dd>{{ link.trace_group }}</dd>
-                </ng-container>
-                <dt>Details:</dt>
-                <dd><pre>{{ getLinkDetails(link) }}</pre></dd>
-            </dl>
-        </ng-container>
-    </ng-template>
 </div>
