@@ -19,7 +19,10 @@ import {
   noneNodeValue,
   getAndColorNetworkTraceLinks,
   getNetworkTraceNodes,
-  colorNodes, linkSizeByProperty, linkSizeByArrayProperty, nodeValueByProperty
+  colorNodes,
+  linkSizeByProperty,
+  linkSizeByArrayProperty,
+  nodeValueByProperty
 } from './algorithms';
 
 @Component({
@@ -90,10 +93,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   sankeyFileLoaded = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
   private currentFileId: any;
-  filtersPanelOpened;
   filteredSankeyData;
-
-  nodesColorMap = new Map();
 
   traceGroupColorMap;
 
@@ -138,6 +138,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as Node;
   }
 
+
   open(content) {
     this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', windowClass: 'fillHeightModal', size: 'xl'}).result
       .then(_ => _);
@@ -175,46 +176,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       links: networkTraceLinks,
       inNodes: node_sets[networkTrace.sources]
     });
-  }
-
-  changeFilter(filter = d => d) {
-    // this.filter = filter;
-    // const {nodes, links, ...data} = this.sankeyData;
-    // const [filteredNodes, filteredOutNodes] = nodes.reduce(([ifilteredNodes, ifilteredOutNodes], n) => {
-    //   if (filter(n).hidden) {
-    //     ifilteredOutNodes.push(n);
-    //   } else {
-    //     ifilteredNodes.push(n);
-    //   }
-    //   return [ifilteredNodes, ifilteredOutNodes];
-    // }, [[], []]);
-    // console.log('calc start');
-    // const {newLinks, oldLinks} = this.resolveFilteredNodesLinks(filteredOutNodes);
-    // console.log('calc stop');
-    // console.table({
-    //   'link diff': oldLinks.length - newLinks.length,
-    //   'initial links': links.length,
-    //   'final links': links.filter(link => !oldLinks.includes(link)).concat(newLinks).length
-    // });
-    // let filteredLinks = links.concat(newLinks).filter(link => !oldLinks.includes(link));
-    // if (links.length - oldLinks.length + newLinks.length !== filteredLinks.length) {
-    //   const r = {
-    //     filtfromlinks: links.filter(value => oldLinks.includes(value)),
-    //     filtfromnew: newLinks.filter(value => oldLinks.find(d => d.path === value.path))
-    //   };
-    //   const r2 = oldLinks.filter(value => !r.filtfromlinks.includes(value) && !r.filtfromnew.includes(value));
-    //   filteredLinks = filteredLinks.filter(value => r2.find(v => v.path === value.path));
-    // }
-    // this.filteredSankeyData = {
-    //   ...data,
-    //   nodes: filteredNodes,
-    //   // filter after concat newLinks and oldLinks are not mutually exclusive
-    //   links: filteredLinks
-    // };
-  }
-
-  toggleFiltersPanel() {
-    this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
   getJSONDetails(details) {
@@ -312,7 +273,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.currentFileId = null;
 
       const linkedFileId = this.route.snapshot.params.file_id;
-      this.opensankey(linkedFileId);
+      this.openSankey(linkedFileId);
     }
   }
 
@@ -326,7 +287,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
    * Open sankey by file_id along with location to scroll to
    * @param hashId - represent the sankey to open
    */
-  opensankey(hashId: string) {
+  openSankey(hashId: string) {
     if (this.object != null && this.currentFileId === this.object.hashId) {
       return;
     }
