@@ -80,7 +80,7 @@ class EntityRecognitionService:
         for token in tokens:
             if token.normalized_keyword in key_results:
                 lowered = token.keyword.lower()
-                if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:
+                if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:  # noqa
                     continue
 
                 match = LMDBMatch(
@@ -228,7 +228,7 @@ class EntityRecognitionService:
                 dbname = PROTEINS_UNIPROT_LMDB
                 global_inclusion = self.entity_inclusions.included_proteins
                 global_exclusion = self.entity_exclusions.excluded_proteins
-                global_exclusion_case_insensitive = self.entity_exclusions.excluded_proteins_case_insensitive
+                global_exclusion_case_insensitive = self.entity_exclusions.excluded_proteins_case_insensitive  # noqa
 
             elif entity_type == EntityType.SPECIES.value:
                 species_matches, species_matches_local = self._check_lmdb_species(
@@ -265,7 +265,7 @@ class EntityRecognitionService:
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
-            if dbname is not None and global_inclusion is not None:
+            if dbname is not None and global_inclusion is not None and global_exclusion is not None:  # noqa
                 key_results: Dict[str, List[dict]] = {}
                 key_id_type: Dict[str, str] = {}
                 key_id_hyperlink: Dict[str, str] = {}
@@ -294,7 +294,7 @@ class EntityRecognitionService:
                     if token.normalized_keyword in key_results:
                         lowered = token.keyword.lower()
                         if global_exclusion_case_insensitive:
-                            if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:
+                            if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:  # noqa
                                 continue
                         else:
                             if lowered in global_exclusion:
