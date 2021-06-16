@@ -8,21 +8,20 @@ $tooltip-arrow-height: 0.4rem;
 $tooltip-arrow-width: 2*$tooltip-arrow-height;
 $background-color: white;
 
-
 :host {
   position: relative;
   height: 100%;
   display: block;
 
 
-  //@keyframes forceScroll {
-  //  0% {
-  //    scroll-snap-type: y mandatory;
-  //  }
-  //  100% {
-  //    scroll-snap-type: y proximity;
-  //  }
-  //}
+  @keyframes forceScroll {
+    0% {
+      scroll-snap-type: y mandatory;
+    }
+    100% {
+      scroll-snap-type: y proximity;
+    }
+  }
 
   &:after {
     content: "";
@@ -40,9 +39,9 @@ $background-color: white;
   .clustergram-wrapper {
     position: relative;
     overflow: auto;
-    //scroll-padding-top: $first-column-width;
+    scroll-padding-top: $first-column-width;
     // force scroll only on load
-    //animation: 0.01s 0s 1 forceScroll;
+    animation: 0.01s 0s 1 forceScroll;
     min-height: 300px;
     max-height: 100%;
 
@@ -51,7 +50,7 @@ $background-color: white;
     table {
       margin-top: $tilted-text-estimate-y-space;
       //table-layout: fixed;
-      //scroll-snap-align: start;
+      scroll-snap-align: start;
       // if there is enough space show tilted text clipped on the right
       // rather than expanding columns
       width: calc(100% - #{$tilted-text-estimate-x-space});
