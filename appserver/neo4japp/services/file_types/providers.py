@@ -246,10 +246,9 @@ class BiocTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc'
     SHORTHAND = 'BioC'
     mime_types = (MIME_TYPE,)
-
+    ALLOWED_EXTENSIONS = ['.json', '.xml', '', '.bioc']
     def handles(self, file: Files) -> bool:
-        return super().handles(file) and os.path.splitext(file.filename)[1].lower() in ['.json',
-            '.xml', '']
+        return super().handles(file) and os.path.splitext(file.filename)[1].lower() in self.ALLOWED_EXTENSIONS
 
     def can_create(self) -> bool:
         return True
@@ -282,10 +281,12 @@ class HTMLTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'html'
     mime_types = (MIME_TYPE,)
     parser = html2text.HTML2Text()
+    FORBIDDEN_EXTENSIONS = ['.xml', '.bioc']
 
     def handles(self, file: Files) -> bool:
+        print(file)
         return super().handles(file) and os.path.splitext(file.filename)[
-            1].lower() != '.xml'
+            1].lower() not in self.FORBIDDEN_EXTENSIONS
 
     def can_create(self) -> bool:
         return True
@@ -332,7 +333,7 @@ class HTMLTypeProvider(BaseFileTypeProvider):
 class OfficeTypeProvider(BaseFileTypeProvider):
     def handles(self, file: Files) -> bool:
         return BaseFileTypeProvider.handles(self, file) and os.path.splitext(file.filename)[
-            1].lower() not in ['.ipynb', '.xml']
+            1].lower() not in ['.ipynb', '.xml', '.bioc']
 
 
 class OfficeHTMLTypeProvider(OfficeTypeProvider, HTMLTypeProvider):
