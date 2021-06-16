@@ -3,9 +3,13 @@ The database created was named ecocyc.mod
 ### Ecocyc.mod
 1. load EcoCyc
 2. Remove synonyms
-3. Set display name and description
+3. Set description 
 4. Set reaction direction correctly
-
+4. Change TransUnit->Gene to Gene->TransUnit
+5. Remove EnzReaction nodes, and connect protein(enzyme) directly with reactions
+6. Remove Regulation nodes, connect regulators directly with regulated elements
+7. Remove DNABindingSite nodes
+8. Remove currency metabolites (optional)
 Run the following cypher script after loading ecocyc to neo4j
 #### Remove synonyms
 
@@ -95,4 +99,10 @@ match(n:Regulation) detach delete n;
 match(n:DNABindingSite) detach delete n
 ```
 
+#### Remove currency metabolites
+put currency_metabolites.txt into neo4j import folder 
+```
+load csv from 'file:///currency_metabolites.txt' as rows match (c:Compound) 
+where c.biocyc_id = rows[0] detach delete c
+```
 
