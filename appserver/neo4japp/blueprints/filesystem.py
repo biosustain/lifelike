@@ -646,7 +646,7 @@ class FileListView(FilesystemBaseView):
             if provider == file_type_service.default_provider:
                 import os
                 file_name, extension = os.path.splitext(file.filename)
-                if extension.lower() == '.xml':
+                if extension.lower() == '.xml' or extension.lower() == '.bioc':
                     file.mime_type = 'vnd.lifelike.document/bioc'
                 elif extension.isupper():
                     file.mime_type = 'application/pdf'
