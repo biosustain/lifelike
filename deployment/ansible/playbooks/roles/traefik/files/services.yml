@@ -1,70 +1,91 @@
 http:
   routers:
-    ***ARANGO_DB_NAME***-qa:
-      entryPoints:
-        - websecure
-      rule: "Host(`qa.***ARANGO_DB_NAME***.bio`)"
-      service: ***ARANGO_DB_NAME***-qa-service
+    dashboard:
+      rule: "Host(`traefik.***ARANGO_DB_NAME***.bio`)"
+      service: api@internal
+      middlewares:
+        - admin-auth
       tls:
         certResolver: "le"
         domains:
-          - main: "qa.***ARANGO_DB_NAME***.bio"
-    # ***ARANGO_DB_NAME***-staging:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`staging.***ARANGO_DB_NAME***.bio`)"
-    #   service: ***ARANGO_DB_NAME***-staging-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "staging.***ARANGO_DB_NAME***.bio"
-    # ***ARANGO_DB_NAME***-prod:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`***ARANGO_DB_NAME***.bio`)"
-    #   service: ***ARANGO_DB_NAME***-prod-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "***ARANGO_DB_NAME***.bio"
-    # ***ARANGO_DB_NAME***-demo:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`demo.***ARANGO_DB_NAME***.bio`)"
-    #   service: ***ARANGO_DB_NAME***-demo-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "demo.***ARANGO_DB_NAME***.bio"
-    ***ARANGO_DB_NAME***-test:
+          - main: "traefik.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-qa-gcp:
       entryPoints:
         - websecure
-      rule: "Host(`test.***ARANGO_DB_NAME***.bio`)"
-      service: ***ARANGO_DB_NAME***-test-service
+      rule: "Host(`qa-gcp.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-qa-gcp-service
       tls:
         certResolver: "le"
         domains:
-          - main: "test.***ARANGO_DB_NAME***.bio"
+          - main: "qa-gcp.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-staging:
+      entryPoints:
+        - websecure
+      rule: "Host(`staging.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-staging-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "staging.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-prod:
+      entryPoints:
+        - websecure
+      rule: "Host(`***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-prod-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-elk-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`elk.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-elk-qa
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "elk.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-demo:
+      entryPoints:
+        - websecure
+      rule: "Host(`demo.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-demo-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "demo.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-sandbox:
+      entryPoints:
+        - websecure
+      rule: "Host(`sandbox.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-sandbox-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "sandbox.***ARANGO_DB_NAME***.bio"
 
   services:
-    ***ARANGO_DB_NAME***-qa-service:
+    ***ARANGO_DB_NAME***-qa-gcp-service:
       loadBalancer:
         servers:
-          - url: "http://10.0.100.5"
-    # ***ARANGO_DB_NAME***-staging-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.7"
-    # ***ARANGO_DB_NAME***-prod-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.8"
-    # ***ARANGO_DB_NAME***-demo-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.10"
-    ***ARANGO_DB_NAME***-test-service:
+          - url: "http://10.128.15.243"
+    ***ARANGO_DB_NAME***-staging-service:
       loadBalancer:
         servers:
-          - url: "http://10.0.100.9"
-
+          - url: "http://10.128.15.207"
+    ***ARANGO_DB_NAME***-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.235"
+    ***ARANGO_DB_NAME***-elk-qa:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.244"
+    ***ARANGO_DB_NAME***-sandbox-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.216"
+    ***ARANGO_DB_NAME***-demo-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.0.63"
