@@ -285,7 +285,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc'
     SHORTHAND = 'BioC'
     mime_types = (MIME_TYPE,)
-    ALLOWED_TYPES = ['.json', '.xml', '.bioc']
+    ALLOWED_TYPES = ['.xml', '.bioc']
 
     def handles(self, file: Files) -> bool:
         ext = os.path.splitext(file.filename)[1].lower()
