@@ -290,14 +290,14 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
 };
 
 
-export const colorByTraceEnding = ({sourceLinks, targetLinks, _color}: Node) => {
+export const colorByTraceEnding = ({sourceLinks, targetLinks, _color, _selected}: Node) => {
   const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace);
   if (difference.size === 1) {
     const traceColor = difference.values().next().value._trace._color;
     const labColor = cubehelix(_color);
     const calcColor = cubehelix(traceColor);
     calcColor.l = labColor.l;
-    calcColor.opacity = labColor.opacity;
+    calcColor.opacity = _selected ? 1 : labColor.opacity;
     return calcColor;
   }
 };
