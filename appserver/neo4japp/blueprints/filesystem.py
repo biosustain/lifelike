@@ -62,6 +62,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
+from neo4japp.services.file_types.service import GenericFileTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -637,9 +638,8 @@ class FileListView(FilesystemBaseView):
 
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
-
             # if no provider matched try to convert
-            if provider == file_type_service.default_provider:
+            if provider == file_type_service.default_provider or isinstance(provider, GenericFileTypeProvider):
                 import os
                 file_name, extension = os.path.splitext(file.filename)
                 if extension.lower() == '.xml' or extension.lower() == '.bioc':

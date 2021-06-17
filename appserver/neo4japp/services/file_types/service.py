@@ -188,6 +188,8 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         else:
             return False
 
+    def convert(self, buffer):
+        return buffer
 
 class DefaultFileTypeProvider(BaseFileTypeProvider):
     """
