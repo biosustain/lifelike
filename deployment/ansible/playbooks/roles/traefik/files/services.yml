@@ -1,70 +1,91 @@
 http:
   routers:
-    lifelike-qa:
-      entryPoints:
-        - websecure
-      rule: "Host(`qa.lifelike.bio`)"
-      service: lifelike-qa-service
+    dashboard:
+      rule: "Host(`traefik.lifelike.bio`)"
+      service: api@internal
+      middlewares:
+        - admin-auth
       tls:
         certResolver: "le"
         domains:
-          - main: "qa.lifelike.bio"
-    # lifelike-staging:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`staging.lifelike.bio`)"
-    #   service: lifelike-staging-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "staging.lifelike.bio"
-    # lifelike-prod:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`lifelike.bio`)"
-    #   service: lifelike-prod-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "lifelike.bio"
-    # lifelike-demo:
-    #   entryPoints:
-    #     - websecure
-    #   rule: "Host(`demo.lifelike.bio`)"
-    #   service: lifelike-demo-service
-    #   tls:
-    #     certResolver: "le"
-    #     domains:
-    #       - main: "demo.lifelike.bio"
-    lifelike-test:
+          - main: "traefik.lifelike.bio"
+    lifelike-qa-gcp:
       entryPoints:
         - websecure
-      rule: "Host(`test.lifelike.bio`)"
-      service: lifelike-test-service
+      rule: "Host(`qa-gcp.lifelike.bio`)"
+      service: lifelike-qa-gcp-service
       tls:
         certResolver: "le"
         domains:
-          - main: "test.lifelike.bio"
+          - main: "qa-gcp.lifelike.bio"
+    lifelike-staging:
+      entryPoints:
+        - websecure
+      rule: "Host(`staging.lifelike.bio`)"
+      service: lifelike-staging-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "staging.lifelike.bio"
+    lifelike-prod:
+      entryPoints:
+        - websecure
+      rule: "Host(`lifelike.bio`)"
+      service: lifelike-prod-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "lifelike.bio"
+    lifelike-elk-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`elk.lifelike.bio`)"
+      service: lifelike-elk-qa
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "elk.lifelike.bio"
+    lifelike-demo:
+      entryPoints:
+        - websecure
+      rule: "Host(`demo.lifelike.bio`)"
+      service: lifelike-demo-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "demo.lifelike.bio"
+    lifelike-sandbox:
+      entryPoints:
+        - websecure
+      rule: "Host(`sandbox.lifelike.bio`)"
+      service: lifelike-sandbox-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "sandbox.lifelike.bio"
 
   services:
-    lifelike-qa-service:
+    lifelike-qa-gcp-service:
       loadBalancer:
         servers:
-          - url: "http://10.0.100.5"
-    # lifelike-staging-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.7"
-    # lifelike-prod-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.8"
-    # lifelike-demo-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://10.0.100.10"
-    lifelike-test-service:
+          - url: "http://10.128.15.243"
+    lifelike-staging-service:
       loadBalancer:
         servers:
-          - url: "http://10.0.100.9"
-
+          - url: "http://10.128.15.207"
+    lifelike-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.235"
+    lifelike-elk-qa:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.244"
+    lifelike-sandbox-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.216"
+    lifelike-demo-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.0.63"
