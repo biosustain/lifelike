@@ -66,11 +66,6 @@
                             </div>
                         </div>
                     </ng-template>
-                    <div class="relations">
-                        <div *ngFor="let relation of doc.relations">
-                            {{relation}}
-                        </div>
-                    </div>
                     <div class="date" *ngIf="doc.created">{{doc.created.$date | date}}</div>
                     <div class="accessions">
                         Accessions:
