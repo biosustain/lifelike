@@ -7,18 +7,6 @@ class GraphMixin(GraphConnection):
     def __init__(self) -> None:
         super().__init__()
         self.node_labels = {
-            EntityType.ANATOMY.value: 'db_MESH:Anatomy',
-            EntityType.DISEASE.value: 'db_MESH:Disease',
-            EntityType.FOOD.value: 'db_MESH:Food',
-            EntityType.PHENOMENA.value: 'db_MESH:Phenomena',
-            EntityType.CHEMICAL.value: 'db_CHEBI:Chemical',
-            EntityType.COMPOUND.value: 'db_BioCyc:Compound',
-            EntityType.GENE.value: 'db_NCBI:Gene',
-            EntityType.SPECIES.value: 'db_NCBI:Taxonomy',
-            EntityType.PROTEIN.value: 'db_UniProt:Protein'
-        }
-
-        self.lifelike_node_labels = {
             EntityType.ANATOMY.value: 'Anatomy',
             EntityType.DISEASE.value: 'Disease',
             EntityType.FOOD.value: 'Food',
@@ -174,10 +162,10 @@ class GraphMixin(GraphConnection):
         """
 
     def get_lifelike_global_inclusions_by_type(self, entity_type):
-        if entity_type not in self.lifelike_node_labels:
+        if entity_type not in self.node_labels:
             return ''
 
-        query_label = self.lifelike_node_labels[entity_type]
+        query_label = self.node_labels[entity_type]
         return f"""
         MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
         RETURN n.id AS entity_id, n.name AS entity_name, s.name AS synonym,
@@ -191,9 +179,10 @@ class GraphMixin(GraphConnection):
         query_label = self.node_labels[entity_type]
         return f"""
         WITH $values AS row
-        OPTIONAL MATCH (n:{query_label})-[:HAS_SYNONYM]->(s)
+        OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
         WHERE n.id = 'MESH:' + row.entity_id
         RETURN n IS NOT NULL AS node_exist,
+            apoc.coll.contains(labels(n), '{query_label}') AS node_has_entity_label,
             apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
         """
 
@@ -243,10 +232,10 @@ class GraphMixin(GraphConnection):
         """
 
     def lifelike_global_inclusion_exist(self, entity_type):
-        if entity_type not in self.lifelike_node_labels:
+        if entity_type not in self.node_labels:
             return ''
 
-        query_label = self.lifelike_node_labels[entity_type]
+        query_label = self.node_labels[entity_type]
         return f"""
         WITH $values AS row
         OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
@@ -262,7 +251,8 @@ class GraphMixin(GraphConnection):
         query_label = self.node_labels[entity_type]
         return """
         WITH $values AS row
-        MATCH (n:replace_with_param) WHERE n.id = 'MESH:' + row.entity_id
+        MATCH (n:db_MESH) WHERE n.id = 'MESH:' + row.entity_id
+        SET n:replace_with_param
         MERGE (s: Synonym {name: row.synonym})
         SET s.global_inclusion = 1, s.need_review = 1
         MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -326,10 +316,10 @@ class GraphMixin(GraphConnection):
         """
 
     def create_lifelike_global_inclusion(self, entity_type):
-        if entity_type not in self.lifelike_node_labels:
+        if entity_type not in self.node_labels:
             return ''
 
-        query_label = self.lifelike_node_labels[entity_type]
+        query_label = self.node_labels[entity_type]
         return """
         WITH $values AS row
         MERGE (n:db_Lifelike {id:'Lifelike:' + row.entity_id})
