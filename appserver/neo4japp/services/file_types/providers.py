@@ -184,99 +184,6 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
         pass
     return None
 
-
-def search_doi_in_text(content: bytes) -> Optional[str]:
-    doi: Optional[str]
-    try:
-        for match in doi_re.finditer(content):
-            label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
-                [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
-            certainly_doi = label + url
-            url = 'https://doi.org/'
-            # is whole match a DOI? (finished on \n, trimmed whitespaces)
-            doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
-                    DOISuffix).strip())
-            if is_valid_doi(doi):
-                return doi
-            # is match till space a DOI?
-            doi = (url + folderRegistrant + likelyDOIName + tillSpace)
-            if is_valid_doi(doi):
-                return doi
-            # make deep search only if there was clear indicator that it is a doi
-            if certainly_doi:
-                # if contains escape patterns try substitute them
-                if common_escape_patterns_re.search(match.group()):
-                    doi = _search_doi_in_pdf(
-                            common_escape_patterns_re.sub(
-                                    b'', match.group()
-                            )
-                    )
-                    if is_valid_doi(doi):
-                        return doi
-                # try substitute different dash types
-                if dash_types_re.search(match.group()):
-                    doi = _search_doi_in_pdf(
-                            dash_types_re.sub(
-                                    b'-', match.group()
-                            )
-                    )
-                    if is_valid_doi(doi):
-                        return doi
-                # we iteratively start cutting off suffix on each group of
-                # unusual characters
-                try:
-                    reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
-                    while reversedDOIEnding:
-                        _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
-                        doi = (
-                                url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
-                        )
-                        if is_valid_doi(doi):
-                            return doi
-                except Exception:
-                    pass
-                # we iteratively start cutting off suffix on each group of either
-                # lowercase letters
-                # uppercase letters
-                # numbers
-                try:
-                    reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
-                    while reversedDOIEnding:
-                        _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
-                        doi = (
-                                url + folderRegistrant + reversedDOIEnding[::-1]
-                        )
-                        if is_valid_doi(doi):
-                            return doi
-                except Exception:
-                    pass
-                # yield 0 matches on test case
-                # # is it a DOI in common format?
-                # doi = (url + folderRegistrant + likelyDOIName)
-                # if is_valid_doi(doi):
-                #     print('match by common format xxx')
-                #     return doi
-                # in very rare cases there is \n in text containing doi
-                try:
-                    end_of_match_idx = match.end(0)
-                    first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
-                    if first_char_after_match == b'\n':
-                        doi = _search_doi_in_pdf(
-                                # new input = match + 50 chars after new line
-                                match.group() +
-                                content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
-                        )
-                        if is_valid_doi(doi):
-                            return doi
-                except Exception as e:
-                    pass
-    except Exception as e:
-        pass
-    return None
-
-
 class DirectoryTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.filesystem/directory'
     SHORTHAND = 'directory'
@@ -396,7 +303,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
         buffer.seek(0)
 
         chunk = data[:2 ** 17]
-        doi = search_doi_in_text(chunk)
+        doi = _search_doi_in_pdf(chunk)
         return doi
 
     def convert(self, buffer):

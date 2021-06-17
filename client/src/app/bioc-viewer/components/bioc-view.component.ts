@@ -126,8 +126,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const subSections = ['INTRO', 'ABSTRACT', 'CONCL', 'REF'];
     const ALLOWED_TYPES = ['title_1', 'abstract_title_1', 'title_1', 'title'];
     const infons = passage.infons || {};
-    const sectionType = infons.section_type.to_upper();
-    const type = infons.type.to_lower();
+    const sectionType = infons.section_type && infons.section_type.toUpperCase();
+    const type = infons.type && infons.type.toLowerCase();
     const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
     return res;
   }
@@ -136,8 +136,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const subSections = ['INTRO', 'ABSTRACT', ];
     const ALLOWED_TYPES = ['title_2'];
     const infons = passage.infons || {};
-    const sectionType = infons.section_type;
-    const type = infons.type;
+    const sectionType = infons.section_type && infons.section_type.toUpperCase();
+    const type = infons.type && infons.type.toLowerCase();
     const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
     return res;
   }
@@ -145,7 +145,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   isParagraph(passage) {
     const TYPES = ['paragraph', 'abstract'];
     const infons = passage.infons || {};
-    const type = infons.type;
+    const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
     return res;
   }
