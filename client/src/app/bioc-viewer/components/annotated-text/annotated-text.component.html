@@ -3,7 +3,7 @@
           [ngClass]="'x-y-z-annotation ' + part.infons.type"
           [ngbTooltip]="tooltip"
           [closeDelay]="1000"
-          [autoClose]="outside"
+          [autoClose]="'outside'"
           placement="top bottom"
           [innerHTML]="part.text"
     ></span>
@@ -13,6 +13,8 @@
             <dd>{{part.infons.identifier}}</dd>
             <dt>Type</dt>
             <dd>{{part.infons.type}}</dd>
+            <a href="{{getSource(part?.infons?.identifier, part?.infons?.type)}}" target="_blank">Source</a>
+            
         </dl>
     </ng-template>
     <ng-template #text>
