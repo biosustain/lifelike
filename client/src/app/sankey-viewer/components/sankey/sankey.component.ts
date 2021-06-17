@@ -10,8 +10,7 @@ import {
   shortNodeText,
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
-  representativePositiveNumber,
-  symmetricDifference
+  representativePositiveNumber
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -76,15 +75,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  @Input() set selectedLinks(links) {
-    // tslint:disable-next-line:no-unused-expression
-    this.links && d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .filter(link => links.has(link))
-      .style('opacity', node => {
-        node.selected = true;
-        return 1;
-      });
+  @Input() set selectedLinksAndTraces({traces, links}) {
+    this.selectTraces(traces);
   }
 
   @Input('data') set data(data) {
@@ -246,8 +238,22 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.unhighlightLinks();
   }
 
+  selectTraces(traces: Set<object>) {
+    // tslint:disable-next-line:no-unused-expression
+    this.links && d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .raise()
+      .style('opacity', _ => 0.35)
+      .filter(({_trace}) => traces.has(_trace))
+      .style('opacity', link => {
+        link._selected = true;
+        return 1;
+      });
+  }
+
   highlightTraces(traces: Set<object>) {
-    d3.select(this.links.nativeElement)
+    // tslint:disable-next-line:no-unused-expression
+    this.links && d3.select(this.links.nativeElement)
       .selectAll('path')
       .raise()
       .style('opacity', ({_trace, _selected}) => traces.has(_trace) || _selected ? 1 : 0.35);
@@ -265,7 +271,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .selectAll('g')
       .filter(({_selected}) => !_selected)
       // tslint:disable-next-line:triple-equals
-      .style('opacity', ({type}) => type === data.type ? 0.45 : 0.35);
+      .style('opacity', ({type, _selected}) => _selected ? 1 : type === data.type ? 0.45 : 0.35);
     d3.select(element)
       .style('opacity', _ => 1)
       .select('text')

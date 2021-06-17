@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
@@ -26,6 +26,8 @@ import {
 } from './algorithms';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 
+import { Options } from 'vis-network';
+
 @Component({
   selector: 'app-sankey-viewer',
   templateUrl: './sankey-view.component.html',
@@ -38,8 +40,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly route: ActivatedRoute,
     private modalService: NgbModal
   ) {
+    this.selection = new BehaviorSubject({});
     this.selectedNodes = new BehaviorSubject(new Set());
-    this.selectedLinks = new BehaviorSubject(new Set());
+    this.selectedLinksAndTraces = new BehaviorSubject({
+      links: new Set(),
+      traces: new Set()
+    });
+
+    this.selectedNodes.subscribe(val => this.selection.next({
+      ...this.selection.value,
+      nodes: val
+    }));
+    this.selectedLinksAndTraces.subscribe(val => this.selection.next({
+      ...this.selection.value,
+      ...val
+    }));
+
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
         this.filesystemService.get(hashId),
@@ -73,9 +89,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  @ViewChild('nodeDetails', {static: false}) nodeDetails: TemplateRef<any>;
-  @ViewChild('linkDetails', {static: false}) linkDetails: TemplateRef<any>;
-
   networkTraces;
   selectedNetworkTrace;
 
@@ -83,6 +96,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   paramsSubscription: Subscription;
   returnUrl: string;
+
+  selection;
 
   loadTask: any;
   openSankeySub: Subscription;
@@ -130,10 +145,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   excludedProperties = new Set(['source', 'target']);
 
   selectedNodes;
-  selectedLinks;
+  selectedLinksAndTraces;
   selectedTraces;
 
-  traceDetailsConfig = {
+  traceDetailsConfig: Options = {
     physics: {
       enabled: false,
       barnesHut: {
@@ -147,14 +162,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         enabled: false
       }
     },
-    edges: {
-      smooth: {
-        type: networkEdgeSmoothers.DYNAMIC
-      }
-    }
+    // edges: {
+    //   smooth: {
+    //     type: networkEdgeSmoothers.DYNAMIC
+    //   }
+    // }
   };
 
   parseProperty = parseForRendering;
+
+
+  getJSONDetails(details) {
+    return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
+  }
 
   getNodeById(nodeId) {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as Node;
@@ -188,19 +208,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
-  }
-
-  openPanel(template, data) {
-    this.details = {
-      template, $implicit: data
-    };
+  openDetailsPanel() {
     this.panelOpened = true;
   }
 
   closePanel() {
     this.panelOpened = false;
+    this.resetSelection();
   }
 
   applyFilter() {
@@ -366,25 +380,43 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   selectLink(link) {
-    const selectedLinks = this.selectedLinks.value;
-    selectedLinks.add(link);
-    this.selectedLinks.next(new Set(selectedLinks));
+    this.selectLinkAndTrace(link, link._trace);
   }
 
-  selectTrace(trace) {
-    const selectedTraces = this.selectedTraces.value;
-    selectedTraces.add(trace);
-    this.selectedTraces.next(new Set(selectedTraces));
+  selectLinkAndTrace(link, trace) {
+    const {links = new Set(), traces = new Set()} = this.selectedLinksAndTraces.value;
+
+    links.add(link);
+    traces.add(trace);
+
+    this.selectedLinksAndTraces.next({
+      links: new Set(links),
+      traces: new Set(traces)
+    });
+  }
+
+  resetSelection() {
+    this.selectedNodes.next(new Set());
+    this.selectedLinksAndTraces.next({
+      links: new Set(),
+      traces: new Set()
+    });
+    this.filteredSankeyData.nodes.forEach(n => {
+      delete n._selected;
+    });
+    this.filteredSankeyData.links.forEach(l => {
+      delete l._selected;
+    });
   }
 
   openNodeDetails(node) {
-    // this.selectNode(node);
-    this.openPanel(this.nodeDetails, node);
+    this.selectNode(node);
+    this.openDetailsPanel();
   }
 
   openLinkDetails(link) {
-    // this.selectLink(link);
-    this.openPanel(this.linkDetails, link);
+    this.selectLink(link);
+    this.openDetailsPanel();
   }
 
   changeLinkSize($event: any) {
