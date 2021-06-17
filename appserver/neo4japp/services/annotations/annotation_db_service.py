@@ -10,10 +10,10 @@ from .data_transfer_objects import GlobalExclusions
 
 
 class AnnotationDBService(DBConnection):
-    def get_global_exclusions(self) -> List[dict]:
+    def get_global_exclusions(self):
         return self.session.query(
             GlobalList.annotation).filter(
-                and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)).all()
+                and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value))
 
     def get_entity_exclusions(self, exclusions: List[dict]) -> GlobalExclusions:
         """Returns set of combined global and local exclusions
@@ -42,13 +42,16 @@ class AnnotationDBService(DBConnection):
             EntityType.PROTEIN.value: set()
         }
 
-        global_exclusions = self.get_global_exclusions()
+        global_exclusions = [d.annotation for d in self.get_global_exclusions()]
         local_exclusions = [exc for exc in exclusions if not exc.get(
             'meta', {}).get('excludeGlobally', False)]  # safe to default to False?
 
         for exclude in global_exclusions + local_exclusions:
-            excluded_text = exclude.get('text', '')
-            entity_type = exclude.get('type', '')
+            try:
+                excluded_text = exclude['text']
+                entity_type = exclude['type']
+            except KeyError:
+                continue
 
             if excluded_text and entity_type in exclusion_sets:
                 if entity_type == EntityType.GENE.value or entity_type == EntityType.PROTEIN.value:  # noqa

@@ -344,48 +344,51 @@ class ManualAnnotationService:
             check = self._global_annotation_exists_in_kg(createval)
             # several possible scenarios
             # 1. main node exists and synonym exists
-            # 2. main node exists and synonym does not exists
-            # 3. main node does not exists
+            # 2. main node exists and synonym does not exist
+            # 3. main node exists and synonym exists and entity label/type does not exist
+            # 4. main node exists and synonym exists and entity label/type exists
+            # 5. main node does not exist
 
-            entity_type_query_param = entity_type
-
-            if check['node_exist'] and not check['synonym_exist']:
+            if check['node_exist'] and (not check['synonym_exist'] or not check['node_has_entity_label']):  # noqa
                 queries = {
-                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
-                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
-                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
-                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion(entity_type_query_param),  # noqa
+                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOTYPE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
                     EntityType.CHEMICAL.value: self.graph.create_chemical_global_inclusion(),
                     EntityType.COMPOUND.value: self.graph.create_compound_global_inclusion(),
                     EntityType.GENE.value: self.graph.create_gene_global_inclusion(),
                     EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion(),
-                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion(),
-                    EntityType.PHENOTYPE.value: self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type_query_param)  # noqa
+                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion()
                 }
 
-                query = queries[entity_type]
-                if query:
-                    try:
+                query = queries.get(entity_type, '')
+                try:
+                    if query:
                         self.graph.exec_write_query_with_params(query, createval)
-                    except BrokenPipeError:
-                        raise AnnotationError(
-                            title='Failed to Create Custom Annotation',
-                            message='The graph connection became stale while processing data, '
-                                    'Please refresh the browser and try again.',
-                            code=500)
-                    except Exception:
-                        current_app.logger.error(
-                            f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
-                            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-                        )
-                        raise AnnotationError(
-                            title='Failed to Create Custom Annotation',
-                            message='A system error occurred while creating the annotation, '
-                                    'we are working on a solution. Please try again later.',
-                            code=500)
+                    else:
+                        query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                        self.graph.exec_write_query_with_params(query, createval)
+                except BrokenPipeError:
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='The graph connection became stale while processing data, '
+                                'Please refresh the browser and try again.',
+                        code=500)
+                except Exception:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
             elif not check['node_exist']:
                 try:
-                    query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type_query_param)
+                    query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
                     self.graph.exec_write_query_with_params(query, createval)
                 except BrokenPipeError:
                     raise AnnotationError(
@@ -424,19 +427,17 @@ class ManualAnnotationService:
                         code=500)
 
     def _global_annotation_exists_in_kg(self, values: dict):
-        entity_type_query_param = values['entity_type']
-
         queries = {
-            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
-            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
-            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),
-            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist(entity_type_query_param),  # noqa
+            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),
+            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.PHENOTYPE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
             EntityType.CHEMICAL.value: self.graph.chemical_global_inclusion_exist(),
             EntityType.COMPOUND.value: self.graph.compound_global_inclusion_exist(),
             EntityType.GENE.value: self.graph.gene_global_inclusion_exist(),
             EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist(),
-            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist(),
-            EntityType.PHENOTYPE.value: self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(entity_type_query_param)  # noqa
+            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist()
         }
 
         # query can be empty string because some entity types
@@ -447,7 +448,7 @@ class ManualAnnotationService:
         if result['node_exist']:
             return result
         else:
-            query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(entity_type_query_param)
+            query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
             result = self.graph.exec_read_query_with_params(query, values)[0]
 
         return result
