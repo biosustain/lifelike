@@ -191,6 +191,7 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
     def convert(self, buffer):
         return buffer
 
+
 class DefaultFileTypeProvider(BaseFileTypeProvider):
     """
     A fallback file type provider that is returned when we don't know what
