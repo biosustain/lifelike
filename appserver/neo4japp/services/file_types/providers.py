@@ -7,7 +7,6 @@ from typing import Optional, List, Dict
 
 import textwrap
 
-import flask
 import graphviz
 import requests
 from pdfminer import high_level
@@ -345,14 +344,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
-                    if label == 'link':
-                        print('url: ', flask.request.host_url)
-                        print('IP: ', flask.request.host)
-                        if node['data'].get('sources') or node.data.get('hyperlinks'):
-                            data = node['data'].get('sources') or [] \
-                                   + node['data'].get('hyperlinks') or []
-                            if any(link.get('url').lstrip().startswith('mailto:') for link in data):
-                                label = 'email'
                     params['image'] = (
                             f'/home/n4j/assets/{label}'
                             f'_{style.get("fillColor") or default_icon_color}.png'
@@ -389,7 +380,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 else:
                     params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['sources'][-1].get('url')
+                params['href'] = node['data']['hyperlinks'][-1].get('url')
             # If url points to internal file, append it with the domain address
             if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
                 params['href'] = LIFELIKE_DOMAIN + params['href']
