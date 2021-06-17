@@ -2,6 +2,8 @@
     <span *ngIf="part.text; else text"
           [ngClass]="'x-y-z-annotation ' + part.infons.type"
           [ngbTooltip]="tooltip"
+          [closeDelay]="1000"
+          [autoClose]="outside"
           placement="top bottom"
           [innerHTML]="part.text"
     ></span>
