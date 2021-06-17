@@ -24,6 +24,8 @@ class ContentSearchSchema(CamelCaseSchema):
 
 class SynonymSearchSchema(CamelCaseSchema):
     term = fields.String()
+    organisms = fields.String(default='', required=False)
+    types = fields.String(default='', required=False)
 
 # Response
 # ----------------------------------------
@@ -35,13 +37,13 @@ class ContentSearchResponseSchema(ResultListSchema):
 
 class SynonymData(CamelCaseSchema):
     type = fields.String()
-    full_name = fields.String()
+    name = fields.String()
     organism = fields.String()
-    aliases = fields.List(fields.String())
+    synonyms = fields.List(fields.String())
 
 
 class SynonymSearchResponseSchema(CamelCaseSchema):
-    synonyms = fields.List(fields.Nested(SynonymData))
+    data = fields.List(fields.Nested(SynonymData))
     count = fields.Integer()
 
 
