@@ -248,13 +248,6 @@ def handle_generic_error(code: int, ex: Exception):
         }
     )
 
-    if isinstance(ex, BrokenPipeError):
-        newex = ServerException(
-            message='The graph connection became stale while processing data, '
-                    'Please refresh the browser and try again.')
-    else:
-        newex = ServerException()
-
     newex.version = GITHUB_HASH
     newex.transaction_id = transaction_id
     if current_app.debug:
