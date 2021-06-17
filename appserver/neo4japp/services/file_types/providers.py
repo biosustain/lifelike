@@ -93,7 +93,7 @@ common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
 
-def _search_doi_in_pdf(content: bytes) -> Optional[str]:
+def _search_doi_in(content: bytes) -> Optional[str]:
     doi: Optional[str]
     try:
         for match in doi_re.finditer(content):
@@ -114,7 +114,7 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
             if certainly_doi:
                 # if contains escape patterns try substitute them
                 if common_escape_patterns_re.search(match.group()):
-                    doi = _search_doi_in_pdf(
+                    doi = _search_doi_in(
                                 common_escape_patterns_re.sub(
                                         b'', match.group()
                                 )
@@ -123,7 +123,7 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
                         return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
-                    doi = _search_doi_in_pdf(
+                    doi = _search_doi_in(
                                 dash_types_re.sub(
                                         b'-', match.group()
                                 )
@@ -171,7 +171,7 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
                     end_of_match_idx = match.end(0)
                     first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
                     if first_char_after_match == b'\n':
-                        doi = _search_doi_in_pdf(
+                        doi = _search_doi_in(
                                     # new input = match + 50 chars after new line
                                     match.group() +
                                     content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
@@ -183,6 +183,7 @@ def _search_doi_in_pdf(content: bytes) -> Optional[str]:
     except Exception as e:
         pass
     return None
+
 
 class DirectoryTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory'
@@ -222,14 +223,14 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 1: search through the first N bytes (most probably containing only metadata)
         chunk = data[:2 ** 17]
-        doi = _search_doi_in_pdf(chunk)
+        doi = _search_doi_in(chunk)
         if doi is not None:
             return doi
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
         text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-        doi = _search_doi_in_pdf(bytes(text, encoding='utf8'))
+        doi = _search_doi_in(bytes(text, encoding='utf8'))
 
         return doi
 
@@ -303,7 +304,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
         buffer.seek(0)
 
         chunk = data[:2 ** 17]
-        doi = _search_doi_in_pdf(chunk)
+        doi = _search_doi_in(chunk)
         return doi
 
     def convert(self, buffer):
