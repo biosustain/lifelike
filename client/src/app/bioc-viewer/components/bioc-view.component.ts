@@ -123,8 +123,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isSubHeader(passage) {
-    const subSections = ['INTRO', 'ABSTRACT'];
-    const ALLOWED_TYPES = ['title_1', 'abstract_title_1'];
+    const subSections = ['INTRO', 'ABSTRACT', 'CONCL', 'REF'];
+    const ALLOWED_TYPES = ['title_1', 'abstract_title_1', 'title_1', 'title'];
     const infons = passage.infons || {};
     const sectionType = infons.section_type;
     const type = infons.type;
@@ -133,7 +133,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isTitle2(passage) {
-    const subSections = ['INTRO', 'ABSTRACT'];
+    const subSections = ['INTRO', 'ABSTRACT', ];
     const ALLOWED_TYPES = ['title_2'];
     const infons = passage.infons || {};
     const sectionType = infons.section_type;
