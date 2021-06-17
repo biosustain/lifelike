@@ -349,7 +349,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                             if any(link.get('url').lstrip().startswith('mailto:') for link in data):
                                 label = 'email'
                     params['image'] = (
-                            f'/home/n4j/assets/{label}'
+                            f'/home/n4j/assets/{label}/{label}'
                             f'_{style.get("fillColor") or default_icon_color}.png'
                         )
                     params['imagepos'] = 'tc'
