@@ -165,6 +165,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
       case ENRICHMENT_TABLE_MIMETYPE:
       case SANKEY_MIMETYPE:
+      case BIOC_MIMETYPE:
       case 'application/pdf':
         return true;
       default:
