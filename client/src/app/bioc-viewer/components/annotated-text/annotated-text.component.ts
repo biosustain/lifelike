@@ -1,5 +1,5 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, OnDestroy } from '@angular/core';
-import { Annotation } from '../bioc-view.component';
+import { Annotation } from '../bioc.format';
 
 @Component({
   selector: 'app-bioc-annotated-text',
