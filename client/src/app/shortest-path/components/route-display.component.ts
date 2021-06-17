@@ -64,9 +64,9 @@ export class RouteDisplayComponent {
           size: 12,
         },
         length: 250,
-        // widthConstraint: {
-        //   maximum: 90,
-        // },
+        widthConstraint: {
+           maximum: 90,
+        },
       },
       nodes: {
         scaling: {
