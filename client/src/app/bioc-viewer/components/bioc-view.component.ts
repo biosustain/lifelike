@@ -127,7 +127,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const ALLOWED_TYPES = ['title_1', 'abstract_title_1', 'title_1', 'title'];
     const infons = passage.infons || {};
     const sectionType = infons.section_type.to_upper();
-    const type = infons.type;
+    const type = infons.type.to_lower();
     const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
     return res;
   }
