@@ -35,7 +35,9 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     }
   }
 
-  getSource(identifier: string, type: string) {
+  getSource(payload: any = {}) {
+    const identifier = payload.identifier;
+    const type = payload.type;
     // MESH Handling
     if (identifier && identifier.toLowerCase().startsWith('mesh')) {
       const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
