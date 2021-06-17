@@ -26,97 +26,111 @@ db_BioCyc, db_EcoCyc and the entity name (e.g. Gene, Protein)
 #### Node labels and attributes:   
 id has the same value for biocyc_id, and displayName and pathways attributes were added post-loading for annotation
 
-| Node Label | Attribute|      
-|-----:|-----------:|        
-| Class | biocyc_id |	
-| Class | data_source |	
-| Class | displayName |	
-| Class | id |	
-| Class | name |	
-| Class | synonyms |	
-| Compound | abbrev_name |	
-| Compound | biocyc_id |	
-| Compound | data_source |	
-| Compound | displayName |	
-| Compound | id |	
-| Compound | inchi_key |	
-| Compound | name |	
-| DNABindingSite | abs_center_pos |	
-| DNABindingSite | biocyc_id |	
-| DNABindingSite | description |	
-| DNABindingSite | displayName |	
-| DNABindingSite | id |	
-| DNABindingSite | site_length |	
-| EnzReaction | biocyc_id |	
-| EnzReaction | description |	
-| EnzReaction | displayName |	
-| EnzReaction | genes |	
-| EnzReaction | id |	
-| EnzReaction | name |	
-| Gene | accession |	
-| Gene | biocyc_id |	
-| Gene | description |	
-| Gene | displayName |	
-| Gene | id |	
-| Gene | left_end_position |	
-| Gene | name |	
-| Gene | pathways |	
-| Gene | right_end_position |	
-| Gene | strand |	
-| Pathway | biocyc_id |	
-| Pathway | displayName |	
-| Pathway | genes |	
-| Pathway | id |	
-| Pathway | name |	
-| Promoter | biocyc_id |	
-| Promoter | description |	
-| Promoter | displayName |	
-| Promoter | genes |	
-| Promoter | id |	
-| Promoter | name |	
-| Promoter | pos_1 |	
-| Promoter | strand |	
-| Protein | abbrev_name |	
-| Protein | biocyc_id |	
-| Protein | description |	
-| Protein | displayName |	
-| Protein | genes |	
-| Protein | id |	
-| Protein | molecular_weight_kd |	
-| Protein | name |	
-| Protein | pi |	
-| RNA | abbrev_name |	
-| RNA | biocyc_id |	
-| RNA | description |	
-| RNA | displayName |	
-| RNA | genes |	
-| RNA | id |	
-| RNA | location |	
-| RNA | name |	
-| Reaction | biocyc_id |	
-| Reaction | description |	
-| Reaction | displayName |	
-| Reaction | ec_number |	
-| Reaction | id |	
-| Reaction | name |	
-| Regulation | biocyc_id |	
-| Regulation | displayName |	
-| Regulation | id |	
-| Regulation | mechanism |	
-| Regulation | mode |	
-| Regulation | type |	
-| Terminator | biocyc_id |	
-| Terminator | description |	
-| Terminator | genes |	
-| Terminator | id |	
-| Terminator | left_end_position |	
-| Terminator | right_end_position |	
-| TranscriptionUnit | biocyc_id |	
-| TranscriptionUnit | description |	
-| TranscriptionUnit | displayName |	
-| TranscriptionUnit | genes |	
-| TranscriptionUnit | id |	
-| TranscriptionUnit | name |	
+| Node Label | Attribute | Source |
+|:-----|:-----------|:-|
+| BioCycClass | biocyc_id | UNIQUE-ID |
+| BioCycClass | data_source | |
+| BioCycClass | displayName | =coalesce(name, biocyc_id) |
+| BioCycClass | id | =biocyc_id |
+| BioCycClass | name | COMMON-NAME |
+| BioCycClass | synonyms | SYNONYMS |
+| Compound | abbrev_name | ABBREV-NAME |
+| Compound | biocyc_id | UNIQUE-ID |
+| Compound | data_source | |	
+| Compound | displayName | =coalesce(name, biocyc_id) |
+| Compound | id |	=biocyc_id |
+| Compound | inchi_key | INCHI-KEY<br />remove leading 'InChIKey='|
+| Compound | name | COMMON-NAME<br />strip HTML tags and remove leading 'a ' and 'an ' |
+| Compound | inchy | INCHI |
+| Compound | smiles | SMILES |
+| DNABindingSite | abs_center_pos | ABS-CENTER-POS |
+| DNABindingSite | biocyc_id | UNIQUE-ID |
+| DNABindingSite | description | |
+| DNABindingSite | displayName | =protein displayName + ' BS' of proteins linked to the DNABindingSite through Regulation<br /><br /> else<br /><br /> =coalesce(name, biocyc_id)
+| DNABindingSite | id | =biocyc_id |
+| DNABindingSite | site_length | SITE-LENGTH |	
+| EnzReaction | biocyc_id | UNIQUE-ID |
+| EnzReaction | description | |
+| EnzReaction | displayName | ? |
+| EnzReaction | genes | |
+| EnzReaction | id | =biocyc_id |
+| EnzReaction | name | COMMON-NAME |
+| EnzReaction | synonyms | SYNONYMS |
+| Gene | accession | ACCESSION-1 |
+| Gene | biocyc_id | UNIQUE-ID |
+| Gene | description | |
+| Gene | displayName | =coalesce(name, biocyc_id) |
+| Gene | id | =biocyc_id |
+| Gene | left_end_position | LEFT-END-POSITION |
+| Gene | name | COMMON-NAME |
+| Gene | pathways | ? |
+| Gene | right_end_position | RIGHT-END-POSITION |
+| Gene | strand | TRANSCRIPTION-DIRECTION |
+| Gene | synonyms | SYNONYMS |
+| Pathway | biocyc_id | UNIQUE-ID |
+| Pathway | displayName | =coalesce(name, biocyc_id) |
+| Pathway | genes |	|
+| Pathway | id | =biocyc_id |
+| Pathway | name | COMMON-NAME |
+| Pathway | synonyms | SYNONYMS |
+| Promoter | biocyc_id | UNIQUE-ID |
+| Promoter | description | |
+| Promoter | displayName | =coalesce(name, biocyc_id) |
+| Promoter | genes | |
+| Promoter | id | =biocyc_id |
+| Promoter | name | COMMON-NAME |
+| Promoter | pos_1 | ABSOLUTE-PLUS-1-POS |	
+| Promoter | strand | TRANSCRIPTION-DIRECTION |
+| Promoter | synonyms | SYNONYMS |
+| Protein | abbrev_name | ABBREV-NAME |
+| Protein | biocyc_id | UNIQUE-ID |
+| Protein | description | |	
+| Protein | displayName | =coalesce(name, biocyc_id) |
+| Protein | genes | |
+| Protein | id | =biocyc_id |
+| Protein | molecular_weight_kd | MOLECULAR-WEIGHT-KD |	
+| Protein | name | COMMON-NAM |
+| Protein | pi | PI |
+| Protein | synonyms | SYNONYMS |
+| Protein | location | LOCATIONS |
+| Promoter | GO | GO-TERMS |
+| RNA | abbrev_name | ABBREV-NAME |
+| RNA | biocyc_id | UNIQUE-ID |
+| RNA | description | |
+| RNA | displayName | =coalesce(name, biocyc_id) |
+| RNA | genes | |
+| RNA | id | =biocyc_id |
+| RNA | location | LOCATIONS |
+| RNA | name | COMMON-NAME
+| Reaction | biocyc_id | UNIQUE-ID |
+| Reaction | description | |
+| Reaction | displayName | =coalesce(ec_number, name, biocyc_id) |
+| Reaction | ec_number | EC-NUMBER |
+| Reaction | id | =biocyc_id |
+| Reaction | name | COMMON-NAME |
+| Reaction | other_name | SYSTEMATIC-NAME |
+| Reaction | direction | REACTION-DIRECTION |
+| Reaction | location | RXN-LOCATIONS |
+| Reaction | synonyms | SYNONYMS |
+| Regulation | biocyc_id | UNIQUE-ID |
+| Regulation | displayName | ? |
+| Regulation | id | =biocyc_id |
+| Regulation | mechanism | MECHANISM |
+| Regulation | mode | MODE |
+| Regulation | type | |
+| Terminator | biocyc_id | UNIQUE-ID |
+| Terminator | displayName | =coalesce(name, biocyc_id) |
+| Terminator | description | |
+| Terminator | genes | |
+| Terminator | id | =biocyc_id |
+| Terminator | left_end_position | LEFT-END-POSITION |
+| Terminator | right_end_position | RIGHT-END-POSITION |
+| TranscriptionUnit | biocyc_id | UNIQUE-ID |
+| TranscriptionUnit | description |	|
+| TranscriptionUnit | displayName | |
+| TranscriptionUnit | genes | |
+| TranscriptionUnit | id | =biocyc_id |
+| TranscriptionUnit | name | COMMON-NAME |
 
 #### Node outgoing relationships
 
