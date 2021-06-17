@@ -315,9 +315,17 @@ class SynonymSearchView(FilesystemBaseView):
     def get(self, params, pagination: Pagination):
         search_term = params.get('term', None)
 
+        organisms = []
+        if len(params['organisms']):
+            organisms = params['organisms'].split(';')
+
+        types = []
+        if len(params['types']):
+            types = params['types'].split(';')
+
         if search_term is None:
             return jsonify(SynonymSearchResponseSchema().dump({
-                'synonyms': [],
+                'data': [],
             }))
 
         page = pagination.page
@@ -326,8 +334,8 @@ class SynonymSearchView(FilesystemBaseView):
 
         try:
             search_dao = get_search_service_dao()
-            results = search_dao.get_synonyms(search_term, offset, limit)
-            count = search_dao.get_synonyms_count(search_term)
+            results = search_dao.get_synonyms(search_term, organisms, types, offset, limit)
+            count = search_dao.get_synonyms_count(search_term, organisms, types)
         except Exception as e:
             current_app.logger.error(
                 f'Failed to get synonym data for term: {search_term}',
@@ -341,7 +349,7 @@ class SynonymSearchView(FilesystemBaseView):
             )
 
         return jsonify(SynonymSearchResponseSchema().dump({
-            'synonyms': results,
+            'data': results,
             'count': count
         }))
 
