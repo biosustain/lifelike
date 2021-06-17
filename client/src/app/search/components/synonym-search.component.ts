@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { KG_VIZ_FILTER_TYPES, ORGANISM_SHORTLIST } from 'app/shared/constants';
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContentSearchService } from '../services/content-search.service';
@@ -18,7 +19,14 @@ export class SynonymSearchComponent {
   id = uuidv4();
 
   synonymData: SynonymData[];
-  checklistSelection = new SelectionModel<any>(true /* multiple */);
+  entityChecklistSelection = new SelectionModel<SynonymData>(true /* multiple */);
+
+  typeFilters = KG_VIZ_FILTER_TYPES.filter(type => type !== 'Protein');
+  selectedTypeFilters: string[] = [];
+  organismFilters = Array.from(ORGANISM_SHORTLIST.keys());
+  selectedOrganismFilters: string[] = [];
+  typeChecklistSelection = new SelectionModel<string>(true /* multiple */);
+  organismChecklistSelection = new SelectionModel<string>(true /* multiple */);
 
   form = new FormGroup({
     q: new FormControl('', Validators.required),
@@ -30,6 +38,8 @@ export class SynonymSearchComponent {
 
   loading = false;
   errorMsg: string = null;
+
+  mostRecentSearchTerm: string;
 
   constructor(
     private readonly modal: NgbActiveModal,
@@ -52,10 +62,17 @@ export class SynonymSearchComponent {
   searchSynonyms() {
     this.loading = true;
     this.synonymData = [];
-    this.contentSearchService.getSynoynms(this.form.value.q, this.page, this.SYNONYM_SEARCH_LIMIT).subscribe(
+    this.mostRecentSearchTerm = this.form.value.q;
+    this.contentSearchService.getSynoynms(
+      this.form.value.q,
+      this.selectedOrganismFilters.map((organism) => ORGANISM_SHORTLIST.get(organism)),
+      this.selectedTypeFilters,
+      this.page,
+      this.SYNONYM_SEARCH_LIMIT
+    ).subscribe(
       (result) => {
         this.loading = false;
-        this.synonymData = result.synonyms;
+        this.synonymData = result.data;
         this.total = result.count;
       },
       (error) => {
@@ -72,38 +89,50 @@ export class SynonymSearchComponent {
   submit() {
     const synonymsToAdd = new Set<string>();
     this.synonymData.forEach(entity => {
-      if (this.checklistSelection.isSelected(entity)) {
+      if (this.entityChecklistSelection.isSelected(entity)) {
         const regex = /\W+/g;
-        entity.aliases.forEach((alias: string) => {
-          const aliasHasNonWordChars = alias.match(regex);
-          synonymsToAdd.add((aliasHasNonWordChars ? `"${alias.toLowerCase()}"` : alias.toLowerCase()));
+        entity.synonyms.forEach((synonym: string) => {
+          const synonymHasNonWordChars = synonym.match(regex);
+          synonymsToAdd.add((synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase()));
         });
       }
     });
     this.modal.close(Array.from(synonymsToAdd));
   }
 
-  toggleSelection(entity: any) {
-    this.checklistSelection.toggle(entity);
+  toggleEntitySelection(entity: SynonymData) {
+    this.entityChecklistSelection.toggle(entity);
   }
 
-  allChecked() {
-    return this.synonymData.every((entity) => this.checklistSelection.isSelected(entity));
+  toggleFilterSelection(checklist: SelectionModel<string>, filter: string) {
+    checklist.toggle(filter);
   }
 
-  toggleAll() {
+  allEntitiesChecked() {
+    return this.synonymData.every((entity) => this.entityChecklistSelection.isSelected(entity));
+  }
+
+  toggleAllEntities() {
     // Just get the current state of the checkbox so we don't have to check the synonym data unnecessarily
     const checkboxHeader = document.getElementById(this.id + '-synonym-checklist-header') as HTMLInputElement;
 
     if (checkboxHeader.checked) {
-      this.synonymData.forEach(entity => this.checklistSelection.select(entity));
+      this.synonymData.forEach(entity => this.entityChecklistSelection.select(entity));
     } else {
-      this.synonymData.forEach(entity => this.checklistSelection.deselect(entity));
+      this.synonymData.forEach(entity => this.entityChecklistSelection.deselect(entity));
     }
   }
 
   goToPage(page: number) {
     this.page = page;
     this.searchSynonyms();
+  }
+
+  organismFiltersChanged(filters: string[]) {
+    this.selectedOrganismFilters = filters;
+  }
+
+  typeFiltersChanged(filters: string[]) {
+    this.selectedTypeFilters = filters;
   }
 }

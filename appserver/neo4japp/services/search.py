@@ -209,39 +209,53 @@ class SearchService(GraphBaseDao):
     def get_synonyms(
         self,
         search_term: str,
+        organisms: List[str],
+        types: List[str],
         page: int,
         limit: int
     ) -> List[dict]:
-        results = self.graph.read_transaction(self.get_synonyms_query, search_term, page, limit)
+        results = self.graph.read_transaction(
+            self.get_synonyms_query,
+            search_term,
+            organisms,
+            types,
+            page,
+            limit
+        )
         synonym_data = []
 
         for row in results:
             type = get_first_known_label_from_node(row['entity'])
-            aliases = row['synonyms']
-            full_name = ''
+            synonyms = row['synonyms']
+            name = ''
             organism = None
 
             if row['t'] is not None:
                 organism = row['t'].get('name', None)
 
-            if row['entity'].get('full_name', None) is not None:
-                full_name = row['entity']['full_name']
-            elif row['entity'].get('description', None) is not None:
-                full_name = row['entity']['description']
+            if row['entity'].get('name', None) is not None:
+                name = row['entity']['name']
 
             synonym_data.append({
                 'type': type,
-                'full_name': full_name,
+                'name': name,
                 'organism': organism,
-                'aliases': aliases,
+                'synonyms': synonyms,
             })
         return synonym_data
 
     def get_synonyms_count(
         self,
         search_term: str,
+        organisms: List[str],
+        types: List[str]
     ) -> List[dict]:
-        results = self.graph.read_transaction(self.get_synonyms_count_query, search_term)
+        results = self.graph.read_transaction(
+            self.get_synonyms_count_query,
+            search_term,
+            organisms,
+            types
+        )
         return results[0]['count']
 
     def visualizer_search_query(
@@ -309,6 +323,8 @@ class SearchService(GraphBaseDao):
         self,
         tx: Neo4jTx,
         search_term: str,
+        organisms: List[str],
+        types: List[str],
         page: int,
         limit: int
     ) -> List[N4jRecord]:
@@ -316,21 +332,29 @@ class SearchService(GraphBaseDao):
         Gets a list of synoynm data for a given search term. Data includes any matched entities, as
         well as any linked organism, if there is one.
         """
+        type_match_str = ''
+        if len(types):
+            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+
+        tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
+        if len(organisms):
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+
         return list(
             tx.run(
-                """
-                MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})<-[:HAS_SYNONYM]-(entity)
-                WHERE NOT 'Protein' IN LABELS(entity)
+                f"""
+                MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})<-[:HAS_SYNONYM]-(entity)
+                WHERE NOT 'Protein' IN labels(entity){type_match_str}
                 MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
                 WHERE
                     size(synonyms.name) > 2 OR
-                    any(x IN LABELS(entity) WHERE x IN ['Chemical', 'Compound'])
+                    any(x IN ['Chemical', 'Compound'] WHERE x IN labels(entity))
                 WITH
                     entity,
                     synonyms.name AS synonyms,
-                    toLower(entity.name) = toLower($search_term) as matches_term
+                    toLower(entity.name) = toLower($search_term) AS matches_term
                 ORDER BY size(synonyms) DESC
-                OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)
+                {tax_match_str}
                 RETURN
                     entity,
                     t,
@@ -342,6 +366,8 @@ class SearchService(GraphBaseDao):
                 LIMIT $limit
                 """,
                 search_term=search_term,
+                organisms=organisms,
+                types=types,
                 page=page,
                 limit=limit
             )
@@ -351,19 +377,32 @@ class SearchService(GraphBaseDao):
         self,
         tx: Neo4jTx,
         search_term: str,
+        organisms: List[str],
+        types: List[str]
     ) -> List[N4jRecord]:
         """
         Gets the count of synoynm data for a given search term.
         """
+        type_match_str = ''
+        if len(types):
+            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+
+        tax_match_str = ''
+        if len(organisms):
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+
         return tx.run(
-            """
-            MATCH (synonym:Synonym {lowercase_name: toLower($search_term)})<-[:HAS_SYNONYM]-(entity)
-            WHERE NOT 'Protein' IN LABELS(entity)
+            f"""
+            MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})<-[:HAS_SYNONYM]-(entity)
+            WHERE NOT 'Protein' IN labels(entity){type_match_str}
             MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
             WHERE
                 size(synonyms.name) > 2 OR
-                any(x IN LABELS(entity) WHERE x IN ['Chemical', 'Compound'])
-            RETURN count(distinct entity) as count
+                any(x IN labels(entity) WHERE x IN ['Chemical', 'Compound'])
+            {tax_match_str}
+            RETURN count(DISTINCT entity) AS count
             """,
             search_term=search_term,
+            organisms=organisms,
+            types=types
         ).data()

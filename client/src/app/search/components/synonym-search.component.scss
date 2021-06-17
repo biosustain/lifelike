@@ -4,3 +4,7 @@
     max-height: 400px;
     overflow-y: auto;
 }
+
+ngb-pagination ::ng-deep ul {
+    margin: 0 !important;
+}

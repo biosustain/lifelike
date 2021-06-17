@@ -26,6 +26,6 @@ export interface AnnotationResponse {
 }
 
 export interface SynonymSearchResponse {
-  synonyms: SynonymData[];
+  data: SynonymData[];
   count: number;
 }

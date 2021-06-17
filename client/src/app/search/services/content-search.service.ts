@@ -61,12 +61,14 @@ export class ContentSearchService {
     ).pipe(map(resp => resp.results));
   }
 
-  getSynoynms(searchTerm: string, page: number, limit: number): Observable<SynonymSearchResponse> {
+  getSynoynms(searchTerm: string, organisms: string[], types: string[], page: number, limit: number): Observable<SynonymSearchResponse> {
     return this.http.get<SynonymSearchResponse>(
       `/api/search/synonyms`, {
         ...this.apiService.getHttpOptions(true),
         params: {
           term: searchTerm,
+          organisms: organisms.join(';'),
+          types: types.join(';'),
           page: page.toString(),
           limit: limit.toString(),
         }
