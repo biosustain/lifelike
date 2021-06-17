@@ -9,8 +9,8 @@ import textwrap
 import graphviz
 import requests
 from pdfminer import high_level
-from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
+from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 
