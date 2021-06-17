@@ -1,5 +1,6 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, OnDestroy } from '@angular/core';
 import { Annotation } from '../bioc.format';
+import { SEARCH_LINKS } from 'app/shared/links';
 
 @Component({
   selector: 'app-bioc-annotated-text',
@@ -31,6 +32,22 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     const parent = this.txt.parentNode;
     if (parent) {
       parent.removeChild(this.txt);
+    }
+  }
+
+  getSource(identifier: string, type: string) {
+    // MESH Handling
+    if (identifier && identifier.toLowerCase().startsWith('mesh')) {
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
+      const url = mesh.url;
+      const idPart = identifier.split(':');
+      return url.replace(/%s/, encodeURIComponent(idPart[1]));
+    }
+    // NCBI
+    if (identifier && !isNaN(Number(identifier))) {
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'ncbi');
+      const url = mesh.url;
+      return url.replace(/%s/, encodeURIComponent(identifier));
     }
   }
 
@@ -82,7 +99,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           .slice(0, idx)
           .concat([
             part.slice(0, startOffset),
-            {...annotation, location},
+            { ...annotation, location },
             part.slice(endOffset)
           ])
           .concat(iacc.slice(idx + 1));
