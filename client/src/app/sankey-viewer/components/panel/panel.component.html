@@ -1,5 +1,11 @@
 <div class="border-bottom border-secondary pb-3 mb-3">
-    <ng-container *ngTemplateOutlet="details?.template; context: details"></ng-container>
+    <ng-container *ngFor="let detail_group of details | keyvalue">
+        <ng-container *ngIf="templates[detail_group.key]">
+            <ng-container *ngFor="let entity of detail_group.value">
+                <ng-container *ngTemplateOutlet="templates[detail_group.key]; context: { $implicit: entity }">
+                </ng-container>
+            </ng-container>
+        </ng-container>
+    </ng-container>
 </div>
-
 
