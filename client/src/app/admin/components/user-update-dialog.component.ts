@@ -22,6 +22,8 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
+    roles: new FormControl('', Validators.required)
+
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
@@ -41,6 +43,7 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
       username: this.user.username,
       firstName: this.user.firstName,
       lastName: this.user.lastName,
+      roles: (this.user.roles.includes('admin') ? 'admin' : 'user')
     });
   }
 
