@@ -76,7 +76,8 @@ class AnnotationGraphService(GraphMixin):
             EntityType.ANATOMY.value,
             EntityType.DISEASE.value,
             EntityType.FOOD.value,
-            EntityType.PHENOMENA.value
+            EntityType.PHENOMENA.value,
+            EntityType.PHENOTYPE.value
         }:
             global_inclusions = self.exec_read_query_with_params(
                 self.get_mesh_global_inclusions_by_type(entity_type), params)
@@ -145,9 +146,7 @@ class AnnotationGraphService(GraphMixin):
             EntityType.COMPOUND.value: self.exec_read_query(self.get_compound_global_inclusions()),
             EntityType.GENE.value: self.exec_read_query(self.get_gene_global_inclusions()),
             EntityType.SPECIES.value: self.exec_read_query(self.get_species_global_inclusions()),
-            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions()),
-            EntityType.PHENOTYPE.value: self.exec_read_query(
-                self.get_lifelike_global_inclusions_by_type(EntityType.PHENOTYPE.value))
+            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions())
         }
 
         for k, v in inclusion_dicts.items():
