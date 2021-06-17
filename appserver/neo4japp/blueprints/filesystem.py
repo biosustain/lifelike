@@ -639,15 +639,14 @@ class FileListView(FilesystemBaseView):
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
             # if no provider matched try to convert
-            if provider == file_type_service.default_provider or isinstance(provider, GenericFileTypeProvider):
+            if provider == file_type_service.default_provider \
+                    or isinstance(provider, GenericFileTypeProvider):
                 import os
                 file_name, extension = os.path.splitext(file.filename)
                 if extension.lower() == '.xml' or extension.lower() == '.bioc':
                     file.mime_type = 'vnd.lifelike.document/bioc'
-                elif extension.isupper():
+                if extension.isupper():
                     file.mime_type = 'application/pdf'
-                else:
-                    file.mime_type = 'application/html'
                 provider = file_type_service.get(file)
                 provider.convert(buffer)
 
