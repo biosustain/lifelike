@@ -48,7 +48,6 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           const localOffset = part.location ? part.location.length : part.length;
           if (offset + localOffset + globalOffset >= location.offset) {
             if (offset + globalOffset > location.offset || part.location) {
-              console.warn('Error state');
               return iacc;
             }
             break;
@@ -69,31 +68,11 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
           return iacc;
         }
         if (part.slice(startOffset, endOffset) !== annotation.text) {
-          console.warn(
-            `${part.slice(startOffset, endOffset)} != ${annotation.text}`,
-            part,
-            annotation,
-            location
-          );
           for (let i = 0; i < part.length; i++) {
             if (part.slice(startOffset - i, endOffset - i) === annotation.text) {
-              console.warn(
-                `Correct for ${-i}`,
-                part.idx,
-                globalOffset,
-                part,
-                annotation
-              );
               break;
             }
             if (part.slice(startOffset + i, endOffset + i) === annotation.text) {
-              console.warn(
-                `Correct for ${-i}`,
-                part.idx,
-                globalOffset,
-                part,
-                annotation
-              );
               break;
             }
           }
