@@ -11,10 +11,11 @@ import {
   nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS,
   representativePositiveNumber,
-  symmetricDifference, uniqueBy
+  symmetricDifference
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { colorByTraceEnding } from '../algorithms';
 
 @Component({
   selector: 'app-sankey',
@@ -238,12 +239,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   pathMouseOver(_element, data, _eventId, _links, ..._rest) {
-    d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .style('opacity', ({_color, _selected}) => _color === data._color || _selected ? 1 : 0.35);
+    this.highlightTraces(new Set([data._trace]));
   }
 
   pathMouseOut(_element, _data, _eventId, _links, ..._rest) {
+    this.unhighlightLinks();
+  }
+
+  highlightTraces(traces: Set<object>) {
+    d3.select(this.links.nativeElement)
+      .selectAll('path')
+      .raise()
+      .style('opacity', ({_trace, _selected}) => traces.has(_trace) || _selected ? 1 : 0.35);
+  }
+
+  unhighlightLinks() {
     d3.select(this.links.nativeElement)
       .selectAll('path')
       .filter(({_selected}) => !_selected)
@@ -254,8 +264,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .filter(({_selected}) => !_selected)
-      .style('opacity', ({_color}) => _color === data._color ? 0.45 : 0.35);
-    d3.select(element).select('text')
+      // tslint:disable-next-line:triple-equals
+      .style('opacity', ({type}) => type === data.type ? 0.45 : 0.35);
+    d3.select(element)
+      .style('opacity', _ => 1)
+      .select('text')
       .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
       // todo: reenable when performance improves
@@ -268,6 +281,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
       // })
       .text(n => nodeLabelAccessor(n));
+
+    const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
+    this.highlightTraces(traces);
   }
 
   nodeMouseOut(element, _data, _eventId, _links, ..._rest) {
@@ -503,27 +519,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         exit => exit.remove()
       )
       .attr('fill', (node: Node) => {
-        const {_color, sourceLinks, targetLinks, _selected} = node;
-        let traceLink;
-        const allGroups = uniqueBy([].concat(sourceLinks, targetLinks), ({_trace: {group}}) => group);
-        if (allGroups.size === 1) {
-          traceLink = allGroups.values().next().value;
-        } else {
-          // only when exactly one trace group starts/ends at the node
-          const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace.group);
-          if (difference.size === 1) {
-            traceLink = difference.values().next().value;
-          }
-        }
-        if (traceLink) {
-          const traceColor = traceLink._color;
-          const labColor = d3.cubehelix(_color);
-          const calcColor = d3.cubehelix(traceColor);
-          calcColor.l = labColor.l;
-          calcColor.opacity = _selected ? 1 : labColor.opacity;
-          return calcColor;
-        }
-        return _color;
+        const traceColor = colorByTraceEnding(node);
+        return traceColor || node._color;
       })
       .call(joined => {
         updateNodeRect(

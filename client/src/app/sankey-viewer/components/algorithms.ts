@@ -1,8 +1,9 @@
 import * as d3Sankey from 'd3-sankey-circular';
 import { uuidv4 } from '../../shared/utils';
-import { nodeLabelAccessor, christianColors, createMapToColor, representativePositiveNumber } from './sankey/utils';
+import { nodeLabelAccessor, christianColors, createMapToColor, representativePositiveNumber, symmetricDifference } from './sankey/utils';
 import { find, defaultId } from './sankey/d3-sankey';
 import { GraphData } from '../../interfaces/vis-js.interface';
+import { cubehelix } from 'd3';
 
 export const fractionOfFixedNodeValue = ({links, nodes}) => {
   links.forEach(l => l.value = 1);
@@ -185,6 +186,7 @@ export const getAndColorNetworkTraceLinks = (networkTrace, links, colorMap = ({g
   );
   const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
     const color = traceGroupColorMap.get(trace.group);
+    trace._color = color;
     return o.concat(
       trace.edges.map(linkIdx => {
         const originLink = links[linkIdx];
@@ -285,4 +287,17 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
       color: undefined
     }))
   } as GraphData;
+};
+
+
+export const colorByTraceEnding = ({sourceLinks, targetLinks, _color}: Node) => {
+  const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace);
+  if (difference.size === 1) {
+    const traceColor = difference.values().next().value._trace._color;
+    const labColor = cubehelix(_color);
+    const calcColor = cubehelix(traceColor);
+    calcColor.l = labColor.l;
+    calcColor.opacity = labColor.opacity;
+    return calcColor;
+  }
 };
