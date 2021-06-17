@@ -176,19 +176,19 @@ class AccountView(MethodView):
                         message=f'Username {params["username"]} already taken.',
                         code=400)
             if params.get('roles'):
-                roles = params['roles']
+                app_roles = [self.get_or_create_role(role) for role in params['roles']]
                 del params['roles']
                 if g.current_user.has_role('admin'):
                     if hash_id == g.current_user.hash_id:
-                        if params.get('roles') != g.current_user.roles:
+                        if app_roles != g.current_user.roles:
                             raise NotAuthorized(
                                 title='Failed to Update User',
                                 message='You cannot update your own roles!')
                     else:
                         # Remove previous roles
                         target.roles = []
-                        for role in roles:
-                            target.roles.append(self.get_or_create_role(role))
+                        for role in app_roles:
+                            target.roles.append(role)
                 else:
                     raise NotAuthorized(
                         title='Failed to Update User',
