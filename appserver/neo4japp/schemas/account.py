@@ -15,6 +15,8 @@ class UserCreateSchema(CamelCaseSchema):
     username = fields.String()
     email = fields.Email()
     password = fields.String()
+    created_by_admin = fields.Boolean()
+    roles = fields.List(fields.String())
 
 
 class UserChangePasswordSchema(CamelCaseSchema):
@@ -24,6 +26,7 @@ class UserChangePasswordSchema(CamelCaseSchema):
 
 class UserUpdateSchema(CamelCaseSchema):
     """ Only these attributes can be modified for AppUsers """
+    username = fields.String()
     first_name = fields.String()
     last_name = fields.String()
 
@@ -40,6 +43,8 @@ class UserSchema(CamelCaseSchema):
 class UserProfileSchema(UserSchema):
     id = fields.Integer()
     email = fields.Email()
+    locked = fields.Boolean()
+    reset_password = fields.Boolean()
     roles = fields.List(fields.String())
 
 

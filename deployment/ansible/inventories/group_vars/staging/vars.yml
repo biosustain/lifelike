@@ -1,3 +1,0 @@
-app_environment: staging
-elastic_file_content_index_id: file_staging
-container_registry: "***ARANGO_DB_NAME***.azurecr.io"
