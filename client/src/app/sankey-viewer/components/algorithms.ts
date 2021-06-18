@@ -301,3 +301,12 @@ export const colorByTraceEnding = ({sourceLinks, targetLinks, _color, _selected}
     return calcColor;
   }
 };
+
+export const getRelatedTraces = ({nodes, links}) => {
+  const nodesLinks = [...nodes].reduce(
+    (linksAccumulator, {sourceLinks, targetLinks}) =>
+      linksAccumulator.concat(sourceLinks, targetLinks)
+    , []
+  );
+  return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
+};

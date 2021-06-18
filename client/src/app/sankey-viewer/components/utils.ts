@@ -21,7 +21,12 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
       if (propertyName === true) {
         return v.map(n => parseForRendering(n)).join(', ');
       }
-      return [...v].slice(0, 3);
+      const vAsArray = [...v];
+      if (vAsArray.length > 3) {
+        return vAsArray.slice(0, 3).concat(`...${vAsArray.length - 3} hidden elements`);
+      } else {
+        return vAsArray;
+      }
     }
     if (v.id) {
       return `{ id: ${v.id}, ... }`;
