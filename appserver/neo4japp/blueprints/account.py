@@ -159,9 +159,11 @@ class AccountView(MethodView):
     @use_args(UserUpdateSchema)
     def put(self, params: dict, hash_id):
         """ Updating password and roles will be delegated to a separate function """
-        admin_or_private_access = g.current_user.has_role('admin') or \
-            g.current_user.has_role('private-data-access')
-        if g.current_user.hash_id != hash_id and admin_or_private_access is False:
+        admin_access = g.current_user.has_role('admin')
+        private_access = g.current_user.has_role('private-data-access')
+        modifying_own_data = g.current_user.hash_id == hash_id
+
+        if modifying_own_data and (admin_access or private_access) is False:
             raise NotAuthorized(
                 title='Failed to Update User',
                 message='You do not have sufficient privileges.')
@@ -176,19 +178,13 @@ class AccountView(MethodView):
                         message=f'Username {params["username"]} already taken.',
                         code=400)
             if params.get('roles'):
-                app_roles = [self.get_or_create_role(role) for role in params['roles']]
-                del params['roles']
-                if g.current_user.has_role('admin'):
-                    if hash_id == g.current_user.hash_id:
-                        if app_roles != g.current_user.roles:
+                params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
+                if admin_access:
+                    if modifying_own_data:
+                        if params['roles'] != g.current_user.roles:
                             raise NotAuthorized(
                                 title='Failed to Update User',
                                 message='You cannot update your own roles!')
-                    else:
-                        # Remove previous roles
-                        target.roles = []
-                        for role in app_roles:
-                            target.roles.append(role)
                 else:
                     raise NotAuthorized(
                         title='Failed to Update User',
