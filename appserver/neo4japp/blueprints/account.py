@@ -163,7 +163,7 @@ class AccountView(MethodView):
         private_access = g.current_user.has_role('private-data-access')
         modifying_own_data = g.current_user.hash_id == hash_id
 
-        if modifying_own_data and (admin_access or private_access) is False:
+        if not modifying_own_data and (admin_access or private_access) is False:
             raise NotAuthorized(
                 title='Failed to Update User',
                 message='You do not have sufficient privileges.')
