@@ -14,7 +14,7 @@ nginx_conf_dir: /home/ansible/nginx
 certbot_image: certbot/certbot
 certbot_hostname: cb01
 certbot_conf_dir: /home/ansible/certbot
-certbot_email: dbour@eng.ucsd.edu
+certbot_email: e4sanchez@eng.ucsd.edu
 
 dh_param_dir: /home/ansible/dh-param
 
