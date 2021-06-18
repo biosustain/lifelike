@@ -149,11 +149,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   traceDetailsConfig: Options = {
     physics: {
-      enabled: false,
+      enabled: true,
       barnesHut: {
-        avoidOverlap: 0.2,
-        centralGravity: 0.1,
-        damping: 0.9,
+        avoidOverlap: 0.9,
+        centralGravity: 0.001,
+        damping: 0.6,
         gravitationalConstant: -10000,
         springLength: 250,
       },
@@ -165,6 +165,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       smooth: {
         type: networkEdgeSmoothers.DYNAMIC, enabled: true, roundness: 0
       }
+    },
+    nodes: {
+      shape: 'dot'
     }
   };
 

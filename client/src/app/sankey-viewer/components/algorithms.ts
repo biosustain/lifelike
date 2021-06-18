@@ -252,6 +252,36 @@ export const colorNodes = (nodes, nodeColorCategoryAccessor = ({schemaClass}) =>
   });
 };
 
+function* generateSLayout(segmentSize, scale = 1) {
+  let x = 2 * segmentSize + 1;
+  let y = 0;
+  let xIncrement = false;
+
+  function* iterateX() {
+    while (
+      (xIncrement && x < 2 * segmentSize) ||
+      (!xIncrement && x > 0)
+      ) {
+      x += xIncrement ? 1 : -1;
+      yield {x: x * scale, y: y * scale};
+    }
+    xIncrement = !xIncrement;
+    yield* iterateY();
+  }
+
+  function* iterateY() {
+    let i = 0;
+    while (i < segmentSize) {
+      i++;
+      y++;
+      yield {x: x * scale, y: y * scale};
+    }
+    yield* iterateX();
+  }
+
+  yield* iterateX();
+}
+
 export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
   const edges = trace.detail_edges.map(([from, to, d]) => ({
     from,
@@ -267,7 +297,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     return nodesSet;
   }, new Set())];
   const nodes = nodeIds.map((nodeId, idx) => {
-    const node = mainNodes[nodeId];
+    const node = mainNodes.find(({id}) => id === nodeId);
     if (node) {
       return {
         ...node,
@@ -275,11 +305,60 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
         label: node.name[0]
       };
     } else {
+      console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
       return {
         id: nodeId
       };
     }
   });
+
+  nodes.forEach(node => {
+    node.fromEdges = [];
+    node.toEdges = [];
+  });
+  const nodeById = new Map(nodes.map((d, i) => [d.id, d]));
+  for (const edge of edges) {
+    let {from, to} = edge;
+    if (typeof from !== 'object') {
+      from = edge.from_obj = find(nodeById, from);
+    }
+    if (typeof to !== 'object') {
+      to = edge.to_obj = find(nodeById, to);
+    }
+    from.fromEdges.push(edge);
+    to.toEdges.push(edge);
+  }
+
+  const segmentSize = Math.ceil(nodes.length / 8);
+  const startNode = find(nodeById, trace.source);
+  const endNode = find(nodeById, trace.target);
+
+  const sLayout = generateSLayout(segmentSize, 2500 / segmentSize);
+  const traverseGraph = node => {
+    if (!node._visited) {
+      const nextPosition = sLayout.next().value;
+      // console.log(nextPosition);
+      if (node.fromEdges.length <= 1 && node.toEdges.length <= 1) {
+        Object.assign(node, nextPosition);
+        // Object.assign(node, nextPosition, {fixed: {x: true, y: true}});
+      }
+      node._visited = true;
+      node.toEdges.forEach(edge => {
+        if (edge.from_obj !== endNode && !edge._visited) {
+          edge._visited = true;
+          traverseGraph(edge.from_obj);
+        }
+      });
+      node.fromEdges.forEach(edge => {
+        if (edge.to_obj !== endNode && !edge._visited) {
+          edge._visited = true;
+          traverseGraph(edge.to_obj);
+        }
+      });
+    }
+  };
+  traverseGraph(startNode);
+
   return {
     edges,
     nodes: nodes.map(n => ({
