@@ -22,7 +22,11 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: azure-secrets ansible-secrets container-login docker-build lmdb
+init: ansible-secrets azure-secrets container-login githooks docker-build lmdb
+
+# Sets up commit hooks for linting
+githooks:
+	git config --local core.hooksPath .githooks/
 
 docker-build:
 	docker-compose build

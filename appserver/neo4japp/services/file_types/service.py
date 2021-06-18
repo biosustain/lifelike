@@ -24,6 +24,16 @@ class BaseFileTypeProvider:
     # in this list are lowercase
     mime_types = ('application/octet-stream',)
 
+    def handles(self, file: Files) -> bool:
+        """
+        Test whether this provider is for the given type of file.
+        Most implementations should just compare the file's mime type and generally you
+        should not override this method.
+        :param file: the file
+        :return: whether this provide should be used
+        """
+        return file.mime_type.lower() in self.mime_types
+
     def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
@@ -37,6 +47,9 @@ class BaseFileTypeProvider:
         :return: whether this provide should be used
         """
         return [(0, self)] if file.mime_type.lower() in self.mime_types else []
+
+    def convert(self, buffer):
+        raise NotImplementedError
 
     def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
         """
@@ -174,6 +187,9 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
             return True
         else:
             return False
+
+    def convert(self, buffer):
+        return buffer
 
 
 class DefaultFileTypeProvider(BaseFileTypeProvider):
