@@ -29,14 +29,14 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Node Label | Attribute | Source |
 |:-----|:-----------|:-|
 | BioCycClass | biocyc_id | UNIQUE-ID |
-| BioCycClass | data_source | |
+| BioCycClass | data_source |BioCyc |
 | BioCycClass | displayName | =coalesce(name, biocyc_id) |
 | BioCycClass | id | =biocyc_id |
 | BioCycClass | name | COMMON-NAME |
 | BioCycClass | synonyms | SYNONYMS |
 | Compound | abbrev_name | ABBREV-NAME |
 | Compound | biocyc_id | UNIQUE-ID |
-| Compound | data_source | |	
+| Compound | data_source | BioCyc |	
 | Compound | displayName | =coalesce(name, biocyc_id) |
 | Compound | id |	=biocyc_id |
 | Compound | inchi_key | INCHI-KEY<br />remove leading 'InChIKey='|
@@ -51,8 +51,7 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | DNABindingSite | site_length | SITE-LENGTH |	
 | EnzReaction | biocyc_id | UNIQUE-ID |
 | EnzReaction | description | |
-| EnzReaction | displayName | ? |
-| EnzReaction | genes | |
+| EnzReaction | displayName | = name + gene(s) that encodes the enzyme|
 | EnzReaction | id | =biocyc_id |
 | EnzReaction | name | COMMON-NAME |
 | EnzReaction | synonyms | SYNONYMS |
@@ -63,20 +62,18 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Gene | id | =biocyc_id |
 | Gene | left_end_position | LEFT-END-POSITION |
 | Gene | name | COMMON-NAME |
-| Gene | pathways | ? |
+| Gene | pathways | =set_gene_property_for_enrichment()|
 | Gene | right_end_position | RIGHT-END-POSITION |
 | Gene | strand | TRANSCRIPTION-DIRECTION |
 | Gene | synonyms | SYNONYMS |
 | Pathway | biocyc_id | UNIQUE-ID |
 | Pathway | displayName | =coalesce(name, biocyc_id) |
-| Pathway | genes |	|
 | Pathway | id | =biocyc_id |
 | Pathway | name | COMMON-NAME |
 | Pathway | synonyms | SYNONYMS |
 | Promoter | biocyc_id | UNIQUE-ID |
 | Promoter | description | |
 | Promoter | displayName | =coalesce(name, biocyc_id) |
-| Promoter | genes | |
 | Promoter | id | =biocyc_id |
 | Promoter | name | COMMON-NAME |
 | Promoter | pos_1 | ABSOLUTE-PLUS-1-POS |	
@@ -86,7 +83,6 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Protein | biocyc_id | UNIQUE-ID |
 | Protein | description | |	
 | Protein | displayName | =coalesce(name, biocyc_id) |
-| Protein | genes | |
 | Protein | id | =biocyc_id |
 | Protein | molecular_weight_kd | MOLECULAR-WEIGHT-KD |	
 | Protein | name | COMMON-NAM |
@@ -98,7 +94,6 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | RNA | biocyc_id | UNIQUE-ID |
 | RNA | description | |
 | RNA | displayName | =coalesce(name, biocyc_id) |
-| RNA | genes | |
 | RNA | id | =biocyc_id |
 | RNA | location | LOCATIONS |
 | RNA | name | COMMON-NAME
@@ -121,14 +116,12 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Terminator | biocyc_id | UNIQUE-ID |
 | Terminator | displayName | =coalesce(name, biocyc_id) |
 | Terminator | description | |
-| Terminator | genes | |
 | Terminator | id | =biocyc_id |
 | Terminator | left_end_position | LEFT-END-POSITION |
 | Terminator | right_end_position | RIGHT-END-POSITION |
 | TranscriptionUnit | biocyc_id | UNIQUE-ID |
 | TranscriptionUnit | description |	|
 | TranscriptionUnit | displayName | |
-| TranscriptionUnit | genes | |
 | TranscriptionUnit | id | =biocyc_id |
 | TranscriptionUnit | name | COMMON-NAME |
 
