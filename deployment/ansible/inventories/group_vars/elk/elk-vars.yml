@@ -1,4 +1,4 @@
-elk_server_name: elk.prod.***ARANGO_DB_NAME***.bio
+elk_server_name: elastic.***ARANGO_DB_NAME***.bio
 network_name: elknet
 
 nginx_image: nginx:1.19.1-alpine
