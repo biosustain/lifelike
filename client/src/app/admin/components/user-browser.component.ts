@@ -23,6 +23,7 @@ import { State } from '../../***ARANGO_USERNAME***-store';
   templateUrl: 'user-browser.component.html',
 })
 export class UserBrowserComponent implements OnInit, OnDestroy {
+  currentUser: AppUser;
   users: AppUser[];
   shownUsers: AppUser[] = [];
   filterQuery = '';
@@ -43,7 +44,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       this.users = data.results;
       this.updateFilter();
     });
-
+    this.accountService.currentUser().subscribe(user => this.currentUser = user);
     this.refresh();
   }
 
@@ -138,9 +139,13 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             .pipe(this.errorHandler.create({label: 'Update user'}))
             .subscribe(() => {
               progressDialogRef.close();
-              this.store.dispatch(AuthActions.userUpdated(
+              if (this.currentUser.hashId === selectedUser.hashId) {
+                  updatedUser = Object.assign(this.currentUser, updatedUser);
+                  this.store.dispatch(AuthActions.userUpdated(
                       {user: updatedUser},
                     ));
+                  this.currentUser = updatedUser;
+              }
               this.accountService.getUserList();
               this.refresh();
               this.snackBar.open(
