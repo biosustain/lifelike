@@ -306,12 +306,26 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .style('opacity', 0.45);
   }
 
+  nodeGroupAccessor({type}) {
+    return type;
+  }
+
   nodeMouseOver(element, data) {
+    this.highlightNode(element);
+    const nodeGroup = this.nodeGroupAccessor(data);
+    this.highlightNodeGroup(nodeGroup);
+    const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
+    this.highlightTraces(traces);
+  }
+
+  highlightNodeGroup(group) {
     d3.select(this.nodes.nativeElement)
       .selectAll('g')
       .filter(({_selected}) => !_selected)
-      // tslint:disable-next-line:triple-equals
-      .style('opacity', ({type}) => type === data.type ? 0.45 : 0.35);
+      .style('opacity', node => this.nodeGroupAccessor(node) === group ? 0.45 : 0.35);
+  }
+
+  highlightNode(element) {
     d3.select(element)
       .style('opacity', _ => 1)
       .select('text')
@@ -327,12 +341,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
       // })
       .text(n => nodeLabelAccessor(n));
-
-    const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
-    this.highlightTraces(traces);
   }
 
-  nodeMouseOut(element, _data) {
+  unhighlightNode(element) {
     if (this.selectedNodes.size) {
       this.selectNodes(this.selectedNodes);
     } else {
@@ -352,6 +363,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
       .text(n => nodeLabelAccessor(n).slice(0, INITIALLY_SHOWN_CHARS));
+  }
+
+  nodeMouseOut(element, _data) {
+    this.unhighlightNode(element);
+    this.unhighlightLinks();
   }
 
   // the function for moving the nodes
