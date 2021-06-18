@@ -1,4 +1,4 @@
 traefik_log_level: DEBUG
 traefik_service_yml: services.yml
-traefik_lets_encrypt_email: dbour@eng.ucsd.edu
+traefik_lets_encrypt_email: e4sanchez@eng.ucsd.edu
 traefik_docker_image: traefik:v2.3
