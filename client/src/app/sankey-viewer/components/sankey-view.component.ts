@@ -149,7 +149,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   traceDetailsConfig: Options = {
     physics: {
-      enabled: true,
+      enabled: false,
       barnesHut: {
         avoidOverlap: 0.9,
         centralGravity: 0.001,
