@@ -84,7 +84,7 @@
                             [data]="filteredSankeyData"
                             [normalizeLinks]="normalizeLinks.value"
                             [selectedNodes]="selectedNodes | async"
-                            [selectedLinksAndTraces]="selectedLinksAndTraces | async"
+                            [selectedLinks]="selectedLinks | async"
                             (nodeClicked)="openNodeDetails($event)"
                             (linkClicked)="openLinkDetails($event)"
                     >
@@ -307,7 +307,7 @@
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Source</b>
-                            {{ parseProperty(trace.source.id) }}
+                            {{ getNodeById(trace.source).id }}
                         </button>
                     </ng-template>
                     <ng-template ngbPanelContent>
@@ -319,7 +319,7 @@
                         <button ngbPanelToggle
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Target</b>
-                            {{ parseProperty(trace.target.id) }}
+                            {{ getNodeById(trace.target).id }}
                         </button>
                     </ng-template>
                     <ng-template ngbPanelContent>
@@ -353,7 +353,7 @@
                                 </app-vis-js-network>
                             </div>
                         </ng-template>
-                        <button class="btn btn-link w-100" (click)="open(content)">Show detailed
+                        <button class="btn btn-link" (click)="open(content)">Show detailed
                             network
                         </button>
                     </ng-template>
