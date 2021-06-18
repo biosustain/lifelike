@@ -22,11 +22,13 @@ import {
   linkSizeByProperty,
   linkSizeByArrayProperty,
   nodeValueByProperty,
-  getTraceDetailsGraph
+  getTraceDetailsGraph,
+  getRelatedTraces
 } from './algorithms';
-import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 
 import { Options } from 'vis-network';
+import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -40,21 +42,18 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly route: ActivatedRoute,
     private modalService: NgbModal
   ) {
-    this.selection = new BehaviorSubject({});
     this.selectedNodes = new BehaviorSubject(new Set());
-    this.selectedLinksAndTraces = new BehaviorSubject({
-      links: new Set(),
-      traces: new Set()
-    });
+    this.selectedLinks = new BehaviorSubject(new Set());
 
-    this.selectedNodes.subscribe(val => this.selection.next({
-      ...this.selection.value,
-      nodes: val
-    }));
-    this.selectedLinksAndTraces.subscribe(val => this.selection.next({
-      ...this.selection.value,
-      ...val
-    }));
+    this.selection = combineLatest([
+      this.selectedNodes,
+      this.selectedLinks
+    ]).pipe(
+      map(([nodes, links]) => ({
+        traces: getRelatedTraces({nodes, links}),
+        nodes, links
+      }))
+    );
 
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
@@ -145,7 +144,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   excludedProperties = new Set(['source', 'target']);
 
   selectedNodes;
-  selectedLinksAndTraces;
+  selectedLinks;
   selectedTraces;
 
   traceDetailsConfig: Options = {
@@ -162,11 +161,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         enabled: false
       }
     },
-    // edges: {
-    //   smooth: {
-    //     type: networkEdgeSmoothers.DYNAMIC
-    //   }
-    // }
+    edges: {
+      smooth: {
+        type: networkEdgeSmoothers.DYNAMIC, enabled: true, roundness: 0
+      }
+    }
   };
 
   parseProperty = parseForRendering;
@@ -375,32 +374,29 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNode(node) {
     const selectedNodes = this.selectedNodes.value;
-    selectedNodes.add(node);
+    if (selectedNodes.has(node)) {
+      selectedNodes.delete(node);
+    } else {
+      selectedNodes.add(node);
+    }
     this.selectedNodes.next(new Set(selectedNodes));
   }
 
   selectLink(link) {
-    this.selectLinkAndTrace(link, link._trace);
-  }
+    const selectedLinks = this.selectedLinks.value;
 
-  selectLinkAndTrace(link, trace) {
-    const {links = new Set(), traces = new Set()} = this.selectedLinksAndTraces.value;
+    if (selectedLinks.has(link)) {
+      selectedLinks.delete(link);
+    } else {
+      selectedLinks.add(link);
+    }
 
-    links.add(link);
-    traces.add(trace);
-
-    this.selectedLinksAndTraces.next({
-      links: new Set(links),
-      traces: new Set(traces)
-    });
+    this.selectedLinks.next(new Set(selectedLinks));
   }
 
   resetSelection() {
     this.selectedNodes.next(new Set());
-    this.selectedLinksAndTraces.next({
-      links: new Set(),
-      traces: new Set()
-    });
+    this.selectedLinks.next(new Set());
     this.filteredSankeyData.nodes.forEach(n => {
       delete n._selected;
     });
