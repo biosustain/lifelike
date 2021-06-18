@@ -345,6 +345,7 @@ class ManualAnnotationService:
             # several possible scenarios
             # 1. main node exists and synonym exists
             # 2. main node exists and synonym does not exist
+            # we care whether the label exist so if it does not, then we can add it
             # 3. main node exists and synonym exists and entity label/type does not exist
             # 4. main node exists and synonym exists and entity label/type exists
             # 5. main node does not exist
