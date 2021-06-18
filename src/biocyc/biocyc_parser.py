@@ -87,88 +87,6 @@ class BiocycParser(object):
         database.run_query(query_yeast)
         database.run_query(query_human)
 
-    def set_display_names(self, database:Database):
-        """
-        Set node display name.  node 'id' property is already set to be same as biocyc_id when loading the nodes
-        :param database: the database to run the queries
-        """
-        logging.info('set Regulation display name')
-        query = """
-        MATCH (n:Regulation)-[:TYPE_OF]->(t) 
-        WHERE EXISTS (n.mode) 
-        SET n.displayName = t.biocyc_id +' (' + n.mode + ')' 
-        """
-        database.run_query(query)
-
-        query = """
-        MATCH (n:Regulation)-[:TYPE_OF]->(t)  where NOT EXISTS(n.displayName) 
-        SET n.displayName = t.biocyc_id
-        """
-        database.run_query(query)
-
-        logging.info('set Reaction display name')
-        query = """
-        MATCH (n:Reaction) WITH n,
-        CASE 
-            WHEN NOT n.ec_number IS NULL THEN n.ec_number
-            WHEN NOT n.name IS NULL THEN n.name
-            ELSE n.biocyc_id 
-        END as displayName
-        set n.displayName = displayName
-        """
-        database.run_query(query)
-
-        logging.info('set display name for TranscriptionUnit')
-        query = "match (n:TranscriptionUnit) where exists(n.name) set n.displayName = n.name + ' TU'"
-        database.run_query(query)
-        query = """
-        match (n:TranscriptionUnit) where not exists (n.displayName) 
-        with n match (n)-[:ELEMENT_OF]-(g:Gene) with n, collect(g.name) as genes 
-        set n.displayName = apoc.text.join(genes, '-') + ' TU'
-        """
-        database.run_query(query)
-
-        logging.info('set display name for all')
-        query = "match (n:db_BioCyc) where not exists (n.displayName) set n.displayName =n.name"
-        database.run_query(query)
-        query = "match (n:db_BioCyc) where not exists (n.displayName) set n.displayName =n.biocyc_id"
-        database.run_query(query)
-
-        logging.info('set display name for protein')
-        query = "match (n:db_BioCyc:Protein) where not exists (n.displayName) set n.displayName =toLower(n.biocyc_id)"
-        database.run_query(query)
-
-        logging.info('set display name for binding site')
-        query = "match (n:DNABindingSite)--(:Regulation)<-[]-(p:Protein) set n.displayName = p.displayName + ' BS'"
-        database.run_query(query)
-
-        logging.info('set display name for EnzReaction')
-        query = """
-        match (n:EnzReaction)-[]-(:Protein)<-[:COMPONENT_OF*0..]-(p)-[:ENCODES]-(g) 
-            with n, collect(distinct g.name) as genes
-            with n, case when size(genes)>0 then n.name + ' ('+ apoc.text.join(genes, ',') + ')'
-            else n.name END as displayName 
-        SET n.displayName = displayName
-        """
-        database.run_query(query)
-
-    def set_descriptions(self, database:Database):
-        """
-        Set node discription, that is very useful for data analysis and annotation. We may need to add all those descriptions
-        in file biocyc/create_ecocyc_mod_database_for_GDS.md to the lifelike database in the future.
-        :param database: the database to run the query
-        """
-        logging.info('set description for genes')
-        query = """
-        match (n:Gene:db_EcoCyc)-[:IS]-(g:Gene:db_NCBI) set n.description = g.full_name;
-        """
-        database.run_query(query)
-        query = """
-        match (n:Gene:db_EcoCyc) where not exists(n.description) or n.description = '-' 
-        with n match (n)-[:ENCODES]-(p) set n.description = p.name;
-        """
-        database.run_query(query)
-
     def set_gene_property_for_enrichment(self, database: Database):
         """
         Add 'pathways' property to biocyc genes. Since the pathways and genes are organism specific, but not reactions,
@@ -201,7 +119,8 @@ class BiocycParser(object):
 
     def load_data_into_neo4j(self, database: Database, entities=ENTITIES, db_files=DB_FILE_DICT, initial_load=False):
         """
-        Use the default ENTITIES and DB_FILE_DICT to load all 4 biocyc databases into KG database
+        Use the default ENTITIES and DB_FILE_DICT to load all 4 biocyc databases into KG database. After load data,
+        need to run scripts to set displayname and description.  See docs/biocyc/set_displayname_description.md
         :param database: the neo4j database to load data
         :param entities: List of entity node labels to load
         :param db_files: dict for biocyc database name  and data file name
@@ -226,11 +145,11 @@ class BiocycParser(object):
                     nodes = parser.parse_data_file()
                     version = parser.version
                     if nodes:
-                        parser.add_nodes_to_graphdb(nodes, database)
+                        parser.update_nodes_in_graphdb(nodes, database)
                         parser.add_edges_to_graphdb(nodes, database)
         self.link_genes(database)
         self.set_gene_property_for_enrichment(database)
-        self.set_id_and_display_names(database)
+        self.add_protein_synonyms(database)
 
     def update_nodes(self, db_name, data_file, entities: [], database: Database):
         for entity in entities:

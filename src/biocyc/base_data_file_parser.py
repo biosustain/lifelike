@@ -122,28 +122,21 @@ class BaseDataFileParser(BaseParser):
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
 
-    def add_nodes_to_graphdb(self, nodes:[], database: Database):
-        if not nodes:
-            return
-        logging.info('add nodes: ' + ':'.join(self.node_labels))
-        rows = []
-        for node in nodes:
-            rows.append(node.to_dict())
-        attrs = [PROP_ID] + self.attrs
-        query = get_create_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, True)
-        database.create_index(self.entity_name, PROP_ID)
-        # if PROP_NAME in self.attrs:
-        #     database.create_index(self.entity_name, PROP_NAME)
-        database.load_data_from_rows(query, rows)
-
     def update_nodes_in_graphdb(self, nodes:[], database:Database):
+        """
+        Load or update nodes in KG. This can also be called for initial loading.
+        :param nodes: list of nodes
+        :param database: neo4j Database
+        :return:
+        """
         if not nodes:
             return
         logging.info('update nodes: ' + ':'.join(self.node_labels))
         rows = []
         for node in nodes:
             rows.append(node.to_dict())
-        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, self.attrs)
+        attrs = [PROP_ID] + self.attrs
+        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels)
         database.load_data_from_rows(query, rows)
 
     def add_edges_to_graphdb(self, nodes:[], database:Database):
