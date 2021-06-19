@@ -137,10 +137,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('q') && params.q !== '') {
       q.push(params.q);
     }
-    if (params.hasOwnProperty('types') && params.types !== []) {
+    if (params.hasOwnProperty('types')) {
       params.types.forEach(type => q.push(`type:${type.shorthand}`));
     }
-    if (params.hasOwnProperty('projects') && params.projects !== []) {
+    if (params.hasOwnProperty('projects')) {
       params.projects.forEach(project => q.push(`project:${project}`));
     }
 
