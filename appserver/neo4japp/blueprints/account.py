@@ -163,7 +163,7 @@ class AccountView(MethodView):
         private_access = g.current_user.has_role('private-data-access')
         modifying_own_data = g.current_user.hash_id == hash_id
 
-        if not modifying_own_data and (admin_access or private_access) is False:
+        if not modifying_own_data and not (admin_access or private_access):
             raise NotAuthorized(
                 title='Failed to Update User',
                 message='You do not have sufficient privileges.')
@@ -178,7 +178,6 @@ class AccountView(MethodView):
                         message=f'Username {params["username"]} already taken.',
                         code=400)
             if params.get('roles'):
-                params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
                 if admin_access:
                     if modifying_own_data:
                         if params['roles'] != g.current_user.roles:
@@ -189,6 +188,8 @@ class AccountView(MethodView):
                     raise NotAuthorized(
                         title='Failed to Update User',
                         message='You do not have sufficient privileges.')
+                params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
+
             for attribute, new_value in params.items():
                 setattr(target, attribute, new_value)
 
