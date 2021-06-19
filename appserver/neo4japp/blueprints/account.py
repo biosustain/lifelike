@@ -180,10 +180,9 @@ class AccountView(MethodView):
             if params.get('roles'):
                 if admin_access:
                     if modifying_own_data:
-                        if params['roles'] != g.current_user.roles:
-                            raise NotAuthorized(
-                                title='Failed to Update User',
-                                message='You cannot update your own roles!')
+                        raise NotAuthorized(
+                            title='Failed to Update User',
+                            message='You cannot update your own roles!')
                 else:
                     raise NotAuthorized(
                         title='Failed to Update User',
