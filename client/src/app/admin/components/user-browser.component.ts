@@ -13,8 +13,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
-import { AuthActions } from '../../auth/store';
-import { Store } from '@ngrx/store';
+import { AuthActions, AuthSelectors } from '../../auth/store';
+import { select, Store } from '@ngrx/store';
 import { State } from '../../root-store';
 
 
@@ -44,7 +44,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       this.users = data.results;
       this.updateFilter();
     });
-    this.accountService.currentUser().subscribe(user => this.currentUser = user);
+    this.store.pipe(select(AuthSelectors.selectAuthUser)).subscribe(user => this.currentUser = user);
     this.refresh();
   }
 
@@ -147,6 +147,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
                     ));
                   this.currentUser = updatedUser;
               }
+              this.refresh();
               this.snackBar.open(
                 `User ${selectedUser.username} updated!`,
                 'close',
@@ -159,8 +160,6 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
       }
     }
-    this.accountService.getUserList();
-    this.refresh();
   }
 
   displayUnlockUserDialog(user: AppUser) {
