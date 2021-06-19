@@ -344,8 +344,8 @@ class SynonymSearchView(FilesystemBaseView):
             )
             raise ServerException(
                 title='Unexpected error during synonym search',
-                message='An unknown error occurred during the synonym search. Please check your ' +
-                        'internet connection and try again.'
+                message='A system error occurred while searching for synonyms, we are ' +
+                        'working on a solution. Please try again later.'
             )
 
         return jsonify(SynonymSearchResponseSchema().dump({
