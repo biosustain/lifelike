@@ -10,8 +10,8 @@ export interface UserCreationRequest {
 
 export interface UserUpdateRequest {
   hashId: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  roles: string[];
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  roles?: string[];
 }

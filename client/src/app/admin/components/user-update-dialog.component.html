@@ -24,6 +24,6 @@
 
   <app-modal-footer>
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary">Update</button>
+    <button type="submit" [disabled]="!form.dirty" class="btn btn-primary">Update</button>
   </app-modal-footer>
 </form>
