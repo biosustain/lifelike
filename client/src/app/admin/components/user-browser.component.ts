@@ -140,14 +140,13 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             .subscribe(() => {
               progressDialogRef.close();
               if (this.currentUser.hashId === selectedUser.hashId) {
-                  updatedUser = Object.assign(this.currentUser, updatedUser);
+                  // Create a new object since properties are read-only
+                  updatedUser = Object.assign({}, this.currentUser, updatedUser);
                   this.store.dispatch(AuthActions.userUpdated(
                       {user: updatedUser},
                     ));
                   this.currentUser = updatedUser;
               }
-              this.accountService.getUserList();
-              this.refresh();
               this.snackBar.open(
                 `User ${selectedUser.username} updated!`,
                 'close',
@@ -160,6 +159,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
       }
     }
+    this.accountService.getUserList();
+    this.refresh();
   }
 
   displayUnlockUserDialog(user: AppUser) {
