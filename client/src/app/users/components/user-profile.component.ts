@@ -54,7 +54,7 @@ export class UserProfileComponent implements OnInit  {
     Object.keys(this.form.controls)
             .forEach(key => {
                 const currentControl = this.form.controls[key];
-                if (currentControl.value !== this.user[key]) {
+                if (currentControl.value !== this.user[key] && currentControl.value !== '') {
                         userData[key] = currentControl.value;
                 }
             });
