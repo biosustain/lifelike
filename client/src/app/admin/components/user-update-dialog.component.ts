@@ -22,7 +22,7 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
-    roles: new FormControl('', Validators.required)
+    roles: new FormControl('')
 
   });
 
@@ -31,10 +31,15 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): UserUpdateRequest {
-        return {
-        hashId: this.user.hashId,
-      ...this.form.value,
-    };
+    const userData = {hashId: this.user.hashId};
+    Object.keys(this.form.controls)
+            .forEach(key => {
+                const currentControl = this.form.controls[key];
+                if (currentControl.value !== this.user[key]) {
+                        userData[key] = currentControl.value;
+                }
+            });
+    return userData;
   }
 
   setUser(user: AppUser) {
