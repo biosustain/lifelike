@@ -12,6 +12,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ResultList } from '../../shared/schemas/common';
+import { userUpdated } from '../../auth/store/actions';
+import { select, Store } from '@ngrx/store';
+import { State } from '../../root-store';
+import { AuthActions, AuthSelectors } from '../../auth/store';
 
 
 @Component({
@@ -22,38 +26,41 @@ import { ResultList } from '../../shared/schemas/common';
 })
 export class UserProfileComponent implements OnInit  {
 
-  @Input() user: AppUser;
-  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() => this.accountService.getUsers());
-
+  user: AppUser;
 
   form = new FormGroup({
-    username: new FormControl({value: '', disabled: false}),
-    firstName: new FormControl({value: '', disabled: false}),
-    lastName: new FormControl({value: '', disabled: false}),
+    username: new FormControl({value: 'username', disabled: false}),
+    firstName: new FormControl({value: 'First Name', disabled: false}),
+    lastName: new FormControl({value: 'Last Name', disabled: false}),
     email: new FormControl({value: '', disabled: true}),
   });
 
   constructor(private readonly accountService: AccountService,
               private readonly progressDialog: ProgressDialog,
               private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler) {
+              private readonly errorHandler: ErrorHandler,
+              private store: Store<State>) {
   }
 
   ngOnInit() {
-    this.form.reset({
-      username: this.user.username,
-      firstName: this.user.firstName,
-      lastName: this.user.lastName,
-      email: this.user.email,
-    });
+   this.store.pipe(select(AuthSelectors.selectAuthUser)).subscribe(user => {
+     this.user = user;
+     this.reset();
+   });
   }
 
   getValue(): UserUpdateRequest {
-    return {
-      hashId: this.user.hashId,
-      ...this.form.value,
-    };
+    const userData = {hashId: this.user.hashId};
+    Object.keys(this.form.controls)
+            .forEach(key => {
+                const currentControl = this.form.controls[key];
+                if (currentControl.value !== this.user[key]) {
+                        userData[key] = currentControl.value;
+                }
+            });
+    return userData;
   }
+
   reset() {
     this.form.reset({
       username: this.user.username,
@@ -71,14 +78,15 @@ export class UserProfileComponent implements OnInit  {
               status: 'Updating user...',
             })),
           });
-    this.accountService.updateUser(this.getValue())
+    const updatedUser = this.getValue();
+    this.accountService.updateUser(updatedUser)
     .pipe(this.errorHandler.create({label: 'Update user'}))
     .subscribe(() => {
       progressDialogRef.close();
-      this.accountService.getUsers(this.user.hashId).subscribe(user => {
-        this.user = user.results.pop();
-        this.reset();
-      });
+      this.user = Object.assign({}, this.user, updatedUser);
+      this.store.dispatch(AuthActions.userUpdated(
+          {user: this.user},
+        ));
       this.reset();
 
       this.snackBar.open(
@@ -86,8 +94,6 @@ export class UserProfileComponent implements OnInit  {
         'close',
         {duration: 5000},
       );
-
-
     }, () => {
       progressDialogRef.close();
     });

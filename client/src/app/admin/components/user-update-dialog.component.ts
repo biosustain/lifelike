@@ -35,7 +35,7 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
     Object.keys(this.form.controls)
             .forEach(key => {
                 const currentControl = this.form.controls[key];
-                if (currentControl.value !== this.user[key]) {
+                if (currentControl.value !== this.user[key] && currentControl.value !== '') {
                         userData[key] = currentControl.value;
                 }
             });
@@ -48,7 +48,7 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
       username: this.user.username,
       firstName: this.user.firstName,
       lastName: this.user.lastName,
-      roles: (this.user.roles.includes('admin') ? 'admin' : 'user')
+      roles: ''
     });
   }
 
