@@ -44,7 +44,7 @@
   <div *ngIf="loading">
     <div>
       <p>
-        Select any number of rows below and submit to add the terms in the "synonyms" column to your content search query. Duplicates will be removed.
+        To add the terms in the "synonyms" column to your search query, select any number of rows and click submit. Duplicates will be removed.
       </p>
     </div>
 
@@ -89,7 +89,7 @@
   <div *ngIf="!loading && !errorMsg && synonymData">
     <div>
       <p>
-        Select any number of rows below and submit to add the terms in the "synonyms" column to your content search query. Duplicates will be removed.
+        To add the terms in the "synonyms" column to your search query, select any number of rows and click submit. Duplicates will be removed.
       </p>
     </div>
     <!-- TODO: Turn this into a standalone "checklist table" component -->
@@ -167,7 +167,7 @@
               class="btn btn-primary"
               [disabled]="entityChecklistSelection.isEmpty()"
               (click)="submit()">
-        Add Selected Synoynms to Search
+        Submit
       </button>
     </div>
   </div>
