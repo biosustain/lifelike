@@ -80,7 +80,7 @@ export class SynonymSearchComponent {
         try {
           this.errorMsg = error.error.message;
         } catch (err) {
-          this.errorMsg = 'An unknown error occurred during the synonym search. Please check your internet connection and try again.';
+          this.errorMsg = 'A system error occurred while searching for synonyms, we are working on a solution. Please try again later.';
         }
       }
     );
