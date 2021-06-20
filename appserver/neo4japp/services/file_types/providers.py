@@ -343,7 +343,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
                     if label == 'link':
-                        if node['data'].get('sources') or node.data.get('hyperlinks'):
+                        if node['data'].get('sources') or node['data'].get('hyperlinks'):
                             data = node['data'].get('sources') or [] \
                                    + node['data'].get('hyperlinks') or []
                             if any(link.get('url').lstrip().startswith('mailto:') for link in data):
