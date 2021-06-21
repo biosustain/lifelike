@@ -70,8 +70,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
                 detail: text,
                 sources: uriData.map(item => ({
                   domain: item.title,
-                  url: item.uri,
-                  isDatabase: false,
+                  url: item.uri
                 })),
               },
               style: {

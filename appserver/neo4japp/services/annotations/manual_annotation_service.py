@@ -333,7 +333,7 @@ class ManualAnnotationService:
                 'synonym': synonym.lower() if is_case_insensitive else synonym,
                 'inclusion_date': inclusion_date,
                 'user': user_full_name,
-                'data_source': data_source,
+                'data_source': data_source if data_source != 'None' else None,
                 'hyperlink': hyperlink,
                 'common_name': common_name
             }
