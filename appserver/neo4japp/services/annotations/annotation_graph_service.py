@@ -48,12 +48,7 @@ class AnnotationGraphService(GraphMixin):
         result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
 
-    def _create_entity_inclusion(
-        self,
-        entity_type: str,
-        inclusion_dict: dict,
-        static_global_inclusions: dict
-    ) -> None:
+    def _create_entity_inclusion(self, entity_type: str, inclusion_dict: dict) -> None:
         createfuncs = {
             EntityType.ANATOMY.value: create_ner_type_anatomy,
             EntityType.CHEMICAL.value: create_ner_type_chemical,
@@ -69,30 +64,13 @@ class AnnotationGraphService(GraphMixin):
             EntityType.ENTITY.value: create_ner_type_entity
         }
 
-        global_inclusions = []
-        params = {'entity_type': entity_type}
-
-        if entity_type in {
-            EntityType.ANATOMY.value,
-            EntityType.DISEASE.value,
-            EntityType.FOOD.value,
-            EntityType.PHENOMENA.value,
-            EntityType.PHENOTYPE.value
-        }:
-            global_inclusions = self.exec_read_query_with_params(
-                self.get_mesh_global_inclusions_by_type(entity_type), params)
-        else:
-            try:
-                global_inclusions = static_global_inclusions[entity_type]
-            except KeyError:
-                # use lifelike_global_inclusions
-                pass
-
+        global_inclusions = self.exec_read_query(self.get_global_inclusions_by_type(entity_type))
         # need to append here because an inclusion
         # might've not been matched to an existing entity
         # so look for it in Lifelike
         global_inclusions += self.exec_read_query_with_params(
-            self.get_lifelike_global_inclusions_by_type(entity_type), params)
+            self.get_lifelike_global_inclusions_by_type(entity_type),
+            {'entity_type': entity_type})
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
@@ -141,16 +119,8 @@ class AnnotationGraphService(GraphMixin):
             EntityType.SPECIES.value: {}
         }
 
-        static_global_inclusions_by_type = {
-            EntityType.CHEMICAL.value: self.exec_read_query(self.get_chemical_global_inclusions()),
-            EntityType.COMPOUND.value: self.exec_read_query(self.get_compound_global_inclusions()),
-            EntityType.GENE.value: self.exec_read_query(self.get_gene_global_inclusions()),
-            EntityType.SPECIES.value: self.exec_read_query(self.get_species_global_inclusions()),
-            EntityType.PROTEIN.value: self.exec_read_query(self.get_protein_global_inclusions())
-        }
-
         for k, v in inclusion_dicts.items():
-            self._create_entity_inclusion(k, v, static_global_inclusions_by_type)
+            self._create_entity_inclusion(k, v)
 
         local_species_inclusions = [
             local for local in inclusions if local.get(
