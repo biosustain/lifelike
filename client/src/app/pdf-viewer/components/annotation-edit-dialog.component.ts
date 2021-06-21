@@ -1,14 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { cloneDeep } from 'lodash';
-import { url } from 'app/shared/validators';
 import { AnnotationType } from 'app/shared/constants';
 
 @Component({
@@ -20,9 +19,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() keywords: string[];
   @Input() coords: number[][];
   @Input() set allText(allText: string) {
-    this.form.patchValue({
-      text: allText
-    });
+    this.form.patchValue({text: allText});
   }
   linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
   isTextEnabled = false;
@@ -34,41 +31,36 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   readonly form: FormGroup = new FormGroup({
     text: new FormControl({value: '', disabled: true}, Validators.required),
-    entityType: new FormControl(this.entityTypeChoices[0].name, Validators.required),
+    entityType: new FormControl('', Validators.required),
     id: new FormControl(''),
-    links: new FormArray([]),
+    source: new FormControl(DatabaseType.NONE, Validators.required),
+    sourceLink: new FormControl(''),
     includeGlobally: new FormControl(false),
   });
-  readonly links = this.form.get('links') as FormArray;
   caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
-    const linksArray = this.form.get('links') as FormArray;
-    for (const link of this.linkTemplates) {
-      linksArray.push(new FormControl('', url));
+  }
+
+  get entityTypeChosen(): boolean {
+    return this.form.get('entityType').value !== '';
+  }
+
+  get databaseTypeChoices(): string[] {
+    const value = this.form.get('entityType').value;
+    if (value) {
+      return ENTITY_TYPE_MAP[this.form.get('entityType').value].sources;
     }
+    return [''];
   }
 
   getValue(): Annotation {
-    const text = this.form.getRawValue().text.trim();
     const links = {};
-    const sourceDomains = new Set(
-      this.linkTemplates.filter(
-        link => link.isDatabase).map(
-          dbDomain => dbDomain.domain.toLowerCase()));
-    // idHyperlink should be taken from the search links (entered by user) considering
-    // the priority (elements in SEARCH_LINKS array have the prioritized order)
-    let idHyperlink;
-    let idType;
-    this.form.value.links.forEach((value, i) => {
-      const domain = this.linkTemplates[i].domain.toLowerCase();
-      links[domain] = value || this.substituteLink(this.linkTemplates[i].url, text);
-
-      if (!idHyperlink && value) {
-        idHyperlink = value;
-        idType = sourceDomains.has(domain) ? domain.toUpperCase() : '';
-      }
+    // getRawValue will return values of disabled controls too
+    const text = this.form.getRawValue().text.trim();
+    this.linkTemplates.forEach(link => {
+      links[link.domain.toLowerCase()] = this.substituteLink(link.url, text);
     });
 
     return {
@@ -79,8 +71,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }),
       meta: {
         id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
-        idHyperlink: idHyperlink || '',
-        idType: idType || '',
+        idHyperlink: this.form.value.sourceLink.trim(),
+        idType: this.form.value.source,
         type: this.form.value.entityType,
         links,
         isCustom: true,
