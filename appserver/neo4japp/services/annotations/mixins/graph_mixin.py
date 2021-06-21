@@ -6,6 +6,18 @@ from ..constants import EntityType
 class GraphMixin(GraphConnection):
     def __init__(self) -> None:
         super().__init__()
+        self.source_labels = {
+            EntityType.ANATOMY.value: 'db_MESH',
+            EntityType.DISEASE.value: 'db_MESH',
+            EntityType.FOOD.value: 'db_MESH',
+            EntityType.PHENOMENA.value: 'db_MESH',
+            EntityType.PHENOTYPE.value: 'db_MESH',
+            EntityType.CHEMICAL.value: 'db_CHEBI',
+            EntityType.COMPOUND.value: 'db_BioCyc',
+            EntityType.GENE.value: 'db_NCBI',
+            EntityType.SPECIES.value: 'db_NCBI',
+            EntityType.PROTEIN.value: 'db_UniProt'
+        }
         self.node_labels = {
             EntityType.ANATOMY.value: 'Anatomy',
             EntityType.DISEASE.value: 'Disease',
@@ -14,7 +26,7 @@ class GraphMixin(GraphConnection):
             EntityType.CHEMICAL.value: 'Chemical',
             EntityType.COMPOUND.value: 'Compound',
             EntityType.GENE.value: 'Gene',
-            EntityType.SPECIES.value: 'Organism',
+            EntityType.SPECIES.value: 'Taxonomy',
             EntityType.PROTEIN.value: 'Protein',
             EntityType.PHENOTYPE.value: 'Phenotype',
             EntityType.ENTITY.value: 'Entity',
@@ -108,54 +120,17 @@ class GraphMixin(GraphConnection):
         RETURN t.id AS organism_id, t.name AS organism_name
         """
 
-    def get_mesh_global_inclusions_by_type(self, entity_type):
+    def get_global_inclusions_by_type(self, entity_type):
         if entity_type not in self.node_labels:
             return ''
 
         query_label = self.node_labels[entity_type]
+
+        if entity_type in self.source_labels:
+            query_label = f'{self.source_labels[entity_type]}:{query_label}'
+
         return f"""
-        WITH $values AS row
         MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
-        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-        RETURN n.id AS entity_id, n.name AS entity_name,
-            s.name AS synonym, n.data_source AS data_source
-        """
-
-    def get_chemical_global_inclusions(self):
-        return """
-        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_CHEBI:Chemical)
-        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-        RETURN n.id AS entity_id, n.name AS entity_name,
-            s.name AS synonym, n.data_source AS data_source
-        """
-
-    def get_compound_global_inclusions(self):
-        return """
-        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_BioCyc:Compound)
-        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-        RETURN n.id AS entity_id, n.name AS entity_name,
-            s.name AS synonym, n.data_source AS data_source
-        """
-
-    def get_gene_global_inclusions(self):
-        return """
-        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_NCBI:Gene)
-        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-        RETURN n.id AS entity_id, n.name AS entity_name,
-            s.name AS synonym, n.data_source AS data_source
-        """
-
-    def get_protein_global_inclusions(self):
-        return """
-        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_UniProt:Protein)
-        WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-        RETURN n.id AS entity_id, n.name AS entity_name,
-            s.name AS synonym, n.data_source AS data_source
-        """
-
-    def get_species_global_inclusions(self):
-        return """
-        MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_NCBI:Taxonomy)
         WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
         RETURN n.id AS entity_id, n.name AS entity_name,
             s.name AS synonym, n.data_source AS data_source
@@ -166,6 +141,9 @@ class GraphMixin(GraphConnection):
             return ''
 
         query_label = self.node_labels[entity_type]
+        if entity_type == EntityType.SPECIES.value:
+            query_label = 'Organism'
+
         return f"""
         MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
         RETURN n.id AS entity_id, n.name AS entity_name, s.name AS synonym,
@@ -182,8 +160,8 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
         WHERE n.id = 'MESH:' + row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(labels(n), '{query_label}') AS node_has_entity_label,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            '{query_label}' IN labels(n) AS node_has_entity_label,
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def chemical_global_inclusion_exist(self):
@@ -192,7 +170,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
         WHERE n.id = row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def compound_global_inclusion_exist(self):
@@ -201,7 +179,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_BioCyc:Compound)-[:HAS_SYNONYM]->(s)
         WHERE n.id = row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def gene_global_inclusion_exist(self):
@@ -210,7 +188,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
         WHERE n.id = row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def protein_global_inclusion_exist(self):
@@ -219,7 +197,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
         WHERE n.id = row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def species_global_inclusion_exist(self):
@@ -228,7 +206,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_NCBI:Taxonomy)-[:HAS_SYNONYM]->(s)
         WHERE n.id = row.entity_id
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def ***ARANGO_DB_NAME***_global_inclusion_exist(self, entity_type):
@@ -241,7 +219,7 @@ class GraphMixin(GraphConnection):
         OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
         WHERE n.external_id = row.entity_id AND n.data_source = row.data_source
         RETURN n IS NOT NULL AS node_exist,
-            apoc.coll.contains(collect(s.name), row.synonym) AS synonym_exist
+            row.synonym IN collect(s.name) AS synonym_exist
         """
 
     def create_mesh_global_inclusion(self, entity_type):
@@ -320,6 +298,9 @@ class GraphMixin(GraphConnection):
             return ''
 
         query_label = self.node_labels[entity_type]
+        if entity_type == EntityType.SPECIES.value:
+            query_label = 'Organism'
+
         return """
         WITH $values AS row
         MERGE (n:db_Lifelike {id:'Lifelike:' + row.entity_id})
