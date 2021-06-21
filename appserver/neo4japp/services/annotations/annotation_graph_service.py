@@ -68,9 +68,8 @@ class AnnotationGraphService(GraphMixin):
         # need to append here because an inclusion
         # might've not been matched to an existing entity
         # so look for it in Lifelike
-        global_inclusions += self.exec_read_query_with_params(
-            self.get_lifelike_global_inclusions_by_type(entity_type),
-            {'entity_type': entity_type})
+        global_inclusions += self.exec_read_query(
+            self.get_lifelike_global_inclusions_by_type(entity_type))
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
