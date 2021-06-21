@@ -41,7 +41,7 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Compound | id |	=biocyc_id |
 | Compound | inchi_key | INCHI-KEY<br />remove leading 'InChIKey='|
 | Compound | name | COMMON-NAME<br />strip HTML tags and remove leading 'a ' and 'an ' |
-| Compound | inchy | INCHI |
+| Compound | inchi | INCHI |
 | Compound | smiles | SMILES |
 | DNABindingSite | abs_center_pos | ABS-CENTER-POS |
 | DNABindingSite | biocyc_id | UNIQUE-ID |
