@@ -77,3 +77,15 @@
         - "{{ certbot_conf_dir }}/www/:/var/www/certbot"
     networks:
         - name: "{{ network_name }}"
+
+- name: Re-issue SSL certificate
+  docker_container:
+    name: "{{ certbot_hostname }}"
+    image: "{{ certbot_image }}"
+    volumes:
+      - "{{ certbot_conf_dir }}/:/etc/letsencrypt/"
+      - "{{ certbot_conf_dir }}/www/:/var/www/certbot/"
+    command: renew --web***ARANGO_USERNAME*** -w /var/www/certbot/
+    detach: no
+  notify: restart nginx container
+  when: certbot_certs.stat.exists

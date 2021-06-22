@@ -1,9 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component} from '@angular/core';
 
 import {
   FormGroup,
   FormControl,
-  Validators, ValidatorFn, AbstractControl,
+  Validators,
 } from '@angular/forms';
 
 
