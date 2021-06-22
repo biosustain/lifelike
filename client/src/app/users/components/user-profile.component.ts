@@ -93,11 +93,10 @@ export class UserProfileComponent implements OnInit  {
       .pipe(this.errorHandler.create({label: 'Update user'}))
       .subscribe(() => {
         progressDialogRef.close();
-        this.user = Object.assign({}, this.user, updatedUser);
+        this.user = {...this.user, ...updatedUser};
         this.store.dispatch(AuthActions.userUpdated(
             {user: this.user},
           ));
-        this.reset();
         this.snackBar.open(
           `You data has been updated successfully!`,
           'close',
