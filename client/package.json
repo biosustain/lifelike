@@ -10,10 +10,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "ng lint && docker-compose exec -T appserver mypy . && docker-compose exec -T appserver pycodestyle ."
-    }
+  "lint-staged": {
+    "*.ts": "tslint"
   },
   "private": true,
   "dependencies": {
@@ -87,7 +85,6 @@
     "@types/vis": "^4.21.19",
     "babel-loader": "^8.2.1",
     "codelyzer": "^5.0.0",
-    "husky": "^4.2.5",
     "jasmine-core": "~3.4.0",
     "jasmine-marbles": "^0.6.0",
     "jasmine-spec-reporter": "~4.2.1",
@@ -99,6 +96,7 @@
     "karma-jasmine-html-reporter": "^1.4.0",
     "karma-spec-reporter": "^0.0.32",
     "karma-viewport": "^1.0.5",
+    "lint-staged": "^11.0.0",
     "ng-bullet": "^1.0.3",
     "ng-mocks": "^9.0.0",
     "protractor": "~5.4.0",

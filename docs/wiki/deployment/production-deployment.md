@@ -39,6 +39,16 @@ gsutil cp gs://kg-secrets/lifelike-accounts.txt .
 If you're in a hurry and just need to know how to deploy various stages of the application, start here.
 
 ## QA Deployment
+
+__Manual Trigger Method__
+1. Go to the [GitHub Actions](https://github.com/SBRG/kg-prototypes/actions) page
+2. Go to one of the GCP deployment workflows. [See Example](https://github.com/SBRG/kg-prototypes/actions/workflows/staging-gcloud.yml)
+3. If the workflow has the trigger, you should see the message.
+
+   `This workflow has a workflow_dispatch event trigger.`
+4. Click **Run Workflow** and choose the branch you want to deploy. NOTE, when selecting a branch, it must have a workflow that contains the trigger `workflow_dispatch`.
+
+__Tag Method__
 1. Clone the repository
 ```bash
 git clone https://github.com/SBRG/kg-prototypes.git
@@ -77,6 +87,15 @@ git push origin qa
 
 ## Staging Deployment
 
+__Manual Trigger Method__
+1. Go to the [GitHub Actions](https://github.com/SBRG/kg-prototypes/actions) page
+2. Go to one of the GCP deployment workflows. [See Example](https://github.com/SBRG/kg-prototypes/actions/workflows/staging-gcloud.yml)
+3. If the workflow has the trigger, you should see the message.
+
+   `This workflow has a workflow_dispatch event trigger.`
+4. Click **Run Workflow** and choose the branch you want to deploy. NOTE, when selecting a branch, it must have a workflow that contains the trigger `workflow_dispatch`.
+
+__Tag Method__
 Same idea as [QA Deployment](#qa-deployment) but change the tag to **staging**
 
 1. Clone the repository
@@ -118,7 +137,7 @@ git push origin staging
 
 ## Production Deployment
 
-Production deployment is a bit different as we use the "release" feature of GitHub. 
+Production deployment is a bit different as we use the "release" feature of GitHub.
 
 1. Go to https://github.com/SBRG/kg-prototypes/releases
 2. Click **Draft a new release** or go https://github.com/SBRG/kg-prototypes/releases/new
@@ -128,6 +147,8 @@ Production deployment is a bit different as we use the "release" feature of GitH
 6. Fill in any description about the release such as a change log
 7. Click **Publish release** to finalize the deployment
 8. View the build progress under **Production Deployment** at https://github.com/SBRG/kg-prototypes/actions
+
+**NOTE:** Production can be deployed using the *tag* or *manual trigger* method, but its discouraged as we won't have an audit trail of the different versions.
 
 # Overview
 The deployment process takes place in 3 separate environments; the local computer (Ansible), GitHub (via GitHub actions), and Google Cloud.
@@ -224,7 +245,12 @@ gsutil cp gs://kg-secrets/ansible.pub .
 ```
 **NOTE:** If you're using an operation system that's not Linux or a variation of it such as OSX, the following steps will have to be revised.
 
-3. Add the *private* and *public* keys into `~/.ssh/` OR modify the `ansible.cfg` file to another directory of your choice 
+**NOTE:** If you get a permission warning for the files, you'll need to configure the permission levels accordingly. For example, on Linux, you can do
+```bash
+chmod 600 ansible
+```
+
+3. Add the *private* and *public* keys into `~/.ssh/` OR modify the `ansible.cfg` file to another directory of your choice
 
 **ansible.cfg**
 ```
@@ -321,7 +347,7 @@ ansible-playbook -i inventories --vault-password-file=.vault_secrets_pw playbook
 ```
 Notice how we passed "demo" as a value to the parameter "webserver". If we looked into the `filebeat_setup.yml` file we'd see that the parameter "webserver" is associated with the "hosts" setting in the configuration file. Ansible associates the value we place in "hosts" with the "group_vars" folder (e.g. so in our case, it will try to find a folder named "demo" under "group_vars" to link all of the variable files for the duration of the `filebeat_setup.yml` script. In addition to the folder specific variables, Ansible will load everything under the "group_vars/all" folder.
 
-8. **(Optional)** Next, we'll configure **Traefik** to pick up our new virtual machine so we can route a subdomain to it. Under `deployment/ansible/playbooks/roles/traefik/templates` there's a file named `services.yml`. We'll modify it to add our new DEMO environment. Take note that the `IP ADDRESS HERE` should be the **internal** ip address of your virtual machine. If you revisit the Google Compute Engine menu, you'll see an *external* and *internal* ip address.
+8. **(Optional)** Next, we'll configure **Traefik** to pick up our new virtual machine so we can route a subdomain to it. Under `deployment/ansible/playbooks/roles/traefik/files` there's a file named `services.yml`. We'll modify it to add our new DEMO environment. Take note that the `IP ADDRESS HERE` should be the **internal** ip address of your virtual machine. If you revisit the Google Compute Engine menu, you'll see an *external* and *internal* ip address.
 
 ```yaml
 http:
@@ -352,7 +378,7 @@ http:
     lifelike-demo-service:
       loadBalancer:
         servers:
-          - url: <IP ADDRESS HERE>
+          - url: <INTERNAL IP ADDRESS HERE>
     lifelike-qa-service:
       loadBalancer:
         servers:
@@ -389,6 +415,5 @@ In short, GitHub actions helps ties our new code changes and the deploy process 
     10. runs the database data and schema migrations
     11. create/update lmdb files
     12. seeds elasticsearch with global annotations (can probably deprecate)
-    13. script runs to cache some LMDB database elements for faster look ups
 
-Our current GitHub actions are triggered through either `tags` or `drafting new release`. These are all shown in the [Quickstart](#quickstart). It's important to point out that we do not need GitHub actions to deploy. We could also run `deploy.yml` locally, BUT the largest caveat is we'd need to build the docker images and push them to the Google Cloud registry ourselves since GitHub actions usually takes care of this.
+Our current GitHub actions are triggered through either `tags`, `drafting new release`, or using the `manual workflow deploy button` (see [source](https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/)). These are all shown in the [Quickstart](#quickstart). It's important to point out that we do not need GitHub actions to deploy. We could also run `deploy.yml` locally, BUT the largest caveat is we'd need to build the docker images and push them to the Google Cloud registry ourselves since GitHub actions usually takes care of this.
