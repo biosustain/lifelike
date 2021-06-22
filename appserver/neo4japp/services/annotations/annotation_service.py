@@ -1022,8 +1022,8 @@ class AnnotationService:
             elif anno.meta.type == EntityType.PROTEIN.value:
                 protein_ids.add(anno.meta.id)
 
-        gene_names = self.graph.get_genes_from_gene_ids(list(gene_ids))
-        protein_names = self.graph.get_proteins_from_protein_ids(list(protein_ids))
+        gene_names = self.graph.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
+        protein_names = self.graph.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))  # noqa
 
         for anno in annotations:
             try:
@@ -1037,14 +1037,19 @@ class AnnotationService:
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
             finally:
-                # TODO: need to rethink this...
-                # if an inclusion is in Lifelike domain/label in KG
-                # that means the primary/common name did not exist
-                # in the KG in the actual source (e.g MECH, etc)
-                # Should it still have the original source or stay as Lifelike?
-                if anno.meta.id_type not in anno.meta.id and 'Lifelike' not in anno.meta.id:
+                # need to uppercase this because the data in the KG
+                # is not consistent with the annotations
+                # the data source is used to prepend to the id
+                # in the KG, it could be ChEBI
+                # but the id could be CHEBI:xxxx
+                #
+                # will probably need a data conversion in the KG
+                # to be consistent, otherwise mismatch between
+                # annotation and KG
+                data_source = anno.meta.id_type.upper()
+                if data_source not in anno.meta.id and 'Lifelike' not in anno.meta.id:
                     # update annotation id
-                    anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
+                    anno.meta.id = f'{data_source}:{anno.meta.id}'
 
         return annotations
 

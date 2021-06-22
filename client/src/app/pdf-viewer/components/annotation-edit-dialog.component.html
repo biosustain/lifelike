@@ -33,7 +33,7 @@
 
     <ng-container *ngIf="entityTypeChosen">
       <app-form-row for="source" label="Data Source" [control]="form.get('source')">
-        <select formControlName="source" class="custom-select w-100" id="source" appAutoFocus>
+        <select formControlName="source" class="custom-select w-100" id="source">
           <option *ngFor="let choice of databaseTypeChoices" [value]="choice">
             {{choice}}
           </option>
