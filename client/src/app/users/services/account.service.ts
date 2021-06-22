@@ -1,10 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
-    AppUser,
-    UserCreationRequest,
-    ChangePasswordRequest,
-    PrivateAppUser,
+  AppUser,
+  UserCreationRequest,
+  ChangePasswordRequest,
+  PrivateAppUser,
+  UserUpdateRequest,
+
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
 import { map, takeUntil } from 'rxjs/operators';
@@ -30,6 +32,19 @@ export class AccountService implements OnDestroy {
         return this.http.post<{result: AppUser}>(
             `${this.accountApi}/`, request,
         ).pipe(map(resp => resp.result));
+    }
+
+    updateUser(request: UserUpdateRequest) {
+        return this.http.put<{result: AppUser}>(
+            `${this.accountApi}/${request.hashId}`, request);
+    }
+
+    resetPassword(email: string) {
+        return this.http.get(`${this.accountApi}/${email}/reset-password`);
+    }
+
+    unlockUser(hashId: string) {
+        return this.http.get(`${this.accountApi}/${hashId}/unlock-user`);
     }
 
     /**

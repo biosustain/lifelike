@@ -519,6 +519,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            fields: List[str],
             query_filter,
             highlight,
     ):
@@ -573,7 +574,10 @@ class ElasticService(ElasticConnection, GraphConnection):
                     ],
                 }
             },
-            'highlight': highlight
+            'fields': fields,
+            'highlight': highlight,
+            # Set `_source` to False so we only return the properties specified in `fields`
+            '_source': False,
         }, phrases + words + wildcards
 
     def search(
@@ -584,6 +588,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
+            fields: List[str],
             offset: int = 0,
             limit: int = 10,
             query_filter=None,
@@ -595,6 +600,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            fields=fields,
             query_filter=query_filter,
             highlight=highlight,
         )

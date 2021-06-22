@@ -19,7 +19,7 @@ logstash_conf_dir: /usr/share/logstash
 certbot_image: certbot/certbot
 certbot_hostname: cb01
 certbot_conf_dir: /usr/share/certbot
-certbot_email: dbour@eng.ucsd.edu
+certbot_email: e4sanchez@eng.ucsd.edu
 
 elastic_password: "{{ vault_elastic_password }}"
 kibana_password: "{{ vault_kibana_password }}"
