@@ -148,8 +148,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             .subscribe(() => {
               progressDialogRef.close();
               if (this.currentUser.hashId === selectedUser.hashId) {
-                  // Create a new object since properties are read-only
-                  updatedUser = Object.assign({}, this.currentUser, updatedUser);
+                  updatedUser = {...this.currentUser, ...updatedUser};
                   this.store.dispatch(AuthActions.userUpdated(
                       {user: updatedUser},
                     ));
