@@ -79,24 +79,35 @@ export class UserProfileComponent implements OnInit  {
             })),
           });
     const updatedUser = this.getValue();
-    this.accountService.updateUser(updatedUser)
-    .pipe(this.errorHandler.create({label: 'Update user'}))
-    .subscribe(() => {
+    // Data object containing one key (hash_id) -> no update data provided
+    if (Object.keys(updatedUser).length === 1) {
       progressDialogRef.close();
-      this.user = Object.assign({}, this.user, updatedUser);
-      this.store.dispatch(AuthActions.userUpdated(
-          {user: this.user},
-        ));
-      this.reset();
-
       this.snackBar.open(
-        `You data has been updated successfully!`,
-        'close',
-        {duration: 5000},
+            `Provided data is either empty of unmodified!`,
+            'close',
+            {duration: 5000},
       );
-    }, () => {
-      progressDialogRef.close();
-    });
+      this.reset();
+    } else {
+      this.accountService.updateUser(updatedUser)
+      .pipe(this.errorHandler.create({label: 'Update user'}))
+      .subscribe(() => {
+        progressDialogRef.close();
+        this.user = Object.assign({}, this.user, updatedUser);
+        this.store.dispatch(AuthActions.userUpdated(
+            {user: this.user},
+          ));
+        this.reset();
+        this.snackBar.open(
+          `You data has been updated successfully!`,
+          'close',
+          {duration: 5000},
+        );
+      }, () => {
+        progressDialogRef.close();
+      });
+    }
+
   }
 
 }
