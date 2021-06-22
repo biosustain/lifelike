@@ -1,24 +1,18 @@
 import attr
 import json
 import os
-import time
 
-from datetime import datetime
 from io import StringIO
-from typing import List
-
-from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType
-from neo4japp.services.annotations.pipeline import (
-    create_annotations2 as create_annotations_helper
-)
+from neo4japp.services.annotations.initializer import get_annotation_service
 
-import base64
 import paramiko
 import multiprocessing as mp
 from itertools import islice
 
+annotator = get_annotation_service()
+create_annotations_helper = annotator.create_annotations
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
