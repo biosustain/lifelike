@@ -134,8 +134,16 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
               status: 'Updating user...',
             })),
           });
-
-          this.accountService.updateUser(updatedUser)
+          // Data object containing one key (hash_id) -> no update data provided
+          if (Object.keys(updatedUser).length === 1) {
+            progressDialogRef.close();
+            this.snackBar.open(
+                `Provided data is either empty of unmodified!`,
+                'close',
+                {duration: 5000},
+              );
+          } else {
+            this.accountService.updateUser(updatedUser)
             .pipe(this.errorHandler.create({label: 'Update user'}))
             .subscribe(() => {
               progressDialogRef.close();
@@ -156,6 +164,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             }, () => {
               progressDialogRef.close();
             });
+          }
         }, () => {
         });
       }
