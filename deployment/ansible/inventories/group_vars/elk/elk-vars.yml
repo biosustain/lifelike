@@ -1,4 +1,4 @@
-elk_server_name: elk.prod.lifelike.bio
+elk_server_name: elastic.lifelike.bio
 network_name: elknet
 
 nginx_image: nginx:1.19.1-alpine
