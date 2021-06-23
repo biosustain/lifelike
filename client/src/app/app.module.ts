@@ -32,6 +32,8 @@ import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
 import { GlobalErrorHandler } from './global-error-handler';
 import { EnrichmentTablesModule } from './enrichment/enrichment-tables.module';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
+import { BiocViewerLibModule } from './bioc-viewer/bioc-viewer-lib.module';
+import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -62,8 +64,10 @@ import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualis
     SearchModule,
     ChartsModule,
     DrawingToolModule,
+    SankeyViewerLibModule,
     NgbModule,
     FileNavigatorModule,
+    BiocViewerLibModule,
     EnrichmentVisualisationsModule,
     ShortestPathModule,
     EnrichmentTablesModule,

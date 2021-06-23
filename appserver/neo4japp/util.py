@@ -1,21 +1,18 @@
-from abc import ABC
-
 import attr
 import functools
 import hashlib
 import itertools
-import jwt
 
-from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json, jsonify, request
+from flask import json, jsonify, request, current_app
 from json import JSONDecodeError
 from neo4j.graph import Node as N4jDriverNode
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
 
-from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
+from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS, LogEventType
+from neo4japp.utils.logger import EventLog
 
 
 def normalize_str(s) -> str:
@@ -396,14 +393,20 @@ def compute_hash(data: dict, **kwargs) -> str:
 
 
 def get_first_known_label_from_node(node: N4jDriverNode):
-    return get_first_known_label_from_list(node.labels)
+    try:
+        return get_first_known_label_from_list(node.labels)
+    except ValueError:
+        current_app.logger.warning(
+            f'Node with ID {node.id} had an unexpected list of labels: {node.labels}',
+            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+        )
+        return 'Unknown'
 
 
 def get_first_known_label_from_list(labels: List[str]):
     for label in labels:
         if label in DISPLAY_NAME_MAP:
             return label
-
     raise ValueError('Detected node label of an unknown type!')
 
 

@@ -14,6 +14,7 @@ import { HierarchySearchTreeComponent } from './components/hierarchy-search-tree
 import { RejectedOptionsDialogComponent } from './components/rejected-options-dialog.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
+import { SynonymSearchComponent } from './components/synonym-search.component';
 
 import { ContentSearchService } from './services/content-search.service';
 import { GraphSearchService } from './services/graph-search.service';
@@ -29,6 +30,7 @@ const components = [
   RejectedOptionsDialogComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
+  SynonymSearchComponent
 ];
 
 @NgModule({
@@ -40,6 +42,7 @@ const components = [
   entryComponents: [
     AdvancedSearchDialogComponent,
     RejectedOptionsDialogComponent,
+    SynonymSearchComponent
   ],
   declarations: components,
   providers: [

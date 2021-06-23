@@ -6,14 +6,14 @@
     </h5>
     <button type="button" class="window-btn" aria-label="Close" tabindex="-1">
       <ng-container *ngIf="!sideCollapse; else sideCollapseButton">
-        <i class="fa" [class.fa-chevron-down]="reversed && expanded"></i>
-        <i class="fa" [class.fa-chevron-up]="!reversed && expanded"></i>
-        <i class="fa" [class.fa-chevron-down]="!reversed && !expanded"></i>
-        <i class="fa" [class.fa-chevron-up]="reversed && !expanded"></i>
+        <i class="fa" [class.fa-caret-down]="reversed && expanded"></i>
+        <i class="fa" [class.fa-caret-up]="!reversed && expanded"></i>
+        <i class="fa" [class.fa-caret-down]="!reversed && !expanded"></i>
+        <i class="fa" [class.fa-caret-up]="reversed && !expanded"></i>
       </ng-container>
       <ng-template #sideCollapseButton>
-        <i class="fa" [class.fa-chevron-left]="expanded"></i>
-        <i class="fa" [class.fa-chevron-right]="!expanded"></i>
+        <i class="fa" [class.fa-caret-left]="expanded"></i>
+        <i class="fa" [class.fa-caret-right]="!expanded"></i>
       </ng-template>
     </button>
   </div>

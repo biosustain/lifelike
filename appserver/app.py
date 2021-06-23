@@ -1,23 +1,32 @@
+import click
+import copy
+import hashlib
 import importlib
+import io
 import json
 import logging
+import math
 import os
-import click
 import sentry_sdk
+import uuid
+
 from flask import g, request
 
+from marshmallow.exceptions import ValidationError
+
 from sqlalchemy import inspect, Table
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import and_, text
+from sqlalchemy.exc import IntegrityError
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import db, get_account_service, get_elastic_service
+from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
-from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent, Files
 from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
@@ -289,3 +298,299 @@ def upload_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.upload_all(lmdb_dir_path)
+
+
+@app.cli.command('merge-maps')
+@click.option('--user-id', '-u', required=True, type=int)
+@click.option('--parent-id', '-p', required=True, type=int)
+@click.option('--maps', '-m', multiple=True, type=int)
+@click.option('--filename', '-f', required=True, type=str)
+@click.option('--description', '-d', required=False, type=str)
+def merge_maps(user_id, filename, description, parent_id, maps):
+    """
+    Merges two or more existing drawing tool maps into a single map.
+
+    Args:
+        user-id - ID of the user who will own the new map
+        parent-id - ID of the folder the new map should be added to
+        maps - IDs of two or more maps to merge (e.g. -m 1 -m 2 -m 3)
+        filename - Name of the new map
+        description - Description of the new map (Optional)
+    """
+    if maps is None or len(maps) < 2:
+        raise ValueError('Should give at least 2 maps to merge.')
+
+    # TODO: Should make sure the given user has access to each of the given maps, and to the given
+    # project. This would involve getting the projects of each of the maps. Until this is done we
+    # should be careful to make sure we aren't creating any maps in the wrong place, or giving the
+    # wrong person access.
+
+    def generate_node_detail_hash(node):
+        # Treat notes/links/maps as unique for now
+        if node['label'] == 'note' or node['label'] == 'link' or node['label'] == 'map':
+            return hashlib.sha256(bytes(str(uuid.uuid4()), 'utf-8')).hexdigest()
+        str_to_hash = (node['label'] + '_' + node['display_name']).lower()
+        return hashlib.sha256(bytes(str_to_hash, 'utf-8')).hexdigest()
+
+    def get_min_max_x_y_of_maps(maps):
+        min_max_x_y_map = {}
+
+        for m in maps:
+            min_x = math.inf
+            min_y = math.inf
+            max_x = -1 * math.inf
+            max_y = -1 * math.inf
+            for node in m['nodes']:
+                x = node['data']['x']
+                y = node['data']['y']
+                height = node['data'].get('height', 25)
+                width = node['data'].get('width', 25)
+
+                if x - (width / 2) < min_x:
+                    min_x = x - (width / 2)
+                if x + (width / 2) > max_x:
+                    max_x = x + (width / 2)
+                if y - (height / 2) < min_y:
+                    min_y = y - (height / 2)
+                if y + (height / 2) > max_y:
+                    max_y = y + (height / 2)
+
+            min_max_x_y_map[m['name']] = [[min_x, min_y], [max_x, max_y]]
+        return min_max_x_y_map
+
+    def get_max_width_and_height_of_maps(min_max_x_y_map):
+        max_width = 0
+        max_height = 0
+
+        for min_max_x_y in min_max_x_y_map.values():
+            min_x, min_y = min_max_x_y[0]
+            max_x, max_y = min_max_x_y[1]
+
+            if max_x - min_x > max_width:
+                max_width = max_x - min_x
+            if max_y - min_y > max_height:
+                max_height = max_y - min_y
+
+        return max_width, max_height
+
+    def combine_maps(maps, sector_width, sector_height, min_max_x_y_map):
+        combined_nodes = []
+        combined_edges = []
+
+        map_dict = {}
+
+        for m in maps:
+            map_dict[m['name']] = {
+                'nodes': m['nodes'],
+                'edges': m['edges']
+            }
+
+        map_origin_dict = {}
+
+        y_multiplier = 0
+        for i, m in enumerate(map_dict.keys()):
+            # Alternate sides of the x-axis every map. E.g., first map is left of the "true" origin,
+            # second map right, third left, etc...
+            x_multiplier = 1 if (i + 1) % 2 == 0 else -1
+
+            new_origin = [
+                x_multiplier * math.ceil(sector_width / 2),
+                y_multiplier * math.ceil(sector_height),
+            ]
+            map_origin_dict[m] = new_origin
+
+            if (i + 1) % 2 == 0:
+                # We want two columns of maps, so increase the y value every third map
+                y_multiplier += 1
+
+        for m in map_dict:
+            new_origin = map_origin_dict[m]
+            min_x, min_y = min_max_x_y_map[m][0]
+            max_x, max_y = min_max_x_y_map[m][1]
+            center_of_map = [(max_x - min_x) / 2, (max_y - min_y) / 2]
+            for node in map_dict[m]['nodes']:
+                # First, translate the node as if 0, 0 were the center of the map. This normalizes
+                # the positions of all maps. Then, translate the node according to the new origin
+                # we calculated earlier.
+                node['data']['x'] = node['data']['x'] + (-1 * center_of_map[0]) + new_origin[0]
+                node['data']['y'] = node['data']['y'] + (-1 * center_of_map[1]) + new_origin[1]
+                combined_nodes.append(node)
+            for edge in map_dict[m]['edges']:
+                combined_edges.append(edge)
+
+        return {
+            'nodes': combined_nodes,
+            'edges': combined_edges,
+        }
+
+    def merge_maps(maps):
+        min_max_x_y_map = get_min_max_x_y_of_maps(maps)
+        sector_width, sector_height = get_max_width_and_height_of_maps(min_max_x_y_map)
+
+        # Add a slight horizontal/vertical margin between maps
+        sector_width += 500
+        sector_height += 1000
+
+        combined_map = combine_maps(maps, sector_width, sector_height, min_max_x_y_map)
+
+        # "node hash" here means the "hash" property of the node objects
+        node_detail_hash_to_node_hash_map = {}
+        old_hash_to_new_hash_map = {}
+        merge_nodes = set()
+        hash_to_node_map = {}
+        for node in combined_map['nodes']:
+            node_hash = node['hash']
+
+            node_detail_hash = generate_node_detail_hash(node)
+            hash_to_node_map[node_hash] = node
+            # If this is the first time we've encountered this node detail hash,
+            # treat the node as the "source of truth" for the merge
+            if node_detail_hash not in node_detail_hash_to_node_hash_map:
+                node_detail_hash_to_node_hash_map[node_detail_hash] = node_hash
+            # If we have seen this node detail hash, map the duplicate node to the detail hash
+            else:
+                new_hash = node_detail_hash_to_node_hash_map[node_detail_hash]
+                merge_nodes.add(new_hash)
+                old_hash_to_new_hash_map[node_hash] = new_hash
+
+        # Replace merged nodes locations with the center of the network. May uncomment this on a
+        # case-by-case basis.
+        # network_center_y = (
+        #     ((math.floor((len(maps) - 1) / 2) + 1) * (sector_height / 2)) + (sector_height / 2)
+        # ) / 2
+        # for i, merge_node_hash in enumerate(merge_nodes):
+        #     x_multiplier = 1 if (i + 1) % 2 == 0 else -1
+        #     y_modifier = i * 50
+        #     hash_to_node_map[merge_node_hash]['data']['x'] = 200 * x_multiplier
+        #     hash_to_node_map[merge_node_hash]['data']['y'] = network_center_y + y_modifier
+
+        edges = []
+        for edge in combined_map['edges']:
+            edge_copy = copy.deepcopy(edge)
+            source = edge['from']
+            target = edge['to']
+
+            # If source is a duplicate node, replace it with the "true" node
+            if source in old_hash_to_new_hash_map:
+                edge_copy['from'] = old_hash_to_new_hash_map[source]
+            # If target is a duplicate node, replace it with the "true" node
+            if target in old_hash_to_new_hash_map:
+                edge_copy['to'] = old_hash_to_new_hash_map[target]
+
+            edges.append(edge_copy)
+
+        nodes = []
+        for node in combined_map['nodes']:
+            if node['hash'] not in old_hash_to_new_hash_map:
+                nodes.append(node)
+
+        return {
+            'nodes': nodes,
+            'edges': edges
+        }
+
+    user = db.session.query(AppUser).filter(AppUser.id == user_id).one()
+    parent = db.session.query(Files).filter(Files.id == parent_id).one()
+    raw_map_data = [
+        [json.loads(raw_data[0]), raw_data[1]]
+        for raw_data in db.session.query(
+            FileContent.raw_file,
+            Files.filename
+        ).join(
+            Files,
+            and_(
+                Files.content_id == FileContent.id,
+                Files.id.in_(maps)
+            )
+        ).all()
+    ]
+    map_data = [
+        {
+            'name': filename,
+            'nodes': file_data['nodes'],
+            'edges': file_data['edges']
+        } for file_data, filename in raw_map_data
+    ]
+
+    file_type_service = get_file_type_service()
+
+    file = Files()
+    file.filename = filename or 'New Merged Map'
+    file.description = description or ''
+    file.user = user
+    file.creator = user
+    file.modifier = user
+    file.public = False
+    file.parent = parent
+    file.upload_url = None
+    file.mime_type = 'vnd.***ARANGO_DB_NAME***.document/map'
+
+    # Create operation
+    buffer = io.BytesIO(json.dumps(merge_maps(map_data)).encode('utf-8'))
+
+    # Figure out file size
+    buffer.seek(0, io.SEEK_END)
+    size = buffer.tell()
+    buffer.seek(0)
+
+    # Check max file size
+    if size > 1024 * 1024 * 300:
+        raise ValidationError(
+            'Your file could not be processed because it is too large.')
+
+    # Get the provider based on what we know now
+    provider = file_type_service.get(file)
+
+    # Check if the user can even upload this type of file
+    if not provider.can_create():
+        raise ValidationError(f"The provided file type is not accepted.")
+
+    # Validate the content
+    try:
+        provider.validate_content(buffer)
+        buffer.seek(0)  # Must rewind
+    except ValueError as e:
+        raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+
+    # Get the DOI
+    file.doi = provider.extract_doi(buffer)
+    buffer.seek(0)  # Must rewind
+
+    # Save the file content if there's any
+    if size:
+        file.content_id = FileContent.get_or_create(buffer)
+        buffer.seek(0)  # Must rewind
+
+    # ========================================
+    # Commit and filename conflict resolution
+    # ========================================
+
+    # Filenames could conflict, so we may need to generate a new filename
+    # Trial 1: First attempt
+    # Trial 2: Try adding (N+1) to the filename and try again
+    # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
+    # Trial 4: Give up
+    # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
+    for trial in range(4):
+        if 1 <= trial <= 2:  # Try adding (N+1)
+            try:
+                file.filename = file.generate_non_conflicting_filename()
+            except ValueError:
+                raise ValidationError(
+                    'Filename conflicts with an existing file in the same folder.',
+                    "filename")
+        elif trial == 3:  # Give up
+            raise ValidationError(
+                'Filename conflicts with an existing file in the same folder.',
+                "filename")
+
+        try:
+            db.session.begin_nested()
+            db.session.add(file)
+            db.session.commit()
+            break
+        except IntegrityError as e:
+            # Warning: this could catch some other integrity error
+            db.session.rollback()
+
+    db.session.commit()

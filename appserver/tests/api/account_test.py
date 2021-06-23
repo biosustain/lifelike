@@ -37,6 +37,7 @@ def test_admin_can_create_user(client, fix_admin_user):
             'lastName': 'yoda',
             'roles': 'admin',
             'password': 'iluvmando',
+            'createdByAdmin': True
         }),
         content_type='application/json'
     )
@@ -132,7 +133,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
 @pytest.mark.parametrize('attribute, value, is_editable', [
     ('firstName', 'fresh', True),
     ('lastName', 'smith', True),
-    ('username', 'false@***ARANGO_DB_NAME***.bio', False),
+    ('username', 'false@***ARANGO_DB_NAME***.bio', True),
     ('email', 'email@***ARANGO_DB_NAME***.bio', False),
 ])
 def test_can_update_only_allowed_attributes(client, test_user, attribute, value, is_editable):

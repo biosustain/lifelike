@@ -64,6 +64,7 @@ from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
+from neo4japp.services.file_types.service import GenericFileTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -686,9 +687,11 @@ class FileListView(FilesystemBaseView):
             # Save the URL
             file.upload_url = url
 
+            mime_type = params.get('mime_type')
+
             # Detect mime type
-            if params.get('mime_type'):
-                file.mime_type = params['mime_type']
+            if mime_type:
+                file.mime_type = mime_type
             else:
                 mime_type = file_type_service.detect_mime_type(buffer)
                 buffer.seek(0)  # Must rewind
@@ -696,6 +699,17 @@ class FileListView(FilesystemBaseView):
 
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
+            # if no provider matched try to convert
+            if provider == file_type_service.default_provider \
+                    or isinstance(provider, GenericFileTypeProvider):
+                import os
+                file_name, extension = os.path.splitext(file.filename)
+                if extension.lower() == '.xml' or extension.lower() == '.bioc':
+                    file.mime_type = 'vnd.***ARANGO_DB_NAME***.document/bioc'
+                if extension.isupper():
+                    file.mime_type = 'application/pdf'
+                provider = file_type_service.get(file)
+                provider.convert(buffer)
 
             # Check if the user can even upload this type of file
             if not provider.can_create():
@@ -716,6 +730,10 @@ class FileListView(FilesystemBaseView):
             if size:
                 file.content_id = FileContent.get_or_create(buffer)
                 buffer.seek(0)  # Must rewind
+                try:
+                    buffer.close()
+                except Exception:
+                    pass
 
         # ========================================
         # Annotation options

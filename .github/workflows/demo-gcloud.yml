@@ -1,12 +1,10 @@
 name: GCP Demo Deployment
 
 on:
+  workflow_dispatch:
   push:
     tags:
-      - "demo-gcp"
-    branches:
-      # only trigger when branches match refs/heads/staging/
-      - "demo-gcp/**"
+      - "demo"
 
 jobs:
   build:
