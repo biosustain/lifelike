@@ -1,4 +1,5 @@
 interface Node {
+  id?: number;
   index?: number;
   sourceLinks?: Array<Link>;
   targetLinks?: Array<Link>;
