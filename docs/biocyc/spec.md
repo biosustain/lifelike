@@ -29,14 +29,14 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Node Label | Attribute | Source |
 |:-----|:-----------|:-|
 | BioCycClass | biocyc_id | UNIQUE-ID |
-| BioCycClass | data_source |BioCyc |
+| BioCycClass | data_source |"BioCyc" |
 | BioCycClass | displayName | =coalesce(name, biocyc_id) |
 | BioCycClass | id | =biocyc_id |
 | BioCycClass | name | COMMON-NAME |
 | BioCycClass | synonyms | SYNONYMS |
 | Compound | abbrev_name | ABBREV-NAME |
 | Compound | biocyc_id | UNIQUE-ID |
-| Compound | data_source | BioCyc |	
+| Compound | data_source | "BioCyc" |	
 | Compound | displayName | =coalesce(name, biocyc_id) |
 | Compound | id |	=biocyc_id |
 | Compound | inchi_key | INCHI-KEY<br />remove leading 'InChIKey='|
@@ -45,11 +45,13 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Compound | smiles | SMILES |
 | DNABindingSite | abs_center_pos | ABS-CENTER-POS |
 | DNABindingSite | biocyc_id | UNIQUE-ID |
+| DNABindingSite | data_source |"BioCyc" |
 | DNABindingSite | description | |
 | DNABindingSite | displayName | =protein displayName + ' BS' of proteins linked to the DNABindingSite through Regulation<br /><br /> else<br /><br /> =coalesce(name, biocyc_id)
 | DNABindingSite | id | =biocyc_id |
 | DNABindingSite | site_length | SITE-LENGTH |	
 | EnzReaction | biocyc_id | UNIQUE-ID |
+| EnzReaction | data_source |"BioCyc" |
 | EnzReaction | description | |
 | EnzReaction | displayName | = name + gene(s) that encodes the enzyme|
 | EnzReaction | id | =biocyc_id |
@@ -57,6 +59,7 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | EnzReaction | synonyms | SYNONYMS |
 | Gene | accession | ACCESSION-1 |
 | Gene | biocyc_id | UNIQUE-ID |
+| Gene | data_source |"BioCyc" |
 | Gene | description | |
 | Gene | displayName | =coalesce(name, biocyc_id) |
 | Gene | id | =biocyc_id |
@@ -67,11 +70,13 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Gene | strand | TRANSCRIPTION-DIRECTION |
 | Gene | synonyms | SYNONYMS |
 | Pathway | biocyc_id | UNIQUE-ID |
+| Pathway | data_source |"BioCyc" |
 | Pathway | displayName | =coalesce(name, biocyc_id) |
 | Pathway | id | =biocyc_id |
 | Pathway | name | COMMON-NAME |
 | Pathway | synonyms | SYNONYMS |
 | Promoter | biocyc_id | UNIQUE-ID |
+| Promoter | data_source |"BioCyc" |
 | Promoter | description | |
 | Promoter | displayName | =coalesce(name, biocyc_id) |
 | Promoter | id | =biocyc_id |
@@ -81,6 +86,7 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Promoter | synonyms | SYNONYMS |
 | Protein | abbrev_name | ABBREV-NAME |
 | Protein | biocyc_id | UNIQUE-ID |
+| Protein | data_source |"BioCyc" |
 | Protein | description | |	
 | Protein | displayName | =coalesce(name, biocyc_id) |
 | Protein | id | =biocyc_id |
@@ -89,15 +95,17 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Protein | pi | PI |
 | Protein | synonyms | SYNONYMS |
 | Protein | location | LOCATIONS |
-| Promoter | GO | GO-TERMS |
+| Protein | GO | GO-TERMS |
 | RNA | abbrev_name | ABBREV-NAME |
 | RNA | biocyc_id | UNIQUE-ID |
+| RNA | data_source |"BioCyc" |
 | RNA | description | |
 | RNA | displayName | =coalesce(name, biocyc_id) |
 | RNA | id | =biocyc_id |
 | RNA | location | LOCATIONS |
 | RNA | name | COMMON-NAME
 | Reaction | biocyc_id | UNIQUE-ID |
+| Reaction | data_source |"BioCyc" |
 | Reaction | description | |
 | Reaction | displayName | =coalesce(ec_number, name, biocyc_id) |
 | Reaction | ec_number | EC-NUMBER |
@@ -108,18 +116,21 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | Reaction | location | RXN-LOCATIONS |
 | Reaction | synonyms | SYNONYMS |
 | Regulation | biocyc_id | UNIQUE-ID |
+| Regulation | data_source |"BioCyc" |
 | Regulation | displayName | ? |
 | Regulation | id | =biocyc_id |
 | Regulation | mechanism | MECHANISM |
 | Regulation | mode | MODE |
 | Regulation | type | |
 | Terminator | biocyc_id | UNIQUE-ID |
+| Terminator | data_source |"BioCyc" |
 | Terminator | displayName | =coalesce(name, biocyc_id) |
 | Terminator | description | |
 | Terminator | id | =biocyc_id |
 | Terminator | left_end_position | LEFT-END-POSITION |
 | Terminator | right_end_position | RIGHT-END-POSITION |
 | TranscriptionUnit | biocyc_id | UNIQUE-ID |
+| TranscriptionUnit | data_source |"BioCyc" |
 | TranscriptionUnit | description |	|
 | TranscriptionUnit | displayName | |
 | TranscriptionUnit | id | =biocyc_id |
