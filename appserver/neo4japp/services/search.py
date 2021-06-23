@@ -343,7 +343,8 @@ class SearchService(GraphBaseDao):
         return list(
             tx.run(
                 f"""
-                MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})<-[:HAS_SYNONYM]-(entity)
+                MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
+                    <-[:HAS_SYNONYM]-(entity)
                 WHERE NOT 'Protein' IN labels(entity){type_match_str}
                 MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
                 WHERE
@@ -393,7 +394,8 @@ class SearchService(GraphBaseDao):
 
         return tx.run(
             f"""
-            MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})<-[:HAS_SYNONYM]-(entity)
+            MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
+                <-[:HAS_SYNONYM]-(entity)
             WHERE NOT 'Protein' IN labels(entity){type_match_str}
             MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
             WHERE
