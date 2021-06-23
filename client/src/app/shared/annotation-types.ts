@@ -1,12 +1,12 @@
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 export enum DatabaseType {
-  MESH = 'MESH',
-  BIOCYC = 'BIOCYC',
-  CHEBI = 'CHEBI',
+  MESH = 'Mesh',
+  BIOCYC = 'BioCyc',
+  CHEBI = 'ChEBI',
   NCBI = 'NCBI',
-  UNIPROT = 'UNIPROT',
-  PUBCHEM = 'PUBCHEM',
+  UNIPROT = 'UniProt',
+  PUBCHEM = 'PubChem',
   NONE = 'None'
 }
 
