@@ -1,3 +1,5 @@
+from neo4j.exceptions import ServiceUnavailable
+
 from neo4japp.database import GraphConnection
 
 from ..constants import EntityType
@@ -38,8 +40,12 @@ class GraphMixin(GraphConnection):
             return self.graph.read_transaction(lambda tx: list(tx.run(query)))
         except BrokenPipeError:
             raise BrokenPipeError(
-                'The graph connection became stale while processing data, '
+                'The graph connection became stale while processing data. '
                 'Please refresh the browser and try again.')
+        except ServiceUnavailable:
+            raise ServiceUnavailable(
+                'Timed out trying to establish connection to the graph database. '
+                'Please try again at a later time.')
         except Exception:
             raise
 
@@ -50,6 +56,10 @@ class GraphMixin(GraphConnection):
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
                 'Please refresh the browser and try again.')
+        except ServiceUnavailable:
+            raise ServiceUnavailable(
+                'Timed out trying to establish connection to the graph database. '
+                'Please try again at a later time.')
         except Exception:
             raise
 
@@ -60,6 +70,10 @@ class GraphMixin(GraphConnection):
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
                 'Please refresh the browser and try again.')
+        except ServiceUnavailable:
+            raise ServiceUnavailable(
+                'Timed out trying to establish connection to the graph database. '
+                'Please try again at a later time.')
         except Exception:
             raise
 
@@ -70,6 +84,10 @@ class GraphMixin(GraphConnection):
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
                 'Please refresh the browser and try again.')
+        except ServiceUnavailable:
+            raise ServiceUnavailable(
+                'Timed out trying to establish connection to the graph database. '
+                'Please try again at a later time.')
         except Exception:
             raise
 
