@@ -1,20 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
+import { Observable} from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { ProjectData } from 'app/file-browser/schema';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectData, ProjectData } from 'app/file-browser/schema';
+import { RankedItem, ResultList } from 'app/shared/schemas/common';
 import { ApiService } from 'app/shared/services/api.service';
 
 import {
   AnnotationRequestOptions,
   AnnotationResponse,
   ContentSearchRequest,
-  ContentSearchResponse,
-  ContentSearchResponseData
+  SynonymSearchResponse,
 } from '../schema';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 
 @Injectable()
@@ -33,8 +33,8 @@ export class ContentSearchService {
     );
   }
 
-  search(request: ContentSearchRequest): Observable<ContentSearchResponse> {
-    return this.http.post<ContentSearchResponseData>(
+  search(request: ContentSearchRequest): Observable<ResultList<RankedItem<FilesystemObject>>> {
+    return this.http.post<ResultList<RankedItem<FilesystemObjectData>>>(
       `/api/search/content`,
       request,
       this.apiService.getHttpOptions(true),
@@ -48,8 +48,6 @@ export class ContentSearchService {
               item: new FilesystemObject().update(itemData.item)
           })),
           query: data.query,
-          synonyms: data.synonyms,
-          droppedSynonyms: data.droppedSynonyms
         };
       }),
     );
@@ -61,5 +59,20 @@ export class ContentSearchService {
         ...this.apiService.getHttpOptions(true),
       },
     ).pipe(map(resp => resp.results));
+  }
+
+  getSynoynms(searchTerm: string, organisms: string[], types: string[], page: number, limit: number): Observable<SynonymSearchResponse> {
+    return this.http.get<SynonymSearchResponse>(
+      `/api/search/synonyms`, {
+        ...this.apiService.getHttpOptions(true),
+        params: {
+          term: searchTerm,
+          organisms: organisms.join(';'),
+          types: types.join(';'),
+          page: page.toString(),
+          limit: limit.toString(),
+        }
+      },
+    );
   }
 }
