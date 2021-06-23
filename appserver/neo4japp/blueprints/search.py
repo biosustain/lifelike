@@ -13,21 +13,23 @@ from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
-    db,
     get_search_service_dao,
     get_elastic_service,
     get_file_type_service
 )
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
+    Files,
     Projects,
-    Files
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
     ContentSearchSchema,
+    ContentSearchResponseSchema,
     OrganismSearchSchema,
+    SynonymSearchSchema,
+    SynonymSearchResponseSchema,
     VizSearchSchema,
-    ContentSearchResponseSchema
 )
 from neo4japp.services.file_types.providers import (
     EnrichmentTableTypeProvider,
@@ -84,32 +86,11 @@ def content_search_params_are_empty(params):
     """
     if 'q' in params and params['q']:
         return False
-    elif 'phrase' in params and params['phrase']:
-        return False
-    elif 'wildcards' in params and params['wildcards']:
-        return False
-    elif 'projects' in params and params['projects']:
-        return False
     elif 'types' in params and params['types']:
         return False
+    elif 'folders' in params and params['folders']:
+        return False
     return True
-
-
-def get_synonyms_from_params(q, advanced_args):
-    # By default, synonyms is true
-    use_synonyms = True
-    if 'synonyms' in advanced_args and advanced_args['synonyms'] is not None:
-        use_synonyms = advanced_args['synonyms']
-
-    # Even if `synonyms` is in the advanced args, expect `q` might also contain synonyms. In this
-    # case, the value found in q takes precedence.
-    extracted_synonyms = re.findall(r'\bsynonyms:\S*', q)
-
-    if len(extracted_synonyms) > 0:
-        q = re.sub(r'\bsynonyms:\S*', '', q)
-        use_synonyms = extracted_synonyms[-1].split(':')[1] == 'true'
-
-    return q, use_synonyms
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
@@ -147,44 +128,11 @@ def get_types_from_params(q, advanced_args, file_type_service):
         ]
 
 
-def get_projects_from_params(q, advanced_args):
-    # Get projects from either `q` or `projects`
-    projects = []
-    if 'projects' in advanced_args and advanced_args['projects'] != '':
-        projects = advanced_args['projects'].split(';')
-
-    # Even if `projects` is in the advanced args, expect `q` might also contain some projects
-    extracted_projects = re.findall(r'\bproject:\S*', q)
-
-    if len(extracted_projects) > 0:
-        q = re.sub(r'\bproject:\S*', '', q)
-        for extracted_type in extracted_projects:
-            projects.append(extracted_type.split(':')[1])
-
-    return q, projects
-
-
 def get_folders_from_params(advanced_args):
     folders = []
     if 'folders' in advanced_args and advanced_args['folders'] != '':
         folders = advanced_args['folders'].split(';')
     return folders
-
-
-def get_wildcards_from_params(q, advanced_args):
-    # Get wildcards from `wildcards`
-    wildcards = []
-    if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
-        wildcards = advanced_args['wildcards'].split(';')
-
-    return ' '.join([q] + wildcards)
-
-
-def get_phrase_from_params(q, advanced_args):
-    if 'phrase' in advanced_args and advanced_args['phrase'] != '':
-        q += ' "' + advanced_args['phrase'] + '"'
-
-    return q
 
 
 def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: List[Projects]):
@@ -260,9 +208,6 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         q = params['q']
         q, types = get_types_from_params(q, params, file_type_service)
         folders = get_folders_from_params(params)
-        q = get_wildcards_from_params(q, params)
-        q = get_phrase_from_params(q, params)
-        q, use_synonyms = get_synonyms_from_params(q, params)
 
         # Set the search term once we've parsed 'q' for all advanced options
         search_term = q.strip()
@@ -294,6 +239,9 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             accessible_folders,
             accessible_projects
         )
+        # These are the document fields that will be returned by elastic
+        fields = ['id']
+
         query_filter = {
             'bool': {
                 'must': [
@@ -308,7 +256,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         }
 
         elastic_service = get_elastic_service()
-        elastic_result, search_phrases, synonym_map, dropped_synonyms = elastic_service.search(
+        elastic_result, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
@@ -317,7 +265,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             text_field_boosts=text_field_boosts,
             keyword_fields=[],
             keyword_field_boosts={},
-            use_synonyms=use_synonyms,
+            fields=fields,
             query_filter=query_filter,
             highlight=highlight
         )
@@ -329,7 +277,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         # So while we have the results from Elasticsearch, they don't contain up to date or
         # complete data about the matched files, so we'll take the hash IDs returned by Elastic
         # and query our database
-        file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
+        file_ids = [doc['fields']['id'][0] for doc in elastic_result['hits']]
         file_map = {
             file.id: file
             for file in self.get_nondeleted_recycled_files(
@@ -340,7 +288,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
 
         results = []
         for document in elastic_result['hits']:
-            file_id = document['_source']['id']
+            file_id = document['fields']['id'][0]
             file: Optional[Files] = file_map.get(file_id)
 
             if file and file.calculated_privileges[current_user.id].readable:
@@ -366,13 +314,59 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             'total': elastic_result['total'],
             'query': ResultQuery(phrases=search_phrases),
             'results': results,
-            'synonyms': synonym_map,
-            'dropped_synonyms': dropped_synonyms,
             'dropped_folders': dropped_folders
         }))
 
 
+class SynonymSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(SynonymSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def get(self, params, pagination: Pagination):
+        search_term = params.get('term', None)
+
+        organisms = []
+        if len(params['organisms']):
+            organisms = params['organisms'].split(';')
+
+        types = []
+        if len(params['types']):
+            types = params['types'].split(';')
+
+        if search_term is None:
+            return jsonify(SynonymSearchResponseSchema().dump({
+                'data': [],
+            }))
+
+        page = pagination.page
+        limit = pagination.limit
+        offset = (page - 1) * limit
+
+        try:
+            search_dao = get_search_service_dao()
+            results = search_dao.get_synonyms(search_term, organisms, types, offset, limit)
+            count = search_dao.get_synonyms_count(search_term, organisms, types)
+        except Exception as e:
+            current_app.logger.error(
+                f'Failed to get synonym data for term: {search_term}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.CONTENT_SEARCH.value).to_dict()
+            )
+            raise ServerException(
+                title='Unexpected error during synonym search',
+                message='A system error occurred while searching for synonyms, we are ' +
+                        'working on a solution. Please try again later.'
+            )
+
+        return jsonify(SynonymSearchResponseSchema().dump({
+            'data': results,
+            'count': count
+        }))
+
+
 bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))
+bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'))
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])

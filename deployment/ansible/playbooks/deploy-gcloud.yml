@@ -10,6 +10,12 @@
       tags: ["docker"]
 
   tasks:
+    - name: Install fail2ban
+      apt:
+        update_cache: yes
+        pkg:
+          - fail2ban
+
     - name: Log into Docker Registry
       docker_login:
         registry_url: lifelike.azurecr.io
@@ -91,6 +97,7 @@
           MB_ELASTICSEARCH_USERNAME={{ MB_ELASTICSEARCH_USERNAME }}
           MB_ELASTICSEARCH_PASSWORD={{ MB_ELASTICSEARCH_PASSWORD }}
           MB_KIBANA_HOST={{ MB_KIBANA_HOST }}
+          SEND_GRID_EMAIL_API_KEY= {{ SEND_GRID_EMAIL_API_KEY }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"

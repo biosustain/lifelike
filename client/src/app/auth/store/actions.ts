@@ -3,22 +3,23 @@ import { createAction, props } from '@ngrx/store';
 import { AppUser, PrivateAppUser, Credential } from 'app/interfaces';
 import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
+
 export const checkTermsOfService = createAction(
-    '[Auth] Check Terms Of Serivce',
+    '[Auth] Check Terms Of Service',
     props<{credential: Credential}>(),
 );
 
-export const termsOfSerivceAgreeing = createAction(
-    '[Auth] Open dialog to Terms Of Serivce',
+export const termsOfServiceAgreeing = createAction(
+    '[Auth] Open dialog to Terms Of Service',
 );
 
 export const agreeTermsOfService = createAction(
-    '[Auth] Agree to Terms Of Serivce',
+    '[Auth] Agree to Terms Of Service',
     props<{ credential: Credential, timeStamp: string }>()
 );
 
 export const disagreeTermsOfService = createAction(
-    '[Auth] Disagree to Terms Of Serivce',
+    '[Auth] Disagree to Terms Of Service',
 );
 
 export const login = createAction(
@@ -55,5 +56,21 @@ export const loginReset = createAction(
     '[Auth] Login Reset'
 );
 
-
 export const logoutSuccess = createAction(LOGOUT_SUCCESS);
+
+export const failedPasswordUpdate = createAction(
+  '[Auth] Initial Password Update Failed'
+);
+
+export const successPasswordUpdate = createAction(
+  '[Auth] Initial Password Updated Successfully'
+);
+
+export const updatePassword = createAction(
+  '[Auth] Changing Initial Password',
+);
+
+export const userUpdated = createAction(
+    '[Auth] Updated user',
+    props<{user: PrivateAppUser}>(),
+);

@@ -1,12 +1,13 @@
 name: GCP Staging Deployment
 
 on:
+  workflow_dispatch:
   push:
     tags:
-      - "staging-gcp"
+      - staging
     branches:
       # only trigger when branches match refs/heads/staging/
-      - "staging-gcp/**"
+      - "staging/**"
 
 jobs:
   build:
