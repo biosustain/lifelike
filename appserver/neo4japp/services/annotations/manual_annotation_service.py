@@ -2,23 +2,30 @@ import itertools
 import uuid
 
 from datetime import datetime
+from flask import current_app
 from typing import List
 
-from neo4japp.constants import TIMEZONE
+from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
-from neo4japp.services.annotations.constants import (
-    EntityType,
-    ManualAnnotationType
-)
-from neo4japp.services.annotations.data_transfer_objects import PDFWord
-from neo4japp.services.annotations.initializer import get_entity_recognition
-from neo4japp.services.annotations.util import has_center_point
-from neo4japp.services.annotations.pipeline import parse_pdf
 from neo4japp.util import standardize_str
+from neo4japp.utils.logger import EventLog
+
+from .annotation_graph_service import AnnotationGraphService
+from .constants import (
+    EntityType,
+    ManualAnnotationType,
+    MAX_ENTITY_WORD_LENGTH,
+    MAX_GENE_WORD_LENGTH,
+    MAX_FOOD_WORD_LENGTH
+)
+from .data_transfer_objects import PDFWord
+from .initializer import get_annotation_tokenizer
+from .util import has_center_point
+
+from .util import parse_content
 
 
 class ManualAnnotationService:
@@ -80,21 +87,21 @@ class ManualAnnotationService:
             return False
 
         if annotate_all:
-            recognition = get_entity_recognition()
-            _, parsed = parse_pdf(file.id, False)
+            tokenizer = get_annotation_tokenizer()
+            _, parsed = parse_content(file_id=file.id, exclude_references=False)
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
 
             if custom_annotation['meta']['type'] == EntityType.GENE.value:
-                max_words = recognition.gene_max_words
+                max_words = MAX_GENE_WORD_LENGTH
             elif custom_annotation['meta']['type'] == EntityType.FOOD.value:
-                max_words = recognition.food_max_words
+                max_words = MAX_FOOD_WORD_LENGTH
             else:
-                max_words = recognition.entity_max_words
+                max_words = MAX_ENTITY_WORD_LENGTH
             matches = self.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
                 tokens_list=list(itertools.chain.from_iterable(
-                    [recognition.generate_tokens(
+                    [tokenizer.create(
                         parsed[idx:max_words + idx]) for idx, token in enumerate(parsed)]))
             )
 
@@ -119,11 +126,11 @@ class ManualAnnotationService:
                             'Please make sure the term is correct, ' +
                             'including correct spacing and no extra characters.',
                     additional_msgs=[
-                        f'We currently only allow up to {recognition.entity_max_words} word(s)'
+                        f'We currently only allow up to {MAX_ENTITY_WORD_LENGTH} word(s)'
                         ' in length for a term. In addition, we'
                         ' have specific word limits for some entity types:',
-                        f'Gene: Max {recognition.gene_max_words} word.',
-                        f'Food: Max {recognition.food_max_words} words.'],
+                        f'Gene: Max {MAX_GENE_WORD_LENGTH} word.',
+                        f'Food: Max {MAX_FOOD_WORD_LENGTH} words.'],
                     code=400)
         else:
             if not annotation_exists(annotation_to_add):
@@ -134,10 +141,11 @@ class ManualAnnotationService:
                     message='Annotation already exists.', code=400)
 
         if annotation_to_add['meta']['includeGlobally']:
-            self.add_to_global_list(
+            self.save_global(
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
-                file.content_id
+                file.content_id,
+                user
             )
 
         version = FileAnnotationsVersion()
@@ -204,10 +212,11 @@ class ManualAnnotationService:
         }
 
         if excluded_annotation['excludeGlobally']:
-            self.add_to_global_list(
+            self.save_global(
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
-                file.content_id
+                file.content_id,
+                user
             )
 
         version = FileAnnotationsVersion()
@@ -289,21 +298,161 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def add_to_global_list(self, annotation, annotation_type, file_id):
-        """ Adds inclusion or exclusion to a global_list table
-        Checks for duplicates and discards them
+    def save_global(self, annotation, annotation_type, file_id, user):
+        """Adds global inclusion to the KG, and global exclusion to postgres.
+
+        For the KG, if a global inclusion (seen as a synonym) matches to an
+        existing entity via entity_id, then a new synonym node is created,
+        and a relationship is added that connects that existing entity node
+        to the new synonym node.
+
+        If there is no match with an existing entity, then a new node is created
+        with the Lifelike domain/node label.
         """
-        if self._global_annotation_exists(annotation, annotation_type):
-            return
+        if annotation_type == ManualAnnotationType.INCLUSION.value:
+            try:
+                entity_type = annotation['meta']['type']
+                entity_id = annotation['meta']['id']
+                data_source = annotation['meta']['idType']
+                common_name = annotation['primaryName']
+                synonym = annotation['meta']['allText']
+                inclusion_date = annotation['inclusion_date']
+                hyperlink = annotation['meta']['idHyperlink']
+                is_case_insensitive = annotation['meta']['isCaseInsensitive']
+                user_full_name = f'{user.first_name} {user.last_name}'
+            except KeyError:
+                raise AnnotationError(
+                    title='Failed to Create Custom Annotation',
+                    message='Could not create global annotation inclusion/exclusion, '
+                            'the data is corrupted. Please try again.',
+                    code=500)
 
-        global_list_annotation = GlobalList(
-            annotation=annotation,
-            type=annotation_type,
-            file_id=file_id,
-        )
+            createval = {
+                'entity_type': entity_type,
+                'entity_id': entity_id,
+                'synonym': synonym.lower() if is_case_insensitive else synonym,
+                'inclusion_date': inclusion_date,
+                'user': user_full_name,
+                'data_source': data_source,
+                'hyperlink': hyperlink,
+                'common_name': common_name
+            }
 
-        db.session.add(global_list_annotation)
-        db.session.commit()
+            # NOTE:
+            # definition of `main node`: the node that contains the common/primary name
+            # e. g `Homo sapiens` is the common/primary name, while `human` is the synonym
+            check = self._global_annotation_exists_in_kg(createval)
+            # several possible scenarios
+            # 1. main node exists and synonym exists
+            # 2. main node exists and synonym does not exist
+            # we care whether the label exist so if it does not, then we can add it
+            # 3. main node exists and synonym exists and entity label/type does not exist
+            # 4. main node exists and synonym exists and entity label/type exists
+            # 5. main node does not exist
+
+            if check['node_exist'] and (not check['synonym_exist'] or not check['node_has_entity_label']):  # noqa
+                queries = {
+                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOTYPE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.CHEMICAL.value: self.graph.create_chemical_global_inclusion(),
+                    EntityType.COMPOUND.value: self.graph.create_compound_global_inclusion(),
+                    EntityType.GENE.value: self.graph.create_gene_global_inclusion(),
+                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion(),
+                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion()
+                }
+
+                query = queries.get(entity_type, '')
+                try:
+                    if query:
+                        self.graph.exec_write_query_with_params(query, createval)
+                    else:
+                        query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                        self.graph.exec_write_query_with_params(query, createval)
+                except BrokenPipeError:
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='The graph connection became stale while processing data, '
+                                'Please refresh the browser and try again.',
+                        code=500)
+                except Exception:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
+            elif not check['node_exist']:
+                try:
+                    query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                    self.graph.exec_write_query_with_params(query, createval)
+                except BrokenPipeError:
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='The graph connection became stale while processing data, '
+                                'Please refresh the browser and try again.',
+                        code=500)
+                except Exception:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
+        else:
+            if not self._global_annotation_exists(annotation, annotation_type):
+                # global exclusion
+                global_list_annotation = GlobalList(
+                    annotation=annotation,
+                    type=annotation_type,
+                    file_id=file_id,
+                )
+
+                try:
+                    db.session.add(global_list_annotation)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                    raise AnnotationError(
+                        title='Failed to Create Custom Annotation',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.',
+                        code=500)
+
+    def _global_annotation_exists_in_kg(self, values: dict):
+        queries = {
+            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),
+            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.PHENOTYPE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.CHEMICAL.value: self.graph.chemical_global_inclusion_exist(),
+            EntityType.COMPOUND.value: self.graph.compound_global_inclusion_exist(),
+            EntityType.GENE.value: self.graph.gene_global_inclusion_exist(),
+            EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist(),
+            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist()
+        }
+
+        # query can be empty string because some entity types
+        # do not exist in the normal domain/labels
+        query = queries.get(values['entity_type'], '')
+        result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+
+        if result['node_exist']:
+            return result
+        else:
+            query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
+            result = self.graph.exec_read_query_with_params(query, values)[0]
+
+        return result
 
     def _global_annotation_exists(self, annotation, annotation_type):
         global_annotations = GlobalList.query.filter_by(
