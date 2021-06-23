@@ -2,6 +2,7 @@ import uuid
 
 from datetime import datetime
 from flask import current_app
+from neo4j.exceptions import ServiceUnavailable
 from typing import List
 
 from neo4japp.constants import TIMEZONE, LogEventType
@@ -70,6 +71,14 @@ class ManualAnnotationService:
                 primary_name = custom_annotation['meta']['allText']
         except KeyError:
             primary_name = custom_annotation['meta']['allText']
+        except (BrokenPipeError, ServiceUnavailable):
+            raise
+        except Exception:
+            raise AnnotationError(
+                title='Failed to Create Custom Annotation',
+                message='A system error occurred while creating the annotation, '
+                        'we are working on a solution. Please try again later.',
+                code=500)
 
         annotation_to_add = {
             **custom_annotation,
@@ -370,7 +379,11 @@ class ManualAnnotationService:
             # 4. main node exists and synonym exists and entity label/type exists
             # 5. main node does not exist
 
-            if check['node_exist'] and (not check['synonym_exist'] or not check['node_has_entity_label']):  # noqa
+            # for Mesh, it is possible some nodes do not have the entity label
+            # because they're grouped under TopicalDescriptors
+            # so that query returns node_has_entity_label value to check for
+            # and add the label for the future
+            if check['node_exist'] and (not check['synonym_exist'] or check.get('node_has_entity_label', False)):  # noqa
                 queries = {
                     EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
                     EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
@@ -391,34 +404,24 @@ class ManualAnnotationService:
                     else:
                         query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
                         self.graph.exec_write_query_with_params(query, createval)
-                except (BrokenPipeError, Exception) as e:
+                except (BrokenPipeError, ServiceUnavailable):
+                    raise
+                except Exception:
                     current_app.logger.error(
                         f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
-                    errmsg = 'A system error occurred while creating the annotation, \
-                        we are working on a solution. Please try again later.'
-                    if isinstance(e, BrokenPipeError):
-                        errmsg = str(e)
-
-                    raise AnnotationError(
-                        title='Failed to Create Custom Annotation', message=errmsg, code=500)
             elif not check['node_exist']:
                 try:
                     query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
                     self.graph.exec_write_query_with_params(query, createval)
-                except (BrokenPipeError, Exception) as e:
+                except (BrokenPipeError, ServiceUnavailable):
+                    raise
+                except Exception:
                     current_app.logger.info(
                         f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
-                    errmsg = 'A system error occurred while creating the annotation, \
-                        we are working on a solution. Please try again later.'
-                    if isinstance(e, BrokenPipeError):
-                        errmsg = str(e)
-
-                    raise AnnotationError(
-                        title='Failed to Create Custom Annotation', message=errmsg, code=500)
         else:
             if not self._global_annotation_exists(annotation, inclusion_type):
                 # global exclusion
@@ -456,13 +459,29 @@ class ManualAnnotationService:
         # query can be empty string because some entity types
         # do not exist in the normal domain/labels
         query = queries.get(values['entity_type'], '')
-        result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+        try:
+            result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+        except (BrokenPipeError, ServiceUnavailable):
+            raise
+        except Exception:
+            current_app.logger.error(
+                f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
 
         if result['node_exist']:
             return result
         else:
-            query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
-            result = self.graph.exec_read_query_with_params(query, values)[0]
+            try:
+                query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
+                result = self.graph.exec_read_query_with_params(query, values)[0]
+            except (BrokenPipeError, ServiceUnavailable):
+                raise
+            except Exception:
+                current_app.logger.error(
+                    f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
 
         return result
 

@@ -1036,10 +1036,6 @@ class AnnotationService:
                 # synonym if blank
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
-            finally:
-                if anno.meta.id_type not in anno.meta.id and 'Lifelike' not in anno.meta.id:
-                    # update annotation id
-                    anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
 
         return annotations
 
