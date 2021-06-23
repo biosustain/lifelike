@@ -54,10 +54,10 @@ class ManualAnnotationService:
     def add_inclusions(self, file: Files, user: AppUser, custom_annotation, annotate_all):
         """Adds custom annotation to a given file.
 
-        :file file to add custom annotation to
-        :user user adding the custom annotation
-        :custom_annotation the custom annotation to create and add
-        :params annotate_all indicate whether to find all occurrences of the annotated term.
+        :params file               file to add custom annotation to
+        :params user               user adding the custom annotation
+        :params custom_annotation  the custom annotation to create and add
+        :params annotate_all       indicate whether to find all occurrences of the annotated term.
 
         Returns the added inclusions.
         """
