@@ -37,3 +37,6 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
   }
   return v;
 };
+
+export const isNumber = (v: any) => !isNaN(v) && typeof v !== 'boolean';
+export const isPositiveNumber = (v: any) => isNumber(v) || v > 0;

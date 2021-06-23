@@ -11,7 +11,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { uuidv4 } from '../../shared/utils';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { parseForRendering } from './utils';
+import { parseForRendering, isPositiveNumber } from './utils';
 import {
   fractionOfFixedNodeValue,
   inputCount,
@@ -141,7 +141,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   traceDetailsGraph;
 
-  excludedProperties = new Set(['source', 'target']);
+  excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
 
   selectedNodes;
   selectedLinks;
@@ -242,12 +242,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (this.excludedProperties.has(k)) {
         return o;
       }
-      if (!isNaN(v as number)) {
+      if (isPositiveNumber(v)) {
         o.push({
           description: k,
           preprocessing: linkSizeByProperty(k)
         });
-      } else if (Array.isArray(v) && v.length >= 2 && !isNaN(v[0]) && !isNaN(v[1])) {
+      } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
         o.push({
           description: k,
           preprocessing: linkSizeByArrayProperty(k)
@@ -263,7 +263,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (this.excludedProperties.has(k)) {
         return o;
       }
-      if (!isNaN(v as number)) {
+      if (isPositiveNumber(v)) {
         o.push({
           description: k,
           preprocessing: nodeValueByProperty(k)
