@@ -979,7 +979,7 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
 def mock_global_chemical_inclusion_annotation():
     inclusions = [
         {
-            'entity_id': '789456',
+            'entity_id': 'CHEBI:789456',
             'entity_name': 'fake-chemical-(12345)',
             'synonym': 'fake-chemical-(12345)',
             'data_source': 'CHEBI',
@@ -1001,7 +1001,7 @@ def mock_global_chemical_inclusion_annotation():
 def mock_global_compound_inclusion_annotation():
     inclusions = [
         {
-            'entity_id': '321357',
+            'entity_id': 'BIOCYC:321357',
             'entity_name': 'compound-(12345)',
             'synonym': 'compound-(12345)',
             'data_source': 'BIOCYC',
@@ -1063,7 +1063,7 @@ def mock_global_inclusion_normalized_already_in_lmdb():
 def mock_global_disease_inclusion_annotation():
     inclusions = [
         {
-            'entity_id': '852753',
+            'entity_id': 'MESH:852753',
             'entity_name': 'disease-(12345)',
             'synonym': 'disease-(12345)',
             'data_source': 'MESH',
@@ -1084,7 +1084,7 @@ def mock_global_disease_inclusion_annotation():
 def mock_global_phenomena_inclusion_annotation():
     inclusions = [
         {
-            'entity_id': '842605',
+            'entity_id': 'MESH:842605',
             'entity_name': 'fake-phenomena',
             'synonym': 'fake-phenomena',
             'data_source': 'MESH',

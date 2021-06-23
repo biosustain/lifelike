@@ -232,7 +232,7 @@ def test_protein_organism_escherichia_coli_pdf(
     keywords = {o.keyword: o.meta.id for o in annotations}
 
     assert 'YdhC' in keywords
-    assert keywords['YdhC'] == 'UNIPROT:P37597'
+    assert keywords['YdhC'] == 'P37597'
 
 
 def test_local_inclusion_affect_gene_organism_matching(
@@ -286,7 +286,7 @@ def test_local_inclusion_affect_gene_organism_matching(
         custom_annotations=inclusions)
 
     assert len(annotations) == 1
-    assert annotations[0].meta.id == 'NCBI:388962'
+    assert annotations[0].meta.id == '388962'
 
 
 def test_local_exclusion_affect_gene_organism_matching(
@@ -566,7 +566,7 @@ def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
     )
 
     assert annotations[0].keyword == 'il-7'
-    assert annotations[0].meta.id == 'NCBI:99999'
+    assert annotations[0].meta.id == '99999'
 
 
 def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
@@ -590,7 +590,7 @@ def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
     )
 
     assert annotations[1].keyword == 'EDEM3'
-    assert annotations[1].meta.id == 'NCBI:80267'
+    assert annotations[1].meta.id == '80267'
 
 
 def test_global_excluded_chemical_annotations(
@@ -917,7 +917,7 @@ def test_global_gene_inclusion_annotation(
 
     assert len(annotations) == 2
     assert annotations[0].keyword == 'gene-(12345)'
-    assert annotations[0].meta.id == 'NCBI Gene:59272'
+    assert annotations[0].meta.id == '59272'
 
 
 def test_global_disease_inclusion_annotation(
@@ -992,7 +992,7 @@ def test_global_phenotype_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'phenotype-(12345)'
-    assert annotations[0].meta.id == 'CUSTOM:FakePheno'
+    assert annotations[0].meta.id == 'FakePheno'
 
 
 def test_global_protein_inclusion_annotation(
@@ -1017,7 +1017,7 @@ def test_global_protein_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'protein-(12345)'
-    assert annotations[0].meta.id == 'UNIPROT:protein-(12345)'
+    assert annotations[0].meta.id == 'protein-(12345)'
 
 
 def test_global_species_inclusion_annotation(
@@ -1042,7 +1042,7 @@ def test_global_species_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
-    assert annotations[0].meta.id == 'NCBI Taxonomy:0088'
+    assert annotations[0].meta.id == '0088'
 
 
 def test_no_annotation_for_abbreviation(
