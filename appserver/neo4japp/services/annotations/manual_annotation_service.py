@@ -222,7 +222,7 @@ class ManualAnnotationService:
         except Exception:
             db.session.rollback()
             raise AnnotationError(
-                title='Failed to Create Custom Annotation',
+                title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',
                 code=500)
@@ -295,7 +295,7 @@ class ManualAnnotationService:
         except Exception:
             db.session.rollback()
             raise AnnotationError(
-                title='Failed to Create Custom Annotation',
+                title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',
                 code=500)
