@@ -407,64 +407,11 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         return words, phrases, wildcards
 
-    def get_synonym_map(
-        self,
-        words: List[str],
-        phrases: List[str],
-    ) -> Tuple[Dict[str, List[str]], Dict[str, List[str]]]:
-        terms = words + phrases
-
-        def get_synonyms_query(tx: Neo4jTx, terms: List[str]) -> List[Neo4jRecord]:
-            """
-            Attempts to get all synonyms for the entities matching each term in the `terms`
-            argument. We first find Synonyms matching each term. We then find all entities
-            with that synoynm, and find ALL OTHER synonyms of that entity.
-            """
-            return tx.run(
-                """
-                UNWIND $terms as search_term
-                OPTIONAL MATCH (synonym:Synonym {lowercase_name: toLower(search_term)})
-                CALL {
-                    WITH search_term, synonym
-                    OPTIONAL MATCH
-                        (synonym)<-[:HAS_SYNONYM]-(entity)-[:HAS_SYNONYM]->(other_synonym)
-                    WHERE NOT 'Protein' IN LABELS(entity) AND size(other_synonym.name) > 1
-                    RETURN other_synonym.name AS other_synonym
-                }
-                WITH search_term, other_synonym
-                ORDER BY size(other_synonym) DESC
-                RETURN
-                    search_term,
-                    collect(DISTINCT other_synonym) AS other_synonyms,
-                    COUNT(DISTINCT other_synonym) AS synonym_count
-                """,
-                terms=terms,
-            ).data()
-
-        results = self.graph.read_transaction(get_synonyms_query, terms)
-
-        # We need to limit the number of returned synonyms partly for performance, but particularly
-        # because elasticsearch has a hard cap on the number of clauses which can be present in a
-        # single Lucene BooleanQuery:
-        # (https://www.elastic.co/guide/en/elasticsearch/reference/current/search-settings.html).
-        # By default this limit is set to 1024.
-        returned_synonyms = {}
-        dropped_synonyms = {}
-        MAX_SYNONYMS_PER_ROW = 1023  # 1024 - the original term
-        for row in results:
-            returned_synonyms[row['search_term']] = row['other_synonyms'][:MAX_SYNONYMS_PER_ROW]
-            returned_synonym_count = len(returned_synonyms[row['search_term']])
-
-            if returned_synonym_count < len(row['other_synonyms']):
-                dropped_synonyms[row['search_term']] = row['other_synonyms'][MAX_SYNONYMS_PER_ROW:]
-        return returned_synonyms, dropped_synonyms
-
-    def generate_synonym_match_subclause(
+    def generate_multi_match_subclause(
         self,
         phrase: str,
         text_fields: List[str],
         text_field_boosts: Dict[str, int],
-        synonym_map: Dict[str, List[str]]
     ):
         return {
             'bool': {
@@ -479,7 +426,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                             ]
                         }
                     }
-                    for term in [phrase] + synonym_map.get(phrase, [])
+                    for term in [phrase]
                 ]
             }
         }
@@ -532,7 +479,6 @@ class ElasticService(ElasticConnection, GraphConnection):
         wildcards: List[str],
         text_fields: List[str],
         text_field_boosts: Dict[str, int],
-        synonym_map: Dict[str, List[str]]
     ):
         # Create single word match subclauses (this is the same as phrase matching below, with the
         # addition of exact text matching; This helps with words that contain punctuation)
@@ -540,11 +486,10 @@ class ElasticService(ElasticConnection, GraphConnection):
             {
                 'bool': {
                     'should': [
-                        self.generate_synonym_match_subclause(
+                        self.generate_multi_match_subclause(
                             word,
                             text_fields,
-                            text_field_boosts,
-                            synonym_map
+                            text_field_boosts
                         )
                     ] + ([
                         # Duplicates the get_text_match_objs above, if we ever need this pattern
@@ -565,11 +510,10 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         # Create phrase match subclauses
         phrase_operands = [
-            self.generate_synonym_match_subclause(
+            self.generate_multi_match_subclause(
                 phrase,
                 text_fields,
-                text_field_boosts,
-                synonym_map
+                text_field_boosts
             )
             for phrase in phrases
         ]
@@ -618,7 +562,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
-            use_synonyms: Dict[str, str],
+            fields: List[str],
             query_filter,
             highlight,
     ):
@@ -634,13 +578,9 @@ class ElasticService(ElasticConnection, GraphConnection):
                     }
                 },
                 'highlight': highlight
-            }, [], {}
+            }, []
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
-        synonym_map: Dict[str, List[str]] = dict()
-        dropped_synonyms: Dict[str, List[str]] = dict()
-        if use_synonyms:
-            synonym_map, dropped_synonyms = self.get_synonym_map(words, phrases)
 
         search_queries = []
         if len(text_fields) > 0:
@@ -651,7 +591,6 @@ class ElasticService(ElasticConnection, GraphConnection):
                     wildcards,
                     text_fields,
                     text_field_boosts,
-                    synonym_map,
                 )
             )
 
@@ -678,8 +617,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                     ],
                 }
             },
-            'highlight': highlight
-        }, phrases + words + wildcards, synonym_map, dropped_synonyms
+            'fields': fields,
+            'highlight': highlight,
+            # Set `_source` to False so we only return the properties specified in `fields`
+            '_source': False,
+        }, phrases + words + wildcards
 
     def search(
             self,
@@ -689,21 +631,21 @@ class ElasticService(ElasticConnection, GraphConnection):
             text_field_boosts: Dict[str, int],
             keyword_fields: List[str],
             keyword_field_boosts: Dict[str, int],
-            use_synonyms: Dict[str, str],
+            fields: List[str],
             offset: int = 0,
             limit: int = 10,
             query_filter=None,
             highlight=None
     ):
-        es_query, search_phrases, synonym_map, dropped_synonyms = self._build_query_clause(
+        es_query, search_phrases = self._build_query_clause(
             search_term=search_term,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
+            fields=fields,
             query_filter=query_filter,
             highlight=highlight,
-            use_synonyms=use_synonyms,
         )
 
         try:
@@ -723,5 +665,5 @@ class ElasticService(ElasticConnection, GraphConnection):
             )
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response, search_phrases, synonym_map, dropped_synonyms
+        return es_response, search_phrases
     # End search methods

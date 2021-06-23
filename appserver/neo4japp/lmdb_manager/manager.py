@@ -15,7 +15,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 
+logging.basicConfig()
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 logging.getLogger('azure').setLevel(logging.WARNING)
 
 
@@ -166,7 +168,6 @@ class LMDBFile:
     category: str
     version: str
     data_mdb_path: str
-    lock_mdb_path: str
 
 
 Base: DeclarativeMeta = declarative_base()
@@ -245,8 +246,7 @@ class LMDBManager:
         return LMDBFile(
             lmdb_category,
             version,
-            path_fn(lmdb_category, version, 'data.mdb'),
-            path_fn(lmdb_category, version, 'lock.mdb'))
+            path_fn(lmdb_category, version, 'data.mdb'))
 
     def generate_paths(self) -> List[LMDBFile]:
         """ Generates paths for all categories from the config """
@@ -259,10 +259,13 @@ class LMDBManager:
             data_mdb_path = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
             data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, hashlib.md5)
             try:
+                self.cloud_provider.create_remote_dir(
+                    'lmdb', os.path.dirname(lmdb_file.data_mdb_path))
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
             except RecordNotFound:
-                pass
+                log.debug(
+                    f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}')
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:
                     upload_file = False
@@ -270,11 +273,8 @@ class LMDBManager:
                 if upload_file:
                     log.debug(f'Uploading {lmdb_file.category}...')
                     src_data_mdb = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
-                    src_lock_mdb = os.path.join(source_dir, lmdb_file.category, 'lock.mdb')
                     self.cloud_provider.upload(
                         self.storage_object, lmdb_file.data_mdb_path, src_data_mdb)
-                    self.cloud_provider.upload(
-                        self.storage_object, lmdb_file.lock_mdb_path, src_lock_mdb)
                 else:
                     log.debug(f'{lmdb_file.category} already up to date. Skipping upload...')
 
@@ -285,11 +285,6 @@ class LMDBManager:
                 self.storage_object,
                 lmdb_file.data_mdb_path,
                 f'{save_dir}/{lmdb_file.category}/data.mdb'
-            )
-            self.cloud_provider.download(
-                self.storage_object,
-                lmdb_file.lock_mdb_path,
-                f'{save_dir}/{lmdb_file.category}/lock.mdb'
             )
 
     def download(self, remote_path, save_path):
