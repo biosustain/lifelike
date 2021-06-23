@@ -14,7 +14,7 @@ import {
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { colorByTraceEnding } from '../algorithms';
+import { colorByTraceEnding } from '../algorithms/algorithms';
 
 @Component({
   selector: 'app-sankey',
@@ -148,6 +148,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   zoom;
   dragging = false;
 
+  @Input() layoutAdjustments = () => {};
+
   getSelectedTraces(selection) {
     const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
     const nodesLinks = [...nodes].reduce(
@@ -209,6 +211,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     return new Promise(resolve => {
         // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
         const a = this.sankey(data);
+        this.layoutAdjustments(a);
         resolve(a);
       }
     );
@@ -254,6 +257,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   pathMouseOut(element, _data) {
     this.unhighlightLinks();
   }
+
 
   selectTraces(traces: Set<object>) {
     // tslint:disable-next-line:no-unused-expression

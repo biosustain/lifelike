@@ -43,7 +43,7 @@
                         </div>
                         <div ngbDropdown class="btn-group d-inline-block" title="Link size">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedLinkValueAccessor ? selectedLinkValueAccessor.description : 'Select Value Accessor' }}
+                                {{ selectedLinkValueAccessor?.description !== 'none' ? selectedLinkValueAccessor.description : 'Select Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
                                 <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
@@ -61,7 +61,7 @@
                         </label>
                         <div ngbDropdown class="btn-group d-inline-block" title="Node fixed size">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedNodeValueAccessor ? selectedNodeValueAccessor.description :
+                                {{ selectedNodeValueAccessor?.description !== 'none' ? selectedNodeValueAccessor.description :
                                 'Select Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
@@ -70,6 +70,16 @@
                                 <div class="dropdown-divider"></div>
                                 <button ngbDropdownItem (click)="selectNodeValueAccessor(nodeValueAccessor)"
                                         *ngFor="let nodeValueAccessor of nodeValueAccessors">{{nodeValueAccessor.description}}</button>
+                            </div>
+                        </div>
+                        <div ngbDropdown class="btn-group d-inline-block" title="Node fixed size">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                {{ selectedPrescaler !== prescalers.default ? selectedPrescaler.name :
+                                'Select prescaler' }}
+                            </button>
+                            <div ngbDropdownMenu>
+                                <button ngbDropdownItem (click)="selectPrescaler(prescaler)"
+                                        *ngFor="let prescaler of prescalers">{{prescaler.name}}</button>
                             </div>
                         </div>
                     </div>
@@ -251,6 +261,7 @@
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
                             {{ parseProperty(node.value) }}
+                            {{ parseProperty(node.fixedValue) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
