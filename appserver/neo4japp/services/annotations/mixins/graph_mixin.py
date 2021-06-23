@@ -161,7 +161,7 @@ class GraphMixin(GraphConnection):
     def chemical_global_inclusion_exist(self):
         return """
         OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
-        WHERE n.id = $entity_id
+        WHERE n.id = 'CHEBI:' + $entity_id
         RETURN n IS NOT NULL AS node_exist,
             $synonym IN collect(s.name) AS synonym_exist
         """
@@ -205,7 +205,7 @@ class GraphMixin(GraphConnection):
         query_label = self.node_labels[entity_type]
         return f"""
         OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
-        WHERE n.external_id = $entity_id AND n.data_source = $data_source
+        WHERE n.external_id = 'Lifelike:' + $entity_id AND n.data_source = $data_source
         RETURN n IS NOT NULL AS node_exist,
             $synonym IN collect(s.name) AS synonym_exist
         """

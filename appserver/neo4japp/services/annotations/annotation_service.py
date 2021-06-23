@@ -1037,19 +1037,9 @@ class AnnotationService:
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
             finally:
-                # need to uppercase this because the data in the KG
-                # is not consistent with the annotations
-                # the data source is used to prepend to the id
-                # in the KG, it could be ChEBI
-                # but the id could be CHEBI:xxxx
-                #
-                # will probably need a data conversion in the KG
-                # to be consistent, otherwise mismatch between
-                # annotation and KG
-                data_source = anno.meta.id_type.upper()
-                if data_source not in anno.meta.id and 'Lifelike' not in anno.meta.id:
+                if anno.meta.id_type not in anno.meta.id and 'Lifelike' not in anno.meta.id:
                     # update annotation id
-                    anno.meta.id = f'{data_source}:{anno.meta.id}'
+                    anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
 
         return annotations
 
