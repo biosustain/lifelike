@@ -38,7 +38,7 @@ export function find(nodeById, id) {
   if (!node) {
     throw new Error('missing: ' + id);
   }
-  return node as Node;
+  return node as SankeyNode;
 }
 
 export function defaultId(d, _ = null, __ = null) {
@@ -129,14 +129,14 @@ function computeNodeValues({nodes}: SankeyData) {
 
 export function computeNodeDepths({nodes}: SankeyData) {
   const n = nodes.length;
-  let current = new Set(nodes);
-  let next = new Set<Node>();
+  let current = new Set<SankeyNode>(nodes);
+  let next = new Set<SankeyNode>();
   let x = 0;
   while (current.size) {
     for (const node of current) {
       node.depth = x;
       for (const {target} of node.sourceLinks) {
-        next.add(target as Node);
+        next.add(target as SankeyNode);
       }
     }
     if (++x > n) {
@@ -150,14 +150,14 @@ export function computeNodeDepths({nodes}: SankeyData) {
 function computeNodeHeights({nodes}: SankeyData) {
   const n = nodes.length;
   let current = new Set(nodes);
-  let next = new Set<Node>();
+  let next = new Set<SankeyNode>();
   let x = 0;
   while (current.size) {
     for (const node of current) {
       // noinspection JSSuspiciousNameCombination
       node.height = x;
       for (const {source} of node.targetLinks) {
-        next.add(source as Node);
+        next.add(source as SankeyNode);
       }
     }
     if (++x > n) {
@@ -281,7 +281,7 @@ function relaxRightToLeft(columns, alpha, beta) {
   }
 }
 
-function resolveCollisions(nodes: Array<Node>, alpha) {
+function resolveCollisions(nodes: Array<SankeyNode>, alpha) {
   const i = nodes.length >> 1;
   const subject = nodes[i];
   resolveCollisionsBottomToTop(nodes, subject.y0 - py, i - 1, alpha);

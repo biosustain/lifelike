@@ -33,8 +33,8 @@ export function identifyCircles(graph: SankeyData, id = defaultId, sortNodes = n
     // Building adjacency graph
     const adjList = [];
     graph.links.forEach(link => {
-      const source = (link.source as Node).index;
-      const target = (link.target as Node).index;
+      const source = (link.source as SankeyNode).index;
+      const target = (link.target as SankeyNode).index;
       if (!adjList[source]) {
         adjList[source] = [];
       }
@@ -64,8 +64,8 @@ export function identifyCircles(graph: SankeyData, id = defaultId, sortNodes = n
     }
 
     graph.links.forEach(link => {
-      const target = (link.target as Node).index;
-      const source = (link.source as Node).index;
+      const target = (link.target as SankeyNode).index;
+      const source = (link.source as SankeyNode).index;
       // If self-linking or a back-edge
       if (target === source || (circularLinks[source] && circularLinks[source][target])) {
         link.circular = true;

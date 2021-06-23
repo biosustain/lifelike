@@ -1,8 +1,8 @@
-interface Node {
+interface SankeyNode {
   id?: number;
   index?: number;
-  sourceLinks?: Array<Link>;
-  targetLinks?: Array<Link>;
+  sourceLinks?: Array<SankeyLink>;
+  targetLinks?: Array<SankeyLink>;
   y0?: number;
   y1?: number;
   x0?: number;
@@ -17,10 +17,10 @@ interface Node {
   _selected?: boolean;
 }
 
-interface Link {
+interface SankeyLink {
   index?: number;
-  source?: Node | string | number;
-  target?: Node | string | number;
+  source?: SankeyNode | string | number;
+  target?: SankeyNode | string | number;
   width?: number;
   y0?: number;
   y1?: number;
@@ -31,6 +31,6 @@ interface Link {
 }
 
 interface SankeyData {
-  nodes?: Array<Node>;
-  links?: Array<Link>;
+  nodes?: Array<SankeyNode>;
+  links?: Array<SankeyLink>;
 }

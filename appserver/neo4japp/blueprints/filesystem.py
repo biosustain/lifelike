@@ -6,7 +6,6 @@ import typing
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
-from io import BufferedIOBase
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 
 from deepdiff import DeepDiff
