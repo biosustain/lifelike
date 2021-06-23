@@ -17,11 +17,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   @Input() set params(params: ContentSearchOptions) {
     this.form.setValue({
       ...this.form.value,
-      q: [
-        params.q,
-        params.phrase ? `"${params.phrase}"` : '',
-        params.wildcards ? params.wildcards : ''
-      ].join(' ').trim(),
+      q: params.q,
       // Advanced Params
       types: params.types ? params.types : [],
       projects: params.projects ? params.projects : [],
@@ -67,7 +63,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   }
 
   dismiss() {
-    this.modal.dismiss();
+    this.modal.dismiss(this.form.value);
   }
 
   close() {

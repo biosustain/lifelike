@@ -3,9 +3,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { OrganismAutocomplete } from 'app/interfaces';
 
+import { KG_VIZ_DOMAINS, KG_VIZ_FILTER_TYPES } from 'app/shared/constants';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+
 import { GraphSearchParameters } from '../graph-search';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-graph-search-form',
@@ -14,17 +16,8 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 export class GraphSearchFormComponent {
   @Output() search = new EventEmitter<GraphSearchParameters>();
 
-  domainChoices: string[] = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
-  entityChoices: string[] = [
-    'Biological Process',
-    'Cellular Component',
-    'Chemical',
-    'Disease',
-    'Gene',
-    'Molecular Function',
-    'Protein',
-    'Taxonomy',
-  ];
+  domainChoices: string[] = KG_VIZ_DOMAINS;
+  entityChoices: string[] = KG_VIZ_FILTER_TYPES;
   organismChoice: string;
 
   form = new FormGroup({
