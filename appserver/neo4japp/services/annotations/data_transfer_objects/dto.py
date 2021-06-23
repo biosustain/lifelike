@@ -1,15 +1,8 @@
 import attr
 
-from typing import List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
-
-
-@attr.s(frozen=True)
-class AnnotationRequest(CamelDictMixin):
-    annotation_method: str = attr.ib()
-    file_ids: List[str] = attr.ib(default=attr.Factory(list))
-    organism: dict = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=False)
@@ -17,12 +10,6 @@ class Inclusion():
     entities: List[dict] = attr.ib()
     entity_id_type: str = attr.ib()
     entity_id_hyperlink: str = attr.ib()
-
-
-@attr.s(frozen=False)
-class PDFBase():
-    def to_dict(self):
-        return attr.asdict(self)
 
 
 @attr.s(frozen=True)
@@ -140,6 +127,43 @@ class RecognizedEntities():
     # non LMDB entity types
     recognized_companies: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     recognized_entities: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+
+
+@attr.s(frozen=True)
+class GlobalExclusions():
+    excluded_anatomy: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_chemicals: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_compounds: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_diseases: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_foods: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_genes: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_phenomenas: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_phenotypes: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_proteins: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_species: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_genes_case_insensitive: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_proteins_case_insensitive: Set[str] = attr.ib(default=attr.Factory(set))
+    # non LMDB entity types
+    excluded_companies: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_entities: Set[str] = attr.ib(default=attr.Factory(set))
+
+
+@attr.s(frozen=True)
+class GlobalInclusions():
+    included_anatomy: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_chemicals: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_compounds: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_diseases: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_foods: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_genes: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_phenomenas: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_phenotypes: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_proteins: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_species: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_local_species: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    # non LMDB entity types
+    included_companies: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_entities: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)

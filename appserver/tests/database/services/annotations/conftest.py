@@ -5,19 +5,14 @@ import pytest
 from os import path, remove, walk
 
 from neo4japp.database import DBConnection, GraphConnection
-from neo4japp.models import FileContent, GlobalList
 from neo4japp.services.annotations import (
     AnnotationService,
     AnnotationDBService,
     AnnotationGraphService,
-    EntityRecognitionService,
     LMDBService,
     ManualAnnotationService
 )
 from neo4japp.services.annotations.constants import (
-    DatabaseType,
-    EntityType,
-    ManualAnnotationType,
     OrganismCategory,
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
@@ -28,7 +23,20 @@ from neo4japp.services.annotations.constants import (
     PHENOMENAS_MESH_LMDB,
     PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
-    SPECIES_NCBI_LMDB,
+    SPECIES_NCBI_LMDB
+)
+from neo4japp.services.annotations.data_transfer_objects import Inclusion
+from neo4japp.services.annotations.lmdb_util import (
+    create_ner_type_anatomy,
+    create_ner_type_chemical,
+    create_ner_type_compound,
+    create_ner_type_disease,
+    create_ner_type_food,
+    create_ner_type_gene,
+    create_ner_type_phenomena,
+    create_ner_type_phenotype,
+    create_ner_type_protein,
+    create_ner_type_species
 )
 from neo4japp.util import normalize_str
 
@@ -44,8 +52,26 @@ def teardown():
                 remove(path.join(parent, fn))
 
 
+def create_empty_lmdb(path_to_folder: str, db_name: str):
+    map_size = 1099511627776
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    env.close()
+
+
+def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
+    map_size = 1099511627776
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    with env.begin(db=db, write=True) as transaction:
+        for entity in entity_objs:
+            transaction.put(
+                normalize_str(entity['synonym']).encode('utf-8'),
+                json.dumps(entity).encode('utf-8'))
+
+
 @pytest.fixture(scope='function')
-def graph_service(graph):
+def get_graph_service(graph):
     class MockGraphConnection(GraphConnection):
         def __init__(self):
             super().__init__()
@@ -59,7 +85,7 @@ def graph_service(graph):
 
 
 @pytest.fixture(scope='function')
-def db_service(session):
+def get_db_service(session):
     class MockDBConnection(DBConnection):
         def __init__(self):
             super().__init__()
@@ -73,32 +99,21 @@ def db_service(session):
 
 
 @pytest.fixture(scope='function')
-def get_annotation_service(db_service, graph_service, lmdb_service, request):
+def get_annotation_service(get_db_service, get_graph_service, request):
     request.addfinalizer(teardown)
 
-    return AnnotationService(db=db_service, graph=graph_service)
+    return AnnotationService(db=get_db_service, graph=get_graph_service)
 
 
 @pytest.fixture(scope='function')
-def get_manual_annotation_service(graph_service, lmdb_service, request):
-    request.addfinalizer(teardown)
-
-    return ManualAnnotationService(graph=graph_service)
+def get_manual_annotation_service(get_graph_service):
+    return ManualAnnotationService(graph=get_graph_service)
 
 
 @pytest.fixture(scope='function')
-def get_entity_service(db_service, graph_service, lmdb_service, request):
+def get_lmdb_service(request):
     request.addfinalizer(teardown)
 
-    return EntityRecognitionService(
-        db=db_service,
-        graph=graph_service,
-        lmdb=lmdb_service
-    )
-
-
-@pytest.fixture(scope='function')
-def lmdb_service():
     configs = [
         (ANATOMY_MESH_LMDB, 'anatomy'),
         (CHEMICALS_CHEBI_LMDB, 'chemicals'),
@@ -124,404 +139,345 @@ def lmdb_service():
         **{db_name: path for db_name, path in configs})
 
 
-# Start LMDB Data Helpers
-def lmdb_anatomy_factory(
-    anatomy_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'anatomy_id': anatomy_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
+@pytest.fixture(scope='function')
+def lmdb_setup_test_local_inclusion_affect_gene_organism_matching(app):
+    bola3 = create_ner_type_gene(name='BOLA3', synonym='BOLA3')
 
-
-def lmdb_chemical_factory(
-    chemical_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'chemical_id': chemical_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_compound_factory(
-    compound_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'compound_id': compound_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_disease_factory(
-    disease_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'disease_id': disease_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_food_factory(
-    food_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'food_id': food_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_gene_factory(
-    gene_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-    category: str,
-):
-    return {
-        'gene_id': gene_id,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-        'category': category,
-    }
-
-
-def lmdb_phenomena_factory(
-    phenomena_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'phenomena_id': name,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_phenotype_factory(
-    phenotype_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'phenotype_id': name,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_protein_factory(
-    protein_id: str,
-    id_type: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        # changed protein_id to protein_name for now (JIRA LL-671)
-        # will eventually change back to protein_id
-        'protein_id': name,
-        'id_type': id_type,
-        'name': name,
-        'synonym': synonym,
-    }
-
-
-def lmdb_species_factory(
-    tax_id: str,
-    id_type: str,
-    category: str,
-    name: str,
-    synonym: str,
-):
-    return {
-        'tax_id': tax_id,
-        'id_type': id_type,
-        'category': category,
-        'name': name,
-        'synonym': synonym,
-    }
-# End LMDB Data Helpers
-
-
-def create_empty_lmdb(path_to_folder: str, db_name: str):
-    map_size = 1099511627776
-    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
-    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
-    env.close()
-
-
-def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
-    map_size = 1099511627776
-    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
-    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
-    with env.begin(db=db, write=True) as transaction:
-        for entity in entity_objs:
-            transaction.put(
-                normalize_str(entity['synonym']).encode('utf-8'),
-                json.dumps(entity).encode('utf-8'))
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', [bola3]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
 
 @pytest.fixture(scope='function')
-def default_lmdb_setup(app, request):
-    # Create gene data
-    bola3 = lmdb_gene_factory(
-        gene_id='388962',
-        id_type=DatabaseType.NCBI.value,
-        name='BOLA3',
-        synonym='BOLA3',
+def lmdb_setup_test_gene_vs_protein(app):
+    hyp27_gene = create_ner_type_gene(name='hyp27', synonym='hyp27')
+    serpina1_gene1 = create_ner_type_gene(name='SERPINA1', synonym='SERPINA1')
+    serpina1_gene2 = create_ner_type_gene(name='serpina1', synonym='serpina1')
+
+    hyp27_protein = create_ner_type_protein(name='Hyp27', synonym='Hyp27')
+    serpina1_protein = create_ner_type_protein(name='Serpin A1', synonym='Serpin A1')
+
+    human = create_ner_type_species(
+        id_='9606',
         category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    ampk = lmdb_gene_factory(
-        gene_id='5564',
-        id_type=DatabaseType.NCBI.value,
-        name='PRKAB1',
-        synonym='AMPK',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    hyp27_gene = lmdb_gene_factory(
-        gene_id='2846957',
-        id_type=DatabaseType.NCBI.value,
-        name='hyp27',
-        synonym='hyp27',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    serpina1_gene = lmdb_gene_factory(
-        gene_id='5265',
-        id_type=DatabaseType.NCBI.value,
-        name='SERPINA1',
-        synonym='SERPINA1',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    serpina1_gene2 = lmdb_gene_factory(
-        gene_id='322701',
-        id_type=DatabaseType.NCBI.value,
-        name='serpina1',
-        synonym='serpina1',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create phenotype data
-    whey_protein = lmdb_phenotype_factory(
-        phenotype_id='MESH:D000067816',
-        id_type=DatabaseType.CUSTOM.value,
-        name='Whey Proteins',
-        synonym='Whey Proteins',
-    )
-
-    # Create protein data
-    hyp27_protein = lmdb_protein_factory(
-        protein_id='Y1954_CLOPE',
-        id_type=DatabaseType.UNIPROT.value,
-        name='Hyp27',
-        synonym='Hyp27',
-    )
-
-    wasabi = lmdb_protein_factory(
-        protein_id='KKX1U_UROMN',
-        id_type=DatabaseType.UNIPROT.value,
-        name='Wasabi receptor toxin',
-        synonym='Wasabi receptor toxin',
-    )
-    ns2a = lmdb_protein_factory(
-        protein_id='NS2A_CVBM',
-        id_type=DatabaseType.UNIPROT.value,
-        name='ns2a',
-        synonym='ns2a',
-    )
-
-    NS2A = lmdb_protein_factory(
-        protein_id='POLG_ZIKVK',
-        id_type=DatabaseType.UNIPROT.value,
-        name='NS2A',
-        synonym='NS2A',
-    )
-
-    serpina1_protein = lmdb_protein_factory(
-        protein_id='A1AT_PONAB',
-        id_type=DatabaseType.UNIPROT.value,
-        name='Serpin A1',
-        synonym='Serpin A1',
-    )
-
-    # Create species data
-    human = lmdb_species_factory(
-        tax_id='9606',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='human',
         synonym='human',
     )
 
-    homosapiens = lmdb_species_factory(
-        tax_id='9606',
+    moni_roreri = create_ner_type_species(
+        id_='221103',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
-        name='Homo Sapiens',
-        synonym='Homo Sapiens',
-    )
-
-    rat = lmdb_species_factory(
-        tax_id='10114',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
-        name='rat',
-        synonym='rat',
-    )
-
-    moniliophthora_roreri = lmdb_species_factory(
-        tax_id='221103',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Moniliophthora roreri',
         synonym='Moniliophthora roreri',
     )
 
-    # Create chemical data
-    arginine = lmdb_chemical_factory(
-        chemical_id='CHEBI:29952',
-        id_type=DatabaseType.CHEBI.value,
-        name='L-arginine residue',
-        synonym='Arg',
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', [hyp27_gene, serpina1_gene1, serpina1_gene2]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
+        (SPECIES_NCBI_LMDB, 'species', [human, moni_roreri]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_chemical_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
     )
 
-    lead = lmdb_chemical_factory(
-        chemical_id='CHEBI:Lead',
-        id_type=DatabaseType.CHEBI.value,
-        name='Lead',
-        synonym='Lead',
-    )
-
-    hypofluorite = lmdb_chemical_factory(
-        chemical_id='CHEBI:30244',
-        id_type=DatabaseType.CHEBI.value,
+    hypofluorite = create_ner_type_chemical(
+        id_='CHEBI:30244',
         name='hypofluorite',
-        synonym='FO(-)',
+        synonym='Hypofluorite',
     )
 
-    histidine = lmdb_chemical_factory(
-        chemical_id='CHEBI:29979',
-        id_type=DatabaseType.CHEBI.value,
-        name='L-histidine residue',
-        synonym='H',
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [hypofluorite]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_compound_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
     )
 
-    adenosine = lmdb_chemical_factory(
-        chemical_id='CHEBI:16335',
-        id_type=DatabaseType.CHEBI.value,
-        name='adenosine',
-        synonym='adenosine',
-    )
-
-    adenosine2 = lmdb_compound_factory(
-        compound_id='ADENOSINE',
-        id_type=DatabaseType.BIOCYC.value,
-        name='adenosine',
-        synonym='adenosine',
-    )
-
-    leadcp = lmdb_compound_factory(
-        compound_id='LEAD',
-        id_type=DatabaseType.BIOCYC.value,
-        name='Lead',
-        synonym='Lead',
-    )
-
-    guanosine = lmdb_compound_factory(
-        compound_id='GUANOSINE',
-        id_type=DatabaseType.BIOCYC.value,
+    guanosine = create_ner_type_compound(
+        id_='GUANOSINE',
         name='guanosine',
         synonym='guanosine',
     )
 
-    # Create disease data
-    cold_sore = lmdb_disease_factory(
-        disease_id='MESH:D006560',
-        id_type=DatabaseType.MESH.value,
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [guanosine]),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_disease_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    cold_sore = create_ner_type_disease(
+        id_='MESH:D006560',
         name='cold sore',
         synonym='cold sore',
     )
 
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine, lead]),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine, leadcp]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (FOODS_MESH_LMDB, 'foods', []),
-        (GENES_NCBI_LMDB, 'genes', [ampk, bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
-        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [whey_protein]),
-        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
-        (SPECIES_NCBI_LMDB, 'species', [homosapiens, human, moniliophthora_roreri, rat]),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_gene_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    bola3 = create_ner_type_gene(name='BOLA3', synonym='BOLA3')
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', [bola3]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
 
 @pytest.fixture(scope='function')
-def abbreviation_lmdb_setup(app, request):
-    pathway = lmdb_phenotype_factory(
-        phenotype_id='MESH:D010427',
-        id_type=DatabaseType.MESH.value,
+def lmdb_setup_test_global_excluded_phenotype_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    whey_protein = create_ner_type_phenotype(
+        id_='MESH:D000067816',
+        name='Whey Proteins',
+        synonym='Whey Proteins',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [whey_protein]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_protein_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    wasabi = create_ner_type_protein(
+        name='Wasabi receptor toxin',
+        synonym='Wasabi receptor toxin',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [wasabi]),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_excluded_species_annotations(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    human = create_ner_type_species(
+        id_='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='human',
+        synonym='human',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [human, rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_exclusions_does_not_interfere_with_other_entities(app):
+    rat = create_ner_type_species(
+        id_='10114',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    adenosine = create_ner_type_chemical(
+        id_='CHEBI:16335',
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    adenosine2 = create_ner_type_compound(
+        id_='ADENOSINE',
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2]),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_global_gene_inclusion_annotation(app):
+    human = create_ner_type_species(
+        id_='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        name='human',
+        synonym='human',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [human]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
+@pytest.fixture(scope='function')
+def lmdb_setup_test_no_annotation_for_abbreviation(app):
+    pathway = create_ner_type_phenotype(
+        id_='MESH:D010427',
         name='Pentose Phosphate Pathway',
         synonym='Pentose Phosphate Pathway',
     )
 
-    hypertension = lmdb_disease_factory(
-        disease_id='MESH:D000081029',
-        id_type=DatabaseType.MESH.value,
+    hypertension = create_ner_type_disease(
+        id_='MESH:D000081029',
         name='Pulmonary Arterial Hypertension',
         synonym='Pulmonary Arterial Hypertension',
     )
 
-    ppp = lmdb_gene_factory(
-        gene_id='101099627',
-        id_type=DatabaseType.NCBI.value,
-        name='PPP',
-        synonym='PPP',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    pah = lmdb_gene_factory(
-        gene_id='245623',
-        id_type=DatabaseType.NCBI.value,
-        name='PAH',
-        synonym='PAH',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+    ppp = create_ner_type_gene(name='PPP', synonym='PPP')
+    pah = create_ner_type_gene(name='PAH', synonym='PAH')
 
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
@@ -537,30 +493,16 @@ def abbreviation_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def global_inclusion_normalized_already_in_lmdb_setup(app, request):
-    il8_gene = lmdb_gene_factory(
-        gene_id='gene-IL8',
-        id_type=DatabaseType.NCBI.value,
-        name='CXCL8',
-        synonym='IL8',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_global_inclusion_normalized_already_in_lmdb(app):
+    il8_gene = create_ner_type_gene(name='CXCL8', synonym='IL8')
 
-    il8_protein = lmdb_protein_factory(
-        protein_id='protein-IL8',
-        id_type=DatabaseType.UNIPROT.value,
-        name='CXCL8',
-        synonym='IL8',
-    )
+    il8_protein = create_ner_type_protein(name='CXCL8', synonym='IL8')
 
-    homosapiens = lmdb_species_factory(
-        tax_id='9606',
+    homosapiens = create_ner_type_species(
+        id_='9606',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Homo Sapiens',
         synonym='Human',
     )
@@ -579,21 +521,17 @@ def global_inclusion_normalized_already_in_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def food_lmdb_setup(app, request):
-    sweetener = lmdb_food_factory(
-        food_id='MESH:D013549',
-        id_type=DatabaseType.MESH.value,
+def lmdb_setup_test_can_find_food_entities(app):
+    sweetener = create_ner_type_food(
+        id_='MESH:D013549',
         name='Sweetening Agents',
         synonym='Artificial Sweeteners',
     )
 
-    bacon = lmdb_food_factory(
-        food_id='MESH:D000080305',
-        id_type=DatabaseType.MESH.value,
+    bacon = create_ner_type_food(
+        id_='MESH:D000080305',
         name='Pork Meat',
         synonym='Bacon',
     )
@@ -612,21 +550,17 @@ def food_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def anatomy_lmdb_setup(app, request):
-    filamin = lmdb_anatomy_factory(
-        anatomy_id='MESH:D064448',
-        id_type=DatabaseType.MESH.value,
+def lmdb_setup_test_can_find_anatomy_entities(app):
+    filamin = create_ner_type_anatomy(
+        id_='MESH:D064448',
         name='Filamins',
         synonym='280 kDa Actin Binding Protein',
     )
 
-    claws = lmdb_anatomy_factory(
-        anatomy_id='MESH:D006724',
-        id_type=DatabaseType.MESH.value,
+    claws = create_ner_type_anatomy(
+        id_='MESH:D006724',
         name='Hoof and Claw',
         synonym='Claws',
     )
@@ -645,86 +579,20 @@ def anatomy_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def bola_human_monkey_gene(app, request):
-    # Create gene data
-    bola3 = lmdb_gene_factory(
-        gene_id='388962',
-        id_type=DatabaseType.NCBI.value,
-        name='BOLA3',
-        synonym='BOLA3',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_assume_human_gene_after_finding_virus(app):
+    ace2 = create_ner_type_gene(name='ACE2', synonym='ACE2',)
 
-    bola3_monkey = lmdb_gene_factory(
-        gene_id='101099627',
-        id_type=DatabaseType.NCBI.value,
-        name='BOLA3',
-        synonym='BOLA3',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create species data
-    human = lmdb_species_factory(
-        tax_id='9606',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
-        name='Homo sapiens',
-        synonym='Homo sapiens',
-    )
-
-    monkey = lmdb_species_factory(
-        tax_id='37293',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
-        name='Aotus nancymai',
-        synonym='Aotus nancymai',
-    )
-
-    entities = [
-        (ANATOMY_MESH_LMDB, 'anatomy', []),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
-        (DISEASES_MESH_LMDB, 'diseases', []),
-        (FOODS_MESH_LMDB, 'foods', []),
-        (GENES_NCBI_LMDB, 'genes', [bola3, bola3_monkey]),
-        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
-        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
-        (SPECIES_NCBI_LMDB, 'species', [human, monkey]),
-    ]
-    for db_name, entity, data in entities:
-        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
-
-    request.addfinalizer(teardown)
-
-
-@pytest.fixture(scope='function')
-def human_gene_pdf_lmdb_setup(app, request):
-    # Create gene data
-    ace2 = lmdb_gene_factory(
-        gene_id='59272',
-        id_type=DatabaseType.NCBI.value,
-        name='ACE2',
-        synonym='ACE2',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create disease data
-    covid_19 = lmdb_disease_factory(
-        disease_id='MESH:C000657245',
-        id_type=DatabaseType.MESH.value,
+    covid_19 = create_ner_type_disease(
+        id_='MESH:C000657245',
         name='COVID-19',
         synonym='COVID-19',
     )
 
-    # Create species data
-    mers_cov = lmdb_species_factory(
-        tax_id='1335626',
+    mers_cov = create_ner_type_species(
+        id_='1335626',
         category=OrganismCategory.VIRUSES.value,
-        id_type=DatabaseType.NCBI.value,
         name='MERS-CoV',
         synonym='MERS-CoV',
     )
@@ -743,57 +611,18 @@ def human_gene_pdf_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
-    # Create gene data
-    purA = lmdb_gene_factory(
-        gene_id='948695',
-        id_type=DatabaseType.NCBI.value,
-        name='purA',
-        synonym='purA',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_gene_organism_escherichia_coli_pdf(app):
+    purA = create_ner_type_gene(name='purA', synonym='purA')
+    purB = create_ner_type_gene(name='purB', synonym='purB')
+    purC = create_ner_type_gene(name='purC', synonym='purC')
+    purD = create_ner_type_gene(name='purF', synonym='purF')
+    purF = create_ner_type_gene(name='purD', synonym='purD')
 
-    purB = lmdb_gene_factory(
-        gene_id='945695',
-        id_type=DatabaseType.NCBI.value,
-        name='purB',
-        synonym='purB',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    purC = lmdb_gene_factory(
-        gene_id='946957',
-        id_type=DatabaseType.NCBI.value,
-        name='purC',
-        synonym='purC',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    purD = lmdb_gene_factory(
-        gene_id='948504',
-        id_type=DatabaseType.NCBI.value,
-        name='purF',
-        synonym='purF',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    purF = lmdb_gene_factory(
-        gene_id='946794',
-        id_type=DatabaseType.NCBI.value,
-        name='purD',
-        synonym='purD',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create species data
-    e_coli = lmdb_species_factory(
-        tax_id='562',
+    e_coli = create_ner_type_species(
+        id_='562',
         category=OrganismCategory.BACTERIA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Escherichia coli',
         synonym='Escherichia coli',
     )
@@ -812,30 +641,15 @@ def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
-    ydhc = lmdb_protein_factory(
-        protein_id='YdhC',
-        id_type=DatabaseType.UNIPROT.value,
-        name='YdhC',
-        synonym='YdhC',
-    )
+def lmdb_setup_test_protein_organism_escherichia_coli_pdf(app):
+    ydhc = create_ner_type_protein(name='YdhC', synonym='YdhC')
+    ydhb = create_ner_type_protein(name='YdhB', synonym='YdhB')
 
-    ydhb = lmdb_protein_factory(
-        protein_id='YdhB',
-        id_type=DatabaseType.UNIPROT.value,
-        name='YdhB',
-        synonym='YdhB',
-    )
-
-    # Create species data
-    e_coli = lmdb_species_factory(
-        tax_id='562',
+    e_coli = create_ner_type_species(
+        id_='562',
         category=OrganismCategory.BACTERIA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Escherichia coli',
         synonym='Escherichia coli',
     )
@@ -854,43 +668,24 @@ def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def human_rat_gene_lmdb_setup(app, request):
-    # Create gene data
-    edem3 = lmdb_gene_factory(
-        gene_id='289085',
-        id_type=DatabaseType.NCBI.value,
-        name='Edem3',
-        synonym='Edem3',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(app):
+    edem3 = create_ner_type_gene(name='Edem3', synonym='Edem3')
+    edem3_caps = create_ner_type_gene(name='EDEM3', synonym='EDEM3')
 
-    edem3_caps = lmdb_gene_factory(
-        gene_id='80267',
-        id_type=DatabaseType.NCBI.value,
-        name='EDEM3',
-        synonym='EDEM3',
+    human = create_ner_type_species(
+        id_='9606',
         category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create species data
-    human = lmdb_species_factory(
-        tax_id='9606',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='human',
-        synonym='human',
+        synonym='human'
     )
 
-    rat = lmdb_species_factory(
-        tax_id='10116',
+    rat = create_ner_type_species(
+        id_='10116',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='rat',
-        synonym='rat',
+        synonym='rat'
     )
 
     entities = [
@@ -907,43 +702,24 @@ def human_rat_gene_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def fish_gene_lmdb_setup(app, request):
-    # Create gene data
-    IL7 = lmdb_gene_factory(
-        gene_id='102353780',
-        id_type=DatabaseType.NCBI.value,
-        name='IL7',
-        synonym='IL7',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(app):
+    IL7 = create_ner_type_gene(name='IL7', synonym='IL7')
+    il7 = create_ner_type_gene(name='il-7', synonym='il-7')
 
-    il7 = lmdb_gene_factory(
-        gene_id='100191071',
-        id_type=DatabaseType.NCBI.value,
-        name='il-7',
-        synonym='il-7',
+    tetraodon = create_ner_type_species(
+        id_='31033',
         category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    # Create species data
-    tetraodon = lmdb_species_factory(
-        tax_id='31033',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Tetraodon rubripes',
-        synonym='Tetraodon rubripes',
+        synonym='Tetraodon rubripes'
     )
 
-    coelacanth = lmdb_species_factory(
-        tax_id='7897',
+    coelacanth = create_ner_type_species(
+        id_='7897',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='coelacanth',
-        synonym='coelacanth',
+        synonym='coelacanth'
     )
 
     entities = [
@@ -960,16 +736,12 @@ def fish_gene_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def vascular_cell_adhesion_lmdb_setup(app, request):
-    vascular = lmdb_protein_factory(
-        protein_id='Vascular',
-        id_type=DatabaseType.UNIPROT.value,
+def vascular_cell_adhesion_lmdb_setup(app):
+    vascular = create_ner_type_protein(
         name='Vascular cell adhesion protein 1',
-        synonym='Vascular cell adhesion protein 1',
+        synonym='Vascular cell adhesion protein 1'
     )
 
     entities = [
@@ -986,57 +758,32 @@ def vascular_cell_adhesion_lmdb_setup(app, request):
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
-    request.addfinalizer(teardown)
-
 
 @pytest.fixture(scope='function')
-def gene_organism_matching_use_organism_before_lmdb_setup(app, request):
-    ptgs2 = lmdb_gene_factory(
-        gene_id='289085',
-        id_type=DatabaseType.NCBI.value,
-        name='PTGS2',
-        synonym='PTGS2',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
+def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
+    ptgs2 = create_ner_type_gene(name='PTGS2', synonym='PTGS2')
+    bdnf = create_ner_type_gene(name='BDNF', synonym='BDNF')
+    bst2 = create_ner_type_gene(name='BST2', synonym='BST2')
 
-    bdnf = lmdb_gene_factory(
-        gene_id='28908534',
-        id_type=DatabaseType.NCBI.value,
-        name='BDNF',
-        synonym='BDNF',
+    cat = create_ner_type_species(
+        id_='9685',
         category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    bst2 = lmdb_gene_factory(
-        gene_id='2890832455',
-        id_type=DatabaseType.NCBI.value,
-        name='BST2',
-        synonym='BST2',
-        category=OrganismCategory.EUKARYOTA.value,
-    )
-
-    cat = lmdb_species_factory(
-        tax_id='9685',
-        category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Felis Catus',
-        synonym='Felis Catus',
+        synonym='Felis Catus'
     )
 
-    homo = lmdb_species_factory(
-        tax_id='9606',
+    homo = create_ner_type_species(
+        id_='9606',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Homo Sapiens',
-        synonym='Homo Sapiens',
+        synonym='Homo Sapiens'
     )
 
-    human = lmdb_species_factory(
-        tax_id='9606',
+    human = create_ner_type_species(
+        id_='9606',
         category=OrganismCategory.EUKARYOTA.value,
-        id_type=DatabaseType.NCBI.value,
         name='Human',
-        synonym='Human',
+        synonym='Human'
     )
 
     entities = [
@@ -1053,33 +800,13 @@ def gene_organism_matching_use_organism_before_lmdb_setup(app, request):
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
 
-    request.addfinalizer(teardown)
-
-
-################################################################################
-# Start monkeypatch mocks here
-# doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
-###############################################################################
+# ################################################################################
+# # Start monkeypatch mocks here
+# # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
+# ###############################################################################
 @pytest.fixture(scope='function')
-def mock_empty_gene_to_organism(monkeypatch):
-    def get_match_result(*args, **kwargs):
-        return {}
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_general_human_genes(monkeypatch):
+def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'BOLA3': {'BOLA3': {'9606': '388962'}}}
 
@@ -1091,12 +818,14 @@ def mock_general_human_genes(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result(monkeypatch):
+def mock_graph_test_genes_vs_proteins(monkeypatch):
     def get_match_result(*args, **kwargs):
-        # match to 'Moniliophthora roreri' in create_species_lmdb()
         return {
             'hyp27': {'hyp27': {'221103': '2846957'}},
-            'SERPINA1': {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
+            'SERPINA1': {
+                'serpina1': {'9606': '5265'},
+                'SERPINA1': {'9606': '5265'}
+            }
         }
 
     monkeypatch.setattr(
@@ -1107,9 +836,14 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
+def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'il-7': {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}}
+        return {
+            'il-7': {
+                'IL7': {'7897': '102353780'},
+                'il-7': {'31033': '99999'}
+            }
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1119,9 +853,12 @@ def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
+def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'ACE2': {'ACE2': {'9606': '59272'}}}
+        return {
+            'ACE2': {'ACE2': {'9606': '59272'}},
+            'Fake_ACE2': {'ACE2': {'9606': '59272'}}
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1131,9 +868,9 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_gene_to_organism_il8_human_gene(monkeypatch):
+def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'CXCL8': {'CXCL8': {'9606': '3576'}}}
+        return {'gene-(12345)': {'ACE2': {'9606': '59272'}}}
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1143,9 +880,12 @@ def mock_gene_to_organism_il8_human_gene(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf(monkeypatch):
+def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'AMPK': {'AMPK': {'9606': '5564'}}}
+        return {
+            'IL8': {'CXCL8': {'9606': '3576'}},
+            'IL-8': {'CXCL8': {'9606': '3576'}}
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1155,9 +895,14 @@ def mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf(monkeypatch
 
 
 @pytest.fixture(scope='function')
-def mock_gene_to_organism_crossmatch_human_rat(monkeypatch):
+def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'EDEM3': {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}}
+        return {
+            'EDEM3': {
+                'EDEM3': {'9606': '80267'},
+                'Edem3': {'10116': '289085'}
+            }
+        }
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -1167,7 +912,7 @@ def mock_gene_to_organism_crossmatch_human_rat(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
+def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
             'purA': {'purA': {'562': '948695'}},
@@ -1185,7 +930,7 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 
 
 @pytest.fixture(scope='function')
-def mock_gene_organism_abbrev_test(monkeypatch):
+def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
             'PPP': {'PPP': {'9606': '80267'}},
@@ -1200,7 +945,7 @@ def mock_gene_organism_abbrev_test(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
+def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
             'YdhC': {'562': 'P37597'},
@@ -1215,7 +960,7 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_using_organism_before(monkeypatch):
+def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
             'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
@@ -1231,245 +976,188 @@ def mock_get_gene_to_organism_match_using_organism_before(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_compound_exclusion():
-    return {'guanosine', 'hydrogen'}
-
-
-@pytest.fixture(scope='function')
-def mock_global_chemical_exclusion():
-    return {'hypofluorite', 'hydrogen', 'adenosine'}
-
-
-@pytest.fixture(scope='function')
-def mock_disease_exclusion():
-    return {'cold sore'}
-
-
-@pytest.fixture(scope='function')
-def mock_gene_exclusion():
-    return {'BOLA3', 'rpoS'}
-
-
-@pytest.fixture(scope='function')
-def mock_phenotype_exclusion():
-    return {'whey proteins'}
-
-
-@pytest.fixture(scope='function')
-def mock_protein_exclusion():
-    return {'Wasabi receptor toxin'}
-
-
-@pytest.fixture(scope='function')
-def mock_species_exclusion():
-    return {'human', 'dog', 'fruit fly'}
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'59272': 'ACE2'}
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_from_gene_ids',
-        get_exclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_IL8_CXCL8_for_global_gene_inclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'3576': 'CXCL8'}
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_from_gene_ids',
-        get_exclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_specified_strain(monkeypatch):
-    result = [
-        {'BOLA3': {'BOLA3': {'9606': '388962'}}},
-        {'BOLA3': {'BOLA3': {'37293': '101099627'}}}
+def mock_global_chemical_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '789456',
+            'entity_name': 'fake-chemical-(12345)',
+            'synonym': 'fake-chemical-(12345)',
+            'data_source': 'CHEBI',
+            'hyperlink': ''
+        }
     ]
 
-    def get_match_result(*args, **kwargs):
-        # simulate service being called twice
-        # TODO: not working as expected...
-        return result.pop()
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_chemical(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc['hyperlink']
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_chemical_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'CHEBI:Fake',
-                'entity_name': 'fake-chemical-(12345)',
-                'synonym': 'fake-chemical-(12345)',
-                'data_source': 'CHEBI',
-                'hyperlink': ''
-            },
-            {
-                'entity_id': 'CHEBI:Fake',
-                'entity_name': 'Carbon',
-                'synonym': 'Carbon',
-                'data_source': 'MESH',
-                'hyperlink': 'http://fake'
-            }
-        ]
+def mock_global_compound_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '321357',
+            'entity_name': 'compound-(12345)',
+            'synonym': 'compound-(12345)',
+            'data_source': 'BIOCYC',
+            'hyperlink': ''
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_lifelike_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_compound(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_compound_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'BIOC:Fake',
-                'entity_name': 'compound-(12345)',
-                'synonym': 'compound-(12345)',
-                'data_source': 'PUBCHEM',
-                'hyperlink': ''
-            }
-        ]
+def mock_global_gene_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '59272',
+            'entity_name': 'gene-(12345)',
+            'synonym': 'gene-(12345)',
+            'data_source': 'NCBI Gene'
+        },
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_lifelike_global_inclusions',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_gene_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': '59272',
-                'entity_name': 'gene-(12345)',
-                'synonym': 'gene-(12345)',
-                'data_source': 'NCBI Gene'
-            },
-            {
-                'entity_id': '3576',
-                'entity_name': 'IL-8',
-                'synonym': 'IL-8',
-                'data_source': 'NCBI Gene'
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_gene_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_disease_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'disease-(12345)',
-                'synonym': 'disease-(12345)',
-                'data_source': 'MESH',
-            }
-        ]
+def mock_global_inclusion_normalized_already_in_lmdb():
+    inclusions = [
+        {
+            'entity_id': '3576',
+            'entity_name': 'CXCL8',
+            'synonym': 'IL-8',
+            'data_source': 'NCBI Gene'
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_phenomena_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Fake',
-                'entity_name': 'fake-phenomena',
-                'synonym': 'fake-phenomena',
-                'data_source': 'MESH',
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_phenotype_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Fake',
-                'entity_name': 'phenotype-(12345)',
-                'synonym': 'phenotype-(12345)',
-                'data_source': 'CUSTOM',
-            }
-        ]
+def mock_global_disease_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '852753',
+            'entity_name': 'disease-(12345)',
+            'synonym': 'disease-(12345)',
+            'data_source': 'MESH',
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_mesh_global_inclusions',
-        get_inclusions,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_global_protein_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'protein-(12345)',
-                'synonym': 'protein-(12345)',
-                'data_source': 'UNIPROT',
-            }
-        ]
-
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_protein_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_disease(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
 
 
 @pytest.fixture(scope='function')
-def mock_global_species_inclusion(monkeypatch):
-    def get_inclusions(*args, **kwargs):
-        return [
-            {
-                'entity_id': 'Ncbi:Fake',
-                'entity_name': 'species-(12345)',
-                'synonym': 'species-(12345)',
-                'data_source': 'NCBI Taxonomy',
-            }
-        ]
+def mock_global_phenomena_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '842605',
+            'entity_name': 'fake-phenomena',
+            'synonym': 'fake-phenomena',
+            'data_source': 'MESH',
+        }
+    ]
 
-    monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_species_global_inclusions',
-        get_inclusions,
-    )
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_phenomena(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': 'FakePheno',
+            'entity_name': 'phenotype-(12345)',
+            'synonym': 'phenotype-(12345)',
+            'data_source': 'CUSTOM',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_phenotype(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': 'Fake_789654',
+            'entity_name': 'protein-(12345)',
+            'synonym': 'protein-(12345)',
+            'data_source': 'UNIPROT',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_protein(inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_inclusion_annotation():
+    inclusions = [
+        {
+            'entity_id': '0088',
+            'entity_name': 'species-(12345)',
+            'synonym': 'species-(12345)',
+            'data_source': 'NCBI Taxonomy',
+        }
+    ]
+
+    return {
+        normalize_str(inc['synonym']): Inclusion(
+            entities=[create_ner_type_species(
+                inc['entity_id'], inc['entity_name'], inc['synonym'])],
+            entity_id_type=inc['data_source'],
+            entity_id_hyperlink=inc.get('hyperlink', '')
+        ) for inc in inclusions
+    }
