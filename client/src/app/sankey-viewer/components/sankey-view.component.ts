@@ -179,7 +179,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   getNodeById(nodeId) {
-    return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as Node;
+    return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
   }
 
 

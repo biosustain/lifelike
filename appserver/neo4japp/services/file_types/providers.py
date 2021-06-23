@@ -193,8 +193,8 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
 
     def validate_content(self, buffer: FileStorage):
         # Figure out file size
-        buffer.seek(0, io.SEEK_END)
-        size = buffer.tell()
+        buffer.stream.seek(0, io.SEEK_END)
+        size = buffer.stream.tell()
 
         if size > 0:
             raise ValueError("Directories can't have content")
@@ -298,8 +298,8 @@ class BiocTypeProvider(BaseFileTypeProvider):
                 passage = biocFromJSON(obj, level=bioc.DOCUMENT)
 
     def extract_doi(self, buffer: FileStorage) -> Optional[str]:
-        data = buffer.read()
-        buffer.seek(0)
+        data = buffer.stream.read()
+        buffer.stream.seek(0)
 
         chunk = data[:2 ** 17]
         doi = _search_doi_in(chunk)
@@ -338,7 +338,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         validate_map(graph)
 
     def to_indexable_content(self, buffer: FileStorage):
-        content_json = json.load(buffer)
+        content_json = json.load(buffer.stream)
         content = io.StringIO()
         string_list = []
 
@@ -525,7 +525,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
         validate_sankey(data)
 
     def to_indexable_content(self, buffer: FileStorage):
-        content_json = json.load(buffer)
+        content_json = json.load(buffer.stream)
         content = io.StringIO()
         string_list = set(extract_text(content_json))
 
@@ -558,7 +558,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         validate_enrichment_table(data)
 
     def to_indexable_content(self, buffer: FileStorage):
-        data = json.load(buffer)
+        data = json.load(buffer.stream)
         content = io.StringIO()
 
         data_tokens = data['data'].split('/')

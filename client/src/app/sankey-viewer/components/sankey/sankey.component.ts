@@ -574,7 +574,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      .attr('fill', (node: Node) => {
+      .attr('fill', (node: SankeyNode) => {
         const traceColor = colorByTraceEnding(node);
         return traceColor || node._color;
       })

@@ -369,7 +369,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
 };
 
 
-export const colorByTraceEnding = ({sourceLinks, targetLinks, _color, _selected}: Node) => {
+export const colorByTraceEnding = ({sourceLinks, targetLinks, _color, _selected}: SankeyNode) => {
   const difference = symmetricDifference(sourceLinks, targetLinks, link => link._trace);
   if (difference.size === 1) {
     const traceColor = difference.values().next().value._trace._color;
