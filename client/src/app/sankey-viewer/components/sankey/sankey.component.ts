@@ -199,6 +199,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
 
+  resetZoom() {
+    d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
+  }
+
   getFontSize(normSize) {
     return this.MIN_FONT + (normSize || 0) * (this.MAX_FONT - this.MIN_FONT);
   }

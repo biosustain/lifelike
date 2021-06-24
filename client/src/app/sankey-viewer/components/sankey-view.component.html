@@ -32,6 +32,13 @@
                         </div>
                     </div>
                     <div class="btn-group btn-group-toggle">
+                        <button type="button" class="btn btn-secondary" container="body"
+                                ngbTooltip="Fit Map to Window" placement="bottom"
+                                (click)="resetZoom()">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+                    <div class="btn-group btn-group-toggle">
                         <div ngbDropdown class="btn-group d-inline-block" title="Select Trace Network">
                             <button class="btn btn-primary" ngbDropdownToggle>
                                 {{ selectedNetworkTrace ? selectedNetworkTrace.description : 'Select Trace Network' }}
@@ -79,15 +86,15 @@
                       direction="horizontal"
                       [gutterSize]="5">
                 <as-split-area [order]="0">
-                    <app-sankey
-                            *ngIf="filteredSankeyData"
-                            [data]="filteredSankeyData"
-                            [normalizeLinks]="normalizeLinks.value"
-                            [selectedNodes]="selectedNodes | async"
-                            [selectedLinks]="selectedLinks | async"
-                            (adjustLayout)="sankeyLayoutAdjustment($event)"
-                            (nodeClicked)="openNodeDetails($event)"
-                            (linkClicked)="openLinkDetails($event)"
+                    <app-sankey #sankey
+                                *ngIf="filteredSankeyData"
+                                [data]="filteredSankeyData"
+                                [normalizeLinks]="normalizeLinks.value"
+                                [selectedNodes]="selectedNodes | async"
+                                [selectedLinks]="selectedLinks | async"
+                                (adjustLayout)="sankeyLayoutAdjustment($event)"
+                                (nodeClicked)="openNodeDetails($event)"
+                                (linkClicked)="openLinkDetails($event)"
                     >
                     </app-sankey>
                 </as-split-area>

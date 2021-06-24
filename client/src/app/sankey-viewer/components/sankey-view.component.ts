@@ -29,7 +29,6 @@ import {
 import { Options } from 'vis-network';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 import { map } from 'rxjs/operators';
-import { TemplateBinding } from '@angular/compiler';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -192,6 +191,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   parseProperty = parseForRendering;
 
+  @ViewChild('sankey', {static: false}) sankey;
+
 
   getJSONDetails(details) {
     return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
@@ -214,6 +215,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.traceDetailsGraph.set(trace, r);
     }
     return r;
+  }
+
+  resetZoom() {
+    if (this.sankey) {
+      this.sankey.resetZoom();
+    }
   }
 
   selectNetworkTrace(networkTrace) {
