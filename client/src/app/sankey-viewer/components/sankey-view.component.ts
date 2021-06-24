@@ -29,6 +29,7 @@ import {
 import { Options } from 'vis-network';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 import { map } from 'rxjs/operators';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -40,7 +41,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    protected readonly errorHandler: ErrorHandler
   ) {
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -207,13 +209,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   open(content) {
     this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', windowClass: 'fillHeightModal', size: 'xl'}).result
-      .then(_ => _);
+      .then(_ => _, _ => _);
   }
 
   getTraceDetailsGraph(trace) {
     let r = this.traceDetailsGraph.get(trace);
     if (!r) {
-      r = getTraceDetailsGraph(trace, this.sankeyData);
+      if (!trace.detail_edges) {
+        this.errorHandler.showError(new Error('No detail_edges defined therefore details view could not be rendered.'));
+        r = {
+          nodes: [],
+          edges: []
+        };
+      } else {
+        r = getTraceDetailsGraph(trace, this.sankeyData);
+      }
       this.traceDetailsGraph.set(trace, r);
     }
     return r;
