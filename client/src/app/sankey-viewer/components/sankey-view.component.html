@@ -103,13 +103,10 @@
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-                        <app-sankey-panel *ngIf="selection | async"
-                                          [details]="selection | async"
-                                          [templates]="{
-                                            nodes: nodeDetails,
-                                            links: linkDetails,
-                                            traces: traceDetails
-                                          }"></app-sankey-panel>
+                        <app-sankey-panel *ngIf="selectionWithTraces | async"
+                                          [details]="selectionWithTraces | async">
+
+                        </app-sankey-panel>
                     </div>
                 </as-split-area>
             </as-split>
