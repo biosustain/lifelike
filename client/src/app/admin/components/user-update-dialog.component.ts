@@ -18,6 +18,7 @@ import { AppUser, UserUpdateRequest } from '../../interfaces';
 })
 export class UserUpdateDialogComponent extends CommonFormDialogComponent {
   user: AppUser;
+  roles = ['admin', 'user'];
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
@@ -51,6 +52,6 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
       roles: ''
     });
   }
-
 }
+
 
