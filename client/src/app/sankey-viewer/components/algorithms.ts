@@ -299,15 +299,21 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
   const nodes = nodeIds.map((nodeId, idx) => {
     const node = mainNodes.find(({id}) => id === nodeId);
     if (node) {
+      const color = cubehelix(node._color);
+      color.s = 0;
       return {
         ...node,
+        color: '' + color,
         databaseLabel: node.type,
-        label: node.name[0]
+        label: Array.isArray(node.name) ? node.name[0] : node.name
       };
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
       return {
-        id: nodeId
+        id: nodeId,
+        label: nodeId,
+        databaseLabel: 'Imlicitly defined',
+        color: 'red'
       };
     }
   });
@@ -362,8 +368,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
   return {
     edges,
     nodes: nodes.map(n => ({
-      ...n,
-      color: undefined
+      ...n
     }))
   } as GraphData;
 };
