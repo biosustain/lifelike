@@ -32,13 +32,20 @@ interface SankeyLink {
   _folded?: boolean;
 }
 
+interface SankeyNodeSets {
+  [key: string]: Array<number>;
+}
+
 interface SankeyGraph {
   log?: string | Array<string>;
   description: string;
+  node_sets: SankeyNodeSets;
 }
 
 interface SankeyData {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
   graph: SankeyGraph;
+  inNode: Array<SankeyNode>;
+  outNode: Array<SankeyNode>;
 }
