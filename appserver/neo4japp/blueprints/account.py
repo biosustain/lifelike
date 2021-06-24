@@ -178,15 +178,14 @@ class AccountView(MethodView):
                         message=f'Username {params["username"]} already taken.',
                         code=400)
             if params.get('roles'):
-                if admin_access:
-                    if modifying_own_data:
-                        raise NotAuthorized(
-                            title='Failed to Update User',
-                            message='You cannot update your own roles!')
-                else:
+                if not admin_access:
                     raise NotAuthorized(
                         title='Failed to Update User',
                         message='You do not have sufficient privileges.')
+                if modifying_own_data:
+                    raise NotAuthorized(
+                        title='Failed to Update User',
+                        message='You cannot update your own roles!')
                 params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
 
             for attribute, new_value in params.items():
