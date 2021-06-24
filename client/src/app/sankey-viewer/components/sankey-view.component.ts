@@ -388,12 +388,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return {
       ...data,
       graph,
-      // link graph
-      ...this.linkGraph({
-        links,
-        nodes,
-        inNodes: graph.node_sets.updown
-      })
+      links,
+      nodes
     } as SankeyData;
   }
 
