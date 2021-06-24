@@ -16,8 +16,7 @@
     </app-form-row>
     <app-form-row for="user-roles" label="User roles" [control]="form.get('roles')">
       <select class="custom-select" formControlName="roles" id="user-roles" [appFormInput]="form.get('roles')">
-         <option value="user">User</option>
-         <option value="admin">Admin</option>
+        <option *ngFor="let role of roles" [ngValue]="role" >{{ role | titlecase}} </option>
      </select>
     </app-form-row>
   </app-modal-body>
