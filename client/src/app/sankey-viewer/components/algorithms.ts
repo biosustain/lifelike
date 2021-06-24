@@ -283,7 +283,7 @@ function* generateSLayout(segmentSize, scale = 1) {
 }
 
 export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
-  const edges = trace.detail_edges.map(([from, to, d]) => ({
+  const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
     from,
     to,
     id: uuidv4(),
