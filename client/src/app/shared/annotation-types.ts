@@ -4,7 +4,8 @@ export enum DatabaseType {
   MESH = 'Mesh',
   BIOCYC = 'BioCyc',
   CHEBI = 'ChEBI',
-  NCBI = 'NCBI',
+  NCBI_GENE = 'NCBI Gene',
+  NCBI_TAXONOMY = 'NCBI Taxonomy',
   UNIPROT = 'UniProt',
   PUBCHEM = 'PubChem',
   NONE = 'None'
@@ -21,10 +22,10 @@ export class EntityType {
 }
 
 export const ENTITY_TYPES = [
-  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI, DatabaseType.NONE]),
+  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI_GENE, DatabaseType.NONE]),
   new EntityType('Protein', annotationTypesMap.get('protein').color, [DatabaseType.UNIPROT, DatabaseType.NONE]),
   new EntityType('Disease', annotationTypesMap.get('disease').color, [DatabaseType.MESH, DatabaseType.NONE]),
-  new EntityType('Species', annotationTypesMap.get('species').color, [DatabaseType.NCBI, DatabaseType.NONE]),
+  new EntityType('Species', annotationTypesMap.get('species').color, [DatabaseType.NCBI_TAXONOMY, DatabaseType.NONE]),
   new EntityType('Company', annotationTypesMap.get('company').color, [DatabaseType.NONE]),
   new EntityType('Mutation', annotationTypesMap.get('mutation').color, [DatabaseType.NONE]),
   new EntityType('Chemical', annotationTypesMap.get('chemical').color, [DatabaseType.CHEBI, DatabaseType.PUBCHEM, DatabaseType.NONE]),
