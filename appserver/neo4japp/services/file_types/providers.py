@@ -532,6 +532,12 @@ class SankeyTypeProvider(BaseFileTypeProvider):
         content.write(' '.join(list(string_list)))
         return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
 
+    def extract_metadata_from_content(self, file: Files, buffer: FileStorage):
+        if not file.description:
+            data = json.loads(buffer.stream.read())
+            description = data['graph']['description']
+            file.description = description
+
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/enrichment-table'
