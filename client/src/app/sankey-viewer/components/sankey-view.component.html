@@ -252,6 +252,25 @@
                         </button>
                     </ng-template>
                 </ngb-panel>
+                <ngb-panel [disabled]="true">
+                    <ng-template ngbPanelHeader let-opened="opened" disabled="true">
+                        <button ngbPanelToggle
+                                class="btn btn-link w-100 d-flex align-items-center justify-content-between">
+                            <b>Label</b>
+                            {{ parseProperty(node.label) }}
+                        </button>
+                    </ng-template>
+                </ngb-panel>
+                <ngb-panel [disabled]="true" *ngIf="node.stId">
+                    <ng-template ngbPanelHeader let-opened="opened" disabled="true">
+                        <a [href]="'https://reactome.org/content/detail/' + node.stId"
+                           class="btn btn-link w-100 d-flex align-items-center justify-content-between">
+
+                            <span>Reactome</span>
+                            {{ node.stId }}
+                        </a>
+                    </ng-template>
+                </ngb-panel>
                 <ngb-panel title="Labels" cardClass="filled-card">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
