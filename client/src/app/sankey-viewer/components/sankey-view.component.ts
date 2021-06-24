@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
@@ -29,6 +29,7 @@ import {
 import { Options } from 'vis-network';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
 import { map } from 'rxjs/operators';
+import { TemplateBinding } from '@angular/compiler';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -42,18 +43,27 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly route: ActivatedRoute,
     private modalService: NgbModal
   ) {
-    this.selectedNodes = new BehaviorSubject(new Set());
-    this.selectedLinks = new BehaviorSubject(new Set());
-
-    this.selection = combineLatest([
-      this.selectedNodes,
-      this.selectedLinks
-    ]).pipe(
-      map(([nodes, links]) => ({
-        traces: getRelatedTraces({nodes, links}),
-        nodes, links
-      }))
+    this.selection = new BehaviorSubject([]);
+    this.selectionWithTraces = this.selection.pipe(
+      map((currentSelection) => {
+        const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
+        const links = currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity);
+        const traces = [...getRelatedTraces({nodes, links})].map(entity => ({
+          type: 'trace',
+          template: this.traceDetails,
+          entity
+        }));
+        return [...currentSelection].reverse().concat(traces);
+      })
     );
+
+    this.selectedNodes = this.selection.pipe(map(currentSelection => {
+      return new Set(currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity));
+    }));
+    this.selectedLinks = this.selection.pipe(map(currentSelection => {
+      return new Set(currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity));
+    }));
+
 
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
@@ -96,7 +106,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   paramsSubscription: Subscription;
   returnUrl: string;
 
-  selection;
+  selection: BehaviorSubject<Array<{
+    type: string,
+    entity: SankeyLink | SankeyNode | object,
+    template: HTMLTemplateElement
+  }>>;
+  selectionWithTraces;
 
   loadTask: any;
   openSankeySub: Subscription;
@@ -146,6 +161,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedNodes;
   selectedLinks;
   selectedTraces;
+
+  @ViewChild('traceDetails', {static: true}) traceDetails;
+  @ViewChild('linkDetails', {static: true}) linkDetails;
+  @ViewChild('nodeDetails', {static: true}) nodeDetails;
 
   traceDetailsConfig: Options = {
     physics: {
@@ -443,31 +462,35 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>));
   }
 
-  selectNode(node) {
-    const selectedNodes = this.selectedNodes.value;
-    if (selectedNodes.has(node)) {
-      selectedNodes.delete(node);
+  toggleSelect(entity, type, template: HTMLTemplateElement) {
+    const currentSelection = this.selection.value;
+    const idxOfSelectedLink = currentSelection.findIndex(
+      d => d.type === type && d.entity === entity
+    );
+
+    if (idxOfSelectedLink !== -1) {
+      currentSelection.splice(idxOfSelectedLink, 1);
     } else {
-      selectedNodes.add(node);
+      currentSelection.push({
+        type,
+        entity,
+        template
+      });
     }
-    this.selectedNodes.next(new Set(selectedNodes));
+
+    this.selection.next(currentSelection);
+  }
+
+  selectNode(node) {
+    this.toggleSelect(node, 'node', this.nodeDetails);
   }
 
   selectLink(link) {
-    const selectedLinks = this.selectedLinks.value;
-
-    if (selectedLinks.has(link)) {
-      selectedLinks.delete(link);
-    } else {
-      selectedLinks.add(link);
-    }
-
-    this.selectedLinks.next(new Set(selectedLinks));
+    this.toggleSelect(link, 'link', this.linkDetails);
   }
 
   resetSelection() {
-    this.selectedNodes.next(new Set());
-    this.selectedLinks.next(new Set());
+    this.selection.next([]);
     this.filteredSankeyData.nodes.forEach(n => {
       delete n._selected;
     });
