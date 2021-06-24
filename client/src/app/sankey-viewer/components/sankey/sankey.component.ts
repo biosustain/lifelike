@@ -38,11 +38,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .nodeId(n => n.id)
       .nodePadding(10)
       // .nodePaddingRatio(0.1)
-      // .linkSort((a, b) =>
-      //   (b.source.index - a.source.index) ||
-      //   (b.target.index - a.target.index) ||
-      //   (b.trace_group - a.trace_group)
-      // )
+      .linkSort((a, b) =>
+        (b.source.index - a.source.index) ||
+        (b.target.index - a.target.index) ||
+        (b._trace.group - a._trace.group)
+      )
       // .nodeSort((a, b) =>
       //   (b.depth - a.depth) ||
       //   (b.index - a.index)
@@ -148,6 +148,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   zoom;
   dragging = false;
 
+  @Output() adjustLayout = new EventEmitter();
+
   getSelectedTraces(selection) {
     const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
     const nodesLinks = [...nodes].reduce(
@@ -209,6 +211,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     return new Promise(resolve => {
         // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
         const a = this.sankey(data);
+        this.adjustLayout.emit({data, extent: this.sankey.extent()});
         resolve(a);
       }
     );
