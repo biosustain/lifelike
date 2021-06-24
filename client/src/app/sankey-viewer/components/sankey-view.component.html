@@ -85,6 +85,7 @@
                             [normalizeLinks]="normalizeLinks.value"
                             [selectedNodes]="selectedNodes | async"
                             [selectedLinks]="selectedLinks | async"
+                            (adjustLayout)="sankeyLayoutAdjustment($event)"
                             (nodeClicked)="openNodeDetails($event)"
                             (linkClicked)="openLinkDetails($event)"
                     >

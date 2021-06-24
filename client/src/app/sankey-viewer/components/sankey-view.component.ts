@@ -206,7 +206,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
-      inNodes: node_sets[networkTrace.sources]
+      inNodes: node_sets[networkTrace.sources],
+      outNodes: node_sets[networkTrace.targets]
     });
   }
 
@@ -234,6 +235,73 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const preprocessedNodes = this.selectedNodeValueAccessor.preprocessing(data) || {};
     const preprocessedLinks = this.selectedLinkValueAccessor.preprocessing(data) || {};
     return Object.assign(data, preprocessedLinks, preprocessedNodes);
+  }
+
+  sankeyLayoutAdjustment({data, extent: [[marginLeft, marginTop], [width, height]]}) {
+    const {inNodes = [], outNodes = []} = this.filteredSankeyData;
+    const traverseRight = inNodes.length < outNodes.length;
+    const nextNodes = traverseRight ?
+      node => node.sourceLinks.map(({target}) => target) :
+      node => node.targetLinks.map(({source}) => source);
+    let nodes = (traverseRight ? inNodes : outNodes).map(n => data.nodes.find(({id}) => id === n.id));
+    if (!nodes.filter(n => n).length) {
+      const accessor = traverseRight ? 'targetLinks' : 'sourceLinks';
+      nodes = data.nodes.filter(n => n[accessor].length === 0);
+    }
+    const visited = new Set();
+    let order = 0;
+    const relayout = ns => {
+      ns.forEach((node, idx, arr) => {
+        if (visited.has(node)) {
+          return;
+        }
+        visited.add(node);
+        node._order = order++;
+        relayout(nextNodes(node));
+      });
+    };
+    relayout(nodes);
+    const columns = data.nodes.reduce((o, n) => {
+      const column = o.get(n.layer);
+      if (column) {
+        column.push(n);
+      } else {
+        o.set(n.layer, [n]);
+      }
+      return o;
+    }, new Map());
+    [...columns.values()].forEach(column => {
+      const {length} = column;
+      const nodesHeight = column.reduce((o, {y0, y1}) => o + y1 - y0, 0);
+      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
+      const freeSpace = height - nodesHeight;
+      const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
+      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
+      column.sort((a, b) => a._order - b._order).forEach((node, idx, arr) => {
+        const nodeHeight = node.y1 - node.y0;
+        node.y0 = y;
+        node.y1 = y + nodeHeight;
+        y += nodeHeight + spacerSize;
+      });
+    });
+    const reverseAccessor = traverseRight ? 'targetLinks' : 'sourceLinks';
+    const depthSorter = traverseRight ? (a, b) => b.depth - a.depth : (a, b) => a.depth - b.depth;
+    const groupOrder = [...
+      data.nodes
+        .sort((a, b) => depthSorter(a, b) || a._order - b._order)
+        .reduce((o, d) => {
+          d[reverseAccessor].forEach(l => o.add(l._trace.group));
+          return o;
+        }, new Set())
+    ];
+    const sort = (a, b) =>
+      (b.source.index - a.source.index) ||
+      (b.target.index - a.target.index) ||
+      (groupOrder.indexOf(a._trace.group) - groupOrder.indexOf(b._trace.group));
+    for (const {sourceLinks, targetLinks} of data.nodes) {
+      sourceLinks.sort(sort);
+      targetLinks.sort(sort);
+    }
   }
 
   extractLinkValueProperties([link = {}]) {
