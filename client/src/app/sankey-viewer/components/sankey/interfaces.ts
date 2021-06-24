@@ -30,6 +30,7 @@ interface SankeyLink {
   circularLinkID?: number;
   circular?: boolean;
   _folded?: boolean;
+  value: number;
 }
 
 interface SankeyNodeSets {
@@ -46,6 +47,6 @@ interface SankeyData {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
   graph: SankeyGraph;
-  inNode?: Array<SankeyNode>;
-  outNode?: Array<SankeyNode>;
+  inNodes?: Array<number>;
+  outNodes?: Array<number>;
 }
