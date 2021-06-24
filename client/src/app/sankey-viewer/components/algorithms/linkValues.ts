@@ -34,7 +34,7 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
     }
   };
 };
-export const inputCount = ({links, nodes, inNodes}) => {
+export const inputCount = ({links, nodes, inNodes}: Partial<SankeyData>) => {
   links.forEach(l => l.value = 1);
   d3Sankey.sankeyCircular()
     .nodeId(n => n.id)

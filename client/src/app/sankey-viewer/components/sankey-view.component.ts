@@ -29,8 +29,8 @@ import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixe
 
 interface ValueGenerator {
   description: string;
-  preprocessing: (v: SankeyData) => object;
-  postprocessing?: (v: SankeyData) => object;
+  preprocessing: (v: SankeyData) => Partial<SankeyData> | undefined;
+  postprocessing?: (v: SankeyData) => Partial<SankeyData> | undefined;
 }
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 
