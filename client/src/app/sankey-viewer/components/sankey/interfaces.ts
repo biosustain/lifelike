@@ -15,6 +15,7 @@ interface SankeyNode {
   description?: string;
   _color?: string;
   _selected?: boolean;
+  stId?: string;
 }
 
 interface SankeyLink {
