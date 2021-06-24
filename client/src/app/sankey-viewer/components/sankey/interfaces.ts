@@ -16,6 +16,7 @@ interface SankeyNode {
   _color?: string;
   _selected?: boolean;
   stId?: string;
+  name?: string | Array<string>;
 }
 
 interface SankeyLink {
@@ -31,7 +32,13 @@ interface SankeyLink {
   _folded?: boolean;
 }
 
+interface SankeyGraph {
+  log?: string | Array<string>;
+  description: string;
+}
+
 interface SankeyData {
-  nodes?: Array<SankeyNode>;
-  links?: Array<SankeyLink>;
+  nodes: Array<SankeyNode>;
+  links: Array<SankeyLink>;
+  graph: SankeyGraph;
 }
