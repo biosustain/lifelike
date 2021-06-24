@@ -557,7 +557,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           )
           .call(enterNode =>
             enterNode.append('title')
-              .text(({name}) => name.join('\n'))
+              .text(({name = []}) => name.join('\n'))
           )
           .call(e => this.enter.emit(e)),
         update => update

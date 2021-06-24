@@ -118,7 +118,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   object?: FilesystemObject;
   // Type information coming from interface sankeySource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
-  sankeyData;
+  sankeyData: SankeyData;
   sankeyFileLoaded = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
   private currentFileId: any;
@@ -192,6 +192,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   parseProperty = parseForRendering;
 
   @ViewChild('sankey', {static: false}) sankey;
+
+  isArray = Array.isArray;
 
 
   getJSONDetails(details) {
