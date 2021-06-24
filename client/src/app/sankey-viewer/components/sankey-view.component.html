@@ -270,9 +270,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true" *ngIf="node.stId">
                     <ng-template ngbPanelHeader let-opened="opened" disabled="true">
-                        <a [href]="'https://reactome.org/content/detail/' + node.stId"
+                        <a [href]="'https://reactome.org/content/detail/' + node.stId" target="_blank"
                            class="btn btn-link w-100 d-flex align-items-center justify-content-between">
-
                             <span>Reactome</span>
                             {{ node.stId }}
                         </a>

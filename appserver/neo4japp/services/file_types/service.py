@@ -154,6 +154,9 @@ class BaseFileTypeProvider:
         :param file: the file
         """
 
+    def extract_metadata_from_content(self, file: Files, buffer: FileStorage):
+        pass
+
 
 class GenericFileTypeProvider(BaseFileTypeProvider):
     """

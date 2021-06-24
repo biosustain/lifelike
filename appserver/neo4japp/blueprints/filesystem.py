@@ -687,6 +687,8 @@ class FileListView(FilesystemBaseView):
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
 
+            provider.extract_metadata_from_content(file, buffer)
+
             # Get the DOI
             file.doi = provider.extract_doi(buffer)
             buffer.seek(0)  # Must rewind
