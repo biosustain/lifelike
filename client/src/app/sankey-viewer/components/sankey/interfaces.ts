@@ -46,6 +46,6 @@ interface SankeyData {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
   graph: SankeyGraph;
-  inNode: Array<SankeyNode>;
-  outNode: Array<SankeyNode>;
+  inNode?: Array<SankeyNode>;
+  outNode?: Array<SankeyNode>;
 }
