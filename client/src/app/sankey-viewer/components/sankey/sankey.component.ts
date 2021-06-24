@@ -14,7 +14,7 @@ import {
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { colorByTraceEnding } from '../algorithms';
+import { colorByTraceEnding } from '../algorithms/algorithms';
 
 @Component({
   selector: 'app-sankey',
