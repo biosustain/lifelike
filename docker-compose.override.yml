@@ -68,7 +68,7 @@ services:
             - SE_HOST=statistical-enrichment
             - SE_PORT=5010
             # Other
-            - DOMAIN=http://localhost
+            - DOMAIN=http://localhost:4200
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
         # Allow debugging w/ IPython or pdb
         stdin_open: true
