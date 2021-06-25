@@ -44,8 +44,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal,
-    protected readonly errorHandler: ErrorHandler
+    private modalService: NgbModal
   ) {
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -183,29 +182,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   };
 
-  traceDetailsConfig: Options = {
-    physics: {
-      enabled: false,
-      barnesHut: {
-        avoidOverlap: 0.9,
-        centralGravity: 0.001,
-        damping: 0.6,
-        gravitationalConstant: -10000,
-        springLength: 250,
-      },
-      stabilization: {
-        enabled: false
-      }
-    },
-    edges: {
-      smooth: {
-        type: networkEdgeSmoothers.DYNAMIC, enabled: true, roundness: 0
-      }
-    },
-    nodes: {
-      shape: 'dot'
-    }
-  };
 
   parseProperty = parseForRendering;
 
@@ -227,23 +203,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.modalService.open(content, {
       ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'}).result
       .then(_ => _, _ => _);
-  }
-
-  getTraceDetailsGraph(trace) {
-    let r = this.traceDetailsGraph.get(trace);
-    if (!r) {
-      if (!trace.detail_edges) {
-        this.errorHandler.showError(new Error('No detail_edges defined therefore details view could not be rendered.'));
-        r = {
-          nodes: [],
-          edges: []
-        };
-      } else {
-        r = getTraceDetailsGraph(trace, this.sankeyData);
-      }
-      this.traceDetailsGraph.set(trace, r);
-    }
-    return r;
   }
 
   resetZoom() {

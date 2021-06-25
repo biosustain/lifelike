@@ -152,6 +152,13 @@ function* generateSLayout(segmentSize, scale = 1) {
   yield* iterateX();
 }
 
+interface LinkedNode {
+  fromEdges: Array<any>;
+  toEdges: Array<any>;
+}
+
+type IntermediateNodeType = visNetwork.Node & SankeyNode & LinkedNode;
+
 export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
   const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
     from,
@@ -166,7 +173,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     nodesSet.add(to);
     return nodesSet;
   }, new Set())];
-  const nodes = nodeIds.map((nodeId, idx) => {
+  const nodes: Array<IntermediateNodeType> = nodeIds.map((nodeId, idx) => {
     const node = mainNodes.find(({id}) => id === nodeId);
     if (node) {
       const color = cubehelix(node._color);
@@ -176,15 +183,15 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
         color: '' + color,
         databaseLabel: node.type,
         label: Array.isArray(node.name) ? node.name[0] : node.name
-      } as visNetwork.Node;
+      };
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
       return {
         id: nodeId,
         label: nodeId,
-        databaseLabel: 'Imlicitly defined',
+        databaseLabel: 'Implicitly defined',
         color: 'red'
-      } as visNetwork.Node;
+      };
     }
   });
 
@@ -192,7 +199,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     node.fromEdges = [];
     node.toEdges = [];
   });
-  const nodeById = new Map(nodes.map((d, i) => [d.id, d]));
+  const nodeById: Map<number, IntermediateNodeType> = new Map(nodes.map((d, i) => [d.id, d]));
   for (const edge of edges) {
     let {from, to} = edge;
     if (typeof from !== 'object') {
@@ -204,11 +211,15 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     from.fromEdges.push(edge);
     to.toEdges.push(edge);
   }
-  const startNode = find(nodeById, trace.source);
-  const endNode = find(nodeById, trace.target);
+  const startNode = find(nodeById, trace.source) as IntermediateNodeType;
+  const endNode = find(nodeById, trace.target) as IntermediateNodeType;
 
   [startNode, endNode].map(node => {
     node.borderWidth = 5;
+    node.color = {
+      border: 'black',
+      background: '' + node.color
+    };
   });
 
   const segmentSize = Math.ceil(nodes.length / 8);

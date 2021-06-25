@@ -38,6 +38,7 @@ interface SankeyNodeSets {
 }
 
 interface SankeyNodeSets {
+  // @ts-ignore
   [key: string]: Array<number>;
 }
 
