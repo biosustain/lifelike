@@ -224,7 +224,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   open(content) {
-    this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', windowClass: 'fillHeightModal', size: 'xl'}).result
+    this.modalService.open(content, {
+      ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'}).result
       .then(_ => _, _ => _);
   }
 
