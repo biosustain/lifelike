@@ -18,6 +18,7 @@ from flask import (
     request,
     jsonify,
 )
+from flask.views import MethodView
 from flask_apispec import use_kwargs
 from json import JSONDecodeError
 from sqlalchemy import and_
@@ -27,6 +28,7 @@ from marshmallow import validate, fields
 
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
+from ..schemas.common import PaginatedRequestSchema
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
@@ -71,6 +73,7 @@ from neo4japp.schemas.annotations import (
     AnnotationGenerationRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
+    GlobalAnnotationListSchema,
     CustomAnnotationCreateSchema,
     CustomAnnotationDeleteSchema,
     AnnotationUUIDListSchema,
@@ -842,95 +845,97 @@ def export_global_exclusions():
     yield response
 
 
-@bp.route('/global-list', methods=['GET'])
-@auth.login_required
-@requires_role('admin')
-def get_annotation_global_list():
+class GlobalAnnotationListView(MethodView):
+    decorators = [auth.login_required, requires_role('admin')]
 
-    yield g.current_user
+    @use_args(PaginatedRequestSchema())
+    def get(self, params):
+        yield g.current_user
 
-    # Exclusions
-    query_1 = db.session.query(
-        FileContent.id,
-        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
-        AppUser.email,
-        GlobalList.id,
-        GlobalList.type,
-        GlobalList.reviewed,
-        GlobalList.approved,
-        GlobalList.creation_date,
-        GlobalList.modified_date,
-        GlobalList.annotation['text'].astext.label('text'),
-        GlobalList.annotation['reason'].astext.label('reason'),
-        GlobalList.annotation['type'].astext.label('entityType'),
-        GlobalList.annotation['id'].astext.label('annotationId'),
-        GlobalList.annotation['comment'].astext.label('comment')
-    ).outerjoin(
-        AppUser,
-        AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).outerjoin(
-        FileContent,
-        FileContent.id == GlobalList.file_id
-    ).filter(
-        GlobalList.type == ManualAnnotationType.EXCLUSION.value
-    )
-    # Inclusions
-    query_2 = db.session.query(
-        FileContent.id,
-        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
-        AppUser.email,
-        GlobalList.id,
-        GlobalList.type,
-        GlobalList.reviewed,
-        GlobalList.approved,
-        GlobalList.creation_date,
-        GlobalList.modified_date,
-        GlobalList.annotation['meta']['allText'].astext.label('text'),
-        sa.sql.null().label('reason'),
-        GlobalList.annotation['meta']['type'].astext.label('entityType'),
-        GlobalList.annotation['meta']['id'].astext.label('annotationId'),
-        sa.sql.null().label('comment')
-    ).outerjoin(
-        AppUser,
-        AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).outerjoin(
-        FileContent,
-        FileContent.id == GlobalList.file_id
-    ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
+        # globals are created from PDFs only (currently)
+        files = db.session.query(
+            Files.content_id).distinct().filter(
+                Files.mime_type == 'application/pdf')
 
-    union_query = query_1.union(query_2)
+        exclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_hash_id'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('file_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['text'].astext.label('text'),
+            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['type'].astext.label('entity_type'),
+            GlobalList.annotation['id'].astext.label('entity_id'),
+            GlobalList.annotation['reason'].astext.label('reason'),
+            GlobalList.annotation['comment'].astext.label('comment')
+        ).distinct(
+            Files.content_id
+        ).outerjoin(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).filter(
+            and_(
+                Files.content_id.in_(files),
+                GlobalList.type == ManualAnnotationType.EXCLUSION.value
+            )
+        )
 
-    # TODO: Refactor to work with paginate_from_args
-    limit = request.args.get('limit', 200)
-    limit = min(200, int(limit))
-    page = request.args.get('page', 1)
-    page = max(1, int(page))
+        inclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_hash_id'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('file_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['meta']['allText'].astext.label('text'),
+            GlobalList.annotation['meta']['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['meta']['type'].astext.label('entity_type'),
+            GlobalList.annotation['meta']['id'].astext.label('entity_id'),
+            sa.sql.null().label('reason'),
+            sa.sql.null().label('comment')
+        ).distinct(
+            Files.content_id
+        ).outerjoin(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).filter(
+            and_(
+                Files.content_id.in_(files),
+                GlobalList.type == ManualAnnotationType.INCLUSION.value
+            )
+        )
 
-    # The order by clause is using a synthetic column
-    # NOTE: We want to keep this ordering case insensitive
-    query = union_query.order_by((sa.asc('text'))).paginate(page, limit, False)
+        query = exclusions.union(inclusions)
+        limit = min(200, int(params.limit))
+        page = max(1, int(params.page))
 
-    response = ResultList(
-        total=query.total,
-        results=[GlobalAnnotationData(
-            file_id=r[0],
-            filename=r[1],
-            user_email=r[2],
-            id=r[3],
-            type=r[4],
-            reviewed=r[5],
-            approved=r[6],
-            creation_date=r[7],
-            modified_date=r[8],
-            text=r[9],
-            reason=r[10],
-            entity_type=r[11],
-            annotation_id=r[12],
-            comment=r[13],
-        ) for r in query.items],
-        query=None)
+        query = query.order_by((sa.asc('text'))).paginate(page, limit, False)
+        results = {
+            'total': query.total,
+            'results': [{
+                'global_id': r.global_list_id,
+                'creator': r.creator,
+                'file_hash_id': r.file_hash_id,
+                'file_deleted': True if r.file_deleted_by else False,
+                'file_reference': hashlib.sha256(r.file_reference).hexdigest(),
+                'type': r.type,
+                'creation_date': r.creation_date,
+                'text': r.text,
+                'case_insensitive': True if r.case_insensitive == 'true' else False,
+                'entity_type': r.entity_type,
+                'entity_id': r.entity_id,
+                'reason': r.reason,
+                'comment': r.comment
+            } for r in query.items]
+        }
 
-    yield jsonify(response.to_dict())
+        yield jsonify(GlobalAnnotationListSchema().dump(results))
 
 
 @bp.route('/global-list', methods=['POST', 'DELETE'])
@@ -1009,3 +1014,6 @@ filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh
     view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))
+bp.add_url_rule(
+    '/global-list',
+    view_func=GlobalAnnotationListView.as_view('global_annotations'))

@@ -59,14 +59,17 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     readonly headers: string[] = [
         'Text',
-        'Annotation Type',
+        'Case Insensitive',
+        'Type',
         'Entity Type',
-        'Annotation ID',
+        'Entity ID',
         'File Reference',
-        'Added by',
+        'File Deleted',
+        'Added By',
         'Reason',
         'Comment',
         'Date Added',
+        'Open File'
     ];
 
     constructor(
@@ -128,8 +131,13 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.loadTask.update(this.locator);
     }
 
+    openNewWindow(fileHashId: string) {
+        this.filesystemService.get(fileHashId).pipe().subscribe(fileObject =>
+            this.filesystemObjectActions.openNewWindow(fileObject));
+    }
+
     deleteAnnotation(objects: readonly GlobalAnnotation[]) {
-        const pids = objects.map((r: GlobalAnnotation) => r.id);
+        const pids = objects.map((r: GlobalAnnotation) => r.globalId);
         this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe().subscribe());
         this.refresh();
     }
