@@ -272,12 +272,11 @@
                                         </button>
                                     </div>
                                     <div class="modal-body vh-75">
-                                        <app-vis-js-network
-                                                [data]="getTraceDetailsGraph(graphLink._trace)"
-                                                [config]="traceDetailsConfig"
+                                        <app-trace-details
+                                                [trace]="graphLink._trace"
+                                                [data]="sankeyData"
                                         >
-
-                                        </app-vis-js-network>
+                                        </app-trace-details>
                                     </div>
                                 </ng-template>
                                 <button class="btn btn-outline-primary" (click)="open(content)">Show detailed
@@ -456,11 +455,11 @@
                                 </button>
                             </div>
                             <div class="modal-body vh-75">
-                                <app-vis-js-network
-                                        [data]="getTraceDetailsGraph(trace)"
-                                        [config]="traceDetailsConfig"
-                                >
-                                </app-vis-js-network>
+                                        <app-trace-details
+                                                [trace]="trace"
+                                                [data]="sankeyData"
+                                        >
+                                        </app-trace-details>
                             </div>
                         </ng-template>
                         <button class="btn btn-link" (click)="open(content)">Show detailed
