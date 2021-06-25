@@ -92,7 +92,8 @@
                         </div>
                         <div ngbDropdown class="btn-group d-inline-block" title="Link size">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedLinkValueAccessor?.description !== 'none' ? selectedLinkValueAccessor.description : 'Select Value Accessor' }}
+                                {{ selectedLinkValueAccessor?.description !== 'None' ?
+                                selectedLinkValueAccessor.description : 'Select Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
                                 <button ngbDropdownItem (click)="selectValueAccessor(valueAccessor)"
@@ -104,13 +105,10 @@
                                         *ngFor="let valueAccessor of linkValueAccessors">{{valueAccessor.description}}</button>
                             </div>
                         </div>
-                        <label class="btn-primary" ngbButtonLabel>
-                            <input type="checkbox" ngbButton [(ngModel)]="normalizeLinks.value"
-                                   (ngModelChange)="updateNormalize()">normalize links
-                        </label>
                         <div ngbDropdown class="btn-group d-inline-block" title="Node fixed size">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedNodeValueAccessor?.description !== 'none' ? selectedNodeValueAccessor.description :
+                                {{ selectedNodeValueAccessor?.description !== 'None' ?
+                                selectedNodeValueAccessor.description :
                                 'Select Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
@@ -129,6 +127,43 @@
                             <div ngbDropdownMenu>
                                 <button ngbDropdownItem (click)="selectPrescaler(prescaler)"
                                         *ngFor="let prescaler of prescalers">{{prescaler.name}}</button>
+                            </div>
+                        </div>
+                        <div ngbDropdown class="btn-group d-inline-block" title="Advanced">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                Advanced
+                            </button>
+                            <div ngbDropdownMenu>
+                                <label ngbButtonLabel class="w-100 text-left m-0">
+                                    <input type="checkbox" ngbButton [(ngModel)]="normalizeLinks.value"
+                                           (ngModelChange)="updateNormalize()">
+                                    Normalize links
+                                </label>
+                                <div class="dropdown-divider"></div>
+                                <label ngbButtonLabel class="w-100 text-left m-0">
+                                    <input type="checkbox" ngbButton [(ngModel)]="nodeHeight.min.enabled"
+                                           (ngModelChange)="updateNormalize()">
+                                    Min node height
+                                    <input type="range" ngbButton
+                                           [(ngModel)]="nodeHeight.min.value"
+                                           [disabled]="!nodeHeight.min.enabled"
+                                           min="0" max="20"
+                                           (ngModelChange)="updateNormalize()"
+                                           class="scrollbar-with-value">
+                                    {{nodeHeight.min.value}}
+                                </label>
+                                <label ngbButtonLabel class="w-100 text-left m-0">
+                                    <input type="checkbox" ngbButton [(ngModel)]="nodeHeight.max.enabled"
+                                           (ngModelChange)="updateNormalize()">
+                                    Max node ratio
+                                    <input type="range" ngbButton
+                                           [(ngModel)]="nodeHeight.max.ratio"
+                                           [disabled]="!nodeHeight.max.enabled"
+                                           min="1" max="20"
+                                           (ngModelChange)="updateNormalize()"
+                                           class="scrollbar-with-value">
+                                    {{nodeHeight.max.ratio}}
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -308,7 +343,6 @@
                                 class="btn btn-link w-100 d-flex align-items-center justify-content-between">
                             <b>Value</b>
                             {{ parseProperty(node.value) }}
-                            {{ parseProperty(node.fixedValue) }}
                         </button>
                     </ng-template>
                 </ngb-panel>

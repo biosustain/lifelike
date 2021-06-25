@@ -172,6 +172,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('linkDetails', {static: true}) linkDetails;
   @ViewChild('nodeDetails', {static: true}) nodeDetails;
 
+  nodeHeight = {
+    min: {
+      enabled: false,
+      value: 0
+    },
+    max: {
+      enabled: false,
+      ratio: 10
+    }
+  };
+
   traceDetailsConfig: Options = {
     physics: {
       enabled: false,
@@ -361,7 +372,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
       let y = additionalSpacers ? spacerSize + marginTop : marginTop;
       column.sort((a, b) => a._order - b._order).forEach((node, idx, arr) => {
-        const nodeHeight = node.y1 - node.y0;
+        let nodeHeight = node.y1 - node.y0;
+        if (this.nodeHeight.max.enabled) {
+          nodeHeight = Math.min(nodeHeight, this.nodeHeight.max.ratio * 10);
+        }
+        if (this.nodeHeight.min.enabled) {
+          nodeHeight = Math.max(nodeHeight, this.nodeHeight.min.value);
+        }
         node.y0 = y;
         node.y1 = y + nodeHeight;
         y += nodeHeight + spacerSize;

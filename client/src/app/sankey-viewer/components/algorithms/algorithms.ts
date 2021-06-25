@@ -3,6 +3,7 @@ import { nodeLabelAccessor, christianColors, createMapToColor, symmetricDifferen
 import { find, defaultId } from '../sankey/d3-sankey';
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { cubehelix } from 'd3';
+import visNetwork from 'vis-network';
 
 export const resolveFilteredNodesLinks = nodes => {
   let newLinks = [];
@@ -175,7 +176,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
         color: '' + color,
         databaseLabel: node.type,
         label: Array.isArray(node.name) ? node.name[0] : node.name
-      };
+      } as visNetwork.Node;
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
       return {
@@ -183,7 +184,7 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
         label: nodeId,
         databaseLabel: 'Imlicitly defined',
         color: 'red'
-      };
+      } as visNetwork.Node;
     }
   });
 
@@ -203,10 +204,14 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     from.fromEdges.push(edge);
     to.toEdges.push(edge);
   }
-
-  const segmentSize = Math.ceil(nodes.length / 8);
   const startNode = find(nodeById, trace.source);
   const endNode = find(nodeById, trace.target);
+
+  [startNode, endNode].map(node => {
+    node.borderWidth = 5;
+  });
+
+  const segmentSize = Math.ceil(nodes.length / 8);
 
   const sLayout = generateSLayout(segmentSize, 2500 / segmentSize);
   const traverseGraph = node => {
