@@ -9,19 +9,18 @@ export interface InclusionMeta {
 }
 
 export interface GlobalAnnotation {
-    id: number;
-    file_id: number;
-    filename: string;
-    userEmail: string;
+    globalId: number;
+    creator: string;
+    fileHashId: string;
+    fileDeleted: boolean;
+    fileReference: string;
     type: string;
-    reviewed: boolean;
-    approved: boolean;
     creationDate: string;
-    modifiedDate: string;
     text: string;
-    reason: string;
+    caseInsensitive: boolean;
     entityType: string;
-    annotationId: string;
+    entityId: string;
+    reason: string;
     comment: string;
 }
 
