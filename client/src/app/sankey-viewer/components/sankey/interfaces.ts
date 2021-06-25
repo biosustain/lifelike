@@ -37,6 +37,10 @@ interface SankeyNodeSets {
   [key: string]: Array<number>;
 }
 
+interface SankeyNodeSets {
+  [key: string]: Array<number>;
+}
+
 interface SankeyGraph {
   log?: string | Array<string>;
   description: string;
