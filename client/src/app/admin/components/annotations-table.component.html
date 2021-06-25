@@ -25,7 +25,7 @@
   <table class="table module-body-table">
     <thead>
       <tr>
-        <th class="text-truncate">
+        <th>
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="select-all"
                    [checked]="results.isAllSelected()"
@@ -33,12 +33,96 @@
             <label class="custom-control-label" for="select-all"></label>
           </div>
         </th>
-        <th *ngFor="let header of headers">
-          {{ header }}
-        </th>
+        <th *ngFor="let header of headers" scope="col">{{ header }}</th>
       </tr>
     </thead>
-    <tbody>
+
+    <tbody *ngIf="status.placeholdersShown">
+      <tr>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+      </tr>
+      </tbody>
+
+    <tbody status.resultsShown>
       <tr *ngFor="let object of results.view; index as objectIndex"
           [class.active]="this.results.isSelected(object)">
         <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
@@ -55,19 +139,30 @@
             </label>
           </div>
         </td>
-        <td class="align-middle text-nowrap">{{ object.text }}</td>
-        <td class="align-middle text-nowrap">{{ object.type }}</td>
-        <td class="align-middle text-nowrap">{{ object.entityType }}</td>
-        <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
-        <td class="align-middle text-nowrap">
+
+        <td class="text-nowrap">{{ object.text }}</td>
+        <td class="text-nowrap">{{ object.caseInsensitive }}</td>
+        <td class="text-nowrap">{{ object.type }}</td>
+        <td class="text-nowrap">{{ object.entityType }}</td>
+        <td class="text-nowrap">{{ object.entityId }}</td>
+        <td class="text-nowrap">{{ object.fileReference | truncate:['15'] }}</td>
+        <td class="text-nowrap">{{ object.fileDeleted }}</td>
+        <td class="text-nowrap">{{ object.creator}}</td>
+        <td class="text-nowrap">{{ object.reason }}</td>
+        <td class="text-nowrap">{{ object.comment }}</td>
+        <td class="text-nowrap">{{ object.creationDate }}</td>
+        <ng-container *ngIf="!object.fileDeleted">
+          <td class="">
+            <button class="btn btn-secondary" (click)="openNewWindow(object.fileHashId)">
+              <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+            </button>
+          </td>
+        </ng-container>
+        <!-- <td class="align-middle text-nowrap">
           <button class="btn"
                   ngbTooltip="Download file" disabled>
           </button>
-        </td>
-        <td class="align-middle text-nowrap">{{ object.userEmail}}</td>
-        <td class="align-middle text-nowrap">{{ object.reason }}</td>
-        <td class="align-middle text-nowrap">{{ object.comment }}</td>
-        <td class="align-middle text-nowrap">{{ object.creationDate }}</td>
+        </td> -->
       </tr>
     </tbody>
   </table>
