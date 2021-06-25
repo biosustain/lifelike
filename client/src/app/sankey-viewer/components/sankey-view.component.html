@@ -104,10 +104,6 @@
                                         *ngFor="let valueAccessor of linkValueAccessors">{{valueAccessor.description}}</button>
                             </div>
                         </div>
-                        <label class="btn-primary" ngbButtonLabel>
-                            <input type="checkbox" ngbButton [(ngModel)]="normalizeLinks.value"
-                                   (ngModelChange)="updateNormalize()">normalize links
-                        </label>
                         <div ngbDropdown class="btn-group d-inline-block" title="Node fixed size">
                             <button class="btn btn-primary" ngbDropdownToggle>
                                 {{ selectedNodeValueAccessor ? selectedNodeValueAccessor.description :
@@ -119,6 +115,35 @@
                                 <div class="dropdown-divider"></div>
                                 <button ngbDropdownItem (click)="selectNodeValueAccessor(nodeValueAccessor)"
                                         *ngFor="let nodeValueAccessor of nodeValueAccessors">{{nodeValueAccessor.description}}</button>
+                            </div>
+                        </div>
+                        <div ngbDropdown class="btn-group d-inline-block" title="Advanced">
+                            <button class="btn btn-primary" ngbDropdownToggle>
+                                Advanced
+                            </button>
+                            <div ngbDropdownMenu>
+                                <label ngbButtonLabel>
+                                    <input type="checkbox" ngbButton [(ngModel)]="normalizeLinks.value"
+                                           (ngModelChange)="updateNormalize()" style="margin-right: 2rem;">Normalize
+                                    links
+                                </label>
+                                <label ngbButtonLabel>
+                                    <input type="checkbox" ngbButton [(ngModel)]="nodeHeight.min.enabled"
+                                           (ngModelChange)="updateNormalize()" style="margin-right: 2rem;">
+                                    <input type="range" ngbButton [(ngModel)]="nodeHeight.min.value"
+                                           [disabled]="!nodeHeight.min.enabled"
+                                           min="0"
+                                           max="20"
+                                           (ngModelChange)="updateNormalize()" style="margin-right: 2rem;">Min node height
+                                </label>
+                                <label ngbButtonLabel>
+                                    <input type="checkbox" ngbButton [(ngModel)]="nodeHeight.max.enabled"
+                                           (ngModelChange)="updateNormalize()" style="margin-right: 2rem;">
+                                    <input type="range" ngbButton [(ngModel)]="nodeHeight.max.ratio"
+                                           [disabled]="!nodeHeight.max.enabled"
+                                           min="1" max="20"
+                                           (ngModelChange)="updateNormalize()" style="margin-right: 2rem;">Max node ratio
+                                </label>
                             </div>
                         </div>
                     </div>
