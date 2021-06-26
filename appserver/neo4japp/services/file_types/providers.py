@@ -362,7 +362,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                         if node['data'].get('sources') or node['data'].get('hyperlinks'):
                             data = node['data'].get('sources') or [] \
                                    + node['data'].get('hyperlinks') or []
-                            if any(link.get('url').lstrip().startswith('mailto:') for link in data):
+                            if any(link.get('url').lstrip().startswith('/projects/') and
+                                   'files' in link.get('url').split('/')
+                                   for link in data):
+                                label = 'document'
+                            elif any(link.get('url').lstrip().startswith('mailto:')
+                                     for link in data):
                                 label = 'email'
                     icon_params['image'] = (
                             f'/home/n4j/assets/{label}/{label}'
