@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten } from 'lodash';
 
 import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -22,7 +22,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
+import { RankedItem, ResultList, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { uuidv4 } from 'app/shared/utils';
@@ -36,11 +36,10 @@ import {
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
-import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
+import { SynonymSearchComponent } from './synonym-search.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
-import { ContentSearchResponse } from '../schema';
 
 
 @Component({
@@ -55,7 +54,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   private readonly defaultLimit = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
-  public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
+
+  results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
@@ -64,11 +64,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
 
+  queryString = '';
   contentSearchFormVal: SearchableRequestOptions;
-
-  useSynonyms = true;
-  synonyms = new Map<string, string[]>();
-  showSynonyms = false;
 
   get emptyParams(): boolean {
     if (isNullOrUndefined(this.params)) {
@@ -77,11 +74,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
     const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
     const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
-    const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
-    const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
-    // TODO: Doesn't really make sense for synoynms to be here, but we could add it in the future
 
-    return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
+    return !(qExists || typesExists || projectsExists);
   }
 
   constructor(private modalService: NgbModal,
@@ -99,6 +93,16 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
+  ngOnInit() {
+    super.ngOnInit();
+
+    this.subscriptions.add(this.route.queryParams.pipe(
+      mergeMap(params => this.deserializeParams(params))
+    ).subscribe(params => {
+      this.queryString = this.getQueryStringFromParams(params);
+    }));
+  }
+
   valueChanged(value: ContentSearchOptions) {
     this.modulePropertiesChange.emit({
       title: value.q.length ? `Search: ${value.q}` : 'Search',
@@ -106,30 +110,15 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
+  getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
     // No point sending a request if the params are completely empty
     if (this.emptyParams) {
-      return of({total: 0, results: [], synonyms: {}, droppedSynonyms: {}});
+      return of({total: 0, results: []});
     }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
-        const synonymsSet = new Set<string>();
-        this.synonyms.clear();
-
-        Object.entries(response.synonyms).forEach(([***ARANGO_USERNAME***, synonymList]) => {
-          this.synonyms.set(***ARANGO_USERNAME***, synonymList);
-          synonymList.forEach(synonym => synonymsSet.add(synonym));
-        });
-        this.highlightTerms = [...response.query.phrases, ...Array.from(synonymsSet)];
-
-        if (Object.keys(response.droppedSynonyms).length) {
-          const rejectedSynonyms = new Map<string, string[]>();
-          Object.entries(response.droppedSynonyms).forEach(([***ARANGO_USERNAME***, synonymList]) => {
-            rejectedSynonyms.set(***ARANGO_USERNAME***, synonymList);
-          });
-          this.openRejectedSynoynms(rejectedSynonyms);
-        }
+        this.highlightTerms = response.query.phrases;
       })
     );
   }
@@ -141,6 +130,21 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       sort: '+name',
       q: '',
     };
+  }
+
+  getQueryStringFromParams(params: ContentSearchOptions) {
+    const q = [];
+    if (params.hasOwnProperty('q') && params.q !== '') {
+      q.push(params.q);
+    }
+    if (params.hasOwnProperty('types')) {
+      params.types.forEach(type => q.push(`type:${type.shorthand}`));
+    }
+    if (params.hasOwnProperty('projects')) {
+      params.projects.forEach(project => q.push(`project:${project}`));
+    }
+
+    return q.join(' ');
   }
 
   deserializeAdvancedParams(params) {
@@ -157,11 +161,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     if (params.hasOwnProperty('wildcards')) {
       advancedParams.wildcards = params.wildcards;
-    }
-    if (params.hasOwnProperty('synonyms')) {
-      // TODO: Change this back if we ever move synonyms back to the advanced search dialog
-      // advancedParams.synonyms = params.synonyms === 'true';
-      this.useSynonyms = params.synonyms === 'true';
     }
     return advancedParams;
   }
@@ -183,17 +182,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('projects')) {
       advancedParams.projects = params.projects.join(';');
     }
-    if (params.hasOwnProperty('phrase')) {
-      advancedParams.phrase = params.phrase;
-    }
-    if (params.hasOwnProperty('wildcards')) {
-      advancedParams.wildcards = params.wildcards;
-    }
-    // TODO: Uncomment if we ever move synonyms back to the advanced search dialog
-    // if (params.hasOwnProperty('synonyms')) {
-    //   advancedParams.synonyms = params.synonyms;
-    // }
-    advancedParams.synonyms = this.useSynonyms.toString();
     return advancedParams;
   }
 
@@ -329,23 +317,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     advancedParams.projects = extractedProjects;
     q = q.replace(/\bproject:\S*/g, '');
 
-    // Remove the first phrase from q and add to the phrase option of the advancedParams
-    const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
-    // Group 2 of the match should be the `"` enclosed string, hence the `phraseMatch[1]` here
-    advancedParams.phrase = phraseMatch !== null ? phraseMatch[1] : '';
-    q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '');
-
-    // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
-    const wildcardMatches = q.match(/\S*(\?|\*)\S*/g);
-    const extractedWildcards = wildcardMatches === null ? [] : wildcardMatches;
-    advancedParams.wildcards = extractedWildcards.join(' ').trim();
-    q = q.replace(/\S*(\?|\*)\S*/g, '');
-
-    // Remove 'synoynms' from q and add to the synonyms options of the advancedParams. NOTE: by default, synonyms is true!
-    const synonymsMatches = q.match(/\bsynonyms:\S*/g);
-    advancedParams.synonyms = (synonymsMatches === null || synonymsMatches.pop().split(':')[1] === 'true');
-    q = q.replace(/\bsynonyms:\S*/g, '');
-
     // Do one last whitespace replacement to clean up the query string
     q = q.replace(/\s+/g, ' ').trim();
 
@@ -370,23 +341,26 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         this.advancedSearch(params);
       })
       // Advanced search dialog was dismissed or rejected
-      .catch(() => {});
+      .catch((params) => {
+        this.queryString = this.getQueryStringFromParams(params);
+      });
   }
 
   /**
-   * Opens the rejected synonym dialog. This will show the user which, if any, search terms had too many synonyms to search all at once.
+   * Opens the synonym search dialog. Users can search for synonyms of a term and add them to the current query.
    */
-  openRejectedSynoynms(rejectedSynonyms: Map<string, string[]>) {
-    const modalRef = this.modalService.open(RejectedSynonymsDialogComponent, {
-      size: 'md',
+   openSynonymSearch() {
+    const modalRef = this.modalService.open(SynonymSearchComponent, {
+      size: 'lg',
     });
-    // Get the starting options from the content search form query
-    modalRef.componentInstance.rejectedSynonyms = rejectedSynonyms;
     modalRef.result
-      // Currently there's no "Submit" action on this dialog, but maybe we'll add one later
-      .then(() => {})
-      // Rejected synonyms dialog was dismissed or rejected
-      .catch(() => {});
+      // Synonym search was submitted
+      .then((synonymsToAdd: string[]) => {
+        this.queryString = (synonymsToAdd.join(' ') + (isNullOrUndefined(this.queryString) ? '' : ` ${this.queryString}`)).trim();
+      })
+      // Synonym search dialog was dismissed or rejected
+      .catch(() => {
+      });
   }
 
   itemDragStart(event: DragEvent, object: FilesystemObject, force = false) {
@@ -394,9 +368,5 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (force || !dataTransfer.types.includes('text/uri-list')) {
       object.addDataTransferData(dataTransfer);
     }
-  }
-
-  toggleShowSynonyms() {
-    this.showSynonyms = !this.showSynonyms;
   }
 }
