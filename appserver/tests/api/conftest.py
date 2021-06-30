@@ -49,7 +49,7 @@ def mock_global_compound_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -75,7 +75,7 @@ def mock_global_gene_exclusion(session):
     exclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.EXCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -113,7 +113,7 @@ def mock_global_list(fix_admin_user, fix_project, session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -129,7 +129,7 @@ def mock_global_list(fix_admin_user, fix_project, session):
     exclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.EXCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
