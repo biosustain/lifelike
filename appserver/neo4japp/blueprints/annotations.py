@@ -775,13 +775,10 @@ class GlobalAnnotationExportInclusions(MethodView):
             AppUser.id == GlobalList.annotation['user_id'].as_integer()
         ).join(
             FileContent,
-            FileContent.id == GlobalList.file_id
-        ).join(
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
             Files,
-            Files.content_id == FileContent.id
-        ).distinct(
-            # because multiple files can point to same file content
-            Files.content_id
+            Files.id == GlobalList.file_id
         ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
 
         def get_inclusion_for_review(inclusions):
@@ -843,13 +840,10 @@ class GlobalAnnotationExportExclusions(MethodView):
             AppUser.id == GlobalList.annotation['user_id'].as_integer()
         ).join(
             FileContent,
-            FileContent.id == GlobalList.file_id
-        ).join(
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
             Files,
-            Files.content_id == FileContent.id
-        ).distinct(
-            # because multiple files can point to same file content
-            Files.content_id
+            Files.id == GlobalList.file_id
         ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
 
         def get_exclusion_for_review(exclusion):
@@ -912,13 +906,10 @@ class GlobalAnnotationListView(MethodView):
             AppUser.id == GlobalList.annotation['user_id'].as_integer()
         ).join(
             FileContent,
-            FileContent.id == GlobalList.file_id
-        ).join(
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
             Files,
-            Files.content_id == FileContent.id
-        ).distinct(
-            # because multiple files can point to same file content
-            Files.content_id
+            Files.id == GlobalList.file_id
         ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
 
         inclusions = db.session.query(
@@ -941,13 +932,10 @@ class GlobalAnnotationListView(MethodView):
             AppUser.id == GlobalList.annotation['user_id'].as_integer()
         ).join(
             FileContent,
-            FileContent.id == GlobalList.file_id
-        ).join(
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
             Files,
-            Files.content_id == FileContent.id
-        ).distinct(
-            # because multiple files can point to same file content
-            Files.content_id
+            Files.id == GlobalList.file_id
         ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
 
         query = exclusions.union(inclusions)
@@ -960,7 +948,7 @@ class GlobalAnnotationListView(MethodView):
             'results': [{
                 'global_id': r.global_list_id,
                 'creator': r.creator,
-                'file_hash_id': r.file_hash_id,
+                'file_hash_id': r.file_hash_id if r.file_hash_id else '',
                 'file_deleted': True if r.file_deleted_by else False,
                 'file_reference': hashlib.sha256(r.file_reference).hexdigest(),
                 'type': r.type,
