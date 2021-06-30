@@ -1,4 +1,4 @@
-# Refactoring literature nodes to create LiteratureEntity nodes based on GraphAware suggestion
+# LL-3049 Refactoring literature nodes to create LiteratureEntity nodes based on GraphAware suggestion
 
 Old model: 
 Entity is either NCBI Gene, MESH Disease or CHEBI Chemical/MESH Chemical

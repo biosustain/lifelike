@@ -1,4 +1,4 @@
-# Refactor literature data so that snippet is unique
+# LL-2193 Refactor literature data so that snippet is unique
 
 In the new schema, properties entry path, entry1_text and entry2_text moved from node Association to relationships PREDICTS.
 
