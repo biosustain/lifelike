@@ -1,4 +1,3 @@
-from flask import json
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 
 from neo4japp.models.common import NEO4JBase
