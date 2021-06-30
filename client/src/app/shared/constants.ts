@@ -6,15 +6,6 @@ export const PUBMEDURL = 'https://pubmed.ncbi.nlm.nih.gov/';
 
 export const VIZ_SEARCH_LIMIT = 10;
 
-export enum Hyperlink {
-  Chebi = 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
-  Mesh = 'https://www.ncbi.nlm.nih.gov/mesh/',
-  Uniprot = 'https://www.uniprot.org/uniprot/?sort=score&query=',
-  NcbiGenes = 'https://www.ncbi.nlm.nih.gov/gene/',
-  NcbiSpecies = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
-  Go = 'http://amigo.geneontology.org/amigo/term/'
-}
-
 export enum DBHostname {
   ChEBI = 'www.ebi.ac.uk',
   UniProt = 'www.uniprot.org',
@@ -34,14 +25,6 @@ export enum AnnotationType {
   Mutation = 'Mutation',
   Pathway = 'Pathway',
   Entity = 'Entity',
-}
-
-export enum DatabaseType {
-  Chebi = 'CHEBI',
-  Mesh = 'MESH',
-  Uniprot = 'UNIPROT',
-  Ncbi = 'NCBI',
-  Biocyc = 'BIOCYC',
 }
 
 export const LOGOUT_SUCCESS = '[Auth] Logout Success';
