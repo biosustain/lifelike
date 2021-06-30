@@ -2,7 +2,6 @@ import attr
 import functools
 import hashlib
 import itertools
-import json
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
@@ -57,7 +56,7 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
                 json.dumps(v)
                 new_dict.update({snake_to_camel(encode_to_str(k)): v})
             except TypeError:
-                pass # Fallback to str, 'v' is not JSON serializable
+                pass  # Fallback to str, 'v' is not JSON serializable
             new_dict.update({snake_to_camel(encode_to_str(k)): str(v)})
     return new_dict
 
