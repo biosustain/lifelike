@@ -14,36 +14,12 @@ from .lmdb_util import *
 
 
 class AnnotationGraphService(GraphMixin):
-    def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
+    def get_nodes_from_node_ids(self, entity_type: str, node_ids: List[str]) -> Dict[str, str]:
         result = self.exec_read_query_with_params(
-            self.get_chemicals_by_ids, {'ids': chemical_ids})
-        return {row['chemical_id']: row['chemical_name'] for row in result}
+            self.get_nodes_by_ids(entity_type), {'ids': node_ids})
+        return {row['entity_id']: row['entity_name'] for row in result}
 
-    def get_compounds_from_compound_ids(self, compound_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(
-            self.get_compounds_by_ids, {'ids': compound_ids})
-        return {row['compound_id']: row['compound_name'] for row in result}
-
-    def get_diseases_from_disease_ids(self, disease_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(
-            self.get_diseases_by_ids, {'ids': disease_ids})
-        return {row['disease_id']: row['disease_name'] for row in result}
-
-    def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(
-            self.get_genes_by_ids, {'ids': gene_ids})
-        return {row['gene_id']: row['gene_name'] for row in result}
-
-    def get_proteins_from_protein_ids(self, protein_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(
-            self.get_proteins_by_ids, {'ids': protein_ids})
-        return {row['protein_id']: row['protein_name'] for row in result}
-
-    def get_organisms_from_organism_ids(self, organism_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(
-            self.get_species_by_ids, {'ids': organism_ids})
-        return {row['organism_id']: row['organism_name'] for row in result}
-
+    # NOTE DEPRECATED: just used in old migration
     def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
         result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
