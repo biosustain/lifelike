@@ -28,7 +28,7 @@ export class SankeyTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: SANKEY_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Documents'}),
+      Object.freeze({id: SANKEY_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
     ];
   }
 
