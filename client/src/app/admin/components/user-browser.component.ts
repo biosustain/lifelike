@@ -13,8 +13,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
-import { AuthActions } from '../../auth/store';
-import { Store } from '@ngrx/store';
+import { AuthActions, AuthSelectors } from '../../auth/store';
+import { select, Store } from '@ngrx/store';
 import { State } from '../../root-store';
 
 
@@ -23,6 +23,7 @@ import { State } from '../../root-store';
   templateUrl: 'user-browser.component.html',
 })
 export class UserBrowserComponent implements OnInit, OnDestroy {
+  currentUser: AppUser;
   users: AppUser[];
   shownUsers: AppUser[] = [];
   filterQuery = '';
@@ -43,7 +44,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       this.users = data.results;
       this.updateFilter();
     });
-
+    this.store.pipe(select(AuthSelectors.selectAuthUser)).subscribe(user => this.currentUser = user);
     this.refresh();
   }
 
@@ -133,15 +134,26 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
               status: 'Updating user...',
             })),
           });
-
-          this.accountService.updateUser(updatedUser)
+          // Data object containing one key (hash_id) -> no update data provided
+          if (Object.keys(updatedUser).length === 1) {
+            progressDialogRef.close();
+            this.snackBar.open(
+                `Provided data is either empty of unmodified!`,
+                'close',
+                {duration: 5000},
+              );
+          } else {
+            this.accountService.updateUser(updatedUser)
             .pipe(this.errorHandler.create({label: 'Update user'}))
             .subscribe(() => {
               progressDialogRef.close();
-              this.store.dispatch(AuthActions.userUpdated(
+              if (this.currentUser.hashId === selectedUser.hashId) {
+                  updatedUser = {...this.currentUser, ...updatedUser};
+                  this.store.dispatch(AuthActions.userUpdated(
                       {user: updatedUser},
                     ));
-              this.accountService.getUserList();
+                  this.currentUser = updatedUser;
+              }
               this.refresh();
               this.snackBar.open(
                 `User ${selectedUser.username} updated!`,
@@ -151,6 +163,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
             }, () => {
               progressDialogRef.close();
             });
+          }
         }, () => {
         });
       }
