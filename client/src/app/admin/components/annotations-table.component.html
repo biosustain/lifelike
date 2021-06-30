@@ -147,17 +147,20 @@
         <td class="text-nowrap">{{ object.entityId }}</td>
         <td class="text-nowrap">{{ object.fileReference | truncate:['15'] }}</td>
         <td class="text-nowrap">{{ object.fileDeleted }}</td>
-        <td class="text-nowrap">{{ object.creator}}</td>
+        <td class="text-nowrap">{{ object.creator }}</td>
         <td class="text-nowrap">{{ object.reason }}</td>
         <td class="text-nowrap">{{ object.comment }}</td>
         <td class="text-nowrap">{{ object.creationDate }}</td>
-        <ng-container *ngIf="!object.fileDeleted">
-          <td class="">
+        <ng-container *ngIf="!object.fileDeleted && object.fileHashId; else noSuchFile">
+          <td>
             <button class="btn btn-secondary" (click)="openNewWindow(object.fileHashId)">
               <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
             </button>
           </td>
         </ng-container>
+        <ng-template #noSuchFile>
+          <td class="text-nowrap">File no longer available</td>
+        </ng-template>
         <!-- <td class="align-middle text-nowrap">
           <button class="btn"
                   ngbTooltip="Download file" disabled>
