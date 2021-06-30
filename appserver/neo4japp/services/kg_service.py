@@ -5,7 +5,7 @@ import time
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List
+from typing import Dict, List, Type
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
 from neo4japp.exceptions import ServerException
@@ -338,7 +338,8 @@ class KgService(HybridDBDao):
                         try:
                             node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
-                        except:
+                        except KeyError:
+                            # If label does not exist, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
 
