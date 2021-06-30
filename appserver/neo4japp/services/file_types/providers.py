@@ -6,6 +6,7 @@ from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import textwrap
+
 import graphviz
 import requests
 from pdfminer import high_level
@@ -33,7 +34,8 @@ from neo4japp.constants import (
     MAX_LINE_WIDTH,
     BASE_IMAGE_HEIGHT,
     IMAGE_HEIGHT_INCREMENT,
-    SCALING_FACTOR
+    SCALING_FACTOR,
+    LIFELIKE_DOMAIN
     )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -462,7 +464,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
-
+            # If url points to internal file, append it with the domain address
+            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+                params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
         for edge in json_graph['edges']:
