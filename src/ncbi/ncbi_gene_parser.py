@@ -53,7 +53,10 @@ class GeneParser(BaseParser):
     def write_lmdb_annotation_file(self):
         """
         2021-06-08 14:28:36,984 rows processed: 43259367
-        :return:
+        LMDB gene annotation file has the following columns:
+        id, name, synonym, data_source.
+
+        Since the gene.info file is very big, data were loaded and write in chunks
         """
         outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
         open(outfile, 'w').close()
@@ -63,15 +66,20 @@ class GeneParser(BaseParser):
         header = True
         for chunk in geneinfo_chunks:
             df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
+            # remove any gene that has a new 'NEWENTRY'.
             df = df[df['name'] != 'NEWENTRY']
             df = df.replace('-', '')
+            # get columns for synonym, then expand the synonyms so that each synonym in one row
             df_syn = df[[PROP_ID, PROP_NAME, PROP_SYNONYMS]]
             df_syn = df_syn.set_index([PROP_ID, PROP_NAME]).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, PROP_NAME, 'synonym']]
+            # add gene name as synonym
             df_names = df[[PROP_ID, PROP_NAME]]
             df_names['synonym'] = df_names[PROP_NAME]
+            # add locus tag as synonym
             df_locus = df[[PROP_ID, PROP_NAME, PROP_LOCUS_TAG]]
             df_locus = df_locus.rename(columns={PROP_LOCUS_TAG: 'synonym'})
+            # combine dataframes
             df_syns = pd.concat([df_names, df_locus, df_syn])
             df_syns.drop_duplicates(inplace=True)
             # remove synonyms with only one letter, or do not have non-digit chars
@@ -84,7 +92,12 @@ class GeneParser(BaseParser):
             header = False
         logging.info(f'rows processed: {count}')
 
-    def extract_organism_geneinfo(self, tax_id):
+    def extract_organism_geneinfo(self, tax_id)->pd.DataFrame:
+        """
+        extract geneinfo rows for given organism
+        :param tax_id: the tax_id for the organism
+        :return: dataframe containing gene info
+        """
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
         df_org = pd.DataFrame()
@@ -101,6 +114,11 @@ class GeneParser(BaseParser):
         return df_org
 
     def _parse_and_write_gene_info(self):
+        """
+        parse gene info, and write data into three tsv files for gene nodes and relationships importing.
+        The gene2syn.tsv has only the synonyms listed in geneinfo file.  gene name and locus tag need to be added as synonyms after
+        finishing data loading. Loading using cypher query is much faster than load with python
+        """
         # create new empty output files
         gene_file = os.path.join(self.output_dir, 'gene.tsv')
         gene2tax_file = os.path.join(self.output_dir, 'gene2tax.tsv')
@@ -142,6 +160,11 @@ class GeneParser(BaseParser):
             header = False
 
     def _load_bioinfo_to_neo4j(self, database: Database, update=False):
+        """
+        Read bioinfo file, and load gene nodes, gene synonyms listed in the synonyms column.  Associate genes with taxonomy
+        :param database: database to laod data
+        :param update: if False, it is initial loading; if True, update the database (no node and relationship deletion)
+        """
         query_genes = get_update_nodes_query(NODE_GENE, PROP_ID,
                                        [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
                                        [NODE_NCBI])
@@ -174,6 +197,8 @@ class GeneParser(BaseParser):
             database.load_data_from_dataframe(df_syn, query_synonyms)
             count_gene2syn += len(df_syn)
         logging.info(f'Processed genes: {count_gene}, gene2syns: {count_gene2syn}')
+
+        # use the following cypher query to load HAS_TAXONOMY relationship is much faster than using python
         logging.info('add gene2tax relationships')
         query_gene2tax = '''
         call apoc.periodic.iterate(
@@ -217,7 +242,7 @@ class GeneParser(BaseParser):
 
 if __name__ == '__main__':
     parser = GeneParser('/Users/rcai/data')
-    database = get_database(Neo4jInstance.LOCAL, 'neo4j')
+    database = get_database(Neo4jInstance.LOCAL, 'lifelike-qa')
     # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
     parser.load_data_to_neo4j(database)
     database.close()
