@@ -179,21 +179,3 @@ class BestOrganismMatch():
     organism_id: str = attr.ib()
     closest_distance: float = attr.ib()
     specified_organism_id: Optional[str] = attr.ib(default=None)
-
-
-@attr.s(frozen=True)
-class GlobalAnnotationData():
-    file_id: str = attr.ib()
-    filename: str = attr.ib()
-    user_email: str = attr.ib()
-    id: int = attr.ib()
-    type: str = attr.ib()
-    reviewed: bool = attr.ib()
-    approved: bool = attr.ib()
-    creation_date: str = attr.ib()
-    modified_date: str = attr.ib()
-    text: str = attr.ib()
-    reason: str = attr.ib()
-    entity_type: str = attr.ib()
-    annotation_id: str = attr.ib()
-    comment: str = attr.ib()

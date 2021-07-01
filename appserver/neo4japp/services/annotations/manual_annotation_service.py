@@ -157,6 +157,7 @@ class ManualAnnotationService:
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
                 file.content_id,
+                file.id,
                 user
             )
 
@@ -243,6 +244,7 @@ class ManualAnnotationService:
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
                 file.content_id,
+                file.id,
                 user
             )
 
@@ -327,7 +329,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def save_global(self, annotation, inclusion_type, file_id, user):
+    def save_global(self, annotation, inclusion_type, file_content_id, file_id, user):
         """Adds global inclusion to the KG, and global exclusion to postgres.
 
         For the KG, if a global inclusion (seen as a synonym) matches to an

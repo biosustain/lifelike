@@ -49,7 +49,7 @@ def mock_global_compound_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -75,7 +75,7 @@ def mock_global_gene_exclusion(session):
     exclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.EXCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -85,9 +85,21 @@ def mock_global_gene_exclusion(session):
 
 
 @pytest.fixture(scope='function')
-def mock_global_list(session):
+def mock_global_list(fix_admin_user, fix_project, session):
     file_content = FileContent(raw_file=b'', checksum_sha256=b'')
     session.add(file_content)
+    session.flush()
+
+    f = Files(
+        hash_id='pdf1',
+        mime_type=PDFTypeProvider.MIME_TYPE,
+        filename='pdf1',
+        description='a test pdf',
+        user=fix_admin_user,
+        content=file_content,
+        parent=fix_project.root,
+    )
+    session.add(f)
     session.flush()
 
     annotation = {
@@ -96,11 +108,12 @@ def mock_global_list(session):
             'type': EntityType.COMPOUND.value,
             'allText': 'compound-(12345)'
         },
+        'user_id': fix_admin_user.id
     }
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -110,12 +123,13 @@ def mock_global_list(session):
     annotation = {
         'id': '59272',
         'type': EntityType.GENE.value,
-        'text': 'fake-gene'
+        'text': 'fake-gene',
+        'user_id': fix_admin_user.id
     }
     exclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.EXCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
