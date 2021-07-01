@@ -99,7 +99,7 @@ class KgService(HybridDBDao):
         primary_label_fn=get_first_known_label_from_node,
     ):
         if url_fn is None:
-            url_fn = lambda x: self._get_uri_of_node_entity(x)
+            url_fn = self._get_uri_of_node_entity
 
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
