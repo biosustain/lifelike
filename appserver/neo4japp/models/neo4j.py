@@ -39,10 +39,10 @@ class GraphNode(NEO4JBase):
         url_fn=None
     ):
         labels = [label for label in node.labels]
-        prop_filter_fn = prop_filter_fn or (lambda x: x)
+        prop_filter_fn = prop_filter_fn or (lambda _: True)
         primary_label = labels[0] if not primary_label_fn else primary_label_fn(node)
         domain_labels = [] if not domain_labels_fn else domain_labels_fn(node)
-        data = prop_filter_fn({k: v for k, v in dict(node).items()})
+        data = {k: v for k, v in dict(node).items() if prop_filter_fn(k)}
         data = snake_to_camel_dict(data, {})
         display_name = None if not display_fn else display_fn(node)
         url = None if not url_fn else url_fn(node)
