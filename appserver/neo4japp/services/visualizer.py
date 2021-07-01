@@ -2,7 +2,13 @@ from flask.globals import current_app
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from typing import List
 
-from neo4japp.constants import DISPLAY_NAME_MAP, LogEventType, TYPE_CHEMICAL, TYPE_DISEASE, TYPE_GENE
+from neo4japp.constants import (
+    DISPLAY_NAME_MAP,
+    LogEventType,
+    TYPE_CHEMICAL,
+    TYPE_DISEASE,
+    TYPE_GENE
+)
 from neo4japp.data_transfer_objects.visualization import (
     Direction,
     DuplicateEdgeConnectionData,
