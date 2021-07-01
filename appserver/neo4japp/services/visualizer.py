@@ -1,7 +1,8 @@
+from flask.globals import current_app
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from typing import List
 
-from neo4japp.constants import DISPLAY_NAME_MAP
+from neo4japp.constants import DISPLAY_NAME_MAP, LogEventType, TYPE_CHEMICAL, TYPE_DISEASE, TYPE_GENE
 from neo4japp.data_transfer_objects.visualization import (
     Direction,
     DuplicateEdgeConnectionData,
@@ -17,28 +18,124 @@ from neo4japp.data_transfer_objects.visualization import (
     GetAssociatedTypesResult,
 )
 from neo4japp.models import GraphNode
+from neo4japp.models.entity_resources import DomainURLsMap
 from neo4japp.services import KgService
-from neo4japp.util import get_first_known_label_from_node
+from neo4japp.util import get_first_known_label_from_list, get_first_known_label_from_node
+from neo4japp.utils.logger import EventLog
 
 
 class VisualizerService(KgService):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
+    def _get_uri_of_node_data(self, id: int, label: str, entity_id: str):
+        """Given node meta data and a map of domains -> URLs, returns the appropriate
+        URL formatted with the node entity identifier.
+        """
+        url_map = {
+            domain: base_url
+            for domain, base_url in
+            self.session.query(
+                DomainURLsMap.domain,
+                DomainURLsMap.base_URL,
+            ).all()
+        }
+
+        # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
+        # is DISTINCT from the `id` property a given node might have, which represents the node
+        # entity! I.e. ID(n) = 123456789 vs. (n: {id: 'CHEBI:0000'})}
+
+        # Can't get the URI of the node if there is no 'id' property, so return None
+        if entity_id is None:
+            current_app.logger.warning(
+                f'Node with ID {id} does not have a URI.',
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            )
+            return None
+
+        url = None
+        try:
+            if label == TYPE_CHEMICAL:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'CHEBI':
+                    url = url_map['chebi'].format(uid)
+                else:
+                    url = url_map['MESH'].format(uid)
+            elif label == TYPE_DISEASE:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'MESH':
+                    url = url_map['MESH'].format(uid)
+                else:
+                    url = url_map['omim'].format(uid)
+            elif label == TYPE_GENE:
+                url = url_map['NCBI_Gene'].format(entity_id)
+        except KeyError:
+            current_app.logger.warning(
+                f'url_map did not contain the expected key value for node with:\n' +
+                f'\tID: {id}\n'
+                f'\tLabel: {label}\n' +
+                f'\tURI: {entity_id}\n'
+                'There may be something wrong in the database.',
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            )
+        finally:
+            return url
+
     def expand_graph(self, node_id: str, filter_labels: List[str]):
         result = self.graph.read_transaction(self.get_expand_query, node_id, filter_labels)
 
-        nodes = []
-        relationships = []
+        node_data = []
+        edge_data = []
         if len(result) > 0:
-            nodes = result[0]['nodes']
-            relationships = result[0]['relationships']
+            node_data = result[0]['nodes']
+            edge_data = result[0]['relationships']
 
-        return self._neo4j_objs_to_graph_objs(
-            nodes,
-            relationships,
-            prop_filter_fn=lambda x: x in ['name', 'id']
-        )
+        nodes = []
+        for data in node_data:
+            try:
+                label = get_first_known_label_from_list(data['labels'])
+            except ValueError:
+                label = 'Unknown'
+            nodes.append({
+                'id': data['id'],
+                'label': label,
+                'domainLabels': [],
+                'data': {
+                    'name': data['name'],
+                    'id': data['entity_id'],
+                },
+                'subLabels': data['labels'],
+                'displayName': data['name'],
+                'entityUrl': self._get_uri_of_node_data(data['id'], label, data['entity_id'])
+            })
+
+        edges = []
+        for data in edge_data:
+            try:
+                from_label = get_first_known_label_from_list(data['from_labels'])
+            except ValueError:
+                from_label = 'Unknown'
+
+            try:
+                to_label = get_first_known_label_from_list(data['to_labels'])
+            except ValueError:
+                to_label = 'Unknown'
+
+            edges.append({
+                'id': data['id'],
+                'label': data['label'],
+                'data': {
+                    'description': data['relationship'].get('description'),
+                    'association_id': data['relationship'].get('association_id'),
+                    'type': data['relationship'].get('type'),
+                },
+                'to': data['relationship'].end_node.id,
+                'from': data['relationship'].start_node.id,
+                'toLabel': to_label,
+                'fromLabel': from_label,
+            })
+
+        return {'nodes': nodes, 'edges': edges}
 
     def get_snippets_from_edges(
         self,
@@ -304,8 +401,26 @@ class VisualizerService(KgService):
                 MATCH (n)-[l:ASSOCIATED]-(m)
                 WHERE any(x IN $labels WHERE x IN labels(m))
                 RETURN
-                    apoc.convert.toSet([n] + collect(m)) AS nodes,
-                    apoc.convert.toSet(collect(l)) AS relationships
+                    apoc.convert.toSet([{
+                        id: ID(n),
+                        labels: labels(n),
+                        entity_id: n.id,
+                        name: n.name
+                    }] + collect({
+                        id: ID(m),
+                        labels: labels(m),
+                        entity_id: m.id,
+                        name: m.name
+                    })) AS nodes,
+                    apoc.convert.toSet(collect({
+                        // We have to return the entire relationship as well, so we can get the
+                        // start and end nodes.
+                        relationship: l,
+                        id: id(l),
+                        label: type(l),
+                        from_labels: labels(n),
+                        to_labels: labels(m)
+                    })) AS relationships
                 """,
                 node_id=node_id, labels=labels
             )
