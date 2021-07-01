@@ -1,5 +1,5 @@
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
-from typing import Dict, List
+from typing import List
 
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.data_transfer_objects.visualization import (
@@ -16,12 +16,9 @@ from neo4japp.data_transfer_objects.visualization import (
     Snippet,
     GetAssociatedTypesResult,
 )
-from neo4japp.models import GraphNode, GraphRelationship
+from neo4japp.models import GraphNode
 from neo4japp.services import KgService
-from neo4japp.util import (
-
-    get_first_known_label_from_node
-)
+from neo4japp.util import get_first_known_label_from_node
 
 
 class VisualizerService(KgService):
@@ -37,7 +34,11 @@ class VisualizerService(KgService):
             nodes = result[0]['nodes']
             relationships = result[0]['relationships']
 
-        return self._neo4j_objs_to_graph_objs(nodes, relationships)
+        return self._neo4j_objs_to_graph_objs(
+            nodes,
+            relationships,
+            prop_filter_fn=lambda x: x in ['name', 'id']
+        )
 
     def get_snippets_from_edges(
         self,
