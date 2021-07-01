@@ -33,12 +33,21 @@ class KgService(HybridDBDao):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
-    def _get_uri_of_node_entity(self, node: N4jDriverNode, url_map: Dict[str, str]):
+    def _get_uri_of_node_entity(self, node: N4jDriverNode):
         """Given a node and a map of domains -> URLs, returns the appropriate
         URL formatted with the node entity identifier.
         """
         label = get_first_known_label_from_node(node)
         entity_id = node.get('id')
+
+        url_map = {
+            domain: base_url
+            for domain, base_url in
+            self.session.query(
+                DomainURLsMap.domain,
+                DomainURLsMap.base_URL,
+            ).all()
+        }
 
         # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
         # is DISTINCT from the `id` property a given node might have, which represents the node
@@ -83,8 +92,15 @@ class KgService(HybridDBDao):
     def _neo4j_objs_to_graph_objs(
         self,
         nodes: List[N4jDriverNode],
-        relationships: List[N4jDriverRelationship]
+        relationships: List[N4jDriverRelationship],
+        prop_filter_fn=None,
+        url_fn=None,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
+        primary_label_fn=get_first_known_label_from_node,
     ):
+        if url_fn is None:
+            url_fn = lambda x: self._get_uri_of_node_entity(x)
+
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
         # different type of nodes/edges being converted.
@@ -93,22 +109,13 @@ class KgService(HybridDBDao):
         node_dict = {}
         rel_dict = {}
 
-        # TODO: Maybe this would be more appropriate as a class property?
-        url_map = {
-            domain: base_url
-            for domain, base_url in
-            self.session.query(
-                DomainURLsMap.domain,
-                DomainURLsMap.base_URL,
-            ).all()
-        }
-
         for node in nodes:
             graph_node = GraphNode.from_neo4j(
                 node,
-                url_fn=lambda x: self._get_uri_of_node_entity(x, url_map),
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label_from_node,
+                url_fn=url_fn,
+                display_fn=display_fn,
+                primary_label_fn=primary_label_fn,
+                prop_filter_fn=prop_filter_fn
             )
             node_dict[graph_node.id] = graph_node
 
