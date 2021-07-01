@@ -1,0 +1,3065 @@
+{
+    "nodes": [
+        {
+            "id": 33024,
+            "label": "gstB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78595,
+            "label": "EC-6.5.1.8",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 59396,
+            "label": "COBS-MONOMER",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79365,
+            "label": "EC-3.4.16.4",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 79880,
+            "label": "EC-2.4.99.17",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 77321,
+            "label": "EC-4.6.1.22",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8466,
+            "label": "(S)-lactaldehyde",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 33535,
+            "label": "dacD",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 7447,
+            "label": "D-ribose 5-phosphate",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 79127,
+            "label": "EC-3.1.1.5",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 79897,
+            "label": "EC-1.1.1.40",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 7960,
+            "label": "L-histidine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 80156,
+            "label": "EC-4.1.3.42",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 79902,
+            "label": "EC-1.1.1.77",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 78879,
+            "label": "EC-4.1.2.53",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 61726,
+            "label": "COBU-CPLX",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 7966,
+            "label": "L-methionine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 61218,
+            "label": "cobinamide-P guanylyltransferase / cobinamide kinase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35618,
+            "label": "mutM",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78125,
+            "label": "RXN0-6549",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 9775,
+            "label": "pyruvate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 79664,
+            "label": "EC-1.97.1.4",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 9777,
+            "label": "acetate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 77618,
+            "label": "EC-1.1.1.83",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 77624,
+            "label": "EC-4.3.1.7",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 35069,
+            "label": "chpB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 8252,
+            "label": "sn-glycero-3-phosphoethanolamine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 10046,
+            "label": "hydroxyacetone",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 33855,
+            "label": "tcyJ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 8006,
+            "label": "L-glutamine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 10058,
+            "label": "preQ1",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 60492,
+            "label": "allose-6-phosphate isomerase / ribose-5-phosphate isomerase B",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 78156,
+            "label": "EC-7.4.2.11",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 34382,
+            "label": "fumD",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78418,
+            "label": "EC-1.4.1.13",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 77394,
+            "label": "EC-2.4.2.21",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8019,
+            "label": "ethanolamine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 79699,
+            "label": "EC-1.8.4.4",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 59221,
+            "label": "fructokinase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 9817,
+            "label": "aminoacetone",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 11101,
+            "label": "EC-4.2.1.2",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 60510,
+            "label": "endoribonuclease toxin ChpB",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 8030,
+            "label": "L-glutamate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 9829,
+            "label": "(R)-1-aminopropan-2-ol",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 77413,
+            "label": "EC-2.7.7.62",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8038,
+            "label": "L-cysteine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 62315,
+            "label": "D-alanyl-D-alanine carboxypeptidase DacD",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 9071,
+            "label": "&alpha;-ribazole 5'-phosphate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 79988,
+            "label": "EC-2.7.1.4",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 32374,
+            "label": "mak",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 10620,
+            "label": "&beta;-nicotinamide D-ribonucleotide",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 9344,
+            "label": "(S)-propane-1,2-diol",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 58506,
+            "label": "allose-6-phosphate isomerase / ribose-5-phosphate isomerase B",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79499,
+            "label": "EC-3.5.1.25",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 9100,
+            "label": "preQ0",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 78734,
+            "label": "EC-1.4.5",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 5006,
+            "label": "a 2-acyl-1-lyso-phosphatidylethanolamine",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 79253,
+            "label": "EC-6.5.1.6|EC-6.5.1.2",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 1176,
+            "label": "a 5'-phospho-[DNA]",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 57500,
+            "label": "cystine ABC transporter periplasmic binding protein",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 62625,
+            "label": "DNA-formamidopyrimidine glycosylase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 8099,
+            "label": "(R)-malate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 8100,
+            "label": "GMP",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 62631,
+            "label": "glutathione S-transferase GstB",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 10153,
+            "label": "&beta;-D-fructofuranose 6-phosphate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 8106,
+            "label": "(S)-malate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 78761,
+            "label": "EC-2.7.1.40",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 2222,
+            "label": "an [RNA]-3'-ribonucleoside-2',3'-cyclophosphate",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 77487,
+            "label": "EC-2.4.2.14",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 9651,
+            "label": "propanoate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 58548,
+            "label": "fumarase D",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 8888,
+            "label": "D-alanine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 78777,
+            "label": "EC-2.4.2.29",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 78010,
+            "label": "acetate:proton symport",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 78011,
+            "label": "EC-1.7.1.13",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8892,
+            "label": "D-methionine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 10941,
+            "label": "EC-4.1.2.53",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 78781,
+            "label": "EC-3.5.1.42",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 79044,
+            "label": "EC-7.4.2.12",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 62404,
+            "label": "cystine ABC transporter",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79822,
+            "label": "EC-4.3.1.17",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8183,
+            "label": "adenosylcobinamide-GDP",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 79573,
+            "label": "EC-1.1.1.75",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 10710,
+            "label": "RXN-8632",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 9176,
+            "label": "2-dehydro-3-deoxy-L-rhamnonate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 31970,
+            "label": "rpiB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 77539,
+            "label": "EC-3.1.4.46|EC-3.1.4.2",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 31999,
+            "label": "cobS",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 8426,
+            "label": "bromide",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 9195,
+            "label": "&beta;-nicotinate D-ribonucleotide",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 31982,
+            "label": "cobU",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78831,
+            "label": "EC-4.1.2.20",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8433,
+            "label": "acetaldehyde",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 10996,
+            "label": "EC-5.3.1.6",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 77301,
+            "label": "RXN-21279",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 7927,
+            "label": "L-cystine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 78589,
+            "label": "EC-2.7.8.26",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 5886,
+            "label": "a 7-aminomethyl-7-deazaguanosine34 in tRNA",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 77567,
+            "label": "EC-6.3.1.2",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "74377",
+            "label": "ENCODES",
+            "from": 33024,
+            "to": 62631,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "87773",
+            "label": "PRODUCES",
+            "from": 78595,
+            "to": 8100,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25840",
+            "label": "CATALYZES",
+            "from": 59396,
+            "to": 78589,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89534",
+            "label": "PRODUCES",
+            "from": 79365,
+            "to": 8888,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90748",
+            "label": "PRODUCES",
+            "from": 79880,
+            "to": 7966,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85051",
+            "label": "PRODUCES",
+            "from": 77321,
+            "to": 2222,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3876",
+            "label": "CONSUMED_BY",
+            "from": 8466,
+            "to": 10941,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "74168",
+            "label": "ENCODES",
+            "from": 33535,
+            "to": 62315,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18673",
+            "label": "ACTIVATES",
+            "from": 7447,
+            "to": 78761,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88959",
+            "label": "PRODUCES",
+            "from": 79127,
+            "to": 8252,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90795",
+            "label": "PRODUCES",
+            "from": 79897,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24640",
+            "label": "INHIBITS",
+            "from": 7960,
+            "to": 77567,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "91419",
+            "label": "PRODUCES",
+            "from": 80156,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90807",
+            "label": "PRODUCES",
+            "from": 79902,
+            "to": 8466,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88414",
+            "label": "PRODUCES",
+            "from": 78879,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25490",
+            "label": "CATALYZES",
+            "from": 61726,
+            "to": 77413,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20868",
+            "label": "INHIBITS",
+            "from": 7966,
+            "to": 78156,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "76065",
+            "label": "COMPONENT_OF",
+            "from": 61218,
+            "to": 61726,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "74373",
+            "label": "ENCODES",
+            "from": 35618,
+            "to": 62625,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86755",
+            "label": "PRODUCES",
+            "from": 78125,
+            "to": 8426,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18656",
+            "label": "ACTIVATES",
+            "from": 9775,
+            "to": 79664,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90252",
+            "label": "PRODUCES",
+            "from": 79664,
+            "to": 7966,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21161",
+            "label": "INHIBITS",
+            "from": 9777,
+            "to": 78831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85762",
+            "label": "PRODUCES",
+            "from": 77618,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85775",
+            "label": "PRODUCES",
+            "from": 77624,
+            "to": 8433,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72867",
+            "label": "ENCODES",
+            "from": 35069,
+            "to": 60510,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "79459",
+            "label": "CONSUMED_BY",
+            "from": 8252,
+            "to": 77539,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3773",
+            "label": "CONSUMED_BY",
+            "from": 10046,
+            "to": 10710,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "70429",
+            "label": "ENCODES",
+            "from": 33855,
+            "to": 57500,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "321",
+            "label": "CONSUMED_BY",
+            "from": 8006,
+            "to": 78418,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81926",
+            "label": "CONSUMED_BY",
+            "from": 10058,
+            "to": 78777,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75380",
+            "label": "COMPONENT_OF",
+            "from": 60492,
+            "to": 58506,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86822",
+            "label": "PRODUCES",
+            "from": 78156,
+            "to": 8892,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71124",
+            "label": "ENCODES",
+            "from": 34382,
+            "to": 58548,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75",
+            "label": "PRODUCES",
+            "from": 78418,
+            "to": 8030,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85226",
+            "label": "PRODUCES",
+            "from": 77394,
+            "to": 9071,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21730",
+            "label": "INHIBITS",
+            "from": 8019,
+            "to": 79822,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90333",
+            "label": "PRODUCES",
+            "from": 79699,
+            "to": 8038,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "26728",
+            "label": "CATALYZES",
+            "from": 59221,
+            "to": 79988,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "418",
+            "label": "CONSUMED_BY",
+            "from": 9817,
+            "to": 79573,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2908",
+            "label": "PRODUCES",
+            "from": 11101,
+            "to": 8106,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27423",
+            "label": "CATALYZES",
+            "from": 60510,
+            "to": 77321,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18605",
+            "label": "ACTIVATES",
+            "from": 8030,
+            "to": 79897,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23284",
+            "label": "INHIBITS",
+            "from": 9829,
+            "to": 77624,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85266",
+            "label": "PRODUCES",
+            "from": 77413,
+            "to": 8183,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20935",
+            "label": "INHIBITS",
+            "from": 8038,
+            "to": 79822,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25177",
+            "label": "CATALYZES",
+            "from": 62315,
+            "to": 79365,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81549",
+            "label": "CONSUMED_BY",
+            "from": 9071,
+            "to": 78589,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "91023",
+            "label": "PRODUCES",
+            "from": 79988,
+            "to": 10153,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71720",
+            "label": "ENCODES",
+            "from": 32374,
+            "to": 59221,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81933",
+            "label": "CONSUMED_BY",
+            "from": 10620,
+            "to": 78781,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "84242",
+            "label": "CONSUMED_BY",
+            "from": 9344,
+            "to": 79902,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2197",
+            "label": "CATALYZES",
+            "from": 58506,
+            "to": 10996,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89856",
+            "label": "PRODUCES",
+            "from": 79499,
+            "to": 9777,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "310",
+            "label": "CONSUMED_BY",
+            "from": 9100,
+            "to": 78011,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88091",
+            "label": "PRODUCES",
+            "from": 78734,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "82619",
+            "label": "CONSUMED_BY",
+            "from": 5006,
+            "to": 79127,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89272",
+            "label": "PRODUCES",
+            "from": 79253,
+            "to": 10620,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "82885",
+            "label": "CONSUMED_BY",
+            "from": 1176,
+            "to": 79253,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "76383",
+            "label": "COMPONENT_OF",
+            "from": 57500,
+            "to": 62404,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25628",
+            "label": "CATALYZES",
+            "from": 62625,
+            "to": 77301,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "79626",
+            "label": "CONSUMED_BY",
+            "from": 8099,
+            "to": 77618,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22804",
+            "label": "INHIBITS",
+            "from": 8100,
+            "to": 77487,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25801",
+            "label": "CATALYZES",
+            "from": 62631,
+            "to": 78125,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22445",
+            "label": "INHIBITS",
+            "from": 10153,
+            "to": 79499,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "84233",
+            "label": "CONSUMED_BY",
+            "from": 8106,
+            "to": 79897,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90",
+            "label": "PRODUCES",
+            "from": 78761,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81559",
+            "label": "CONSUMED_BY",
+            "from": 2222,
+            "to": 78595,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27",
+            "label": "PRODUCES",
+            "from": 77487,
+            "to": 8030,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23808",
+            "label": "INHIBITS",
+            "from": 9651,
+            "to": 78010,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2790",
+            "label": "CATALYZES",
+            "from": 58548,
+            "to": 11101,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81838",
+            "label": "CONSUMED_BY",
+            "from": 8888,
+            "to": 78734,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88187",
+            "label": "PRODUCES",
+            "from": 78777,
+            "to": 5886,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86509",
+            "label": "PRODUCES",
+            "from": 78010,
+            "to": 9777,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "65",
+            "label": "PRODUCES",
+            "from": 78011,
+            "to": 10058,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3300",
+            "label": "PRODUCES",
+            "from": 10941,
+            "to": 9176,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88197",
+            "label": "PRODUCES",
+            "from": 78781,
+            "to": 9195,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88774",
+            "label": "PRODUCES",
+            "from": 79044,
+            "to": 7927,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27591",
+            "label": "CATALYZES",
+            "from": 62404,
+            "to": 79044,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90617",
+            "label": "PRODUCES",
+            "from": 79822,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "81548",
+            "label": "CONSUMED_BY",
+            "from": 8183,
+            "to": 78589,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "179",
+            "label": "PRODUCES",
+            "from": 79573,
+            "to": 9829,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3149",
+            "label": "PRODUCES",
+            "from": 10710,
+            "to": 9344,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "82123",
+            "label": "CONSUMED_BY",
+            "from": 9176,
+            "to": 78879,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72849",
+            "label": "ENCODES",
+            "from": 31970,
+            "to": 60492,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85565",
+            "label": "PRODUCES",
+            "from": 77539,
+            "to": 8019,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71850",
+            "label": "ENCODES",
+            "from": 31999,
+            "to": 59396,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21673",
+            "label": "INHIBITS",
+            "from": 8426,
+            "to": 78831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "79155",
+            "label": "CONSUMED_BY",
+            "from": 9195,
+            "to": 77394,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "73434",
+            "label": "ENCODES",
+            "from": 31982,
+            "to": 61218,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88317",
+            "label": "PRODUCES",
+            "from": 78831,
+            "to": 9775,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22029",
+            "label": "INHIBITS",
+            "from": 8433,
+            "to": 80156,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3044",
+            "label": "PRODUCES",
+            "from": 10996,
+            "to": 7447,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85008",
+            "label": "PRODUCES",
+            "from": 77301,
+            "to": 1176,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "83830",
+            "label": "CONSUMED_BY",
+            "from": 7927,
+            "to": 79699,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "87761",
+            "label": "PRODUCES",
+            "from": 78589,
+            "to": 8100,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "84199",
+            "label": "CONSUMED_BY",
+            "from": 5886,
+            "to": 79880,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85636",
+            "label": "PRODUCES",
+            "from": 77567,
+            "to": 8006,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        }
+    ]
+}
