@@ -236,6 +236,7 @@ def update_or_create_index(index_id, index_mapping_file):
     elastic_service.update_or_create_index(index_id, index_mapping_file)
 
 
+# NOTE DEPRECATED: Files.file_id no longer exist -> Files.content_id
 @app.cli.command('reannotate')
 def reannotate_all():
     """ CAUTION: Master command to reannotate all files
