@@ -8,12 +8,12 @@ export interface InclusionMeta {
     type: string;
 }
 
-export interface GlobalAnnotation {
+export interface GlobalAnnotationListItem {
     globalId: number;
     creator: string;
-    fileHashId: string;
+    fileUuid: string;
     fileDeleted: boolean;
-    fileReference: string;
+    contentReference: string;
     type: string;
     creationDate: string;
     text: string;
