@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { GlobalAnnotation } from 'app/interfaces/annotation';
+import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { tap } from 'rxjs/operators';
@@ -43,7 +43,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         limit: new FormControl(100),
     });
 
-    readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotation>> = new BackgroundTask(
+    readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
         (locator: PaginatedRequestOptions) => this.globalAnnotationService.getAnnotations(locator),
     );
 
@@ -51,25 +51,25 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModel<GlobalAnnotation>([], {
+    readonly results = new CollectionModel<GlobalAnnotationListItem>([], {
         multipleSelection: true,
     });
 
     protected subscriptions = new Subscription();
 
     readonly headers: string[] = [
+        'Open File',
         'Text',
         'Case Insensitive',
         'Type',
         'Entity Type',
         'Entity ID',
-        'File Reference',
+        'Content Reference',
         'File Deleted',
         'Added By',
         'Reason',
         'Comment',
-        'Date Added',
-        'Open File'
+        'Date Added'
     ];
 
     constructor(
@@ -136,8 +136,8 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
             this.filesystemObjectActions.openNewWindow(fileObject));
     }
 
-    deleteAnnotation(objects: readonly GlobalAnnotation[]) {
-        const pids = objects.map((r: GlobalAnnotation) => r.globalId);
+    deleteAnnotation(objects: readonly GlobalAnnotationListItem[]) {
+        const pids = objects.map((r: GlobalAnnotationListItem) => r.globalId);
         this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe().subscribe());
         this.refresh();
     }

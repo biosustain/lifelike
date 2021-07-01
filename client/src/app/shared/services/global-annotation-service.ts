@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { AbstractService } from './abstract-service';
-import { GlobalAnnotation } from 'app/interfaces/annotation';
+import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { PaginatedRequestOptions, ResultList } from '../schemas/common';
 
 @Injectable({providedIn: 'root'})
@@ -15,8 +15,8 @@ export class GlobalAnnotationService extends AbstractService {
         super(auth, http);
     }
 
-    getAnnotations(options: PaginatedRequestOptions = {}): Observable<ResultList<GlobalAnnotation>> {
-        return this.http.get<ResultList<GlobalAnnotation>>(
+    getAnnotations(options: PaginatedRequestOptions = {}): Observable<ResultList<GlobalAnnotationListItem>> {
+        return this.http.get<ResultList<GlobalAnnotationListItem>>(
             `${this.baseUrl}/global-list`, {
             ...this.getHttpOptions(true),
             params: options as any,
