@@ -136,10 +136,10 @@ class AnnotationUUIDListSchema(ResultListSchema):
 
 class GlobalAnnotationListItemSchema(CamelCaseSchema):
     global_id = fields.Integer()
-    file_hash_id = fields.String()
+    file_uuid = fields.String()
     creator = fields.String()
     file_deleted = fields.Boolean()
-    file_reference = fields.String()
+    content_reference = fields.String()
     type = fields.String()
     creation_date = fields.Date()
     text = fields.String()
