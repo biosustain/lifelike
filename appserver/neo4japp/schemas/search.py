@@ -1,4 +1,4 @@
-from marshmallow import fields, validate, ValidationError
+from marshmallow import fields, validate
 
 from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema

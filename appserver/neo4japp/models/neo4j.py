@@ -1,4 +1,3 @@
-from flask import json
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 
 from neo4japp.models.common import NEO4JBase
@@ -14,20 +13,6 @@ class GraphNode(NEO4JBase):
         self.sub_labels = sub_labels
         self.display_name = display_name
         self.entity_url = url
-
-    def property_filter(self, properties, only=None, include=None, exclude=None, keyfn=None):
-        if only:
-            attrs = only
-        else:
-            exclude = exclude or []
-            attrs = (include or []) + [k for k in properties.keys() if k not in exclude]
-
-        keyfn = keyfn or (lambda x: x)
-        retval = {}
-        for k in attrs:
-            key = keyfn(k)
-            retval[key] = properties[k]
-        return retval
 
     @classmethod
     def from_neo4j(
