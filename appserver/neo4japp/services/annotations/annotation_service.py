@@ -140,11 +140,14 @@ class AnnotationService:
                 # assign to avoid line being too long
                 # can't use multi pycode ignore/noqa...
                 link = ENTITY_HYPERLINKS
-                if param.entity['id_type'] != DatabaseType.NCBI.value:
+                try:
                     hyperlink = link[param.entity['id_type']]
-                else:
-                    # type ignore, see https://github.com/python/mypy/issues/8277
-                    hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+                except KeyError:
+                    if param.entity['id_type'] == 'BioCyc':
+                        # temp until LL-3296 is done
+                        hyperlink = link[DatabaseType.BIOCYC.value]
+                    else:
+                        raise
 
                 if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in param.entity_id:  # noqa
                     hyperlink += param.entity_id[5:]  # type: ignore

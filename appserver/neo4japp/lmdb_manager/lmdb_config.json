@@ -4,9 +4,9 @@
     "compounds": "v1",
     "diseases": "v3",
     "foods": "v2",
-    "genes": "v3",
+    "genes": "v4",
     "phenomenas": "v2",
     "proteins": "v2",
-    "species": "v1",
+    "species": "v2",
     "phenotypes": "v1"
 }

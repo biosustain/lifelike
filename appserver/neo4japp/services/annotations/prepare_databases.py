@@ -79,13 +79,15 @@ def prepare_lmdb_genes_database(filename: str):
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # gene_id	name	synonym	tax_id	tax_category
+            # geneId	geneName	synonym	data_source
             headers = next(reader)
             for line in reader:
                 gene_name = line[1]
                 synonym = line[2]
+                data_source = line[3]
 
-                gene = create_ner_type_gene(name=gene_name, synonym=synonym)
+                gene = create_ner_type_gene(
+                    name=gene_name, synonym=synonym, data_source=data_source)
 
                 try:
                     transaction.put(
@@ -447,13 +449,10 @@ if __name__ == '__main__':
 
     # gene
     prepare_lmdb_genes_database(filename='datasets/genes.tsv')
+    prepare_lmdb_genes_database(filename='datasets/pseudomonasCyc_genes.tsv')
 
     # disease
     prepare_lmdb_diseases_database(filename='datasets/disease.tsv')
-    # this is now included in disease.tsv
-    # it was needed before because the data was new and not in disease.tsv
-    # keep as record in case it's removed from disease.tsv later
-    # prepare_lmdb_diseases_database(filename='datasets/covid19_disease.tsv')
 
     # food
     prepare_lmdb_foods_database(filename='datasets/food.tsv')
