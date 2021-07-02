@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { GlobalAnnotation } from 'app/interfaces/annotation';
+import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { tap } from 'rxjs/operators';
@@ -43,7 +43,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         limit: new FormControl(100),
     });
 
-    readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotation>> = new BackgroundTask(
+    readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
         (locator: PaginatedRequestOptions) => this.globalAnnotationService.getAnnotations(locator),
     );
 
@@ -51,22 +51,25 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModel<GlobalAnnotation>([], {
+    readonly results = new CollectionModel<GlobalAnnotationListItem>([], {
         multipleSelection: true,
     });
 
     protected subscriptions = new Subscription();
 
     readonly headers: string[] = [
+        'Open File',
         'Text',
-        'Annotation Type',
+        'Case Insensitive',
+        'Type',
         'Entity Type',
-        'Annotation ID',
-        'File Reference',
-        'Added by',
+        'Entity ID',
+        'Content Reference',
+        'File Deleted',
+        'Added By',
         'Reason',
         'Comment',
-        'Date Added',
+        'Date Added'
     ];
 
     constructor(
@@ -128,8 +131,13 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.loadTask.update(this.locator);
     }
 
-    deleteAnnotation(objects: readonly GlobalAnnotation[]) {
-        const pids = objects.map((r: GlobalAnnotation) => r.id);
+    openNewWindow(fileHashId: string) {
+        this.filesystemService.get(fileHashId).pipe().subscribe(fileObject =>
+            this.filesystemObjectActions.openNewWindow(fileObject));
+    }
+
+    deleteAnnotation(objects: readonly GlobalAnnotationListItem[]) {
+        const pids = objects.map((r: GlobalAnnotationListItem) => r.globalId);
         this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe().subscribe());
         this.refresh();
     }

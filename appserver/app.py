@@ -243,6 +243,7 @@ def reindex_elastic():
     elastic_service.index_files()
 
 
+# NOTE DEPRECATED: Files.file_id no longer exist -> Files.content_id
 @app.cli.command('reannotate')
 def reannotate_all():
     """ CAUTION: Master command to reannotate all files
