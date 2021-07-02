@@ -3,7 +3,6 @@ from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from typing import List
 
 from neo4japp.constants import (
-    DISPLAY_NAME_MAP,
     LogEventType,
     TYPE_CHEMICAL,
     TYPE_DISEASE,
@@ -26,7 +25,7 @@ from neo4japp.data_transfer_objects.visualization import (
 from neo4japp.models import GraphNode
 from neo4japp.models.entity_resources import DomainURLsMap
 from neo4japp.services import KgService
-from neo4japp.util import get_first_known_label_from_list, get_first_known_label_from_node
+from neo4japp.util import get_first_known_label_from_list, snake_to_camel_dict
 from neo4japp.utils.logger import EventLog
 
 
@@ -40,11 +39,10 @@ class VisualizerService(KgService):
         """
         url_map = {
             domain: base_url
-            for domain, base_url in
-            self.session.query(
+            for domain, base_url in self.session.query(
                 DomainURLsMap.domain,
                 DomainURLsMap.base_URL,
-            ).all()
+            )
         }
 
         # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
@@ -256,15 +254,23 @@ class VisualizerService(KgService):
             for reference in row['references']:
                 snippets.append(
                     Snippet(
-                        reference=GraphNode.from_neo4j(
-                            reference['snippet'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label_from_node,
+                        reference=GraphNode(
+                            reference['snippet'].id,
+                            'Snippet',
+                            [],
+                            snake_to_camel_dict(dict(reference['snippet']), {}),
+                            [],
+                            None,
+                            None,
                         ),
-                        publication=GraphNode.from_neo4j(
-                            reference['publication'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label_from_node,
+                        publication=GraphNode(
+                            reference['publication'].id,
+                            'Publication',
+                            [],
+                            snake_to_camel_dict(dict(reference['publication']), {}),
+                            [],
+                            None,
+                            None,
                         ),
                         raw_score=reference['raw_score'],
                         normalized_score=reference['normalized_score']
@@ -313,15 +319,23 @@ class VisualizerService(KgService):
                 to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_neo4j(
-                        reference['snippet'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node,
+                    reference=GraphNode(
+                        reference['snippet'].id,
+                        'Snippet',
+                        [],
+                        snake_to_camel_dict(dict(reference['snippet']), {}),
+                        [],
+                        None,
+                        None,
                     ),
-                    publication=GraphNode.from_neo4j(
-                        reference['publication'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node,
+                    publication=GraphNode(
+                        reference['publication'].id,
+                        'Publication',
+                        [],
+                        snake_to_camel_dict(dict(reference['publication']), {}),
+                        [],
+                        None,
+                        None,
                     ),
                     raw_score=reference['raw_score'],
                     normalized_score=reference['normalized_score']
@@ -376,15 +390,23 @@ class VisualizerService(KgService):
                 to_node_id=to_id,
                 association=row['description'],
                 snippets=[Snippet(
-                    reference=GraphNode.from_neo4j(
-                        reference['snippet'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node,
+                    reference=GraphNode(
+                        reference['snippet'].id,
+                        'Snippet',
+                        [],
+                        snake_to_camel_dict(dict(reference['snippet']), {}),
+                        [],
+                        None,
+                        None,
                     ),
-                    publication=GraphNode.from_neo4j(
-                        reference['publication'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label_from_node,
+                    publication=GraphNode(
+                        reference['publication'].id,
+                        'Publication',
+                        [],
+                        snake_to_camel_dict(dict(reference['publication']), {}),
+                        [],
+                        None,
+                        None,
                     ),
                     raw_score=reference['raw_score'],
                     normalized_score=reference['normalized_score']
