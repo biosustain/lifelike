@@ -280,8 +280,12 @@ class SearchService(GraphBaseDao):
                 WHERE {result_filters}
                 WITH n, score, toLower(n.name) = toLower($search_term) as matches_input
                 {organism_match_string}
-                RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, n.namespace AS go_class, score, matches_input
+                WITH n, t, score, matches_input, n.namespace as go_class
+                MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
+                WITH collect(n) + collect(m) as nodes, t, score, matches_input, go_class
+                UNWIND nodes as node
+                RETURN DISTINCT node AS node, t.id AS taxonomy_id,
+                    t.name AS taxonomy_name, go_class AS go_class, score, matches_input
                 ORDER BY matches_input DESC, score DESC
                 SKIP $amount
                 LIMIT $limit
