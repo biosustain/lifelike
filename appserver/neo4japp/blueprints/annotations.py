@@ -3,7 +3,6 @@ import hashlib
 import html
 import io
 import json
-import re
 import time
 
 import sqlalchemy as sa
@@ -17,6 +16,7 @@ from flask import (
     request,
     jsonify,
 )
+from flask.views import MethodView
 from flask_apispec import use_kwargs
 from json import JSONDecodeError
 from marshmallow import validate, fields
@@ -25,53 +25,34 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
 from webargs.flaskparser import use_args
 
-from .filesystem import bp as filesystem_bp
+from .auth import auth
+from .filesystem import bp as filesystem_bp, FilesystemBaseView
+from .permissions import requires_role
 
-from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.filesystem import FilesystemBaseView
-from neo4japp.blueprints.permissions import requires_role
-from neo4japp.constants import LogEventType, TIMEZONE
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import (
+from ..constants import LogEventType, TIMEZONE
+from ..database import (
     db,
     get_excel_export_service,
     get_manual_annotation_service,
     get_sorted_annotation_service,
     get_enrichment_table_service
 )
-from neo4japp.exceptions import AnnotationError
-from neo4japp.models import (
+from ..exceptions import AnnotationError
+from ..models import (
     AppUser,
     Files,
     FileContent,
     GlobalList,
     FallbackOrganism
 )
-from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion
-from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-from neo4japp.services.annotations.constants import (
-    DEFAULT_ANNOTATION_CONFIGS,
-    EntityType,
-    ManualAnnotationType,
-)
-from neo4japp.services.annotations.data_transfer_objects import (
-    GlobalAnnotationData
-)
-from neo4japp.services.annotations.pipeline import (
-    create_annotations_from_pdf,
-    create_annotations_from_enrichment_table
-)
-from neo4japp.services.annotations import AnnotationGraphService
-from neo4japp.services.annotations.sorted_annotation_service import (
-    default_sorted_annotation,
-    sorted_annotations_dict
-)
-from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
-from neo4japp.schemas.annotations import (
+from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
+from ..models.files_queries import get_nondeleted_recycled_children_query
+from ..schemas.annotations import (
     AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
+    GlobalAnnotationListSchema,
     CustomAnnotationCreateSchema,
     CustomAnnotationDeleteSchema,
     AnnotationUUIDListSchema,
@@ -80,10 +61,26 @@ from neo4japp.schemas.annotations import (
     SystemAnnotationListSchema,
     CustomAnnotationListSchema
 )
-from neo4japp.schemas.filesystem import BulkFileRequestSchema
-from neo4japp.schemas.enrichment import EnrichmentTableSchema
-from neo4japp.utils.logger import UserEventLog
-from neo4japp.utils.http import make_cacheable_file_response
+from ..schemas.common import PaginatedRequestSchema
+from ..schemas.enrichment import EnrichmentTableSchema
+from ..schemas.filesystem import BulkFileRequestSchema
+from ..services.annotations.constants import (
+    DEFAULT_ANNOTATION_CONFIGS,
+    EntityType,
+    ManualAnnotationType,
+)
+from ..services.annotations.pipeline import (
+    create_annotations_from_pdf,
+    create_annotations_from_enrichment_table
+)
+from ..services.annotations import AnnotationGraphService
+from ..services.annotations.sorted_annotation_service import (
+    default_sorted_annotation,
+    sorted_annotations_dict
+)
+from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
+from ..utils.logger import UserEventLog
+from ..utils.http import make_cacheable_file_response
 
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -753,185 +750,220 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
         return jsonify({'results': 'Success'})
 
 
-@bp.route('/global-list/inclusions')
-@auth.login_required
-@requires_role('admin')
-def export_global_inclusions():
-    yield g.current_user
+class GlobalAnnotationExportInclusions(MethodView):
+    decorators = [auth.login_required, requires_role('admin')]
 
-    inclusions = GlobalList.query.filter_by(
-        type=ManualAnnotationType.INCLUSION.value,
-        reviewed=False
-    ).all()
+    def get(self):
+        yield g.current_user
 
-    def get_inclusion_for_review(inclusion):
-        user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
-        username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
+        inclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_uuid'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('content_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['meta']['allText'].astext.label('text'),
+            GlobalList.annotation['meta']['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['meta']['type'].astext.label('entity_type'),
+            GlobalList.annotation['meta']['id'].astext.label('entity_id'),
+            sa.sql.null().label('reason'),
+            sa.sql.null().label('comment')
+        ).join(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).join(
+            FileContent,
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
+            Files,
+            Files.id == GlobalList.file_id
+        ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
 
-        missing_data = any([
-            inclusion.annotation['meta'].get('id', None) is None,
-            inclusion.annotation['meta'].get('idHyperlink', None) is None
-        ])
+        def get_inclusion_for_review(inclusions):
+            user = AppUser.query.filter_by(id=inclusions.file_deleted_by).one_or_none()
+            deleter = f'User with id {inclusions.file_deleted_by} does not exist.'
+            if inclusions.file_deleted_by is None:
+                deleter = None
+            elif user:
+                deleter = f'{user.username} ({user.first_name} {user.last_name})'
 
-        if missing_data:
-            current_app.logger.warning(
-                f'Found inclusion in the global list with missing data:\n{inclusion.to_dict()}'
-            )
+            return {
+                # 'global_id': inclusions.global_list_id,
+                'creator': inclusions.creator,
+                'file_uuid': inclusions.file_uuid,
+                'file_deleted_by': deleter,
+                # 'content_reference': hashlib.sha256(inclusions.content_reference).hexdigest(),
+                'type': inclusions.type,
+                'creation_date': str(inclusions.creation_date),
+                'text': inclusions.text,
+                'case_insensitive': True if inclusions.case_insensitive == 'true' else False,
+                'entity_type': inclusions.entity_type,
+                'entity_id': inclusions.entity_id,
+                'reason': inclusions.reason,
+                'comment': inclusions.comment
+            }
+        data = [get_inclusion_for_review(inclusions) for inclusions in inclusions]
 
-        return {
-            'id': inclusion.annotation['meta'].get('id', ''),
-            'term': inclusion.annotation['meta']['allText'],
-            'type': inclusion.annotation['meta']['type'],
-            'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
-            'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
-            'user': username,
+        exporter = get_excel_export_service()
+        response = make_response(exporter.get_bytes(data), 200)
+        response.headers['Content-Type'] = exporter.mimetype
+        response.headers['Content-Disposition'] = \
+            f'attachment; filename={exporter.get_filename("global_inclusions")}'
+        yield response
+
+
+class GlobalAnnotationExportExclusions(MethodView):
+    decorators = [auth.login_required, requires_role('admin')]
+
+    def get(self):
+        yield g.current_user
+
+        exclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_uuid'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('content_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['text'].astext.label('text'),
+            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['type'].astext.label('entity_type'),
+            GlobalList.annotation['id'].astext.label('entity_id'),
+            GlobalList.annotation['reason'].astext.label('reason'),
+            GlobalList.annotation['comment'].astext.label('comment')
+        ).join(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).join(
+            FileContent,
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
+            Files,
+            Files.id == GlobalList.file_id
+        ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+
+        def get_exclusion_for_review(exclusion):
+            user = AppUser.query.filter_by(id=exclusion.file_deleted_by).one_or_none()
+            deleter = f'User with id {exclusion.file_deleted_by} does not exist.'
+            if exclusion.file_deleted_by is None:
+                deleter = None
+            elif user:
+                deleter = f'{user.username} ({user.first_name} {user.last_name})'
+
+            return {
+                # 'global_id': exclusion.global_list_id,
+                'creator': exclusion.creator,
+                'file_uuid': exclusion.file_uuid,
+                'file_deleted_by': deleter,
+                # 'content_reference': hashlib.sha256(exclusion.content_reference).hexdigest(),
+                'type': exclusion.type,
+                'creation_date': str(exclusion.creation_date),
+                'text': exclusion.text,
+                'case_insensitive': True if exclusion.case_insensitive == 'true' else False,
+                'entity_type': exclusion.entity_type,
+                'entity_id': exclusion.entity_id,
+                'reason': exclusion.reason,
+                'comment': exclusion.comment
+            }
+        data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
+
+        exporter = get_excel_export_service()
+        response = make_response(exporter.get_bytes(data), 200)
+        response.headers['Content-Type'] = exporter.mimetype
+        response.headers['Content-Disposition'] = \
+            f'attachment; filename={exporter.get_filename("global_exclusions")}'
+        yield response
+
+
+class GlobalAnnotationListView(MethodView):
+    decorators = [auth.login_required, requires_role('admin')]
+
+    @use_args(PaginatedRequestSchema())
+    def get(self, params):
+        yield g.current_user
+
+        exclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_uuid'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('content_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['text'].astext.label('text'),
+            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['type'].astext.label('entity_type'),
+            GlobalList.annotation['id'].astext.label('entity_id'),
+            GlobalList.annotation['reason'].astext.label('reason'),
+            GlobalList.annotation['comment'].astext.label('comment')
+        ).join(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).join(
+            FileContent,
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
+            Files,
+            Files.id == GlobalList.file_id
+        ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+
+        inclusions = db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_uuid'),
+            Files.deleter_id.label('file_deleted_by'),
+            FileContent.checksum_sha256.label('content_reference'),
+            GlobalList.type.label('type'),
+            GlobalList.creation_date.label('creation_date'),
+            # GlobalList.modified_date,
+            GlobalList.annotation['meta']['allText'].astext.label('text'),
+            GlobalList.annotation['meta']['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['meta']['type'].astext.label('entity_type'),
+            GlobalList.annotation['meta']['id'].astext.label('entity_id'),
+            sa.sql.null().label('reason'),
+            sa.sql.null().label('comment')
+        ).join(
+            AppUser,
+            AppUser.id == GlobalList.annotation['user_id'].as_integer()
+        ).join(
+            FileContent,
+            FileContent.id == GlobalList.file_content_id
+        ).outerjoin(
+            Files,
+            Files.id == GlobalList.file_id
+        ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
+
+        query = exclusions.union(inclusions)
+        limit = min(200, int(params.limit))
+        page = max(1, int(params.page))
+
+        query = query.order_by((sa.asc('text'))).paginate(page, limit, False)
+        results = {
+            'total': query.total,
+            'results': [{
+                'global_id': r.global_list_id,
+                'creator': r.creator,
+                'file_uuid': r.file_uuid if r.file_uuid else '',
+                'file_deleted': True if r.file_deleted_by else False,
+                'content_reference': hashlib.sha256(r.content_reference).hexdigest(),
+                'type': r.type,
+                'creation_date': r.creation_date,
+                'text': r.text,
+                'case_insensitive': True if r.case_insensitive == 'true' else False,
+                'entity_type': r.entity_type,
+                'entity_id': r.entity_id,
+                'reason': r.reason,
+                'comment': r.comment
+            } for r in query.items]
         }
 
-    data = [get_inclusion_for_review(inclusion) for inclusion in inclusions]
-
-    exporter = get_excel_export_service()
-    response = make_response(exporter.get_bytes(data), 200)
-    response.headers['Content-Type'] = exporter.mimetype
-    response.headers['Content-Disposition'] = \
-        f'attachment; filename={exporter.get_filename("global_inclusions")}'
-    yield response
-
-
-@bp.route('/global-list/exclusions')
-@auth.login_required
-@requires_role('admin')
-def export_global_exclusions():
-    yield g.current_user
-
-    exclusions = GlobalList.query.filter_by(
-        type=ManualAnnotationType.EXCLUSION.value,
-        reviewed=False,
-    ).all()
-
-    def get_exclusion_for_review(exclusion):
-        user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
-        username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-
-        missing_data = any([
-            exclusion.annotation.get('text', None) is None,
-            exclusion.annotation.get('type', None) is None,
-            exclusion.annotation.get('idHyperlink', None) is None
-        ])
-
-        if missing_data:
-            current_app.logger.warning(
-                f'Found exclusion in the global list with missing data:\n{exclusion.to_dict()}'
-            )
-
-        return {
-            'term': exclusion.annotation.get('text', ''),
-            'type': exclusion.annotation.get('type', ''),
-            'id_hyperlink': exclusion.annotation.get('idHyperlink', ''),
-            'reason': exclusion.annotation['reason'],
-            'comment': exclusion.annotation['comment'],
-            'exclusion_date': exclusion.annotation['exclusion_date'],
-            'user': username,
-        }
-
-    data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
-
-    exporter = get_excel_export_service()
-    response = make_response(exporter.get_bytes(data), 200)
-    response.headers['Content-Type'] = exporter.mimetype
-    response.headers['Content-Disposition'] = \
-        f'attachment; filename={exporter.get_filename("global_exclusions")}'
-    yield response
-
-
-@bp.route('/global-list', methods=['GET'])
-@auth.login_required
-@requires_role('admin')
-def get_annotation_global_list():
-
-    yield g.current_user
-
-    # Exclusions
-    query_1 = db.session.query(
-        FileContent.id,
-        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
-        AppUser.email,
-        GlobalList.id,
-        GlobalList.type,
-        GlobalList.reviewed,
-        GlobalList.approved,
-        GlobalList.creation_date,
-        GlobalList.modified_date,
-        GlobalList.annotation['text'].astext.label('text'),
-        GlobalList.annotation['reason'].astext.label('reason'),
-        GlobalList.annotation['type'].astext.label('entityType'),
-        GlobalList.annotation['id'].astext.label('annotationId'),
-        GlobalList.annotation['comment'].astext.label('comment')
-    ).outerjoin(
-        AppUser,
-        AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).outerjoin(
-        FileContent,
-        FileContent.id == GlobalList.file_id
-    ).filter(
-        GlobalList.type == ManualAnnotationType.EXCLUSION.value
-    )
-    # Inclusions
-    query_2 = db.session.query(
-        FileContent.id,
-        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
-        AppUser.email,
-        GlobalList.id,
-        GlobalList.type,
-        GlobalList.reviewed,
-        GlobalList.approved,
-        GlobalList.creation_date,
-        GlobalList.modified_date,
-        GlobalList.annotation['meta']['allText'].astext.label('text'),
-        sa.sql.null().label('reason'),
-        GlobalList.annotation['meta']['type'].astext.label('entityType'),
-        GlobalList.annotation['meta']['id'].astext.label('annotationId'),
-        sa.sql.null().label('comment')
-    ).outerjoin(
-        AppUser,
-        AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).outerjoin(
-        FileContent,
-        FileContent.id == GlobalList.file_id
-    ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
-
-    union_query = query_1.union(query_2)
-
-    # TODO: Refactor to work with paginate_from_args
-    limit = request.args.get('limit', 200)
-    limit = min(200, int(limit))
-    page = request.args.get('page', 1)
-    page = max(1, int(page))
-
-    # The order by clause is using a synthetic column
-    # NOTE: We want to keep this ordering case insensitive
-    query = union_query.order_by((sa.asc('text'))).paginate(page, limit, False)
-
-    response = ResultList(
-        total=query.total,
-        results=[GlobalAnnotationData(
-            file_id=r[0],
-            filename=r[1],
-            user_email=r[2],
-            id=r[3],
-            type=r[4],
-            reviewed=r[5],
-            approved=r[6],
-            creation_date=r[7],
-            modified_date=r[8],
-            text=r[9],
-            reason=r[10],
-            entity_type=r[11],
-            annotation_id=r[12],
-            comment=r[13],
-        ) for r in query.items],
-        query=None)
-
-    yield jsonify(response.to_dict())
+        yield jsonify(GlobalAnnotationListSchema().dump(results))
 
 
 @bp.route('/global-list', methods=['POST', 'DELETE'])
@@ -979,6 +1011,15 @@ def get_pdf_to_annotate(file_id):
     return res
 
 
+bp.add_url_rule(
+    '/global-list',
+    view_func=GlobalAnnotationListView.as_view('global_annotations_list'))
+bp.add_url_rule(
+    '/global-list/exclusions',
+    view_func=GlobalAnnotationExportExclusions.as_view('export_global_exclusions'))
+bp.add_url_rule(
+    '/global-list/inclusions',
+    view_func=GlobalAnnotationExportInclusions.as_view('export_global_inclusions'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations',
     view_func=FileAnnotationsView.as_view('file_annotations_list'))
