@@ -24,7 +24,8 @@ from neo4japp.constants import (
     TYPE_DISEASE,
 )
 from neo4japp.util import (
-    get_first_known_label_from_node
+    get_first_known_label_from_node,
+    snake_to_camel_dict
 )
 from neo4japp.utils.logger import EventLog
 
@@ -42,11 +43,10 @@ class KgService(HybridDBDao):
 
         url_map = {
             domain: base_url
-            for domain, base_url in
-            self.session.query(
+            for domain, base_url in self.session.query(
                 DomainURLsMap.domain,
                 DomainURLsMap.base_URL,
-            ).all()
+            )
         }
 
         # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
@@ -93,14 +93,7 @@ class KgService(HybridDBDao):
         self,
         nodes: List[N4jDriverNode],
         relationships: List[N4jDriverRelationship],
-        prop_filter_fn=None,
-        url_fn=None,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
-        primary_label_fn=get_first_known_label_from_node,
     ):
-        if url_fn is None:
-            url_fn = self._get_uri_of_node_entity
-
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
         # different type of nodes/edges being converted.
@@ -110,17 +103,28 @@ class KgService(HybridDBDao):
         rel_dict = {}
 
         for node in nodes:
-            graph_node = GraphNode.from_neo4j(
-                node,
-                url_fn=url_fn,
-                display_fn=display_fn,
-                primary_label_fn=primary_label_fn,
-                prop_filter_fn=prop_filter_fn
+            label = get_first_known_label_from_node(node)
+            graph_node = GraphNode(
+                id=node.id,
+                label=get_first_known_label_from_node(node),
+                sub_labels=list(node.labels),
+                domain_labels=[],
+                display_name=node.get(DISPLAY_NAME_MAP[label]),
+                data=snake_to_camel_dict(dict(node), {}),
+                url=None
             )
             node_dict[graph_node.id] = graph_node
 
         for rel in relationships:
-            graph_rel = GraphRelationship.from_neo4j(rel)
+            graph_rel = GraphRelationship(
+                id=rel.id,
+                label=type(rel).__name__,
+                data=dict(rel),
+                to=rel.end_node.id,
+                _from=rel.start_node.id,
+                to_label=list(rel.end_node.labels)[0],
+                from_label=list(rel.start_node.labels)[0]
+            )
             rel_dict[graph_rel.id] = graph_rel
         return {
             'nodes': [n.to_dict() for n in node_dict.values()],
