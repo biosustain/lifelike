@@ -1,4 +1,4 @@
-from neo4japp.services.annotations.constants import DatabaseType, EntityIdStr
+from .constants import DatabaseType, EntityIdStr
 
 
 def create_ner_type_anatomy(
@@ -54,9 +54,13 @@ def create_ner_type_food(
     }
 
 
-def create_ner_type_gene(name: str, synonym: str) -> dict:
+def create_ner_type_gene(
+    name: str,
+    synonym: str,
+    data_source: str = DatabaseType.NCBI_GENE.value
+) -> dict:
     return {
-        'id_type': DatabaseType.NCBI.value,
+        'id_type': data_source,
         'name': name,
         'synonym': synonym,
     }
@@ -107,7 +111,7 @@ def create_ner_type_species(
 ) -> dict:
     return {
         EntityIdStr.SPECIES.value: id_,
-        'id_type': DatabaseType.NCBI.value,
+        'id_type': DatabaseType.NCBI_TAXONOMY.value,
         'category': category,
         'name': name,
         'synonym': synonym,
