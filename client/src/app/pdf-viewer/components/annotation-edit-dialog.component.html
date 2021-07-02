@@ -1,7 +1,5 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
-  <app-modal-header (cancel)="cancel()">
-    Edit Annotation
-  </app-modal-header>
+  <app-modal-header (cancel)="cancel()">Create Annotation</app-modal-header>
 
   <app-modal-body>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
@@ -33,30 +31,19 @@
       <input type="text" formControlName="id" class="form-control" id="id">
     </app-form-row>
 
-    <fieldset class="fieldset-properties mt-4">
-      <legend>Search Links <i class="fas fa-external-link-alt ml-1"></i></legend>
+    <ng-container *ngIf="entityTypeChosen">
+      <app-form-row for="source" label="Data Source" [control]="form.get('source')">
+        <select formControlName="source" class="custom-select w-100" id="source">
+          <option *ngFor="let choice of databaseTypeChoices" [value]="choice">
+            {{choice}}
+          </option>
+        </select>
+      </app-form-row>
 
-      <div class="text-muted mb-3">
-        <i class="fas fa-info-circle"></i>
-          Click links below to search databases for the annotated text.
-          Find and enter desirable links in the fields below.
-      </div>
-
-      <ng-container formArrayName="links">
-        <div class="form-group row"
-             *ngFor="let link of links.controls; index as i">
-          <label [for]="'annotation-link-' + i" class="col-form-label col-sm-3">
-            <a [href]="substituteLink(linkTemplates[i].url, form.get('text').value)"
-               target="_blank" class="mt-1 text-truncate"
-               ngbTooltip="Open default search link">{{ linkTemplates[i].domain }}</a>:
-          </label>
-          <div class="col-sm-9">
-            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i">
-            <app-form-input-feedback [control]="link" [errors]="errors"></app-form-input-feedback>
-          </div>
-        </div>
-      </ng-container>
-    </fieldset>
+      <app-form-row for="sourceLink" label="Source Link" [control]="form.get('sourceLink')">
+        <input type="text" formControlName="sourceLink" class="form-control" id="sourceLink">
+      </app-form-row>
+    </ng-container>
 
     <div class="custom-control custom-checkbox mt-4">
       <input type="checkbox" class="custom-control-input" id="include-globally"

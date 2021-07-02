@@ -701,32 +701,6 @@ def example4_pdf_gene_and_organism_network(
             )
     return graph
 
-
-@pytest.fixture(scope='function')
-def human_gene_pdf_gene_and_organism_network(
-    graph: Session,
-):
-    with graph.begin_transaction() as tx:
-        ace2 = create_gene_node(
-            tx=tx,
-            gene_name='ace2',
-            gene_id='59272'
-        )
-
-        human = create_taxonomy_node(
-            tx=tx,
-            name='Homo Sapiens',
-            rank='species',
-            tax_id='9606',
-        )
-
-        create_has_taxonomy_relationship(
-            tx=tx,
-            source_id=ace2.id,
-            target_id=human.id,
-        )
-    return graph
-
 # End Graph Data Fixtures #
 
 # Start DTO Fixtures #
