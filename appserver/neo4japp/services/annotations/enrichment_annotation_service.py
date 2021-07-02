@@ -8,21 +8,19 @@ from typing import Dict, List, Set, Tuple
 from flask import current_app
 
 from neo4japp.constants import LogEventType
-from neo4japp.services.annotations.annotation_service import AnnotationService
-from neo4japp.services.annotations import (
-    AnnotationService,
-    AnnotationDBService,
-    AnnotationGraphService
-)
-from neo4japp.services.annotations.constants import EntityIdStr, EntityType
-from neo4japp.services.annotations.data_transfer_objects import (
+from neo4japp.utils.logger import EventLog
+
+from .annotation_service import AnnotationService
+from .annotation_db_service import AnnotationDBService
+from .annotation_graph_service import AnnotationGraphService
+from .constants import EntityIdStr, EntityType
+from .data_transfer_objects import (
     Annotation,
     CreateAnnotationObjParams,
     RecognizedEntities,
     LMDBMatch,
     SpecifiedOrganismStrain
 )
-from neo4japp.utils.logger import EventLog
 
 
 class EnrichmentAnnotationService(AnnotationService):
@@ -59,7 +57,7 @@ class EnrichmentAnnotationService(AnnotationService):
         fallback_gene_organism_matches = \
             self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
-                postgres_genes=self.db.get_genes(
+                postgres_genes=self.db.get_organism_genes(
                     genes=gene_names_list, organism_ids=organism_ids),
                 matched_organism_ids=[self.specified_organism.organism_id],
             )
@@ -192,7 +190,7 @@ class EnrichmentAnnotationService(AnnotationService):
             f'Time to clean and run annotation interval tree {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
-        return self.add_primary_name(annotations=cleaned)
+        return self._add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,

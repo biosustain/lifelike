@@ -7,3 +7,4 @@ from .entity_recognition import EntityRecognitionService
 from .lmdb_connector import LMDBConnector
 from .lmdb_service import LMDBService
 from .manual_annotation_service import ManualAnnotationService
+from .tokenizer import Tokenizer
