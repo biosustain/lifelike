@@ -51,11 +51,6 @@ match (n:EnzReaction)-[]-(:Protein)<-[:COMPONENT_OF*0..]-()-[:ENCODES]-(g)
 SET n.displayName = displayName
 ```
 
-- Protein
-```
-match (n:db_BioCyc:Protein) where not exists (n.name) set n.displayName = toLower(n.biocyc_id);
-```
-
 # Set Description
 
 ```

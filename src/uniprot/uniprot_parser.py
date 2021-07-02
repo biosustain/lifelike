@@ -252,10 +252,10 @@ class UniprotParser(BaseParser):
                         outfile2.write(f'{prot_id}\t{syn}\t{gene_name}\n')
             print('added synonyms: ', count)
 
-    def update_graphdb(self, database):
+    def load_data_to_neo4j(self, database: Database, update=True):
         file = os.path.join(self.output_dir, 'sprot.tsv')
         headers = [PROP_ID, PROP_NAME, 'gene_name', 'tax_id', 'pathway', 'function']
-        query = get_create_nodes_query(NODE_UNIPROT, PROP_ID, headers, [NODE_PROTEIN])
+        query = get_update_nodes_query(NODE_UNIPROT, PROP_ID, headers, [NODE_PROTEIN])
         database.load_csv_file(file, headers, query, 0, '\t', 2000, ['tax_id'])
         # load synonyms
         file = os.path.join(self.output_dir, 'synonym.tsv')
@@ -290,7 +290,6 @@ class UniprotParser(BaseParser):
         query = get_create_relationships_query(NODE_UNIPROT, PROP_ID, PROP_ID, NODE_GENE,
                                                           PROP_ID, 'gene_id', REL_GENE)
         database.load_csv_file(file, headers, query, 0, '\t', 2000)
-        database.close()
 
     def fix_missed_genelinks(self, database):
         """
@@ -329,9 +328,7 @@ class UniprotParser(BaseParser):
         self.extract_protein_symbol_as_synonym()
         filename = os.path.join(self.output_dir, 'sprot2syn_derived.tsv')
         headers = ['prot_id', 'synonym', 'type']
-        query = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, 'synonym', NODE_UNIPROT, PROP_ID,
-                                                          'prot_id',
-                                                          REL_SYNONYM, False, '', [], ['type'])
+        query = get_create_synonym_relationships_query(NODE_UNIPROT, PROP_ID, 'prot_id', 'synonym', ['type'])
         database.create_index(NODE_UNIPROT, PROP_ID)
         database.create_index(NODE_SYNONYM, PROP_NAME)
         database.load_csv_file(filename, headers, query, 0, '\t', 2000)
@@ -348,6 +345,8 @@ class UniprotParser(BaseParser):
 
 
 if __name__ == '__main__':
-    # add_protein_symbol_as_synonym()
     parser = UniprotParser()
+    database = get_database(Neo4jInstance.LOCAL)
+    parser.load_data_to_neo4j(database)
+    database.close()
 

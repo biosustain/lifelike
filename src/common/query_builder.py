@@ -78,7 +78,7 @@ def get_create_nodes_query(node_label:str, id_name: str, properties:[], addition
     return '\n'.join(query_rows)
 
 
-def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], update_only=False):
+def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], update_only=False, update_version=None):
     """
     Build query to update nodes.  If a node not exists, and update_only = False, create one then update.
     The query will take a param $dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
@@ -106,7 +106,10 @@ def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], a
         if update_properties:
             props = ['n.' + prop + '=row.' + prop for prop in update_properties if prop != id_name]
             prop_sets += props
-        query_rows.append('SET ' + ','.join(prop_sets))
+        if update_version:
+            prop_sets.append(f'n.version={update_version}')
+        if len(prop_sets) > 0:
+            query_rows.append('SET ' + ','.join(prop_sets))
     return '\n'.join(query_rows)
 
 
@@ -122,7 +125,7 @@ def get_delete_nodes_query(node_label: str, id_name: str):
 
 
 def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
-                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[]):
+                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[], update_version=None):
     """
     Build the query to create relationships from dataframe.  Dataframe need to transfer to dictionary using the following code:
     dict = {'rows': dataframe.to_dict('Records')}
@@ -141,56 +144,41 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
     rows.append("MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
         node1_label, node1_id, node1_col, node2_label, node2_id, node2_col))
     rows.append(f"MERGE (a)-[r:{relationship}]->(b)")
+    prop_sets = []
     if rel_properties:
-        prop_sets = []
         for prop in rel_properties:
             prop_sets.append(f"r.{prop}=row.{prop}")
+    if update_version:
+        prop_sets.append(f'r.version={update_version}')
+    if prop_sets:
         set_phrase = ', '.join(prop_sets)
-        rows.append(f"ON CREATE SET {set_phrase}")
+        rows.append(f"SET {set_phrase}")
     return '\n'.join(rows)
 
 
-def get_create_nodes_relationships_query(node_label:str, node_id:str, node_col:str,
-                                             node2_label, node2_id, node2_col,  relationship: str, forward=True,
-                                             additional_new_node_label='', node_properties=[], rel_properties=[]):
+def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_col:str, synonym_col, rel_properties=[], update_version=None):
     """
     Build the query to create node, then create relationship with another existing node using dataframe data.
     Dataframe need to transfer to dictionary using the following code: dict = {'rows': dataframe.to_dict('Records')}
-    :param node_label: the label for the new node
-    :param node_id: the new node id name, e.g. 'id', 'biocyc_id'
-    :param node_col: the node id column name in the dataframe, e.g. 'start_id', 'string_id'
-    :param node2_label: the other node label for the relationship.  This node need to be in database already
-    :param node2_id: the other node id name
-    :param node2_col: the dataframe column name for the other node id
-    :param relationship: the relationship type
-    :param forward: if true, node->node2, otherwise, node2->node
-    :param additional_new_node_label: add additional label to the new node
-    :param node_properties: new node properties to set
-    :param rel_properties: relationship properties to set
+    :param node_label: the node label
+    :param node_id: the node id name, e.g. 'id', 'biocyc_id'
+    :param node_id_col: the node id column name in the dataframe, e.g. 'start_id', 'string_id'
+    :param synonym_col: the dataframe column name for synonym
+    :param rel_properties: relationship properties for HAS_SYNONYM
+    :param update_version: the version
     :return: cypher query with parameter $dict
     """
     query_rows = list()
     query_rows.append("WITH $dict.rows as rows UNWIND rows as row")
-    query_rows.append("MERGE (a:%s {%s: row.%s})" % (node_label, node_id, node_col))
-    if node_properties or additional_new_node_label:
-        prop_sets = []
-        if additional_new_node_label:
-            prop_sets.append(f"a:{additional_new_node_label}")
-        for prop in node_properties:
-            if prop != node_id:
-                prop_sets.append(f"a.{prop}=row.{prop}")
+    query_rows.append("MERGE (a:Synonym {name: row.%s}) set a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
+    query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col))
+    query_rows.append("MERGE (b)-[r:HAS_SYNONYM]->(a)")
+    prop_sets = []
+    for prop in rel_properties:
+        prop_sets.append(f"r.{prop}=row.{prop}")
+    if update_version:
+        prop_sets.append(f"r.version={update_version}")
+    if prop_sets:
         set_phrase = ', '.join(prop_sets)
-        query_rows.append(f" ON CREATE SET {set_phrase}")
-    query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node2_label, node2_id, node2_col))
-    if forward:
-        query_rows.append(f"MERGE (a)-[r:{relationship}]->(b)")
-    else:
-        query_rows.append(f"MERGE (b)-[r:{relationship}]->(a)")
-    if rel_properties:
-        prop_sets = []
-        for prop in rel_properties:
-            prop_sets.append(f"r.{prop}=row.{prop}")
-        set_phrase = ', '.join(prop_sets)
-        query_rows.append(f"ON CREATE SET {set_phrase}")
+        query_rows.append(f"SET {set_phrase}")
     return '\n'.join(query_rows)
-
