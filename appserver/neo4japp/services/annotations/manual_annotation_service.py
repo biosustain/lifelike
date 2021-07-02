@@ -137,7 +137,8 @@ class ManualAnnotationService:
             self.add_to_global_list(
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
-                file.content_id
+                file.content_id,
+                file.id
             )
 
         version = FileAnnotationsVersion()
@@ -207,7 +208,8 @@ class ManualAnnotationService:
             self.add_to_global_list(
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
-                file.content_id
+                file.content_id,
+                file.id
             )
 
         version = FileAnnotationsVersion()
@@ -289,7 +291,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def add_to_global_list(self, annotation, annotation_type, file_id):
+    def add_to_global_list(self, annotation, annotation_type, file_content_id, file_id):
         """ Adds inclusion or exclusion to a global_list table
         Checks for duplicates and discards them
         """
@@ -299,7 +301,8 @@ class ManualAnnotationService:
         global_list_annotation = GlobalList(
             annotation=annotation,
             type=annotation_type,
-            file_id=file_id,
+            file_content_id=file_content_id,
+            file_id=file_id
         )
 
         db.session.add(global_list_annotation)

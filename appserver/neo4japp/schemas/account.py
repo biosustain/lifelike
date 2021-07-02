@@ -29,6 +29,7 @@ class UserUpdateSchema(CamelCaseSchema):
     username = fields.String()
     first_name = fields.String()
     last_name = fields.String()
+    roles = fields.List(fields.String())
 
 
 class UserSchema(CamelCaseSchema):

@@ -11,7 +11,10 @@ class GlobalList(RDBMSBase, TimestampMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     annotation = db.Column(postgresql.JSON, nullable=False)
     type = db.Column(db.String(12), nullable=False)
-    file_id = db.Column(db.Integer, db.ForeignKey('files_content.id'), nullable=False, index=True)
+    file_content_id = db.Column(db.Integer, db.ForeignKey('files_content.id'), nullable=False, index=True)  # noqa
+    # nullable to work with existing data because due to previous bad migration,
+    # we're not going to migrate values into this new column
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=True, index=True)
     reviewed = db.Column(db.Boolean, default=False)
     approved = db.Column(db.Boolean, default=False)
 
