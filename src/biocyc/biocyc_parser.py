@@ -22,10 +22,12 @@ ENTITIES = [NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE, NODE_GENE, NODE_TE
             NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
             NODE_REACTION, NODE_PATHWAY, NODE_ENZ_REACTION, NODE_REGULATION]
 
-DB_FILE_DICT = {DB_ECOCYC: 'ecoli.tar.gz',
-                DB_HUMANCYC: 'humancyc.tar.gz',
-                DB_YEASTCYC: 'yeastcyc.tar.gz',
-                DB_PPUT: 'pput160488cyc.tar.gz'}
+DB_FILE_DICT = {
+                # DB_ECOCYC: 'ecoli.tar.gz',
+                # DB_HUMANCYC: 'humancyc.tar.gz',
+                # DB_YEASTCYC: 'yeastcyc.tar.gz',
+                DB_PPUT: 'pput160488cyc.tar.gz',
+                DB_METACYC: 'meta.tar.gz'}
 
 
 class BiocycParser(object):
@@ -117,7 +119,7 @@ class BiocycParser(object):
         """
         database.run_query(query)
 
-    def load_data_into_neo4j(self, database: Database, entities=ENTITIES, db_files=DB_FILE_DICT, initial_load=False):
+    def load_data_into_neo4j(self, database: Database, update_version, entities=ENTITIES, db_files=DB_FILE_DICT, initial_load=False):
         """
         Use the default ENTITIES and DB_FILE_DICT to load all 4 biocyc databases into KG database. After load data,
         need to run scripts to set displayname and description.  See docs/biocyc/set_displayname_description.md
@@ -145,8 +147,8 @@ class BiocycParser(object):
                     nodes = parser.parse_data_file()
                     version = parser.version
                     if nodes:
-                        parser.update_nodes_in_graphdb(nodes, database)
-                        parser.add_edges_to_graphdb(nodes, database)
+                        parser.update_nodes_in_graphdb(nodes, database, update_version)
+                        parser.add_edges_to_graphdb(nodes, database, update_version)
         self.link_genes(database)
         self.set_gene_property_for_enrichment(database)
         self.add_protein_synonyms(database)
@@ -173,8 +175,9 @@ class BiocycParser(object):
 if __name__ == '__main__':
     datadir = '/Users/rcai/data'
     parser = BiocycParser(datadir)
-    database = get_database(Neo4jInstance.LOCAL, 'ecocyc')
-    parser.load_data_into_neo4j(database, ENTITIES, {DB_ECOCYC: 'ecoli.tar.gz'}, True)
+    # database = get_database(Neo4jInstance.LOCAL, '***ARANGO_DB_NAME***-qa')
+    database = get_database(Neo4jInstance.GOOGLE_QA)
+    parser.load_data_into_neo4j(database, 1, ENTITIES, DB_FILE_DICT, True)
     database.close()
 
 

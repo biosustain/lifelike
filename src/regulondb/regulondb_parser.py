@@ -79,7 +79,7 @@ class RegulonDbParser(BaseParser):
     def load_genes(self):
         attribute_map = {
             'GENE_ID': PROP_REGULONDB_ID,
-            'GENE_NAME': PROP_COMMON_NAME, 
+            'GENE_NAME': PROP_NAME,
             'GENE_POSLEFT': PROP_POS_LEFT,
             'GENE_POSRIGHT': PROP_POS_RIGHT,
             'GENE_STRAND': PROP_STRAND,
@@ -90,7 +90,7 @@ class RegulonDbParser(BaseParser):
     def load_operons(self):
         attribute_map = {
             'OPERON_ID': PROP_REGULONDB_ID,
-            'OPERON_NAME': PROP_COMMON_NAME,
+            'OPERON_NAME': PROP_NAME,
             'REGULATIONPOSLEFT': PROP_POS_LEFT,
             'REGULATIONPOSRIGHT': PROP_POS_RIGHT,
             'OPERON_STRAND': PROP_STRAND,
@@ -101,7 +101,7 @@ class RegulonDbParser(BaseParser):
     def load_gene_products(self):
         attribute_map = {
             'PRODUCT_ID': PROP_REGULONDB_ID,
-            'PRODUCT_NAME': PROP_COMMON_NAME,
+            'PRODUCT_NAME': PROP_NAME,
             'MOLECULAR_WEIGTH': 'molecular_weight',
             'LOCATION': 'location',
             # 'ANTICODON': 'anticodon',
@@ -113,7 +113,7 @@ class RegulonDbParser(BaseParser):
     def load_promoters(self):
         attribute_map = {
             'PROMOTER_ID': PROP_REGULONDB_ID,
-            'PROMOTER_NAME': PROP_COMMON_NAME,
+            'PROMOTER_NAME': PROP_NAME,
             'POS_1': PROP_POS_1,
             'SIGMA_FACTOR': 'sigma_factor',
             'PROMOTER_SEQUENCE': PROP_SEQUENCE,
@@ -126,7 +126,7 @@ class RegulonDbParser(BaseParser):
     def load_regulons(self):
         attribute_map = {
             'REGULON_ID': PROP_REGULONDB_ID,
-            'REGULON_NAME': PROP_COMMON_NAME,
+            'REGULON_NAME': PROP_NAME,
             'REGULON_TF_GROUP': 'num_tfs',
         }
         logging.info('load regulondb regulons')
@@ -147,7 +147,7 @@ class RegulonDbParser(BaseParser):
     def load_transunits(self):
         attribute_map = {
             'TRANSCRIPTION_UNIT_ID': PROP_REGULONDB_ID,
-            'TRANSCRIPTION_UNIT_NAME': PROP_COMMON_NAME,
+            'TRANSCRIPTION_UNIT_NAME': PROP_NAME,
             'TRANSCRIPTION_UNIT_NOTE': PROP_COMMENT,
         }
         logging.info('load regulondb transcription_units')
@@ -158,7 +158,7 @@ class RegulonDbParser(BaseParser):
     def load_transcription_factors(self, update=False):
         attribute_map = {
             'TRANSCRIPTION_FACTOR_ID': PROP_REGULONDB_ID,
-            'TRANSCRIPTION_FACTOR_NAME': PROP_COMMON_NAME,
+            'TRANSCRIPTION_FACTOR_NAME': PROP_NAME,
             'SITE_LENGTH': 'site_length',
             'SYMMETRY': 'symmetry',
             'TRANSCRIPTION_FACTOR_FAMILY': 'regulator_family',

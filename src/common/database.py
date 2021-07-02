@@ -12,6 +12,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 STG_URI = 'bolt://34.67.212.125:7687'
 STG_PASSWORD = '***ARANGO_DB_NAME***-stg-2021'
 
+QA_URI = 'bolt://34.72.250.27:7687'
+QA_PASSWORD = '***ARANGO_DB_NAME***-qa-2021'
+
 PROD_URI = 'bolt://35.225.248.203:7687'
 PROD_PASSWORD = 'Lifelike0.9prod'
 
@@ -28,6 +31,7 @@ protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
 class Neo4jInstance(Enum):
     GOOGLE_STG = 'google staging dataase'
     GOOGLE_PROD = 'google prod database'
+    GOOGLE_QA = 'google qa database'
     DTU = 'dtu neo4j'
     LOCAL = 'local host'
 
@@ -41,6 +45,8 @@ def get_database(neo4j: Neo4jInstance, dbname='neo4j'):
     """
     if neo4j == Neo4jInstance.GOOGLE_STG:
         driver = GraphDatabase.driver(STG_URI, auth=('neo4j', STG_PASSWORD))
+    elif neo4j == Neo4jInstance.GOOGLE_QA:
+        driver = GraphDatabase.driver(QA_URI, auth=('neo4j', QA_PASSWORD))
     elif neo4j == Neo4jInstance.GOOGLE_PROD:
         driver = GraphDatabase.driver(PROD_URI, auth=('neo4j', PROD_PASSWORD))
     elif neo4j == Neo4jInstance.DTU:

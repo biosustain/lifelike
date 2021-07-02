@@ -172,8 +172,7 @@ class GeneParser(BaseParser):
             query_genes = get_create_nodes_query(NODE_GENE, PROP_ID,
                                            [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
                                            [NODE_NCBI])
-        query_synonyms = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, 'synonym',
-                                                     NODE_GENE, PROP_ID, PROP_ID, REL_SYNONYM, False, '', [PROP_LOWERCASE_NAME])
+        query_synonyms = get_create_synonym_relationships_query(NODE_GENE, PROP_ID, PROP_ID, 'synonym')
         print(query_synonyms)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=10000, usecols=gene_info_cols)

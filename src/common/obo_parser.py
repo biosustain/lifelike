@@ -111,8 +111,7 @@ class OboParser(object):
         if not entity2synonym_list:
             return
         logging.info(f'add {node_label} synonyms')
-        query = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, PROP_NAME, node_label,
-                                                                node_id_name, node_id_name, REL_SYNONYM, False)
+        query = get_create_synonym_relationships_query(node_label, node_id_name, node_id_name, PROP_NAME)
         database.load_data_from_rows(query, entity2synonym_list)
 
     @classmethod
