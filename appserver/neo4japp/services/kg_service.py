@@ -5,7 +5,7 @@ import time
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List
+from typing import Dict, List, Type
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
 from neo4japp.exceptions import ServerException
@@ -338,7 +338,8 @@ class KgService(HybridDBDao):
                         try:
                             node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
-                        except ValueError:
+                        except KeyError:
+                            # If label does not exist, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
 
@@ -434,7 +435,13 @@ class KgService(HybridDBDao):
             'Min Mean Short Updown Acetate',
             'Min Mean Short Updown Butyrate',
             'AAK1 to Metab noOct',
-            'FosB to PER1'
+            'FosB to PER1',
+            'Uncharacterized iModulon Genes and Top 20 Metabolites',
+            'Uncharacterized iModulon Genes Only',
+            'Uncharacterized iModulon Genes to Methionine',
+            'Uncharacterized iModulon Genes yjdI Metabolites',
+            'Zink iModulon Metals',
+            'Zink iModulon Test2'
             # 'nagA (ALE Mutation Data)',
         ]
         return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
@@ -489,7 +496,13 @@ class KgService(HybridDBDao):
             'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
             'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json',
             'cytoscape_data/aak1_to_metab_noOct_graphml.json',
-            'cytoscape_data/FosB to PER1_vis_js.json'
+            'cytoscape_data/FosB to PER1_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_and_top20_metabolites_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_only_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_to_methionine_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_yjdI_metabolites_vis_js.json',
+            'marina_sankey_data/zink-imodulon-metals_vis_js.json',
+            'marina_sankey_data/zink-imodulon-test2_vis_js.json'
             # 'ale_mutation_data/nagA.json',
         ]
 

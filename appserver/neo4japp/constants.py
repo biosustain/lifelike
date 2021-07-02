@@ -356,7 +356,7 @@ RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string
 
 # Start email constants
 MESSAGE_SENDER_IDENTITY = "lifelike-account-service@lifelike.bio"
-MAILING_API_KEY = os.getenv('SEND_GRID_API_KEY')
+MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
 RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
@@ -364,3 +364,5 @@ SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
+
+LIFELIKE_DOMAIN = os.getenv('DOMAIN')
