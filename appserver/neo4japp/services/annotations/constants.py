@@ -143,7 +143,8 @@ class DatabaseType(Enum):
     CUSTOM = 'CUSTOM'
     MESH = 'MESH'
     UNIPROT = 'UNIPROT'
-    NCBI = 'NCBI'
+    NCBI_GENE = 'NCBI Gene'
+    NCBI_TAXONOMY = 'NCBI Taxonomy'
     BIOCYC = 'BIOCYC'
     PUBCHEM = 'PUBCHEM'
 
@@ -169,10 +170,8 @@ ENTITY_HYPERLINKS = {
     DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
-    DatabaseType.NCBI.value: {
-        EntityType.GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-        EntityType.SPECIES.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
-    },
+    DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
+    DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',  # noqa
     DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }
