@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 from common.database import *
+from common.utils import get_data_dir
 import logging
 
 def add_annotation_entity_labels(database:Database):
@@ -66,12 +67,34 @@ def add_annotation_entity_labels(database:Database):
     """
     database.run_query(query_food)
 
-if __name__ == "__main__":
-    # database = get_database(Neo4jInstance.LOCAL)
+
+def _export_disease_synonyms_for_LMDB(database: Database, outfile):
+    """
+    Since all synonyms with comma have been removed from KG database, use cypher query to get disease synonyms.
+    :param database:
+    :return:
+    """
+    query = """
+    match(n:Disease)-[:HAS_SYNONYM]-(s) return n.id as MeshID, n.name as Name, s.name as Synonym, n.data_source as DataSource
+    order by MeshID, Synonym 
+    """
+    df = database.get_data(query)
+    df.to_csv(outfile, sep='\t', index=False)
+
+
+def write_diseaselist_file_for_LMDB():
     database = get_database(Neo4jInstance.GOOGLE_STG)
-    add_annotation_entity_labels(database)
+    file = os.path.join(get_data_dir(), 'processed', 'disease_for_LMDB_20210609.tsv')
+    print(file)
+    _export_disease_synonyms_for_LMDB(database, file)
     database.close()
 
+
+if __name__ == "__main__":
+    # write_diseaselist_file_for_LMDB()
+    database = get_database(Neo4jInstance.LOCAL, 'lifelike-qa')
+    add_annotation_entity_labels(database)
+    database.close()
 
 
 

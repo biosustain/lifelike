@@ -61,7 +61,7 @@ class GoOboParser(OboParser, BaseParser):
                 node_dict[node_label] = []
             node_dict[node_label].append(node.to_dict())
         for label in node_dict.keys():
-            query = get_create_nodes_query(NODE_GO, PROP_ID, self.attributes_map.keys(), [label.title().replace('_', '')])
+            query = get_update_nodes_query(NODE_GO, PROP_ID, self.attributes_map.keys(), [label.title().replace('_', '')])
             database.load_data_from_rows(query, node_dict[label])
 
         self.load_synonyms(database, nodes, NODE_GO, PROP_ID)
@@ -69,9 +69,9 @@ class GoOboParser(OboParser, BaseParser):
 
 
 if __name__ == '__main__':
-    parser = GoOboParser()
+    parser = GoOboParser("/Users/rcai/data")
     # use the right database
-    database = get_database(Neo4jInstance.LOCAL, 'neo4j')
+    database = get_database(Neo4jInstance.LOCAL, 'lifelike-qa')
     parser.load_data_to_neo4j(database)
     database.close()
 

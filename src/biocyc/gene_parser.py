@@ -31,7 +31,7 @@ class GeneParser(BaseDataFileParser):
     def create_synonym_rels(self) -> bool:
         return True
 
-    def add_dblinks_to_graphdb(self, db_link_dict:dict, database: Database):
+    def add_dblinks_to_graphdb(self, db_link_dict:dict, database: Database, update_version):
         for db in db_link_dict.keys():
             logging.info('add relationship links to ' + db)
             if db == 'NCBI-GENE':
@@ -40,8 +40,8 @@ class GeneParser(BaseDataFileParser):
             else:
                 dest_label = 'db_' + db
                 relType = db.uppper() + '_LINK'
-            query = get_create_nodes_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              dest_label, PROP_ID, 'to_id', relType)
+            query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
+                                                              dest_label, PROP_ID, 'to_id', relType, update_version=update_version)
             logging.info(query)
             database.load_data_from_rows(query, db_link_dict[db])
 

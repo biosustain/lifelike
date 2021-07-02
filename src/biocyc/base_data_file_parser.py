@@ -122,7 +122,7 @@ class BaseDataFileParser(BaseParser):
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
 
-    def update_nodes_in_graphdb(self, nodes:[], database:Database):
+    def update_nodes_in_graphdb(self, nodes:[], database:Database, update_version):
         """
         Load or update nodes in KG. This can also be called for initial loading.
         :param nodes: list of nodes
@@ -136,10 +136,10 @@ class BaseDataFileParser(BaseParser):
         for node in nodes:
             rows.append(node.to_dict())
         attrs = [PROP_ID] + self.attrs
-        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels)
+        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, update_version=update_version)
         database.load_data_from_rows(query, rows)
 
-    def add_edges_to_graphdb(self, nodes:[], database:Database):
+    def add_edges_to_graphdb(self, nodes:[], database:Database, update_version):
         entity_rel_dict = dict()
         db_link_dict = dict()
         synonym_list = []
@@ -170,26 +170,25 @@ class BaseDataFileParser(BaseParser):
 
         if synonym_list:
             logging.info('add synonyms')
-            query = get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, PROP_NAME, NODE_BIOCYC, PROP_BIOCYC_ID,
-                                                              PROP_BIOCYC_ID, REL_SYNONYM, False)
+            query = get_create_synonym_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, PROP_BIOCYC_ID, PROP_NAME, [], update_version)
             logging.info(query)
             database.load_data_from_rows(query, synonym_list)
         for rel in entity_rel_dict.keys():
             logging.info('add relationship ' + rel)
             query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel)
+                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel, update_version=update_version)
             logging.info(query)
             database.load_data_from_rows(query, entity_rel_dict[rel])
 
-        self.add_dblinks_to_graphdb(db_link_dict, database)
+        self.add_dblinks_to_graphdb(db_link_dict, database, update_version)
 
-    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database):
+    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database, update_version):
         for db_name in db_link_dict.keys():
             logging.info('add DB Link relationship to ' + db_name )
             dest_label = 'db_' + db_name
             rel = db_name.upper() + '_LINK'
-            query = get_create_nodes_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              dest_label, PROP_ID, 'to_id', rel)
+            query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
+                                                              dest_label, PROP_ID, 'to_id', rel, update_version=update_version)
             logging.info(query)
             database.load_data_from_rows(query, db_link_dict[db_name])
 

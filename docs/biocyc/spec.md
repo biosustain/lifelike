@@ -16,6 +16,11 @@ http://brg-files.ai.sri.com/public/dist/yeastcyc.tar.gz
 - PseudomonasCyc: for Pseudomonas putida KT2440 (tax_id 160488)  
 http://brg-files.ai.sri.com/public/dist/pput160488cyc.tar.gz
 
+- MetaCyc: MetaCyc is a curated database of experimentally elucidated metabolic pathways from all domains of life.
+MetaCyc contains pathways involved in both primary and secondary metabolism, as well as associated metabolites, reactions, 
+enzymes, and genes. The goal of MetaCyc is to catalog the universe of metabolism by storing a representative sample of each experimentally elucidated pathway 
+https://brg-files.ai.sri.com/public/dist/meta.tar.gz
+
 In Lifelike graph database, each node in BioCyc was labeled as db_BioCyc, and nodes for each biocyc database was 
 labeled as additional database name, such as db_EcoCyc, db_HumanCyc.  Therefore for any EcoCyc, there are 3 labels: 
 db_BioCyc, db_EcoCyc and the entity name (e.g. Gene, Protein)
