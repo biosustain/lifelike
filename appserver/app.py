@@ -236,13 +236,6 @@ def update_or_create_index(index_id, index_mapping_file):
     elastic_service.update_or_create_index(index_id, index_mapping_file)
 
 
-@app.cli.command('reindex-elastic')
-def reindex_elastic():
-    """Reindexes all files in the index given by the ELASTIC_FILE_INDEX_ID environment variable."""
-    elastic_service = get_elastic_service()
-    elastic_service.index_files()
-
-
 # NOTE DEPRECATED: Files.file_id no longer exist -> Files.content_id
 @app.cli.command('reannotate')
 def reannotate_all():
