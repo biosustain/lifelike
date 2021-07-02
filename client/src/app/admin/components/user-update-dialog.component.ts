@@ -1,9 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component} from '@angular/core';
 
 import {
   FormGroup,
   FormControl,
-  Validators, ValidatorFn, AbstractControl,
+  Validators,
 } from '@angular/forms';
 
 
@@ -18,10 +18,13 @@ import { AppUser, UserUpdateRequest } from '../../interfaces';
 })
 export class UserUpdateDialogComponent extends CommonFormDialogComponent {
   user: AppUser;
+  roles = ['admin', 'user'];
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
+    roles: new FormControl('')
+
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
@@ -29,10 +32,15 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): UserUpdateRequest {
-        return {
-        hashId: this.user.hashId,
-      ...this.form.value,
-    };
+    const userData = {hashId: this.user.hashId};
+    Object.keys(this.form.controls)
+            .forEach(key => {
+                const currentControl = this.form.controls[key];
+                if (currentControl.value !== this.user[key] && currentControl.value !== '') {
+                        userData[key] = currentControl.value;
+                }
+            });
+    return userData;
   }
 
   setUser(user: AppUser) {
@@ -41,8 +49,9 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
       username: this.user.username,
       firstName: this.user.firstName,
       lastName: this.user.lastName,
+      roles: ''
     });
   }
-
 }
+
 

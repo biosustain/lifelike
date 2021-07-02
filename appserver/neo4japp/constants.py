@@ -363,3 +363,5 @@ SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
+
+LIFELIKE_DOMAIN = os.getenv('DOMAIN')

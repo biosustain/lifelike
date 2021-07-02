@@ -107,7 +107,6 @@ def test_user_can_get_global_list(
 
     data = json.loads(response.get_data().decode('utf-8'))
     assert data['total'] == 2
-    assert data['query'] is None
     assert len(data['results']) == 2
 
     if data['results'][0]['type'] == 'inclusion':
