@@ -69,13 +69,16 @@ def get_primary_names(annotations):
             elif anno['meta']['type'] == EntityType.SPECIES.value:
                 organism_ids.add(meta_id)
 
-    chemical_names = neo4j.get_chemicals_from_chemical_ids(list(chemical_ids))
-    compound_names = neo4j.get_compounds_from_compound_ids(list(compound_ids))
-    disease_names = neo4j.get_diseases_from_disease_ids(list(disease_ids))
-    gene_names = neo4j.get_genes_from_gene_ids(list(gene_ids))
-    protein_names = neo4j.get_proteins_from_protein_ids(list(protein_ids))
-    organism_names = neo4j.get_organisms_from_organism_ids(list(organism_ids))
-    mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
+    try:
+        chemical_names = neo4j.get_nodes_from_node_ids(EntityType.CHEMICAL.value, list(chemical_ids))  # noqa
+        compound_names = neo4j.get_nodes_from_node_ids(EntityType.COMPOUND.value, list(compound_ids))  # noqa
+        disease_names = neo4j.get_nodes_from_node_ids(EntityType.DISEASE.value, list(disease_ids))
+        gene_names = neo4j.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
+        protein_names = neo4j.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))
+        organism_names = neo4j.get_nodes_from_node_ids(EntityType.SPECIES.value, list(organism_ids))  # noqa
+        mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
+    except Exception:
+        raise
 
     for anno in annotations:
         if not anno.get('primaryName'):

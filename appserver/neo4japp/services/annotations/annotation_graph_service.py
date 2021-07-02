@@ -1,58 +1,161 @@
-from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
 from typing import Dict, List
 
-from neo4japp.database import GraphConnection
+from flask import current_app
+from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+from neo4japp.constants import LogEventType
+from neo4japp.util import normalize_str
+from neo4japp.utils.logger import EventLog
+
+from .mixins.graph_mixin import GraphMixin
+
+from .constants import EntityType
+from .data_transfer_objects import GlobalInclusions, Inclusion
+from .lmdb_util import *
 
 
-class AnnotationGraphService(GraphConnection):
-    def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_chemicals_from_chemical_ids_query,
-            chemical_ids
-        )
-        return {row['chemical_id']: row['chemical_name'] for row in result}
+class AnnotationGraphService(GraphMixin):
+    def get_nodes_from_node_ids(self, entity_type: str, node_ids: List[str]) -> Dict[str, str]:
+        result = self.exec_read_query_with_params(
+            self.get_nodes_by_ids(entity_type), {'ids': node_ids})
+        return {row['entity_id']: row['entity_name'] for row in result}
 
-    def get_compounds_from_compound_ids(self, compound_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_compounds_from_compound_ids_query,
-            compound_ids
-        )
-        return {row['compound_id']: row['compound_name'] for row in result}
-
-    def get_diseases_from_disease_ids(self, disease_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_diseases_from_disease_ids_query,
-            disease_ids
-        )
-        return {row['disease_id']: row['disease_name'] for row in result}
-
-    def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_genes_from_gene_ids_query,
-            gene_ids
-        )
-        return {row['gene_id']: row['gene_name'] for row in result}
-
-    def get_proteins_from_protein_ids(self, protein_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_proteins_from_protein_ids_query,
-            protein_ids
-        )
-        return {row['protein_id']: row['protein_name'] for row in result}
-
-    def get_organisms_from_organism_ids(self, organism_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_organisms_from_organism_ids_query,
-            organism_ids
-        )
-        return {row['organism_id']: row['organism_name'] for row in result}
-
+    # NOTE DEPRECATED: just used in old migration
     def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
-        result = self.graph.read_transaction(
-            self.get_mesh_from_mesh_ids_query,
-            mesh_ids
-        )
+        result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
+
+    def _create_entity_inclusion(self, entity_type: str, inclusion_dict: dict) -> None:
+        createfuncs = {
+            EntityType.ANATOMY.value: create_ner_type_anatomy,
+            EntityType.CHEMICAL.value: create_ner_type_chemical,
+            EntityType.COMPOUND.value: create_ner_type_compound,
+            EntityType.DISEASE.value: create_ner_type_disease,
+            EntityType.FOOD.value: create_ner_type_food,
+            EntityType.GENE.value: create_ner_type_gene,
+            EntityType.PHENOMENA.value: create_ner_type_phenomena,
+            EntityType.PHENOTYPE.value: create_ner_type_phenotype,
+            EntityType.PROTEIN.value: create_ner_type_protein,
+            EntityType.SPECIES.value: create_ner_type_species,
+            EntityType.COMPANY.value: create_ner_type_company,
+            EntityType.ENTITY.value: create_ner_type_entity
+        }
+
+        global_inclusions = self.exec_read_query(self.get_global_inclusions_by_type(entity_type))
+        # need to append here because an inclusion
+        # might've not been matched to an existing entity
+        # so look for it in Lifelike
+        global_inclusions += self.exec_read_query(
+            self.get_***ARANGO_DB_NAME***_global_inclusions_by_type(entity_type))
+
+        for inclusion in global_inclusions:
+            normalized_synonym = normalize_str(inclusion['synonym'])
+            if entity_type != EntityType.GENE.value and entity_type != EntityType.PROTEIN.value:
+                entity = createfuncs[entity_type](
+                    id_=inclusion['entity_id'],
+                    name=inclusion['entity_name'],
+                    synonym=inclusion['synonym']
+                )  # type: ignore
+            else:
+                entity = createfuncs[entity_type](
+                    name=inclusion['entity_name'], synonym=inclusion['synonym'])  # type: ignore
+
+            if normalized_synonym in inclusion_dict:
+                inclusion_dict[normalized_synonym].entities.append(entity)
+            else:
+                inclusion_dict[normalized_synonym] = Inclusion(
+                    entities=[entity],
+                    entity_id_type=inclusion['data_source'],
+                    entity_id_hyperlink=inclusion.get('hyperlink', '')
+                )
+
+    def get_entity_inclusions(self, inclusions: List[dict]) -> GlobalInclusions:
+        """Returns global inclusions for each entity type.
+        For species (taxonomy), also return the local inclusions.
+
+        :param inclusions:  custom annotations relative to file
+            - need to be filtered for local inclusions
+        """
+        inclusion_dicts: Dict[str, dict] = {
+            EntityType.ANATOMY.value: {},
+            EntityType.CHEMICAL.value: {},
+            EntityType.COMPOUND.value: {},
+            EntityType.DISEASE.value: {},
+            EntityType.FOOD.value: {},
+            EntityType.GENE.value: {},
+            EntityType.PHENOMENA.value: {},
+            EntityType.PHENOTYPE.value: {},
+            EntityType.PROTEIN.value: {},
+            EntityType.SPECIES.value: {},
+            EntityType.COMPANY.value: {},
+            EntityType.ENTITY.value: {}
+        }
+
+        local_inclusion_dicts: Dict[str, dict] = {
+            EntityType.SPECIES.value: {}
+        }
+
+        for k, v in inclusion_dicts.items():
+            self._create_entity_inclusion(k, v)
+
+        local_species_inclusions = [
+            local for local in inclusions if local.get(
+                'meta', {}).get('type') == EntityType.SPECIES.value and not local.get(
+                    'meta', {}).get('includeGlobally', False)  # safe to default to False?
+        ]
+
+        for local_inclusion in local_species_inclusions:
+            entity_type = EntityType.SPECIES.value
+            try:
+                entity_id = local_inclusion['meta']['id']
+                entity_id_type = local_inclusion['meta']['idType']
+                entity_id_hyperlink = local_inclusion['meta']['idHyperlink']
+                synonym = local_inclusion['meta']['allText']
+            except KeyError:
+                current_app.logger.error(
+                    f'Error creating local inclusion {local_inclusion} for {entity_type}',
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            else:
+                # entity_name could be empty strings
+                # probably a result of testing
+                # but will keep here just in case
+                if entity_id and synonym:
+                    normalized_synonym = normalize_str(synonym)
+
+                    if not entity_id:
+                        # ID is required for global inclusions
+                        # but we also include local species inclusion
+                        entity_id = synonym
+
+                    entity = create_ner_type_species(
+                        id_=entity_id,
+                        name=synonym,
+                        synonym=synonym
+                    )
+
+                    if normalized_synonym in local_inclusion_dicts[entity_type]:
+                        local_inclusion_dicts[entity_type][normalized_synonym].entities.append(entity)  # noqa
+                    else:
+                        local_inclusion_dicts[entity_type][normalized_synonym] = Inclusion(
+                            entities=[entity],
+                            entity_id_type=entity_id_type,
+                            entity_id_hyperlink=entity_id_hyperlink
+                        )
+        return GlobalInclusions(
+            included_anatomy=inclusion_dicts[EntityType.ANATOMY.value],
+            included_chemicals=inclusion_dicts[EntityType.CHEMICAL.value],
+            included_compounds=inclusion_dicts[EntityType.COMPOUND.value],
+            included_diseases=inclusion_dicts[EntityType.DISEASE.value],
+            included_foods=inclusion_dicts[EntityType.FOOD.value],
+            included_genes=inclusion_dicts[EntityType.GENE.value],
+            included_phenomenas=inclusion_dicts[EntityType.PHENOMENA.value],
+            included_phenotypes=inclusion_dicts[EntityType.PHENOTYPE.value],
+            included_proteins=inclusion_dicts[EntityType.PROTEIN.value],
+            included_species=inclusion_dicts[EntityType.SPECIES.value],
+            included_local_species=local_inclusion_dicts[EntityType.SPECIES.value],
+            included_companies=inclusion_dicts[EntityType.COMPANY.value],
+            included_entities=inclusion_dicts[EntityType.ENTITY.value],
+        )
 
     def get_gene_to_organism_match_result(
         self,
@@ -80,11 +183,8 @@ class AnnotationGraphService(GraphConnection):
     ) -> Dict[str, Dict[str, Dict[str, str]]]:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
 
-        result = self.graph.read_transaction(
-            self.get_gene_to_organism_query,
-            genes,
-            organisms,
-        )
+        result = self.exec_read_query_with_params(
+            self.get_gene_to_organism, {'genes': genes, 'organisms': organisms})
 
         for row in result:
             gene_name = row['gene_name']
@@ -109,11 +209,8 @@ class AnnotationGraphService(GraphConnection):
     ) -> Dict[str, Dict[str, str]]:
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
-        result = self.graph.read_transaction(
-            self.get_protein_to_organism_query,
-            proteins,
-            organisms,
-        )
+        result = self.exec_read_query_with_params(
+            self.get_protein_to_organism, {'proteins': proteins, 'organisms': organisms})
 
         for row in result:
             protein_name: str = row['protein']
@@ -133,150 +230,6 @@ class AnnotationGraphService(GraphConnection):
         return self.graph.run(
             self.get_organisms_from_gene_ids_query,
             gene_ids
-        )
-
-    def get_gene_to_organism_query(
-        self,
-        tx: Neo4jTx,
-        genes: List[str],
-        organisms: List[str]
-    ) -> List[Neo4jRecord]:
-        """Retrieves a list of all the genes with a given name
-        in a particular organism."""
-        return list(
-            tx.run(
-                """
-                MATCH (s:Synonym)-[]-(g:Gene)
-                WHERE s.name IN $genes
-                WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-                WHERE p.id IN $organisms
-                RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id,
-                    p.id AS organism_id
-                """,
-                genes=genes, organisms=organisms
-            )
-        )
-
-    def get_protein_to_organism_query(
-        self,
-        tx: Neo4jTx,
-        proteins: List[str],
-        organisms: List[str]
-    ) -> List[Neo4jRecord]:
-        """Retrieves a list of all the protein with a given name
-        in a particular organism."""
-        return list(
-            tx.run(
-                """
-                MATCH (s:Synonym)-[]-(g:db_UniProt)
-                WHERE s.name IN $proteins
-                WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-                WHERE p.id IN $organisms
-                RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
-                """,
-                proteins=proteins, organisms=organisms
-            )
-        )
-
-    def get_mesh_from_mesh_ids_query(self, tx: Neo4jTx, mesh_ids: List[str]) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $mesh_ids
-                RETURN n.id AS mesh_id, n.name AS mesh_name
-                """,
-                mesh_ids=mesh_ids
-            )
-        )
-
-    def get_chemicals_from_chemical_ids_query(
-        self,
-        tx: Neo4jTx,
-        chemical_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (c:Chemical) WHERE c.id IN $chemical_ids
-                RETURN c.id AS chemical_id, c.name AS chemical_name
-                """,
-                chemical_ids=chemical_ids
-            )
-        )
-
-    def get_compounds_from_compound_ids_query(
-        self,
-        tx: Neo4jTx,
-        compound_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (c:Compound) WHERE c.biocyc_id IN $compound_ids
-                RETURN c.biocyc_id AS compound_id, c.name AS compound_name
-                """,
-                compound_ids=compound_ids
-            )
-        )
-
-    def get_diseases_from_disease_ids_query(
-        self,
-        tx: Neo4jTx,
-        disease_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (d:Disease) WHERE d.id IN $disease_ids
-                RETURN d.id AS disease_id, d.name AS disease_name
-                """,
-                disease_ids=disease_ids
-            )
-        )
-
-    def get_genes_from_gene_ids_query(
-        self,
-        tx: Neo4jTx,
-        gene_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene) WHERE g.id IN $gene_ids
-                RETURN g.id AS gene_id, g.name AS gene_name
-                """,
-                gene_ids=gene_ids
-            )
-        )
-
-    def get_proteins_from_protein_ids_query(
-        self,
-        tx: Neo4jTx,
-        protein_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (p:db_UniProt) WHERE p.id IN $protein_ids
-                RETURN p.id AS protein_id, p.name AS protein_name
-                """,
-                protein_ids=protein_ids
-            )
-        )
-
-    def get_organisms_from_organism_ids_query(
-        self,
-        tx: Neo4jTx,
-        organism_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        return list(
-            tx.run(
-                """
-                MATCH (t:Taxonomy) WHERE t.id IN $organism_ids
-                RETURN t.id AS organism_id, t.name AS organism_name
-                """,
-                organism_ids=organism_ids
-            )
         )
 
     def get_organisms_from_gene_ids_query(
