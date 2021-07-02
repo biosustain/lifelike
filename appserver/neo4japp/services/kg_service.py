@@ -7,7 +7,12 @@ from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 from typing import Dict, List
 
-from neo4japp.constants import BIOCYC_ORG_ID_DICT
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT,
+    TYPE_LITERATURE_CHEMICAL,
+    TYPE_LITERATURE_DISEASE,
+    TYPE_LITERATURE_GENE
+)
 from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
@@ -67,6 +72,20 @@ class KgService(HybridDBDao):
                 else:
                     url = url_map['omim'].format(uid)
             elif label == TYPE_GENE:
+                url = url_map['NCBI_Gene'].format(entity_id)
+            elif label == TYPE_LITERATURE_CHEMICAL:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'CHEBI':
+                    url = url_map['chebi'].format(uid)
+                else:
+                    url = url_map['MESH'].format(uid)
+            elif label == TYPE_LITERATURE_DISEASE:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'MESH':
+                    url = url_map['MESH'].format(uid)
+                else:
+                    url = url_map['omim'].format(uid)
+            elif label == TYPE_LITERATURE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError:
             current_app.logger.warning(

@@ -212,24 +212,18 @@ def create_association_node(
 
 def create_snippet_node(
     tx: Transaction,
-    entry1_text: str,
-    entry2_text: str,
     snippet_id: int,
     sentence: str
 ) -> Node:
     """Creates a snippet node and adds it to the graph."""
     query = """
         CREATE (s:Snippet {
-            entry1_text: $entry1_text,
-            entry2_text: $entry2_text,
             id: $snippet_id,
             sentence: $sentence
         }) RETURN s
     """
     return tx.run(
         query,
-        entry1_text=entry1_text,
-        entry2_text=entry2_text,
         snippet_id=snippet_id,
         sentence=sentence
     ).single()['s']
@@ -304,6 +298,8 @@ def create_predicts_relationship(
     tx: Transaction,
     source_id: int,
     target_id: int,
+    entry1_text: str,
+    entry2_text: str,
     raw_score: Optional[float] = None,
     normalized_score: Optional[float] = None,
 ) -> Relationship:
@@ -314,7 +310,9 @@ def create_predicts_relationship(
     query = """
         MATCH (source) WHERE ID(source)=$source_id
         MATCH (target) WHERE ID(target)=$target_id
-        CREATE (source)-[r:PREDICTS {
+        CREATE (source)-[r:INDICATES {
+            entry1_text: $entry1_text,
+            entry2_text: $entry2_text,
             raw_score: $raw_score,
             normalized_score: $normalized_score
         }]->(target)
@@ -322,6 +320,8 @@ def create_predicts_relationship(
     """
     return tx.run(
         query,
+        entry1_text=entry1_text,
+        entry2_text=entry2_text,
         source_id=source_id,
         target_id=target_id,
         raw_score=raw_score,
@@ -519,43 +519,31 @@ def gas_gangrene_with_associations_and_references(
         # Snippet Nodes
         oxygen_to_gas_gangrene_snippet_node1 = create_snippet_node(
             tx=tx,
-            entry1_text='oxygen',
-            entry2_text='gas gangrene',
             snippet_id=7430189,
             sentence='In this study , we aimed to investigate the effect of HBO2...',
         )
         oxygen_to_gas_gangrene_snippet_node2 = create_snippet_node(
             tx=tx,
-            entry1_text='oxygen',
-            entry2_text='gas gangrene',
             snippet_id=1890743,
             sentence='Hyperbaric oxygen therapy has an adjunctive role...',
         )
         penicillins_to_gas_gangrene_snippet_node1 = create_snippet_node(
             tx=tx,
-            entry1_text='penicillin',
-            entry2_text='gas gangrene',
             snippet_id=9810347,
             sentence='In a mouse model of gas_gangrene caused by...',
         )
         penicillins_to_gas_gangrene_snippet_node2 = create_snippet_node(
             tx=tx,
-            entry1_text='penicillin',
-            entry2_text='gas gangrene',
             snippet_id=9810346,
             sentence='Toxin suppression and rapid bacterial killing may...',
         )
         penicillins_to_gas_gangrene_snippet_node3 = create_snippet_node(
             tx=tx,
-            entry1_text='penicillin',
-            entry2_text='gas gangrene',
             snippet_id=9810348,
             sentence='...penicillin was found to reduce the affect of...',
         )
         penicillins_to_gas_gangrene_snippet_node4 = create_snippet_node(
             tx=tx,
-            entry1_text='penicillin',
-            entry2_text='gas gangrene',
             snippet_id=9810346,
             sentence='...suppresses toxins and rapidly kills bacteria...',
         )
@@ -606,12 +594,12 @@ def gas_gangrene_with_associations_and_references(
 
         # Snippet -> Association Relationships
         snippet_to_association_rels = [
-            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
-            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association_node, None, None],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_association_node1, 2, 0.385],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_association_node1, 5, 0.693],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_association_node2, 1, 0.222],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_association_node2, 3, 0.456],  # noqa
+            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association_node, None, None, 'oxygen', 'gas gangrene'],  # noqa
+            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association_node, None, None, 'oxygen', 'gas gangrene'],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_association_node1, 2, 0.385, 'penicillin', 'gas gangrene'],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_association_node1, 5, 0.693, 'penicillin', 'gas gangrene'],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_association_node2, 1, 0.222, 'penicillin', 'gas gangrene'],  # noqa
+            [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_association_node2, 3, 0.456, 'penicillin', 'gas gangrene'],  # noqa
         ]
         for rel in snippet_to_association_rels:
             create_predicts_relationship(
@@ -620,6 +608,8 @@ def gas_gangrene_with_associations_and_references(
                 target_id=rel[1].id,
                 raw_score=rel[2],
                 normalized_score=rel[3],
+                entry1_text=rel[4],
+                entry2_text=rel[5],
             )
 
         # Snippet -> Publication Relationships
