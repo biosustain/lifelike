@@ -5,16 +5,14 @@ import re
 import sqlalchemy
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from flask import current_app
 from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
-from sqlalchemy.orm.query import Query
-from sqlalchemy.types import ARRAY, TIMESTAMP
+from sqlalchemy.types import TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
 
-from neo4japp.constants import FILE_INDEX_ID, LogEventType
+from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Projects

@@ -129,13 +129,23 @@ def get_types_from_params(q, advanced_args, file_type_service):
 
 
 def get_folders_from_params(advanced_args):
-    folders = []
-    if 'folders' in advanced_args and advanced_args['folders'] != '':
+    try:
         folders = advanced_args['folders'].split(';')
+    except KeyError:
+        folders = []
     return folders
 
 
 def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: List[Projects]):
+    """
+    Generates a lucene boolean query which filters documents based on folder/project access. Takes
+    as input two options:
+        - accessible_folders: a list of Files objects representing folders to be included in the query
+        - accessible_projects: a list of Projects objects representing projects to be included in the
+        query
+    Any files present in accessible_folders which are not children of accessible_projects will be
+    ignored, and returned along with the query.
+    """
     accessible_projects_ids = [
         project.id
         for project in accessible_projects
@@ -230,7 +240,9 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         }
 
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+        # Gets the full list of projects accessible by the current user.
         accessible_projects, _ = self.get_nondeleted_projects(None, accessible_only=True)
+        # Gets the full list of folders accessible by the current user.
         accessible_folders = self.get_nondeleted_recycled_files(
             Files.hash_id.in_(folders),
             attr_excl=EXCLUDE_FIELDS

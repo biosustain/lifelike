@@ -4,15 +4,13 @@ from dataclasses import dataclass
 from flask import current_app
 from sqlalchemy import (
     event,
-    join,
     orm,
-    select,
     and_,
     or_,
 )
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
-from typing import Dict, List
+from typing import Dict
 
 from neo4japp.constants import LogEventType
 from neo4japp.database import db
@@ -212,7 +210,7 @@ def init_default_access(mapper, connection, target):
 
 
 @event.listens_for(Projects, 'after_update')
-def file_update(mapper, connection, target: Projects):
+def project_update(mapper, connection, target: Projects):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.database import get_elastic_service
     from neo4japp.models.files import Files
