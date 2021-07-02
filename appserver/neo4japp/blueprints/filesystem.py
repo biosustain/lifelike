@@ -14,9 +14,8 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
-from urllib.error import URLError
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -549,7 +548,12 @@ class FileHierarchyView(FilesystemBaseView):
                     curr_dir[id_path_list[-1]] = None
 
         def generate_node_tree(id, children):
-            file = db.session.query(Files).get(id)
+            file = db.session.query(
+                Files
+            ).options(
+                defer('annotations'),
+                defer('enrichment_annotations')
+            ).get(id)
             filename_path = file.filename_path
             if children is None:
                 return {
