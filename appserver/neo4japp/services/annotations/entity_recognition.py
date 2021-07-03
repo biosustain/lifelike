@@ -51,7 +51,7 @@ class EntityRecognitionService:
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        with self.lmdb.open_db(dbname) as txn:
+        with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -113,7 +113,7 @@ class EntityRecognitionService:
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        with self.lmdb.open_db(dbname) as txn:
+        with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -270,7 +270,7 @@ class EntityRecognitionService:
                 key_id_type: Dict[str, str] = {}
                 key_id_hyperlink: Dict[str, str] = {}
 
-                with self.lmdb.open_db(dbname) as txn:
+                with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
                     matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)  # noqa
 

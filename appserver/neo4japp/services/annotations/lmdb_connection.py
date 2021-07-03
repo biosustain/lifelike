@@ -1,28 +1,39 @@
 import lmdb
+
 from typing import Any, Dict
 from flask import current_app
 
+from ..common import DatabaseConnection, TransactionContext
+
 from neo4japp.constants import LogEventType
 from neo4japp.utils.logger import EventLog
-
 from neo4japp.exceptions import LMDBError
 
 
-class LMDBConnector:
-    def __init__(self, dirpath: str, **kwargs) -> None:
+class LMDBConnection(DatabaseConnection):
+    def __init__(self, dirpath: str, **kwargs):
         self.dirpath = dirpath
         self.dbs: Dict[str, Any] = {}
         self.configs = kwargs
 
-    # both __enter__ and __exit__ allows the class
-    # to be use with a `with` block
-    def __enter__(self):
-        return self
+    class _context(TransactionContext):
+        def __init__(self, env, db):
+            self.db = db
+            self.env = env
 
-    def __exit__(self, exc_type, exc_val, exc_traceback):
-        self.env.close()
+        def __enter__(self):
+            self.session = self.env.begin(self.db)
+            return self.session
 
-    def open_db(self, dbname: str, create: bool = False, readonly: bool = True):
+        def __exit__(self, exc_type, exc_val, exc_traceback):
+            print('Inside LMDB __exit__')
+            self.env.close()
+
+    def begin(self, **kwargs):
+        dbname = kwargs.get('dbname', '')
+        create = kwargs.get('create', False)
+        readonly = kwargs.get('readonly', True)
+
         if not dbname:
             current_app.logger.error(
                 f'LMDB database name is invalid, cannot connect to {dbname}.',
@@ -34,7 +45,7 @@ class LMDBConnector:
 
         dbpath = f'{self.dirpath}{self.configs[dbname]}'
         try:
-            self.env = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
+            env = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
         except Exception:
             current_app.logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
@@ -56,10 +67,9 @@ class LMDBConnector:
             and the transaction and cursor will point to the wrong address in
             memory and retrieve whatever is there.
             """
-            db = self.env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
+            db = env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
             self.dbs[dbname] = db
-            # return transaction
-            return self.env.begin(db)
+            return self._context(env, db)
         except Exception:
             current_app.logger.error(
                 f'Failed to open LMDB database named {dbname}.',
