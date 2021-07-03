@@ -5,12 +5,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Subject } from 'rxjs';
 
-import { FileNodeData } from 'app/file-browser/schema';
+import { FilesystemObjectData } from 'app/file-browser/schema';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { ContentSearchOptions } from '../content-search';
 import { SearchType } from '../shared';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-advanced-search-dialog',
@@ -36,7 +37,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   @Input() typeChoices: SearchType[] = [];
 
   initialCheckedNodes: string[] = [];
-  fileHierarchyTree: TreeNode<FileNodeData>[] = [];
+  fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
   hierarchyLoaded = false;
 
   resetHierarchyTreeSubject = new Subject<boolean>();
@@ -59,9 +60,17 @@ export class AdvancedSearchDialogComponent implements OnInit {
 
   ngOnInit() {
     this.filesystemService.getHierarchy(true).subscribe((resp) => {
-      this.fileHierarchyTree = resp.results;
+      this.fileHierarchyTree = resp.results.map(fileNodeObjectData => this.convertFODNodetoFONode(fileNodeObjectData));
       this.hierarchyLoaded = true;
     });
+  }
+
+  convertFODNodetoFONode(node: TreeNode<FilesystemObjectData>) {
+    return {
+      data: new FilesystemObject().update(node.data),
+      level: node.level,
+      children: node.children.map(child => this.convertFODNodetoFONode(child))
+    } as TreeNode<FilesystemObject>;
   }
 
   dismiss() {
@@ -110,5 +119,5 @@ export class AdvancedSearchDialogComponent implements OnInit {
     this.form.get('folders').patchValue(folders);
   }
 
-  initiallyCheckedNodesFilterFn = (t: FlatNode<FileNodeData>) => this.form.get('folders').value.includes(t.data.hashId);
+  initiallyCheckedNodesFilterFn = (t: FlatNode<FilesystemObject>) => this.form.get('folders').value.includes(t.data.hashId);
 }
