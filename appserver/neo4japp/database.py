@@ -53,12 +53,15 @@ scheme = os.getenv('NEO4J_SCHEME', 'bolt')
 port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'
 username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
-driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
+graph = GraphDatabase.driver(url, auth=basic_auth(username, password))
 
 
+# TODO: with the DatabaseConnection class
+# these functions that save to `g` are no longer needed
+# remove them when possible
 def get_neo4j_db():
     if not hasattr(g, 'neo4j_db'):
-        g.neo4j_db = driver.session()
+        g.neo4j_db = graph.session()
     return g.neo4j_db
 
 

@@ -9,6 +9,8 @@ from .entity_recognition import EntityRecognitionService
 from .lmdb_service import LMDBService
 from .tokenizer import Tokenizer
 
+from neo4japp.database import graph
+
 from .constants import (
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
@@ -43,7 +45,7 @@ configs = {
 def get_annotation_service():
     return AnnotationService(
         db=AnnotationDBService(),
-        graph=AnnotationGraphService()
+        graph=AnnotationGraphService(graph)
     )
 
 
@@ -52,13 +54,13 @@ def get_annotation_db_service():
 
 
 def get_annotation_graph_service():
-    return AnnotationGraphService()
+    return AnnotationGraphService(graph)
 
 
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
         db=AnnotationDBService(),
-        graph=AnnotationGraphService()
+        graph=AnnotationGraphService(graph)
     )
 
 
