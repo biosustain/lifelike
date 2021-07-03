@@ -95,6 +95,8 @@ export interface FilesystemObjectData {
   highlight?: string[];
   fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigurations;
+  trueFilename: string;
+  filePath: string;
 }
 
 interface ContentValue {
@@ -177,17 +179,8 @@ export interface ObjectExportRequest {
 // Responses
 // ----------------------------------------
 
-export interface FileNodeData {
-  trueFilename: string;
-  description: string;
-  mimeType: string;
-  filePath: string;
-  hashId: string;
-  parent: number;
-}
-
 export interface FileHierarchyResponse {
-  results: TreeNode<FileNodeData>[];
+  results: TreeNode<FilesystemObjectData>[];
 }
 
 // ========================================

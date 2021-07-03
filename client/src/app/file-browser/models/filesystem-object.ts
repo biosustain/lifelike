@@ -144,6 +144,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   recycled: boolean;
   effectivelyRecycled: boolean;
   annotationConfigs?: AnnotationConfigurations;
+  trueFilename: string;
+  filePath: string;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -620,7 +622,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
       'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
+      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
+      'trueFilename']) {
       if (key in data) {
         this[key] = data[key];
       }

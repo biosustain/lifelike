@@ -295,19 +295,8 @@ class FileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileSchema))
 
 
-# Using a custom class in favor of `FileSchema` because it does not seem to be possible to ignore
-# properties in recursive properties. For example, if we used `FileSchema` for `FileNode.data`
-# above, we could ignore fields in the ***ARANGO_USERNAME*** node, but not in its children.
-class FileNodeData(CamelCaseSchema):
-    true_filename = fields.String()
-    description = fields.String()
-    mime_type = fields.String()
-    hash_id = fields.String()
-    file_path = fields.String()
-
-
 class FileNode(CamelCaseSchema):
-    data = fields.Nested(FileNodeData)
+    data = fields.Nested(FileSchema)
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 

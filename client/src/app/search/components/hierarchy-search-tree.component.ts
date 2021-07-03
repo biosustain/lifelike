@@ -1,12 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
-
-import { MAP_MIMETYPE } from 'app/drawing-tool/providers/map.type-provider';
-import { ENRICHMENT_TABLE_MIMETYPE } from 'app/enrichment/providers/enrichment-table.type-provider';
-import { DIRECTORY_MIMETYPE } from 'app/file-browser/providers/directory.type-provider';
-import { FileNodeData } from 'app/file-browser/schema';
-import { PDF_MIMETYPE } from 'app/pdf-viewer/providers/pdf-type-provider';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ChecklistFlatTreeComponent } from 'app/shared/components/checklist-flat-tree/checklist-flat-tree.component';
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
@@ -15,7 +9,7 @@ import { FlatNode, TreeNode } from 'app/shared/schemas/common';
   templateUrl: './hierarchy-search-tree.component.html',
   styleUrls: ['./hierarchy-search-tree.component.scss']
 })
-export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<FileNodeData> {
+export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<FilesystemObject> {
   @Output() folderSelectionChanged = new EventEmitter<string[]>();
 
   constructor() {
@@ -23,7 +17,7 @@ export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<Fil
   }
 
   /** Toggle item selection. Select/deselect all the descendants node */
-  itemSelectionToggle(node: FlatNode<FileNodeData>): void {
+  itemSelectionToggle(node: FlatNode<FilesystemObject>): void {
     this.checklistSelection.toggle(node);
 
     // Node is a parent
@@ -42,25 +36,6 @@ export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<Fil
       if (parent !== null) {
         this.checklistSelection.deselect(this.getParentNode(node));
       }
-    }
-  }
-
-  getIconForFileNode(node: TreeNode<FileNodeData>) {
-    switch (node.data.mimeType) {
-      case PDF_MIMETYPE:
-        return 'fa-file-pdf';
-      case ENRICHMENT_TABLE_MIMETYPE:
-        return 'fa-table';
-      case MAP_MIMETYPE:
-        return 'fa-project-diagram';
-      case DIRECTORY_MIMETYPE:
-        if (!isNullOrUndefined(node.data.parent)) {
-          return 'fa-folder';
-        } else {
-          return 'fa-layer-group';
-        }
-      default:
-        return 'fa-file';
     }
   }
 
