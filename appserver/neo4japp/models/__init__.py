@@ -9,9 +9,8 @@ from .auth import (
 )
 from .neo4j import GraphNode, GraphRelationship
 from .projects import Projects, projects_collaborator_role
-from .files import Files, FileContent, LMDBsDates, Worksheet, FallbackOrganism
 from .organism_match import OrganismGeneMatch
 from .annotations import AnnotationStopWords, GlobalList
 from .entity_resources import DomainURLsMap, AnnotationStyle
 from .files import Files, FileContent, FileVersion, FileBackup, Worksheet, \
-    file_collaborator_role, LMDBsDates
+    file_collaborator_role, FallbackOrganism
