@@ -277,7 +277,7 @@ def load_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.root_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
-    manager.update_all_dates()
+    manager.update_all_dates(lmdb_dir_path)
 
 
 @app.cli.command('upload-lmdb')
