@@ -6,22 +6,26 @@ from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
-from .mixins.graph_mixin import GraphMixin
-
 from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion
 from .lmdb_util import *
+from .utils.graph_queries import *
+
+from ..common import GraphConnection
 
 
-class AnnotationGraphService(GraphMixin):
+class AnnotationGraphService(GraphConnection):
+    def __init__(self, conn):
+        super().__init__(conn)
+
     def get_nodes_from_node_ids(self, entity_type: str, node_ids: List[str]) -> Dict[str, str]:
         result = self.exec_read_query_with_params(
-            self.get_nodes_by_ids(entity_type), {'ids': node_ids})
+            get_nodes_by_ids(entity_type), {'ids': node_ids})
         return {row['entity_id']: row['entity_name'] for row in result}
 
     # NOTE DEPRECATED: just used in old migration
     def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(self.get_mesh_by_ids, {'ids': mesh_ids})
+        result = self.exec_read_query_with_params(get_mesh_by_ids(), {'ids': mesh_ids})
         return {row['mesh_id']: row['mesh_name'] for row in result}
 
     def _create_entity_inclusion(self, entity_type: str, inclusion_dict: dict) -> None:
@@ -40,12 +44,12 @@ class AnnotationGraphService(GraphMixin):
             EntityType.ENTITY.value: create_ner_type_entity
         }
 
-        global_inclusions = self.exec_read_query(self.get_global_inclusions_by_type(entity_type))
+        global_inclusions = self.exec_read_query(get_global_inclusions_by_type(entity_type))
         # need to append here because an inclusion
         # might've not been matched to an existing entity
         # so look for it in Lifelike
         global_inclusions += self.exec_read_query(
-            self.get_***ARANGO_DB_NAME***_global_inclusions_by_type(entity_type))
+            get_***ARANGO_DB_NAME***_global_inclusions_by_type(entity_type))
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
@@ -184,7 +188,7 @@ class AnnotationGraphService(GraphMixin):
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
 
         result = self.exec_read_query_with_params(
-            self.get_gene_to_organism, {'genes': genes, 'organisms': organisms})
+            get_gene_to_organism(), {'genes': genes, 'organisms': organisms})
 
         for row in result:
             gene_name = row['gene_name']
@@ -210,7 +214,7 @@ class AnnotationGraphService(GraphMixin):
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         result = self.exec_read_query_with_params(
-            self.get_protein_to_organism, {'proteins': proteins, 'organisms': organisms})
+            get_protein_to_organism(), {'proteins': proteins, 'organisms': organisms})
 
         for row in result:
             protein_name: str = row['protein']
@@ -227,27 +231,5 @@ class AnnotationGraphService(GraphMixin):
         return protein_to_organism_map
 
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
-        return self.graph.run(
-            self.get_organisms_from_gene_ids_query,
-            gene_ids
-        )
-
-    def get_organisms_from_gene_ids_query(
-        self,
-        tx: Neo4jTx,
-        gene_ids: List[str]
-    ) -> List[Neo4jRecord]:
-        """Retrieves a list of gene and corresponding organism data
-        from a given list of genes."""
-        return list(
-            tx.run(
-                """
-                MATCH (g:Gene) WHERE g.id IN $gene_ids
-                WITH g
-                MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
-                RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id,
-                    t.name as species_name
-                """,
-                gene_ids=gene_ids
-            )
-        )
+        return self.exec_read_query_with_params(
+            get_organisms_from_gene_ids(), {'gene_ids': gene_ids})
