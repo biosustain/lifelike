@@ -557,23 +557,11 @@ class FileHierarchyView(FilesystemBaseView):
             filename_path = file.filename_path
             if children is None:
                 return {
-                    'data': {
-                        'true_filename': file.true_filename,
-                        'description': file.description,
-                        'mime_type': file.mime_type,
-                        'hash_id': file.hash_id,
-                        'file_path': filename_path,
-                    },
+                    'data': file,
                     'level': len(filename_path.split('/')) - 2
                 }
             return {
-                'data': {
-                    'true_filename': file.true_filename,
-                    'description': file.description,
-                    'mime_type': file.mime_type,
-                    'hash_id': file.hash_id,
-                    'file_path': filename_path,
-                },
+                'data': file,
                 'level': len(filename_path.split('/')) - 2,
                 'children': [
                     generate_node_tree(id, grandchildren)

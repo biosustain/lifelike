@@ -6,7 +6,7 @@
                   [checked]="checklistSelection.isSelected(node)"
                   (change)="itemSelectionToggle(node)">
       {{node.data.trueFilename}}
-      <i [class]="'fas ' + getIconForFileNode(node)"></i>
+      <i [class]="node.data.fontAwesomeIcon"></i>
     </mat-checkbox>
   </mat-tree-node>
 
@@ -22,7 +22,7 @@
                   [indeterminate]="(descendantsPartiallySelected(node) || (descendantsAllSelected(node)) && !checklistSelection.isSelected(node))"
                   (change)="itemSelectionToggle(node)">
       {{node.data.trueFilename}}
-      <i [class]="'fas ' + getIconForFileNode(node)"></i>
+      <i [class]="node.data.fontAwesomeIcon"></i>
     </mat-checkbox>
   </mat-tree-node>
 </mat-tree>
