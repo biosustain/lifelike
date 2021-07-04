@@ -25,7 +25,8 @@ from neo4japp.constants import (
     RESET_PASSWORD_SYMBOLS,
     RESET_PASSWORD_ALPHABET,
     SEND_GRID_API_CLIENT,
-    RESET_PASSWORD_EMAIL_TITLE, LogEventType
+    RESET_PASSWORD_EMAIL_TITLE,
+    LogEventType
 )
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
@@ -76,8 +77,8 @@ class AccountView(MethodView):
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
-            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id)
-            .join(t_approle, user_role.c.app_role_id == t_approle.c.id)
+            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, full=True)
+            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, full=True)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
@@ -105,9 +106,9 @@ class AccountView(MethodView):
                 'first_name': first_name,
                 'last_name': last_name,
                 'locked': failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES,
-                'roles': roles.split(',')
+                'roles': roles.split(',') if roles else ""
             } for id, hash_id, username, email, first_name,
-            last_name, failed_login_count, roles in db.session.execute(query).fetchall()]
+            last_name, failed_login_count, roles in db.session.execute(query).fetchall() if id]
 
         return jsonify(UserProfileListSchema().dump({
             'total': len(results),
