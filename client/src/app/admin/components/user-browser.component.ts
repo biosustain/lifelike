@@ -16,6 +16,7 @@ import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { AuthActions, AuthSelectors } from '../../auth/store';
 import { select, Store } from '@ngrx/store';
 import { State } from '../../***ARANGO_USERNAME***-store';
+import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 
 
 @Component({
@@ -91,6 +92,12 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
 
   private updateFilter() {
     this.shownUsers = this.filterQuery.length ? this.users.filter(user => user.username.includes(this.filterQuery)) : this.users;
+  }
+
+  getRolelessUsers(): string[] {
+    return this.shownUsers.filter((user) => {
+      return user.roles.length === 0;
+    }).map((user) => user.username);
   }
 
   displayCreateDialog() {
@@ -194,4 +201,11 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
     }
   }
+
+  displayMissingRolesDialog() {
+    const usernames = this.getRolelessUsers();
+    const modalRef = this.modalService.open(MissingRolesDialogComponent);
+    modalRef.componentInstance.setUsers(usernames);
+  }
+
 }
