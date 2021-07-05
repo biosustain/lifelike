@@ -39,6 +39,13 @@ DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
 
+FILE_MIME_TYPE_DIRECTORY = 'vnd.***ARANGO_DB_NAME***.filesystem/directory'
+FILE_MIME_TYPE_PDF = 'application/pdf'
+FILE_MIME_TYPE_BIOC = 'vnd.***ARANGO_DB_NAME***.document/bioc'
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
+FILE_MIME_TYPE_SANKEY = 'vnd.***ARANGO_DB_NAME***.document/sankey'
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
+
 
 # enrichment labels
 class EnrichmentDomain(Enum):
