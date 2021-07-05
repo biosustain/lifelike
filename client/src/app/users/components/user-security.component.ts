@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component, EventEmitter,
-  Input, Output,
+  Component,
+  Input,
 } from '@angular/core';
 import {
   FormGroup,
@@ -23,7 +23,6 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../shared/constants
 })
 export class UserSecurityComponent {
   @Input() user: AppUser;
-  @Output() passwordChanged: EventEmitter<boolean> = new EventEmitter();
 
   readonly errors = {
     notMatch: 'Your two passwords don\'t match.',
@@ -67,7 +66,6 @@ export class UserSecurityComponent {
         },
       }));
       this.form.reset();
-      this.passwordChanged.emit(true);
     } else {
       this.form.markAsDirty();
       this.messageDialog.display({
