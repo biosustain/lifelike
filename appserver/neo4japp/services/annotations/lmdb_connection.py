@@ -26,7 +26,6 @@ class LMDBConnection(DatabaseConnection):
             return self.session
 
         def __exit__(self, exc_type, exc_val, exc_traceback):
-            print('Inside LMDB __exit__')
             self.env.close()
 
     def begin(self, **kwargs):
