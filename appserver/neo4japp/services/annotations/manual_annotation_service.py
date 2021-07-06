@@ -23,7 +23,8 @@ from .constants import (
 )
 from .data_transfer_objects import PDFWord
 from .initializer import get_annotation_tokenizer
-from .util import has_center_point, parse_content
+from .utils.common import has_center_point
+from .utils.parsing import parse_content
 from .utils.graph_queries import *
 
 

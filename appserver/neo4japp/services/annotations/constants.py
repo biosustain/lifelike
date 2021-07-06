@@ -27,6 +27,10 @@ MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
 REQUEST_TIMEOUT = 60
+NLP_SERVICE_ENDPOINT = 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict'
+PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
+PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
+PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',

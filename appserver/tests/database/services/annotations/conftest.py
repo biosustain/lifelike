@@ -26,7 +26,7 @@ from neo4japp.services.annotations.constants import (
     SPECIES_NCBI_LMDB
 )
 from neo4japp.services.annotations.data_transfer_objects import Inclusion
-from neo4japp.services.annotations.lmdb_util import (
+from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
     create_ner_type_compound,

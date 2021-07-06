@@ -3,21 +3,17 @@ import requests
 from string import punctuation
 from typing import List, Tuple
 
-from .constants import MAX_ABBREVIATION_WORD_LENGTH, REQUEST_TIMEOUT
-from .data_transfer_objects import PDFWord
+from ..constants import (
+    MAX_ABBREVIATION_WORD_LENGTH,
+    PARSER_RESOURCE_PULL_ENDPOINT,
+    PARSER_PDF_ENDPOINT,
+    PARSER_TEXT_ENDPOINT,
+    REQUEST_TIMEOUT
+)
+from ..data_transfer_objects import PDFWord
 
-
-def has_center_point(coords: List[float], new_coords: List[float]) -> bool:
-    """Checks if the center point of one set of coordinates
-    are in another.
-    """
-    x1, y1, x2, y2 = coords
-    new_x1, new_y1, new_x2, new_y2 = new_coords
-
-    center_x = (new_x1 + new_x2)/2
-    center_y = (new_y1 + new_y2)/2
-
-    return x1 <= center_x <= x2 and y1 <= center_y <= y2
+from neo4japp.constants import FILE_MIME_TYPE_PDF
+from neo4japp.exceptions import ServerException
 
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
@@ -57,24 +53,39 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def parse_content(data_type: str = 'pdf', **kwargs) -> Tuple[str, List[PDFWord]]:
-    if data_type == 'text':
-        url = 'http://pdfparser:7600/token/rect/text/json'
-    else:
-        url = 'http://pdfparser:7600/token/rect/json/'
+def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[PDFWord]]:
+    url = PARSER_PDF_ENDPOINT if content_type == FILE_MIME_TYPE_PDF else PARSER_TEXT_ENDPOINT
 
     if 'exclude_references' in kwargs:
-        file_id = kwargs['file_id']
-        exclude_references = kwargs['exclude_references']
+        try:
+            file_id = kwargs['file_id']
+            exclude_references = kwargs['exclude_references']
+        except KeyError:
+            raise ServerException(
+                'Parsing Error',
+                'Cannot parse the PDF file, the file id is missing or data is corrupted.')
         data = {
-            'fileUrl': f'http://appserver:5000/annotations/files/{file_id}',
+            'fileUrl': f'{PARSER_RESOURCE_PULL_ENDPOINT}/{file_id}',
             'excludeReferences': exclude_references
         }
     else:
         data = {'text': kwargs['text']}
 
-    req = requests.post(url, data=data, timeout=REQUEST_TIMEOUT)
-    resp = req.json()
-    req.close()
+    try:
+        req = requests.post(url, data=data, timeout=REQUEST_TIMEOUT)
+        resp = req.json()
+        req.close()
+    except requests.exceptions.ConnectTimeout:
+        raise ServerException(
+            'Parsing Error',
+            'The request timed out while trying to connect to the parsing service.')
+    except requests.exceptions.Timeout:
+        raise ServerException(
+            'Parsing Error',
+            'The request to the parsing service timed out.')
+    except (requests.exceptions.RequestException, Exception):
+        raise ServerException(
+            'Parsing Error',
+            'An unexpected error occurred with the parsing service.')
 
     return process_parsed_content(resp)

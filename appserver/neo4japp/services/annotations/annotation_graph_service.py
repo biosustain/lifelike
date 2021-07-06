@@ -1,17 +1,17 @@
 from typing import Dict, List
 
 from flask import current_app
-from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
-from neo4japp.constants import LogEventType
-from neo4japp.util import normalize_str
-from neo4japp.utils.logger import EventLog
 
 from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion
-from .lmdb_util import *
+from .utils.lmdb import *
 from .utils.graph_queries import *
 
 from ..common import GraphConnection
+
+from neo4japp.constants import LogEventType
+from neo4japp.util import normalize_str
+from neo4japp.utils.logger import EventLog
 
 
 class AnnotationGraphService(GraphConnection):
