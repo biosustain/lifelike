@@ -16,6 +16,16 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from '../algorithms/algorithms';
 
+function updateTextShadow(_) {
+  const [shadow, text] = this.children;
+  const {x, y, width, height} = text.getBBox();
+  d3.select(shadow)
+    .attr('x', x)
+    .attr('y', y)
+    .attr('width', width)
+    .attr('height', height);
+}
+
 @Component({
   selector: 'app-sankey',
   templateUrl: './sankey.component.html',
@@ -101,11 +111,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size();
     return texts => texts
-      .attr('x', _ => -6)
-      .attr('y', ({y0, y1}) => (y1 - y0) / 2)
+      .attr('transform', ({x0, x1, y0, y1}) => `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`)
       .attr('text-anchor', 'end')
+      .call(textGroup =>
+        textGroup.select('text')
+          .attr('dy', '0.35em')
+      )
       .filter(({x0}) => x0 < width / 2)
-      .attr('x', ({x0, x1}) => (x1 - x0) + 6)
       .attr('text-anchor', 'start');
   }
 
@@ -327,27 +339,39 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
 
   highlightNodeGroup(group) {
     d3.select(this.nodes.nativeElement)
-      .selectAll('g')
+      .selectAll(function() {
+        return this.children;
+      })
       .filter(({_selected}) => !_selected)
-      .style('opacity', node => this.nodeGroupAccessor(node) === group ? 0.45 : 0.35);
+      .style('opacity', node => this.nodeGroupAccessor(node) === group ? 1 : 0.35);
   }
 
   highlightNode(element) {
-    d3.select(element)
+    const selection = d3.select(element)
+      .raise()
       .style('opacity', _ => 1)
-      .select('text')
-      .text(shortNodeText)
-      .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
-      // todo: reenable when performance improves
-      // .transition().duration(RELAYOUT_DURATION)
-      // .textTween(n => {
-      //   const displayName = nodeLabelAccessor(n);
-      //   const length = displayName.length;
-      //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-      //   return t => t === 1 ? displayName :
-      //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
-      // })
-      .text(n => nodeLabelAccessor(n));
+      .select('g')
+      .call(textGroup =>
+        textGroup
+          .select('text')
+          .text(shortNodeText)
+          .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+          // todo: reenable when performance improves
+          // .transition().duration(RELAYOUT_DURATION)
+          // .textTween(n => {
+          //   const displayName = nodeLabelAccessor(n);
+          //   const length = displayName.length;
+          //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+          //   return t => t === 1 ? displayName :
+          //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+          // })
+          .text(n => nodeLabelAccessor(n))
+      );
+    // postpone so the size is known
+    requestAnimationFrame(_ =>
+      selection
+        .each(updateTextShadow)
+    );
   }
 
   unhighlightNode(element) {
@@ -355,7 +379,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       this.selectNodes(this.selectedNodes);
     } else {
       d3.select(this.nodes.nativeElement)
-        .selectAll('g')
+        .selectAll(function() {
+          return this.children;
+        })
         .style('opacity', 1);
     }
     d3.select(element).select('text')
@@ -530,7 +556,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       );
 
     d3.select(nodesRef)
-      .selectAll('g')
+      .selectAll(function() {
+        return this.children;
+      } as any)
       .data(
         words.nodes.filter(
           // should no longer be an issue but leaving as sanity check
@@ -551,8 +579,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           .call(enterNode =>
             updateNodeText(
               enterNode
-                .append('text')
-                .attr('dy', '0.35em')
+                .append('g')
+                .call(textGroup => {
+                  textGroup.append('rect')
+                    .classed('text-shadow', true);
+                  textGroup.append('text');
+                })
             )
           )
           .call(enterNode =>
@@ -568,7 +600,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
               // .transition().duration(RELAYOUT_DURATION)
             );
             updateNodeText(
-              enterNode.select('text')
+              enterNode.select('g')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'end')
               // todo: reenable when performance improves
@@ -581,16 +613,20 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      .attr('fill', (node: SankeyNode) => {
-        const traceColor = colorByTraceEnding(node);
-        return traceColor || node._color;
-      })
       .call(joined => {
         updateNodeRect(
-          joined.select('rect')
+          joined
+            .select('rect')
+            .attr('fill', (node: SankeyNode) => {
+              const traceColor = colorByTraceEnding(node);
+              return traceColor || node._color;
+            })
         );
-        joined.select('text')
-          .text(shortNodeText);
+        joined.select('g')
+          .call(textGroup => {
+            textGroup.select('text')
+              .text(shortNodeText);
+          });
       });
   }
 }

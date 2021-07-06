@@ -244,3 +244,6 @@ export function symmetricDifference(setA, setB, accessor) {
     return difference;
   }, uniqueBy(setA, accessor));
 }
+
+export const plusMinus = (howMuch = 1) =>
+  Math.round(Math.random() * 2 * howMuch - howMuch);
