@@ -10,3 +10,5 @@ elif [ "${FLASK_APP_CONFIG}" = "Production" ] || [ "${FLASK_APP_CONFIG}" = "Stag
 else
     echo "No environment setup for ${FLASK_ENV}"
 fi
+
+python statistical_enrichment/app.py biocyc parser args

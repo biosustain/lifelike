@@ -12,27 +12,18 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { uuidv4 } from '../../shared/utils';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { parseForRendering, isPositiveNumber } from './utils';
-import {
-  getAndColorNetworkTraceLinks,
-  getNetworkTraceNodes,
-  colorNodes,
-  getTraceDetailsGraph,
-  getRelatedTraces
-} from './algorithms/algorithms';
-
-import { Options } from 'vis-network';
-import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.component';
+import { getAndColorNetworkTraceLinks, getNetworkTraceNodes, colorNodes, getRelatedTraces } from './algorithms/algorithms';
 import { map } from 'rxjs/operators';
 import prescalers from './algorithms/prescalers';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
 import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
+import { createMapToColor } from './sankey/utils';
 
 interface ValueGenerator {
   description: string;
   preprocessing: (v: SankeyData) => Partial<SankeyData> | undefined;
   postprocessing?: (v: SankeyData) => Partial<SankeyData> | undefined;
 }
-import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -201,7 +192,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   open(content) {
     this.modalService.open(content, {
-      ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'}).result
+      ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'
+    }).result
       .then(_ => _, _ => _);
   }
 
@@ -214,7 +206,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
-    const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links);
+    const traceColorPaletteMap = createMapToColor(networkTrace.traces.map(({group}) => group));
+    const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
     colorNodes(nodes);
     this.filteredSankeyData = this.linkGraph({
