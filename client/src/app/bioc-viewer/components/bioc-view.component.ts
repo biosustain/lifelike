@@ -252,9 +252,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       if (annotationElem) {
         annotationElem.scrollIntoView({ block: 'center' });
-        jQuery(annotationElem).effect('highlight', {
-          color: 'red'
-        }, 1000);
+        jQuery(annotationElem).css('border', '2px solid #D62728');
+        jQuery(annotationElem).animate({
+          borderLeftColor: 'white',
+          borderTopColor: 'white',
+          borderRightColor: 'white',
+          borderBottomColor: 'white',
+       }, 1000);
       }
     }
   }
