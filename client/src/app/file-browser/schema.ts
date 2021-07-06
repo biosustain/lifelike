@@ -95,6 +95,8 @@ export interface FilesystemObjectData {
   highlight?: string[];
   fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigurations;
+  // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
+  // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
   filePath: string;
 }
