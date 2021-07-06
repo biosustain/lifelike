@@ -1,4 +1,4 @@
-from .constants import DatabaseType, EntityIdStr
+from ..constants import DatabaseType, EntityIdStr
 
 
 def create_ner_type_anatomy(
