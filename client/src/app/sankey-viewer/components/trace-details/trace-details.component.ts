@@ -1,8 +1,10 @@
 import { Component, Input, ViewEncapsulation, } from '@angular/core';
-import { getTraceDetailsGraph } from '../algorithms/algorithms';
-import { ErrorHandler } from '../../../shared/services/error-handler.service';
 import { Options } from 'vis-network';
-import { networkEdgeSmoothers } from '../../../shared/components/vis-js-network/vis-js-network.component';
+
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { networkEdgeSmoothers } from 'app/shared/components/vis-js-network/vis-js-network.component';
+
+import { getTraceDetailsGraph } from './traceDetails';
 
 @Component({
   selector: 'app-trace-details',
@@ -50,7 +52,7 @@ export class TraceDetailsComponent {
       };
     } else {
       this.detailsData = getTraceDetailsGraph(trace, this.data);
-      this.legend = this.detailsData.nodes.reduce((o,n) => {
+      this.legend = this.detailsData.nodes.reduce((o, n) => {
         if (!o.has(n.type) && typeof n.color === 'string') {
           o.set(n.type, [n.color, n.color]);
         }
