@@ -138,6 +138,8 @@ class FileSchema(CamelCaseSchema):
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     file_path = fields.String()
+    # TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists
+    # as a helper for getting the real name of a root file.
     true_filename = fields.String()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
