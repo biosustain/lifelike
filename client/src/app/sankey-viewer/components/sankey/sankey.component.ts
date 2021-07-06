@@ -33,31 +33,6 @@ function updateTextShadow(_) {
   encapsulation: ViewEncapsulation.None,
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy {
-  @Input() normalizeLinks = true;
-  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
-  @ViewChild('g', {static: false}) g!: ElementRef;
-  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
-  @ViewChild('links', {static: false}) links!: ElementRef;
-  @Output() nodeClicked = new EventEmitter();
-  @Output() linkClicked = new EventEmitter();
-  @Output() enter = new EventEmitter();
-  MARGIN = 10;
-  margin = {
-    top: this.MARGIN,
-    right: this.MARGIN,
-    bottom: this.MARGIN,
-    left: this.MARGIN
-  };
-  MIN_FONT = 12;
-  MAX_FONT = 48;
-  resizeObserver: any;
-  size;
-  zoom;
-  dragging = false;
-  @Output() adjustLayout = new EventEmitter();
-  private readonly sankey: any;
 
   @Input() set timeInterval(ti) {
     if (this.sankey) {
@@ -79,33 +54,35 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .attr('text-anchor', 'start');
   }
 
-  _selectedNodes = new Set<object>();
-
   get selectedNodes() {
     return this._selectedNodes;
   }
 
   @Input() set selectedNodes(nodes) {
-    this.selectNodes(nodes);
+    if (nodes.size) {
+      this.selectNodes(nodes);
+    } else {
+      this.deselectNodes();
+    }
+    this._selectedNodes = nodes;
     const selectedTraces = this.getSelectedTraces({nodes});
     this.selectTraces(selectedTraces);
-    this._selectedNodes = nodes;
   }
-
-  _selectedLinks = new Set<object>();
 
   get selectedLinks() {
     return this._selectedLinks;
   }
 
   @Input() set selectedLinks(links) {
-    this.selectLinks(links);
+    if (links.size) {
+      this.selectLinks(links);
+    } else {
+      this.deselectLinks();
+    }
+    this._selectedLinks = links;
     const selectedTraces = this.getSelectedTraces({links});
     this.selectTraces(selectedTraces);
-    this._selectedLinks = links;
   }
-
-  private _data: SankeyData = {} as SankeyData;
 
   get data() {
     return this._data;
@@ -151,6 +128,65 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
 
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 8]);
+  }
+
+  get linkSelection() {
+    // returns empty selection if DOM struct was not initialised
+    return d3.select(this.links && this.links.nativeElement)
+      .selectAll(function() {
+        // by default there is recursive match, not desired in here
+        return this.children;
+      });
+  }
+
+  get nodeSelection() {
+    // returns empty selection if DOM struct was not initialised
+    return d3.select(this.nodes && this.nodes.nativeElement)
+      .selectAll(function() {
+        // by default there is recursive match, not desired in here
+        return this.children;
+      });
+  }
+  @Input() normalizeLinks = true;
+  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('g', {static: false}) g!: ElementRef;
+  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
+  @ViewChild('links', {static: false}) links!: ElementRef;
+  @Output() nodeClicked = new EventEmitter();
+  @Output() linkClicked = new EventEmitter();
+  @Output() enter = new EventEmitter();
+  MARGIN = 10;
+  margin = {
+    top: this.MARGIN,
+    right: this.MARGIN,
+    bottom: this.MARGIN,
+    left: this.MARGIN
+  };
+  MIN_FONT = 12;
+  MAX_FONT = 48;
+  resizeObserver: any;
+  size;
+  zoom;
+  dragging = false;
+  @Output() adjustLayout = new EventEmitter();
+  private readonly sankey: any;
+
+  _selectedNodes = new Set<object>();
+
+  _selectedLinks = new Set<object>();
+
+  private _data: SankeyData = {} as SankeyData;
+
+  deselectNodes() {
+    this.nodeSelection
+      .attr('selected', undefined);
+  }
+
+  deselectLinks() {
+    this.linkSelection
+      .attr('selected', undefined);
   }
 
   getSelectedTraces(selection) {
@@ -202,10 +238,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
 
-  resetZoom() {
-    d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
-  }
-
   getFontSize(normSize) {
     return this.MIN_FONT + (normSize || 0) * (this.MAX_FONT - this.MIN_FONT);
   }
@@ -227,11 +259,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   linkClick(element, data) {
     this.linkClicked.emit(data);
     this.clipboard.writeToClipboard(data.path).then(_ =>
-      this.snackBar.open(
-        `Path copied to clipboard`,
-        undefined,
-        {duration: 500},
-      )
+        this.snackBar.open(
+          `Path copied to clipboard`,
+          undefined,
+          {duration: 500},
+        ),
+      console.error
     );
 
     // this.showPopOverForSVGElement(element, {link: data});
@@ -246,58 +279,40 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   pathMouseOut(element, _data) {
-    this.unhighlightLinks();
+    this.unhighlightTraces();
   }
 
   selectTraces(traces: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
-    this.links && d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .raise()
-      .style('opacity', link => {
-        link._selected = traces.has(link._trace);
-        return link._selected ? 1 : 0.35;
-      })
-      .filter(({_selected}) => _selected).raise();
+    this.linkSelection
+      .attr('selectedTrace', ({_trace}) => traces.has(_trace))
+      .filter(({_trace}) => traces.has(_trace))
+      .raise();
   }
 
   selectNodes(nodes: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
-    this.nodes && d3.select(this.nodes.nativeElement)
-      .selectAll('g')
-      .style('opacity', node => {
-        node._selected = nodes.has(node);
-        return node._selected ? 1 : 0.45;
-      })
-      .style('stroke-opacity', ({_selected}) => {
-        return _selected ? 1 : undefined;
-      });
+    this.nodeSelection
+      .attr('selected', n => nodes.has(n));
   }
 
   selectLinks(links: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
-    this.links && d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .style('stroke-opacity', link => {
-        return links.has(link) ? 0.7 : undefined;
-      });
+    this.linkSelection
+      .attr('selected', l => links.has(l));
   }
 
   highlightTraces(traces: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
-    this.links && d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .style('opacity', ({_trace, _selected}) => traces.has(_trace) || _selected ? 1 : 0.35)
-      .filter(({_trace}) => traces.has(_trace))
-      .style('opacity', _ => 1)
+    this.linkSelection
+      .attr('highlighted', ({_trace, _selected}) => traces.has(_trace))
+      .filter(({_trace, _selected}) => traces.has(_trace))
       .raise();
   }
 
-  unhighlightLinks() {
-    d3.select(this.links.nativeElement)
-      .selectAll('path')
-      .filter(({_selected}) => !_selected)
-      .style('opacity', 0.45);
+  unhighlightTraces() {
+    this.linkSelection
+      .attr('highlighted', undefined);
   }
 
   nodeGroupAccessor({type}) {
@@ -313,20 +328,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   highlightNodeGroup(group) {
-    d3.select(this.nodes.nativeElement)
-      .selectAll(function() {
-        return this.children;
-      })
-      .filter(({_selected}) => !_selected)
-      .style('opacity', node => this.nodeGroupAccessor(node) === group ? 1 : 0.35);
+    this.nodeSelection
+      .attr('highlighted', node => this.nodeGroupAccessor(node) === group);
   }
 
   highlightNode(element) {
     const selection = d3.select(element)
       .raise()
-      .style('opacity', _ => 1)
+      .attr('highlighted', true)
       .select('g')
-      .call(textGroup =>
+      .call(textGroup => {
         textGroup
           .select('text')
           .text(shortNodeText)
@@ -340,8 +351,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           //   return t => t === 1 ? displayName :
           //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
           // })
-          .text(n => nodeLabelAccessor(n))
-      );
+          .text(n => nodeLabelAccessor(n));
+      });
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
@@ -350,17 +361,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   unhighlightNode(element) {
-    if (this.selectedNodes.size) {
-      this.selectNodes(this.selectedNodes);
-    } else {
-      d3.select(this.nodes.nativeElement)
-        .selectAll(function() {
-          return this.children;
-        })
-        .style('opacity', 1);
-    }
+    this.nodeSelection
+      .attr('highlighted', false);
+
     d3.select(element).select('text')
-      .text(shortNodeText)
       .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
       // todo: reenable when performance improves
       // .transition().duration(RELAYOUT_DURATION)
@@ -370,12 +374,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
       //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
-      .text(n => nodeLabelAccessor(n).slice(0, INITIALLY_SHOWN_CHARS));
+      .text(shortNodeText);
   }
 
   nodeMouseOut(element, _data) {
     this.unhighlightNode(element);
-    this.unhighlightLinks();
+    this.unhighlightTraces();
   }
 
   // the function for moving the nodes
@@ -389,10 +393,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       y1: d.y0 + d3.event.dy + nodeHeight
     };
     Object.assign(d, newPosition);
-    d3.select(element).raise().attr('transform', `translate(${d.x0},${d.y0})`);
+    d3.select(element)
+      .raise()
+      .attr('transform', `translate(${d.x0},${d.y0})`);
     const relatedLinksIds = d.sourceLinks.concat(d.targetLinks).map(({id}) => id);
-    d3.select(this.links.nativeElement)
-      .selectAll('path')
+    this.linkSelection
       .filter(({id}) => relatedLinksIds.includes(id))
       .attr('d', link => {
         const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
@@ -501,12 +506,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    */
   private updateDOM(words) {
     const {
-      links: {nativeElement: linksRef}, nodes: {nativeElement: nodesRef},
       updateNodeRect, updateNodeText
     } = this;
 
-    d3.select(linksRef)
-      .selectAll('path')
+    this.linkSelection
       .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
         enter => enter
@@ -545,10 +548,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           .text(({description}) => description)
       );
 
-    d3.select(nodesRef)
-      .selectAll(function() {
-        return this.children;
-      } as any)
+    this.nodeSelection
       .data(
         words.nodes.filter(
           // should no longer be an issue but leaving as sanity check
