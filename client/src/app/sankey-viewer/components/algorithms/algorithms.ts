@@ -49,10 +49,10 @@ export const resolveFilteredNodesLinks = nodes => {
   };
 };
 
-export const getAndColorNetworkTraceLinks = (networkTrace, links, colorMap = ({group}, i) => [group, christianColors[i]]) => {
+export const getAndColorNetworkTraceLinks = (networkTrace, links, colorMap = undefined) => {
   const traceBasedLinkSplitMap = new Map();
-  const traceGroupColorMap = new Map(
-    networkTrace.traces.map(colorMap)
+  const traceGroupColorMap = colorMap ? colorMap : new Map(
+    networkTrace.traces.map(({group}, i) => [group, christianColors[i]])
   );
   const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
     const color = traceGroupColorMap.get(trace.group);
