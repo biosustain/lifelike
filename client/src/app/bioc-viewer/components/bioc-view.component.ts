@@ -41,7 +41,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<BiocFile> = new EventEmitter();
-  @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
 
   id = uniqueId('FileViewComponent-');
 
@@ -482,22 +481,5 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
     return fallback.url.replace(/%s/, encodeURIComponent(identifier));
   }
-
-  getLocation(event: any): Location {
-    return {
-      pageNumber: 1,
-      rect: []
-    };
-  }
-
-
-
-}
-
-
-export interface AnnotationDragEvent {
-  event: DragEvent;
-  meta: Meta;
-  location: Location;
 }
 
