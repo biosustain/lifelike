@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, ViewChild, HostListener, ElementRef } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
@@ -23,6 +23,10 @@ import { map } from 'rxjs/operators';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { Location, Meta } from 'app/pdf-viewer/annotation-type';
+import { SEARCH_LINKS } from 'app/shared/links';
+
 
 @Component({
   selector: 'app-bioc-viewer',
@@ -37,6 +41,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<BiocFile> = new EventEmitter();
+  @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
 
   id = uniqueId('FileViewComponent-');
 
@@ -60,6 +65,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
   openbiocSub: Subscription;
+  openStatusSub: Subscription;
   ready = false;
   object?: FilesystemObject;
   // Type information coming from interface biocSource at:
@@ -91,6 +97,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
+    protected readonly _elemenetRef: ElementRef
   ) {
     this.loadTask = new BackgroundTask(([hashId]) => {
       return combineLatest(
@@ -119,35 +126,87 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       this.ready = true;
     });
 
+    this.openStatusSub = this.loadTask.status$.subscribe((data) => {
+      if (data.resultsShown) {
+        const fragment = (this.route.snapshot.fragment || '');
+        if (fragment.indexOf('offset') >= 0) {
+          setTimeout(() => {
+            this.scrollInOffset(fragment);
+          }, 1000);
+        }
+      }
+    });
+
     this.loadFromUrl();
   }
 
-  isSubHeader(passage) {
-    const subSections = ['INTRO', 'ABSTRACT', 'CONCL', 'REF'];
-    const ALLOWED_TYPES = ['title_1', 'abstract_title_1', 'title_1', 'title'];
-    const infons = passage.infons || {};
-    const sectionType = infons.section_type && infons.section_type.toUpperCase();
-    const type = infons.type && infons.type.toLowerCase();
-    const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
-    return res;
+  getFigureCaption(passage) {
+    return passage.infons.id || 'Fig';
   }
 
-  isTitle2(passage) {
-    const subSections = ['INTRO', 'ABSTRACT', ];
-    const ALLOWED_TYPES = ['title_2'];
-    const infons = passage.infons || {};
-    const sectionType = infons.section_type && infons.section_type.toUpperCase();
-    const type = infons.type && infons.type.toLowerCase();
-    const res = subSections.includes(sectionType) && ALLOWED_TYPES.includes(type);
-    return res;
+  isGeneric(passage) {
+    return !this.isTableView(passage) && !this.isFigure(passage);
   }
 
-  isParagraph(passage) {
-    const TYPES = ['paragraph', 'abstract'];
+  isTableView(passage) {
+    const TYPES = ['table', 'table_caption', 'table_footnote'];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
     return res;
+  }
+
+  isFigure(passage) {
+    const TYPES = ['fig_caption'];
+    const infons = passage.infons || {};
+    const type = infons.type && infons.type.toLowerCase();
+    const res = TYPES.includes(type);
+    return res;
+  }
+
+  buildFigureLink(doc, passage) {
+    const pmcid = doc.passages.find(p => p.infons['article-id_pmc']);
+    const infons = passage.infons || {};
+    const file = infons.file;
+    return `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${pmcid.infons['article-id_pmc']}/bin/${file}`;
+  }
+
+  pmid(doc) {
+    const pmid = doc.passages.find(p => p.infons['article-id_pmid']);
+    if (pmid) {
+      const PMID_LINK = 'https://www.ncbi.nlm.nih.gov/pubmed/' + String(pmid.infons['article-id_pmid']);
+      const text = 'PMID' + String(pmid.infons['article-id_pmid']);
+      return [text, PMID_LINK];
+    }
+    const pmc = doc.passages.find(p => p.infons['article-id_pmc']);
+    if (pmc) {
+      const PMCID_LINK = 'http://www.ncbi.nlm.nih.gov/pmc/articles/pmc' + String(pmc.infons['article-id_pmc']);
+      const text = 'PMC' + String(pmc.infons['article-id_pmc']);
+      return [text, PMCID_LINK];
+    }
+
+    return [];
+  }
+
+  journal(doc) {
+    const journal = doc.passages.find(p => p.infons[`journal`]);
+    if (journal) {
+      return journal.infons[`journal`];
+    }
+  }
+
+  authors(doc) {
+    const authors = doc.passages.find(p => p.infons[`authors`]);
+    if (authors) {
+      return authors.infons[`authors`];
+    }
+  }
+
+  year(doc) {
+    const year = doc.passages.find(p => p.infons[`year`]);
+    if (year) {
+      return year.infons[`year`];
+    }
   }
 
   title(doc) {
@@ -184,6 +243,20 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       return true;
     } else {
       return value;
+    }
+  }
+
+  scrollInOffset(offset: any) {
+    const offsetNum = offset.split('=')[1];
+    if (!isNaN(Number(offsetNum))) {
+      const query = `span[offset='${offsetNum}']`;
+      const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
+      if (annotationElem) {
+        annotationElem.scrollIntoView({ block: 'center' });
+        jQuery(annotationElem).effect('highlight', {
+          color: 'red'
+        }, 1000);
+      }
     }
   }
 
@@ -249,6 +322,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     if (this.removeAnnotationExclusionSub) {
       this.removeAnnotationExclusionSub.unsubscribe();
+    }
+    if (this.openStatusSub) {
+      this.openStatusSub.unsubscribe();
     }
   }
 
@@ -323,5 +399,105 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>));
   }
+
+  @HostListener('document:selectionchange', ['$event'])
+  selectionChange(event: Event) {
+    console.log('event is ', event);
+    const selection = window.getSelection();
+    console.log(selection);
+  }
+
+  @HostListener('dragstart', ['$event'])
+  dragStart(event: DragEvent) {
+    const meta: any = {};
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    const txt = (event.target as any).innerHTML;
+    const type = (event.target as any).classList[1];
+    const id = (event.target as any).attributes[`identifier`].nodeValue;
+    const annType = (event.target as any).attributes[`annType`].nodeValue;
+    const offset = (event.target as any).attributes[`offset`].nodeValue;
+    const src = this.getSource({
+      identifier: id,
+      type: annType
+    });
+    const search = [];
+    const hyperlinks = [];
+    const url = src;
+    const domain = new URL(src).hostname.replace(/^www\./i, '');
+    const isDatabase = false;
+    hyperlinks.push({ url, domain, isDatabase });
+    const hyperlink = meta.idHyperlink || '';
+    dataTransfer.setData('text/plain', txt);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: txt,
+      label: String(type).toLowerCase(),
+      sub_labels: [],
+      data: {
+        sources: [{
+          domain: this.object.filename,
+          url: ['/projects', encodeURIComponent(this.object.project.name),
+            'bioc', encodeURIComponent(this.object.hashId)].join('/') + '#offset=' + offset,
+        }],
+        search,
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.object.hashId,
+        }, {
+          type: 'DATABASE',
+          url: hyperlink,
+        }],
+        hyperlinks,
+        detail: meta.type === 'link' ? meta.allText : '',
+      },
+      style: {
+        showDetail: meta.type === 'link',
+      },
+    } as Partial<UniversalGraphNode>));
+
+    event.stopPropagation();
+  }
+
+  getSource(payload: any = {}) {
+    const identifier = payload.identifier || payload.Identifier;
+    const type = payload.type;
+
+    // MESH Handling
+    if (identifier && identifier.toLowerCase().startsWith('mesh')) {
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
+      const url = mesh.url;
+      const idPart = identifier.split(':');
+      return url.replace(/%s/, encodeURIComponent(idPart[1]));
+    }
+
+    // NCBI
+    if (identifier && !isNaN(Number(identifier))) {
+      let domain = 'ncbi';
+      if (type === 'Species') {
+        domain = 'ncbi_taxonomy';
+      }
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === domain);
+      const url = mesh.url;
+      return url.replace(/%s/, encodeURIComponent(identifier));
+    }
+    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
+    return fallback.url.replace(/%s/, encodeURIComponent(identifier));
+  }
+
+  getLocation(event: any): Location {
+    return {
+      pageNumber: 1,
+      rect: []
+    };
+  }
+
+
+
+}
+
+
+export interface AnnotationDragEvent {
+  event: DragEvent;
+  meta: Meta;
+  location: Location;
 }
 
