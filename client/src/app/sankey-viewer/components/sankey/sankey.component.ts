@@ -9,12 +9,12 @@ import {
   calculateLinkPathParams,
   shortNodeText,
   nodeLabelAccessor,
-  INITIALLY_SHOWN_CHARS,
-  representativePositiveNumber
+  INITIALLY_SHOWN_CHARS
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { colorByTraceEnding } from '../algorithms/algorithms';
+import { colorByTraceEnding } from './algorithms/traceLogic';
+import { representativePositiveNumber } from '../utils';
 
 function updateTextShadow(_) {
   const [shadow, text] = this.children;
@@ -33,9 +33,88 @@ function updateTextShadow(_) {
   encapsulation: ViewEncapsulation.None,
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy {
+  @Input() normalizeLinks = true;
+  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('g', {static: false}) g!: ElementRef;
+  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
+  @ViewChild('links', {static: false}) links!: ElementRef;
+  @Output() nodeClicked = new EventEmitter();
+  @Output() linkClicked = new EventEmitter();
+  @Output() enter = new EventEmitter();
+  MARGIN = 10;
+  margin = {
+    top: this.MARGIN,
+    right: this.MARGIN,
+    bottom: this.MARGIN,
+    left: this.MARGIN
+  };
+  MIN_FONT = 12;
+  MAX_FONT = 48;
+  resizeObserver: any;
+  size;
+  zoom;
+  dragging = false;
+  @Output() adjustLayout = new EventEmitter();
+  private readonly sankey: any;
+
   @Input() set timeInterval(ti) {
     if (this.sankey) {
       this.sankey.timeInterval(ti);
+    }
+  }
+
+  get updateNodeText() {
+    // noinspection JSUnusedLocalSymbols
+    const [width, _height] = this.sankey.size();
+    return texts => texts
+      .attr('transform', ({x0, x1, y0, y1}) => `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`)
+      .attr('text-anchor', 'end')
+      .call(textGroup =>
+        textGroup.select('text')
+          .attr('dy', '0.35em')
+      )
+      .filter(({x0}) => x0 < width / 2)
+      .attr('text-anchor', 'start');
+  }
+
+  _selectedNodes = new Set<object>();
+
+  get selectedNodes() {
+    return this._selectedNodes;
+  }
+
+  @Input() set selectedNodes(nodes) {
+    this.selectNodes(nodes);
+    const selectedTraces = this.getSelectedTraces({nodes});
+    this.selectTraces(selectedTraces);
+    this._selectedNodes = nodes;
+  }
+
+  _selectedLinks = new Set<object>();
+
+  get selectedLinks() {
+    return this._selectedLinks;
+  }
+
+  @Input() set selectedLinks(links) {
+    this.selectLinks(links);
+    const selectedTraces = this.getSelectedTraces({links});
+    this.selectTraces(selectedTraces);
+    this._selectedLinks = links;
+  }
+
+  private _data: SankeyData = {} as SankeyData;
+
+  get data() {
+    return this._data;
+  }
+
+  @Input('data') set data(data) {
+    this._data = {...data} as SankeyData;
+    if (this.svg) {
+      this.updateLayout(this._data).then(d => this.updateDOM(d));
     }
   }
 
@@ -73,94 +152,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 8]);
   }
-
-  @Input() set selectedNodes(nodes) {
-    this.selectNodes(nodes);
-    const selectedTraces = this.getSelectedTraces({nodes});
-    this.selectTraces(selectedTraces);
-    this._selectedNodes = nodes;
-  }
-
-  get selectedNodes() {
-    return this._selectedNodes;
-  }
-
-  @Input() set selectedLinks(links) {
-    this.selectLinks(links);
-    const selectedTraces = this.getSelectedTraces({links});
-    this.selectTraces(selectedTraces);
-    this._selectedLinks = links;
-  }
-
-  get selectedLinks() {
-    return this._selectedLinks;
-  }
-
-  @Input('data') set data(data) {
-    this._data = {...data} as SankeyData;
-    if (this.svg) {
-      this.updateLayout(this._data).then(d => this.updateDOM(d));
-    }
-  }
-
-  get data() {
-    return this._data;
-  }
-
-  get updateNodeText() {
-    // noinspection JSUnusedLocalSymbols
-    const [width, _height] = this.sankey.size();
-    return texts => texts
-      .attr('transform', ({x0, x1, y0, y1}) => `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`)
-      .attr('text-anchor', 'end')
-      .call(textGroup =>
-        textGroup.select('text')
-          .attr('dy', '0.35em')
-      )
-      .filter(({x0}) => x0 < width / 2)
-      .attr('text-anchor', 'start');
-  }
-
-  _selectedNodes = new Set<object>();
-
-  _selectedLinks = new Set<object>();
-
-  @Input() normalizeLinks = true;
-
-  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
-  @ViewChild('g', {static: false}) g!: ElementRef;
-  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
-  @ViewChild('links', {static: false}) links!: ElementRef;
-
-  @Output() nodeClicked = new EventEmitter();
-  @Output() linkClicked = new EventEmitter();
-  @Output() enter = new EventEmitter();
-
-  private _data: SankeyData = {} as SankeyData;
-
-  MARGIN = 10;
-
-  margin = {
-    top: this.MARGIN,
-    right: this.MARGIN,
-    bottom: this.MARGIN,
-    left: this.MARGIN
-  };
-
-  MIN_FONT = 12;
-  MAX_FONT = 48;
-
-  private readonly sankey: any;
-  resizeObserver: any;
-
-  size;
-
-  zoom;
-  dragging = false;
-
-  @Output() adjustLayout = new EventEmitter();
 
   getSelectedTraces(selection) {
     const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
@@ -231,22 +222,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
         resolve(a);
       }
     );
-  }
-
-
-  /**
-   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example,
-   * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
-   */
-  private getCloudSvgDimensions() {
-    const wrapper = this.wrapper.nativeElement;
-    const {
-      margin
-    } = this;
-    return {
-      width: wrapper.offsetWidth - margin.left - margin.right,
-      height: wrapper.offsetHeight - margin.top - margin.bottom
-    };
   }
 
   linkClick(element, data) {
@@ -497,6 +472,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
             dragging = false;
           })
       );
+  }
+
+  /**
+   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example,
+   * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
+   */
+  private getCloudSvgDimensions() {
+    const wrapper = this.wrapper.nativeElement;
+    const {
+      margin
+    } = this;
+    return {
+      width: wrapper.offsetWidth - margin.left - margin.right,
+      height: wrapper.offsetHeight - margin.top - margin.bottom
+    };
   }
 
   /**

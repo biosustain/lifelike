@@ -2,22 +2,22 @@ import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { uuidv4 } from '../../shared/utils';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { parseForRendering, isPositiveNumber } from './utils';
-import { getAndColorNetworkTraceLinks, getNetworkTraceNodes, colorNodes, getRelatedTraces } from './algorithms/algorithms';
+import { getAndColorNetworkTraceLinks, getNetworkTraceNodes, colorNodes, getRelatedTraces } from './algorithms/traceLogic';
 import { map } from 'rxjs/operators';
-import prescalers from './algorithms/prescalers';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
 import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
-import { createMapToColor } from './sankey/utils';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+
+import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
+import { uuidv4 } from 'app/shared/utils';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 
 interface ValueGenerator {
   description: string;
@@ -31,6 +31,78 @@ interface ValueGenerator {
   styleUrls: ['./sankey-view.component.scss'],
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
+
+  networkTraces;
+  selectedNetworkTrace;
+  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  paramsSubscription: Subscription;
+  returnUrl: string;
+  selection: BehaviorSubject<Array<{
+    type: string,
+    entity: SankeyLink | SankeyNode | object,
+    template: HTMLTemplateElement
+  }>>;
+  selectionWithTraces;
+  loadTask: any;
+  openSankeySub: Subscription;
+  ready = false;
+  object?: FilesystemObject;
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
+  sankeyData: SankeyData;
+  // Type information coming from interface sankeySource at:
+  sankeyFileLoaded = false;
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  filteredSankeyData;
+  traceGroupColorMap;
+  panelOpened;
+  details;
+  normalizeLinks = {value: false};
+  linkValueAccessors;
+  nodeValueAccessors;
+  linkValueGenerators = [
+    {
+      description: 'Fraction of fixed node value',
+      disabled: () => this.selectedNodeValueAccessor === this.nodeValueGenerators[0],
+      requires: ({node: {fixedValue}}) => fixedValue,
+      preprocessing: fractionOfFixedNodeValue
+    } as ValueGenerator,
+    {
+      description: 'Input count',
+      preprocessing: inputCount
+    } as ValueGenerator
+  ];
+  nodeValueGenerators = [
+    {
+      description: 'None',
+      preprocessing: noneNodeValue
+    } as ValueGenerator
+  ];
+  selectedLinkValueAccessor = this.linkValueGenerators[1];
+  selectedNodeValueAccessor = this.nodeValueGenerators[0];
+  prescalers = prescalers;
+  selectedPrescaler = this.prescalers[0];
+  traceDetailsGraph;
+  excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
+  selectedNodes;
+  selectedLinks;
+  selectedTraces;
+  @ViewChild('traceDetails', {static: true}) traceDetails;
+  @ViewChild('linkDetails', {static: true}) linkDetails;
+  @ViewChild('nodeDetails', {static: true}) nodeDetails;
+  nodeHeight = {
+    min: {
+      enabled: false,
+      value: 0
+    },
+    max: {
+      enabled: false,
+      ratio: 10
+    }
+  };
+  parseProperty = parseForRendering;
+  @ViewChild('sankey', {static: false}) sankey;
+  isArray = Array.isArray;
+  private currentFileId: any;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -91,95 +163,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadFromUrl();
   }
-
-  networkTraces;
-  selectedNetworkTrace;
-
-  @Output() requestClose: EventEmitter<any> = new EventEmitter();
-
-  paramsSubscription: Subscription;
-  returnUrl: string;
-
-  selection: BehaviorSubject<Array<{
-    type: string,
-    entity: SankeyLink | SankeyNode | object,
-    template: HTMLTemplateElement
-  }>>;
-  selectionWithTraces;
-
-  loadTask: any;
-  openSankeySub: Subscription;
-  ready = false;
-  object?: FilesystemObject;
-  // Type information coming from interface sankeySource at:
-  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
-  sankeyData: SankeyData;
-  sankeyFileLoaded = false;
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  private currentFileId: any;
-  filteredSankeyData;
-
-  traceGroupColorMap;
-
-  panelOpened;
-  details;
-  normalizeLinks = {value: false};
-
-  linkValueGenerators = [
-    {
-      description: 'Fraction of fixed node value',
-      disabled: () => this.selectedNodeValueAccessor === this.nodeValueGenerators[0],
-      requires: ({node: {fixedValue}}) => fixedValue,
-      preprocessing: fractionOfFixedNodeValue
-    } as ValueGenerator,
-    {
-      description: 'Input count',
-      preprocessing: inputCount
-    } as ValueGenerator
-  ];
-  nodeValueGenerators = [
-    {
-      description: 'None',
-      preprocessing: noneNodeValue
-    } as ValueGenerator
-  ];
-  linkValueAccessors;
-  selectedLinkValueAccessor = this.linkValueGenerators[1];
-  nodeValueAccessors;
-  selectedNodeValueAccessor = this.nodeValueGenerators[0];
-  prescalers = prescalers;
-  selectedPrescaler = this.prescalers[0];
-
-  traceDetailsGraph;
-
-  excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
-
-  selectedNodes;
-  selectedLinks;
-  selectedTraces;
-
-  @ViewChild('traceDetails', {static: true}) traceDetails;
-  @ViewChild('linkDetails', {static: true}) linkDetails;
-  @ViewChild('nodeDetails', {static: true}) nodeDetails;
-
-  nodeHeight = {
-    min: {
-      enabled: false,
-      value: 0
-    },
-    max: {
-      enabled: false,
-      ratio: 10
-    }
-  };
-
-
-  parseProperty = parseForRendering;
-
-  @ViewChild('sankey', {static: false}) sankey;
-
-  isArray = Array.isArray;
-
 
   getJSONDetails(details) {
     return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
