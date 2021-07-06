@@ -140,9 +140,10 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
     """
     Generates a lucene boolean query which filters documents based on folder/project access. Takes
     as input two options:
-        - accessible_folders: a list of Files objects representing folders to be included in the query
-        - accessible_projects: a list of Projects objects representing projects to be included in the
+        - accessible_folders: a list of Files objects representing folders to be included in the
         query
+        - accessible_projects: a list of Projects objects representing projects to be included in
+        the query
     Any files present in accessible_folders which are not children of accessible_projects will be
     ignored, and returned along with the query.
     """
