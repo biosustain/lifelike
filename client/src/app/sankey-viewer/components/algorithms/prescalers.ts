@@ -1,9 +1,4 @@
-interface Prescaler {
-  name: string;
-  description: string;
-  fn: (v: number) => number;
-}
-
+import { ArrayWithDefault, Prescaler } from './interfaces';
 
 const prescalers: ArrayWithDefault<Prescaler> = [
   {
@@ -44,10 +39,6 @@ const prescalers: ArrayWithDefault<Prescaler> = [
 ];
 
 prescalers.default = prescalers[0];
-
-interface ArrayWithDefault<T> extends Array<T> {
-  default?: T;
-}
 
 export default prescalers;
 

@@ -1,5 +1,5 @@
-import { representativePositiveNumber } from '../sankey/utils';
 import * as d3Sankey from 'd3-sankey-circular';
+import { representativePositiveNumber } from '../utils';
 
 export const fractionOfFixedNodeValue = ({links, nodes}) => {
   links.forEach(l => l.value = 1);

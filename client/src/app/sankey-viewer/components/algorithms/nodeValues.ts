@@ -1,4 +1,4 @@
-import { representativePositiveNumber } from '../sankey/utils';
+import { representativePositiveNumber } from '../utils';
 
 export const noneNodeValue = ({nodes}) => {
   nodes.forEach(n => {
