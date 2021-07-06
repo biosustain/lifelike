@@ -189,7 +189,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
-    const traceColorPaletteMap = createMapToColor(networkTrace.traces.map(({group}) => group));
+    const traceColorPaletteMap = createMapToColor(
+      networkTrace.traces.map(({group}) => group), {alpha: _ => 1, saturation: _ => 0.5}
+    );
     const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
     colorNodes(nodes);
