@@ -8,10 +8,9 @@ import csv
 import lmdb
 import json
 
-from ast import literal_eval
 from os import path, remove, walk
 
-from neo4japp.services.annotations.constants import (
+from .constants import (
     CHEMICALS_CHEBI_LMDB,
     COMPOUNDS_BIOCYC_LMDB,
     DISEASES_MESH_LMDB,
@@ -25,7 +24,7 @@ from neo4japp.services.annotations.constants import (
     ANATOMY_MESH_LMDB,
     DatabaseType,
 )
-from neo4japp.services.annotations.lmdb_util import (
+from .utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
     create_ner_type_compound,
