@@ -13,6 +13,7 @@ import { GraphSearchFormComponent } from './components/graph-search-form.compone
 import { RejectedSynonymsDialogComponent } from './components/rejected-synonyms-dialog.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
+import { SynonymSearchComponent } from './components/synonym-search.component';
 
 import { ContentSearchService } from './services/content-search.service';
 import { GraphSearchService } from './services/graph-search.service';
@@ -27,6 +28,7 @@ const components = [
   RejectedSynonymsDialogComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
+  SynonymSearchComponent
 ];
 
 @NgModule({
@@ -38,6 +40,7 @@ const components = [
   entryComponents: [
     AdvancedSearchDialogComponent,
     RejectedSynonymsDialogComponent,
+    SynonymSearchComponent
   ],
   declarations: components,
   providers: [

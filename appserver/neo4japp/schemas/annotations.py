@@ -134,6 +134,26 @@ class AnnotationUUIDListSchema(ResultListSchema):
     results = fields.List(fields.String())
 
 
+class GlobalAnnotationListItemSchema(CamelCaseSchema):
+    global_id = fields.Integer()
+    file_uuid = fields.String()
+    creator = fields.String()
+    file_deleted = fields.Boolean()
+    content_reference = fields.String()
+    type = fields.String()
+    creation_date = fields.Date()
+    text = fields.String()
+    case_insensitive = fields.Boolean()
+    entity_type = fields.String()
+    entity_id = fields.String()
+    reason = fields.String()
+    comment = fields.String()
+
+
+class GlobalAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(GlobalAnnotationListItemSchema))
+
+
 # ========================================
 # Custom Annotations
 # ========================================

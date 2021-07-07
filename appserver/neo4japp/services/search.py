@@ -15,7 +15,8 @@ from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
     get_first_known_label_from_node,
     get_known_domain_labels_from_node,
-    normalize_str
+    normalize_str,
+    snake_to_camel_dict
 )
 from neo4japp.utils.logger import EventLog
 
@@ -62,11 +63,15 @@ class SearchService(GraphBaseDao):
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
-            graph_node = GraphNode.from_neo4j(
-                node,
-                display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label_from_node,
-                domain_labels_fn=get_known_domain_labels_from_node,
+
+            graph_node = GraphNode(
+                id=node.id,
+                label=get_first_known_label_from_node(node),
+                sub_labels=list(node.labels),
+                domain_labels=get_known_domain_labels_from_node(node),
+                display_name=node.get('name'),
+                data=snake_to_camel_dict(dict(node), {}),
+                url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,
@@ -206,6 +211,58 @@ class SearchService(GraphBaseDao):
             'total': len(nodes),
         }
 
+    def get_synonyms(
+        self,
+        search_term: str,
+        organisms: List[str],
+        types: List[str],
+        page: int,
+        limit: int
+    ) -> List[dict]:
+        results = self.graph.read_transaction(
+            self.get_synonyms_query,
+            search_term,
+            organisms,
+            types,
+            page,
+            limit
+        )
+        synonym_data = []
+
+        for row in results:
+            type = get_first_known_label_from_node(row['entity'])
+            synonyms = row['synonyms']
+            name = ''
+            organism = None
+
+            if row['t'] is not None:
+                organism = row['t'].get('name', None)
+
+            if row['entity'].get('name', None) is not None:
+                name = row['entity']['name']
+
+            synonym_data.append({
+                'type': type,
+                'name': name,
+                'organism': organism,
+                'synonyms': synonyms,
+            })
+        return synonym_data
+
+    def get_synonyms_count(
+        self,
+        search_term: str,
+        organisms: List[str],
+        types: List[str]
+    ) -> List[dict]:
+        results = self.graph.read_transaction(
+            self.get_synonyms_count_query,
+            search_term,
+            organisms,
+            types
+        )
+        return results[0]['count']
+
     def visualizer_search_query(
         self,
         tx: Neo4jTx,
@@ -266,3 +323,93 @@ class SearchService(GraphBaseDao):
                 term=term, limit=limit
             ).data()
         ]
+
+    def get_synonyms_query(
+        self,
+        tx: Neo4jTx,
+        search_term: str,
+        organisms: List[str],
+        types: List[str],
+        page: int,
+        limit: int
+    ) -> List[N4jRecord]:
+        """
+        Gets a list of synoynm data for a given search term. Data includes any matched entities, as
+        well as any linked organism, if there is one.
+        """
+        type_match_str = ''
+        if len(types):
+            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+
+        tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
+        if len(organisms):
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+
+        return list(
+            tx.run(
+                f"""
+                MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
+                    <-[:HAS_SYNONYM]-(entity)
+                WHERE NOT 'Protein' IN labels(entity){type_match_str}
+                MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
+                WHERE
+                    size(synonyms.name) > 2 OR
+                    any(x IN ['Chemical', 'Compound'] WHERE x IN labels(entity))
+                WITH
+                    entity,
+                    synonyms.name AS synonyms,
+                    toLower(entity.name) = toLower($search_term) AS matches_term
+                ORDER BY size(synonyms) DESC
+                {tax_match_str}
+                RETURN
+                    entity,
+                    t,
+                    collect(DISTINCT synonyms) AS synonyms,
+                    COUNT(DISTINCT synonyms) AS synonym_count,
+                    matches_term
+                ORDER BY matches_term DESC
+                SKIP $page
+                LIMIT $limit
+                """,
+                search_term=search_term,
+                organisms=organisms,
+                types=types,
+                page=page,
+                limit=limit
+            )
+        )
+
+    def get_synonyms_count_query(
+        self,
+        tx: Neo4jTx,
+        search_term: str,
+        organisms: List[str],
+        types: List[str]
+    ) -> List[N4jRecord]:
+        """
+        Gets the count of synoynm data for a given search term.
+        """
+        type_match_str = ''
+        if len(types):
+            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+
+        tax_match_str = ''
+        if len(organisms):
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+
+        return tx.run(
+            f"""
+            MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
+                <-[:HAS_SYNONYM]-(entity)
+            WHERE NOT 'Protein' IN labels(entity){type_match_str}
+            MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
+            WHERE
+                size(synonyms.name) > 2 OR
+                any(x IN labels(entity) WHERE x IN ['Chemical', 'Compound'])
+            {tax_match_str}
+            RETURN count(DISTINCT entity) AS count
+            """,
+            search_term=search_term,
+            organisms=organisms,
+            types=types
+        ).data()

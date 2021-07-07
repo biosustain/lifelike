@@ -8,6 +8,7 @@ from io import BufferedIOBase
 from typing import Optional, List
 
 import bioc
+import textwrap
 import graphviz
 import requests
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -24,16 +25,20 @@ from neo4japp.constants import (
     DEFAULT_NODE_WIDTH,
     DEFAULT_NODE_HEIGHT,
     MAX_LINE_WIDTH,
-    BASE_IMAGE_HEIGHT,
+    BASE_ICON_DISTANCE,
     IMAGE_HEIGHT_INCREMENT,
-    SCALING_FACTOR
-)
+    FONT_SIZE_MULTIPLIER,
+    SCALING_FACTOR,
+    ICON_SIZE,
+    LIFELIKE_DOMAIN
+    )
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.sankey import validate_sankey
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
@@ -420,25 +425,49 @@ class MapTypeProvider(BaseFileTypeProvider):
                     if not style.get('strokeColor'):
                         params['penwidth'] = '0.0'
                 else:
+                    params['penwidth'] = '0.0'
+                    # Calculate the distance between icon and the label center
+                    distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
+                        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+                        (style.get('fontSizeScale', 1.0) - 1.0)
+                    # Create a separate node which will hold the image
+                    icon_params = {
+                        'name': "icon_" + node['hash'],
+                        'pos': (
+                            f"{node['data']['x'] / SCALING_FACTOR},"
+                            f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
+                        ),
+                        'label': ""
+                    }
                     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
-                    params['image'] = (
-                        f'/home/n4j/assets/{label}'
-                        f'_{style.get("fillColor") or default_icon_color}.png'
-                    )
-                    params['imagepos'] = 'tc'
-                    params['labelloc'] = 'b'
-                    # Prevents the upper part of the label and image from overlapping
-                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
-                                           * IMAGE_HEIGHT_INCREMENT + 0.25 *
-                                           (style.get('fontSizeScale', 1.0) - 1.0))
-                    params['width'] = '0.6'
-                    params['fixedsize'] = 'true'
-                    params['imagescale'] = 'true'
-                    params['forcelabels'] = "true"
-                    params['penwidth'] = '0.0'
+                    if label == 'link':
+                        if node['data'].get('sources') or node['data'].get('hyperlinks'):
+                            data = node['data'].get('sources') or [] \
+                                   + node['data'].get('hyperlinks') or []
+                            if any(link.get('url').lstrip().startswith('/projects/') and
+                                   'enrichment-table' in link.get('url').split('/')
+                                   for link in data):
+                                label = 'enrichment_table'
+                            elif any(link.get('url').lstrip().startswith('/projects/') and
+                                     'files' in link.get('url').split('/')
+                                     for link in data):
+                                label = 'document'
+                            elif any(link.get('url').lstrip().startswith('mailto:')
+                                     for link in data):
+                                label = 'email'
+                    icon_params['image'] = (
+                            f'/home/n4j/assets/{label}/{label}'
+                            f'_{style.get("fillColor") or default_icon_color}.png'
+                        )
+                    icon_params['height'] = ICON_SIZE
+                    icon_params['width'] = ICON_SIZE
+                    icon_params['fixedsize'] = 'true'
+                    icon_params['imagescale'] = 'true'
+                    icon_params['penwidth'] = '0.0'
                     params['fontcolor'] = style.get("fillColor") or default_icon_color
+                    graph.node(**icon_params)
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 default_color = ANNOTATION_STYLES_DICT.get(
@@ -460,7 +489,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
-
+            # If url points to internal file, append it with the domain address
+            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+                params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
         for edge in json_graph['edges']:
