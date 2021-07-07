@@ -1,28 +1,29 @@
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
-    <button type="button" mat-icon-button disabled></button>
-    <mat-checkbox class="checklist-leaf-node"
-                  color="primary"
-                  [checked]="checklistSelection.isSelected(node)"
-                  (change)="itemSelectionToggle(node)">
-      {{node.data.trueFilename}}
-      <i [class]="node.data.fontAwesomeIcon"></i>
-    </mat-checkbox>
+    <div class="row-spacer"></div>
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" [id]="node.data.id + '-checkbox'"
+             [checked]="checklistSelection.isSelected(node)"
+             (change)="itemSelectionToggle(node)">
+      <label class="custom-control-label" [for]="node.data.id + '-checkbox'">
+        {{node.data.trueFilename}}<i [class]="'ml-1 ' + node.data.fontAwesomeIcon"></i>
+      </label>
+    </div>
   </mat-tree-node>
 
   <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-    <button type="button" mat-icon-button matTreeNodeToggle
+    <button type="button" class="btn rounded-circle row-spacer" matTreeNodeToggle
             [attr.aria-label]="'Toggle ' + node.data.trueFilename">
-      <mat-icon class="mat-icon-rtl-mirror">
-        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-      </mat-icon>
+      <i [class]="'fas fa-' + (treeControl.isExpanded(node) ? 'chevron-down' : 'chevron-right')"></i>
     </button>
-    <mat-checkbox color="primary"
-                  [checked]="checklistSelection.isSelected(node)"
-                  [indeterminate]="(descendantsPartiallySelected(node) || (descendantsAllSelected(node)) && !checklistSelection.isSelected(node))"
-                  (change)="itemSelectionToggle(node)">
-      {{node.data.trueFilename}}
-      <i [class]="node.data.fontAwesomeIcon"></i>
-    </mat-checkbox>
+
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" [id]="node.data.id + '-checkbox'"
+             [checked]="checklistSelection.isSelected(node)"
+             (change)="itemSelectionToggle(node)">
+      <label class="custom-control-label" [for]="node.data.id + '-checkbox'">
+        {{node.data.trueFilename}}<i [class]="'ml-1 ' + node.data.fontAwesomeIcon"></i>
+      </label>
+    </div>
   </mat-tree-node>
 </mat-tree>
