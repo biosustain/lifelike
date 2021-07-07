@@ -200,6 +200,7 @@ def create_mesh_global_inclusion(entity_type):
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """.replace('replace_with_param', query_label)
 
 
@@ -211,6 +212,7 @@ def create_chemical_global_inclusion():
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """
 
 
@@ -222,6 +224,7 @@ def create_compound_global_inclusion():
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """
 
 
@@ -233,6 +236,7 @@ def create_gene_global_inclusion():
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """
 
 
@@ -244,6 +248,7 @@ def create_species_global_inclusion():
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """
 
 
@@ -255,6 +260,7 @@ def create_protein_global_inclusion():
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user
+        r.file_reference = $file_uuid
     """
 
 
@@ -282,5 +288,7 @@ def create_***ARANGO_DB_NAME***_global_inclusion(entity_type):
     MERGE (s:Synonym {name: $synonym})
     SET s.global_inclusion = 1, s.need_review = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
-    SET r.inclusion_date = n.inclusion_date, r.user = n.user
+    SET r.inclusion_date = n.inclusion_date,
+        r.user = n.user,
+        r.file_reference = $file_uuid
     """.replace('replace_with_param', query_label)

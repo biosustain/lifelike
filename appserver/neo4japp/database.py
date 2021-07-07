@@ -218,16 +218,6 @@ def get_elastic_service():
     return g.elastic_service
 
 
-def get_manual_annotation_service():
-    from neo4japp.services.annotations import (
-        AnnotationGraphService,
-        ManualAnnotationService
-    )
-    return ManualAnnotationService(
-        graph=AnnotationGraphService()
-    )
-
-
 def get_sorted_annotation_service(sort_id, *, mime_type=None):
     from neo4japp.services.annotations import (
         AnnotationGraphService,

@@ -4,13 +4,13 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.database import DBConnection, GraphConnection
 from neo4japp.services.annotations import (
     AnnotationService,
     AnnotationDBService,
     AnnotationGraphService,
     LMDBService,
-    ManualAnnotationService
+    ManualAnnotationService,
+    Tokenizer
 )
 from neo4japp.services.annotations.constants import (
     OrganismCategory,
@@ -71,31 +71,13 @@ def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
 
 
 @pytest.fixture(scope='function')
-def get_graph_service(graph):
-    class MockGraphConnection(GraphConnection):
-        def __init__(self):
-            super().__init__()
-            self.graph = graph
-
-    class MockAnnotationGraphService(MockGraphConnection, AnnotationGraphService):
-        def __init__(self):
-            super().__init__()
-
-    return MockAnnotationGraphService()
+def get_graph_service(graph_driver):
+    return AnnotationGraphService(graph_driver)
 
 
 @pytest.fixture(scope='function')
 def get_db_service(session):
-    class MockDBConnection(DBConnection):
-        def __init__(self):
-            super().__init__()
-            self.session = session
-
-    class MockAnnotationDBService(MockDBConnection, AnnotationDBService):
-        def __init__(self):
-            super().__init__()
-
-    return MockAnnotationDBService()
+    return AnnotationDBService()
 
 
 @pytest.fixture(scope='function')
@@ -107,7 +89,8 @@ def get_annotation_service(get_db_service, get_graph_service, request):
 
 @pytest.fixture(scope='function')
 def get_manual_annotation_service(get_graph_service):
-    return ManualAnnotationService(graph=get_graph_service)
+    return ManualAnnotationService(
+        graph=get_graph_service, tokenizer=Tokenizer())
 
 
 @pytest.fixture(scope='function')

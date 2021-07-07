@@ -55,6 +55,7 @@ def downgrade():
 
 def data_upgrades():
     """Add optional data upgrade migrations here"""
+    pass
 
 
 def data_downgrades():
