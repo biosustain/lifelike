@@ -1,0 +1,4827 @@
+{
+    "nodes": [
+        {
+            "id": 34821,
+            "label": "crp",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 53765,
+            "label": "ycgJ TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 34310,
+            "label": "glaR",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 60425,
+            "label": "alkaline phosphatase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 78858,
+            "label": "EC-1.1.1.381",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 55311,
+            "label": "fumD TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 56349,
+            "label": "sohB TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 79902,
+            "label": "EC-1.1.1.77",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 55838,
+            "label": "curA TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 60964,
+            "label": "DksA-ppGpp",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 32811,
+            "label": "dkgA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 61485,
+            "label": "queuosine precursor transporter",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 58414,
+            "label": "acetate kinase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 32816,
+            "label": "ackA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 60464,
+            "label": "DNA-binding transcriptional repressor GlaR",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35894,
+            "label": "hisD",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 34361,
+            "label": "yjeH",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 56378,
+            "label": "casABCDE12 TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 56377,
+            "label": "crp TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 60989,
+            "label": "methylglyoxal reductase DkgA",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 9790,
+            "label": "L-allo-threonine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 33855,
+            "label": "tcyJ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 48191,
+            "label": "dctAp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 9795,
+            "label": "glycine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 34372,
+            "label": "yeaE",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 54343,
+            "label": "yhdWXYZ TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 34382,
+            "label": "fumD",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 59472,
+            "label": "NtrC-Phosphorylated DNA-binding transcriptional dual regulator",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 53847,
+            "label": "yeaQ TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 56919,
+            "label": "hisLGDCBHAFI TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 9817,
+            "label": "aminoacetone",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 55386,
+            "label": "tcyJ TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 61531,
+            "label": "histidinal/histidinol dehydrogenase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 32351,
+            "label": "fucA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 57952,
+            "label": "DNA-binding transcriptional dual regulator ArcA",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 47712,
+            "label": "sohBp1",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 58466,
+            "label": "DNA-binding transcriptional dual regulator GcvA",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 60000,
+            "label": "regulator of RpoS",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79462,
+            "label": "NRIDEPHOS-RXN",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 60523,
+            "label": "sensory histidine kinase NtrB",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 59500,
+            "label": "DNA-binding transcriptional dual regulator LeuO",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 54379,
+            "label": "msyB TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 61550,
+            "label": "alkaline phosphatase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 53876,
+            "label": "dctA TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 63101,
+            "label": "HISTDEHYD-CPLX",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 57472,
+            "label": "small regulatory RNA GcvB",
+            "databaseLabel": "RNA",
+            "value": 1,
+            "font": {
+                "color": "#5c98d1"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5c98d1",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5c98d1"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5c98d1"
+                }
+            }
+        },
+        {
+            "id": 47745,
+            "label": "rpmBp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 31873,
+            "label": "msyB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 9344,
+            "label": "(S)-propane-1,2-diol",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 59012,
+            "label": "DNA-binding transcriptional dual regulator Lrp",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 61072,
+            "label": "CRP-cAMP DNA-binding transcriptional dual regulator",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 33431,
+            "label": "yhhQ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 45725,
+            "label": "tcyJp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 35998,
+            "label": "lrp",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 34974,
+            "label": "yjfY",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 79520,
+            "label": "RXN0-7084",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 60579,
+            "label": "methylglyoxal reductase YeaE",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 78500,
+            "label": "L-methionine:proton antiport",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 79527,
+            "label": "EC-3.1.1.32",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 80040,
+            "label": "HISTALDEHYD-RXN",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 33962,
+            "label": "yhdZ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78510,
+            "label": "TRANS-RXN-412",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 57522,
+            "label": "L-fuculose-phosphate aldolase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35506,
+            "label": "curA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 58548,
+            "label": "fumarase D",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 61620,
+            "label": "DNA-binding transcriptional dual regulator CRP",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 10423,
+            "label": "ppGpp",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 60602,
+            "label": "L-methionine/branched chain amino acid exporter",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 33980,
+            "label": "relA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 8892,
+            "label": "D-methionine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 36029,
+            "label": "leuO",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 60609,
+            "label": "L-fuculose-phosphate aldolase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35009,
+            "label": "gcvB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 58563,
+            "label": "DNA-binding transcriptional dual regulator CRP",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35014,
+            "label": "yeaQ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 58572,
+            "label": "outer membrane phospholipase A",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 53965,
+            "label": "ackA TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 32468,
+            "label": "rssB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78036,
+            "label": "malate:proton symport",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 31970,
+            "label": "rpiB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 55016,
+            "label": "sohB TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 31982,
+            "label": "cobU",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 34032,
+            "label": "sohB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 36082,
+            "label": "glnL",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 33010,
+            "label": "yiiM",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 36084,
+            "label": "yodC",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 46329,
+            "label": "sohBp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 56071,
+            "label": "yhhQ TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 32520,
+            "label": "chpS",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 59659,
+            "label": "sensor histidine kinase ArcB",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 46347,
+            "label": "crpp2",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 35599,
+            "label": "ycgJ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 7953,
+            "label": "L-threonine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 8466,
+            "label": "(S)-lactaldehyde",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 35095,
+            "label": "ydhQ",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 7960,
+            "label": "L-histidine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 7966,
+            "label": "L-methionine",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 77600,
+            "label": "EC-1.1.1",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 35618,
+            "label": "mutM",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 32550,
+            "label": "cas2",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 79143,
+            "label": "EC-2.7.6.5",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 32054,
+            "label": "phoA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 33593,
+            "label": "gcvA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 33084,
+            "label": "mscL",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 57150,
+            "label": "yjfY TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 10046,
+            "label": "hydroxyacetone",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 35140,
+            "label": "yacL",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 9544,
+            "label": "EC-2.7.99",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 78156,
+            "label": "EC-7.4.2.11",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 32087,
+            "label": "pldA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 11101,
+            "label": "EC-4.2.1.2",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 36194,
+            "label": "yegR",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 55667,
+            "label": "ivy TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 59254,
+            "label": "Phosphorylated DNA-binding transcriptional dual regulator ArcA",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79228,
+            "label": "NRIPHOS-RXN",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 45952,
+            "label": "casAp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 54146,
+            "label": "lrp TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 44933,
+            "label": "sohBp2",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 32646,
+            "label": "ivy",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 78213,
+            "label": "EC-4.1.2.17",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 62858,
+            "label": "outer membrane phospholipase A",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 32650,
+            "label": "dctA",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 9100,
+            "label": "preQ0",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 54668,
+            "label": "sohB TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 5006,
+            "label": "a 2-acyl-1-lyso-phosphatidylethanolamine",
+            "databaseLabel": "Class",
+            "value": 1,
+            "font": {
+                "color": "#f1587a"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#f1587a",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#f1587a"
+                }
+            }
+        },
+        {
+            "id": 32144,
+            "label": "nac",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 58256,
+            "label": "DNA-binding transcriptional dual regulator NtrC",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 61330,
+            "label": "DNA-binding transcriptional dual regulator CysB",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 35735,
+            "label": "cysB",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 35736,
+            "label": "ybbC",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 35234,
+            "label": "yjdP",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 8099,
+            "label": "(R)-malate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 45992,
+            "label": "gcvBp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 8106,
+            "label": "(S)-malate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 35757,
+            "label": "ycaK",
+            "databaseLabel": "Gene",
+            "value": 1,
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 62385,
+            "label": "C4 dicarboxylate/orotate:H+ symporter",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 9651,
+            "label": "propanoate",
+            "databaseLabel": "Compound",
+            "value": 1,
+            "font": {
+                "color": "#4caf50"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#4caf50",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#4caf50"
+                }
+            }
+        },
+        {
+            "id": 59828,
+            "label": "GDP/GTP pyrophosphokinase",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 79285,
+            "label": "EC-3.1.3",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 56246,
+            "label": "gcvB TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 47548,
+            "label": "lrpp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 60886,
+            "label": "GcvA-gly",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 47574,
+            "label": "yhdWp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 10710,
+            "label": "RXN-8632",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 10721,
+            "label": "EC-2.7.2.7|EC-2.7.2.1|EC-2.7.2.15|EC-2.7.2.14",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 55276,
+            "label": "rpmBG-mutM TU",
+            "databaseLabel": "TranscriptionUnit",
+            "value": 1,
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 58351,
+            "label": "DNA-binding transcriptional dual regulator Nac",
+            "databaseLabel": "Protein",
+            "value": 1,
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": 10739,
+            "label": "RXN0-6470",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 77300,
+            "label": "EC-1.1.1.103",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 8182,
+            "label": "EC-4.1.2.48|EC-4.1.2.49",
+            "databaseLabel": "Reaction",
+            "value": 1,
+            "font": {
+                "color": "#ebb434"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ebb434",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ebb434"
+                }
+            }
+        },
+        {
+            "id": 46587,
+            "label": "hisLp",
+            "databaseLabel": "Promoter",
+            "value": 1,
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "71136",
+            "label": "ENCODES",
+            "from": 34821,
+            "to": 58563,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14561",
+            "label": "HAS_GENE",
+            "from": 53765,
+            "to": 35599,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72821",
+            "label": "ENCODES",
+            "from": 34310,
+            "to": 60464,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75986",
+            "label": "COMPONENT_OF",
+            "from": 60425,
+            "to": 61550,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88368",
+            "label": "PRODUCES",
+            "from": 78858,
+            "to": 9817,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12925",
+            "label": "HAS_GENE",
+            "from": 55311,
+            "to": 34382,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12491",
+            "label": "HAS_GENE",
+            "from": 56349,
+            "to": 34032,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "90807",
+            "label": "PRODUCES",
+            "from": 79902,
+            "to": 8466,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14421",
+            "label": "HAS_GENE",
+            "from": 55838,
+            "to": 35506,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19466",
+            "label": "ACTIVATES",
+            "from": 60964,
+            "to": 46587,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22686",
+            "label": "INHIBITS",
+            "from": 60964,
+            "to": 47745,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "73281",
+            "label": "ENCODES",
+            "from": 32811,
+            "to": 60989,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27738",
+            "label": "CATALYZES",
+            "from": 61485,
+            "to": 78510,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "824",
+            "label": "CATALYZES",
+            "from": 58414,
+            "to": 10721,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71023",
+            "label": "ENCODES",
+            "from": 32816,
+            "to": 58414,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20418",
+            "label": "ACTIVATES",
+            "from": 60464,
+            "to": 31970,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21303",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 35599,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23171",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 35234,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23606",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 57150,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23796",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 33593,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24619",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 34372,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24790",
+            "label": "INHIBITS",
+            "from": 60464,
+            "to": 32468,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "73642",
+            "label": "ENCODES",
+            "from": 35894,
+            "to": 61531,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72954",
+            "label": "ENCODES",
+            "from": 34361,
+            "to": 60602,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10209",
+            "label": "HAS_GENE",
+            "from": 56378,
+            "to": 32550,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13561",
+            "label": "HAS_GENE",
+            "from": 56377,
+            "to": 34821,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "26208",
+            "label": "CATALYZES",
+            "from": 60989,
+            "to": 77600,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "82080",
+            "label": "CONSUMED_BY",
+            "from": 9790,
+            "to": 78858,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "44081",
+            "label": "ELEMENT_OF",
+            "from": 48191,
+            "to": 53876,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3580",
+            "label": "CONSUMED_BY",
+            "from": 9795,
+            "to": 8182,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72936",
+            "label": "ENCODES",
+            "from": 34372,
+            "to": 60579,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12397",
+            "label": "HAS_GENE",
+            "from": 54343,
+            "to": 33962,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71124",
+            "label": "ENCODES",
+            "from": 34382,
+            "to": 58548,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18899",
+            "label": "ACTIVATES",
+            "from": 59472,
+            "to": 47574,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13810",
+            "label": "HAS_GENE",
+            "from": 53847,
+            "to": 35014,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14919",
+            "label": "HAS_GENE",
+            "from": 56919,
+            "to": 35894,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12238",
+            "label": "HAS_GENE",
+            "from": 55386,
+            "to": 33855,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "76764",
+            "label": "COMPONENT_OF",
+            "from": 61531,
+            "to": 63101,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72959",
+            "label": "ENCODES",
+            "from": 32351,
+            "to": 60609,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "77784",
+            "label": "MODIFIED_TO",
+            "from": 57952,
+            "to": 59254,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "51985",
+            "label": "ELEMENT_OF",
+            "from": 47712,
+            "to": 56349,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19219",
+            "label": "ACTIVATES",
+            "from": 58466,
+            "to": 45992,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75605",
+            "label": "COMPONENT_OF",
+            "from": 58466,
+            "to": 60886,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "83444",
+            "label": "CONSUMED_BY",
+            "from": 60000,
+            "to": 79520,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89758",
+            "label": "PRODUCES",
+            "from": 79462,
+            "to": 58256,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20317",
+            "label": "ACTIVATES",
+            "from": 60523,
+            "to": 79462,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18585",
+            "label": "ACTIVATES",
+            "from": 59500,
+            "to": 45952,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9152",
+            "label": "HAS_GENE",
+            "from": 54379,
+            "to": 31873,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27556",
+            "label": "CATALYZES",
+            "from": 61550,
+            "to": 79285,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10370",
+            "label": "HAS_GENE",
+            "from": 53876,
+            "to": 32650,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "25942",
+            "label": "CATALYZES",
+            "from": 63101,
+            "to": 80040,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22928",
+            "label": "INHIBITS",
+            "from": 57472,
+            "to": 55386,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22980",
+            "label": "INHIBITS",
+            "from": 57472,
+            "to": 54146,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "48531",
+            "label": "ELEMENT_OF",
+            "from": 47745,
+            "to": 55276,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "84242",
+            "label": "CONSUMED_BY",
+            "from": 9344,
+            "to": 79902,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18467",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 31970,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18522",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 35140,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18657",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 36082,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19300",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 35095,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19468",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 34361,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19550",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 32144,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19584",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 33980,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23298",
+            "label": "INHIBITS",
+            "from": 59012,
+            "to": 36029,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20290",
+            "label": "ACTIVATES",
+            "from": 59012,
+            "to": 32054,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21596",
+            "label": "INHIBITS",
+            "from": 59012,
+            "to": 36084,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21843",
+            "label": "INHIBITS",
+            "from": 59012,
+            "to": 34372,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24004",
+            "label": "INHIBITS",
+            "from": 59012,
+            "to": 33010,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24310",
+            "label": "INHIBITS",
+            "from": 59012,
+            "to": 35735,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21277",
+            "label": "INHIBITS",
+            "from": 61072,
+            "to": 44933,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22037",
+            "label": "INHIBITS",
+            "from": 61072,
+            "to": 47712,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24141",
+            "label": "INHIBITS",
+            "from": 61072,
+            "to": 46329,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "73611",
+            "label": "ENCODES",
+            "from": 33431,
+            "to": 61485,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "48908",
+            "label": "ELEMENT_OF",
+            "from": 45725,
+            "to": 55386,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71531",
+            "label": "ENCODES",
+            "from": 35998,
+            "to": 59012,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89904",
+            "label": "PRODUCES",
+            "from": 79520,
+            "to": 59659,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "26014",
+            "label": "CATALYZES",
+            "from": 60579,
+            "to": 77600,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "87561",
+            "label": "PRODUCES",
+            "from": 78500,
+            "to": 7966,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89919",
+            "label": "PRODUCES",
+            "from": 79527,
+            "to": 5006,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "91139",
+            "label": "PRODUCES",
+            "from": 80040,
+            "to": 7960,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "87584",
+            "label": "PRODUCES",
+            "from": 78510,
+            "to": 9100,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27515",
+            "label": "CATALYZES",
+            "from": 57522,
+            "to": 78213,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2790",
+            "label": "CATALYZES",
+            "from": 58548,
+            "to": 11101,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20183",
+            "label": "ACTIVATES",
+            "from": 61620,
+            "to": 48191,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75730",
+            "label": "COMPONENT_OF",
+            "from": 61620,
+            "to": 61072,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19016",
+            "label": "ACTIVATES",
+            "from": 10423,
+            "to": 54379,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19325",
+            "label": "ACTIVATES",
+            "from": 10423,
+            "to": 57150,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19356",
+            "label": "ACTIVATES",
+            "from": 10423,
+            "to": 47548,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19505",
+            "label": "ACTIVATES",
+            "from": 10423,
+            "to": 53847,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "19541",
+            "label": "ACTIVATES",
+            "from": 10423,
+            "to": 55838,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22184",
+            "label": "INHIBITS",
+            "from": 10423,
+            "to": 46347,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75658",
+            "label": "COMPONENT_OF",
+            "from": 10423,
+            "to": 60964,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27420",
+            "label": "CATALYZES",
+            "from": 60602,
+            "to": 78500,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72190",
+            "label": "ENCODES",
+            "from": 33980,
+            "to": 59828,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71929",
+            "label": "ENCODES",
+            "from": 36029,
+            "to": 59500,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "74875",
+            "label": "COMPONENT_OF",
+            "from": 60609,
+            "to": 57522,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "55157",
+            "label": "ENCODES",
+            "from": 35009,
+            "to": 57472,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "76018",
+            "label": "COMPONENT_OF",
+            "from": 58563,
+            "to": 61620,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "26218",
+            "label": "CATALYZES",
+            "from": 58572,
+            "to": 79527,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10622",
+            "label": "HAS_GENE",
+            "from": 53965,
+            "to": 32816,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72361",
+            "label": "ENCODES",
+            "from": 32468,
+            "to": 60000,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86562",
+            "label": "PRODUCES",
+            "from": 78036,
+            "to": 8099,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12490",
+            "label": "HAS_GENE",
+            "from": 55016,
+            "to": 34032,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72880",
+            "label": "ENCODES",
+            "from": 36082,
+            "to": 60523,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "47779",
+            "label": "ELEMENT_OF",
+            "from": 46329,
+            "to": 55016,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11563",
+            "label": "HAS_GENE",
+            "from": 56071,
+            "to": 33431,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3939",
+            "label": "CONSUMED_BY",
+            "from": 59659,
+            "to": 9544,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "52097",
+            "label": "ELEMENT_OF",
+            "from": 46347,
+            "to": 56377,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "78967",
+            "label": "CONSUMED_BY",
+            "from": 7953,
+            "to": 77300,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20868",
+            "label": "INHIBITS",
+            "from": 7966,
+            "to": 78156,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "34",
+            "label": "PRODUCES",
+            "from": 77600,
+            "to": 10046,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "88999",
+            "label": "PRODUCES",
+            "from": 79143,
+            "to": 10423,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "72782",
+            "label": "ENCODES",
+            "from": 32054,
+            "to": 60425,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "71062",
+            "label": "ENCODES",
+            "from": 33593,
+            "to": 58466,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13762",
+            "label": "HAS_GENE",
+            "from": 57150,
+            "to": 34974,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3773",
+            "label": "CONSUMED_BY",
+            "from": 10046,
+            "to": 10710,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3391",
+            "label": "PRODUCES",
+            "from": 9544,
+            "to": 57952,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86822",
+            "label": "PRODUCES",
+            "from": 78156,
+            "to": 8892,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "74522",
+            "label": "ENCODES",
+            "from": 32087,
+            "to": 62858,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2908",
+            "label": "PRODUCES",
+            "from": 11101,
+            "to": 8106,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10366",
+            "label": "HAS_GENE",
+            "from": 55667,
+            "to": 32646,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24819",
+            "label": "INHIBITS",
+            "from": 59254,
+            "to": 48191,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89201",
+            "label": "PRODUCES",
+            "from": 79228,
+            "to": 59472,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "52098",
+            "label": "ELEMENT_OF",
+            "from": 45952,
+            "to": 56378,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15057",
+            "label": "HAS_GENE",
+            "from": 54146,
+            "to": 35998,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "46601",
+            "label": "ELEMENT_OF",
+            "from": 44933,
+            "to": 54668,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "86938",
+            "label": "PRODUCES",
+            "from": 78213,
+            "to": 8466,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "75406",
+            "label": "COMPONENT_OF",
+            "from": 62858,
+            "to": 58572,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "74215",
+            "label": "ENCODES",
+            "from": 32650,
+            "to": 62385,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12492",
+            "label": "HAS_GENE",
+            "from": 54668,
+            "to": 34032,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "70976",
+            "label": "ENCODES",
+            "from": 32144,
+            "to": 58351,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "82827",
+            "label": "CONSUMED_BY",
+            "from": 58256,
+            "to": 79228,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20173",
+            "label": "ACTIVATES",
+            "from": 61330,
+            "to": 45725,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "73509",
+            "label": "ENCODES",
+            "from": 35735,
+            "to": 61330,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "51656",
+            "label": "ELEMENT_OF",
+            "from": 45992,
+            "to": 56246,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "27267",
+            "label": "CATALYZES",
+            "from": 62385,
+            "to": 78036,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "26053",
+            "label": "CATALYZES",
+            "from": 59828,
+            "to": 79143,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "89346",
+            "label": "PRODUCES",
+            "from": 79285,
+            "to": 7953,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13803",
+            "label": "HAS_GENE",
+            "from": 56246,
+            "to": 35009,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "44875",
+            "label": "ELEMENT_OF",
+            "from": 47548,
+            "to": 54146,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3894",
+            "label": "CONSUMED_BY",
+            "from": 60886,
+            "to": 10739,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "45511",
+            "label": "ELEMENT_OF",
+            "from": 47574,
+            "to": 54343,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3149",
+            "label": "PRODUCES",
+            "from": 10710,
+            "to": 9344,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3001",
+            "label": "PRODUCES",
+            "from": 10721,
+            "to": 9651,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14585",
+            "label": "HAS_GENE",
+            "from": 55276,
+            "to": 35618,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "18603",
+            "label": "ACTIVATES",
+            "from": 58351,
+            "to": 53965,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20015",
+            "label": "ACTIVATES",
+            "from": 58351,
+            "to": 56071,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20065",
+            "label": "ACTIVATES",
+            "from": 58351,
+            "to": 35757,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20430",
+            "label": "ACTIVATES",
+            "from": 58351,
+            "to": 55667,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20491",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 33084,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20576",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 32811,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20814",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 31982,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "20947",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 55838,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21102",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 36194,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "21841",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 53765,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22379",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 35998,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "22622",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 32520,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23608",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 35736,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23799",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 32087,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23889",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 36029,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "23954",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 32351,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "24126",
+            "label": "INHIBITS",
+            "from": 58351,
+            "to": 55311,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3335",
+            "label": "PRODUCES",
+            "from": 10739,
+            "to": 9795,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "85005",
+            "label": "PRODUCES",
+            "from": 77300,
+            "to": 9817,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2951",
+            "label": "PRODUCES",
+            "from": 8182,
+            "to": 9790,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "53914",
+            "label": "ELEMENT_OF",
+            "from": 46587,
+            "to": 56919,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        }
+    ]
+}

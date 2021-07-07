@@ -68,3 +68,6 @@ export const KG_VIZ_FILTER_TYPES = [
 ];
 
 export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
+
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 50;
