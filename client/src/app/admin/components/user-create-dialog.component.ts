@@ -10,20 +10,21 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { UserCreationRequest } from '../../interfaces';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../shared/constants';
 
 @Component({
   selector: 'app-user-create-dialog',
   templateUrl: 'user-create-dialog.component.html',
 })
 export class UserCreateDialogComponent extends CommonFormDialogComponent {
-  readonly MIN_PASSWORD_LENGTH = 8;
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
     password: new FormControl('', [
       Validators.required,
-      Validators.minLength(this.MIN_PASSWORD_LENGTH),
+      Validators.minLength(MIN_PASSWORD_LENGTH),
+      Validators.maxLength(MAX_PASSWORD_LENGTH)
     ]),
     email: new FormControl('', [Validators.required, Validators.email]),
     roles: new FormControl('user', Validators.required)
