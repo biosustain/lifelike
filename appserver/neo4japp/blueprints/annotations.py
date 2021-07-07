@@ -33,7 +33,6 @@ from ..constants import LogEventType, TIMEZONE
 from ..database import (
     db,
     get_excel_export_service,
-    get_manual_annotation_service,
     get_sorted_annotation_service,
     get_enrichment_table_service
 )
@@ -75,6 +74,7 @@ from ..services.annotations.initializer import (
     get_annotation_tokenizer,
     get_bioc_document_service,
     get_enrichment_annotation_service,
+    get_manual_annotation_service,
     get_recognition_service
 )
 from ..services.annotations.sorted_annotation_service import (
