@@ -5,7 +5,7 @@ import time
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List
+from typing import Dict, List, Type
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT
 from neo4japp.exceptions import ServerException
@@ -24,7 +24,8 @@ from neo4japp.constants import (
     TYPE_DISEASE,
 )
 from neo4japp.util import (
-    get_first_known_label_from_node
+    get_first_known_label_from_node,
+    snake_to_camel_dict
 )
 from neo4japp.utils.logger import EventLog
 
@@ -33,12 +34,20 @@ class KgService(HybridDBDao):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
-    def _get_uri_of_node_entity(self, node: N4jDriverNode, url_map: Dict[str, str]):
+    def _get_uri_of_node_entity(self, node: N4jDriverNode):
         """Given a node and a map of domains -> URLs, returns the appropriate
         URL formatted with the node entity identifier.
         """
         label = get_first_known_label_from_node(node)
         entity_id = node.get('id')
+
+        url_map = {
+            domain: base_url
+            for domain, base_url in self.session.query(
+                DomainURLsMap.domain,
+                DomainURLsMap.base_URL,
+            )
+        }
 
         # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
         # is DISTINCT from the `id` property a given node might have, which represents the node
@@ -83,7 +92,7 @@ class KgService(HybridDBDao):
     def _neo4j_objs_to_graph_objs(
         self,
         nodes: List[N4jDriverNode],
-        relationships: List[N4jDriverRelationship]
+        relationships: List[N4jDriverRelationship],
     ):
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
@@ -93,27 +102,29 @@ class KgService(HybridDBDao):
         node_dict = {}
         rel_dict = {}
 
-        # TODO: Maybe this would be more appropriate as a class property?
-        url_map = {
-            domain: base_url
-            for domain, base_url in
-            self.session.query(
-                DomainURLsMap.domain,
-                DomainURLsMap.base_URL,
-            ).all()
-        }
-
         for node in nodes:
-            graph_node = GraphNode.from_neo4j(
-                node,
-                url_fn=lambda x: self._get_uri_of_node_entity(x, url_map),
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label_from_node,
+            label = get_first_known_label_from_node(node)
+            graph_node = GraphNode(
+                id=node.id,
+                label=get_first_known_label_from_node(node),
+                sub_labels=list(node.labels),
+                domain_labels=[],
+                display_name=node.get(DISPLAY_NAME_MAP[label]),
+                data=snake_to_camel_dict(dict(node), {}),
+                url=None
             )
             node_dict[graph_node.id] = graph_node
 
         for rel in relationships:
-            graph_rel = GraphRelationship.from_neo4j(rel)
+            graph_rel = GraphRelationship(
+                id=rel.id,
+                label=type(rel).__name__,
+                data=dict(rel),
+                to=rel.end_node.id,
+                _from=rel.start_node.id,
+                to_label=list(rel.end_node.labels)[0],
+                from_label=list(rel.start_node.labels)[0]
+            )
             rel_dict[graph_rel.id] = graph_rel
         return {
             'nodes': [n.to_dict() for n in node_dict.values()],
@@ -338,7 +349,8 @@ class KgService(HybridDBDao):
                         try:
                             node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
-                        except ValueError:
+                        except KeyError:
+                            # If label does not exist, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
 
@@ -434,7 +446,13 @@ class KgService(HybridDBDao):
             'Min Mean Short Updown Acetate',
             'Min Mean Short Updown Butyrate',
             'AAK1 to Metab noOct',
-            'FosB to PER1'
+            'FosB to PER1',
+            'Uncharacterized iModulon Genes and Top 20 Metabolites',
+            'Uncharacterized iModulon Genes Only',
+            'Uncharacterized iModulon Genes to Methionine',
+            'Uncharacterized iModulon Genes yjdI Metabolites',
+            'Zink iModulon Metals',
+            'Zink iModulon Test2'
             # 'nagA (ALE Mutation Data)',
         ]
         return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
@@ -489,7 +507,13 @@ class KgService(HybridDBDao):
             'cytoscape_data/minMeanShort_updown_Acetate_graphml.json',
             'cytoscape_data/minMeanShort_updown_Butyrate_graphml.json',
             'cytoscape_data/aak1_to_metab_noOct_graphml.json',
-            'cytoscape_data/FosB to PER1_vis_js.json'
+            'cytoscape_data/FosB to PER1_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_and_top20_metabolites_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_only_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_to_methionine_vis_js.json',
+            'marina_sankey_data/uncharacterized_iModulon_genes_yjdI_metabolites_vis_js.json',
+            'marina_sankey_data/zink-imodulon-metals_vis_js.json',
+            'marina_sankey_data/zink-imodulon-test2_vis_js.json'
             # 'ale_mutation_data/nagA.json',
         ]
 
