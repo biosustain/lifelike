@@ -17,6 +17,7 @@ import { colorByTraceEnding } from './algorithms/traceLogic';
 import { representativePositiveNumber } from '../utils';
 
 function updateTextShadow(_) {
+  // this contains ref to textGroup
   const [shadow, text] = this.children;
   const {x, y, width, height} = text.getBBox();
   d3.select(shadow)
@@ -236,6 +237,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
+  }
+
+  resetZoom() {
+    d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
   }
 
   getFontSize(normSize) {

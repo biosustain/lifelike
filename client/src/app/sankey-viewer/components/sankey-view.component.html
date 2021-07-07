@@ -17,60 +17,62 @@
             <div class="module-header">
 
                 <div class="module-title-bar d-flex justify-content-between">
-                    <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
-                        {{ object?.filename }}
-                    </h1>
-                    <div class="d-inline-block mr-4 flex-grow-0" container="body" ngbDropdown>
-                        <a (click)="$event.preventDefault()" class="dropdown-no-arrow" href="#" ngbDropdownToggle>
-                            <i class="fas fa-chevron-down fa-fw text-icon"></i>
-                        </a>
-                        <div ngbDropdownMenu>
-                            <app-object-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
-                                             [object]="object" [showDelete]="false"
-                                             [showOpen]="false">
-                            </app-object-menu>
-                            <div class="dropdown-divider"></div>
-                            <button (click)="open(logModal)" *ngIf="sankeyData?.graph.log" ngbDropdownItem>
-                                Open logs
-                                <ng-template #logModal let-modal>
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="modal-basic-title">Logs</h4>
-                                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                                type="button">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body vh-75">
-                                        <ng-container
-                                                *ngIf="isArray(sankeyData.graph.log); else justText">
+                    <div class="d-flex">
+                        <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+                            {{ object?.filename }}
+                        </h1>
+                        <div class="d-inline-block mr-4 flex-grow-0" container="body" ngbDropdown>
+                            <a (click)="$event.preventDefault()" class="dropdown-no-arrow" href="#" ngbDropdownToggle>
+                                <i class="fas fa-chevron-down fa-fw text-icon"></i>
+                            </a>
+                            <div ngbDropdownMenu>
+                                <app-object-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
+                                                 [object]="object" [showDelete]="false"
+                                                 [showOpen]="false">
+                                </app-object-menu>
+                                <div class="dropdown-divider"></div>
+                                <button (click)="open(logModal)" *ngIf="sankeyData?.graph.log" ngbDropdownItem>
+                                    Open logs
+                                    <ng-template #logModal let-modal>
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="modal-basic-title">Logs</h4>
+                                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                                    type="button">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body vh-75">
+                                            <ng-container
+                                                    *ngIf="isArray(sankeyData.graph.log); else justText">
 
-                                            <ul class="list-group list-group-flush cancel-out-card-padding">
-                                                <li *ngFor="let log of sankeyData.graph.log"
-                                                    class="list-group-item"
-                                                >{{ log }}</li>
-                                            </ul>
-                                        </ng-container>
-                                        <ng-template #justText>
-                                            {{ sankeyData.graph.log }}
-                                        </ng-template>
-                                    </div>
-                                </ng-template>
-                            </button>
-                            <button (click)="open(descriptionModal)" ngbDropdownItem>
-                                Open description
-                                <ng-template #descriptionModal let-modal>
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="modal-basic-title">Description</h4>
-                                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                                type="button">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body vh-75">
-                                        {{ sankeyData.graph.description }}
-                                    </div>
-                                </ng-template>
-                            </button>
+                                                <ul class="list-group list-group-flush cancel-out-card-padding">
+                                                    <li *ngFor="let log of sankeyData.graph.log"
+                                                        class="list-group-item"
+                                                    >{{ log }}</li>
+                                                </ul>
+                                            </ng-container>
+                                            <ng-template #justText>
+                                                {{ sankeyData.graph.log }}
+                                            </ng-template>
+                                        </div>
+                                    </ng-template>
+                                </button>
+                                <button (click)="open(descriptionModal)" ngbDropdownItem>
+                                    Open description
+                                    <ng-template #descriptionModal let-modal>
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="modal-basic-title">Description</h4>
+                                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                                    type="button">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body vh-75">
+                                            {{ sankeyData.graph.description }}
+                                        </div>
+                                    </ng-template>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="btn-group btn-group-toggle">
@@ -90,82 +92,21 @@
                                         ngbDropdownItem>{{trace.description}}</button>
                             </div>
                         </div>
-                        <div class="btn-group d-inline-block" ngbDropdown title="Link size">
+                        <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
                             <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedLinkValueAccessor?.description !== 'None' ?
-                                selectedLinkValueAccessor.description : 'Select Value Accessor' }}
+                                {{ options.selectedPredefinedValueAccessor?.description !== 'None' ?
+                                options.selectedPredefinedValueAccessor.description :
+                                'Select Predefined Value Accessor' }}
                             </button>
                             <div ngbDropdownMenu>
-                                <button (click)="selectValueAccessor(valueAccessor)" *ngFor="let valueAccessor of linkValueGenerators"
-                                        [disabled]="valueAccessor.disabled && valueAccessor.disabled()"
-                                        ngbDropdownItem
-                                >{{valueAccessor.description}}</button>
-                                <div class="dropdown-divider"></div>
-                                <button (click)="selectValueAccessor(valueAccessor)" *ngFor="let valueAccessor of linkValueAccessors"
-                                        ngbDropdownItem>{{valueAccessor.description}}</button>
+                                <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor)"
+                                        *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors"
+                                        ngbDropdownItem>{{predefinedValueAccessor.description}}</button>
                             </div>
                         </div>
-                        <div class="btn-group d-inline-block" ngbDropdown title="Node fixed size">
-                            <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedNodeValueAccessor?.description !== 'None' ?
-                                selectedNodeValueAccessor.description :
-                                'Select Value Accessor' }}
-                            </button>
-                            <div ngbDropdownMenu>
-                                <button (click)="selectNodeValueAccessor(nodeValueAccessor)" *ngFor="let nodeValueAccessor of nodeValueGenerators"
-                                        ngbDropdownItem>{{nodeValueAccessor.description}}</button>
-                                <div class="dropdown-divider"></div>
-                                <button (click)="selectNodeValueAccessor(nodeValueAccessor)" *ngFor="let nodeValueAccessor of nodeValueAccessors"
-                                        ngbDropdownItem>{{nodeValueAccessor.description}}</button>
-                            </div>
-                        </div>
-                        <div class="btn-group d-inline-block" ngbDropdown title="Node fixed size">
-                            <button class="btn btn-primary" ngbDropdownToggle>
-                                {{ selectedPrescaler !== prescalers.default ? selectedPrescaler.name :
-                                'Select prescaler' }}
-                            </button>
-                            <div ngbDropdownMenu>
-                                <button (click)="selectPrescaler(prescaler)" *ngFor="let prescaler of prescalers"
-                                        ngbDropdownItem>{{prescaler.name}}</button>
-                            </div>
-                        </div>
-                        <div class="btn-group d-inline-block" ngbDropdown title="Advanced">
-                            <button class="btn btn-primary" ngbDropdownToggle>
-                                Advanced
-                            </button>
-                            <div ngbDropdownMenu>
-                                <label class="w-100 text-left m-0" ngbButtonLabel>
-                                    <input (ngModelChange)="updateNormalize()" [(ngModel)]="normalizeLinks.value" ngbButton
-                                           type="checkbox">
-                                    Normalize links
-                                </label>
-                                <div class="dropdown-divider"></div>
-                                <label class="w-100 text-left m-0" ngbButtonLabel>
-                                    <input (ngModelChange)="updateNormalize()" [(ngModel)]="nodeHeight.min.enabled" ngbButton
-                                           type="checkbox">
-                                    Min node height
-                                    <input (ngModelChange)="updateNormalize()" [(ngModel)]="nodeHeight.min.value"
-                                           [disabled]="!nodeHeight.min.enabled"
-                                           class="scrollbar-with-value"
-                                           max="20" min="0"
-                                           ngbButton
-                                           type="range">
-                                    {{nodeHeight.min.value}}
-                                </label>
-                                <label class="w-100 text-left m-0" ngbButtonLabel>
-                                    <input (ngModelChange)="updateNormalize()" [(ngModel)]="nodeHeight.max.enabled" ngbButton
-                                           type="checkbox">
-                                    Max node ratio
-                                    <input (ngModelChange)="updateNormalize()" [(ngModel)]="nodeHeight.max.ratio"
-                                           [disabled]="!nodeHeight.max.enabled"
-                                           class="scrollbar-with-value"
-                                           max="20" min="1"
-                                           ngbButton
-                                           type="range">
-                                    {{nodeHeight.max.ratio}}
-                                </label>
-                            </div>
-                        </div>
+                        <label class="btn-primary" ngbButtonLabel>
+                            <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
+                        </label>
                     </div>
                 </div>
             </div>
@@ -179,28 +120,53 @@
                                 (nodeClicked)="openNodeDetails($event)"
                                 *ngIf="filteredSankeyData"
                                 [data]="filteredSankeyData"
-                                [normalizeLinks]="normalizeLinks.value"
+                                [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
                     >
                     </app-sankey>
                 </as-split-area>
-                <as-split-area [class]="panelOpened ? 'as-split-area border' : 'as-split-area as-hidden'"
+                <as-split-area [class]="detailsPanel ? 'as-split-area border' : 'as-split-area as-hidden'"
                                [order]="1"
-                               [visible]="panelOpened"
+                               [visible]="detailsPanel"
                                size="340">
                     <div class="w-100 h-100 p-3">
-                        <div class="annotation-filter-btns-container">
-                            <button (click)="closePanel()"
-                                    class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
+                        <div class="d-flex justify-content-between align-items-center">
+                            Selection
+                            <button (click)="closeDetailsPanel()"
+                                    class="btn btn-danger"
+                                    type="button"
+                                    title="Click to close tha panel and clear selection">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="border-bottom border-secondary pb-3 mb-3">
+
+                            <app-sankey-details-panel *ngIf="selectionWithTraces | async"
+                                                      [details]="selectionWithTraces | async">
+                            </app-sankey-details-panel>
+                        </div>
+                    </div>
+                </as-split-area>
+                <as-split-area [class]="advancedPanel ? 'as-split-area border' : 'as-split-area as-hidden'"
+                               [order]="2"
+                               [visible]="advancedPanel"
+                               size="340">
+                    <div class="w-100 h-100 p-3">
+                        <div class="d-flex justify-content-between align-items-center pl-3">
+                            Advanced options
+                            <button (click)="closeAdvancedPanel()"
+                                    class="btn btn-danger"
                                     type="button">
                                 <i class="fa fa-close"></i>
                             </button>
                         </div>
-                        <app-sankey-panel *ngIf="selectionWithTraces | async"
-                                          [details]="selectionWithTraces | async">
-
-                        </app-sankey-panel>
+                        <div class="dropdown-divider"></div>
+                        <div class="border-bottom border-secondary pb-3 mb-3">
+                            <app-sankey-advanced-panel [(options)]="options" (optionsChange)="onOptionsChange($event)">
+                            </app-sankey-advanced-panel>
+                        </div>
                     </div>
                 </as-split-area>
             </as-split>
@@ -271,7 +237,7 @@
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <div class="modal-body vh-75">
+                                    <div class="modal-body">
                                         <app-trace-details
                                                 [data]="sankeyData"
                                                 [trace]="graphLink._trace"
@@ -289,13 +255,13 @@
                 <ngb-panel cardClass="filled-card" title="Properties">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
-                            <li *ngFor="let property of linkValueAccessors"
+                            <li *ngFor="let property of options.linkValueAccessors"
                                 [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
                                  'flex-wrap': true,
                                  'justify-content-between': true,
-                                active: property === selectedLinkValueAccessor
+                                active: property === options.selectedLinkValueAccessor
                               }"
                             ><b>{{ property.description }}</b>{{parseProperty(graphLink[property.description])}}</li>
                             <li *ngIf="graphLink._folded"
@@ -356,7 +322,8 @@
                 </ngb-panel>
                 <ngb-panel *ngIf="node.stId" [disabled]="true">
                     <ng-template disabled="true" let-opened="opened" ngbPanelHeader>
-                        <a [href]="'https://reactome.org/content/detail/' + node.stId" class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                        <a [href]="'https://reactome.org/content/detail/' + node.stId"
+                           class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                            target="_blank">
                             <span>Reactome</span>
                             {{ node.stId }}
@@ -375,13 +342,13 @@
                 <ngb-panel cardClass="filled-card" title="Properties">
                     <ng-template ngbPanelContent>
                         <ul class="list-group list-group-flush cancel-out-card-padding">
-                            <li *ngFor="let property of nodeValueAccessors"
+                            <li *ngFor="let property of options.nodeValueAccessors"
                                 [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
                                  'flex-wrap': true,
                                  'justify-content-between': true,
-                                active: property === selectedNodeValueAccessor
+                                active: property === options.selectedNodeValueAccessor
                               }"
                             ><b>{{ property.description }}</b>{{parseProperty(node[property.description])}}</li>
                         </ul>
