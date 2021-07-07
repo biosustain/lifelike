@@ -14,6 +14,7 @@ from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
 from .annotation_graph_service import AnnotationGraphService
+from .tokenizer import Tokenizer
 from .constants import (
     EntityType,
     ManualAnnotationType,
@@ -22,7 +23,6 @@ from .constants import (
     MAX_FOOD_WORD_LENGTH
 )
 from .data_transfer_objects import PDFWord
-from .initializer import get_annotation_tokenizer
 from .utils.common import has_center_point
 from .utils.parsing import parse_content
 from .utils.graph_queries import *
@@ -31,9 +31,11 @@ from .utils.graph_queries import *
 class ManualAnnotationService:
     def __init__(
         self,
-        graph: AnnotationGraphService
+        graph: AnnotationGraphService,
+        tokenizer: Tokenizer
     ) -> None:
         self.graph = graph
+        self.tokenizer = tokenizer
 
     def _annotation_exists(
         self,
@@ -92,8 +94,6 @@ class ManualAnnotationService:
         term = custom_annotation['meta']['allText'].strip()
 
         if annotate_all:
-            # TODO: refactor this so it doesn't initialize like this
-            tokenizer = get_annotation_tokenizer()
             _, parsed = parse_content(file_id=file.id, exclude_references=False)
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
 
@@ -121,7 +121,7 @@ class ManualAnnotationService:
             matches = self._get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
-                tokens_list=tokenizer.create(parsed)
+                tokens_list=self.tokenizer.create(parsed)
             )
 
             inclusions = [{
@@ -158,8 +158,8 @@ class ManualAnnotationService:
             self.save_global(
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
-                file.content_id,
                 file.id,
+                file.hash_id,
                 user
             )
 
@@ -245,8 +245,8 @@ class ManualAnnotationService:
             self.save_global(
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
-                file.content_id,
                 file.id,
+                file.hash_id,
                 user
             )
 
@@ -331,7 +331,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def save_global(self, annotation, inclusion_type, file_content_id, file_id, user):
+    def save_global(self, annotation, inclusion_type, file_id, file_hash_id, user):
         """Adds global inclusion to the KG, and global exclusion to postgres.
 
         For the KG, if a global inclusion (seen as a synonym) matches to an
@@ -368,7 +368,8 @@ class ManualAnnotationService:
                 'user': user_full_name,
                 'data_source': data_source if data_source != 'None' else None,
                 'hyperlink': hyperlink,
-                'common_name': common_name
+                'common_name': common_name,
+                'file_uuid': file_hash_id
             }
 
             # NOTE:

@@ -6,6 +6,7 @@ from .annotation_graph_service import AnnotationGraphService
 from .bioc_service import BiocDocumentService
 from .enrichment_annotation_service import EnrichmentAnnotationService
 from .entity_recognition import EntityRecognitionService
+from .manual_annotation_service import ManualAnnotationService
 from .lmdb_service import LMDBService
 from .tokenizer import Tokenizer
 
@@ -74,6 +75,13 @@ def get_annotation_tokenizer():
 
 def get_lmdb_service():
     return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+
+
+def get_manual_annotation_service():
+    return ManualAnnotationService(
+        graph=AnnotationGraphService(graph),
+        tokenizer=Tokenizer()
+    )
 
 
 def get_recognition_service(exclusions, inclusions):
