@@ -1338,7 +1338,7 @@ def mock_global_chemical_inclusion(session):
         inclusion = GlobalList(
             annotation=anno,
             type=ManualAnnotationType.INCLUSION.value,
-            file_id=file_content.id,
+            file_content_id=file_content.id,
             reviewed=True,
             approved=True,
         )
@@ -1366,7 +1366,7 @@ def mock_global_compound_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1404,7 +1404,7 @@ def mock_global_gene_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1415,7 +1415,7 @@ def mock_global_gene_inclusion(session):
     inclusion2 = GlobalList(
         annotation=annotation2,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1443,7 +1443,7 @@ def mock_global_disease_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1471,7 +1471,7 @@ def mock_global_phenomena_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1499,7 +1499,7 @@ def mock_global_phenotype_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1527,7 +1527,7 @@ def mock_global_protein_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )
@@ -1555,7 +1555,7 @@ def mock_global_species_inclusion(session):
     inclusion = GlobalList(
         annotation=annotation,
         type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
+        file_content_id=file_content.id,
         reviewed=True,
         approved=True,
     )

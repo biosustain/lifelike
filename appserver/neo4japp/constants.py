@@ -319,9 +319,11 @@ DEFAULT_BORDER_COLOR = '#2B7CE9'
 DEFAULT_NODE_WIDTH = 41.25
 DEFAULT_NODE_HEIGHT = 27.5
 MAX_LINE_WIDTH = 50
-BASE_IMAGE_HEIGHT = 0.8
+BASE_ICON_DISTANCE = 0.5
+FONT_SIZE_MULTIPLIER = 0.25
 IMAGE_HEIGHT_INCREMENT = 0.23
 SCALING_FACTOR = 55
+ICON_SIZE = '1'
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
     'dotted': 'dotted',
@@ -354,7 +356,7 @@ RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string
 
 # Start email constants
 MESSAGE_SENDER_IDENTITY = "lifelike-account-service@lifelike.bio"
-MAILING_API_KEY = os.getenv('SEND_GRID_API_KEY')
+MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
 RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
@@ -362,3 +364,5 @@ SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
+
+LIFELIKE_DOMAIN = os.getenv('DOMAIN')

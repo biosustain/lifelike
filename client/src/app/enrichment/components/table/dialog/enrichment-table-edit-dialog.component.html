@@ -103,7 +103,7 @@
 
     <app-modal-footer>
       <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn btn-primary">{{ submitButtonLabel }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid" >{{ submitButtonLabel }}</button>
     </app-modal-footer>
   </div>
 </form>
