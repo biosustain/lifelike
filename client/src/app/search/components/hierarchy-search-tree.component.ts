@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ChecklistFlatTreeComponent } from 'app/shared/components/checklist-flat-tree/checklist-flat-tree.component';
-import { FlatNode, TreeNode } from 'app/shared/schemas/common';
+import { FlatNode } from 'app/shared/schemas/common';
 
 @Component({
   selector: 'app-hierarchy-search-tree',
