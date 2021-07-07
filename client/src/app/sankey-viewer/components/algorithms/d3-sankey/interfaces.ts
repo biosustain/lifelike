@@ -42,10 +42,21 @@ interface SankeyNodeSets {
   [key: string]: Array<number>;
 }
 
+interface SankeySizingGroup {
+  link_sizing?: string;
+  node_sizing?: string;
+}
+
+interface SankeyPredefinedSizing {
+  // @ts-ignore
+  [key: string]: SankeySizingGroup;
+}
+
 interface SankeyGraph {
   log?: string | Array<string>;
   description: string;
   node_sets: SankeyNodeSets;
+  sizing?: SankeyPredefinedSizing;
 }
 
 interface SankeyData {
