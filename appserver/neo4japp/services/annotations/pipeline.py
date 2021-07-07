@@ -4,7 +4,7 @@ import time
 from flask import current_app
 from typing import List, Tuple
 
-from .constants import SPECIES_NCBI_LMDB
+from .constants import SPECIES_LMDB
 from .data_transfer_objects import PDFWord, SpecifiedOrganismStrain
 from .utils.nlp import predict
 from .utils.parsing import parse_content
@@ -162,7 +162,7 @@ class Pipeline:
             entity_synonym = normalize_str(specified_organism_synonym)
             entity_id = specified_organism_tax_id
             try:
-                with self.er_service.lmdb.begin(SPECIES_NCBI_LMDB) as txn:
+                with self.er_service.lmdb.begin(SPECIES_LMDB) as txn:
                     entity_category = json.loads(
                         txn.get(entity_synonym.encode('utf-8')))['category']
             except (KeyError, TypeError, Exception):

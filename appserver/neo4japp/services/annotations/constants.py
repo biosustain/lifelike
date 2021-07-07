@@ -2,17 +2,16 @@ from enum import Enum
 
 
 # lmdb database names
-ANATOMY_MESH_LMDB = 'anatomy_mesh'
-CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
-CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
-COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
-DISEASES_MESH_LMDB = 'diseases_mesh'
-FOODS_MESH_LMDB = 'foods_mesh'
-GENES_NCBI_LMDB = 'genes_ncbi'
-PHENOMENAS_MESH_LMDB = 'phenomenas_mesh'
-PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
-PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
-SPECIES_NCBI_LMDB = 'species_ncbi'
+ANATOMY_LMDB = 'anatomy_lmdb'
+CHEMICALS_LMDB = 'chemicals_lmdb'
+COMPOUNDS_LMDB = 'compounds_lmdb'
+DISEASES_LMDB = 'diseases_lmdb'
+FOODS_LMDB = 'foods_lmdb'
+GENES_LMDB = 'genes_lmdb'
+PHENOMENAS_LMDB = 'phenomenas_lmdb'
+PHENOTYPES_LMDB = 'phenotypes_lmdb'
+PROTEINS_LMDB = 'proteins_lmdb'
+SPECIES_LMDB = 'species_lmdb'
 
 HOMO_SAPIENS_TAX_ID = '9606'
 
