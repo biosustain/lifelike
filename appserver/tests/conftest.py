@@ -475,8 +475,8 @@ def penicillins_to_gas_gangrene_treatment_edge(
         )
     return penicillins_to_gas_gangrene_treatment_edge
 
-
 # End Entity -> Entity Relationship Fixtures #
+
 # Start Misc. Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene_with_associations_and_references(
@@ -743,7 +743,7 @@ def gas_gangrene_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
-        data=snake_to_camel_dict(dict(gas_gangrene), {}),
+        data = snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
 
@@ -771,7 +771,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
-        data=snake_to_camel_dict(dict(gas_gangrene), {}),
+        data = snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
 
@@ -800,7 +800,7 @@ def oxygen_duplicate_vis_node(oxygen: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=oxygen.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]),  # noqa
-        data=snake_to_camel_dict(dict(oxygen), {}),
+        data = snake_to_camel_dict(dict(oxygen), {}),
         url=None,
     )
 
@@ -829,7 +829,7 @@ def penicillins_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
-        data=snake_to_camel_dict(dict(penicillins), {}),
+        data = snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
 
@@ -857,7 +857,7 @@ def penicillins_duplicate_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
-        data=snake_to_camel_dict(dict(penicillins), {}),
+        data = snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
 
@@ -886,7 +886,7 @@ def pomc_vis_node(pomc: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
-        data=snake_to_camel_dict(dict(pomc), {}),
+        data = snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
 
@@ -914,7 +914,7 @@ def pomc_duplicate_vis_node(pomc: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
-        data=snake_to_camel_dict(dict(pomc), {}),
+        data = snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
 
