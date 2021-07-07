@@ -32,8 +32,9 @@ from neo4japp.constants import (
     DEFAULT_NODE_WIDTH,
     DEFAULT_NODE_HEIGHT,
     MAX_LINE_WIDTH,
-    BASE_IMAGE_HEIGHT,
+    BASE_ICON_DISTANCE,
     IMAGE_HEIGHT_INCREMENT,
+    FONT_SIZE_MULTIPLIER,
     SCALING_FACTOR,
     LIFELIKE_DOMAIN,
     FILE_MIME_TYPE_DIRECTORY,
@@ -41,7 +42,9 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_BIOC,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_SANKEY,
-    FILE_MIME_TYPE_ENRICHMENT_TABLE
+    FILE_MIME_TYPE_ENRICHMENT_TABLE,
+    ICON_SIZE,
+    LIFELIKE_DOMAIN
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -430,25 +433,49 @@ class MapTypeProvider(BaseFileTypeProvider):
                     if not style.get('strokeColor'):
                         params['penwidth'] = '0.0'
                 else:
+                    params['penwidth'] = '0.0'
+                    # Calculate the distance between icon and the label center
+                    distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
+                        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+                        (style.get('fontSizeScale', 1.0) - 1.0)
+                    # Create a separate node which will hold the image
+                    icon_params = {
+                        'name': "icon_" + node['hash'],
+                        'pos': (
+                            f"{node['data']['x'] / SCALING_FACTOR},"
+                            f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
+                        ),
+                        'label': ""
+                    }
                     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
-                    params['image'] = (
-                            f'/home/n4j/assets/{label}'
+                    if label == 'link':
+                        if node['data'].get('sources') or node['data'].get('hyperlinks'):
+                            data = node['data'].get('sources') or [] \
+                                   + node['data'].get('hyperlinks') or []
+                            if any(link.get('url').lstrip().startswith('/projects/') and
+                                   'enrichment-table' in link.get('url').split('/')
+                                   for link in data):
+                                label = 'enrichment_table'
+                            elif any(link.get('url').lstrip().startswith('/projects/') and
+                                     'files' in link.get('url').split('/')
+                                     for link in data):
+                                label = 'document'
+                            elif any(link.get('url').lstrip().startswith('mailto:')
+                                     for link in data):
+                                label = 'email'
+                    icon_params['image'] = (
+                            f'/home/n4j/assets/{label}/{label}'
                             f'_{style.get("fillColor") or default_icon_color}.png'
                         )
-                    params['imagepos'] = 'tc'
-                    params['labelloc'] = 'b'
-                    # Prevents the upper part of the label and image from overlapping
-                    params['height'] = str(BASE_IMAGE_HEIGHT + params['label'].count('\n')
-                                           * IMAGE_HEIGHT_INCREMENT + 0.25 *
-                                           (style.get('fontSizeScale', 1.0) - 1.0))
-                    params['width'] = '0.6'
-                    params['fixedsize'] = 'true'
-                    params['imagescale'] = 'true'
-                    params['forcelabels'] = "true"
-                    params['penwidth'] = '0.0'
+                    icon_params['height'] = ICON_SIZE
+                    icon_params['width'] = ICON_SIZE
+                    icon_params['fixedsize'] = 'true'
+                    icon_params['imagescale'] = 'true'
+                    icon_params['penwidth'] = '0.0'
                     params['fontcolor'] = style.get("fillColor") or default_icon_color
+                    graph.node(**icon_params)
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 default_color = ANNOTATION_STYLES_DICT.get(
