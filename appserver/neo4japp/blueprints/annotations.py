@@ -47,7 +47,6 @@ from ..models import (
 )
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..schemas.annotations import (
-    AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
@@ -557,13 +556,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         file: Files,
         cause: AnnotationChangeCause,
-        configs: AnnotationConfigurations,
+        configs: dict,
         organism: Optional[FallbackOrganism] = None,
         user_id: int = None
     ):
         """Annotate PDF files."""
         text, parsed = Pipeline.parse(
-            file.mime_type, file_id=file.id, exclude_references=configs.exclude_references)
+            file.mime_type, file_id=file.id, exclude_references=configs['exclude_references'])
 
         pipeline = Pipeline(
             {
@@ -580,7 +579,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             excluded_annotations=file.excluded_annotations or [],
             custom_annotations=file.custom_annotations or []
         ).identify(
-            annotation_methods=configs.annotation_methods
+            annotation_methods=configs['annotation_methods']
         ).annotate(
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
@@ -614,7 +613,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         cause: AnnotationChangeCause,
         user_id: int,
         enrichment: dict,
-        configs: AnnotationConfigurations,
+        configs: dict,
         organism: Optional[FallbackOrganism] = None
     ):
         """Annotate all text in enrichment table."""
@@ -635,7 +634,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             excluded_annotations=file.excluded_annotations or [],
             custom_annotations=file.custom_annotations or []
         ).identify(
-            annotation_methods=configs.annotation_methods
+            annotation_methods=configs['annotation_methods']
         ).annotate(
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
