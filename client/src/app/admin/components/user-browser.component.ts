@@ -123,7 +123,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
 
 
   displayUpdateDialog() {
-    for (const selectedUser of this.shownUsers.reverse()) {
+    for (const selectedUser of this.shownUsers.slice().reverse()) {
       if (this.selection.isSelected(selectedUser)) {
         const modalRef = this.modalService.open(UserUpdateDialogComponent);
         modalRef.componentInstance.setUser(selectedUser);
