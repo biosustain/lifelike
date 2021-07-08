@@ -60,14 +60,14 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     if (node) {
       const color = cubehelix(node._color);
       color.s = 0;
-      if (isDevMode() && !node.displayName) {
-        console.error(`Node ${node.id} has no displayName property.`, node);
+      if (isDevMode() && !node.label) {
+        console.error(`Node ${node.id} has no label property.`, node);
       }
       return {
         ...node,
         color: '' + color,
         databaseLabel: node.type,
-        label: node.displayName
+        label: node.label
       };
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);

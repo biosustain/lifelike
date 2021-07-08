@@ -472,11 +472,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           // .textTween(n => {
-          //   const displayName = nodeLabelAccessor(n);
-          //   const length = displayName.length;
+          //   const label = nodeLabelAccessor(n);
+          //   const length = label.length;
           //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-          //   return t => t === 1 ? displayName :
-          //     (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+          //   return t => t === 1 ? label :
+          //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
           // })
           .text(n => nodeLabelAccessor(n));
       });
@@ -496,10 +496,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       // todo: reenable when performance improves
       // .transition().duration(RELAYOUT_DURATION)
       // .textTween(n => {
-      //   const displayName = nodeLabelAccessor(n);
-      //   const length = displayName.length;
+      //   const label = nodeLabelAccessor(n);
+      //   const length = label.length;
       //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-      //   return t => (displayName.slice(0, interpolator(t)) + '...').slice(0, length);
+      //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
       .text(shortNodeText);
   }
@@ -626,7 +626,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           )
           .call(enterNode =>
             enterNode.append('title')
-              .text(({name = []}) => Array.isArray(name) ? name.join('\n') : name)
+              .text(({label}) => label)
           )
           .call(e => this.enter.emit(e)),
         update => update
