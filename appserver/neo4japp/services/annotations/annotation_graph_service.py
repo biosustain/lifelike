@@ -44,6 +44,9 @@ class AnnotationGraphService(GraphConnection):
             EntityType.ENTITY.value: create_ner_type_entity
         }
 
+        # TODO: can we just do get_global_inclusions_by_type once?
+        # get all nodes that a Synonym points to and filter on labels in python?
+        # or would that be too much data to retrieve all at once?
         global_inclusions = self.exec_read_query(get_global_inclusions_by_type(entity_type))
         # need to append here because an inclusion
         # might've not been matched to an existing entity
