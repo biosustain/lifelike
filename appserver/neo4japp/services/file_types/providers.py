@@ -196,10 +196,10 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
+    def validate_content(self, buffer: BufferedIOBase):
         # Figure out file size
-        buffer.stream.seek(0, io.SEEK_END)
-        size = buffer.stream.tell()
+        buffer.seek(0, io.SEEK_END)
+        size = buffer.tell()
 
         if size > 0:
             raise ValueError("Directories can't have content")
@@ -210,19 +210,19 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
-        return [(0, self.MIME_TYPE)] if buffer.stream.read(5) == b'%PDF-' else []
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
+    def validate_content(self, buffer: BufferedIOBase):
         # TODO: Actually validate PDF content
         pass
 
-    def extract_doi(self, buffer: FileStorage) -> Optional[str]:
-        data = buffer.stream.read()
-        buffer.stream.seek(0)
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+        data = buffer.read()
+        buffer.seek(0)
 
         # Attempt 1: search through the first N bytes (most probably containing only metadata)
         chunk = data[:2 ** 17]
@@ -277,7 +277,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     common_escape_patterns_re = re.compile(rb'\\')
     dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 
-    def to_indexable_content(self, buffer: FileStorage):
+    def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
@@ -297,14 +297,14 @@ class BiocTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
+    def validate_content(self, buffer: BufferedIOBase):
         with BioCJsonIterReader(buffer) as reader:
             for obj in reader:
                 passage = biocFromJSON(obj, level=bioc.DOCUMENT)
 
-    def extract_doi(self, buffer: FileStorage) -> Optional[str]:
-        data = buffer.stream.read()
-        buffer.stream.seek(0)
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+        data = buffer.read()
+        buffer.seek(0)
 
         chunk = data[:2 ** 17]
         doi = _search_doi_in(chunk)
@@ -325,7 +325,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
@@ -333,17 +333,17 @@ class MapTypeProvider(BaseFileTypeProvider):
         except ValueError:
             return []
         finally:
-            buffer.stream.seek(0)
+            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
-        graph = json.loads(buffer.stream.read())
+    def validate_content(self, buffer: BufferedIOBase):
+        graph = json.loads(buffer.read())
         validate_map(graph)
 
-    def to_indexable_content(self, buffer: FileStorage):
-        content_json = json.load(buffer.stream)
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        content_json = json.load(buffer)
         content = io.StringIO()
         string_list = []
 
@@ -362,7 +362,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
-        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
@@ -498,10 +498,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
-            if any(item in [
-                node_hash_type_dict[edge['from']],
-                node_hash_type_dict[edge['to']]
-            ] for item in ['link', 'note']):
+            if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
+                   item in ['link', 'note']):
                 default_line_style = 'dashed'
                 default_arrow_head = 'none'
             graph.edge(
@@ -535,33 +533,36 @@ class SankeyTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'Sankey'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
-
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
-            if os.path.splitext(str(buffer.filename))[1] == '.sankey':
+            if os.path.splitext(str(
+                    # buffer in here is actually wrapper of BufferedIOBase and it contains
+                    # filename even if type check fails
+                    buffer.filename  # type: ignore[attr-defined]
+            ))[1] == '.sankey':
                 return [(0, self.MIME_TYPE)]
             else:
                 return []
         except ValueError as e:
             return []
         finally:
-            buffer.stream.seek(0)
+            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
-        data = json.loads(buffer.stream.read())
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
         validate_sankey(data)
 
-    def to_indexable_content(self, buffer: FileStorage):
-        content_json = json.load(buffer.stream)
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        content_json = json.load(buffer)
         content = io.StringIO()
         string_list = set(extract_text(content_json))
 
         content.write(' '.join(list(string_list)))
-        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def extract_metadata_from_content(self, file: Files, buffer: FileStorage):
         if not file.description:
@@ -575,7 +576,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
@@ -585,17 +586,17 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         except ValueError:
             return []
         finally:
-            buffer.stream.seek(0)
+            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileStorage):
-        data = json.loads(buffer.stream.read())
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
         validate_enrichment_table(data)
 
-    def to_indexable_content(self, buffer: FileStorage):
-        data = json.load(buffer.stream)
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        data = json.load(buffer)
         content = io.StringIO()
 
         data_tokens = data['data'].split('/')
@@ -626,7 +627,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
                                 content.write(value['text'])
                 content.write('.\r\n\r\n')
 
-        return typing.cast(FileStorage, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
