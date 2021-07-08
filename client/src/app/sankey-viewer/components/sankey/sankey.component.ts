@@ -20,13 +20,12 @@ import {
   composeLinkPath,
   calculateLinkPathParams,
   shortNodeText,
-  nodeLabelAccessor,
   INITIALLY_SHOWN_CHARS
 } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from './algorithms/traceLogic';
-import { representativePositiveNumber } from '../utils';
+import { representativePositiveNumber, nodeLabelAccessor } from '../utils';
 
 
 @Component({
