@@ -135,10 +135,11 @@
                       unit="pixel">
                 <as-split-area [order]="0">
                     <app-sankey #sankey
+                                *ngIf="filteredSankeyData"
                                 (adjustLayout)="sankeyLayoutAdjustment($event)"
                                 (linkClicked)="openLinkDetails($event)"
                                 (nodeClicked)="openNodeDetails($event)"
-                                *ngIf="filteredSankeyData"
+                                [nodeAlign]="nodeAlign"
                                 [data]="filteredSankeyData"
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
