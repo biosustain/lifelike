@@ -1,0 +1,7 @@
+    <ng-container *ngFor="let detailView of details">
+        <ng-container *ngIf="detailView.template">
+            <ng-container *ngTemplateOutlet="detailView.template; context: { $implicit: detailView.entity }">
+            </ng-container>
+        </ng-container>
+    </ng-container>
+
