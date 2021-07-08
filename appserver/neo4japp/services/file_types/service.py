@@ -1,8 +1,9 @@
 from io import BufferedIOBase, BytesIO
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
+
+import typing
 
 import magic
-import typing
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.models import Files
@@ -154,7 +155,7 @@ class BaseFileTypeProvider:
         :param file: the file
         """
 
-    def extract_metadata_from_content(self, file: Files, buffer: FileStorage):
+    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
         pass
 
 

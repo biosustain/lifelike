@@ -2,9 +2,9 @@ import { Component, Input, ViewEncapsulation, } from '@angular/core';
 import { Options } from 'vis-network';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { networkEdgeSmoothers } from 'app/shared/components/vis-js-network/vis-js-network.component';
 
 import { getTraceDetailsGraph } from './traceDetails';
+import { networkEdgeSmoothers } from '../../../shared/components/vis-js-network/vis-js-network.constants';
 
 @Component({
   selector: 'app-trace-details',

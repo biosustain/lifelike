@@ -7,6 +7,7 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from urllib.error import URLError
 
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
@@ -17,7 +18,6 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
-from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -820,7 +820,7 @@ class FileListView(FilesystemBaseView):
                 missing=[],
         )))
 
-    def _get_content_from_params(self, params: dict) -> Tuple[FileStorage, Optional[str]]:
+    def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
@@ -848,7 +848,7 @@ class FileListView(FilesystemBaseView):
         elif buffer is not None:
             return buffer, None
         else:
-            return typing.cast(FileStorage, io.BytesIO()), None
+            return typing.cast(io.BufferedIOBase, io.BytesIO()), None
 
 
 class FileSearchView(FilesystemBaseView):

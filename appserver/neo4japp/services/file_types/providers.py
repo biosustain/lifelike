@@ -1,21 +1,27 @@
 import io
 import json
-import os
 import re
-import textwrap
 import typing
 from io import BufferedIOBase
-from typing import Optional, List
+from typing import Optional, List, Dict
 
-import bioc
 import textwrap
 import graphviz
 import requests
-from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
-from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from pdfminer import high_level
-from werkzeug.datastructures import FileStorage
+from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
+from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
+import os
+import bioc
 
+import neo4japp.utils.string
+from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.models import Files
+from neo4japp.schemas.formats.drawing_tool import validate_map
+from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.sankey import validate_sankey
+from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -32,12 +38,6 @@ from neo4japp.constants import (
     ICON_SIZE,
     LIFELIKE_DOMAIN
     )
-from neo4japp.models import Files
-from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.sankey import validate_sankey
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
-from neo4japp.services.file_types.service import BaseFileTypeProvider
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -564,9 +564,9 @@ class SankeyTypeProvider(BaseFileTypeProvider):
         content.write(' '.join(list(string_list)))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
-    def extract_metadata_from_content(self, file: Files, buffer: FileStorage):
+    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
         if not file.description:
-            data = json.loads(buffer.stream.read())
+            data = json.loads(buffer.read())
             description = data['graph']['description']
             file.description = description
 
