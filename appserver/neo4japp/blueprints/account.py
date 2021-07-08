@@ -77,8 +77,8 @@ class AccountView(MethodView):
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
-            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, full=True)
-            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, full=True)
+            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
+            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
