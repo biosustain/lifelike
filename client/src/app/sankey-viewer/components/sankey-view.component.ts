@@ -51,6 +51,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedNodes;
   selectedLinks;
   selectedTraces;
+  nodeAlign;
   @ViewChild('traceDetails', {static: true}) traceDetails;
   @ViewChild('linkDetails', {static: true}) linkDetails;
   @ViewChild('nodeDetails', {static: true}) nodeDetails;
@@ -203,11 +204,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
     colorNodes(nodes);
+    const inNodes = node_sets[networkTrace.sources];
+    const outNodes = node_sets[networkTrace.targets];
+    this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
-      inNodes: node_sets[networkTrace.sources],
-      outNodes: node_sets[networkTrace.targets]
+      inNodes,
+      outNodes
     });
   }
 
