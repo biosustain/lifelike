@@ -28,16 +28,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from './algorithms/traceLogic';
 import { representativePositiveNumber } from '../utils';
 
-function updateTextShadow(_) {
-  // this contains ref to textGroup
-  const [shadow, text] = this.children;
-  const {x, y, width, height} = text.getBBox();
-  d3.select(shadow)
-    .attr('x', x)
-    .attr('y', y)
-    .attr('width', width)
-    .attr('height', height);
-}
 
 @Component({
   selector: 'app-sankey',
@@ -81,14 +71,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   // region Properties (&Accessors)
-  MIN_FONT = 12;
-  MAX_FONT = 48;
-  MARGIN = 10;
+  static MIN_FONT = 12;
+  static MAX_FONT = 48;
+  static MARGIN = 10;
   margin = {
-    top: this.MARGIN,
-    right: this.MARGIN,
-    bottom: this.MARGIN,
-    left: this.MARGIN
+    top: SankeyComponent.MARGIN,
+    right: SankeyComponent.MARGIN,
+    bottom: SankeyComponent.MARGIN,
+    left: SankeyComponent.MARGIN
   };
   resizeObserver: any;
   size;
@@ -125,11 +115,23 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     return this._data;
   }
 
-  getFontSize(normSize) {
-    return this.MIN_FONT + (normSize || 0) * (this.MAX_FONT - this.MIN_FONT);
+  static updateTextShadow(_) {
+    // this contains ref to textGroup
+    // @ts-ignore
+    const [shadow, text] = this.children;
+    const {x, y, width, height} = text.getBBox();
+    d3.select(shadow)
+      .attr('x', x)
+      .attr('y', y)
+      .attr('width', width)
+      .attr('height', height);
   }
 
-  nodeGroupAccessor({type}) {
+  static getFontSize(normSize) {
+    return this.MIN_FONT + (normSize || 0) * (SankeyComponent.MAX_FONT - SankeyComponent.MIN_FONT);
+  }
+
+  static nodeGroupAccessor({type}) {
     return type;
   }
   // endregion
@@ -350,7 +352,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   nodeMouseOver(element, data) {
     this.highlightNode(element);
-    const nodeGroup = this.nodeGroupAccessor(data);
+    const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
     const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
     this.highlightTraces(traces);
@@ -455,7 +457,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   highlightNodeGroup(group) {
     this.nodeSelection
-      .attr('highlighted', node => this.nodeGroupAccessor(node) === group);
+      .attr('highlighted', node => SankeyComponent.nodeGroupAccessor(node) === group);
   }
 
   highlightNode(element) {
@@ -482,7 +484,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
-        .each(updateTextShadow)
+        .each(SankeyComponent.updateTextShadow)
     );
   }
 
@@ -520,6 +522,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   // region Render
+
   updateNodeRect = rects => rects
     .attr('height', n => representativePositiveNumber(n.y1 - n.y0))
     .attr('width', ({x1, x0}) => x1 - x0)
