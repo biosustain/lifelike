@@ -51,7 +51,7 @@ class BaseFileTypeProvider:
     def convert(self, buffer):
         raise NotImplementedError
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[Tuple[float, str]]:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
         """
         Given the byte buffer, return a list of possible mime types with
         confidence levels. Larger numbers indicate a higher confidence and negative
@@ -80,7 +80,7 @@ class BaseFileTypeProvider:
         """
         return False
 
-    def validate_content(self, buffer: FileStorage):
+    def validate_content(self, buffer: BufferedIOBase):
         """
         Validate the contents of the given buffer to see if it is correct for
         this given file type.
@@ -95,7 +95,7 @@ class BaseFileTypeProvider:
         # See the map and enrichment table formats for examples
         raise ValueError('format cannot be validated')
 
-    def extract_doi(self, buffer: FileStorage) -> Optional[str]:
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         """
         Attempt to extract a DOI from the file.
 
@@ -106,7 +106,7 @@ class BaseFileTypeProvider:
         # contents to look for the DOI
         return None
 
-    def to_indexable_content(self, buffer: FileStorage) -> FileStorage:
+    def to_indexable_content(self, buffer: BufferedIOBase) -> BufferedIOBase:
         """
         Return a new buffer that is suited for indexing by Elasticsearch. For
         some file formats, this operation may return a whole different type of file
@@ -119,7 +119,7 @@ class BaseFileTypeProvider:
         # Files of this file type cannot be indexed until you override this method
         # You can actually just return a blob of text (encoded in UTF-8)
         # with all the relevant keywords
-        return typing.cast(FileStorage, BytesIO())
+        return typing.cast(BufferedIOBase, BytesIO())
 
     def should_highlight_content_text_matches(self) -> bool:
         """
@@ -169,21 +169,21 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
     def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
         return [(-100, GenericFileTypeProvider(file.mime_type))]
 
-    def detect_mime_type(self, buffer: FileStorage) -> List[Tuple[float, str]]:
-        mime_type = magic.from_buffer(buffer.stream.read(2048), mime=True)
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
+        mime_type = magic.from_buffer(buffer.read(2048), mime=True)
         return [(-100, mime_type)]
 
-    def validate_content(self, buffer: FileStorage):
+    def validate_content(self, buffer: BufferedIOBase):
         return
 
     def can_create(self) -> bool:
         return True
 
-    def to_indexable_content(self, buffer: FileStorage):
+    def to_indexable_content(self, buffer: BufferedIOBase):
         if self.mime_type.startswith('text/'):
             return buffer  # Have Elasticsearch index these files
         else:
-            return typing.cast(FileStorage, BytesIO())
+            return typing.cast(BufferedIOBase, BytesIO())
 
     def should_highlight_content_text_matches(self) -> bool:
         if self.mime_type.startswith('text/'):
@@ -235,7 +235,7 @@ class FileTypeService:
             return results[-1][1]
         return self.default_provider
 
-    def detect_mime_type(self, buffer: FileStorage) -> str:
+    def detect_mime_type(self, buffer: BufferedIOBase) -> str:
         """
         Detect the file type based on the file's contents. A provider
         will be returned regardless, although it may be the default one.
@@ -247,7 +247,7 @@ class FileTypeService:
             try:
                 results.extend(provider.detect_mime_type(buffer))
             finally:
-                buffer.stream.seek(0)
+                buffer.seek(0)
         if len(results):
             results.sort(key=lambda item: item[0])
             return results[-1][1]
