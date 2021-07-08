@@ -41,10 +41,11 @@ class TransactionContext(metaclass=abc.ABCMeta):
 
 class DatabaseConnection(metaclass=abc.ABCMeta):
     """Potentially using alongside a `with` context manager
-    can have performance issues since python's `with` block is slow.
+    can have performance issues since python's `with` block is slow
+    due to setting up a context manager.
 
-    If multiple queries are needed within the same context, it would
-    be better to implement:
+    If multiple queries are needed within the same context, it might
+    be worthwhile to implement:
 
     @property
     def session(self):
