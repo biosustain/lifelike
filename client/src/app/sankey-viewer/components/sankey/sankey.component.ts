@@ -362,6 +362,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.unhighlightTraces();
   }
 
+  scaleZoom(scaleBy) {
+    d3.select(this.svg.nativeElement).transition().call(this.zoom.scaleBy, scaleBy);
+  }
+
   resetZoom() {
     d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
   }

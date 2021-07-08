@@ -189,11 +189,26 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .then(_ => _, _ => _);
   }
 
+  // region Zoom
   resetZoom() {
     if (this.sankey) {
       this.sankey.resetZoom();
     }
   }
+
+  zoomIn() {
+    if (this.sankey) {
+      this.sankey.scaleZoom(1.25);
+    }
+  }
+
+  zoomOut() {
+    if (this.sankey) {
+      this.sankey.scaleZoom(.8);
+    }
+  }
+
+  // endregion
 
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
