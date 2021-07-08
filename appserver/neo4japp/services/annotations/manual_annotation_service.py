@@ -158,6 +158,7 @@ class ManualAnnotationService:
             self.save_global(
                 annotation_to_add,
                 ManualAnnotationType.INCLUSION.value,
+                file.content_id,
                 file.id,
                 file.hash_id,
                 user
@@ -245,6 +246,7 @@ class ManualAnnotationService:
             self.save_global(
                 excluded_annotation,
                 ManualAnnotationType.EXCLUSION.value,
+                file.content_id,
                 file.id,
                 file.hash_id,
                 user
@@ -331,7 +333,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def save_global(self, annotation, inclusion_type, file_id, file_hash_id, user):
+    def save_global(self, annotation, inclusion_type, file_content_id, file_id, file_hash_id, user):
         """Adds global inclusion to the KG, and global exclusion to postgres.
 
         For the KG, if a global inclusion (seen as a synonym) matches to an
@@ -434,6 +436,7 @@ class ManualAnnotationService:
                     annotation=annotation,
                     type=inclusion_type,
                     file_id=file_id,
+                    file_content_id=file_content_id
                 )
 
                 try:

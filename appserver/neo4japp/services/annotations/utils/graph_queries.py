@@ -95,7 +95,7 @@ def get_global_inclusions_by_type(entity_type):
     return f"""
     MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
     WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
-    RETURN n.id AS entity_id, n.name AS entity_name,
+    RETURN id(n) AS internal_id, n.id AS entity_id, n.name AS entity_name,
         s.name AS synonym, n.data_source AS data_source
     """
 
@@ -110,8 +110,8 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type(entity_type):
 
     return f"""
     MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
-    RETURN n.id AS entity_id, n.name AS entity_name, s.name AS synonym,
-        n.data_source AS data_source, n.hyperlink AS hyperlink
+    RETURN id(n) AS internal_id, n.id AS entity_id, n.name AS entity_name,
+        s.name AS synonym, n.data_source AS data_source, n.hyperlink AS hyperlink
     """
 
 
@@ -196,10 +196,10 @@ def create_mesh_global_inclusion(entity_type):
     MATCH (n:db_MESH) WHERE n.id = 'MESH:' + $entity_id
     SET n:replace_with_param
     MERGE (s: Synonym {name: row.synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """.replace('replace_with_param', query_label)
 
@@ -208,10 +208,10 @@ def create_chemical_global_inclusion():
     return """
     MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """
 
@@ -220,10 +220,10 @@ def create_compound_global_inclusion():
     return """
     MATCH (n:db_BioCyc:Compound) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """
 
@@ -232,10 +232,10 @@ def create_gene_global_inclusion():
     return """
     MATCH (n:db_NCBI:Gene) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """
 
@@ -244,10 +244,10 @@ def create_species_global_inclusion():
     return """
     MATCH (n:db_NCBI:Taxonomy) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """
 
@@ -256,10 +256,10 @@ def create_protein_global_inclusion():
     return """
     MATCH (n:db_UniProt:Protein) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.user = $user
+        r.user = $user,
         r.file_reference = $file_uuid
     """
 
@@ -276,7 +276,6 @@ def create_***ARANGO_DB_NAME***_global_inclusion(entity_type):
     MERGE (n:db_Lifelike {id:'Lifelike:' + $entity_id})
     ON CREATE
     SET n:replace_with_param,
-        n.need_review = 1,
         n.data_source = $data_source,
         n.external_id = $entity_id,
         n.name = $common_name,
@@ -286,7 +285,7 @@ def create_***ARANGO_DB_NAME***_global_inclusion(entity_type):
         n.user = $user
     WITH n
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1, s.need_review = 1
+    SET s.global_inclusion = 1
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     SET r.inclusion_date = n.inclusion_date,
         r.user = n.user,
