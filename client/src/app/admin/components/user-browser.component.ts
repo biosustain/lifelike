@@ -206,7 +206,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   displayMissingRolesDialog() {
     const users = this.getRolelessUsers();
     const modalRef = this.modalService.open(MissingRolesDialogComponent);
-    modalRef.componentInstance.setUsers(users);
+    modalRef.componentInstance.users = users;
     modalRef.result.then(isModified => {
       if (isModified) {
         this.refresh();

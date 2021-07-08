@@ -30,10 +30,6 @@ export class MissingRolesDialogComponent extends CommonFormDialogComponent {
     this.accountService = accountService;
   }
 
-  setUsers(users: AppUser[]) {
-    this.users = users;
-  }
-
   updateAll() {
     for (const user of this.users) {
       this.fixMissingUserRole(user);
@@ -76,8 +72,6 @@ export class MissingRolesDialogComponent extends CommonFormDialogComponent {
     }, () => {
       progressDialogRef.close();
     });
-
-
   }
 
   getValue(): boolean {
