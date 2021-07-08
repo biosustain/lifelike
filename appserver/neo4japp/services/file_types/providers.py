@@ -6,7 +6,6 @@ from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import textwrap
-
 import graphviz
 import requests
 from pdfminer import high_level
@@ -38,7 +37,6 @@ from neo4japp.constants import (
     SCALING_FACTOR,
     ICON_SIZE,
     LIFELIKE_DOMAIN
-
     )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -103,7 +101,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
     try:
         for match in doi_re.finditer(content):
             label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
-                    [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
+                [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
             certainly_doi = label + url
             url = 'https://doi.org/'
             # is whole match a DOI? (finished on \n, trimmed whitespaces)
@@ -120,19 +118,19 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # if contains escape patterns try substitute them
                 if common_escape_patterns_re.search(match.group()):
                     doi = _search_doi_in(
-                                common_escape_patterns_re.sub(
-                                        b'', match.group()
-                                )
-                        )
+                            common_escape_patterns_re.sub(
+                                    b'', match.group()
+                            )
+                    )
                     if is_valid_doi(doi):
                         return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
                     doi = _search_doi_in(
-                                dash_types_re.sub(
-                                        b'-', match.group()
-                                )
-                        )
+                            dash_types_re.sub(
+                                    b'-', match.group()
+                            )
+                    )
                     if is_valid_doi(doi):
                         return doi
                 # we iteratively start cutting off suffix on each group of
@@ -141,10 +139,10 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                    reversedDOIEnding, 1)
+                                reversedDOIEnding, 1)
                         doi = (
-                                    url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
-                            )
+                                url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
+                        )
                         if is_valid_doi(doi):
                             return doi
                 except Exception:
@@ -157,9 +155,9 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                    reversedDOIEnding, 1)
+                                reversedDOIEnding, 1)
                         doi = (
-                                    url + folderRegistrant + reversedDOIEnding[::-1]
+                                url + folderRegistrant + reversedDOIEnding[::-1]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -177,10 +175,10 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
-                                    # new input = match + 50 chars after new line
-                                    match.group() +
-                                    content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
-                            )
+                                # new input = match + 50 chars after new line
+                                match.group() +
+                                content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                        )
                         if is_valid_doi(doi):
                             return doi
                 except Exception as e:
@@ -392,24 +390,24 @@ class MapTypeProvider(BaseFileTypeProvider):
             params = {
                 'name': node['hash'],
                 'label': '\n'.join(textwrap.TextWrapper(
-                    width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-                    replace_whitespace=False).wrap(node['display_name'])),
+                        width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+                        replace_whitespace=False).wrap(node['display_name'])),
                 'pos': (
-                   f"{node['data']['x'] / SCALING_FACTOR},"
-                   f"{-node['data']['y'] / SCALING_FACTOR}!"
-                    ),
+                    f"{node['data']['x'] / SCALING_FACTOR},"
+                    f"{-node['data']['y'] / SCALING_FACTOR}!"
+                ),
                 'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
                 'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
                 'shape': 'box',
                 'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
                 'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
                 'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
-                    node['label'], {'color': 'black'}).get('color'),
+                        node['label'], {'color': 'black'}).get('color'),
                 'fontname': 'sans-serif',
                 'margin': "0.2,0.0",
                 'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
                 'penwidth': f"{style.get('lineWidthScale', 1.0)}"
-                            if style.get('lineType') != 'none' else '0.0'
+                if style.get('lineType') != 'none' else '0.0'
             }
 
             if node['label'] in ['map', 'link', 'note']:
@@ -418,9 +416,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
                     params['label'] = '\n'.join(
-                        textwrap.TextWrapper(
-                            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                            replace_whitespace=False).wrap(detail_text))
+                            textwrap.TextWrapper(
+                                    width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+                                    replace_whitespace=False).wrap(detail_text))
                     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                      {'bgcolor': 'black'}
                                                                      ).get('bgcolor')
@@ -473,8 +471,8 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
                 default_color = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
+                        node['label'],
+                        {'color': 'black'})['color']
                 params['color'] = style.get('strokeColor') or default_color
                 if style.get('fillColor'):
                     params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
@@ -484,7 +482,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['data'].get('sources'):
                 doi_src = next((src for src in node['data'].get('sources') if src.get(
-                    'domain') == "DOI"), None)
+                        'domain') == "DOI"), None)
                 if doi_src:
                     params['href'] = doi_src.get('url')
                 else:
@@ -505,17 +503,19 @@ class MapTypeProvider(BaseFileTypeProvider):
                 default_line_style = 'dashed'
                 default_arrow_head = 'none'
             graph.edge(
-                edge['from'],
-                edge['to'],
-                edge['label'],
-                dir='both',
-                color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-                arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
-                arrowhead=ARROW_STYLE_DICT.get(style.get('targetHeadType') or default_arrow_head),
-                penwidth=str(style.get('lineWidthScale', 1.0)) if style.get('lineType') != 'none'
+                    edge['from'],
+                    edge['to'],
+                    edge['label'],
+                    dir='both',
+                    color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+                    arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+                    arrowhead=ARROW_STYLE_DICT.get(
+                            style.get('targetHeadType') or default_arrow_head),
+                    penwidth=str(style.get('lineWidthScale', 1.0)) if style.get(
+                            'lineType') != 'none'
                     else '0.0',
-                fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
+                    fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+                    style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
 
             )
 
@@ -536,8 +536,14 @@ class SankeyTypeProvider(BaseFileTypeProvider):
     def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
-            self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            if os.path.splitext(str(
+                    # buffer in here is actually wrapper of BufferedIOBase and it contains
+                    # filename even if type check fails
+                    buffer.filename  # type: ignore[attr-defined]
+            ))[1] == '.sankey':
+                return [(0, self.MIME_TYPE)]
+            else:
+                return []
         except ValueError as e:
             return []
         finally:
@@ -557,6 +563,12 @@ class SankeyTypeProvider(BaseFileTypeProvider):
 
         content.write(' '.join(list(string_list)))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+
+    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
+        if not file.description:
+            data = json.loads(buffer.read())
+            description = data['graph']['description']
+            file.description = description
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
