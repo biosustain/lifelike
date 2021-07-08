@@ -165,7 +165,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
       const selectedTraces = this.getSelectedTraces({nodes});
       this.selectTraces(selectedTraces);
-      this.sankey.timeInterval(timeInterval.currentValue);
     }
     if (selectedLinks) {
       const links = selectedLinks.currentValue;
