@@ -551,6 +551,12 @@ class AnnotationService:
             entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in gene_organism_matches:
+                # the postgres table organism_gene_match
+                # doesn't have data_source like the KG since that's recent
+                # hotfix for now until that table is replaced with a better implementation
+                has_gene_data_source = gene_organism_matches[entity_synonym].get('gene_data_source', False)  # noqa
+                if has_gene_data_source and entity['id_type'] != gene_organism_matches[entity_synonym]['gene_data_source']:  # noqa
+                    continue
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
@@ -578,6 +584,12 @@ class AnnotationService:
                 specified_organism_id = best_match.specified_organism_id
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
             elif entity_synonym in fallback_gene_organism_matches:
+                # the postgres table `organism_gene_match`
+                # doesn't have data_source like the KG since that's recent
+                # hotfix for now until that table is replaced with a better implementation
+                has_gene_data_source = fallback_gene_organism_matches[entity_synonym].get('gene_data_source', False)  # noqa
+                if has_gene_data_source and entity['id_type'] != fallback_gene_organism_matches[entity_synonym]['gene_data_source']:  # noqa
+                    continue
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa

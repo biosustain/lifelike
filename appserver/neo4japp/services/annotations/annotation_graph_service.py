@@ -198,6 +198,7 @@ class AnnotationGraphService(GraphConnection):
             gene_synonym = row['gene_synonym']
             gene_id = row['gene_id']
             organism_id = row['organism_id']
+            gene_data_source = row['data_source']
 
             if gene_to_organism_map.get(gene_synonym, None) is not None:
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):
@@ -205,7 +206,8 @@ class AnnotationGraphService(GraphConnection):
                 else:
                     gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
+                gene_to_organism_map[gene_synonym] = {
+                    gene_name: {organism_id: gene_id}, 'gene_data_source': gene_data_source}
 
         return gene_to_organism_map
 
