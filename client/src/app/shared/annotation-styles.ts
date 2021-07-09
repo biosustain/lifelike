@@ -58,6 +58,8 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
+const IMAGE = '#fedcba';
+
 const annotationTypes: AnnotationStyle[] = [
   {
     label: 'gene',
@@ -197,6 +199,15 @@ const annotationTypes: AnnotationStyle[] = [
       background: ASSOCIATION,
       color: '#000'
     },
+  },
+  {
+    label: 'image',
+    color: IMAGE,
+    style: {
+      border: IMAGE,
+      background: IMAGE,
+      color: '#000',
+    }
   },
 ];
 

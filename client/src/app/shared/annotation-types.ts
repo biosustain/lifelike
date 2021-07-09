@@ -25,7 +25,8 @@ export const ENTITY_TYPES = [
   new EntityType('Food', annotationTypesMap.get('food').color),
   new EntityType('Anatomy', annotationTypesMap.get('anatomy').color),
   new EntityType('Lab Strain', annotationTypesMap.get('lab strain').color),
-  new EntityType('Lab Sample', annotationTypesMap.get('lab sample').color)
+  new EntityType('Lab Sample', annotationTypesMap.get('lab sample').color),
+  new EntityType('Image', annotationTypesMap.get('image').color),
 ];
 
 export const ENTITY_TYPE_MAP = ENTITY_TYPES.reduce((map, item) => {
