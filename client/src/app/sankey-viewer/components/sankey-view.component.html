@@ -84,8 +84,10 @@
                                         </div>
                                         <div class="modal-body">
                                             <pre [style.marginBottom]="0">{{ getJSONDetails(sankeyData) }}</pre>
-                                            <small>This view contains reduced object representation. Nested objects has been mapped to
-                                                their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                                            <small>This view contains reduced object representation. Nested objects has
+                                                been mapped to
+                                                their ids or indexes (if available); <s>shown arrays contains only top 3
+                                                    rows;</s>
                                                 numbers
                                                 has been
                                                 limited to 6 digits after comma.</small>
@@ -102,12 +104,12 @@
                             <i class="fas fa-expand-arrows-alt"></i>
                         </button>
                         <button (click)="zoomIn()" class="btn btn-secondary" container="body"
-                  ngbTooltip="Zoom In" placement="bottom"
+                                ngbTooltip="Zoom In" placement="bottom"
                                 type="button">
                             <i class="fas fa-search-plus"></i>
                         </button>
                         <button (click)="zoomOut()" class="btn btn-secondary" container="body"
-                  ngbTooltip="Zoom Out" placement="bottom"
+                                ngbTooltip="Zoom Out" placement="bottom"
                                 type="button">
                             <i class="fas fa-search-minus"></i>
                         </button>
@@ -173,7 +175,6 @@
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="border-bottom border-secondary pb-3 mb-3">
-
                             <app-sankey-details-panel *ngIf="selectionWithTraces | async"
                                                       [details]="selectionWithTraces | async">
                             </app-sankey-details-panel>
@@ -221,7 +222,8 @@
                 </ngb-panel>
                 <ngb-panel *ngIf="!graphLink._multiple_values else multipleValues" [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Value</b>
                             {{ parseProperty(graphLink.value) }}
                         </button>
@@ -259,24 +261,31 @@
                                 {{ graphLink._trace.group }}
                             </li>
                             <li class="list-group-item">
-                                <ng-template #content let-modal>
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Trace details</h4>
-                                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                                type="button">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body vh-75">
-                                        <app-trace-details
-                                                [data]="sankeyData"
-                                                [trace]="graphLink._trace"
-                                        >
-                                        </app-trace-details>
-                                    </div>
-                                </ng-template>
-                                <button (click)="open(content)" class="btn btn-outline-primary">Show detailed
-                                    network
+                                <!--                                <ng-template #content let-modal>-->
+                                <!--                                    <div class="modal-header">-->
+                                <!--                                        <h4 class="modal-title">Trace details</h4>-->
+                                <!--                                        <button (click)="modal.dismiss()" aria-label="Close" class="close"-->
+                                <!--                                                type="button">-->
+                                <!--                                            <span aria-hidden="true">&times;</span>-->
+                                <!--                                        </button>-->
+                                <!--                                    </div>-->
+                                <!--                                    <div class="modal-body vh-75">-->
+                                <!--                                        <a [routerLink]="['/heroes']" [state]="{-->
+                                <!--                                            data: sankeyData,-->
+                                <!--                                            trace: graphLink._trace-->
+                                <!--                                        }">Heroes</a>-->
+                                <!--                                        <app-trace-details-->
+                                <!--                                                [data]="sankeyData"-->
+                                <!--                                                [trace]="graphLink._trace"-->
+                                <!--                                        >-->
+                                <!--                                        </app-trace-details>-->
+                                <!--                                    </div>-->
+                                <!--                                </ng-template>-->
+                                <button (click)="gotoDynamic({
+                                            data: sankeyData,
+                                            trace: graphLink._trace
+                                        })" class="btn btn-outline-primary">
+                                    Show detailed network
                                 </button>
                             </li>
                         </ul>
@@ -334,7 +343,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Value</b>
                             {{ parseProperty(node.value) }}
                         </button>
@@ -342,7 +352,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Label</b>
                             {{ parseProperty(node.label) }}
                         </button>
@@ -408,7 +419,8 @@
             <ngb-accordion ngbAccordion activeIds="source target">
                 <ngb-panel id="source">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Source</b>
                             {{ getNodeById(trace.source).id }}
                         </button>
@@ -419,7 +431,8 @@
                 </ngb-panel>
                 <ngb-panel id="target">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Target</b>
                             {{ getNodeById(trace.target).id }}
                         </button>
@@ -430,7 +443,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Group</b>
                             {{ parseProperty(trace.group) }}
                         </button>
@@ -438,23 +452,26 @@
                 </ngb-panel>
                 <ngb-panel>
                     <ng-template disabled="true" ngbPanelHeader>
-                        <ng-template #content let-modal>
-                            <div class="modal-header">
-                                <h4 class="modal-title">Trace details</h4>
-                                <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                        type="button">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body vh-75">
-                                <app-trace-details
-                                        [data]="sankeyData"
-                                        [trace]="trace"
-                                >
-                                </app-trace-details>
-                            </div>
-                        </ng-template>
-                        <button (click)="open(content)" class="btn btn-link">Show detailed
+                        <!--                        <ng-template #content let-modal>-->
+                        <!--                            <div class="modal-header">-->
+                        <!--                                <h4 class="modal-title">Trace details</h4>-->
+                        <!--                                <button (click)="modal.dismiss()" aria-label="Close" class="close"-->
+                        <!--                                        type="button">-->
+                        <!--                                    <span aria-hidden="true">&times;</span>-->
+                        <!--                                </button>-->
+                        <!--                            </div>-->
+                        <!--                            <div class="modal-body vh-75">-->
+                        <!--                                <app-trace-details-->
+                        <!--                                        [data]="sankeyData"-->
+                        <!--                                        [trace]="trace"-->
+                        <!--                                >-->
+                        <!--                                </app-trace-details>-->
+                        <!--                            </div>-->
+                        <!--                        </ng-template>-->
+                        <button (click)="gotoDynamic({
+                                            data: sankeyData,
+                                            trace: trace
+                                        })" class="btn btn-link">Show detailed
                             network
                         </button>
                     </ng-template>
