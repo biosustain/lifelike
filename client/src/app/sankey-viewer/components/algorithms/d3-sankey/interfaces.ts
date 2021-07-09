@@ -59,9 +59,12 @@ interface SankeyGraph {
   sizing?: SankeyPredefinedSizing;
 }
 
-interface SankeyData {
+interface SankeyD3Data {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
+}
+
+interface SankeyData extends SankeyD3Data {
   graph: SankeyGraph;
   inNodes?: Array<number>;
   outNodes?: Array<number>;

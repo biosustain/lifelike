@@ -106,6 +106,10 @@ $non-active-node-opacity: .50;
         opacity: $link-opacity;
         stroke-opacity: $link-stroke-opacity;
 
+        &.circular {
+          stroke-dasharray: 4 4;
+        }
+
         &[selected=false] {
           opacity: $non-active-link-opacity;
         }
