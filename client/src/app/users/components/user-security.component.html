@@ -5,10 +5,6 @@
 
   <app-form-row for="password" label="Password" [control]="form.get('password')">
     <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
-      <small class="text-danger"
-        *ngIf="form.get('password').hasError('maxlength')">
-        The maximum length for the password is {{form.get('password').errors.maxlength.requiredLength}} characters.
-      </small>
   </app-form-row>
 
   <app-form-row for="confirm-password" label="Confirm Password" [control]="form.get('passwordConfirm')" [errors]="errors">
