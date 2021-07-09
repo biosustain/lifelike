@@ -503,7 +503,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   onOptionsChange($event) {
-    console.log($event);
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 

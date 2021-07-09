@@ -7,8 +7,8 @@ export const colorByTraceEnding = ({sourceLinks, targetLinks, _color, _selected}
     const traceColor = difference.values().next().value._trace._color;
     const labColor = cubehelix(_color);
     const calcColor = cubehelix(traceColor);
-    calcColor.l = labColor.l;
-    calcColor.opacity = _selected ? 1 : labColor.opacity;
+    // calcColor.l = labColor.l;
+    // calcColor.opacity = _selected ? 1 : labColor.opacity;
     return calcColor;
   }
 };
