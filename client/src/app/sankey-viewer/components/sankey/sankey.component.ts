@@ -506,16 +506,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   /**
-   * Draws a word cloud with the given FilterEntity inputs using the d3.layout.cloud library.
-   * @param data represents a collection of FilterEntity data
+   * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
+   * and adjustments from outer scope
+   * @param data graph declaration
    */
   updateLayout(data) {
     return new Promise(resolve => {
         computeNodeLinks(data);
-        // data.links.forEach(link => {
-        //   delete link.circular;
-        //   delete link.circularLinkID;
-        // });
         identifyCircles(data);
         const {nodes, links, ...rest} = data;
         const [circularLinks, nonCircularLinks] = links.reduce(([c, nc], n) => {
@@ -526,19 +523,22 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           }
           return [c, nc];
         }, [[], []]);
+        // Calculate layout by skipping circular links
         this.sankey({nodes, links: nonCircularLinks});
         // Link into graph prev filtered links
         registerLinks({nodes, links: circularLinks});
+        // adjust width of circular links
+        const {width, value} = nonCircularLinks[0];
+        const valueScaler = width / value;
         circularLinks.forEach(link => {
-          delete link.width;
-          delete link.y0;
-          delete link.y1;
+          link.width = link.value * valueScaler;
         });
         const layout = {
           nodes,
           links: nonCircularLinks.concat(circularLinks),
           ...rest
         };
+        // Run adjustments declared in viewer
         this.adjustLayout.emit({
           data: layout,
           extent: this.sankey.extent()
@@ -570,22 +570,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   /**
-   * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+   * Run d3 lifecycle code to update DOM
+   * @param graph: { links, nodes } to be rendered
    */
-  /**
-   * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
-   * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
-   * and added words will be drawn.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-   */
-  private updateDOM(words) {
+  private updateDOM(graph) {
     const {
       updateNodeRect, updateNodeText
     } = this;
 
     this.linkSelection
-      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
+      .data(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
         enter => enter
           .append('path')
@@ -626,7 +620,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     this.nodeSelection
       .data(
-        words.nodes.filter(
+        graph.nodes.filter(
           // should no longer be an issue but leaving as sanity check
           // (if not satisfied visualisation brakes)
           n => n.sourceLinks.length + n.targetLinks.length > 0
@@ -676,7 +670,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
-        // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
       .call(joined => {
