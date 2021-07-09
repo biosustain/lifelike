@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
 
@@ -19,6 +19,7 @@ import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -112,7 +113,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    protected readonly workSpaceManager: WorkspaceManager,
+    private router: Router
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
@@ -171,6 +174,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
 
     this.loadFromUrl();
+  }
+
+  gotoDynamic(state) {
+    const url = `/projects/${this.object.project.name}/trace`;
+    this.workSpaceManager.navigateByUrl(url, {
+      sideBySide: true, newTab: true, state: {
+        data: 'b'
+      }
+    });
   }
 
   getJSONDetails(details) {
