@@ -42,12 +42,12 @@ def get_organisms_from_gene_ids():
 
 def get_gene_to_organism():
     return """
-    MATCH (s:Synonym)-[]-(g:db_NCBI:Gene)
+    MATCH (s:Synonym)-[]-(g:Gene)
     WHERE s.name IN $genes
     WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
     WHERE p.id IN $organisms
     RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id,
-        p.id AS organism_id
+        p.id AS organism_id, g.data_source AS data_source
     """
 
 
