@@ -29,7 +29,7 @@
           </select>
           <app-form-input-feedback [control]="addForm.get('roleName')"></app-form-input-feedback>
         </div>
-        <button type="submit" class="btn btn-secondary ml-2">Add</button>
+        <button type="submit" class="btn btn-secondary ml-2" [disabled]="addForm.invalid" >Add</button>
       </div>
     </form>
 
