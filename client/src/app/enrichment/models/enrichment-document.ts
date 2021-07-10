@@ -15,7 +15,7 @@ export class BaseEnrichmentDocument {
     'UniProt',
     'String',
     'GO',
-    'Biocyc',
+    'BioCyc',
     'KEGG'
   ];
   result: EnrichmentResult = null;
@@ -39,7 +39,7 @@ export class BaseEnrichmentDocument {
 
     // parse for column order/domain input
     if (domains == null) {
-      domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc', 'KEGG'];
+      domains = this.domains;
     }
 
     const duplicateGenes = this.getDuplicates(rawImportGenes);
@@ -294,7 +294,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     UniProt: {labels: ['Function']},
                     String: {labels: ['Annotation']},
                     GO: {labels: ['Annotation']},
-                    Biocyc: {labels: ['Pathways']},
+                    BioCyc: {labels: ['Pathways']},
                     KEGG: {labels: ['Pathways']}
                   },
                   genes: genesList,
@@ -382,10 +382,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       }
     }
 
-    if (domains.includes('Biocyc')) {
+    if (domains.includes('BioCyc')) {
       if (wrapper.biocyc !== null) {
         const text = wrapper.biocyc.result ? wrapper.biocyc.result.join('; ') : '';
-        results.Biocyc = {
+        results.BioCyc = {
           Pathways: {
             text,
             annotatedText: text,
