@@ -965,7 +965,7 @@ def mock_global_chemical_inclusion_annotation():
             'entity_id': 'CHEBI:789456',
             'entity_name': 'fake-chemical-(12345)',
             'synonym': 'fake-chemical-(12345)',
-            'data_source': 'CHEBI',
+            'data_source': 'ChEBI',
             'hyperlink': ''
         }
     ]
@@ -987,7 +987,7 @@ def mock_global_compound_inclusion_annotation():
             'entity_id': 'BIOCYC:321357',
             'entity_name': 'compound-(12345)',
             'synonym': 'compound-(12345)',
-            'data_source': 'BIOCYC',
+            'data_source': 'BioCyc',
             'hyperlink': ''
         }
     ]
@@ -1070,7 +1070,7 @@ def mock_global_phenomena_inclusion_annotation():
             'entity_id': 'MESH:842605',
             'entity_name': 'fake-phenomena',
             'synonym': 'fake-phenomena',
-            'data_source': 'MESH',
+            'data_source': 'MeSH',
         }
     ]
 
@@ -1112,7 +1112,7 @@ def mock_global_protein_inclusion_annotation():
             'entity_id': 'Fake_789654',
             'entity_name': 'protein-(12345)',
             'synonym': 'protein-(12345)',
-            'data_source': 'UNIPROT',
+            'data_source': 'UniProt',
         }
     ]
 

@@ -147,14 +147,14 @@ class EntityIdStr(Enum):
 
 
 class DatabaseType(Enum):
-    CHEBI = 'CHEBI'
-    CUSTOM = 'CUSTOM'
-    MESH = 'MESH'
-    UNIPROT = 'UNIPROT'
+    CHEBI = 'ChEBI'
+    CUSTOM = 'Custom'
+    MESH = 'MeSH'
+    UNIPROT = 'UniProt'
     NCBI_GENE = 'NCBI Gene'
     NCBI_TAXONOMY = 'NCBI Taxonomy'
-    BIOCYC = 'BIOCYC'
-    PUBCHEM = 'PUBCHEM'
+    BIOCYC = 'BioCyc'
+    PUBCHEM = 'PubChem'
 
 
 class ManualAnnotationType(Enum):
