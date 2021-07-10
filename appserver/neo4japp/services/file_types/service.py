@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import typing
 
 import magic
+from werkzeug.datastructures import FileStorage
 
 from neo4japp.models import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
@@ -153,6 +154,9 @@ class BaseFileTypeProvider:
 
         :param file: the file
         """
+
+    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
+        pass
 
 
 class GenericFileTypeProvider(BaseFileTypeProvider):
