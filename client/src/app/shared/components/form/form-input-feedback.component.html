@@ -11,6 +11,9 @@
     Enter at least {{ control.getError('minlength').requiredLength }}
     character{{ control.getError('minlength').requiredLength == 1 ? '' : 's' }}.
   </div>
+  <div *ngIf="control.hasError('maxlength')">
+     Enter no more than {{control.getError('maxlength').requiredLength}} characters.
+  </div>
   <div *ngIf="control.hasError('email')">
     The provided email is not valid.
   </div>

@@ -1,0 +1,71 @@
+<label class="w-100 text-left m-0" ngbButtonLabel>
+    <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update($event)"
+           ngbButton
+           type="checkbox">
+    Normalize links
+</label>
+<div class="dropdown-divider"></div>
+<label class="w-100 text-left m-0" ngbButtonLabel>
+    <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update($event)"
+           ngbButton
+           type="checkbox">
+    Min node height
+    <input [(ngModel)]="options.nodeHeight.min.value" (ngModelChange)="update($event)"
+           [disabled]="!options.nodeHeight.min.enabled"
+           class="scrollbar-with-value"
+           max="20" min="0"
+           ngbButton
+           type="range">
+    {{options.nodeHeight.min.value}}
+</label>
+<label class="w-100 text-left m-0" ngbButtonLabel>
+    <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update($event)"
+           ngbButton
+           type="checkbox">
+    Max node ratio
+    <input [(ngModel)]="options.nodeHeight.max.ratio" (ngModelChange)="update($event)"
+           [disabled]="!options.nodeHeight.max.enabled"
+           class="scrollbar-with-value"
+           max="20" min="1"
+           ngbButton
+           type="range">
+    {{options.nodeHeight.max.ratio}}
+</label>
+<div class="dropdown-divider"></div>
+<div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup name="link"
+     [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate($event)" title="Link size">
+    <div class="mb-1">Link Value Accessor:</div>
+    <label ngbButtonLabel class="mb-0"
+           *ngFor="let valueAccessor of options.linkValueGenerators">
+        <input ngbButton type="radio" [value]="valueAccessor"
+               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+    </label>
+    <label ngbButtonLabel class="mb-0"
+           *ngFor="let valueAccessor of options.linkValueAccessors">
+        <input ngbButton type="radio"
+               [value]="valueAccessor"> {{valueAccessor.description}}
+    </label>
+</div>
+<div class="dropdown-divider"></div>
+<div class="form-check" ngbRadioGroup name="node"
+     [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate($event)" title="Node fixed size">
+    <div class="mb-1">Node Value Accessor:</div>
+    <label ngbButtonLabel class="mb-0"
+           *ngFor="let valueAccessor of options.nodeValueGenerators">
+        <input ngbButton type="radio" [value]="valueAccessor"
+               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+    </label>
+    <label ngbButtonLabel class="mb-0"
+           *ngFor="let valueAccessor of options.nodeValueAccessors">
+        <input ngbButton type="radio"
+               [value]="valueAccessor"> {{valueAccessor.description}}
+    </label>
+</div>
+<div class="dropdown-divider"></div>
+<div class="form-check" ngbRadioGroup name="prescaler"
+     [(ngModel)]="options.selectedPrescaler" (ngModelChange)="update($event)" title="Prescaler">
+    <div class="mb-1">Prescaler:</div>
+    <label ngbButtonLabel *ngFor="let prescaler of options.prescalers" [title]="prescaler.description" class="mb-0">
+        <input ngbButton type="radio" [value]="prescaler"> {{prescaler.name}}
+    </label>
+</div>

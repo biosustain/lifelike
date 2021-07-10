@@ -15,7 +15,8 @@ from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
     get_first_known_label_from_node,
     get_known_domain_labels_from_node,
-    normalize_str
+    normalize_str,
+    snake_to_camel_dict
 )
 from neo4japp.utils.logger import EventLog
 
@@ -62,11 +63,15 @@ class SearchService(GraphBaseDao):
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
-            graph_node = GraphNode.from_neo4j(
-                node,
-                display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label_from_node,
-                domain_labels_fn=get_known_domain_labels_from_node,
+
+            graph_node = GraphNode(
+                id=node.id,
+                label=get_first_known_label_from_node(node),
+                sub_labels=list(node.labels),
+                domain_labels=get_known_domain_labels_from_node(node),
+                display_name=node.get('name'),
+                data=snake_to_camel_dict(dict(node), {}),
+                url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,

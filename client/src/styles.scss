@@ -45,5 +45,11 @@ router-outlet + * {
   white-space: pre-line;
 }
 
+.adaptive-modal {
+  .modal-xl {
+    max-width: 90vw;
+  }
+}
+
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';

@@ -32,6 +32,7 @@ from neo4japp.services import (
 from neo4japp.services.elastic import ElasticService
 from neo4japp.util import (
     get_first_known_label_from_node,
+    snake_to_camel_dict,
 )
 
 
@@ -725,12 +726,15 @@ def human_gene_pdf_gene_and_organism_network(
 @pytest.fixture(scope='function')
 def gas_gangrene_vis_node(gas_gangrene: Node):
     """Creates a VisNode from gas gangrene"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        gas_gangrene,
-        # TODO: Should change the way label is retrieved here...
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]
-        )
+    labels = list(gas_gangrene.labels)
+    node_as_graph_node = GraphNode(
+        id=gas_gangrene.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
+        data = snake_to_camel_dict(dict(gas_gangrene), {}),
+        url=None,
     )
 
     gas_gangrene_vis_node = VisNode(
@@ -750,11 +754,15 @@ def gas_gangrene_vis_node(gas_gangrene: Node):
 @pytest.fixture(scope='function')
 def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
     """Creates a DuplicateVisNode from gas gangrene"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        gas_gangrene,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]
-        )
+    labels = list(gas_gangrene.labels)
+    node_as_graph_node = GraphNode(
+        id=gas_gangrene.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
+        data = snake_to_camel_dict(dict(gas_gangrene), {}),
+        url=None,
     )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
@@ -775,11 +783,15 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
 @pytest.fixture(scope='function')
 def oxygen_duplicate_vis_node(oxygen: Node):
     """Creates a DuplicateVisNode from oxygen"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        oxygen,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]
-        )
+    labels = list(oxygen.labels)
+    node_as_graph_node = GraphNode(
+        id=oxygen.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=oxygen.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]),  # noqa
+        data = snake_to_camel_dict(dict(oxygen), {}),
+        url=None,
     )
 
     oxygen_duplicate_vis_node = DuplicateVisNode(
@@ -800,11 +812,15 @@ def oxygen_duplicate_vis_node(oxygen: Node):
 @pytest.fixture(scope='function')
 def penicillins_vis_node(penicillins: Node):
     """Creates a VisNode from penicillins"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        penicillins,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]
-        )
+    labels = list(penicillins.labels)
+    node_as_graph_node = GraphNode(
+        id=penicillins.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
+        data = snake_to_camel_dict(dict(penicillins), {}),
+        url=None,
     )
 
     penicillins_vis_node = VisNode(
@@ -824,11 +840,15 @@ def penicillins_vis_node(penicillins: Node):
 @pytest.fixture(scope='function')
 def penicillins_duplicate_vis_node(penicillins: Node):
     """Creates a DuplicateVisNode from penicillins"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        penicillins,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]
-        )
+    labels = list(penicillins.labels)
+    node_as_graph_node = GraphNode(
+        id=penicillins.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
+        data = snake_to_camel_dict(dict(penicillins), {}),
+        url=None,
     )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
@@ -849,11 +869,15 @@ def penicillins_duplicate_vis_node(penicillins: Node):
 @pytest.fixture(scope='function')
 def pomc_vis_node(pomc: Node):
     """Creates a VisNode from pomc"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        pomc,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]
-        )
+    labels = list(pomc.labels)
+    node_as_graph_node = GraphNode(
+        id=pomc.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
+        data = snake_to_camel_dict(dict(pomc), {}),
+        url=None,
     )
 
     pomc_vis_node = VisNode(
@@ -873,11 +897,15 @@ def pomc_vis_node(pomc: Node):
 @pytest.fixture(scope='function')
 def pomc_duplicate_vis_node(pomc: Node):
     """Creates a DuplicateVisNode from pomc"""
-    node_as_graph_node = GraphNode.from_neo4j(
-        pomc,
-        display_fn=lambda x: x.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]
-        )
+    labels = list(pomc.labels)
+    node_as_graph_node = GraphNode(
+        id=pomc.id,
+        label=labels[0],
+        sub_labels=labels,
+        domain_labels=[],
+        display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
+        data = snake_to_camel_dict(dict(pomc), {}),
+        url=None,
     )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
@@ -901,8 +929,15 @@ def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 ):
     """Creates a DuplicateVisEdge from the oxygen to gas_gangrene
     alleviates/reduces relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        oxygen_to_gas_gangrene_treatment_edge,
+
+    edge_as_graph_relationship = GraphRelationship(
+        id=oxygen_to_gas_gangrene_treatment_edge.id,
+        label=type(oxygen_to_gas_gangrene_treatment_edge).__name__,
+        data=dict(oxygen_to_gas_gangrene_treatment_edge),
+        to=oxygen_to_gas_gangrene_treatment_edge.end_node.id,
+        _from=oxygen_to_gas_gangrene_treatment_edge.start_node.id,
+        to_label=list(oxygen_to_gas_gangrene_treatment_edge.end_node.labels)[0],
+        from_label=list(oxygen_to_gas_gangrene_treatment_edge.start_node.labels)[0]
     )
 
     oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -928,8 +963,14 @@ def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
 ):
     """Creates a VisEdge from the pomc to gas gangrene
     role in disease pathogenesis relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        pomc_to_gas_gangrene_pathogenesis_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=pomc_to_gas_gangrene_pathogenesis_edge.id,
+        label=type(pomc_to_gas_gangrene_pathogenesis_edge).__name__,
+        data=dict(pomc_to_gas_gangrene_pathogenesis_edge),
+        to=pomc_to_gas_gangrene_pathogenesis_edge.end_node.id,
+        _from=pomc_to_gas_gangrene_pathogenesis_edge.start_node.id,
+        to_label=list(pomc_to_gas_gangrene_pathogenesis_edge.end_node.labels)[0],
+        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0]
     )
 
     pomc_to_gas_gangrene_pathogenesis_as_vis_edge = VisEdge(
@@ -952,8 +993,14 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
 ):
     """Creates a DuplicateVisEdge from the pomc to gas_gangrene
     role in disease pathogenesis relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        pomc_to_gas_gangrene_pathogenesis_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=pomc_to_gas_gangrene_pathogenesis_edge.id,
+        label=type(pomc_to_gas_gangrene_pathogenesis_edge).__name__,
+        data=dict(pomc_to_gas_gangrene_pathogenesis_edge),
+        to=pomc_to_gas_gangrene_pathogenesis_edge.end_node.id,
+        _from=pomc_to_gas_gangrene_pathogenesis_edge.start_node.id,
+        to_label=list(pomc_to_gas_gangrene_pathogenesis_edge.end_node.labels)[0],
+        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0]
     )
 
     pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -979,8 +1026,14 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
 ):
     """Creates a VisEdge from the penicillins to gas gangrene
     alleviates/reduces relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_alleviates_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_alleviates_edge.id,
+        label=type(penicillins_to_gas_gangrene_alleviates_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_alleviates_edge),
+        to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
     )
 
     penicillins_to_gas_gangrene_alleviates_as_vis_edge = VisEdge(
@@ -1003,8 +1056,14 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     alleviates/reduces relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_alleviates_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_alleviates_edge.id,
+        label=type(penicillins_to_gas_gangrene_alleviates_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_alleviates_edge),
+        to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
     )
 
     penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -1030,8 +1089,14 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
 ):
     """Creates a VisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_treatment_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_treatment_edge.id,
+        label=type(penicillins_to_gas_gangrene_treatment_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_treatment_edge),
+        to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
     )
 
     penicillins_to_gas_gangrene_treatment_as_vis_edge = VisEdge(
@@ -1054,8 +1119,14 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_treatment_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_treatment_edge.id,
+        label=type(penicillins_to_gas_gangrene_treatment_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_treatment_edge),
+        to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
     )
 
     penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -1116,8 +1187,14 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
 def gas_gangrene_treatement_edge_data(
     penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_treatment_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_treatment_edge.id,
+        label=type(penicillins_to_gas_gangrene_treatment_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_treatment_edge),
+        to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
     )
 
     return EdgeConnectionData(
@@ -1133,8 +1210,14 @@ def gas_gangrene_treatement_edge_data(
 def gas_gangrene_alleviates_edge_data(
     penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_alleviates_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_alleviates_edge.id,
+        label=type(penicillins_to_gas_gangrene_alleviates_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_alleviates_edge),
+        to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
     )
 
     return EdgeConnectionData(
@@ -1150,8 +1233,14 @@ def gas_gangrene_alleviates_edge_data(
 def gas_gangrene_treatement_duplicate_edge_data(
     penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_treatment_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_treatment_edge.id,
+        label=type(penicillins_to_gas_gangrene_treatment_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_treatment_edge),
+        to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
     )
 
     return [
@@ -1171,8 +1260,14 @@ def gas_gangrene_treatement_duplicate_edge_data(
 def gas_gangrene_alleviates_duplicate_edge_data(
     penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
-    edge_as_graph_relationship = GraphRelationship.from_neo4j(
-        penicillins_to_gas_gangrene_alleviates_edge,
+    edge_as_graph_relationship = GraphRelationship(
+        id=penicillins_to_gas_gangrene_alleviates_edge.id,
+        label=type(penicillins_to_gas_gangrene_alleviates_edge).__name__,
+        data=dict(penicillins_to_gas_gangrene_alleviates_edge),
+        to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
+        _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
+        to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
     )
 
     return [
