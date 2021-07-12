@@ -18,7 +18,7 @@ import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
-import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { ValueGenerator, SankeyAdvancedOptions} from './interfaces';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { SessionStorageService } from '../../shared/services/session-storage.service';
 import { nodeLabelAccessor } from '../../trace-viewer/components/utils';
@@ -31,37 +31,36 @@ import visNetwork from 'vis-network';
   styleUrls: ['./sankey-view.component.scss'],
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
+  networkTraces;
+  selectedNetworkTrace;
   paramsSubscription: Subscription;
   returnUrl: string;
-  selectionWithTraces;
-  loadTask: any;
-  openSankeySub: Subscription;
-  object?: FilesystemObject;
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  private currentFileId: any;
-
-  sankeyData: SankeyData;
-  filteredSankeyData;
-
-  detailsPanel: boolean;
-  advancedPanel: boolean;
-
-  traceDetailsGraph;
-
-  excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
-
-  networkTraces;
-
   selection: BehaviorSubject<Array<{
     type: string,
     entity: SankeyLink | SankeyNode | object,
     template: HTMLTemplateElement
   }>>;
+  selectionWithTraces;
+  loadTask: any;
+  openSankeySub: Subscription;
+  ready = false;
+  object?: FilesystemObject;
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
+  sankeyData: SankeyData;
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  filteredSankeyData;
+  detailsPanel: boolean;
+  advancedPanel: boolean;
+  traceDetailsGraph;
+  excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
   selectedNodes;
   selectedLinks;
-  selectedNetworkTrace;
-
+  selectedTraces;
   nodeAlign;
+  @ViewChild('traceDetails', {static: true}) traceDetails;
+  @ViewChild('linkDetails', {static: true}) linkDetails;
+  @ViewChild('nodeDetails', {static: true}) nodeDetails;
+
   options: SankeyAdvancedOptions = {
     nodeHeight: {
       min: {
@@ -110,14 +109,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     prescalers,
     selectedPrescaler: prescalers[0]
   };
-
   parseProperty = parseForRendering;
-  isArray = Array.isArray;
-
-  @ViewChild('traceDetails', {static: true}) traceDetails;
-  @ViewChild('linkDetails', {static: true}) linkDetails;
-  @ViewChild('nodeDetails', {static: true}) nodeDetails;
   @ViewChild('sankey', {static: false}) sankey;
+  isArray = Array.isArray;
+  private currentFileId: any;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -180,14 +175,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.emitModuleProperties();
 
       this.currentFileId = object.hashId;
+      this.ready = true;
     });
 
     this.loadFromUrl();
   }
 
-  // region Trace details
   parseTraceDetails(trace) {
-    const {nodes: mainNodes} = this.sankeyData;
+    const {nodes: mainNodes } = this.sankeyData;
 
     const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
       from,
@@ -203,30 +198,30 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       return nodesSet;
     }, new Set())];
     const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
-      const node = mainNodes.find(({id}) => id === nodeId);
-      if (node) {
-        const color = cubehelix(node._color);
-        color.s = 0;
-        const label = nodeLabelAccessor(node);
-        if (isDevMode() && !label) {
-          console.error(`Node ${node.id} has no label property.`, node);
-        }
-        return {
-          id: node.id,
-          color: '' + color,
-          databaseLabel: node.type,
-          label
-        };
-      } else {
-        console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
-        return {
-          id: nodeId,
-          label: nodeId,
-          databaseLabel: 'Implicitly defined',
-          color: 'red'
-        };
+    const node = mainNodes.find(({id}) => id === nodeId);
+    if (node) {
+      const color = cubehelix(node._color);
+      color.s = 0;
+      const label = nodeLabelAccessor(node);
+      if (isDevMode() && !label) {
+        console.error(`Node ${node.id} has no label property.`, node);
       }
-    });
+      return {
+        id: node.id,
+        color: '' + color,
+        databaseLabel: node.type,
+        label
+      };
+    } else {
+      console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
+      return {
+        id: nodeId,
+        label: nodeId,
+        databaseLabel: 'Implicitly defined',
+        color: 'red'
+      };
+    }
+  });
 
     return {
       ...trace,
@@ -235,7 +230,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     };
   }
 
-  showTraceDetails(trace) {
+  gotoDynamic(trace) {
     const traceDetails = this.parseTraceDetails(trace);
     const id = this.sessionStorage.set(traceDetails);
     const url = `/projects/${this.object.project.name}/trace/${id}`;
@@ -244,8 +239,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  // endregion
-
   getJSONDetails(details) {
     return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
   }
@@ -253,6 +246,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   getNodeById(nodeId) {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
   }
+
 
   open(content) {
     this.modalService.open(content, {
@@ -282,6 +276,36 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   // endregion
 
+  selectNetworkTrace(networkTrace) {
+    this.selectedNetworkTrace = networkTrace;
+    const {links, nodes, graph: {node_sets}} = this.sankeyData;
+    const traceColorPaletteMap = createMapToColor(
+      networkTrace.traces.map(({group}) => group),
+      {alpha: _ => 1, saturation: _ => 0.35}
+    );
+    const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
+    const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
+    colorNodes(nodes);
+    const inNodes = node_sets[networkTrace.sources];
+    const outNodes = node_sets[networkTrace.targets];
+    this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
+    this.filteredSankeyData = this.linkGraph({
+      nodes: networkTraceNodes,
+      links: networkTraceLinks,
+      inNodes,
+      outNodes
+    });
+  }
+
+  openDetailsPanel() {
+    this.detailsPanel = true;
+  }
+
+  closeDetailsPanel() {
+    this.detailsPanel = false;
+    this.resetSelection();
+  }
+
   closeAdvancedPanel() {
     this.advancedPanel = false;
   }
@@ -294,180 +318,38 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  // region Properties extraction
-  extractLinkValueProperties([link = {}]) {
-    // extract all numeric properties
-    this.options.linkValueAccessors = Object.entries(link).reduce((o, [k, v]) => {
-      if (this.excludedProperties.has(k)) {
-        return o;
-      }
-      if (isPositiveNumber(v)) {
-        o.push({
-          description: k,
-          preprocessing: linkSizeByProperty(k),
-          postprocessing: ({links}) => {
-            links.forEach(l => {
-              l.value /= (l._adjacent_divider || 1);
-              // take max for layer calculation
-            });
-          }
-        });
-      } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
-        o.push({
-          description: k,
-          preprocessing: linkSizeByArrayProperty(k),
-          postprocessing: ({links}) => {
-            links.forEach(l => {
-              l.multiple_values = l.multiple_values.map(d => d / (l._adjacent_divider || 1));
-              // take max for layer calculation
-            });
-          }
-        });
-      }
-      return o;
-    }, []);
-  }
-
-  extractNodeValueProperties([node = {}]) {
-    // extract all numeric properties
-    this.options.nodeValueAccessors = Object.entries(node).reduce((o, [k, v]) => {
-      if (this.excludedProperties.has(k)) {
-        return o;
-      }
-      if (isPositiveNumber(v)) {
-        o.push({
-          description: k,
-          preprocessing: nodeValueByProperty(k)
-        });
-      }
-      return o;
-    }, []);
-  }
-
-  extractPredefinedValueProperties({sizing = {}}: { sizing: SankeyPredefinedSizing }) {
-    this.options.predefinedValueAccessors = this.options.predefinedValueAccessors.concat(
-      Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
-        description: name,
-        callback: () => {
-          if (node_sizing) {
-            const nodeValueAccessor = this.options.nodeValueAccessors.find(({description}) => description === node_sizing);
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
-          } else {
-            const nodeValueAccessor = this.options.nodeValueGenerators[0];
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
-          }
-          if (link_sizing) {
-            const linkValueAccessor = this.options.linkValueAccessors.find(({description}) => description === link_sizing);
-            this.options.selectedLinkValueAccessor = linkValueAccessor;
-          } else {
-            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[1];
-          }
-          this.onOptionsChange();
-        }
-      })));
-  }
-
-  // endregion
-
-  loadFromUrl() {
-    // Check if the component was loaded with a url to parse fileId
-    // from
-    if (this.route.snapshot.params.file_id) {
-      this.object = null;
-      this.currentFileId = null;
-
-      const linkedFileId = this.route.snapshot.params.file_id;
-      this.openSankey(linkedFileId);
-    }
-  }
-
-  /**
-   * Open sankey by file_id along with location to scroll to
-   * @param hashId - represent the sankey to open
-   */
-  openSankey(hashId: string) {
-    if (this.object != null && this.currentFileId === this.object.hashId) {
-      return;
-    }
-    this.loadTask.update([hashId]);
-  }
-
-  parseData({links, graph, nodes, ...data}) {
-    this.networkTraces = graph.trace_networks;
-    this.selectedNetworkTrace = this.networkTraces[0];
-    this.extractLinkValueProperties(links);
-    this.extractNodeValueProperties(nodes);
-    this.extractPredefinedValueProperties(graph);
-    return {
-      ...data,
-      graph,
-      links,
-      nodes
-    } as SankeyData;
-  }
-
-  requestRefresh() {
-    if (confirm('There have been some changes. Would you like to refresh this open document?')) {
-      this.loadFromUrl();
-    }
-  }
-
-  emitModuleProperties() {
-    this.modulePropertiesChange.next({
-      title: this.object.filename,
-      fontAwesomeIcon: 'file-chart-line',
-    });
-  }
-
-  prescale(data) {
-    const {fn, process} = this.options.selectedPrescaler;
-
-    if (process) {
-      process(data);
-    }
-    if (fn) {
-      data.nodes.filter(({fixedValue}) => fixedValue).forEach(n => {
-        n.fixedValue = fn(n.fixedValue);
-      });
-      data.links.forEach(l => {
-        l.value = fn(l.value);
-        if (l.multiple_values) {
-          l.multiple_values = l.multiple_values.map(fn);
-        }
-      });
-    }
-  }
-
   linkGraph(data) {
     data.links.forEach(l => {
       l.id = uuidv4();
     });
-
     const preprocessedNodes = this.options.selectedNodeValueAccessor.preprocessing(data) || {};
     const preprocessedLinks = this.options.selectedLinkValueAccessor.preprocessing(data) || {};
 
     Object.assign(data, preprocessedLinks, preprocessedNodes);
 
-    this.prescale(data);
+    const prescaler = this.options.selectedPrescaler.fn;
 
+    let minValue = data.nodes.reduce((m, n) => {
+      if (n.fixedValue !== undefined) {
+        n.fixedValue = prescaler(n.fixedValue);
+        return Math.min(m, n.fixedValue);
+      }
+      return m;
+    }, 0);
+    minValue = data.links.reduce((m, l) => {
+      l.value = prescaler(l.value);
+      if (l.multiple_values) {
+        l.multiple_values = l.multiple_values.map(prescaler);
+        return Math.min(m, ...l.multiple_values);
+      }
+      return Math.min(m, l.value);
+    }, minValue);
     if (this.options.selectedNodeValueAccessor.postprocessing) {
       Object.assign(data, this.options.selectedNodeValueAccessor.postprocessing(data) || {});
     }
     if (this.options.selectedLinkValueAccessor.postprocessing) {
       Object.assign(data, this.options.selectedLinkValueAccessor.postprocessing(data) || {});
     }
-
-    let minValue = data.nodes.filter(({fixedValue}) => fixedValue).reduce((m, n) => {
-      return Math.min(m, n.fixedValue);
-    }, 0);
-    minValue = data.links.reduce((m, l) => {
-      if (l.multiple_values) {
-        return Math.min(m, ...l.multiple_values);
-      }
-      return Math.min(m, l.value);
-    }, minValue);
-
-    // offset values if falls out of scale
     if (minValue < 0) {
       data.nodes.forEach(n => {
         if (n.fixedValue !== undefined) {
@@ -558,9 +440,133 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
+  extractLinkValueProperties([link = {}]) {
+    // extract all numeric properties
+    this.options.linkValueAccessors = Object.entries(link).reduce((o, [k, v]) => {
+      if (this.excludedProperties.has(k)) {
+        return o;
+      }
+      if (isPositiveNumber(v)) {
+        o.push({
+          description: k,
+          preprocessing: linkSizeByProperty(k),
+          postprocessing: ({links}) => {
+            links.forEach(l => {
+              l.value /= (l._adjacent_divider || 1);
+              // take max for layer calculation
+            });
+          }
+        });
+      } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
+        o.push({
+          description: k,
+          preprocessing: linkSizeByArrayProperty(k),
+          postprocessing: ({links}) => {
+            links.forEach(l => {
+              l.multiple_values = l.multiple_values.map(d => d / (l._adjacent_divider || 1));
+              // take max for layer calculation
+            });
+          }
+        });
+      }
+      return o;
+    }, []);
+  }
+
+  extractNodeValueProperties([node = {}]) {
+    // extract all numeric properties
+    this.options.nodeValueAccessors = Object.entries(node).reduce((o, [k, v]) => {
+      if (this.excludedProperties.has(k)) {
+        return o;
+      }
+      if (isPositiveNumber(v)) {
+        o.push({
+          description: k,
+          preprocessing: nodeValueByProperty(k)
+        });
+      }
+      return o;
+    }, []);
+  }
+
+  extractPredefinedValueProperties({sizing = {}}: { sizing: SankeyPredefinedSizing }) {
+    this.options.predefinedValueAccessors = this.options.predefinedValueAccessors.concat(
+      Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
+        description: name,
+        callback: () => {
+          if (node_sizing) {
+            const nodeValueAccessor = this.options.nodeValueAccessors.find(({description}) => description === node_sizing);
+            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+          } else {
+            const nodeValueAccessor = this.options.nodeValueGenerators[0];
+            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+          }
+          if (link_sizing) {
+            const linkValueAccessor = this.options.linkValueAccessors.find(({description}) => description === link_sizing);
+            this.options.selectedLinkValueAccessor = linkValueAccessor;
+          } else {
+            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[1];
+          }
+          this.onOptionsChange();
+        }
+      })));
+  }
+
+  parseData({links, graph, nodes, ...data}) {
+    this.networkTraces = graph.trace_networks;
+    this.selectedNetworkTrace = this.networkTraces[0];
+    this.extractLinkValueProperties(links);
+    this.extractNodeValueProperties(nodes);
+    this.extractPredefinedValueProperties(graph);
+    return {
+      ...data,
+      graph,
+      links,
+      nodes
+    } as SankeyData;
+  }
+
+  loadFromUrl() {
+    // Check if the component was loaded with a url to parse fileId
+    // from
+    if (this.route.snapshot.params.file_id) {
+      this.object = null;
+      this.currentFileId = null;
+
+      const linkedFileId = this.route.snapshot.params.file_id;
+      this.openSankey(linkedFileId);
+    }
+  }
+
+  requestRefresh() {
+    if (confirm('There have been some changes. Would you like to refresh this open document?')) {
+      this.loadFromUrl();
+    }
+  }
+
+  /**
+   * Open sankey by file_id along with location to scroll to
+   * @param hashId - represent the sankey to open
+   */
+  openSankey(hashId: string) {
+    if (this.object != null && this.currentFileId === this.object.hashId) {
+      return;
+    }
+    this.ready = false;
+
+    this.loadTask.update([hashId]);
+  }
+
   ngOnDestroy() {
     this.paramsSubscription.unsubscribe();
     this.openSankeySub.unsubscribe();
+  }
+
+  emitModuleProperties() {
+    this.modulePropertiesChange.next({
+      title: this.object.filename,
+      fontAwesomeIcon: 'file-chart-line',
+    });
   }
 
   onOptionsChange() {
@@ -586,28 +592,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
-  }
-
-  // region Selection
-  selectNetworkTrace(networkTrace) {
-    this.selectedNetworkTrace = networkTrace;
-    const {links, nodes, graph: {node_sets}} = this.sankeyData;
-    const traceColorPaletteMap = createMapToColor(
-      networkTrace.traces.map(({group}) => group),
-      {alpha: _ => 1, saturation: _ => 0.35}
-    );
-    const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
-    const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
-    colorNodes(nodes);
-    const inNodes = node_sets[networkTrace.sources];
-    const outNodes = node_sets[networkTrace.targets];
-    this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
-    this.filteredSankeyData = this.linkGraph({
-      nodes: networkTraceNodes,
-      links: networkTraceLinks,
-      inNodes,
-      outNodes
-    });
   }
 
   toggleSelect(entity, type, template: HTMLTemplateElement) {
@@ -647,14 +631,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  // endregion
-
   selectPredefinedValueAccessor(accessor) {
     this.options.selectedPredefinedValueAccessor = accessor;
     accessor.callback();
   }
 
-  // region Details
   openNodeDetails(node) {
     this.selectNode(node);
     this.openDetailsPanel();
@@ -664,15 +645,4 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.selectLink(link);
     this.openDetailsPanel();
   }
-
-  openDetailsPanel() {
-    this.detailsPanel = true;
-  }
-
-  closeDetailsPanel() {
-    this.detailsPanel = false;
-    this.resetSelection();
-  }
-
-  // endregion
 }
