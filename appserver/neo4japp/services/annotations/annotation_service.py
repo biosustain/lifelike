@@ -1,5 +1,6 @@
 import time
 
+from bisect import bisect_left
 from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
 from uuid import uuid4
@@ -354,8 +355,13 @@ class AnnotationService:
                 )
                 continue
 
+            positions_to_check = self.organism_locations[organism]
+            if above_only:
+                cut_idx = bisect_left(positions_to_check, (entity_location_lo, entity_location_hi))
+                positions_to_check = positions_to_check[:cut_idx+1]
+
             # Get the closest instance of this organism
-            for organism_pos in self.organism_locations[organism]:
+            for organism_pos in positions_to_check:
                 organism_location_lo = organism_pos[0]
                 organism_location_hi = organism_pos[1]
 
@@ -363,8 +369,7 @@ class AnnotationService:
                     # organism is before entity
                     new_organism_dist = entity_location_lo - organism_location_hi
                 else:
-                    if not above_only:
-                        new_organism_dist = organism_location_lo - entity_location_hi
+                    new_organism_dist = organism_location_lo - entity_location_hi
 
                 if new_organism_dist < min_organism_dist:
                     min_organism_dist = new_organism_dist
@@ -513,10 +518,9 @@ class AnnotationService:
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
-        gene_organism_matches = {}
 
         gene_match_time = time.time()
-        gene_organism_matches = self.graph.get_gene_to_organism_match_result(
+        graph_results = self.graph.get_gene_to_organism_match_result(
             genes=gene_names_list,
             postgres_genes=self.db.get_organism_genes(
                 genes=gene_names_list, organism_ids=organism_ids),
@@ -527,12 +531,15 @@ class AnnotationService:
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
 
+        gene_organism_matches = graph_results.matches
+        gene_data_sources = graph_results.data_sources
+
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
 
         if self.specified_organism.synonym:
             gene_match_time = time.time()
-            fallback_gene_organism_matches = \
+            fallback_graph_results = \
                 self.graph.get_gene_to_organism_match_result(
                     genes=gene_names_list,
                     postgres_genes=self.db.get_organism_genes(
@@ -543,6 +550,7 @@ class AnnotationService:
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
+            fallback_gene_organism_matches = fallback_graph_results.matches
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
@@ -551,12 +559,6 @@ class AnnotationService:
             entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in gene_organism_matches:
-                # the postgres table organism_gene_match
-                # doesn't have data_source like the KG since that's recent
-                # hotfix for now until that table is replaced with a better implementation
-                has_gene_data_source = gene_organism_matches[entity_synonym].get('gene_data_source', False)  # noqa
-                if has_gene_data_source and entity['id_type'] != gene_organism_matches[entity_synonym]['gene_data_source']:  # noqa
-                    continue
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
@@ -584,12 +586,6 @@ class AnnotationService:
                 specified_organism_id = best_match.specified_organism_id
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
             elif entity_synonym in fallback_gene_organism_matches:
-                # the postgres table `organism_gene_match`
-                # doesn't have data_source like the KG since that's recent
-                # hotfix for now until that table is replaced with a better implementation
-                has_gene_data_source = fallback_gene_organism_matches[entity_synonym].get('gene_data_source', False)  # noqa
-                if has_gene_data_source and entity['id_type'] != fallback_gene_organism_matches[entity_synonym]['gene_data_source']:  # noqa
-                    continue
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
@@ -607,6 +603,11 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
+                # the postgres table `organism_gene_match`
+                # doesn't have data_source like the KG since that's recent
+                # hotfix for now until that table is replaced with a better implementation
+                if gene_id in gene_data_sources and entity['id_type'] != gene_data_sources[gene_id]:
+                    continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
                         token=token,
@@ -643,10 +644,9 @@ class AnnotationService:
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
-        protein_organism_matches = {}
 
         protein_match_time = time.time()
-        protein_organism_matches = self.graph.get_proteins_to_organisms(
+        graph_results = self.graph.get_proteins_to_organisms(
             proteins=protein_names_list,
             organisms=list(self.organism_frequency),
         )
@@ -655,12 +655,13 @@ class AnnotationService:
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
 
+        protein_organism_matches = graph_results.matches
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
 
         if self.specified_organism.synonym:
             protein_match_time = time.time()
-            fallback_protein_organism_matches = \
+            fallback_graph_results = \
                 self.graph.get_proteins_to_organisms(
                     proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
@@ -669,6 +670,8 @@ class AnnotationService:
                 f'Protein fallback organism KG query time {time.time() - protein_match_time}',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
+
+            fallback_protein_organism_matches = fallback_graph_results.matches
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')

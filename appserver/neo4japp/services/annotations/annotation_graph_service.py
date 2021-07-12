@@ -3,7 +3,7 @@ from typing import Dict, List
 from flask import current_app
 
 from .constants import EntityType
-from .data_transfer_objects import GlobalInclusions, Inclusion
+from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
 
@@ -169,7 +169,7 @@ class AnnotationGraphService(GraphConnection):
         genes: List[str],
         postgres_genes: Dict[str, Dict[str, Dict[str, str]]],
         matched_organism_ids: List[str],
-    ) -> Dict[str, Dict[str, Dict[str, str]]]:
+    ) -> GeneOrProteinToOrganism:
         """Returns a map of gene name to gene id."""
         postgres_result = postgres_genes
 
@@ -179,16 +179,18 @@ class AnnotationGraphService(GraphConnection):
         neo4j_result = self.get_genes_to_organisms(second_round_genes, matched_organism_ids)
 
         # Join the results of the two queries
-        postgres_result.update(neo4j_result)
+        postgres_result.update(neo4j_result.matches)
 
-        return postgres_result
+        return GeneOrProteinToOrganism(
+            matches=postgres_result, data_sources=neo4j_result.data_sources)
 
     def get_genes_to_organisms(
         self,
         genes: List[str],
         organisms: List[str],
-    ) -> Dict[str, Dict[str, Dict[str, str]]]:
+    ) -> GeneOrProteinToOrganism:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
+        data_sources: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
             get_gene_to_organism(), {'genes': genes, 'organisms': organisms})
@@ -198,7 +200,9 @@ class AnnotationGraphService(GraphConnection):
             gene_synonym = row['gene_synonym']
             gene_id = row['gene_id']
             organism_id = row['organism_id']
-            gene_data_source = row['data_source']
+            data_source = row['data_source']
+
+            data_sources[gene_id] = data_source
 
             if gene_to_organism_map.get(gene_synonym, None) is not None:
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):
@@ -206,16 +210,15 @@ class AnnotationGraphService(GraphConnection):
                 else:
                     gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[gene_synonym] = {
-                    gene_name: {organism_id: gene_id}, 'gene_data_source': gene_data_source}
+                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
-        return gene_to_organism_map
+        return GeneOrProteinToOrganism(matches=gene_to_organism_map, data_sources=data_sources)
 
     def get_proteins_to_organisms(
         self,
         proteins: List[str],
         organisms: List[str],
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> GeneOrProteinToOrganism:
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         result = self.exec_read_query_with_params(
@@ -233,7 +236,7 @@ class AnnotationGraphService(GraphConnection):
             else:
                 protein_to_organism_map[protein_name] = {organism_id: gene_id}
 
-        return protein_to_organism_map
+        return GeneOrProteinToOrganism(matches=protein_to_organism_map)
 
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         return self.exec_read_query_with_params(
