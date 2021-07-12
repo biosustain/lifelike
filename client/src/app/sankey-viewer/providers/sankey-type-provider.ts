@@ -1,7 +1,4 @@
-import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
-  Exporter,
-} from '../../file-browser/services/object-type.service';
+import { AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper, Exporter, } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';

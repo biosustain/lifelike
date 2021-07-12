@@ -5,7 +5,7 @@
         <i class="fa fa-fw fa-plus"></i>
         Create User
       </button>
-      <div class="d-inline-block" ngbTooltip="Under construction!">
+      <div class="d-inline-block">
         <button class="btn btn-secondary ml-2" [disabled]="!isOneSelected()" (click)="displayUpdateDialog()" >
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
@@ -13,6 +13,9 @@
           <i class="fa fa-fw fa-trash"></i>
         </button>
       </div>
+      <button type="button" class="btn btn-warning ml-2" (click)="this.displayMissingRolesDialog()" [disabled]="!this.getRolelessUsers().length">
+        Missing roles
+      </button>
       <button type="button" class="btn btn-secondary ml-2" (click)="this.refresh()"
               ngbTooltip="Refresh the results">
         <i class="fa fa-sync"></i>
@@ -84,10 +87,20 @@
         </div>
       </td>
       <td class="align-middle d-none d-md-table-cell text-truncate">
-        <span *ngIf="!user.roles.includes('admin'); else adminText">User</span>
-        <ng-template #adminText>
-          Administrator
+        <ng-container *ngIf="user.roles.length; then roleCheck; else noRoleText">
+        </ng-container>
+        <ng-template #roleCheck>
+          <span *ngIf="!user.roles.includes('admin'); else adminText">User</span>
+          <ng-template #adminText>
+            Administrator
+          </ng-template>
         </ng-template>
+        <ng-template #noRoleText>
+          <span class="badge badge-danger">
+            No role
+          </span>
+        </ng-template>
+
       </td>
       <td class="align-middle d-none d-lg-table-cell text-truncate">
         {{ user.email }}
