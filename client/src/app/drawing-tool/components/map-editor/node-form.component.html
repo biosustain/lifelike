@@ -14,7 +14,7 @@
 
           <div class="form-group">
             <label for="detail">Detail:</label>
-            <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="10"
+            <textarea *ngIf="!isImageNode()" [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="10"
                       maxlength="5000"></textarea>
             <label *ngIf="isImageNode()"> THIS IS AN IMAGE NODE </label>
           </div>
