@@ -17,12 +17,16 @@ import { RouterModule } from '@angular/router';
 import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
-import { FilterPanelComponent } from './components/filter-panel/filter-panel.component';
+import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
+import { TraceDetailsComponent } from './components/trace-details/trace-details.component';
+import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    FilterPanelComponent
+    SankeyAdvancedPanelComponent,
+    SankeyDetailsPanelComponent,
+    TraceDetailsComponent
   ],
   imports: [
     CommonModule,
@@ -51,7 +55,9 @@ import { FilterPanelComponent } from './components/filter-panel/filter-panel.com
   }],
   exports: [
     SankeyViewComponent,
-    FilterPanelComponent
+    SankeyAdvancedPanelComponent,
+    SankeyDetailsPanelComponent,
+    TraceDetailsComponent
   ],
 })
 export class SankeyViewerLibModule {

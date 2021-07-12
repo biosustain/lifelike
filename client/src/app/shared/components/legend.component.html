@@ -2,9 +2,10 @@
   <div class="window-body">
     <div class="d-flex flex-column align-items-center">
       <span *ngFor="let nodeType of legend | keyvalue" class="w-100 d-flex flex-row align-items-center">
-        <div class="border border-white rounded mr-2"
+        <div class="rounded mr-2"
               [ngStyle]="{
                 'background': nodeType.value[0],
+                'border': '3px solid ' + nodeType.value[1],
                 'height': '10px',
                 'width': '10px'
               }"
