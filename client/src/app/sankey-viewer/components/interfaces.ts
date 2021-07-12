@@ -12,7 +12,8 @@ export interface ArrayWithDefault<T> extends Array<T> {
 export interface Prescaler {
   name: string;
   description: string;
-  fn: (v: number) => number;
+  fn?: (v: number) => number;
+  process?: (v: any) => void;
 }
 
 

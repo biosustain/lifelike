@@ -268,7 +268,7 @@
                                 {{ graphLink._trace.group }}
                             </li>
                             <li class="list-group-item" *ngIf="graphLink._trace.detail_edges">
-                                <button (click)="gotoDynamic(graphLink._trace)" class="btn btn-outline-primary">
+                                <button (click)="showTraceDetails(graphLink._trace)" class="btn btn-outline-primary">
                                     Show detailed network
                                 </button>
                             </li>
@@ -436,7 +436,7 @@
                 </ngb-panel>
                 <ngb-panel *ngIf="trace.detail_edges">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button (click)="gotoDynamic(trace)" class="btn btn-link">Show detailed
+                        <button (click)="showTraceDetails(trace)" class="btn btn-link">Show detailed
                             network
                         </button>
                     </ng-template>
