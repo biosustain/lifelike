@@ -4,6 +4,7 @@ import { isDevMode } from '@angular/core';
 import { find } from '../algorithms/d3-sankey/d3-sankey';
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { cubehelix } from 'd3';
+import { nodeLabelAccessor } from '../utils';
 
 function* generateSLayout(segmentSize, scale = 1) {
   let x = 2 * segmentSize + 1;
@@ -60,14 +61,15 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
     if (node) {
       const color = cubehelix(node._color);
       color.s = 0;
-      if (isDevMode() && !node.displayName) {
-        console.error(`Node ${node.id} has no displayName property.`, node);
+      const label = nodeLabelAccessor(node);
+      if (isDevMode() && !label) {
+        console.error(`Node ${node.id} has no label property.`, node);
       }
       return {
         ...node,
         color: '' + color,
         databaseLabel: node.type,
-        label: node.displayName
+        label
       };
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);

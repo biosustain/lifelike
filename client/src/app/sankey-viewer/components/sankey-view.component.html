@@ -101,6 +101,16 @@
                                 type="button">
                             <i class="fas fa-expand-arrows-alt"></i>
                         </button>
+                        <button (click)="zoomIn()" class="btn btn-secondary" container="body"
+                  ngbTooltip="Zoom In" placement="bottom"
+                                type="button">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button (click)="zoomOut()" class="btn btn-secondary" container="body"
+                  ngbTooltip="Zoom Out" placement="bottom"
+                                type="button">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
                     </div>
                     <div class="btn-group btn-group-toggle">
                         <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
@@ -135,10 +145,11 @@
                       unit="pixel">
                 <as-split-area [order]="0">
                     <app-sankey #sankey
+                                *ngIf="filteredSankeyData"
                                 (adjustLayout)="sankeyLayoutAdjustment($event)"
                                 (linkClicked)="openLinkDetails($event)"
                                 (nodeClicked)="openNodeDetails($event)"
-                                *ngIf="filteredSankeyData"
+                                [nodeAlign]="nodeAlign"
                                 [data]="filteredSankeyData"
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"

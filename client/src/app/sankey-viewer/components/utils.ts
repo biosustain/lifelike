@@ -105,3 +105,5 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
   }
   return v;
 };
+
+export const nodeLabelAccessor = ({label}) => label;

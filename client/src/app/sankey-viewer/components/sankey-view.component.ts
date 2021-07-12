@@ -51,6 +51,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedNodes;
   selectedLinks;
   selectedTraces;
+  nodeAlign;
   @ViewChild('traceDetails', {static: true}) traceDetails;
   @ViewChild('linkDetails', {static: true}) linkDetails;
   @ViewChild('nodeDetails', {static: true}) nodeDetails;
@@ -188,26 +189,45 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .then(_ => _, _ => _);
   }
 
+  // region Zoom
   resetZoom() {
     if (this.sankey) {
       this.sankey.resetZoom();
     }
   }
 
+  zoomIn() {
+    if (this.sankey) {
+      this.sankey.scaleZoom(1.25);
+    }
+  }
+
+  zoomOut() {
+    if (this.sankey) {
+      this.sankey.scaleZoom(.8);
+    }
+  }
+
+  // endregion
+
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const traceColorPaletteMap = createMapToColor(
-      networkTrace.traces.map(({group}) => group), {alpha: _ => 1, saturation: _ => 0.5}
+      networkTrace.traces.map(({group}) => group),
+      {alpha: _ => 1, saturation: _ => 0.35}
     );
     const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
     colorNodes(nodes);
+    const inNodes = node_sets[networkTrace.sources];
+    const outNodes = node_sets[networkTrace.targets];
+    this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
-      inNodes: node_sets[networkTrace.sources],
-      outNodes: node_sets[networkTrace.targets]
+      inNodes,
+      outNodes
     });
   }
 
@@ -484,7 +504,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   onOptionsChange($event) {
-    console.log($event);
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
