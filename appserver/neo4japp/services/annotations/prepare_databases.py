@@ -8,24 +8,21 @@ import csv
 import lmdb
 import json
 
-from ast import literal_eval
 from os import path, remove, walk
 
 from neo4japp.services.annotations.constants import (
-    CHEMICALS_CHEBI_LMDB,
-    COMPOUNDS_BIOCYC_LMDB,
-    DISEASES_MESH_LMDB,
-    GENES_NCBI_LMDB,
-    PHENOMENAS_MESH_LMDB,
-    PHENOTYPES_CUSTOM_LMDB,
-    PROTEINS_UNIPROT_LMDB,
-    CHEMICALS_PUBCHEM_LMDB,
-    SPECIES_NCBI_LMDB,
-    FOODS_MESH_LMDB,
-    ANATOMY_MESH_LMDB,
-    DatabaseType,
+    CHEMICALS_LMDB,
+    COMPOUNDS_LMDB,
+    DISEASES_LMDB,
+    GENES_LMDB,
+    PHENOMENAS_LMDB,
+    PHENOTYPES_LMDB,
+    PROTEINS_LMDB,
+    SPECIES_LMDB,
+    FOODS_LMDB,
+    ANATOMY_LMDB
 )
-from neo4japp.services.annotations.lmdb_util import (
+from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
     create_ner_type_compound,
@@ -74,18 +71,20 @@ def prepare_lmdb_genes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size, max_dbs=2)
-        db = env.open_db(GENES_NCBI_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(GENES_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # gene_id	name	synonym	tax_id	tax_category
+            # geneId	geneName	synonym	data_source
             headers = next(reader)
             for line in reader:
                 gene_name = line[1]
                 synonym = line[2]
+                data_source = line[3]
 
-                gene = create_ner_type_gene(name=gene_name, synonym=synonym)
+                gene = create_ner_type_gene(
+                    name=gene_name, synonym=synonym, data_source=data_source)
 
                 try:
                     transaction.put(
@@ -103,7 +102,7 @@ def prepare_lmdb_chemicals_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size, max_dbs=2)
-        db = env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(CHEMICALS_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -137,7 +136,7 @@ def prepare_lmdb_compounds_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size, max_dbs=2)
-        db = env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(COMPOUNDS_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -188,7 +187,7 @@ def prepare_lmdb_proteins_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PROTEINS_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -221,7 +220,7 @@ def prepare_lmdb_species_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/species'), map_size=map_size, max_dbs=2)
-        db = env.open_db(SPECIES_NCBI_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -257,7 +256,7 @@ def prepare_lmdb_diseases_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size, max_dbs=2)
-        db = env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(DISEASES_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -287,7 +286,7 @@ def prepare_lmdb_phenomenas_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/phenomenas'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PHENOMENAS_MESH_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PHENOMENAS_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -321,7 +320,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PHENOTYPES_CUSTOM_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PHENOTYPES_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -355,7 +354,7 @@ def prepare_lmdb_foods_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/foods'), map_size=map_size, max_dbs=2)
-        db = env.open_db(FOODS_MESH_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(FOODS_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -388,7 +387,7 @@ def prepare_lmdb_anatomy_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/anatomy'), map_size=map_size, max_dbs=2)
-        db = env.open_db(ANATOMY_MESH_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(ANATOMY_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -438,36 +437,43 @@ if __name__ == '__main__':
 
     # anatomy
     prepare_lmdb_anatomy_database(filename='datasets/anatomy.tsv')
+    print('Done creating anatomy')
 
     # chemical
     prepare_lmdb_chemicals_database(filename='datasets/chebi.tsv')
+    print('Done creating chemicals')
 
     # compound
     prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
+    print('Done creating compounds')
 
     # gene
     prepare_lmdb_genes_database(filename='datasets/genes.tsv')
+    prepare_lmdb_genes_database(filename='datasets/pseudomonasCyc_genes.tsv')
+    print('Done creating genes')
 
     # disease
     prepare_lmdb_diseases_database(filename='datasets/disease.tsv')
-    # this is now included in disease.tsv
-    # it was needed before because the data was new and not in disease.tsv
-    # keep as record in case it's removed from disease.tsv later
-    # prepare_lmdb_diseases_database(filename='datasets/covid19_disease.tsv')
+    print('Done creating diseases')
 
     # food
     prepare_lmdb_foods_database(filename='datasets/food.tsv')
+    print('Done creating foods')
 
     # phenomena
     prepare_lmdb_phenomenas_database(filename='datasets/phenomena.tsv')
+    print('Done creating phenomenas')
 
     # phenotype
     prepare_lmdb_phenotypes_database(filename='datasets/phenotype.tsv')
+    print('Done creating phenotypes')
 
     # protein
     prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
     prepare_lmdb_proteins_database(filename='datasets/sprot2syn_gene.tsv')
+    print('Done creating proteins')
 
     # organism
     prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/covid19_taxonomy2.tsv')
+    print('Done creating taxonomy')

@@ -7,7 +7,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain,
     GlobalInclusions
 )
-from neo4japp.services.annotations.util import process_parsed_content
+from neo4japp.services.annotations.utils.parsing import process_parsed_content
 
 from .util import *
 

@@ -24,7 +24,7 @@ from neo4japp.services.annotations.constants import (
     ORGANISM_DISTANCE_THRESHOLD,
     SEARCH_LINKS,
 )
-from neo4japp.services.annotations.util import has_center_point
+from .utils.common import has_center_point
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     BestOrganismMatch,
@@ -135,16 +135,19 @@ class AnnotationService:
             link_search_term = param.token.keyword
 
             # entity here is data structure from LMDB
-            # see services/annotations/lmdb_util.py for definition
+            # see services/annotations/utils/lmdb.py for definition
             if not param.entity_id_hyperlink:
                 # assign to avoid line being too long
                 # can't use multi pycode ignore/noqa...
                 link = ENTITY_HYPERLINKS
-                if param.entity['id_type'] != DatabaseType.NCBI.value:
+                try:
                     hyperlink = link[param.entity['id_type']]
-                else:
-                    # type ignore, see https://github.com/python/mypy/issues/8277
-                    hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+                except KeyError:
+                    if param.entity['id_type'] == 'BioCyc':
+                        # temp until LL-3296 is done
+                        hyperlink = link[DatabaseType.BIOCYC.value]
+                    else:
+                        raise
 
                 if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in param.entity_id:  # noqa
                     hyperlink += param.entity_id[5:]  # type: ignore

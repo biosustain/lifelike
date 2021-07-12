@@ -14,6 +14,7 @@ from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
 from .annotation_graph_service import AnnotationGraphService
+from .tokenizer import Tokenizer
 from .constants import (
     EntityType,
     ManualAnnotationType,
@@ -22,16 +23,19 @@ from .constants import (
     MAX_FOOD_WORD_LENGTH
 )
 from .data_transfer_objects import PDFWord
-from .initializer import get_annotation_tokenizer
-from .util import has_center_point, parse_content
+from .utils.common import has_center_point
+from .utils.parsing import parse_content
+from .utils.graph_queries import *
 
 
 class ManualAnnotationService:
     def __init__(
         self,
-        graph: AnnotationGraphService
+        graph: AnnotationGraphService,
+        tokenizer: Tokenizer
     ) -> None:
         self.graph = graph
+        self.tokenizer = tokenizer
 
     def _annotation_exists(
         self,
@@ -90,8 +94,6 @@ class ManualAnnotationService:
         term = custom_annotation['meta']['allText'].strip()
 
         if annotate_all:
-            # TODO: refactor this so it doesn't initialize like this
-            tokenizer = get_annotation_tokenizer()
             _, parsed = parse_content(file_id=file.id, exclude_references=False)
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
 
@@ -119,7 +121,7 @@ class ManualAnnotationService:
             matches = self._get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
-                tokens_list=tokenizer.create(parsed)
+                tokens_list=self.tokenizer.create(parsed)
             )
 
             inclusions = [{
@@ -158,6 +160,7 @@ class ManualAnnotationService:
                 ManualAnnotationType.INCLUSION.value,
                 file.content_id,
                 file.id,
+                file.hash_id,
                 user
             )
 
@@ -245,6 +248,7 @@ class ManualAnnotationService:
                 ManualAnnotationType.EXCLUSION.value,
                 file.content_id,
                 file.id,
+                file.hash_id,
                 user
             )
 
@@ -329,7 +333,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def save_global(self, annotation, inclusion_type, file_content_id, file_id, user):
+    def save_global(self, annotation, inclusion_type, file_content_id, file_id, file_hash_id, user):
         """Adds global inclusion to the KG, and global exclusion to postgres.
 
         For the KG, if a global inclusion (seen as a synonym) matches to an
@@ -366,7 +370,8 @@ class ManualAnnotationService:
                 'user': user_full_name,
                 'data_source': data_source if data_source != 'None' else None,
                 'hyperlink': hyperlink,
-                'common_name': common_name
+                'common_name': common_name,
+                'file_uuid': file_hash_id
             }
 
             # NOTE:
@@ -387,16 +392,16 @@ class ManualAnnotationService:
             # and add the label for the future
             if check['node_exist'] and (not check['synonym_exist'] or check.get('node_has_entity_label', False)):  # noqa
                 queries = {
-                    EntityType.ANATOMY.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.DISEASE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.FOOD.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.PHENOMENA.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.PHENOTYPE.value: self.graph.create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.CHEMICAL.value: self.graph.create_chemical_global_inclusion(),
-                    EntityType.COMPOUND.value: self.graph.create_compound_global_inclusion(),
-                    EntityType.GENE.value: self.graph.create_gene_global_inclusion(),
-                    EntityType.PROTEIN.value: self.graph.create_protein_global_inclusion(),
-                    EntityType.SPECIES.value: self.graph.create_species_global_inclusion()
+                    EntityType.ANATOMY.value: create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.DISEASE.value: create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.FOOD.value: create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOMENA.value: create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.PHENOTYPE.value: create_mesh_global_inclusion(entity_type),  # noqa
+                    EntityType.CHEMICAL.value: create_chemical_global_inclusion(),
+                    EntityType.COMPOUND.value: create_compound_global_inclusion(),
+                    EntityType.GENE.value: create_gene_global_inclusion(),
+                    EntityType.PROTEIN.value: create_protein_global_inclusion(),
+                    EntityType.SPECIES.value: create_species_global_inclusion()
                 }
 
                 query = queries.get(entity_type, '')
@@ -404,7 +409,7 @@ class ManualAnnotationService:
                     if query:
                         self.graph.exec_write_query_with_params(query, createval)
                     else:
-                        query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                        query = create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
                         self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -415,7 +420,7 @@ class ManualAnnotationService:
                     )
             elif not check['node_exist']:
                 try:
-                    query = self.graph.create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                    query = create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
                     self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -431,6 +436,7 @@ class ManualAnnotationService:
                     annotation=annotation,
                     type=inclusion_type,
                     file_id=file_id,
+                    file_content_id=file_content_id
                 )
 
                 try:
@@ -446,16 +452,16 @@ class ManualAnnotationService:
 
     def _global_annotation_exists_in_kg(self, values: dict):
         queries = {
-            EntityType.ANATOMY.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.DISEASE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.FOOD.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),
-            EntityType.PHENOMENA.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.PHENOTYPE.value: self.graph.mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.CHEMICAL.value: self.graph.chemical_global_inclusion_exist(),
-            EntityType.COMPOUND.value: self.graph.compound_global_inclusion_exist(),
-            EntityType.GENE.value: self.graph.gene_global_inclusion_exist(),
-            EntityType.PROTEIN.value: self.graph.protein_global_inclusion_exist(),
-            EntityType.SPECIES.value: self.graph.species_global_inclusion_exist()
+            EntityType.ANATOMY.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.DISEASE.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.FOOD.value: mesh_global_inclusion_exist(values['entity_type']),
+            EntityType.PHENOMENA.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.PHENOTYPE.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
+            EntityType.CHEMICAL.value: chemical_global_inclusion_exist(),
+            EntityType.COMPOUND.value: compound_global_inclusion_exist(),
+            EntityType.GENE.value: gene_global_inclusion_exist(),
+            EntityType.PROTEIN.value: protein_global_inclusion_exist(),
+            EntityType.SPECIES.value: species_global_inclusion_exist()
         }
 
         # query can be empty string because some entity types
@@ -475,7 +481,7 @@ class ManualAnnotationService:
             return result
         else:
             try:
-                query = self.graph.***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
+                query = ***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
                 result = self.graph.exec_read_query_with_params(query, values)[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise

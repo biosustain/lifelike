@@ -6,20 +6,23 @@ from .annotation_graph_service import AnnotationGraphService
 from .bioc_service import BiocDocumentService
 from .enrichment_annotation_service import EnrichmentAnnotationService
 from .entity_recognition import EntityRecognitionService
+from .manual_annotation_service import ManualAnnotationService
 from .lmdb_service import LMDBService
 from .tokenizer import Tokenizer
 
+from neo4japp.database import graph
+
 from .constants import (
-    ANATOMY_MESH_LMDB,
-    CHEMICALS_CHEBI_LMDB,
-    COMPOUNDS_BIOCYC_LMDB,
-    DISEASES_MESH_LMDB,
-    FOODS_MESH_LMDB,
-    GENES_NCBI_LMDB,
-    PHENOMENAS_MESH_LMDB,
-    PHENOTYPES_CUSTOM_LMDB,
-    PROTEINS_UNIPROT_LMDB,
-    SPECIES_NCBI_LMDB,
+    ANATOMY_LMDB,
+    CHEMICALS_LMDB,
+    COMPOUNDS_LMDB,
+    DISEASES_LMDB,
+    FOODS_LMDB,
+    GENES_LMDB,
+    PHENOMENAS_LMDB,
+    PHENOTYPES_LMDB,
+    PROTEINS_LMDB,
+    SPECIES_LMDB,
 )
 
 
@@ -27,23 +30,23 @@ from .constants import (
 # once each entity type starts having multiple sources
 # they will go in as subdirs (e.g chemicals/chebi, chemicals/pubchem)
 configs = {
-    ANATOMY_MESH_LMDB: 'anatomy',
-    CHEMICALS_CHEBI_LMDB: 'chemicals',
-    COMPOUNDS_BIOCYC_LMDB: 'compounds',
-    DISEASES_MESH_LMDB: 'diseases',
-    FOODS_MESH_LMDB: 'foods',
-    GENES_NCBI_LMDB: 'genes',
-    PHENOMENAS_MESH_LMDB: 'phenomenas',
-    PHENOTYPES_CUSTOM_LMDB: 'phenotypes',
-    PROTEINS_UNIPROT_LMDB: 'proteins',
-    SPECIES_NCBI_LMDB: 'species'
+    ANATOMY_LMDB: 'anatomy',
+    CHEMICALS_LMDB: 'chemicals',
+    COMPOUNDS_LMDB: 'compounds',
+    DISEASES_LMDB: 'diseases',
+    FOODS_LMDB: 'foods',
+    GENES_LMDB: 'genes',
+    PHENOMENAS_LMDB: 'phenomenas',
+    PHENOTYPES_LMDB: 'phenotypes',
+    PROTEINS_LMDB: 'proteins',
+    SPECIES_LMDB: 'species'
 }
 
 
 def get_annotation_service():
     return AnnotationService(
         db=AnnotationDBService(),
-        graph=AnnotationGraphService()
+        graph=AnnotationGraphService(graph)
     )
 
 
@@ -52,13 +55,13 @@ def get_annotation_db_service():
 
 
 def get_annotation_graph_service():
-    return AnnotationGraphService()
+    return AnnotationGraphService(graph)
 
 
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
         db=AnnotationDBService(),
-        graph=AnnotationGraphService()
+        graph=AnnotationGraphService(graph)
     )
 
 
@@ -72,6 +75,13 @@ def get_annotation_tokenizer():
 
 def get_lmdb_service():
     return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+
+
+def get_manual_annotation_service():
+    return ManualAnnotationService(
+        graph=AnnotationGraphService(graph),
+        tokenizer=Tokenizer()
+    )
 
 
 def get_recognition_service(exclusions, inclusions):
