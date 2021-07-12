@@ -30,7 +30,7 @@ node_labels = {
 }
 
 
-def get_organisms_from_gene_ids():
+def get_organisms_from_gene_ids_query():
     return """
     MATCH (g:Gene) WHERE g.id IN $gene_ids
     WITH g
@@ -40,7 +40,7 @@ def get_organisms_from_gene_ids():
     """
 
 
-def get_gene_to_organism():
+def get_gene_to_organism_query():
     return """
     MATCH (s:Synonym)-[]-(g:Gene)
     WHERE s.name IN $genes
@@ -51,7 +51,7 @@ def get_gene_to_organism():
     """
 
 
-def get_protein_to_organism():
+def get_protein_to_organism_query():
     return """
     MATCH (s:Synonym)-[]-(g:db_UniProt)
     WHERE s.name IN $proteins
@@ -83,7 +83,7 @@ def get_mesh_by_ids():
     """
 
 
-def get_global_inclusions_by_type(entity_type):
+def get_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -100,7 +100,7 @@ def get_global_inclusions_by_type(entity_type):
     """
 
 
-def get_lifelike_global_inclusions_by_type(entity_type):
+def get_lifelike_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -115,7 +115,7 @@ def get_lifelike_global_inclusions_by_type(entity_type):
     """
 
 
-def mesh_global_inclusion_exist(entity_type):
+def get_mesh_global_inclusion_exist_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -129,7 +129,7 @@ def mesh_global_inclusion_exist(entity_type):
     """
 
 
-def chemical_global_inclusion_exist():
+def get_chemical_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
     WHERE n.id = 'CHEBI:' + $entity_id
@@ -138,7 +138,7 @@ def chemical_global_inclusion_exist():
     """
 
 
-def compound_global_inclusion_exist():
+def get_compound_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_BioCyc:Compound)-[:HAS_SYNONYM]->(s)
     WHERE n.id = $entity_id
@@ -147,7 +147,7 @@ def compound_global_inclusion_exist():
     """
 
 
-def gene_global_inclusion_exist():
+def get_gene_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
     WHERE n.id = $entity_id
@@ -156,7 +156,7 @@ def gene_global_inclusion_exist():
     """
 
 
-def protein_global_inclusion_exist():
+def get_protein_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
     WHERE n.id = $entity_id
@@ -165,7 +165,7 @@ def protein_global_inclusion_exist():
     """
 
 
-def species_global_inclusion_exist():
+def get_species_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_NCBI:Taxonomy)-[:HAS_SYNONYM]->(s)
     WHERE n.id = $entity_id
@@ -174,7 +174,7 @@ def species_global_inclusion_exist():
     """
 
 
-def lifelike_global_inclusion_exist(entity_type):
+def get_lifelike_global_inclusion_exist_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -187,7 +187,7 @@ def lifelike_global_inclusion_exist(entity_type):
     """
 
 
-def create_mesh_global_inclusion(entity_type):
+def get_create_mesh_global_inclusion_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -204,7 +204,7 @@ def create_mesh_global_inclusion(entity_type):
     """.replace('replace_with_param', query_label)
 
 
-def create_chemical_global_inclusion():
+def get_create_chemical_global_inclusion_query():
     return """
     MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + $entity_id
     MERGE (s:Synonym {name: $synonym})
@@ -216,7 +216,7 @@ def create_chemical_global_inclusion():
     """
 
 
-def create_compound_global_inclusion():
+def get_create_compound_global_inclusion_query():
     return """
     MATCH (n:db_BioCyc:Compound) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
@@ -228,7 +228,7 @@ def create_compound_global_inclusion():
     """
 
 
-def create_gene_global_inclusion():
+def get_create_gene_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Gene) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
@@ -240,7 +240,7 @@ def create_gene_global_inclusion():
     """
 
 
-def create_species_global_inclusion():
+def get_create_species_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Taxonomy) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
@@ -252,7 +252,7 @@ def create_species_global_inclusion():
     """
 
 
-def create_protein_global_inclusion():
+def get_create_protein_global_inclusion_query():
     return """
     MATCH (n:db_UniProt:Protein) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
@@ -264,7 +264,7 @@ def create_protein_global_inclusion():
     """
 
 
-def create_lifelike_global_inclusion(entity_type):
+def get_create_lifelike_global_inclusion_query(entity_type):
     if entity_type not in node_labels:
         return ''
 

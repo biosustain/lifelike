@@ -358,7 +358,7 @@ class AnnotationService:
             positions_to_check = self.organism_locations[organism]
             if above_only:
                 cut_idx = bisect_left(positions_to_check, (entity_location_lo, entity_location_hi))
-                positions_to_check = positions_to_check[:cut_idx+1]
+                positions_to_check = positions_to_check[:cut_idx]
 
             # Get the closest instance of this organism
             for organism_pos in positions_to_check:

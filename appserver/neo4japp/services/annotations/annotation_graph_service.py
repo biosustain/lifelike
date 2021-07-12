@@ -44,15 +44,15 @@ class AnnotationGraphService(GraphConnection):
             EntityType.ENTITY.value: create_ner_type_entity
         }
 
-        # TODO: can we just do get_global_inclusions_by_type once?
+        # TODO: can we just do get_global_inclusions_by_type_query once?
         # get all nodes that a Synonym points to and filter on labels in python?
         # or would that be too much data to retrieve all at once?
-        global_inclusions = self.exec_read_query(get_global_inclusions_by_type(entity_type))
+        global_inclusions = self.exec_read_query(get_global_inclusions_by_type_query(entity_type))
         # need to append here because an inclusion
         # might've not been matched to an existing entity
         # so look for it in Lifelike
         global_inclusions += self.exec_read_query(
-            get_lifelike_global_inclusions_by_type(entity_type))
+            get_lifelike_global_inclusions_by_type_query(entity_type))
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
@@ -193,7 +193,7 @@ class AnnotationGraphService(GraphConnection):
         data_sources: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
-            get_gene_to_organism(), {'genes': genes, 'organisms': organisms})
+            get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
 
         for row in result:
             gene_name = row['gene_name']
@@ -222,7 +222,7 @@ class AnnotationGraphService(GraphConnection):
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         result = self.exec_read_query_with_params(
-            get_protein_to_organism(), {'proteins': proteins, 'organisms': organisms})
+            get_protein_to_organism_query(), {'proteins': proteins, 'organisms': organisms})
 
         for row in result:
             protein_name: str = row['protein']
@@ -238,6 +238,6 @@ class AnnotationGraphService(GraphConnection):
 
         return GeneOrProteinToOrganism(matches=protein_to_organism_map)
 
-    def get_organisms_from_gene_ids(self, gene_ids: List[str]):
+    def get_organisms_from_gene_ids_query(self, gene_ids: List[str]):
         return self.exec_read_query_with_params(
-            get_organisms_from_gene_ids(), {'gene_ids': gene_ids})
+            get_organisms_from_gene_ids_query(), {'gene_ids': gene_ids})

@@ -25,7 +25,10 @@ from neo4japp.services.annotations.constants import (
     PROTEINS_LMDB,
     SPECIES_LMDB
 )
-from neo4japp.services.annotations.data_transfer_objects import Inclusion
+from neo4japp.services.annotations.data_transfer_objects import (
+    Inclusion,
+    GeneOrProteinToOrganism
+)
 from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
@@ -791,7 +794,7 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
 @pytest.fixture(scope='function')
 def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'BOLA3': {'BOLA3': {'9606': '388962'}}}
+        return GeneOrProteinToOrganism(matches={'BOLA3': {'BOLA3': {'9606': '388962'}}})
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -803,13 +806,13 @@ def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_genes_vs_proteins(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'hyp27': {'hyp27': {'221103': '2846957'}},
             'SERPINA1': {
                 'serpina1': {'9606': '5265'},
                 'SERPINA1': {'9606': '5265'}
             }
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -821,12 +824,12 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'il-7': {
                 'IL7': {'7897': '102353780'},
                 'il-7': {'31033': '99999'}
             }
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -838,10 +841,10 @@ def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(m
 @pytest.fixture(scope='function')
 def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'ACE2': {'ACE2': {'9606': '59272'}},
             'Fake_ACE2': {'ACE2': {'9606': '59272'}}
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -853,7 +856,8 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'gene-(12345)': {'ACE2': {'9606': '59272'}}}
+        return GeneOrProteinToOrganism(matches={
+            'gene-(12345)': {'ACE2': {'9606': '59272'}}})
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -865,10 +869,10 @@ def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'IL8': {'CXCL8': {'9606': '3576'}},
             'IL-8': {'CXCL8': {'9606': '3576'}}
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -880,12 +884,12 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'EDEM3': {
                 'EDEM3': {'9606': '80267'},
                 'Edem3': {'10116': '289085'}
             }
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -897,13 +901,13 @@ def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
 @pytest.fixture(scope='function')
 def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'purA': {'purA': {'562': '948695'}},
             'purB': {'purB': {'562': '945695'}},
             'purC': {'purC': {'562': '946957'}},
             'purD': {'purD': {'562': '948504'}},
             'purF': {'purF': {'562': '946794'}},
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -915,10 +919,10 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'PPP': {'PPP': {'9606': '80267'}},
             'PAH': {'PAH': {'9606': '289085'}}
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -930,10 +934,10 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'YdhC': {'562': 'P37597'},
             'YdhB': {'562': 'P0ACR2'},
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -945,11 +949,11 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {
+        return GeneOrProteinToOrganism(matches={
             'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
             'BDNF': {'BDNF': {'9606': '627', '9685': '493690'}},
             'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
-        }
+        })
 
     monkeypatch.setattr(
         AnnotationGraphService,
