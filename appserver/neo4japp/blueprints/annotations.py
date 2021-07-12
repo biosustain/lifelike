@@ -407,7 +407,7 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
                     else:
                         gene_ids[gene_id] = 1
 
-        gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
+        gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids_query(
             gene_ids=list(gene_ids.keys())
         )
         sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']],
