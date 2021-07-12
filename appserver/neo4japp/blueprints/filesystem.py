@@ -1,6 +1,7 @@
 import hashlib
 import io
 import itertools
+import json
 import re
 import typing
 import urllib.request
@@ -18,6 +19,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
+from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -1050,9 +1052,49 @@ class FileExportView(FilesystemBaseView):
         file_type_service = get_file_type_service()
         file_type = file_type_service.get(file)
 
+        json_graph = json.loads(file.content.raw_file)
+        maps_to_export = {hash_id}
+        maps_re = re.compile('^/projects/[a-zA-Z0-9]+/maps/.+$')
+        # writer = PdfFileWriter()
+        merger = PdfFileMerger(strict=False)
+
+        for node in json_graph['nodes']:
+            if node['data'].get('sources') or node['data'].get('hyperlinks'):
+                data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
+                for link in data:
+                    url = link.get('url', "").lstrip()
+                    if maps_re.match(url):
+                        map_hash = url.split('/')[-1]
+                        # map_hash = url.split('/')[3]
+                        if map_hash not in maps_to_export:
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True)
+                            self.check_file_permissions([child_file], current_user, ['readable'],
+                                                        permit_recycled=True)
+                            maps_to_export.add(map_hash)
+                            child = file_type.generate_export(child_file, params['format'])
+                            child_content_io = io.BytesIO(child.content.getvalue())
+                            # child_content = child.content.getvalue()
+                            # print("Type of content: ", type(child_content_io))
+                            # print("Type of child: ", type(child_content))
+                            child_reader = PdfFileReader(child_content_io)
+                            # writer.appendPagesFromReader(child_reader)
+                            merger.append(child_content_io)
+
+        for some_map in maps_to_export:
+            print("I will export map with hash: ", some_map)
         try:
             export = file_type.generate_export(file, params['format'])
             export_content = export.content.getvalue()
+            export_content_io = io.BytesIO(export_content)
+            # checksum_sha256 = hashlib.sha256(export_content).digest()
+            export_reader = PdfFileReader(export_content_io, strict=False)
+            # print(export_reader.getNumPages(), " pages")
+            # writer.insertPage(export_reader.getPage(0))
+            merger.append(export_content_io)
+            merger.write(export_content_io)
+            merger.write('here.pdf')
+            export_content = export_content_io.read()
             checksum_sha256 = hashlib.sha256(export_content).digest()
 
             return make_cacheable_file_response(
