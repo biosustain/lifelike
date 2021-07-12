@@ -17,6 +17,8 @@ interface SankeyNode {
   _selected?: boolean;
   stId?: string;
   name?: string | Array<string>;
+  label?: string;
+  type?: string;
 }
 
 interface SankeyLink {

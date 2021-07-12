@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild, isDevMode } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
@@ -18,8 +18,12 @@ import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
-import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { ValueGenerator, SankeyAdvancedOptions} from './interfaces';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { SessionStorageService } from '../../shared/services/session-storage.service';
+import { nodeLabelAccessor } from '../../trace-viewer/components/utils';
+import { cubehelix } from 'd3';
+import visNetwork from 'vis-network';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -76,7 +80,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       callback: () => {
         this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.find(({description}) => description === 'Input count');
         this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
-        this.onOptionsChange(this.options);
+        this.onOptionsChange();
       }
     }],
     linkValueGenerators: [
@@ -115,7 +119,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly route: ActivatedRoute,
     private modalService: NgbModal,
     protected readonly workSpaceManager: WorkspaceManager,
-    private router: Router
+    private router: Router,
+    private sessionStorage: SessionStorageService
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
@@ -176,12 +181,61 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  gotoDynamic(state) {
-    const url = `/projects/${this.object.project.name}/trace`;
-    this.workSpaceManager.navigateByUrl(url, {
-      sideBySide: true, newTab: true, state: {
-        data: 'b'
+  parseTraceDetails(trace) {
+    const {nodes: mainNodes } = this.sankeyData;
+
+    const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
+      from,
+      to,
+      id: uuidv4(),
+      arrows: 'to',
+      label: d.type,
+      ...(d || {})
+    }));
+    const nodeIds = [...edges.reduce((nodesSet, {from, to}) => {
+      nodesSet.add(from);
+      nodesSet.add(to);
+      return nodesSet;
+    }, new Set())];
+    const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
+    const node = mainNodes.find(({id}) => id === nodeId);
+    if (node) {
+      const color = cubehelix(node._color);
+      color.s = 0;
+      const label = nodeLabelAccessor(node);
+      if (isDevMode() && !label) {
+        console.error(`Node ${node.id} has no label property.`, node);
       }
+      return {
+        id: node.id,
+        color: '' + color,
+        databaseLabel: node.type,
+        label
+      };
+    } else {
+      console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
+      return {
+        id: nodeId,
+        label: nodeId,
+        databaseLabel: 'Implicitly defined',
+        color: 'red'
+      };
+    }
+  });
+
+    return {
+      ...trace,
+      nodes,
+      edges
+    };
+  }
+
+  gotoDynamic(trace) {
+    const traceDetails = this.parseTraceDetails(trace);
+    const id = this.sessionStorage.set(traceDetails);
+    const url = `/projects/${this.object.project.name}/trace/${id}`;
+    this.workSpaceManager.navigateByUrl(url, {
+      sideBySide: true, newTab: true
     });
   }
 
@@ -313,7 +367,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return data;
   }
 
-  sankeyLayoutAdjustment({data, extent: [[marginLeft, marginTop], [width, height]]}) {
+  sankeyLayoutAdjustment({data, extent: [[_marginLeft, marginTop], [_width, height]]}) {
     const {inNodes = [], outNodes = []} = this.filteredSankeyData;
     const traverseRight = inNodes.length < outNodes.length;
     const nextNodes = traverseRight ?
@@ -327,7 +381,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const visited = new Set();
     let order = 0;
     const relayout = ns => {
-      ns.forEach((node, idx, arr) => {
+      ns.forEach(node => {
         if (visited.has(node)) {
           return;
         }
@@ -353,7 +407,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       const freeSpace = height - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
       let y = additionalSpacers ? spacerSize + marginTop : marginTop;
-      column.sort((a, b) => a._order - b._order).forEach((node, idx, arr) => {
+      column.sort((a, b) => a._order - b._order).forEach(node => {
         let nodeHeight = node.y1 - node.y0;
         if (this.options.nodeHeight.max.enabled) {
           nodeHeight = Math.min(nodeHeight, this.options.nodeHeight.max.ratio * 10);
@@ -453,7 +507,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           } else {
             this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[1];
           }
-          this.onOptionsChange(this.options);
+          this.onOptionsChange();
         }
       })));
   }
@@ -515,7 +569,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  onOptionsChange($event) {
+  onOptionsChange() {
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
