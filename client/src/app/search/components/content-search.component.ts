@@ -22,7 +22,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, ResultList, SearchableRequestOptions } from 'app/shared/schemas/common';
+import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { uuidv4 } from 'app/shared/utils';
@@ -36,10 +36,12 @@ import {
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
+import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
 import { SynonymSearchComponent } from './synonym-search.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
+import { ContentSearchResponse } from '../schema';
 
 
 @Component({
@@ -110,15 +112,25 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
+  getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     // No point sending a request if the params are completely empty
     if (this.emptyParams) {
-      return of({total: 0, results: []});
+      return of({
+        total: 0,
+        results: [],
+        synonyms: {},
+        droppedFolders: []
+      });
     }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
         this.highlightTerms = response.query.phrases;
+        const rejectedFolders: string[] = response.droppedFolders;
+
+        if (rejectedFolders.length) {
+          this.openRejectedOptions(rejectedFolders);
+        }
       })
     );
   }
@@ -359,6 +371,22 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       // Synonym search dialog was dismissed or rejected
       .catch(() => {
       });
+  }
+
+  /**
+   * Opens the rejected options dialog. This will show the user any erroneous search inputs, if any.
+   */
+   openRejectedOptions(rejectedFolders: string[]) {
+    const modalRef = this.modalService.open(RejectedOptionsDialogComponent, {
+      size: 'md',
+    });
+    // Get the starting options from the content search form query
+    modalRef.componentInstance.rejectedFolders = rejectedFolders;
+    modalRef.result
+      // Currently there's no "Submit" action on this dialog, but maybe we'll add one later
+      .then(() => {})
+      // Rejected options dialog was dismissed or rejected
+      .catch(() => {});
   }
 
   itemDragStart(event: DragEvent, object: FilesystemObject, force = false) {

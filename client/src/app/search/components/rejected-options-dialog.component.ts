@@ -9,7 +9,6 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class RejectedOptionsDialogComponent {
   @Input() rejectedFolders: string[] = [];
-  @Input() rejectedSynonyms = new Map<string, string[]>();
 
   constructor(
     private readonly modal: NgbActiveModal,
