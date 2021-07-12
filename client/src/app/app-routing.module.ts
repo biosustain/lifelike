@@ -137,11 +137,11 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name/trace',
+    path: 'projects/:project_name/trace/:id',
     canActivate: [AuthGuard],
     component: TraceViewComponent,
     data: {
-      title: 'Trace',
+      title: 'Trace details',
       fontAwesomeIcon: 'file-chart-line',
     },
   },

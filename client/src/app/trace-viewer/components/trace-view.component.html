@@ -1,0 +1,38 @@
+<div class="d-flex flex-column position-relative h-100">
+    <div [ngStyle]="{'z-index': 0, 'display': 'initial'}"
+         class="position-absolute w-100 h-100 d-flex flex-column">
+        <div class="module">
+            <ng-container *ngIf="!openError; else error">
+                <div class="module-header">
+
+                    <div class="module-title-bar d-flex justify-content-between">
+                        <div class="d-flex">
+                            <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+                                {{ title }}
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-100 h-100">
+                    <app-trace-details [data]="data"
+                    >
+                    </app-trace-details>
+                </div>
+            </ng-container>
+            <ng-template #error>
+                <div class="module-header">
+                    <div class="module-title-bar d-flex justify-content-between">
+                        <div class="d-flex">
+                            <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+                                This view is outdated
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-100 h-100 p-4">
+                    Please reopen tab to view this trace.
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
