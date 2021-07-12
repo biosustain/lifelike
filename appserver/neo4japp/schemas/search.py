@@ -33,6 +33,7 @@ class SynonymSearchSchema(CamelCaseSchema):
 
 class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
+    dropped_folders = fields.List(fields.String())
 
 
 class SynonymData(CamelCaseSchema):

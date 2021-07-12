@@ -152,15 +152,11 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
         for project in accessible_projects
     ]
 
-    accessible_filepaths = []
-    inaccessible_files = []
+    filepaths = []
     for file in accessible_folders:
-        if file.project.id in accessible_projects_ids:
-            accessible_filepaths.append(file.filename_path)
-        else:
-            inaccessible_files.append(file.hash_id)
+        filepaths.append(file.filename_path)
 
-    if len(accessible_filepaths):
+    if len(filepaths):
         return {
             'bool': {
                 'should': [
@@ -169,10 +165,10 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
                             "file_path.tree": file_path
                         }
                     }
-                    for file_path in accessible_filepaths
+                    for file_path in filepaths
                 ]
             }
-        }, inaccessible_files
+        }
     else:
         # If there were no accessible filepaths in the given list, search all accessible projects
         return {
@@ -184,7 +180,7 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
                     {'term': {'public': True}}
                 ]
             }
-        }, inaccessible_files
+        }
 
 # End Search Helpers #
 
@@ -248,7 +244,9 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             Files.hash_id.in_(folders),
             attr_excl=EXCLUDE_FIELDS
         )
-        filepaths_filter, dropped_folders = get_filepaths_filter(
+        accessible_folder_hash_ids = [folder.hash_id for folder in accessible_folders]
+        dropped_folders = [folder for folder in folders if folder not in accessible_folder_hash_ids]
+        filepaths_filter = get_filepaths_filter(
             accessible_folders,
             accessible_projects
         )

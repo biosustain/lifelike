@@ -5,14 +5,15 @@ import { Observable} from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemObjectData, ProjectData } from 'app/file-browser/schema';
-import { RankedItem, ResultList } from 'app/shared/schemas/common';
+import { ProjectData } from 'app/file-browser/schema';
 import { ApiService } from 'app/shared/services/api.service';
 
 import {
   AnnotationRequestOptions,
   AnnotationResponse,
   ContentSearchRequest,
+  ContentSearchResponse,
+  ContentSearchResponseData,
   SynonymSearchResponse,
 } from '../schema';
 
@@ -33,8 +34,8 @@ export class ContentSearchService {
     );
   }
 
-  search(request: Record<keyof ContentSearchRequest, string>): Observable<ResultList<RankedItem<FilesystemObject>>> {
-    return this.http.get<ResultList<RankedItem<FilesystemObjectData>>>(
+  search(request: Record<keyof ContentSearchRequest, string>): Observable<ContentSearchResponse> {
+    return this.http.get<ContentSearchResponseData>(
       `/api/search/content`,
       {
         ...this.apiService.getHttpOptions(true),
@@ -52,6 +53,7 @@ export class ContentSearchService {
               item: new FilesystemObject().update(itemData.item)
           })),
           query: data.query,
+          droppedFolders: data.droppedFolders
         };
       }),
     );
