@@ -179,3 +179,9 @@ class BestOrganismMatch():
     organism_id: str = attr.ib()
     closest_distance: float = attr.ib()
     specified_organism_id: Optional[str] = attr.ib(default=None)
+
+
+@attr.s(frozen=False)
+class GeneOrProteinToOrganism():
+    matches: dict = attr.ib(default=attr.Factory(dict))
+    data_sources: dict = attr.ib(default=attr.Factory(dict))
