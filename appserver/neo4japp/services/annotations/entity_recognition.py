@@ -4,16 +4,16 @@ from typing import Dict, List
 
 from .constants import (
     EntityType,
-    ANATOMY_MESH_LMDB,
-    CHEMICALS_CHEBI_LMDB,
-    COMPOUNDS_BIOCYC_LMDB,
-    DISEASES_MESH_LMDB,
-    FOODS_MESH_LMDB,
-    GENES_NCBI_LMDB,
-    PHENOMENAS_MESH_LMDB,
-    PHENOTYPES_CUSTOM_LMDB,
-    PROTEINS_UNIPROT_LMDB,
-    SPECIES_NCBI_LMDB,
+    ANATOMY_LMDB,
+    CHEMICALS_LMDB,
+    COMPOUNDS_LMDB,
+    DISEASES_LMDB,
+    FOODS_LMDB,
+    GENES_LMDB,
+    PHENOMENAS_LMDB,
+    PHENOTYPES_LMDB,
+    PROTEINS_LMDB,
+    SPECIES_LMDB,
     MAX_GENE_WORD_LENGTH,
     MAX_FOOD_WORD_LENGTH
 )
@@ -42,7 +42,7 @@ class EntityRecognitionService:
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        dbname = GENES_NCBI_LMDB
+        dbname = GENES_LMDB
         global_inclusion = self.entity_inclusions.included_genes
         global_exclusion = self.entity_exclusions.excluded_genes
         global_exclusion_case_insensitive = self.entity_exclusions.excluded_genes_case_insensitive
@@ -51,7 +51,7 @@ class EntityRecognitionService:
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        with self.lmdb.open_db(dbname) as txn:
+        with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -103,7 +103,7 @@ class EntityRecognitionService:
     def _check_lmdb_species(self, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        dbname = SPECIES_NCBI_LMDB
+        dbname = SPECIES_LMDB
         global_inclusion = self.entity_inclusions.included_species
         local_inclusion = self.entity_inclusions.included_local_species
         global_exclusion = self.entity_exclusions.excluded_species
@@ -113,7 +113,7 @@ class EntityRecognitionService:
         key_id_type: Dict[str, str] = {}
         key_id_hyperlink: Dict[str, str] = {}
 
-        with self.lmdb.open_db(dbname) as txn:
+        with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -180,27 +180,27 @@ class EntityRecognitionService:
             global_exclusion_case_insensitive = None
 
             if entity_type == EntityType.ANATOMY.value:
-                dbname = ANATOMY_MESH_LMDB
+                dbname = ANATOMY_LMDB
                 global_inclusion = self.entity_inclusions.included_anatomy
                 global_exclusion = self.entity_exclusions.excluded_anatomy
 
             elif entity_type == EntityType.CHEMICAL.value:
-                dbname = CHEMICALS_CHEBI_LMDB
+                dbname = CHEMICALS_LMDB
                 global_inclusion = self.entity_inclusions.included_chemicals
                 global_exclusion = self.entity_exclusions.excluded_chemicals
 
             elif entity_type == EntityType.COMPOUND.value:
-                dbname = COMPOUNDS_BIOCYC_LMDB
+                dbname = COMPOUNDS_LMDB
                 global_inclusion = self.entity_inclusions.included_compounds
                 global_exclusion = self.entity_exclusions.excluded_compounds
 
             elif entity_type == EntityType.DISEASE.value:
-                dbname = DISEASES_MESH_LMDB
+                dbname = DISEASES_LMDB
                 global_inclusion = self.entity_inclusions.included_diseases
                 global_exclusion = self.entity_exclusions.excluded_diseases
 
             elif entity_type == EntityType.FOOD.value:
-                dbname = FOODS_MESH_LMDB
+                dbname = FOODS_LMDB
                 global_inclusion = self.entity_inclusions.included_foods
                 global_exclusion = self.entity_exclusions.excluded_foods
                 keys = {token.normalized_keyword for token in tokens
@@ -215,17 +215,17 @@ class EntityRecognitionService:
                 continue
 
             elif entity_type == EntityType.PHENOMENA.value:
-                dbname = PHENOMENAS_MESH_LMDB
+                dbname = PHENOMENAS_LMDB
                 global_inclusion = self.entity_inclusions.included_phenomenas
                 global_exclusion = self.entity_exclusions.excluded_phenomenas
 
             elif entity_type == EntityType.PHENOTYPE.value:
-                dbname = PHENOTYPES_CUSTOM_LMDB
+                dbname = PHENOTYPES_LMDB
                 global_inclusion = self.entity_inclusions.included_phenotypes
                 global_exclusion = self.entity_exclusions.excluded_phenotypes
 
             elif entity_type == EntityType.PROTEIN.value:
-                dbname = PROTEINS_UNIPROT_LMDB
+                dbname = PROTEINS_LMDB
                 global_inclusion = self.entity_inclusions.included_proteins
                 global_exclusion = self.entity_exclusions.excluded_proteins
                 global_exclusion_case_insensitive = self.entity_exclusions.excluded_proteins_case_insensitive  # noqa
@@ -270,7 +270,7 @@ class EntityRecognitionService:
                 key_id_type: Dict[str, str] = {}
                 key_id_hyperlink: Dict[str, str] = {}
 
-                with self.lmdb.open_db(dbname) as txn:
+                with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
                     matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)  # noqa
 

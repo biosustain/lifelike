@@ -2,17 +2,16 @@ from enum import Enum
 
 
 # lmdb database names
-ANATOMY_MESH_LMDB = 'anatomy_mesh'
-CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
-CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
-COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
-DISEASES_MESH_LMDB = 'diseases_mesh'
-FOODS_MESH_LMDB = 'foods_mesh'
-GENES_NCBI_LMDB = 'genes_ncbi'
-PHENOMENAS_MESH_LMDB = 'phenomenas_mesh'
-PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
-PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
-SPECIES_NCBI_LMDB = 'species_ncbi'
+ANATOMY_LMDB = 'anatomy_lmdb'
+CHEMICALS_LMDB = 'chemicals_lmdb'
+COMPOUNDS_LMDB = 'compounds_lmdb'
+DISEASES_LMDB = 'diseases_lmdb'
+FOODS_LMDB = 'foods_lmdb'
+GENES_LMDB = 'genes_lmdb'
+PHENOMENAS_LMDB = 'phenomenas_lmdb'
+PHENOTYPES_LMDB = 'phenotypes_lmdb'
+PROTEINS_LMDB = 'proteins_lmdb'
+SPECIES_LMDB = 'species_lmdb'
 
 HOMO_SAPIENS_TAX_ID = '9606'
 
@@ -27,6 +26,10 @@ MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
 REQUEST_TIMEOUT = 60
+NLP_SERVICE_ENDPOINT = 'https://nlp-api.lifelike.bio/v1/predict'
+PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
+PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
+PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
@@ -148,7 +151,8 @@ class DatabaseType(Enum):
     CUSTOM = 'CUSTOM'
     MESH = 'MESH'
     UNIPROT = 'UNIPROT'
-    NCBI = 'NCBI'
+    NCBI_GENE = 'NCBI Gene'
+    NCBI_TAXONOMY = 'NCBI Taxonomy'
     BIOCYC = 'BIOCYC'
     PUBCHEM = 'PUBCHEM'
 
@@ -174,10 +178,8 @@ ENTITY_HYPERLINKS = {
     DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
-    DatabaseType.NCBI.value: {
-        EntityType.GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-        EntityType.SPECIES.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
-    },
+    DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
+    DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',  # noqa
     DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }

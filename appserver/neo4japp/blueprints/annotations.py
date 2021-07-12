@@ -33,7 +33,6 @@ from ..constants import LogEventType, TIMEZONE
 from ..database import (
     db,
     get_excel_export_service,
-    get_manual_annotation_service,
     get_sorted_annotation_service,
     get_enrichment_table_service
 )
@@ -47,7 +46,6 @@ from ..models import (
 )
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..schemas.annotations import (
-    AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
@@ -68,11 +66,17 @@ from ..services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
-from ..services.annotations.pipeline import (
-    create_annotations_from_pdf,
-    create_annotations_from_enrichment_table
+from ..services.annotations.pipeline import Pipeline
+from ..services.annotations.initializer import (
+    get_annotation_service,
+    get_annotation_db_service,
+    get_annotation_graph_service,
+    get_annotation_tokenizer,
+    get_bioc_document_service,
+    get_enrichment_annotation_service,
+    get_manual_annotation_service,
+    get_recognition_service
 )
-from ..services.annotations import AnnotationGraphService
 from ..services.annotations.sorted_annotation_service import (
     default_sorted_annotation,
     sorted_annotations_dict
@@ -381,7 +385,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
 class FileAnnotationGeneCountsView(FileAnnotationCountsView):
     def get_rows(self, files: List[Files]):
         manual_annotations_service = get_manual_annotation_service()
-        annotation_graph_service = AnnotationGraphService()
+        annotation_graph_service = get_annotation_graph_service()
 
         yield [
             'gene_id',
@@ -505,7 +509,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 try:
                     enriched = enrich_service.create_annotation_mappings(enrichment)
 
-                    annotations, version = self._annotate_enrichment_texts(
+                    annotations, version = self._annotate_enrichment_table(
                         file=file,
                         enriched=enriched,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
@@ -552,18 +556,35 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         file: Files,
         cause: AnnotationChangeCause,
-        configs: AnnotationConfigurations,
+        configs: dict,
         organism: Optional[FallbackOrganism] = None,
         user_id: int = None
     ):
         """Annotate PDF files."""
-        annotations_json = create_annotations_from_pdf(
-            annotation_configs=configs,
+        text, parsed = Pipeline.parse(
+            file.mime_type, file_id=file.id, exclude_references=configs['exclude_references'])
+
+        pipeline = Pipeline(
+            {
+                'adbs': get_annotation_db_service,
+                'ags': get_annotation_graph_service,
+                'aers': get_recognition_service,
+                'tkner': get_annotation_tokenizer,
+                'as': get_annotation_service,
+                'bs': get_bioc_document_service
+            },
+            text=text, parsed=parsed)
+
+        annotations_json = pipeline.get_globals(
+            excluded_annotations=file.excluded_annotations or [],
+            custom_annotations=file.custom_annotations or []
+        ).identify(
+            annotation_methods=configs['annotation_methods']
+        ).annotate(
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
-            document=file,
-            filename=file.filename
-        )
+            custom_annotations=file.custom_annotations or [],
+            filename=file.filename)
 
         update = {
             'id': file.id,
@@ -585,26 +606,44 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         return update, version
 
-    def _annotate_enrichment_texts(
+    def _annotate_enrichment_table(
         self,
         file: Files,
         enriched: EnrichmentCellTextMapping,
         cause: AnnotationChangeCause,
         user_id: int,
         enrichment: dict,
-        organism: Optional[FallbackOrganism] = None,
-        configs: AnnotationConfigurations = None
+        configs: dict,
+        organism: Optional[FallbackOrganism] = None
     ):
         """Annotate all text in enrichment table."""
+        text, parsed = Pipeline.parse(file.mime_type, text=enriched.text)
 
-        annotations_json = create_annotations_from_enrichment_table(
-            annotation_configs=configs,
+        pipeline = Pipeline(
+            {
+                'adbs': get_annotation_db_service,
+                'ags': get_annotation_graph_service,
+                'aers': get_recognition_service,
+                'tkner': get_annotation_tokenizer,
+                'as': get_enrichment_annotation_service,
+                'bs': get_bioc_document_service
+            },
+            text=text, parsed=parsed)
+
+        annotations_json = pipeline.get_globals(
+            excluded_annotations=file.excluded_annotations or [],
+            custom_annotations=file.custom_annotations or []
+        ).identify(
+            annotation_methods=configs['annotation_methods']
+        ).annotate(
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
-            text=enriched.text,
-            enrichment_mappings=enriched.text_index_map
-        )
+            custom_annotations=file.custom_annotations or [],
+            filename=file.filename,
+            enrichment_mappings=enriched.text_index_map)
 
+        # NOTE: code below to calculate the correct offsets for enrichment table
+        # and correctly highlight based on cell is not pretty
         annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
         # sort by lo_location_offset to go from beginning to end
         sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
