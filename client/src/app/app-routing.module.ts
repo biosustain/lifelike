@@ -29,7 +29,6 @@ import {EnrichmentTableViewerComponent} from './enrichment/components/table/enri
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
 import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component';
 import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
-import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
 import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
 
 // TODO: Add an unprotected home page

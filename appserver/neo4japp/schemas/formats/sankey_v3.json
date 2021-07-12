@@ -118,7 +118,6 @@
       "required": [
         "node_sets",
         "description",
-        "name",
         "trace_networks"
       ]
     },
@@ -188,10 +187,17 @@
             "type": "integer"
           },
           "name": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "referenceType": {
             "type": "string"
@@ -309,13 +315,19 @@
             "type": "number"
           },
           "1/pageUpdown": {
-            "type": ["number", "string"]
+            "type": [
+              "number",
+              "string"
+            ]
           },
           "pageMetab": {
             "type": "number"
           },
           "1/pageMetab": {
-            "type": ["number", "string"]
+            "type": [
+              "number",
+              "string"
+            ]
           },
           "NLG": {
             "type": "string"
