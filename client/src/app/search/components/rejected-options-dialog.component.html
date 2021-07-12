@@ -14,27 +14,6 @@
       </div>
     </div>
   </div>
-
-  <div *ngIf="rejectedSynonyms?.size">
-    <div>
-      <p class="mb-3">
-        The terms you entered produced a very large number of synoynms. For the purposes of running an efficient
-        search, the following synonyms were truncated from each search term:
-      </p>
-    </div>
-    <div style="max-height: 225px; overflow-y: auto;">
-      <div *ngFor="let synonym of rejectedSynonyms | keyvalue; let last = last">
-        <ul [class]="last ? 'mb-0' : 'mb-3'">
-          <li>
-            <strong class="mr-2">{{synonym.key}}:</strong>
-            <div *ngFor="let s of synonym.value; let last = last" class="mr-2" style="display: inline-block;">
-              {{s + (!last ? ';' : '')}}
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
 </app-modal-body>
 <app-modal-footer>
   <button class="btn btn-secondary" (click)="close()">Close</button>

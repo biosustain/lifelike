@@ -569,6 +569,8 @@ class ElasticService(ElasticConnection, GraphConnection):
         search_term = search_term.strip()
 
         if search_term == '':
+            # Even if the search_term is empty, we may still want to get results. E.g. if a user
+            # is looking only for _all_ map content in a specific folder.
             return {
                 'query': {
                     'bool': {
@@ -577,7 +579,10 @@ class ElasticService(ElasticConnection, GraphConnection):
                         ],
                     }
                 },
-                'highlight': highlight
+                'fields': fields,
+                'highlight': highlight,
+                # Set `_source` to False so we only return the properties specified in `fields`
+                '_source': False,
             }, []
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
