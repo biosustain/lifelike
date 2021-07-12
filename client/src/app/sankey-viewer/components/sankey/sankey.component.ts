@@ -14,18 +14,13 @@ import {
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
-import {
-  createResizeObserver,
-  layerWidth,
-  composeLinkPath,
-  calculateLinkPathParams,
-  shortNodeText,
-  INITIALLY_SHOWN_CHARS
-} from './utils';
+import { createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams, shortNodeText, INITIALLY_SHOWN_CHARS } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from './algorithms/traceLogic';
 import { representativePositiveNumber, nodeLabelAccessor } from '../utils';
+import { identifyCircles } from '../algorithms/d3-sankey/d3-sankey-circular';
+import { computeNodeLinks, registerLinks } from '../algorithms/d3-sankey/d3-sankey';
 
 
 @Component({
@@ -133,6 +128,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   static nodeGroupAccessor({type}) {
     return type;
   }
+
   // endregion
 
   // region Life cycle
@@ -152,7 +148,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     if (data && this.svg) {
       // using this.data instead of current value so we use copy made by setter
-      this.updateLayout(this._data).then(d => this.updateDOM(d));
+      this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     if (selectedNodes) {
@@ -510,15 +506,44 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   /**
-   * Draws a word cloud with the given FilterEntity inputs using the d3.layout.cloud library.
-   * @param data represents a collection of FilterEntity data
+   * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
+   * and adjustments from outer scope
+   * @param data graph declaration
    */
   updateLayout(data) {
     return new Promise(resolve => {
-        // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-        const a = this.sankey(data);
-        this.adjustLayout.emit({data, extent: this.sankey.extent()});
-        resolve(a);
+        computeNodeLinks(data);
+        identifyCircles(data);
+        const {nodes, links, ...rest} = data;
+        const [circularLinks, nonCircularLinks] = links.reduce(([c, nc], n) => {
+          if (n.circular) {
+            c.push(n);
+          } else {
+            nc.push(n);
+          }
+          return [c, nc];
+        }, [[], []]);
+        // Calculate layout by skipping circular links
+        this.sankey({nodes, links: nonCircularLinks});
+        // Link into graph prev filtered links
+        registerLinks({nodes, links: circularLinks});
+        // adjust width of circular links
+        const {width, value} = nonCircularLinks[0];
+        const valueScaler = width / value;
+        circularLinks.forEach(link => {
+          link.width = link.value * valueScaler;
+        });
+        const layout = {
+          nodes,
+          links: nonCircularLinks.concat(circularLinks),
+          ...rest
+        };
+        // Run adjustments declared in viewer
+        this.adjustLayout.emit({
+          data: layout,
+          extent: this.sankey.extent()
+        });
+        resolve(layout);
       }
     );
   }
@@ -545,22 +570,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   /**
-   * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+   * Run d3 lifecycle code to update DOM
+   * @param graph: { links, nodes } to be rendered
    */
-  /**
-   * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
-   * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
-   * and added words will be drawn.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-   */
-  private updateDOM(words) {
+  private updateDOM(graph) {
     const {
       updateNodeRect, updateNodeText
     } = this;
 
     this.linkSelection
-      .data(words.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
+      .data(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
       .join(
         enter => enter
           .append('path')
@@ -569,6 +588,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
             link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
             return composeLinkPath(link.calculated_params);
           })
+          .classed('circular', ({circular}) => circular)
           .call(path =>
             path.append('title')
           ),
@@ -600,7 +620,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     this.nodeSelection
       .data(
-        words.nodes.filter(
+        graph.nodes.filter(
           // should no longer be an issue but leaving as sanity check
           // (if not satisfied visualisation brakes)
           n => n.sourceLinks.length + n.targetLinks.length > 0
@@ -650,7 +670,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
-        // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
       .call(joined => {

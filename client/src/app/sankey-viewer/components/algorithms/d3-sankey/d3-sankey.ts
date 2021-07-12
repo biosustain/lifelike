@@ -45,12 +45,7 @@ export function defaultId(d, _ = null, __ = null) {
   return d.id;
 }
 
-export function computeNodeLinks({nodes, links}: SankeyData, id = defaultId) {
-  for (const [i, node] of nodes.entries()) {
-    node.index = i;
-    node.sourceLinks = [];
-    node.targetLinks = [];
-  }
+export function registerLinks({links, nodes}, id = defaultId) {
   const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
   for (const [i, link] of links.entries()) {
     link.index = i;
@@ -64,6 +59,15 @@ export function computeNodeLinks({nodes, links}: SankeyData, id = defaultId) {
     source.sourceLinks.push(link);
     target.targetLinks.push(link);
   }
+}
+
+export function computeNodeLinks({nodes, links}: SankeyData, id = defaultId) {
+  for (const [i, node] of nodes.entries()) {
+    node.index = i;
+    node.sourceLinks = [];
+    node.targetLinks = [];
+  }
+  registerLinks({links, nodes});
 }
 
 function ascendingSourceBreadth(a, b) {

@@ -1,4 +1,5 @@
 import { uniqueBy, nodeLabelAccessor } from '../utils';
+import { isDevMode } from '@angular/core';
 
 export const normalizeGenerator = values => {
   const min = Math.min(...values);
@@ -40,8 +41,20 @@ export const calculateLinkPathParams = (link, normalize = true) => {
   const {targetLinks} = target;
   const sourceIndex = sourceLinks.indexOf(link);
   const targetIndex = targetLinks.indexOf(link);
-  // tslint:disable-next-line:no-bitwise
-  const bezierX = (sourceX + targetX) / 2;
+  const columns = Math.abs(target.column - source.column);
+  const linkWidth = Math.abs(targetX - sourceX);
+  const bezierOffset = (link.circular ? linkWidth / columns : linkWidth) / 2;
+  const sourceBezierX = sourceX + bezierOffset;
+  const targetBezierX = targetX - bezierOffset;
+  if (isDevMode()) {
+    console.assert(
+      link.circular || (sourceBezierX === targetBezierX),
+      'Non circular bezier s/t should equal at average',
+      sourceBezierX, '(source bez) ===',
+      targetBezierX, '(target bez) ===',
+      (sourceX + targetX) / 2, '(average)'
+    );
+  }
   let sourceY0;
   let sourceY1;
   let targetY0;
@@ -122,7 +135,8 @@ export const calculateLinkPathParams = (link, normalize = true) => {
     targetX,
     targetY0,
     targetY1,
-    bezierX
+    sourceBezierX,
+    targetBezierX
   };
 };
 export const composeLinkPath = ({
@@ -132,12 +146,13 @@ export const composeLinkPath = ({
                                   targetX,
                                   targetY0,
                                   targetY1,
-                                  bezierX
+                                  sourceBezierX,
+                                  targetBezierX
                                 }) =>
   `M${sourceX} ${sourceY0}` +
-  `C${bezierX} ${sourceY0},${bezierX} ${targetY0},${targetX} ${targetY0}` +
+  `C${sourceBezierX} ${sourceY0},${targetBezierX} ${targetY0},${targetX} ${targetY0}` +
   `L${targetX} ${targetY1}` +
-  `C${bezierX} ${targetY1},${bezierX} ${sourceY1},${sourceX} ${sourceY1}` +
+  `C${targetBezierX} ${targetY1},${sourceBezierX} ${sourceY1},${sourceX} ${sourceY1}` +
   `Z`;
 export const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
 export const createResizeObserver = (callback, container) => {
