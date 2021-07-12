@@ -551,6 +551,7 @@ class AnnotationService:
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             fallback_gene_organism_matches = fallback_graph_results.matches
+            gene_data_sources.update(fallback_graph_results.data_sources)
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
