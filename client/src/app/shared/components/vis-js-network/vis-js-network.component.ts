@@ -7,26 +7,8 @@ import { Color, Edge, Network, Node, Options } from 'vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
+import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
 
-
-enum networkEdgeSmoothers {
-  DYNAMIC = 'dynamic',
-  CONTINUOUS = 'continuous',
-  DISCRETE = 'discrete',
-  DIAGONAL_CROSS = 'diagonalCross',
-  STRAIGHT_CROSS = 'straightCross',
-  HORIZONTAL = 'horizontal',
-  VERTICAL = 'vertical',
-  CUBIC_BEZIER = 'cubicBezier',
-}
-
-enum networkSolvers {
-  BARNES_HUT = 'barnesHut',
-  FORCE_ATLAS_2_BASED = 'forceAtlas2Based',
-  // Disabling this for now, as it seems to require additional configuration that we cannot assume will be present.
-  // HIERARCHICHAL_REPULSION = 'hierarchicalRepulsion',
-  REPULSION = 'repulsion'
-}
 
 @Component({
   selector: 'app-vis-js-network',
