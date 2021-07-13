@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from flask import current_app
 
-from .constants import EntityType
+from .constants import DatabaseType, EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
@@ -186,6 +186,9 @@ class AnnotationGraphService(GraphConnection):
 
             if gene_to_organism_map.get(gene_synonym, None) is not None:
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                    # we already have it in the dict, so only add if data_source is NCBI
+                    if data_source != DatabaseType.NCBI_GENE.value:
+                        continue
                     gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
                 else:
                     gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
