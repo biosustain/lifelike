@@ -24,6 +24,7 @@ import { SessionStorageService } from '../../shared/services/session-storage.ser
 import { nodeLabelAccessor } from '../../trace-viewer/components/utils';
 import { cubehelix } from 'd3';
 import visNetwork from 'vis-network';
+import { shortNodeText } from './sankey/utils';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -206,11 +207,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (isDevMode() && !label) {
         console.error(`Node ${node.id} has no label property.`, node);
       }
+      const {sourceLinks, targetLinks, ...otherProperties} = node;
       return {
-        id: node.id,
+        ...otherProperties,
         color: '' + color,
         databaseLabel: node.type,
-        label
+        label: shortNodeText(node),
+        title: label
       };
     } else {
       console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
