@@ -8,12 +8,12 @@ import { configureTestSuite } from 'ng-bullet';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
-import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
+import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
 import { ContentSearchService } from '../services/content-search.service';
 
-describe('RejectedSynonymsDialogComponent', () => {
-  let component: RejectedSynonymsDialogComponent;
-  let fixture: ComponentFixture<RejectedSynonymsDialogComponent>;
+describe('RejectedOptionsDialogComponent', () => {
+  let component: RejectedOptionsDialogComponent;
+  let fixture: ComponentFixture<RejectedOptionsDialogComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
@@ -22,7 +22,7 @@ describe('RejectedSynonymsDialogComponent', () => {
         SharedModule,
         BrowserAnimationsModule,
       ],
-      declarations: [ RejectedSynonymsDialogComponent ],
+      declarations: [ RejectedOptionsDialogComponent ],
       providers: [
         ContentSearchService,
         NgbActiveModal,
@@ -31,7 +31,7 @@ describe('RejectedSynonymsDialogComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(RejectedSynonymsDialogComponent);
+    fixture = TestBed.createComponent(RejectedOptionsDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
