@@ -12,6 +12,7 @@ import { ApiService } from 'app/shared/services/api.service';
 import {
   BulkObjectUpdateRequest,
   FileAnnotationHistoryResponse,
+  FileHierarchyResponse,
   FilesystemObjectData,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
@@ -343,6 +344,17 @@ export class FilesystemService {
       },
     ).pipe(
       map(() => ({})),
+    );
+  }
+
+  getHierarchy(directoriesOnly: boolean = false): Observable<FileHierarchyResponse> {
+    return this.http.get<FileHierarchyResponse>(
+      `/api/filesystem/objects/hierarchy`, {
+        ...this.apiService.getHttpOptions(true),
+        params: {
+          directoriesOnly: String(directoriesOnly)
+        }
+      }
     );
   }
 }
