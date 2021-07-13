@@ -420,7 +420,6 @@ class AnnotationService:
         matched dict, otherwise do not annotate.
         """
         entity_synonym = entity['synonym']
-        common_name = entity['name']
 
         entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
             entity=token,
@@ -444,8 +443,8 @@ class AnnotationService:
                 else:
                     # for genes
                     try:
-                        # prioritize common name match over synonym
-                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][common_name]  # noqa
+                        # prioritize common name that is same as synonym
+                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
                     except KeyError:
                         # only take the first gene/protein for the organism
                         # no way for us to infer which to use
@@ -552,18 +551,19 @@ class AnnotationService:
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
 
-        gene_mem: Dict[Tuple[str, Tuple[int, int]], BestOrganismMatch] = {}
+        gene_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
             token_offset = (token.lo_location_offset, token.hi_location_offset)
+            synonym_common_name_tuple = (entity['name'], entity['synonym'])
 
             entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in gene_organism_matches:
                 try:
-                    # prioritize common name match over synonym
-                    organisms_to_match = gene_organism_matches[entity_synonym][entity['name']]
+                    # prioritize common name that is same as synonym
+                    organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
                 except KeyError:
                     # only take the first gene for the organism
                     # no way for us to infer which to use
@@ -573,7 +573,7 @@ class AnnotationService:
                             organisms_to_match[key] = d[key]
 
                 try:
-                    best_match = gene_mem[(entity_synonym, token_offset)]
+                    best_match = gene_mem[(synonym_common_name_tuple, token_offset)]
                 except KeyError:
                     best_match = self._find_best_organism_match(
                         token=token,
@@ -581,7 +581,7 @@ class AnnotationService:
                         organisms_to_match=organisms_to_match,
                         fallback_organism_matches=fallback_gene_organism_matches,
                         entity_type=EntityType.GENE.value)
-                    gene_mem[(entity_synonym, token_offset)] = best_match
+                    gene_mem[(synonym_common_name_tuple, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -676,16 +676,17 @@ class AnnotationService:
 
             fallback_protein_organism_matches = fallback_graph_results.matches
 
-        protein_mem: Dict[Tuple[str, Tuple[int, int]], BestOrganismMatch] = {}
+        protein_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             protein_id = entity[EntityIdStr.PROTEIN.value]
             entity_synonym = entity['synonym']
             token_offset = (token.lo_location_offset, token.hi_location_offset)
+            synonym_common_name_tuple = (entity['name'], entity['synonym'])
 
             if entity_synonym in protein_organism_matches:
                 try:
-                    best_match = protein_mem[(entity_synonym, token_offset)]
+                    best_match = protein_mem[(synonym_common_name_tuple, token_offset)]
                 except KeyError:
                     best_match = self._find_best_organism_match(
                         token=token,
@@ -693,7 +694,7 @@ class AnnotationService:
                         organisms_to_match=protein_organism_matches[entity_synonym],
                         fallback_organism_matches=fallback_protein_organism_matches,
                         entity_type=EntityType.PROTEIN.value)
-                    protein_mem[(entity_synonym, token_offset)] = best_match
+                    protein_mem[(synonym_common_name_tuple, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
