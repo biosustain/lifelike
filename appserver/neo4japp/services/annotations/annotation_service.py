@@ -552,9 +552,11 @@ class AnnotationService:
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
 
+        gene_mem: Dict[Tuple[str, Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
+            token_offset = (token.lo_location_offset, token.hi_location_offset)
 
             entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
@@ -570,12 +572,16 @@ class AnnotationService:
                         if key not in organisms_to_match:
                             organisms_to_match[key] = d[key]
 
-                best_match = self._find_best_organism_match(
-                    token=token,
-                    entity=entity,
-                    organisms_to_match=organisms_to_match,
-                    fallback_organism_matches=fallback_gene_organism_matches,
-                    entity_type=EntityType.GENE.value)
+                try:
+                    best_match = gene_mem[(entity_synonym, token_offset)]
+                except KeyError:
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity=entity,
+                        organisms_to_match=organisms_to_match,
+                        fallback_organism_matches=fallback_gene_organism_matches,
+                        entity_type=EntityType.GENE.value)
+                    gene_mem[(entity_synonym, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -670,18 +676,24 @@ class AnnotationService:
 
             fallback_protein_organism_matches = fallback_graph_results.matches
 
+        protein_mem: Dict[Tuple[str, Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             protein_id = entity[EntityIdStr.PROTEIN.value]
             entity_synonym = entity['synonym']
+            token_offset = (token.lo_location_offset, token.hi_location_offset)
 
             if entity_synonym in protein_organism_matches:
-                best_match = self._find_best_organism_match(
-                    token=token,
-                    entity=entity,
-                    organisms_to_match=protein_organism_matches[entity_synonym],
-                    fallback_organism_matches=fallback_protein_organism_matches,
-                    entity_type=EntityType.PROTEIN.value)
+                try:
+                    best_match = protein_mem[(entity_synonym, token_offset)]
+                except KeyError:
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity=entity,
+                        organisms_to_match=protein_organism_matches[entity_synonym],
+                        fallback_organism_matches=fallback_protein_organism_matches,
+                        entity_type=EntityType.PROTEIN.value)
+                    protein_mem[(entity_synonym, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -798,58 +810,9 @@ class AnnotationService:
             species_annotations_with_local += filtered_local_species_annotations
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
-            self._get_entity_frequency_location_and_category(
-                annotations=species_annotations_with_local)
+            self._get_entity_frequency_location_and_category(species_annotations_with_local)
 
         return species_annotations
-
-    def _update_entity_frequency_map(
-        self,
-        entity_frequency: Dict[str, int],
-        annotation
-    ) -> Dict[str, int]:
-        entity_id = annotation.meta.id
-        if entity_frequency.get(entity_id, None) is not None:
-            entity_frequency[entity_id] += 1
-        else:
-            entity_frequency[entity_id] = 1
-
-        # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-            if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
-                entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
-            else:
-                entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
-
-        return entity_frequency
-
-    def _update_entity_location_map(
-        self,
-        matched_entity_locations: Dict[str, List[Tuple[int, int]]],
-        annotation
-    ) -> Dict[str, List[Tuple[int, int]]]:
-        if matched_entity_locations.get(annotation.meta.id, None) is not None:
-            matched_entity_locations[annotation.meta.id].append(
-                (annotation.lo_location_offset, annotation.hi_location_offset)
-            )
-        else:
-            matched_entity_locations[annotation.meta.id] = [
-                (annotation.lo_location_offset, annotation.hi_location_offset)
-            ]
-
-        # If the annotation represents a virus, then also mark this location as a human
-        # annotation
-        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-            if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
-                matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
-                    (annotation.lo_location_offset, annotation.hi_location_offset)
-                )
-            else:
-                matched_entity_locations[HOMO_SAPIENS_TAX_ID] = [
-                    (annotation.lo_location_offset, annotation.hi_location_offset)
-                ]
-
-        return matched_entity_locations
 
     def _get_entity_frequency_location_and_category(
         self,
@@ -866,20 +829,39 @@ class AnnotationService:
         entity_frequency: Dict[str, int] = {}
         entity_categories: Dict[str, str] = {}
 
+        locations: Dict[str, Set[Tuple[int, int]]] = {}
         for annotation in annotations:
-            entity_frequency = self._update_entity_frequency_map(
-                entity_frequency=entity_frequency,
-                annotation=annotation,
-            )
-            matched_entity_locations = self._update_entity_location_map(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
-            entity_categories[annotation.meta.id] = annotation.meta.category or ''
+            entity_id = annotation.meta.id
+            offset_pairs = (annotation.lo_location_offset, annotation.hi_location_offset)
+
+            if entity_frequency.get(entity_id, None):
+                entity_frequency[entity_id] += 1
+            else:
+                entity_frequency[entity_id] = 1
+
+            if locations.get(entity_id, None):
+                locations[entity_id].add(offset_pairs)
+            else:
+                locations[entity_id] = {offset_pairs}
 
             # Need to add an entry for humans if we annotated a virus
-            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:
+                if locations.get(HOMO_SAPIENS_TAX_ID, None):
+                    locations[HOMO_SAPIENS_TAX_ID].add(offset_pairs)
+                else:
+                    locations[HOMO_SAPIENS_TAX_ID] = {offset_pairs}
+
+                if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None):
+                    entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
+                else:
+                    entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
+
                 entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
+
+            entity_categories[entity_id] = annotation.meta.category or ''
+
+        for k, v in locations.items():
+            matched_entity_locations[k] = sorted(v)
 
         return entity_frequency, matched_entity_locations, entity_categories
 
