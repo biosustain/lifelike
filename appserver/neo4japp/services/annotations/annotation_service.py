@@ -403,7 +403,7 @@ class AnnotationService:
     def _find_best_organism_match(
         self,
         token,
-        entity_synonym,
+        entity,
         organisms_to_match,
         fallback_organism_matches,
         entity_type
@@ -419,6 +419,9 @@ class AnnotationService:
         If none found, then use the most frequent organism in document if it is in the
         matched dict, otherwise do not annotate.
         """
+        entity_synonym = entity['synonym']
+        common_name = entity['name']
+
         entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
             entity=token,
             organism_matches=organisms_to_match
@@ -442,7 +445,7 @@ class AnnotationService:
                     # for genes
                     try:
                         # prioritize common name match over synonym
-                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
+                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][common_name]  # noqa
                     except KeyError:
                         # only take the first gene/protein for the organism
                         # no way for us to infer which to use
@@ -520,11 +523,9 @@ class AnnotationService:
         organism_ids = list(self.organism_frequency)
 
         gene_match_time = time.time()
-        graph_results = self.graph.get_gene_to_organism_match_result(
+        graph_results = self.graph.get_genes_to_organisms(
             genes=gene_names_list,
-            postgres_genes=self.db.get_organism_genes(
-                genes=gene_names_list, organism_ids=organism_ids),
-            matched_organism_ids=organism_ids,
+            organisms=organism_ids,
         )
         current_app.logger.info(
             f'Gene organism KG query time {time.time() - gene_match_time}',
@@ -540,11 +541,9 @@ class AnnotationService:
         if self.specified_organism.synonym:
             gene_match_time = time.time()
             fallback_graph_results = \
-                self.graph.get_gene_to_organism_match_result(
+                self.graph.get_genes_to_organisms(
                     genes=gene_names_list,
-                    postgres_genes=self.db.get_organism_genes(
-                        genes=gene_names_list, organism_ids=organism_ids),
-                    matched_organism_ids=[self.specified_organism.organism_id],
+                    organisms=[self.specified_organism.organism_id],
                 )
             current_app.logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
@@ -562,7 +561,7 @@ class AnnotationService:
             if entity_synonym in gene_organism_matches:
                 try:
                     # prioritize common name match over synonym
-                    organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
+                    organisms_to_match = gene_organism_matches[entity_synonym][entity['name']]
                 except KeyError:
                     # only take the first gene for the organism
                     # no way for us to infer which to use
@@ -573,7 +572,7 @@ class AnnotationService:
 
                 best_match = self._find_best_organism_match(
                     token=token,
-                    entity_synonym=entity_synonym,
+                    entity=entity,
                     organisms_to_match=organisms_to_match,
                     fallback_organism_matches=fallback_gene_organism_matches,
                     entity_type=EntityType.GENE.value)
@@ -604,10 +603,7 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
-                # the postgres table `organism_gene_match`
-                # doesn't have data_source like the KG since that's recent
-                # hotfix for now until that table is replaced with a better implementation
-                if gene_id in gene_data_sources and entity['id_type'] != gene_data_sources[gene_id]:
+                if entity['id_type'] != gene_data_sources[gene_id]:
                     continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
@@ -682,7 +678,7 @@ class AnnotationService:
             if entity_synonym in protein_organism_matches:
                 best_match = self._find_best_organism_match(
                     token=token,
-                    entity_synonym=entity_synonym,
+                    entity=entity,
                     organisms_to_match=protein_organism_matches[entity_synonym],
                     fallback_organism_matches=fallback_protein_organism_matches,
                     entity_type=EntityType.PROTEIN.value)
