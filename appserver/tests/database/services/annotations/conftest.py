@@ -794,7 +794,13 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
 @pytest.fixture(scope='function')
 def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={'BOLA3': {'BOLA3': {'9606': '388962'}}})
+        return GeneOrProteinToOrganism(
+            matches={
+                'BOLA3': {'BOLA3': {'9606': '388962'}}
+            },
+            data_sources={
+                '388962': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -806,13 +812,18 @@ def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_genes_vs_proteins(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'hyp27': {'hyp27': {'221103': '2846957'}},
-            'SERPINA1': {
-                'serpina1': {'9606': '5265'},
-                'SERPINA1': {'9606': '5265'}
-            }
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'hyp27': {'hyp27': {'221103': '2846957'}},
+                'SERPINA1': {
+                    'serpina1': {'9606': '5265'},
+                    'SERPINA1': {'9606': '5265'}
+                }
+            },
+            data_sources={
+                '2846957': 'NCBI Gene',
+                '5265': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -824,12 +835,17 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'il-7': {
-                'IL7': {'7897': '102353780'},
-                'il-7': {'31033': '99999'}
-            }
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'il-7': {
+                    'IL7': {'7897': '102353780'},
+                    'il-7': {'31033': '99999'}
+                }
+            },
+            data_sources={
+                '102353780': 'NCBI Gene',
+                '99999': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -841,10 +857,14 @@ def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(m
 @pytest.fixture(scope='function')
 def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'ACE2': {'ACE2': {'9606': '59272'}},
-            'Fake_ACE2': {'ACE2': {'9606': '59272'}}
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'ACE2': {'ACE2': {'9606': '59272'}},
+                'Fake_ACE2': {'ACE2': {'9606': '59272'}}
+            },
+            data_sources={
+                '59272': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -856,8 +876,13 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'gene-(12345)': {'ACE2': {'9606': '59272'}}})
+        return GeneOrProteinToOrganism(
+            matches={
+                'gene-(12345)': {'ACE2': {'9606': '59272'}}
+            },
+            data_sources={
+                '59272': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -869,10 +894,14 @@ def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'IL8': {'CXCL8': {'9606': '3576'}},
-            'IL-8': {'CXCL8': {'9606': '3576'}}
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'IL8': {'CXCL8': {'9606': '3576'}},
+                'IL-8': {'CXCL8': {'9606': '3576'}}
+            },
+            data_sources={
+                '3576': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -884,12 +913,17 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'EDEM3': {
-                'EDEM3': {'9606': '80267'},
-                'Edem3': {'10116': '289085'}
-            }
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'EDEM3': {
+                    'EDEM3': {'9606': '80267'},
+                    'Edem3': {'10116': '289085'}
+                }
+            },
+            data_sources={
+                '80267': 'NCBI Gene',
+                '289085': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -901,13 +935,21 @@ def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
 @pytest.fixture(scope='function')
 def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'purA': {'purA': {'562': '948695'}},
-            'purB': {'purB': {'562': '945695'}},
-            'purC': {'purC': {'562': '946957'}},
-            'purD': {'purD': {'562': '948504'}},
-            'purF': {'purF': {'562': '946794'}},
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'purA': {'purA': {'562': '948695'}},
+                'purB': {'purB': {'562': '945695'}},
+                'purC': {'purC': {'562': '946957'}},
+                'purD': {'purD': {'562': '948504'}},
+                'purF': {'purF': {'562': '946794'}},
+            },
+            data_sources={
+                '948695': 'NCBI Gene',
+                '945695': 'NCBI Gene',
+                '946957': 'NCBI Gene',
+                '948504': 'NCBI Gene',
+                '946794': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -919,10 +961,15 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'PPP': {'PPP': {'9606': '80267'}},
-            'PAH': {'PAH': {'9606': '289085'}}
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'PPP': {'PPP': {'9606': '80267'}},
+                'PAH': {'PAH': {'9606': '289085'}}
+            },
+            data_sources={
+                '80267': 'NCBI Gene',
+                '289085': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -934,10 +981,15 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'YdhC': {'562': 'P37597'},
-            'YdhB': {'562': 'P0ACR2'},
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'YdhC': {'562': 'P37597'},
+                'YdhB': {'562': 'P0ACR2'},
+            },
+            data_sources={
+                'P37597': 'NCBI Gene',
+                'P0ACR2': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
@@ -949,11 +1001,17 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return GeneOrProteinToOrganism(matches={
-            'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
-            'BDNF': {'BDNF': {'9606': '627', '9685': '493690'}},
-            'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
-        })
+        return GeneOrProteinToOrganism(
+            matches={
+                'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
+                'BDNF': {'BDNF': {'9606': '627', '9685': '493690'}},
+                'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
+            },
+            data_sources={
+                '5743': 'NCBI Gene',
+                '627': 'NCBI Gene',
+                '684': 'NCBI Gene'
+            })
 
     monkeypatch.setattr(
         AnnotationGraphService,
