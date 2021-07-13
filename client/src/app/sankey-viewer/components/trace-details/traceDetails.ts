@@ -65,8 +65,9 @@ export const getTraceDetailsGraph = (trace, {nodes: mainNodes}) => {
       if (isDevMode() && !label) {
         console.error(`Node ${node.id} has no label property.`, node);
       }
+      const { sourceLinks, targetLinks, ...otherProperties } = node;
       return {
-        ...node,
+        ...otherProperties,
         color: '' + color,
         databaseLabel: node.type,
         label
