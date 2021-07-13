@@ -18,12 +18,14 @@ import { BiocViewComponent } from './components/bioc-view.component';
 import { BiocTypeProvider } from './providers/bioc-type-provider';
 import { InfonsComponent } from './components/infons/infons.component';
 import { AnnotatedTextComponent } from './components/annotated-text/annotated-text.component';
+import { BiocTableViewComponent } from './components/bioc-table-view/bioc-table-view.component';
 
 @NgModule({
   declarations: [
     BiocViewComponent,
     InfonsComponent,
-    AnnotatedTextComponent
+    AnnotatedTextComponent,
+    BiocTableViewComponent
   ],
   imports: [
     CommonModule,
@@ -52,7 +54,8 @@ import { AnnotatedTextComponent } from './components/annotated-text/annotated-te
   exports: [
     BiocViewComponent,
     InfonsComponent,
-    AnnotatedTextComponent
+    AnnotatedTextComponent,
+    BiocTableViewComponent
   ],
 })
 export class BiocViewerLibModule {
