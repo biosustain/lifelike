@@ -1,19 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { configureTestSuite } from 'ng-bullet';
+
+import { Subject } from 'rxjs';
 
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
-import { RejectedSynonymsDialogComponent } from './rejected-synonyms-dialog.component';
-import { ContentSearchService } from '../services/content-search.service';
+import { HierarchySearchTreeComponent } from './hierarchy-search-tree.component';
 
-describe('RejectedSynonymsDialogComponent', () => {
-  let component: RejectedSynonymsDialogComponent;
-  let fixture: ComponentFixture<RejectedSynonymsDialogComponent>;
+describe('HierarchySearchTreeComponent', () => {
+  let component: HierarchySearchTreeComponent;
+  let fixture: ComponentFixture<HierarchySearchTreeComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
@@ -22,16 +21,13 @@ describe('RejectedSynonymsDialogComponent', () => {
         SharedModule,
         BrowserAnimationsModule,
       ],
-      declarations: [ RejectedSynonymsDialogComponent ],
-      providers: [
-        ContentSearchService,
-        NgbActiveModal,
-      ]
+      declarations: [ HierarchySearchTreeComponent ],
+      providers: []
     });
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(RejectedSynonymsDialogComponent);
+    fixture = TestBed.createComponent(HierarchySearchTreeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
