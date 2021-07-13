@@ -86,7 +86,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   selected;
 
   constructor() {
-    this.selected = new BehaviorSubject({nodes: [], edge: []}).pipe(
+    this.selected = new BehaviorSubject({nodes: [], edges: []}).pipe(
       map(({nodes, edges}) => ({
         nodes: this.networkData.nodes.get(nodes),
         edges: this.networkData.edges.get(edges)
