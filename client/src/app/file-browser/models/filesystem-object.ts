@@ -273,7 +273,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return 'Map';
       case BIOC_MIMETYPE:
-        return 'File';
+        return 'Bioc';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'Enrichment Table';
       case 'application/pdf':
@@ -319,7 +319,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return '\uf542';
       case BIOC_MIMETYPE:
-        return '\uf15b';
+        return '\uf1c1';
       case ENRICHMENT_TABLE_MIMETYPE:
         return '\uf0ce';
       case SANKEY_MIMETYPE:

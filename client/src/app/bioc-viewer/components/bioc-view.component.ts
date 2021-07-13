@@ -87,6 +87,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   };
   searching = false;
 
+  selectedText = '';
+  createdNode;
+
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
@@ -258,7 +261,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           borderTopColor: 'white',
           borderRightColor: 'white',
           borderBottomColor: 'white',
-       }, 1000);
+        }, 1000);
       }
     }
   }
@@ -364,7 +367,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
-      fontAwesomeIcon: 'file-bioc',
+      fontAwesomeIcon: 'file',
     });
   }
 
@@ -396,29 +399,63 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
         sources: [{
           domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name),
+          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
     } as Partial<UniversalGraphNode>));
   }
 
-  @HostListener('document:selectionchange', ['$event'])
+  @HostListener('document:mouseup', ['$event'])
   selectionChange(event: Event) {
-    console.log('event is ', event);
+    // I will replace this code
+    if (this.createdNode && this.createdNode.parentNode) {
+      this.createdNode.parentNode.replaceChild(document.createTextNode(this.selectedText), this.createdNode);
+      this.createdNode = null;
+    }
     const selection = window.getSelection();
-    console.log(selection);
+    const selectedText = selection.toString();
+    if (selectedText && selectedText.length > 0) {
+      const range = window.getSelection().getRangeAt(0);
+      this.selectedText = selection.toString();
+      // create a new DOM node and set it's style property to something yellowish.
+      const newNode = document.createElement('span');
+      newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
+      newNode.setAttribute('draggable', 'true');
+      this.createdNode = newNode;
+
+      try {
+        // surround the selection with the new span tag
+        range.surroundContents(this.createdNode);
+      } catch (e) {
+        window.getSelection().empty();
+      }
+      return false;
+    }
   }
 
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
+    // I will replace this code
     const meta: any = {};
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as any).innerHTML;
-    const type = (event.target as any).classList[1];
-    const id = (event.target as any).attributes[`identifier`].nodeValue;
-    const annType = (event.target as any).attributes[`annType`].nodeValue;
-    const offset = (event.target as any).attributes[`offset`].nodeValue;
+    const clazz = (event.target as any).classList;
+    const type = (clazz && clazz.length > 1) ? clazz[1] : 'link';
+    if (!clazz) {
+      dataTransfer.setData('text/plain', this.selectedText);
+      dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+        display_name: this.selectedText,
+        label: 'note',
+        style: {
+          showDetail: false,
+        },
+      } as Partial<UniversalGraphNode>));
+      return;
+    }
+    const id = ((event.target as any).attributes[`identifier`] || {}).nodeValue;
+    const annType = ((event.target as any).attributes[`annType`] || {}).nodeValue;
+    const offset = ((event.target as any).attributes[`offset`] || {}).nodeValue;
     const src = this.getSource({
       identifier: id,
       type: annType
@@ -430,16 +467,20 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const isDatabase = false;
     hyperlinks.push({ url, domain, isDatabase });
     const hyperlink = meta.idHyperlink || '';
+    let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
+      'bioc', encodeURIComponent(this.object.hashId)].join('/');
+    if (offset) {
+      sourceUrl += '#offset=' + offset;
+    }
     dataTransfer.setData('text/plain', txt);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: txt,
-      label: String(type).toLowerCase(),
+      label: String(type).toLowerCase() === 'text-truncate' ? 'link' : String(type).toLowerCase(),
       sub_labels: [],
       data: {
         sources: [{
           domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name),
-            'bioc', encodeURIComponent(this.object.hashId)].join('/') + '#offset=' + offset,
+          url: sourceUrl
         }],
         search,
         references: [{
@@ -461,6 +502,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   getSource(payload: any = {}) {
+    // I will replace this code
     const identifier = payload.identifier || payload.Identifier;
     const type = payload.type;
 
