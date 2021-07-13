@@ -185,8 +185,8 @@ def set_role(email, role):
     db.session.commit()
 
 
-@app.cli.command('seed-elastic')
-def seed_elasticsearch():
+@app.cli.command('reset-elastic')
+def reset_elastic():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
     elastic_service = get_elastic_service()
