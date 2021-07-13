@@ -164,26 +164,6 @@ class AnnotationGraphService(GraphConnection):
             included_entities=inclusion_dicts[EntityType.ENTITY.value],
         )
 
-    def get_gene_to_organism_match_result(
-        self,
-        genes: List[str],
-        postgres_genes: Dict[str, Dict[str, Dict[str, str]]],
-        matched_organism_ids: List[str],
-    ) -> GeneOrProteinToOrganism:
-        """Returns a map of gene name to gene id."""
-        postgres_result = postgres_genes
-
-        # Collect all the genes that were not matched to an organism in the table, and search
-        # the Neo4j database for them
-        second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
-        neo4j_result = self.get_genes_to_organisms(second_round_genes, matched_organism_ids)
-
-        # Join the results of the two queries
-        postgres_result.update(neo4j_result.matches)
-
-        return GeneOrProteinToOrganism(
-            matches=postgres_result, data_sources=neo4j_result.data_sources)
-
     def get_genes_to_organisms(
         self,
         genes: List[str],
