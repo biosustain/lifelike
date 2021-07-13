@@ -215,7 +215,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   get isNavigable() {
     // TODO: Move this method to ObjectTypeProvider
     return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === MAP_MIMETYPE
-      || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
+      || this.mimeType === ENRICHMENT_TABLE_MIMETYPE || this.mimeType === BIOC_MIMETYPE;
   }
 
   get hasWordCloud() {
@@ -277,7 +277,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return 'Map';
       case BIOC_MIMETYPE:
-        return 'BioC';
+        return 'Bioc';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'Enrichment Table';
       case 'application/pdf':
@@ -303,7 +303,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return 'fa fa-project-diagram';
       case BIOC_MIMETYPE:
-        return 'fa fa-file-alt';
+        return 'fa fa-file';
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'fa fa-table';
       case SANKEY_MIMETYPE:
@@ -323,7 +323,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MAP_MIMETYPE:
         return '\uf542';
       case BIOC_MIMETYPE:
-        return '\uf542';
+        return '\uf1c1';
       case ENRICHMENT_TABLE_MIMETYPE:
         return '\uf0ce';
       case SANKEY_MIMETYPE:
