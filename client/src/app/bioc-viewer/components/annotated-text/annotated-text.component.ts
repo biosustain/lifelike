@@ -36,8 +36,9 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   }
 
   getSource(payload: any = {}) {
-    const identifier = payload.identifier;
+    const identifier = payload.identifier || payload.Identifier;
     const type = payload.type;
+    // console.log(payload);
     // MESH Handling
     if (identifier && identifier.toLowerCase().startsWith('mesh')) {
       const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
@@ -47,10 +48,20 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     }
     // NCBI
     if (identifier && !isNaN(Number(identifier))) {
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'ncbi');
+      let domain = 'ncbi';
+      if (type === 'Species') {
+        domain = 'ncbi_taxonomy';
+      }
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === domain);
       const url = mesh.url;
       return url.replace(/%s/, encodeURIComponent(identifier));
     }
+    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
+    return fallback.url.replace(/%s/, encodeURIComponent(identifier));
+  }
+
+  dragStarted($event) {
+    console.log('Drag started in annotated text');
   }
 
   ngOnChanges(changes: SimpleChanges) {
