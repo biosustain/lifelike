@@ -181,14 +181,17 @@ class AnnotationGraphService(GraphConnection):
             gene_id = row['gene_id']
             organism_id = row['organism_id']
             data_source = row['data_source']
+            data_source_key = f'{gene_synonym}{organism_id}'
 
-            data_sources[gene_id] = data_source
+            # we already have it in the dict,
+            # so skip current if what we have is already NCBI
+            if data_sources.get(data_source_key, '') == DatabaseType.NCBI_GENE.value:
+                continue
 
-            if gene_to_organism_map.get(gene_synonym, None) is not None:
+            data_sources[data_source_key] = data_source
+
+            if gene_to_organism_map.get(gene_synonym, None):
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):
-                    # we already have it in the dict, so only add if data_source is NCBI
-                    if data_source != DatabaseType.NCBI_GENE.value:
-                        continue
                     gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
                 else:
                     gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
