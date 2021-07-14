@@ -592,6 +592,7 @@ class AnnotationService:
                 specified_organism_id = best_match.specified_organism_id
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
             elif entity_synonym in fallback_gene_organism_matches:
+                organism_id = self.specified_organism.organism_id
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
@@ -609,7 +610,7 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
-                if entity['id_type'] != gene_data_sources[gene_id]:
+                if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:
                     continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
