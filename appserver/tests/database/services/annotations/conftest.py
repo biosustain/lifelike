@@ -799,7 +799,7 @@ def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
                 'BOLA3': {'BOLA3': {'9606': '388962'}}
             },
             data_sources={
-                '388962': 'NCBI Gene'
+                'BOLA39606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -816,13 +816,13 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
             matches={
                 'hyp27': {'hyp27': {'221103': '2846957'}},
                 'SERPINA1': {
-                    'serpina1': {'9606': '5265'},
+                    # 'serpina1': {'9606': '5265'},
                     'SERPINA1': {'9606': '5265'}
                 }
             },
             data_sources={
-                '2846957': 'NCBI Gene',
-                '5265': 'NCBI Gene'
+                'hyp27221103': 'NCBI Gene',
+                'SERPINA19606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -838,13 +838,13 @@ def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(m
         return GeneOrProteinToOrganism(
             matches={
                 'il-7': {
-                    'IL7': {'7897': '102353780'},
+                    # 'IL7': {'7897': '102353780'},
                     'il-7': {'31033': '99999'}
                 }
             },
             data_sources={
-                '102353780': 'NCBI Gene',
-                '99999': 'NCBI Gene'
+                'il-731033': 'NCBI Gene',
+                # '99999': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -863,7 +863,8 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
                 'Fake_ACE2': {'ACE2': {'9606': '59272'}}
             },
             data_sources={
-                '59272': 'NCBI Gene'
+                'ACE29606': 'NCBI Gene',
+                'Fake_ACE29606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -881,7 +882,7 @@ def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
                 'gene-(12345)': {'ACE2': {'9606': '59272'}}
             },
             data_sources={
-                '59272': 'NCBI Gene'
+                'gene-(12345)9606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -900,7 +901,8 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
                 'IL-8': {'CXCL8': {'9606': '3576'}}
             },
             data_sources={
-                '3576': 'NCBI Gene'
+                'IL89606': 'NCBI Gene',
+                'IL-89606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -917,12 +919,12 @@ def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
             matches={
                 'EDEM3': {
                     'EDEM3': {'9606': '80267'},
-                    'Edem3': {'10116': '289085'}
+                    # 'Edem3': {'10116': '289085'}
                 }
             },
             data_sources={
-                '80267': 'NCBI Gene',
-                '289085': 'NCBI Gene'
+                'EDEM39606': 'NCBI Gene',
+                # '289085': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -944,11 +946,11 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
                 'purF': {'purF': {'562': '946794'}},
             },
             data_sources={
-                '948695': 'NCBI Gene',
-                '945695': 'NCBI Gene',
-                '946957': 'NCBI Gene',
-                '948504': 'NCBI Gene',
-                '946794': 'NCBI Gene'
+                'purA562': 'NCBI Gene',
+                'purB562': 'NCBI Gene',
+                'purC562': 'NCBI Gene',
+                'purD562': 'NCBI Gene',
+                'purF562': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -967,8 +969,8 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
                 'PAH': {'PAH': {'9606': '289085'}}
             },
             data_sources={
-                '80267': 'NCBI Gene',
-                '289085': 'NCBI Gene'
+                'PPP9606': 'NCBI Gene',
+                'PAH9606': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -987,8 +989,8 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
                 'YdhB': {'562': 'P0ACR2'},
             },
             data_sources={
-                'P37597': 'NCBI Gene',
-                'P0ACR2': 'NCBI Gene'
+                'YdhC562': 'NCBI Gene',
+                'YdhB562': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
@@ -1008,9 +1010,12 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
                 'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
             },
             data_sources={
-                '5743': 'NCBI Gene',
-                '627': 'NCBI Gene',
-                '684': 'NCBI Gene'
+                'PTGS29606': 'NCBI Gene',
+                'PTGS29685': 'NCBI Gene',
+                'BDNF9606': 'NCBI Gene',
+                'BDNF9685': 'NCBI Gene',
+                'BST29606': 'NCBI Gene',
+                'BST29685': 'NCBI Gene'
             })
 
     monkeypatch.setattr(
