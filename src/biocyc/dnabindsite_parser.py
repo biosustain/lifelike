@@ -1,9 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
 from common.constants import *
-import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 PROP_POS = 'abs_center_pos'
 PROP_LEN = 'site_length'

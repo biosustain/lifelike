@@ -5,9 +5,6 @@ from common.query_builder import *
 import os, gzip, logging, re, csv
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
-
 
 # protein name types:
 REC_FULLNAME = 'recommended full name'
@@ -74,10 +71,11 @@ class UniprotParser(BaseParser):
     """
     def __init__(self, base_dir=None):
         BaseParser.__init__(self, DB_UNIPROT.lower())
+        self.logger = logging.getLogger(__name__)
 
     def parse_uniprot_file(self, gz_file: str):
         entries = []
-        logging.info('start parsing file:' + gz_file)
+        self.logger.info("Start parsing file:" + gz_file)
         with gzip.open(os.path.join(self.download_dir, gz_file), 'rt') as f:
             for line in f:
                 if not line.startswith('CC       '):
@@ -85,7 +83,7 @@ class UniprotParser(BaseParser):
                     pathway = False
                 if line.startswith('ID'):
                     if entries and len(entries) % 10000 == 0:
-                        logging.info(str(len(entries)))
+                        self.logger.info(str(len(entries)))
                     entry = Entry()
                     pre_line_type = None
                     entries.append(entry)
@@ -133,7 +131,7 @@ class UniprotParser(BaseParser):
                         entry.function += ' ' + self._clean_name(line[len('CC       '):], False)
                     elif pathway:
                         entry.pathway += ' ' + self._clean_name(line[len('CC       '):], False)
-        logging.info(f'total entries: {len(entries)}')
+        self.logger.info(f'Total entries: {len(entries)}')
         return entries
 
     def write_data_files_for_import(self):
@@ -181,11 +179,11 @@ class UniprotParser(BaseParser):
             f.write(':START_ID(UniProt-ID)\t:END_ID(GO-ID)\n')
 
     def write_sprot2gene_file(self):
-        logging.info("write sprot2gene")
+        self.logger.info("Write sprot2gene")
         # get sprot ids
         with open(os.path.join(self.output_dir, 'sprot.tsv'), 'r') as f:
             sprot_ids = set([line.split('\t')[0] for line in f])
-        logging.info("total sprot " + str(len(sprot_ids)))
+        self.logger.info("Total sprot " + str(len(sprot_ids)))
         # with open(os.path.join(self.base_dir, 'processed', 'gene', 'gene.tsv'), 'r') as f:
         #     reader = csv.reader(f, delimiter='\t')
         #     genes = set([row[0] for row in reader])
@@ -203,7 +201,7 @@ class UniprotParser(BaseParser):
                 if row[2] and row[0] in sprot_ids:
                     rows += 1
                     outfile.write(f'{row[0]}\t{row[2]}\n')
-        logging.info('finished writing sprot2gene.tsv. rows:' + str(rows))
+        self.logger.info('Finished writing sprot2gene.tsv. rows:' + str(rows))
 
     def remove_gene_mesh_from_synonym_file(self):
         ## get gene synonyms
