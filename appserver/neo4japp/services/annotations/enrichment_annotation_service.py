@@ -51,10 +51,9 @@ class EnrichmentAnnotationService(AnnotationService):
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
-        fallback_gene_organism_matches = {}
 
         gene_match_time = time.time()
-        fallback_gene_organism_matches = \
+        fallback_graph_results = \
             self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
                 postgres_genes=self.db.get_organism_genes(
@@ -65,6 +64,8 @@ class EnrichmentAnnotationService(AnnotationService):
             f'Gene fallback organism KG query time {time.time() - gene_match_time}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
+        fallback_gene_organism_matches = fallback_graph_results.matches
+        gene_data_sources = fallback_graph_results.data_sources
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
@@ -93,6 +94,11 @@ class EnrichmentAnnotationService(AnnotationService):
                     except KeyError:
                         continue
                     else:
+                        # the postgres table `organism_gene_match`
+                        # doesn't have data_source like the KG since that's recent
+                        # hotfix for now until that table is replaced with a better implementation
+                        if gene_id in gene_data_sources and entity['id_type'] != gene_data_sources[gene_id]:  # noqa
+                            continue
                         entities_to_create.append(
                             CreateAnnotationObjParams(
                                 token=token,
@@ -124,10 +130,9 @@ class EnrichmentAnnotationService(AnnotationService):
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
-        fallback_protein_organism_matches = {}
 
         protein_match_time = time.time()
-        fallback_protein_organism_matches = \
+        fallback_graph_results = \
             self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=[self.specified_organism.organism_id],
@@ -136,6 +141,7 @@ class EnrichmentAnnotationService(AnnotationService):
             f'Protein fallback organism KG query time {time.time() - protein_match_time}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
+        fallback_protein_organism_matches = fallback_graph_results.matches
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
