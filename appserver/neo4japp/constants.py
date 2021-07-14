@@ -53,7 +53,7 @@ class EnrichmentDomain(Enum):
     REGULON = 'Regulon'
     STRING = 'String'
     GO = 'GO'
-    BIOCYC = 'Biocyc'
+    BIOCYC = 'BioCyc'
 
 
 class LogEventType(Enum):

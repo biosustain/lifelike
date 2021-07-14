@@ -1,7 +1,7 @@
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 export enum DatabaseType {
-  MESH = 'Mesh',
+  MESH = 'MeSH',
   BIOCYC = 'BioCyc',
   CHEBI = 'ChEBI',
   NCBI_GENE = 'NCBI Gene',

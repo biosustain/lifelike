@@ -180,7 +180,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_organisms_from_gene_ids',
+        'get_organisms_from_gene_ids_query',
         get_organisms_from_gene_ids_result,
     )
 
