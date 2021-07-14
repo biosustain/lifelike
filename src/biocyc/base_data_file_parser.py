@@ -11,9 +11,6 @@ UNIQUE_ID = 'UNIQUE-ID'
 NODE_LABEL = 'node_label'
 LABEL = ':LABEL'
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
-
 
 class BaseDataFileParser(BaseParser):
     """
@@ -42,6 +39,7 @@ class BaseDataFileParser(BaseParser):
         self.db_link_sources = db_link_sources
         self.attrs = []
         self.version = ''
+        self.logger = logging.getLogger(__name__)
 
     def create_synonym_rels(self)->bool:
         return False
@@ -61,14 +59,14 @@ class BaseDataFileParser(BaseParser):
         return str(max(versions))
 
     def parse_data_file(self):
-        # logging.info('read ' + self.datafile + ' from ' + self.input_zip)
+        # self.logger.info('read ' + self.datafile + ' from ' + self.input_zip)
         with tarfile.open(self.input_zip, mode='r:gz') as tar:
             if not self.version:
                 self.version = self.get_db_version(tar)
-                print(self.version)
+                self.logger.info(f'Database file version: "{self.version}"')
             for tarinfo in tar:
                 if tarinfo.name.endswith('/'+ self.datafile) and self.version in tarinfo.name:
-                    logging.info('parse ' + tarinfo.name)
+                    self.logger.info('Parse ' + tarinfo.name)
                     utf8reader = codecs.getreader('ISO-8859-1')
                     f = utf8reader(tar.extractfile(tarinfo.name))
                     nodes = []
@@ -84,6 +82,9 @@ class BaseDataFileParser(BaseParser):
             if line.startswith(UNIQUE_ID):
                 node = NodeData(self.node_labels.copy(), PROP_BIOCYC_ID)
                 nodes.append(node)
+
+                # add data source property
+                node.add_attribute(PROP_DATA_SOURCE, DB_BIOCYC, "str")
             if node and PROP_COMMENT in self.attr_name_map and prev_line_is_comment and line.startswith('/'):
                 line = line[1:].strip()
                 node.add_attribute(PROP_COMMENT, line, 'str')
@@ -113,7 +114,7 @@ class BaseDataFileParser(BaseParser):
                             rel_type = self.rel_name_map.get(attr)
                             node.add_edge_type(rel_type, val)
         except Exception as ex:
-            print('line:', line)
+            self.logger.error('line:', line)
         return node, prev_line_is_comment
 
     def add_dblink(self, node:NodeData, db_name, reference_id):
@@ -122,7 +123,7 @@ class BaseDataFileParser(BaseParser):
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
 
-    def update_nodes_in_graphdb(self, nodes:[], database:Database, update_version):
+    def update_nodes_in_graphdb(self, nodes:[], database:Database):
         """
         Load or update nodes in KG. This can also be called for initial loading.
         :param nodes: list of nodes
@@ -131,15 +132,15 @@ class BaseDataFileParser(BaseParser):
         """
         if not nodes:
             return
-        logging.info('update nodes: ' + ':'.join(self.node_labels))
+        self.logger.info('Update nodes: ' + ':'.join(self.node_labels))
         rows = []
         for node in nodes:
             rows.append(node.to_dict())
-        attrs = [PROP_ID] + self.attrs
-        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, update_version=update_version)
+        attrs = self.attrs + [PROP_DATA_SOURCE]
+        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels)
         database.load_data_from_rows(query, rows)
 
-    def add_edges_to_graphdb(self, nodes:[], database:Database, update_version):
+    def add_edges_to_graphdb(self, nodes:[], database:Database):
         entity_rel_dict = dict()
         db_link_dict = dict()
         synonym_list = []
@@ -169,34 +170,34 @@ class BaseDataFileParser(BaseParser):
                     entity_rel_dict[rel].append({'from_id': from_id, 'to_id': to_id})
 
         if synonym_list:
-            logging.info('add synonyms')
-            query = get_create_synonym_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, PROP_BIOCYC_ID, PROP_NAME, [], update_version)
-            logging.info(query)
+            self.logger.info('Add synonyms')
+            query = get_create_synonym_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, PROP_BIOCYC_ID, PROP_NAME, [])
+            self.logger.debug(query)
             database.load_data_from_rows(query, synonym_list)
         for rel in entity_rel_dict.keys():
-            logging.info('add relationship ' + rel)
+            self.logger.info('Add relationship ' + rel)
             query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel, update_version=update_version)
-            logging.info(query)
+                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel)
+            self.logger.debug(query)
             database.load_data_from_rows(query, entity_rel_dict[rel])
 
-        self.add_dblinks_to_graphdb(db_link_dict, database, update_version)
+        self.add_dblinks_to_graphdb(db_link_dict, database)
 
-    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database, update_version):
+    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database):
         for db_name in db_link_dict.keys():
-            logging.info('add DB Link relationship to ' + db_name )
+            self.logger.info('Add DB Link relationship to ' + db_name )
             dest_label = 'db_' + db_name
             rel = db_name.upper() + '_LINK'
             query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              dest_label, PROP_ID, 'to_id', rel, update_version=update_version)
-            logging.info(query)
+                                                              dest_label, PROP_ID, 'to_id', rel)
+            self.logger.debug(query)
             database.load_data_from_rows(query, db_link_dict[db_name])
 
     def write_entity_data_files(self, nodes:[]):
         os.makedirs(self.db_output_dir, 0o777, True)
-        logging.info(f'writing {self.entity_name} files')
+        self.logger.info(f'Writing {self.entity_name} files')
         with open(os.path.join(self.db_output_dir, self.entity_name.lower() + '.tsv'), 'w') as f:
-            attrs = [PROP_ID] + self.attrs
+            attrs = [PROP_ID] + [PROP_DATA_SOURCE] + self.attrs
             f.write('\t'.join(attrs) + '\n')
             f.writelines(NodeData.get_entity_data_rows(nodes, attrs))
 

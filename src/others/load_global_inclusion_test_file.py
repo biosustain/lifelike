@@ -5,9 +5,6 @@ from common import utils
 import pandas as pd
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
-
 KG_DOMAINS = [DB_NCBI, DB_MESH, DB_UNIPROT]
 
 
@@ -117,7 +114,6 @@ def add_global_inclusion_test_file(file, database):
 
 
 if __name__ == '__main__':
-    # database = get_database(Neo4jInstance.LOCAL)
-    database = get_database(Neo4jInstance.GOOGLE_PROD)
+    database = get_database()
     add_global_inclusion_test_file('Global Inclusion Test File for Robin v2.xlsx', database)
     database.close()

@@ -3,6 +3,7 @@ import pandas as pd
 from common.database import *
 from common.constants import *
 from ncbi.ncbi_gene_parser import GeneParser
+import logging
 
 
 class TestGeneParser(unittest.TestCase):
@@ -14,13 +15,14 @@ class TestGeneParser(unittest.TestCase):
         self.parser = GeneParser('/Users/rcai/data')
         self.database = database
         self.tax_id = tax_id
+        self.logger = logging.getLogger(__name__)
 
     def get_geneinfo_file(self):
         return os.path.join(self.parser.output_dir, 'geneinfo_' + str(self.tax_id) + '.tsv')
 
     def write_geneinfo(self):
         df_geneinfo = self.parser.extract_organism_geneinfo(self.tax_id)
-        print(len(df_geneinfo))
+        self.logger.info(len(df_geneinfo))
         df_geneinfo.to_csv(self.get_geneinfo_file(), sep='\t', index=False)
 
     def test_gene_count(self):
@@ -48,7 +50,7 @@ class TestGeneParser(unittest.TestCase):
         # remove synonyms with only one letter, or do not have non-digit chars
         df_syns = df_syns[df_syns['name'].str.len() > 1 & df_syns['name'].str.contains('[a-zA-Z]')]
         df_syns = df_syns[df_syns['name'].str.len() > 1]
-        print(len(df_names), len(df_locus), len(df_syns))
+        self.logger.info(len(df_names), len(df_locus), len(df_syns))
         return df_syns
 
     def test_synonym_count(self):
@@ -79,14 +81,14 @@ class TestGeneParser(unittest.TestCase):
         df_file = df_file.sort_values(by=[PROP_ID, PROP_NAME])
         df_file = df_file.drop_duplicates()
         df_file.to_csv(os.path.join(self.parser.output_dir, 'gene_syn_9606_file.tsv'), sep='\t', index=False)
-        logging.info(f"kg synonyms: {len(df_db)}")
-        logging.info(f"file synonyms: {len(df_file)}")
+        self.logger.info(f"kg synonyms: {len(df_db)}")
+        self.logger.info(f"file synonyms: {len(df_file)}")
         df = pd.concat([df_db, df_file]).drop_duplicates(keep=False)
-        print(df)
+        self.logger.debug(df)
 
 
-if __name__ == '__main__':
-    database = get_database(Neo4jInstance.LOCAL)
+if __name__ == "__main__":
+    database = get_database()
     test = TestGeneParser(database, 9606)
     test.test_synonym_count()
     database.close()
