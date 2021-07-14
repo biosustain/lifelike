@@ -392,16 +392,16 @@ class ManualAnnotationService:
             # and add the label for the future
             if check['node_exist'] and (not check['synonym_exist'] or check.get('node_has_entity_label', False)):  # noqa
                 queries = {
-                    EntityType.ANATOMY.value: create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.DISEASE.value: create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.FOOD.value: create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.PHENOMENA.value: create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.PHENOTYPE.value: create_mesh_global_inclusion(entity_type),  # noqa
-                    EntityType.CHEMICAL.value: create_chemical_global_inclusion(),
-                    EntityType.COMPOUND.value: create_compound_global_inclusion(),
-                    EntityType.GENE.value: create_gene_global_inclusion(),
-                    EntityType.PROTEIN.value: create_protein_global_inclusion(),
-                    EntityType.SPECIES.value: create_species_global_inclusion()
+                    EntityType.ANATOMY.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.DISEASE.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.FOOD.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.PHENOMENA.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.PHENOTYPE.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.CHEMICAL.value: get_create_chemical_global_inclusion_query(),
+                    EntityType.COMPOUND.value: get_create_compound_global_inclusion_query(),
+                    EntityType.GENE.value: get_create_gene_global_inclusion_query(),
+                    EntityType.PROTEIN.value: get_create_protein_global_inclusion_query(),
+                    EntityType.SPECIES.value: get_create_species_global_inclusion_query()
                 }
 
                 query = queries.get(entity_type, '')
@@ -409,7 +409,7 @@ class ManualAnnotationService:
                     if query:
                         self.graph.exec_write_query_with_params(query, createval)
                     else:
-                        query = create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                        query = get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type)
                         self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -420,7 +420,7 @@ class ManualAnnotationService:
                     )
             elif not check['node_exist']:
                 try:
-                    query = create_***ARANGO_DB_NAME***_global_inclusion(entity_type)
+                    query = get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type)
                     self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -452,16 +452,16 @@ class ManualAnnotationService:
 
     def _global_annotation_exists_in_kg(self, values: dict):
         queries = {
-            EntityType.ANATOMY.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.DISEASE.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.FOOD.value: mesh_global_inclusion_exist(values['entity_type']),
-            EntityType.PHENOMENA.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.PHENOTYPE.value: mesh_global_inclusion_exist(values['entity_type']),  # noqa
-            EntityType.CHEMICAL.value: chemical_global_inclusion_exist(),
-            EntityType.COMPOUND.value: compound_global_inclusion_exist(),
-            EntityType.GENE.value: gene_global_inclusion_exist(),
-            EntityType.PROTEIN.value: protein_global_inclusion_exist(),
-            EntityType.SPECIES.value: species_global_inclusion_exist()
+            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
+            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
+            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query(values['entity_type']),
+            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
+            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
+            EntityType.CHEMICAL.value: get_chemical_global_inclusion_exist_query(),
+            EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
+            EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
+            EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query(),
+            EntityType.SPECIES.value: get_species_global_inclusion_exist_query()
         }
 
         # query can be empty string because some entity types
@@ -481,7 +481,7 @@ class ManualAnnotationService:
             return result
         else:
             try:
-                query = ***ARANGO_DB_NAME***_global_inclusion_exist(values['entity_type'])
+                query = get_***ARANGO_DB_NAME***_global_inclusion_exist_query(values['entity_type'])
                 result = self.graph.exec_read_query_with_params(query, values)[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise
