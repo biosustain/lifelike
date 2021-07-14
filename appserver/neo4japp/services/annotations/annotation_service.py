@@ -403,7 +403,7 @@ class AnnotationService:
     def _find_best_organism_match(
         self,
         token,
-        entity,
+        entity_synonym,
         organisms_to_match,
         fallback_organism_matches,
         entity_type
@@ -419,8 +419,6 @@ class AnnotationService:
         If none found, then use the most frequent organism in document if it is in the
         matched dict, otherwise do not annotate.
         """
-        entity_synonym = entity['synonym']
-
         entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
             entity=token,
             organism_matches=organisms_to_match
@@ -577,7 +575,7 @@ class AnnotationService:
                 except KeyError:
                     best_match = self._find_best_organism_match(
                         token=token,
-                        entity=entity,
+                        entity_synonym=entity_synonym,
                         organisms_to_match=organisms_to_match,
                         fallback_organism_matches=fallback_gene_organism_matches,
                         entity_type=EntityType.GENE.value)
@@ -691,7 +689,7 @@ class AnnotationService:
                 except KeyError:
                     best_match = self._find_best_organism_match(
                         token=token,
-                        entity=entity,
+                        entity_synonym=entity_synonym,
                         organisms_to_match=protein_organism_matches[entity_synonym],
                         fallback_organism_matches=fallback_protein_organism_matches,
                         entity_type=EntityType.PROTEIN.value)
