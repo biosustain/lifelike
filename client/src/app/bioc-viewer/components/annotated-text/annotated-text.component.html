@@ -6,11 +6,16 @@
           [autoClose]="'outside'"
           placement="top bottom"
           [innerHTML]="part.text"
+          [draggable]="'true'"
+          [attr.offset]="part.location.offset"
+          [attr.identifier]="part.infons.identifier || part.infons.Identifier"
+          [attr.annType]="part.infons.type"
+          (dragstart)="dragStarted($event)"
     ></span>
     <ng-template #tooltip>
         <dl>
             <dt>Identifier</dt>
-            <dd>{{part.infons.identifier}}</dd>
+            <dd>{{part.infons.identifier || part.infons.Identifier}}</dd>
             <dt>Type</dt>
             <dd>{{part.infons.type}}</dd>
             <a href="{{getSource(part.infons)}}" target="_blank">Source</a>
