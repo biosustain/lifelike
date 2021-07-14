@@ -464,8 +464,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const hyperlinks = [];
     const url = src;
     const domain = new URL(src).hostname.replace(/^www\./i, '');
-    const isDatabase = false;
-    hyperlinks.push({ url, domain, isDatabase });
+    hyperlinks.push({ url, domain });
     const hyperlink = meta.idHyperlink || '';
     let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
       'bioc', encodeURIComponent(this.object.hashId)].join('/');
