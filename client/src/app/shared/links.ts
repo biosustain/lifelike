@@ -2,10 +2,9 @@ import { Hyperlink } from '../drawing-tool/services/interfaces';
 
 export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   domain: 'NCBI_Taxonomy',
-  url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s',
-  isDatabase: true,
+  url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s'
 }, {
-  domain: 'NCBI',
+  domain: 'NCBI_Gene',
   url: 'https://www.ncbi.nlm.nih.gov/gene/?term=%s'
 }, {
   domain: 'UniProt',
