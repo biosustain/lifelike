@@ -17,7 +17,7 @@ def get_create_constraint_query(label: str, property_name: str, constraint_name:
     query = 'CREATE CONSTRAINT '
     if constraint_name:
         query += constraint_name
-    query += f' ON (n:{label}) ASSERT n.{property_name} IS UNIQUE'
+    query += f' IF NOT EXISTS ON (n:{label}) ASSERT n.{property_name} IS UNIQUE'
     return query
 
 
@@ -32,7 +32,7 @@ def get_create_index_query(label: str, property_name: str, index_name=''):
     query = 'CREATE INDEX '
     if index_name:
         query += index_name
-    query += f' for (n:{label}) on (n.{property_name})'
+    query += f' IF NOT EXISTS FOR (n:{label}) ON (n.{property_name})'
     return query
 
 
