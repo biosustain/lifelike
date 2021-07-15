@@ -64,7 +64,6 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         'Type',
         'Entity Type',
         'Entity ID',
-        'Content Reference',
         'File Deleted',
         'Added By',
         'Reason',
