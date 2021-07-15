@@ -544,7 +544,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
                 return [(0, self.MIME_TYPE)]
             else:
                 return []
-        except (ValueError, AttributeError):
+        except ValueError as e:
             return []
         finally:
             buffer.seek(0)
