@@ -1083,14 +1083,12 @@ class FileExportView(FilesystemBaseView):
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
-
-
             except ExportFormatError:
                 raise ValidationError("Unknown or invalid export format for the requested file.",
                                       "format")
 
         export_content = export.content.getvalue()
-        checksum_sha256 =  hashlib.sha256(export_content).digest()
+        checksum_sha256 = hashlib.sha256(export_content).digest()
         return make_cacheable_file_response(
                 request,
                 export_content,
@@ -1103,9 +1101,7 @@ class FileExportView(FilesystemBaseView):
         params['mergeOption'] = params.get('mergeOption') or 'vertical'
 
         out_files = []
-        # file = None
         for file in files:
-            print(file.hash_id)
             try:
                 export = file_type.generate_export(file, params['format'])
             except ExportFormatError:
@@ -1119,14 +1115,10 @@ class FileExportView(FilesystemBaseView):
             for out_file in out_files:
                 merger.append(out_file)
             merger.write(final_bytes)
-        if params['format'] == 'png' and params.get('mergeOption') == 'animation':
-            APNG.from_files(out_files, delay=500).save(final_bytes)
-        elif params['format'] == 'png':
+        if params['format'] == 'png':
             is_vertical = params.get('mergeOption') == 'vertical'
             images = [Image.open(x) for x in out_files]
-
             cropped_images = [image.crop(image.getbbox()) for image in images]
-
             widths, heights = zip(*(i.size for i in cropped_images))
 
             if is_vertical:
@@ -1137,29 +1129,23 @@ class FileExportView(FilesystemBaseView):
                 max_height = max(heights)
 
             new_im = Image.new('RGBA', (total_width, max_height), (255, 255, 255, 0))
-            print('new image size: ', new_im.size)
 
             x_offset, y_offset = 0, 0
-            for x, im in enumerate(cropped_images):
+            for im in cropped_images:
                 x_center = (total_width / 2 - im.size[0] / 2) * is_vertical
                 y_center = (max_height / 2 - im.size[1] / 2) * (not is_vertical)
                 new_im.paste(im, (x_offset + int(x_center), y_offset + int(y_center)))
                 x_offset += im.size[0] * (not is_vertical)
                 y_offset += im.size[1] * is_vertical
-            # new_im.save('test.png')
             new_im.save(final_bytes, format='PNG')
-            # with open("image.png", "wb") as outfile:
-            #     # Copy the BytesIO stream to the output file
-            #     outfile.write(final_bytes.getvalue())
-
 
         ext = f".{params['format']}"
-        print("done!")
         return FileExport(
             content=final_bytes,
             mime_type=extension_mime_types[ext],
             filename=f"{file.filename}{ext}"
         )
+
 
 class FileBackupView(FilesystemBaseView):
     """Endpoint to manage 'backups' that are recorded for the user when they are editing a file
