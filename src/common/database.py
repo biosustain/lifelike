@@ -164,7 +164,7 @@ class Database:
                                  low_memory=False, engine='c', na_filter=False)
         count = 0
         self.logger.info("Load file: " + data_file)
-        self.logger.info("Query: " + query)
+        self.logger.debug("Query: " + query)
         with self.driver.session(database=self.dbname) as session:
             if not chunk_size:
                 df = data_chunk

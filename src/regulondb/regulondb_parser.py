@@ -118,7 +118,7 @@ class RegulonDbParser(BaseParser):
             'PROMOTER_STRAND': PROP_STRAND,
             # 'PROMOTER_NOTE': PROP_COMMENT,
         }
-        self.loggerg.info('Load regulondb promoters')
+        self.logger.info('Load regulondb promoters')
         self.create_nodes('promoter.txt', NODE_PROMOTER, attribute_map)
 
     def load_regulons(self):
