@@ -27,7 +27,8 @@ export class HighlightSnippetComponent implements OnChanges {
     ngOnChanges() {
         const spaceRegex = / /gi;
 
-        const entry1BackgroundColor = this.legend.get(this.entry1Type)[0];
+        const entry1Colors = this.legend.get(this.entry1Type) || ['#000', '#000'];
+        const entry1BackgroundColor = entry1Colors[0];
         const entry1StyleString = `
             background-color: ${hexToRGBA(entry1BackgroundColor, 0.3)};
             display: inline-block;
@@ -37,7 +38,8 @@ export class HighlightSnippetComponent implements OnChanges {
         `;
         const entry1TextJoinedByUnderscore = this.entry1Text.replace(spaceRegex, '_');
 
-        const entry2BackgroundColor = this.legend.get(this.entry2Type)[0];
+        const entry2Colors = this.legend.get(this.entry2Type) || ['#000', '#000'];
+        const entry2BackgroundColor = entry2Colors[0];
         const entry2StyleString = `
             background-color: ${hexToRGBA(entry2BackgroundColor, 0.3)};
             display: inline-block;
