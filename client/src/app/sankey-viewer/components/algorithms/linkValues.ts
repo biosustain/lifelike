@@ -43,7 +43,7 @@ export const inputCount = ({links, nodes, inNodes}: Partial<SankeyData>) => {
     .nodeAlign(d3Sankey.sankeyRight)
     .nodeWidth(10)
     ({nodes, links});
-  nodes.sort((a, b) => a.depth - b.depth).forEach(n => {
+  [...nodes].sort((a, b) => a.depth - b.depth).forEach(n => {
     if (inNodes.includes(n.id)) {
       n.value = 1;
     } else {
