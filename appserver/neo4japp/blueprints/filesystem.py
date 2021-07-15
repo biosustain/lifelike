@@ -1058,10 +1058,10 @@ class FileExportView(FilesystemBaseView):
         file_type = file_type_service.get(file)
 
         # Better way to see if a file is a map?
+        # This will be replaced with optional param
         if isinstance(file_type, MapTypeProvider) and params['format'] in ['pdf', 'png']:
             json_graph = json.loads(file.content.raw_file)
             maps_to_export = {hash_id}
-            files = [file]
             for node in json_graph['nodes']:
                 if node['data'].get('sources') or node['data'].get('hyperlinks'):
                     data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
@@ -1069,16 +1069,8 @@ class FileExportView(FilesystemBaseView):
                         url = link.get('url', "").lstrip()
                         if self.maps_re.match(url):
                             map_hash = url.split('/')[-1]
-                            if map_hash not in maps_to_export:
-                                maps_to_export.add(map_hash)
-                                file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
-                                                                         lazy_load_content=True)
-                                self.check_file_permissions([file], current_user, ['readable'],
-                                                            permit_recycled=True)
-                                files.append(file)
-            # self.check_file_permissions(list(maps_to_export), current_user, ['readable'],
-            #                             permit_recycled=True)
-            export = self.export_multiple_maps(params, file_type, files)
+                            maps_to_export.add(map_hash)
+            export = self.export_multiple_maps(params, file_type, maps_to_export)
 
         else:
             try:
@@ -1101,7 +1093,12 @@ class FileExportView(FilesystemBaseView):
         params['mergeOption'] = params.get('mergeOption') or 'vertical'
 
         out_files = []
-        for file in files:
+        current_user = g.current_user
+        for map_hash in files:
+            file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
+                                                     lazy_load_content=True)
+            self.check_file_permissions([file], current_user, ['readable'],
+                                        permit_recycled=True)
             try:
                 export = file_type.generate_export(file, params['format'])
             except ExportFormatError:
@@ -1122,18 +1119,18 @@ class FileExportView(FilesystemBaseView):
             widths, heights = zip(*(i.size for i in cropped_images))
 
             if is_vertical:
-                total_width = max(widths)
-                max_height = sum(heights)
+                width = max(widths)
+                height = sum(heights)
             else:
-                total_width = sum(widths)
-                max_height = max(heights)
+                width = sum(widths)
+                height = max(heights)
 
-            new_im = Image.new('RGBA', (total_width, max_height), (255, 255, 255, 0))
-
+            new_im = Image.new('RGBA', (width, height), (255, 255, 255, 0))
             x_offset, y_offset = 0, 0
+
             for im in cropped_images:
-                x_center = (total_width / 2 - im.size[0] / 2) * is_vertical
-                y_center = (max_height / 2 - im.size[1] / 2) * (not is_vertical)
+                x_center = (width / 2 - im.size[0] / 2) * is_vertical
+                y_center = (height / 2 - im.size[1] / 2) * (not is_vertical)
                 new_im.paste(im, (x_offset + int(x_center), y_offset + int(y_center)))
                 x_offset += im.size[0] * (not is_vertical)
                 y_offset += im.size[1] * is_vertical
