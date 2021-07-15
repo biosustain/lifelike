@@ -85,7 +85,9 @@ class GraphConnection(DatabaseConnection):
             graph_date.day,
             graph_date.hour,
             graph_date.minute,
-            int(graph_date.second))
+            int(graph_date.second),
+            int(graph_date.second * 1000000 % 1000000),
+            tzinfo=graph_date.tzinfo)
 
     def begin(self, **kwargs):
         return self._context(self.conn)

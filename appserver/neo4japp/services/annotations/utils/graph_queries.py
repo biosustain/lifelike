@@ -61,6 +61,25 @@ def get_protein_to_organism_query():
     """
 
 
+def get_global_inclusions_query():
+    return """
+    MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
+    WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
+    RETURN
+        id(n) AS node_internal_id,
+        id(s) AS syn_node_internal_id,
+        n.id AS entity_id,
+        n.external_id AS external_id,
+        s.name AS synonym,
+        n.data_source AS data_source,
+        r.entity_type AS entity_type,
+        r.file_reference AS file_reference,
+        r.user AS creator,
+        r.inclusion_date AS creation_date
+    ORDER BY toLower(synonym)
+    """
+
+
 def get_global_inclusions_paginated_query():
     return """
     MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
