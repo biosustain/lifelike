@@ -19,8 +19,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from './algorithms/traceLogic';
 import { representativePositiveNumber, nodeLabelAccessor } from '../utils';
-import { identifyCircles } from '../algorithms/d3-sankey/d3-sankey-circular';
-import { computeNodeLinks, registerLinks } from '../algorithms/d3-sankey/d3-sankey';
+import { SankeyLayoutService } from './sankey-layout.service';
 
 
 @Component({
@@ -33,22 +32,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
     private elRef: ElementRef,
     private clipboard: ClipboardService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private sankey: SankeyLayoutService
   ) {
-    this.sankey = d3Sankey.sankey()
-      .nodeId(n => n.id)
-      .nodePadding(10)
-      // .nodePaddingRatio(0.1)
-      .linkSort((a, b) =>
+    Object.assign(sankey, {
+      py: 10, // nodePadding
+      dx: 10, // nodeWidth
+      linkSort: (a, b) =>
         (b.source.index - a.source.index) ||
         (b.target.index - a.target.index) ||
         (b._trace.group - a._trace.group)
-      )
-      // .nodeSort((a, b) =>
-      //   (b.depth - a.depth) ||
-      //   (b.index - a.index)
-      // )
-      .nodeWidth(10);
+    });
 
     this.linkClick = this.linkClick.bind(this);
     this.nodeClick = this.nodeClick.bind(this);
@@ -78,7 +72,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   size;
   zoom;
   dragging = false;
-  private readonly sankey: any;
 
   // shallow copy of input data
   private _data: SankeyData = {} as SankeyData;
@@ -132,17 +125,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Life cycle
-  ngOnChanges({timeInterval, selectedNodes, selectedLinks, data, nodeAlign}: SimpleChanges) {
+  ngOnChanges({selectedNodes, selectedLinks, data, nodeAlign}: SimpleChanges) {
     // using on Changes in place of setters as order is important
-    if (timeInterval) {
-      this.sankey.timeInterval(timeInterval.currentValue);
-    }
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
       if (typeof align === 'function') {
-        this.sankey.nodeAlign(align);
+        this.sankey.align = align;
       } else if (align) {
-        this.sankey.nodeAlign(d3Sankey['sankey' + align]);
+        this.sankey.align = d3Sankey['sankey' + align];
       }
     }
 
@@ -251,7 +241,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
-    this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
+    this.sankey.extent = [[margin.left, margin.top], [innerWidth, innerHeight]];
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
@@ -512,8 +502,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   updateLayout(data) {
     return new Promise(resolve => {
-        computeNodeLinks(data);
-        identifyCircles(data);
+        this.sankey.computeNodeLinks(data);
+        this.sankey.identifyCircles(data);
         const {nodes, links, ...rest} = data;
         const [circularLinks, nonCircularLinks] = links.reduce(([c, nc], n) => {
           if (n.circular) {
@@ -524,9 +514,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           return [c, nc];
         }, [[], []]);
         // Calculate layout by skipping circular links
-        this.sankey({nodes, links: nonCircularLinks});
+        this.sankey.calcLayout({nodes, links: nonCircularLinks});
         // Link into graph prev filtered links
-        registerLinks({nodes, links: circularLinks});
+        this.sankey.registerLinks({nodes, links: circularLinks});
         // adjust width of circular links
         const {width, value} = nonCircularLinks[0];
         const valueScaler = width / value;
@@ -538,11 +528,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           links: nonCircularLinks.concat(circularLinks),
           ...rest
         };
-        // Run adjustments declared in viewer
-        this.adjustLayout.emit({
-          data: layout,
-          extent: this.sankey.extent()
-        });
         resolve(layout);
       }
     );
@@ -557,7 +542,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
-    const [width, _height] = this.sankey.size();
+    const [width, _height] = this.sankey.size;
     return texts => texts
       .attr('transform', ({x0, x1, y0, y1}) => `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`)
       .attr('text-anchor', 'end')

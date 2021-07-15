@@ -7,7 +7,6 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { getAndColorNetworkTraceLinks, getNetworkTraceNodes, colorNodes, getRelatedTraces } from './algorithms/traceLogic';
 import { map } from 'rxjs/operators';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
 import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
@@ -18,17 +17,25 @@ import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
-import { ValueGenerator, SankeyAdvancedOptions} from './interfaces';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { SessionStorageService } from '../../shared/services/session-storage.service';
-import { nodeLabelAccessor } from '../../trace-viewer/components/utils';
+import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { SessionStorageService } from 'app/shared/services/session-storage.service';
+import { nodeLabelAccessor } from 'app/trace-viewer/components/utils';
 import { cubehelix } from 'd3';
 import visNetwork from 'vis-network';
+import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
+import { SankeyLayoutService } from './sankey/sankey-layout.service';
 
 @Component({
   selector: 'app-sankey-viewer',
   templateUrl: './sankey-view.component.html',
   styleUrls: ['./sankey-view.component.scss'],
+  providers: [
+    CustomisedSankeyLayoutService, {
+      provide: SankeyLayoutService,
+      useExisting: CustomisedSankeyLayoutService
+    }
+  ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   networkTraces;
@@ -120,7 +127,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     private modalService: NgbModal,
     protected readonly workSpaceManager: WorkspaceManager,
     private router: Router,
-    private sessionStorage: SessionStorageService
+    private sessionStorage: SessionStorageService,
+    private sankeyLayout: CustomisedSankeyLayoutService
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
@@ -131,7 +139,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       map((currentSelection) => {
         const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
         const links = currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity);
-        const traces = [...getRelatedTraces({nodes, links})].map(entity => ({
+        const traces = [
+          ...this.sankeyLayout.getRelatedTraces({nodes, links})
+        ].map(entity => ({
           type: 'trace',
           template: this.traceDetails,
           entity
@@ -182,7 +192,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   parseTraceDetails(trace) {
-    const {nodes: mainNodes } = this.sankeyData;
+    const {nodes: mainNodes} = this.sankeyData;
 
     const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
       from,
@@ -198,30 +208,30 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       return nodesSet;
     }, new Set())];
     const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
-    const node = mainNodes.find(({id}) => id === nodeId);
-    if (node) {
-      const color = cubehelix(node._color);
-      color.s = 0;
-      const label = nodeLabelAccessor(node);
-      if (isDevMode() && !label) {
-        console.error(`Node ${node.id} has no label property.`, node);
+      const node = mainNodes.find(({id}) => id === nodeId);
+      if (node) {
+        const color = cubehelix(node._color);
+        color.s = 0;
+        const label = nodeLabelAccessor(node);
+        if (isDevMode() && !label) {
+          console.error(`Node ${node.id} has no label property.`, node);
+        }
+        return {
+          id: node.id,
+          color: '' + color,
+          databaseLabel: node.type,
+          label
+        };
+      } else {
+        console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
+        return {
+          id: nodeId,
+          label: nodeId,
+          databaseLabel: 'Implicitly defined',
+          color: 'red'
+        };
       }
-      return {
-        id: node.id,
-        color: '' + color,
-        databaseLabel: node.type,
-        label
-      };
-    } else {
-      console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
-      return {
-        id: nodeId,
-        label: nodeId,
-        databaseLabel: 'Implicitly defined',
-        color: 'red'
-      };
-    }
-  });
+    });
 
     return {
       ...trace,
@@ -283,9 +293,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       networkTrace.traces.map(({group}) => group),
       {alpha: _ => 1, saturation: _ => 0.35}
     );
-    const networkTraceLinks = getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
-    const networkTraceNodes = getNetworkTraceNodes(networkTraceLinks, nodes);
-    colorNodes(nodes);
+    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
+    const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
+    this.sankeyLayout.colorNodes(nodes);
     const inNodes = node_sets[networkTrace.sources];
     const outNodes = node_sets[networkTrace.targets];
     this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
@@ -365,79 +375,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     return data;
-  }
-
-  sankeyLayoutAdjustment({data, extent: [[_marginLeft, marginTop], [_width, height]]}) {
-    const {inNodes = [], outNodes = []} = this.filteredSankeyData;
-    const traverseRight = inNodes.length < outNodes.length;
-    const nextNodes = traverseRight ?
-      node => node.sourceLinks.map(({target}) => target) :
-      node => node.targetLinks.map(({source}) => source);
-    let nodes = (traverseRight ? inNodes : outNodes).map(n => data.nodes.find(({id}) => id === n.id));
-    if (!nodes.filter(n => n).length) {
-      const accessor = traverseRight ? 'targetLinks' : 'sourceLinks';
-      nodes = data.nodes.filter(n => n[accessor].length === 0);
-    }
-    const visited = new Set();
-    let order = 0;
-    const relayout = ns => {
-      ns.forEach(node => {
-        if (visited.has(node)) {
-          return;
-        }
-        visited.add(node);
-        node._order = order++;
-        relayout(nextNodes(node));
-      });
-    };
-    relayout(nodes);
-    const columns = data.nodes.reduce((o, n) => {
-      const column = o.get(n.layer);
-      if (column) {
-        column.push(n);
-      } else {
-        o.set(n.layer, [n]);
-      }
-      return o;
-    }, new Map());
-    [...columns.values()].forEach(column => {
-      const {length} = column;
-      const nodesHeight = column.reduce((o, {y0, y1}) => o + y1 - y0, 0);
-      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
-      const freeSpace = height - nodesHeight;
-      const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
-      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
-      column.sort((a, b) => a._order - b._order).forEach(node => {
-        let nodeHeight = node.y1 - node.y0;
-        if (this.options.nodeHeight.max.enabled) {
-          nodeHeight = Math.min(nodeHeight, this.options.nodeHeight.max.ratio * 10);
-        }
-        if (this.options.nodeHeight.min.enabled) {
-          nodeHeight = Math.max(nodeHeight, this.options.nodeHeight.min.value);
-        }
-        node.y0 = y;
-        node.y1 = y + nodeHeight;
-        y += nodeHeight + spacerSize;
-      });
-    });
-    const reverseAccessor = traverseRight ? 'targetLinks' : 'sourceLinks';
-    const depthSorter = traverseRight ? (a, b) => b.depth - a.depth : (a, b) => a.depth - b.depth;
-    const groupOrder = [...
-      data.nodes
-        .sort((a, b) => depthSorter(a, b) || a._order - b._order)
-        .reduce((o, d) => {
-          d[reverseAccessor].forEach(l => o.add(l._trace.group));
-          return o;
-        }, new Set())
-    ];
-    const sort = (a, b) =>
-      (b.source.index - a.source.index) ||
-      (b.target.index - a.target.index) ||
-      (groupOrder.indexOf(a._trace.group) - groupOrder.indexOf(b._trace.group));
-    for (const {sourceLinks, targetLinks} of data.nodes) {
-      sourceLinks.sort(sort);
-      targetLinks.sort(sort);
-    }
   }
 
   extractLinkValueProperties([link = {}]) {
@@ -570,6 +507,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   onOptionsChange() {
+    this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
