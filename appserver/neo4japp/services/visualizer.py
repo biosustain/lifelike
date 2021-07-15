@@ -6,7 +6,10 @@ from neo4japp.constants import (
     LogEventType,
     TYPE_CHEMICAL,
     TYPE_DISEASE,
-    TYPE_GENE
+    TYPE_GENE,
+    TYPE_LITERATURE_CHEMICAL,
+    TYPE_LITERATURE_DISEASE,
+    TYPE_LITERATURE_GENE
 )
 from neo4japp.data_transfer_objects.visualization import (
     Direction,
@@ -34,7 +37,7 @@ class VisualizerService(KgService):
         super().__init__(graph=graph, session=session)
 
     def _get_uri_of_node_data(self, id: int, label: str, entity_id: str):
-        """Given node meta data and a map of domains -> URLs, returns the appropriate
+        """Given node meta data returns the appropriate
         URL formatted with the node entity identifier.
         """
         url_map = {
@@ -72,6 +75,20 @@ class VisualizerService(KgService):
                 else:
                     url = url_map['omim'].format(uid)
             elif label == TYPE_GENE:
+                url = url_map['NCBI_Gene'].format(entity_id)
+            elif label == TYPE_LITERATURE_CHEMICAL:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'CHEBI':
+                    url = url_map['chebi'].format(uid)
+                else:
+                    url = url_map['MESH'].format(uid)
+            elif label == TYPE_LITERATURE_DISEASE:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'MESH':
+                    url = url_map['MESH'].format(uid)
+                else:
+                    url = url_map['omim'].format(uid)
+            elif label == TYPE_LITERATURE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError:
             current_app.logger.warning(
@@ -506,7 +523,7 @@ class VisualizerService(KgService):
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
                     COUNT(s) as snippet_count,
-                    collect({
+                    collect(distinct {
                         snippet: {
                             id: s.id,
                             data: {
@@ -541,7 +558,7 @@ class VisualizerService(KgService):
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) as references, from_id, to_id, description
                 """,
