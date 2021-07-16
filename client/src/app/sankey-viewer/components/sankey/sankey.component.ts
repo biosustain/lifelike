@@ -14,7 +14,7 @@ import {
 
 import * as d3 from 'd3';
 import * as d3Sankey from 'd3-sankey';
-import { createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams, shortNodeText, INITIALLY_SHOWN_CHARS } from './utils';
+import { createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { colorByTraceEnding } from './algorithms/traceLogic';
@@ -352,6 +352,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   resetZoom() {
+    // it is used by its parent
     d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
   }
 
@@ -456,8 +457,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .call(textGroup => {
         textGroup
           .select('text')
-          .text(shortNodeText)
-          .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+          .text(this.sankey.shortNodeText)
+          .filter(this.sankey.ellipsed)
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           // .textTween(n => {
@@ -481,7 +482,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('highlighted', false);
 
     d3.select(element).select('text')
-      .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+      .filter(this.sankey.ellipsed)
       // todo: reenable when performance improves
       // .transition().duration(RELAYOUT_DURATION)
       // .textTween(n => {
@@ -490,7 +491,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
       //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
-      .text(shortNodeText);
+      .text(this.sankey.shortNodeText);
   }
 
   // endregion
@@ -669,7 +670,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         joined.select('g')
           .call(textGroup => {
             textGroup.select('text')
-              .text(shortNodeText);
+              .text(this.sankey.shortNodeText);
           });
       });
   }
