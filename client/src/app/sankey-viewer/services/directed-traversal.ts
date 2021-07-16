@@ -6,13 +6,13 @@ interface Direction {
 }
 
 const ltr = {
-  linksAccessor: 'sourceLinks',
-  nodeAccessor: 'target'
+  linksAccessor: '_sourceLinks',
+  nodeAccessor: '_target'
 } as Direction;
 
 const rtl = {
-  linksAccessor: 'targetLinks',
-  nodeAccessor: 'source'
+  linksAccessor: '_targetLinks',
+  nodeAccessor: '_source'
 } as Direction;
 
 export class DirectedTraversal {
