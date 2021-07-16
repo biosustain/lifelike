@@ -19,6 +19,7 @@ import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -112,7 +113,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
@@ -501,6 +503,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       title: this.object.filename,
       fontAwesomeIcon: 'file-chart-line',
     });
+  }
+
+  openNewWindow() {
+    this.filesystemObjectActions.openNewWindow(this.object);
   }
 
   onOptionsChange($event) {
