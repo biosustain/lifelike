@@ -10,6 +10,12 @@
         <option *ngFor="let exporter of exporters; let i = index" [value]="i">{{ exporter.name }}</option>
       </select>
     </app-form-row>
+    <app-form-row [control]="form.get('bundledExport')" [hidden]="!isBundledExportSupported()">
+      <mat-checkbox formControlName="bundledExport" id="bundledExport"
+                    [appFormInput]="form.get('bundledExport')">
+        Bundled Export
+      </mat-checkbox>
+    </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>
