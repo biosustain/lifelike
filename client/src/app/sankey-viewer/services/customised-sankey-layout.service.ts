@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { christianColors, createMapToColor, nodeLabelAccessor } from '../components/utils';
+import { christianColors, createMapToColor } from '../components/utils';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -31,30 +31,6 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     max: {} as SizeLimit,
     min: {} as SizeLimit
   };
-
-  // @ts-ignore
-  labelEllipsis: SizeLimit = {
-    enabled: true,
-    value: 10
-  };
-
-  get shortNodeText() {
-    const {labelEllipsis: {value, enabled}} = this;
-    if (enabled) {
-      return n => nodeLabelAccessor(n).slice(0, value);
-    } else {
-      return n => nodeLabelAccessor(n);
-    }
-  }
-
-  get ellipsed() {
-    const {labelEllipsis: {value, enabled}} = this;
-    if (enabled) {
-      return n => nodeLabelAccessor(n).length > value;
-    } else {
-      return _ => false;
-    }
-  }
 
   getYScaleFactor(columns, nodes) {
     const {y1, y0, py, dx, nodeHeight} = this;

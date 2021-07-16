@@ -57,7 +57,6 @@ import findCircuits from 'elementary-circuits-directed-graph';
 
 import { max, min, sum } from 'd3-array';
 import { sankeyJustify as justify } from 'd3-sankey';
-import { nodeLabelAccessor } from '../utils';
 
 @Injectable()
 export class SankeyLayoutService {
@@ -82,16 +81,6 @@ export class SankeyLayoutService {
   constructor() {
 
   }
-
-  get shortNodeText() {
-    return n => nodeLabelAccessor(n).slice(0, SankeyLayoutService.labelEllipsis);
-  }
-
-  get ellipsed() {
-    return n => nodeLabelAccessor(n).length > SankeyLayoutService.labelEllipsis;
-  }
-
-  static labelEllipsis = 10;
 
   x0 = 0;
   y0 = 0;
