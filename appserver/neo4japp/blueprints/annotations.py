@@ -36,7 +36,7 @@ from ..database import (
     get_sorted_annotation_service,
     get_enrichment_table_service
 )
-from ..exceptions import AnnotationError
+from ..exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
@@ -1005,21 +1005,30 @@ class GlobalAnnotationListView(MethodView):
 def delete_global_annotations(pids):
     yield g.current_user
 
+    # exclusions in postgres will not have synonym_id
+    # those are for the graph nodes, and -1 represents not having one
     query = GlobalList.__table__.delete().where(
-        GlobalList.id.in_(pids)
+        GlobalList.id.in_([gid for gid, sid in pids if sid == -1])
     )
     try:
         db.session.execute(query)
-    except SQLAlchemyError:
-        db.session.rollback()
-    else:
         db.session.commit()
+
         current_app.logger.info(
             f'Deleted {len(pids)} global annotations',
             extra=UserEventLog(
                 username=g.current_user.username,
                 event_type=LogEventType.ANNOTATION.value).to_dict()
         )
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise ServerException(
+            title='Could not delete exclusion',
+            message='A database error occurred when deleting the global exclusion.')
+
+    # now delete from the KG
+    graph = get_annotation_graph_service()
+
     yield jsonify(dict(result='success'))
 
 

@@ -136,7 +136,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     }
 
     deleteAnnotation(objects: readonly GlobalAnnotationListItem[]) {
-        const pids = objects.map((r: GlobalAnnotationListItem) => r.globalId);
+        const pids = objects.map((r: GlobalAnnotationListItem) => [r.globalId, r.synonymId ? r.synonymId : -1]);
         this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe().subscribe());
         this.refresh();
     }
