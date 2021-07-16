@@ -286,4 +286,4 @@ class FileAnnotationHistoryResponseSchema(ResultListSchema):
 # ----------------------------------------
 
 class GlobalAnnotationsDeleteSchema(Schema):
-    pids = fields.List(fields.Integer())
+    pids = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
