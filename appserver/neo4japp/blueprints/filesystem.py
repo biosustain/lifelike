@@ -7,7 +7,6 @@ import typing
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
-
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
 from flask.views import MethodView
@@ -15,7 +14,7 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 from PyPDF2 import PdfFileMerger
