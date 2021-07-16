@@ -85,7 +85,8 @@ $non-active-node-opacity: .50;
           }
 
           text {
-            font-size: 0.5em;
+            // empirical value nicely scaling with window width
+            font-size: 0.55vw;
             // todo: reenable when performance improves
             //transition: font-size 250ms 250ms, fill 250ms 250ms;
             pointer-events: none;
