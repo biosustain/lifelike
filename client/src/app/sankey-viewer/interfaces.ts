@@ -1,38 +1,45 @@
 interface SankeyNode {
   id?: number;
-  index?: number;
-  sourceLinks?: Array<SankeyLink>;
-  targetLinks?: Array<SankeyLink>;
-  y0?: number;
-  y1?: number;
-  x0?: number;
-  x1?: number;
-  depth?: number;
-  height?: number;
-  value?: number;
-  fixedValue?: number;
-  layer?: number;
   description?: string;
-  _color?: string;
-  _selected?: boolean;
   stId?: string;
   name?: string | Array<string>;
   label?: string;
   type?: string;
+
+  // region Used internally to compute layout
+  _index?: number;
+  _sourceLinks?: Array<SankeyLink>;
+  _targetLinks?: Array<SankeyLink>;
+  _y0?: number;
+  _y1?: number;
+  _x0?: number;
+  _x1?: number;
+  _depth?: number;
+  _height?: number;
+  _value?: number;
+  _fixedValue?: number;
+  _layer?: number;
+  _color?: string;
+  // endregion
 }
 
 interface SankeyLink {
   index?: number;
   source?: SankeyNode | string | number;
   target?: SankeyNode | string | number;
-  width?: number;
-  y0?: number;
-  y1?: number;
+
+  // region Used internally to compute layout
+  _source?: SankeyNode | string | number;
+  _target?: SankeyNode | string | number;
+  _width?: number;
+  _y0?: number;
+  _y1?: number;
   _multiple_values?: [number, number];
-  circularLinkID?: number;
-  circular?: boolean;
+  _circularLinkID?: number;
+  _circular?: boolean;
   _folded?: boolean;
-  value: number;
+  _value: number;
+  // endregion
 }
 
 interface SankeyNodeSets {
@@ -68,6 +75,9 @@ interface SankeyD3Data {
 
 interface SankeyData extends SankeyD3Data {
   graph: SankeyGraph;
-  inNodes?: Array<number>;
-  outNodes?: Array<number>;
+
+  // region used internally to compute layout
+  _inNodes?: Array<number>;
+  _outNodes?: Array<number>;
+  // endregion
 }
