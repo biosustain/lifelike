@@ -2,21 +2,21 @@ import { representativePositiveNumber } from '../utils';
 
 export const noneNodeValue = ({nodes}) => {
   nodes.forEach(n => {
-    delete n.fixedValue;
-    delete n.value;
+    delete n._fixedValue;
+    delete n._value;
   });
   return {
     _sets: {
       node: {
-        fixedValue: false,
-        value: false
+        _fixedValue: false,
+        _value: false
       }
     }
   };
 };
 export const nodeValueByProperty = property => ({nodes}) => {
   nodes.forEach(n => {
-    n.fixedValue = representativePositiveNumber(n[property]);
+    n._fixedValue = representativePositiveNumber(n[property]);
   });
   return {
     _sets: {
