@@ -40,7 +40,6 @@ export interface SankeyAdvancedOptions {
   nodeValueGenerators: Array<any>;
   linkValueGenerators: Array<any>;
   normalizeLinks: boolean;
-  labelEllipsis: any;
 }
 
 import visNetwork from 'vis-network';
