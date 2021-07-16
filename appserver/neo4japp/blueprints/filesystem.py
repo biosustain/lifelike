@@ -8,7 +8,6 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
-from urllib.error import URLError
 
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
@@ -19,8 +18,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
-from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
-from apng import APNG
+from PyPDF2 import PdfFileMerger
 from PIL import Image
 
 from neo4japp.blueprints.auth import auth
