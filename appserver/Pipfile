@@ -59,7 +59,6 @@ werkzeug = "==0.16.0"
 lmdb = "==1.2.1"
 pypdf2 = "==1.26.0"
 pillow = "==8.3.1"
-apng = "==0.3.4"
 
 [requires]
 python_version = "3.8.2"
