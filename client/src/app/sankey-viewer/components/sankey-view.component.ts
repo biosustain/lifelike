@@ -114,11 +114,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     selectedNodeValueAccessor: undefined,
     selectedPredefinedValueAccessor: undefined,
     prescalers,
-    selectedPrescaler: prescalers[0],
-    labelEllipsis: {
-      enabled: true,
-      value: SankeyLayoutService.labelEllipsis
-    }
+    selectedPrescaler: prescalers[0]
   };
   parseProperty = parseForRendering;
   @ViewChild('sankey', {static: false}) sankey;
@@ -512,7 +508,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   onOptionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
-    this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
