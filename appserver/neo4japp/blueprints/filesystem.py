@@ -1113,27 +1113,20 @@ class FileExportView(FilesystemBaseView):
                 merger.append(out_file)
             merger.write(final_bytes)
         if params['format'] == 'png':
-            is_vertical = params.get('mergeOption') == 'vertical'
             images = [Image.open(x) for x in out_files]
             cropped_images = [image.crop(image.getbbox()) for image in images]
             widths, heights = zip(*(i.size for i in cropped_images))
 
-            if is_vertical:
-                width = max(widths)
-                height = sum(heights)
-            else:
-                width = sum(widths)
-                height = max(heights)
+            max_width = max(widths)
+            total_height = sum(heights)
 
-            new_im = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-            x_offset, y_offset = 0, 0
+            new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
+            y_offset = 0
 
             for im in cropped_images:
-                x_center = (width / 2 - im.size[0] / 2) * is_vertical
-                y_center = (height / 2 - im.size[1] / 2) * (not is_vertical)
-                new_im.paste(im, (x_offset + int(x_center), y_offset + int(y_center)))
-                x_offset += im.size[0] * (not is_vertical)
-                y_offset += im.size[1] * is_vertical
+                x_offset = int((max_width - im.size[0]) / 2)
+                new_im.paste(im, (x_offset, y_offset))
+                y_offset += im.size[1]
             new_im.save(final_bytes, format='PNG')
 
         ext = f".{params['format']}"
