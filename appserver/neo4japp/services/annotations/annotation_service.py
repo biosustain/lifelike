@@ -563,12 +563,8 @@ class AnnotationService:
                     # prioritize common name that is same as synonym
                     organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
                 except KeyError:
-                    # only take the first gene for the organism
-                    # no way for us to infer which to use
                     for d in list(gene_organism_matches[entity_synonym].values()):
-                        key = next(iter(d))
-                        if key not in organisms_to_match:
-                            organisms_to_match[key] = d[key]
+                        organisms_to_match = {**organisms_to_match, **d}
 
                 try:
                     best_match = gene_mem[(synonym_common_name_tuple, token_offset)]
@@ -595,12 +591,8 @@ class AnnotationService:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
                 except KeyError:
-                    # only take the first gene for the organism
-                    # no way for us to infer which to use
                     for d in list(fallback_gene_organism_matches[entity_synonym].values()):
-                        key = next(iter(d))
-                        if key not in organisms_to_match:
-                            organisms_to_match[key] = d[key]
+                        organisms_to_match = {**organisms_to_match, **d}
                 try:
                     gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                     category = self.specified_organism.category
