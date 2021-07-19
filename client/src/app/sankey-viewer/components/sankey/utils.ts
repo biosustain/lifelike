@@ -65,8 +65,6 @@ export const createResizeObserver = (callback, container) => {
 };
 
 export const RELAYOUT_DURATION = 250;
-export const INITIALLY_SHOWN_CHARS = 10;
-export const shortNodeText = n => nodeLabelAccessor(n).slice(0, INITIALLY_SHOWN_CHARS);
 
 export function symmetricDifference(setA, setB, accessor) {
   return [...uniqueBy(setB, accessor).entries()].reduce((difference, [identifier, elem]) => {
