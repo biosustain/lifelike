@@ -67,6 +67,8 @@ class EnrichmentAnnotationService(AnnotationService):
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
+            organism_id = self.specified_organism.organism_id
+
             try:
                 entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             except KeyError:
@@ -91,7 +93,7 @@ class EnrichmentAnnotationService(AnnotationService):
                     except KeyError:
                         continue
                     else:
-                        if entity['id_type'] != gene_data_sources[gene_id]:  # noqa
+                        if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:  # noqa
                             continue
                         entities_to_create.append(
                             CreateAnnotationObjParams(
