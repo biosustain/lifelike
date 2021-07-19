@@ -142,11 +142,16 @@ class AnnotationService:
                 # can't use multi pycode ignore/noqa...
                 link = ENTITY_HYPERLINKS
                 try:
-                    hyperlink = link[param.entity['id_type']]
-                except KeyError:
                     if param.entity['id_type'] == 'BioCyc':
                         # temp until LL-3296 is done
-                        hyperlink = link[DatabaseType.BIOCYC.value]
+                        hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+                    else:
+                        hyperlink = link[param.entity['id_type']]
+                except KeyError:
+                    if param.entity['id_type'] == 'BioCyc':
+                        e_type = DatabaseType.BIOCYC.value
+                        # temp until LL-3296 is done
+                        hyperlink = link[e_type][param.token_type]  # type: ignore
                     else:
                         raise
 

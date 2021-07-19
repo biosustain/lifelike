@@ -180,7 +180,10 @@ ENTITY_HYPERLINKS = {
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
     DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',  # noqa
-    DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
+    DatabaseType.BIOCYC.value: {
+        EntityType.GENE.value: 'https://biocyc.org/gene?orgid=PPUT160488&id=',
+        EntityType.COMPOUND.value: 'https://biocyc.org/compound?orgid=META&id='
+    },
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }
 
