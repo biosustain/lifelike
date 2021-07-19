@@ -3,7 +3,7 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 import { NodeCreation } from '../../../actions/nodes';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
-import { makeid } from 'app/drawing-tool/services';
+// import { makeid } from 'app/drawing-tool/services';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
 import { smartTruncate } from '../../../utils/strings';
@@ -12,7 +12,7 @@ import { GraphClipboardData, TYPE_STRING } from './paste-keyboard-shortcut.behav
 /**
  * Implements the copy key.
  */
-export class CopyKeyboardShortcut extends AbstractCanvasBehavior {
+export class CopyKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   /**
    * Bound copy event handler that we need to remove later.
    */

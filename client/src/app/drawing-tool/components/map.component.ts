@@ -24,7 +24,7 @@ import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-// import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
@@ -92,7 +92,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchListIdx = -1;
 
   constructor(
-<<<<<<< HEAD
     readonly filesystemService: FilesystemService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
@@ -103,18 +102,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
-=======
-      readonly mapService: MapService,
-      readonly snackBar: MatSnackBar,
-      readonly modalService: NgbModal,
-      readonly messageDialog: MessageDialog,
-      readonly ngZone: NgZone,
-      readonly route: ActivatedRoute,
-      readonly errorHandler: ErrorHandler,
-      readonly workspaceManager: WorkspaceManager,
-      readonly filesystemService: FilesystemService,
-      readonly mapImageProviderService: MapImageProviderService,
->>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
+    // readonly mapService: MapService,
+    readonly mapImageProviderService: MapImageProviderService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -151,20 +140,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
-<<<<<<< HEAD
+// <<<<<<< HEAD
     Promise.resolve().then(() => {
-      const style = new KnowledgeMapStyle();
+      // const style = new KnowledgeMapStyle();
+      const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService)); // from below
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
         edgeRenderStyle: style,
       });
-=======
-    const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService));
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-      nodeRenderStyle: style,
-      edgeRenderStyle: style,
-    });
->>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
+// =======
+    // const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService));
+    // this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+    //   nodeRenderStyle: style,
+    //   edgeRenderStyle: style,
+    // });
+// >>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
       this.registerGraphBehaviors();
 
@@ -239,14 +229,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   registerGraphBehaviors() {
-<<<<<<< HEAD
-    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
-=======
+// <<<<<<< HEAD
+    // this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
+    // this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
+    // this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
+// =======
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
->>>>>>> 979038cdc (Use .behavior.ts suffix.)
+// 979038cdc (Use .behavior.ts suffix.)
   }
 
   ngOnDestroy() {

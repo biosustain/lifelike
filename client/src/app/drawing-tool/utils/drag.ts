@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { DragImage } from 'app/shared/utils/drag';
 import { KnowledgeMapStyle } from '../../graph-viewer/styles/knowledge-map-style';
 
-const style = new KnowledgeMapStyle();
+const style = new KnowledgeMapStyle(null);
 
 export function createNodeDragImage(d: UniversalGraphNode): DragImage {
   const canvas = document.createElement('canvas');
