@@ -21,8 +21,6 @@ import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-// import { BehaviorList } from './behaviors';
-import { Subject } from 'rxjs';
 import { escapeRegExp } from 'lodash';
 import { RenderTree } from './render-tree';
 
@@ -357,6 +355,22 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Invalidate the whole renderer cache.
    */
   invalidateAll(): void {
+  }
+
+  /**
+   * Invalidate any cache entries for the given node. If changes are made
+   * that might affect how the node is rendered, this method must be called.
+   * @param d the node
+   */
+  invalidateNode(d: UniversalGraphNode): void {
+    for (const edge of this.edges) {
+      if (edge.from === d.hash || edge.to === d.hash) {
+        this.invalidateEdge(edge);
+      }
+    }
+  }
+
+  invalidateEdge(d: UniversalGraphEdge): void {
   }
 
   /**
@@ -916,15 +930,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         name: 'Bands',
         color: '#740CAA',
         leaves: [],
-        groups: [],
-        padding: 10,
+        // groups: [],
+        // padding: 10,
       },
       {
         name: 'Things',
         color: '#0CAA70',
         leaves: [],
-        groups: [],
-        padding: 10,
+        // groups: [],
+        // padding: 10,
       },
     ];
 
