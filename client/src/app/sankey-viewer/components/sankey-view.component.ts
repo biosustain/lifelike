@@ -22,6 +22,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
 import { cubehelix } from 'd3';
 import visNetwork from 'vis-network';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 
@@ -128,6 +129,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly workSpaceManager: WorkspaceManager,
     private router: Router,
     private sessionStorage: SessionStorageService,
+    private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
@@ -250,7 +252,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   gotoDynamic(trace) {
     const traceDetails = this.parseTraceDetails(trace);
     const id = this.sessionStorage.set(traceDetails);
-    const url = `/projects/${this.object.project.name}/trace/${id}`;
+    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${id}`;
     this.workSpaceManager.navigateByUrl(url, {
       sideBySide: true, newTab: true
     });
@@ -290,7 +292,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.sankey.scaleZoom(.8);
     }
   }
-
   // endregion
 
   selectNetworkTrace(networkTrace) {
@@ -510,6 +511,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       title: this.object.filename,
       fontAwesomeIcon: 'file-chart-line',
     });
+  }
+
+  openNewWindow() {
+    this.filesystemObjectActions.openNewWindow(this.object);
   }
 
   onOptionsChange() {
