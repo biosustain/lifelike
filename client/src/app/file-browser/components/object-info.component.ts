@@ -64,6 +64,9 @@ export class ObjectInfoComponent implements OnInit {
   }
 
   highlightDragStart(event: DragEvent) {
+    // do not propagate so workspace attached event is not fired
+    event.stopPropagation();
+
     GenericDataProvider.setURIs(event.dataTransfer, [{
       title: this.object.filename,
       uri: new URL(this.object.getURL(false), window.location.href).href,

@@ -77,6 +77,7 @@ import {
 } from './services/highlight-text.service';
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
+import { SessionStorageService } from './services/session-storage.service';
 
 const components = [
   VisJsNetworkComponent,
@@ -156,6 +157,7 @@ const components = [
     ApiService,
     SharedNgrxEffects,
     SharedSearchService,
+    SessionStorageService,
     ApiService,
     AccountsService,
     DataTransferDataService,
