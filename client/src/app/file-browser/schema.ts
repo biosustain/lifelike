@@ -172,6 +172,7 @@ export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectConten
  */
 export interface ObjectExportRequest {
   format: string;
+  exportLinked: boolean;
 }
 
 // ========================================
