@@ -20,7 +20,7 @@ import { ObjectVersion } from '../models/object-version';
 import {
   GraphClipboardData,
   TYPE_STRING,
-} from '../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
+} from '../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../services/object-type.service';
 import { Observable } from 'rxjs';
 import { mergeMap, shareReplay } from 'rxjs/operators';

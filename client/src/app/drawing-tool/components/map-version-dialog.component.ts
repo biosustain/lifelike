@@ -11,13 +11,11 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription, Observable } from 'rxjs';
 
-// TODO: find the file, put it back
-// import { MapService } from '../services/map.service';
+import { MapService } from '../services/map.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-
 
 @Component({
   selector: 'app-map-version-dialog',
@@ -40,7 +38,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   public readonly loadTask: BackgroundTask<
     void,
     {versions: KnowledgeMap[]}
-  > = new BackgroundTask(() => this.mapService.getMapVersions(this.projectName, this.currentMap.hash_id));
+  > = new BackgroundTask(() => MapService.getMapVersions(this.projectName, this.currentMap.hash_id));
   private loadTaskSubscription: Subscription;
   versionChoices: string[];
   versionIDs: number[];
@@ -113,6 +111,6 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
 
   findVersion() {
     const versionId = this.versionIDs[this.form.value.version.split('.')[0].substring(8) - 1];
-    return this.mapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
+    return MapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
   }
 }

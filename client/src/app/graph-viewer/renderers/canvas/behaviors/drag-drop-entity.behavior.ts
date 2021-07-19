@@ -1,7 +1,7 @@
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { NodeCreation } from '../../../actions/nodes';
-import { makeid } from '../../../../drawing-tool/services';
+import { makeid } from '../../../../shared/utils/identifiers';
 import { CanvasGraphView } from '../canvas-graph-view';
 
 export class DragDropEntityBehavior extends AbstractCanvasBehavior {
