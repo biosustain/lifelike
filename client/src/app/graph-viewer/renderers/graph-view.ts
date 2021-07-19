@@ -931,14 +931,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         color: '#740CAA',
         leaves: [],
         // groups: [],
-        // padding: 10,
+        padding: 10,
       },
       {
         name: 'Things',
         color: '#0CAA70',
         leaves: [],
         // groups: [],
-        // padding: 10,
+        padding: 10,
       },
     ];
 
