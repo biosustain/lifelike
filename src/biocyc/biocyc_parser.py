@@ -3,25 +3,15 @@ import logging
 from pathlib import Path
 from typing import List
 
+from common import utils as common_utils
 from common.constants import *
 from common.database import *
 
-from biocyc import (
-    class_parser,
-    compound_parser,
-    dnabindsite_parser,
-    enzymereaction_parser,
-    gene_parser,
-    pathway_parser,
-    promoter_parser,
-    protein_parser,
-    reaction_parser,
-    regulation_parser,
-    rna_parser,
-    terminator_parser,
-    transcripitionunit_parser,
-)
-
+from biocyc import (class_parser, compound_parser, dnabindsite_parser,
+                    enzymereaction_parser, gene_parser, pathway_parser,
+                    promoter_parser, protein_parser, reaction_parser,
+                    regulation_parser, rna_parser, terminator_parser,
+                    transcripitionunit_parser)
 
 ENTITIES = [NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE, NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
             NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
@@ -151,10 +141,11 @@ class BiocycParser(object):
                 parser.version = version
                 if parser:
                     nodes = parser.parse_data_file()
-                    version = parser.version
+                    data_source_version = parser.version
                     if nodes:
-                        parser.update_nodes_in_graphdb(nodes, database)
-                        parser.add_edges_to_graphdb(nodes, database)
+                        node_version = common_utils.get_node_version(data_source_version)
+                        parser.update_nodes_in_graphdb(nodes, database, node_version)
+                        parser.add_edges_to_graphdb(nodes, database, node_version)
 
 
     def write_entity_datafile(self, db_name, data_file, entities: []):
