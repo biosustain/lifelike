@@ -21,27 +21,3 @@
 .small-font {
   font-size: $font-size-sm;
 }
-
-.checkpoint {
-  vertical-align: middle;
-
-  :first-child {
-    margin-right: .5em;
-  }
-}
-
-.scrollbar-with-value {
-  display: flex;
-  flex-wrap: wrap;
-  vertical-align: middle;
-
-  :first-child {
-    margin-right: .5em;
-  }
-
-  :last-child {
-    margin-left: .5em;
-    margin-right: .5em;
-    flex-grow: 1;
-  }
-}
