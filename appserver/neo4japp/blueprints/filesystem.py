@@ -1048,33 +1048,24 @@ class FileExportView(FilesystemBaseView):
         """Export a file."""
         current_user = g.current_user
 
+        print(params)
+
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
         file_type_service = get_file_type_service()
         file_type = file_type_service.get(file)
 
-        # Better way to see if a file is a map?
-        # This will be replaced with optional param
-        if isinstance(file_type, MapTypeProvider) and params['format'] in ['pdf', 'png']:
-            json_graph = json.loads(file.content.raw_file)
-            maps_to_export = {hash_id}
-            for node in json_graph['nodes']:
-                if node['data'].get('sources') or node['data'].get('hyperlinks'):
-                    data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
-                    for link in data:
-                        url = link.get('url', "").lstrip()
-                        if self.maps_re.match(url):
-                            map_hash = url.split('/')[-1]
-                            maps_to_export.add(map_hash)
-            export = self.export_multiple_maps(params, file_type, maps_to_export)
+        # Should I check the format here?
+        if params['export_linked'] and params['format'] in ['pdf', 'png']:
+            export = self.export_multiple_maps(params, file_type, file)
 
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
             except ExportFormatError:
                 raise ValidationError("Unknown or invalid export format for the requested file.",
-                                      "format")
+                                      params["format"])
 
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
@@ -1086,52 +1077,84 @@ class FileExportView(FilesystemBaseView):
                 mime_type=export.mime_type,
         )
 
-    def export_multiple_maps(self, params: dict, file_type: MapTypeProvider, files):
-        params['mergeOption'] = params.get('mergeOption') or 'vertical'
-
-        out_files = []
+    def export_multiple_maps(self, params: dict, file_type: MapTypeProvider, file):
         current_user = g.current_user
-        for map_hash in files:
-            file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
-                                                     lazy_load_content=True)
-            self.check_file_permissions([file], current_user, ['readable'],
-                                        permit_recycled=True)
+
+        json_graph = json.loads(file.content.raw_file)
+        maps_to_export = {file.hash_id}
+        files = [file]
+        for node in json_graph['nodes']:
+            if node['data'].get('sources') or node['data'].get('hyperlinks'):
+                data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
+                for link in data:
+                    url = link.get('url', "").lstrip()
+                    if self.maps_re.match(url):
+                        map_hash = url.split('/')[-1]
+                        if map_hash not in maps_to_export:
+                            maps_to_export.add(map_hash)
+                            file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
+                                                                     lazy_load_content=True)
+                            self.check_file_permissions([file], current_user, ['readable'],
+                                                        permit_recycled=True)
+                            files.append(file)
+        out_files = []
+        for file in files:
             try:
                 export = file_type.generate_export(file, params['format'])
             except ExportFormatError:
                 raise ValidationError("Unknown or invalid export format for the requested file.",
-                                      "format")
+                                      params["format"])
             out_files.append(io.BytesIO(export.content.getvalue()))
-
-        final_bytes = io.BytesIO()
-        if params['format'] == 'pdf':
-            merger = PdfFileMerger(strict=False)
-            for out_file in out_files:
-                merger.append(out_file)
-            merger.write(final_bytes)
-        if params['format'] == 'png':
-            images = [Image.open(x) for x in out_files]
-            cropped_images = [image.crop(image.getbbox()) for image in images]
-            widths, heights = zip(*(i.size for i in cropped_images))
-
-            max_width = max(widths)
-            total_height = sum(heights)
-
-            new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
-            y_offset = 0
-
-            for im in cropped_images:
-                x_offset = int((max_width - im.size[0]) / 2)
-                new_im.paste(im, (x_offset, y_offset))
-                y_offset += im.size[1]
-            new_im.save(final_bytes, format='PNG')
-
+        merger = LinkedMapExportProvider(params['format'])
+        final_bytes = merger.merge(out_files)
         ext = f".{params['format']}"
         return FileExport(
             content=final_bytes,
             mime_type=extension_mime_types[ext],
             filename=f"{file.filename}{ext}"
         )
+
+
+class LinkedMapExportProvider():
+    def __init__(self, format):
+
+        if format == 'png':
+            self.merger = self.merge_pngs_vertically
+        elif format == 'pdf':
+            self.merger = self.merge_pdfs
+        else:
+            raise ValidationError("Unknown or invalid export format for the requested file.",
+                                  format)
+
+    def merge(self, files):
+        return self.merger(files)
+
+    def merge_pngs_vertically(self, files):
+        final_bytes = io.BytesIO()
+        images = [Image.open(x) for x in files]
+        cropped_images = [image.crop(image.getbbox()) for image in images]
+        widths, heights = zip(*(i.size for i in cropped_images))
+
+        max_width = max(widths)
+        total_height = sum(heights)
+
+        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
+        y_offset = 0
+
+        for im in cropped_images:
+            x_offset = int((max_width - im.size[0]) / 2)
+            new_im.paste(im, (x_offset, y_offset))
+            y_offset += im.size[1]
+        new_im.save(final_bytes, format='PNG')
+        return final_bytes
+
+    def merge_pdfs(self, files):
+        final_bytes = io.BytesIO()
+        merger = PdfFileMerger(strict=False)
+        for out_file in files:
+            merger.append(out_file)
+        merger.write(final_bytes)
+        return final_bytes
 
 
 class FileBackupView(FilesystemBaseView):
