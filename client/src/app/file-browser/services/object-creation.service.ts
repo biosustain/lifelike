@@ -82,10 +82,13 @@ export class ObjectCreationService {
           const annotationsService = this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
           ).pipe(map(result => {
-            results = [[object], [result]];
-            const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
-            modalRef.componentInstance.objects = results[0];
-            modalRef.componentInstance.results = results[1];
+            const check = Object.entries(result.mapping).map(r => r[1].success);
+            if (check.some(c => c === false)) {
+                results = [[object], [result]];
+                const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+                modalRef.componentInstance.objects = results[0];
+                modalRef.componentInstance.results = results[1];
+            }
             return object;
           }));
           return iif(
