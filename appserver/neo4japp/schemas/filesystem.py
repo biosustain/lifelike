@@ -270,6 +270,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
 
 class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
+    exportLinked = fields.Boolean(required=True)
 
 
 # Response
