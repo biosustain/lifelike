@@ -137,6 +137,10 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
+    file_path = fields.String()
+    # TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists
+    # as a helper for getting the real name of a root file.
+    true_filename = fields.String()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
 
@@ -272,6 +276,10 @@ class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
 
 
+class FileHierarchyRequestSchema(CamelCaseSchema):
+    directories_only = fields.Boolean(required=False)
+
+
 # Response
 # ----------------------------------------
 
@@ -287,6 +295,16 @@ class MultipleFileResponseSchema(ResultMappingSchema):
 
 class FileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileSchema))
+
+
+class FileNode(CamelCaseSchema):
+    data = fields.Nested(FileSchema)
+    level = fields.Integer()
+    children = fields.List(fields.Nested(lambda: FileNode()))
+
+
+class FileHierarchyResponseSchema(CamelCaseSchema):
+    results = fields.List(fields.Nested(FileNode))
 
 
 # ========================================

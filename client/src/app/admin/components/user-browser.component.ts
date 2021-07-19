@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { AccountService } from 'app/users/services/account.service';
-import { AppUser, PrivateAppUser, UserCreationRequest } from 'app/interfaces';
+import { AppUser, PrivateAppUser } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -16,6 +16,8 @@ import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { AuthActions, AuthSelectors } from '../../auth/store';
 import { select, Store } from '@ngrx/store';
 import { State } from '../../root-store';
+import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
+
 
 
 @Component({
@@ -91,6 +93,12 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
 
   private updateFilter() {
     this.shownUsers = this.filterQuery.length ? this.users.filter(user => user.username.includes(this.filterQuery)) : this.users;
+  }
+
+  getRolelessUsers(): AppUser[] {
+    return this.shownUsers.filter((user) => {
+      return user.roles.length === 0;
+    });
   }
 
   displayCreateDialog() {
@@ -194,4 +202,16 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
     }
   }
+
+  displayMissingRolesDialog() {
+    const users = this.getRolelessUsers();
+    const modalRef = this.modalService.open(MissingRolesDialogComponent);
+    modalRef.componentInstance.users = users;
+    modalRef.result.then(isModified => {
+      if (isModified) {
+        this.refresh();
+      }
+    });
+  }
+
 }
