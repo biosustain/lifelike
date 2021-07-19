@@ -247,7 +247,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   gotoDynamic(trace) {
     const traceDetails = this.parseTraceDetails(trace);
     const id = this.sessionStorage.set(traceDetails);
-    const url = `/projects/${this.object.project.name}/trace/${id}`;
+    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${id}`;
     this.workSpaceManager.navigateByUrl(url, {
       sideBySide: true, newTab: true
     });
@@ -287,7 +287,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.sankey.scaleZoom(.8);
     }
   }
-
   // endregion
 
   selectNetworkTrace(networkTrace) {

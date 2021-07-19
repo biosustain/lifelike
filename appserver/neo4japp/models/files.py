@@ -2,22 +2,29 @@ import enum
 import hashlib
 import os
 import re
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import BinaryIO, Optional, List, Dict
-
 import sqlalchemy
+
+from dataclasses import dataclass
+from flask import current_app
 from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.query import Query
-from sqlalchemy.types import ARRAY, TIMESTAMP
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from sqlalchemy.types import TIMESTAMP
+from typing import BinaryIO, Optional, List, Dict
 
-from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_elastic_service
+from neo4japp.exceptions import ServerException
 from neo4japp.models import Projects
-from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, \
+from neo4japp.models.common import (
+    RDBMSBase,
+    TimestampMixin,
+    RecyclableMixin,
+    FullTimestampMixin,
     HashIdMixin
+)
+from neo4japp.utils import EventLog
+from neo4japp.utils.sqlalchemy import get_model_changes
 
 file_collaborator_role = db.Table(
     'file_collaborator_role',
@@ -228,6 +235,74 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def effectively_recycled(self):
         return self.recycled or self.parent_recycled
 
+    @property
+    def file_path(self):
+        """
+        Gets a list of Files representing the path to this file.
+        """
+        current_file = self
+        file_path: List[Files] = []
+        while current_file is not None:
+            try:
+                file_path.append(current_file)
+                current_file = db.session.query(
+                    Files
+                ).filter(
+                    Files.id == current_file.parent_id
+                ).one_or_none()
+            except MultipleResultsFound as e:
+                current_app.logger.error(
+                    f'Could not find parent of file with id: {self.id}',
+                    exc_info=e,
+                    extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+                )
+                raise ServerException(
+                    title=f'Cannot Get Filepath',
+                    message=f'Could not find parent of file {self.filename}.',
+                )
+        return file_path[::-1]
+
+    @property
+    def project(self) -> Projects:
+        """
+        Gets the Project this file belongs to.
+        """
+        ***ARANGO_USERNAME***_folder = self.file_path[0].id
+        try:
+            return db.session.query(
+                Projects
+            ).filter(
+                Projects.***ARANGO_USERNAME***_id == ***ARANGO_USERNAME***_folder
+            ).one()
+        except NoResultFound as e:
+            current_app.logger.error(
+                f'Could not find project of file with id: {self.id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
+            )
+            raise ServerException(
+                title=f'Cannot Get Project of File',
+                message=f'Could not find project of file {self.filename}.',
+            )
+
+    # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
+    # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
+    @property
+    def true_filename(self):
+        if self.parent_id is not None:
+            return self.filename
+        return self.project.name
+
+    @property
+    def filename_path(self):
+        file_path = self.file_path
+        project_name = file_path.pop(0).true_filename
+        filename_path = [project_name]
+
+        for file in file_path:
+            filename_path.append(file.filename)
+        return f'/{"/".join(filename_path)}'
+
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
@@ -287,11 +362,129 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
 # Files table ORM event listeners
 @event.listens_for(Files, 'after_insert')
-@event.listens_for(Files, 'after_delete')
+def file_insert(mapper, connection, target: Files):
+    """
+    Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
+    file insert will be rolled back.
+    """
+    try:
+        elastic_service = get_elastic_service()
+        current_app.logger.info(
+            f'Attempting to index newly created file with hash_id: {target.hash_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.index_files([target.hash_id])
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic index failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Create File',
+            message='Something unexpected occurred while creating your file! Please try again ' +
+                    'later.'
+        )
+
+
 @event.listens_for(Files, 'after_update')
-def file_change(mapper, connection, target: Files):
-    elastic_service = get_elastic_service()
-    elastic_service.index_or_delete_files([target.hash_id])
+def file_update(mapper, connection, target: Files):
+    """
+    Handles updating this document in elastic. Note: if this fails, the file update will be rolled
+    back.
+    """
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
+    try:
+        elastic_service = get_elastic_service()
+        files_to_update = [target.hash_id]
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            family = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            ).all()
+            files_to_update = [member.hash_id for member in family]
+
+        changes = get_model_changes(target)
+        # Only delete a file when it changes from "not-deleted" to "deleted"
+        if 'deletion_date' in changes and changes['deletion_date'][0] is None and changes['deletion_date'][1] is not None:  # noqa
+            current_app.logger.info(
+                f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            elastic_service.delete_files(files_to_update)
+            # TODO: Should we handle the case where a document's deleted state goes from "deleted"
+            # to "not deleted"? What would that mean for folders? Re-index all children as well?
+        else:
+            # File was not deleted, so update it -- and possibly its children if it has any --
+            # instead
+            current_app.logger.info(
+                f'Attempting to update files in elastic with hash_ids: {files_to_update}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            # TODO: Change this to an update operation, and only update what has changed
+            # TODO: Only need to update children if the folder name changes (is this true? any
+            # other cases where we would do this? Maybe safer to just always update file path
+            # any time the parent changes...)
+            elastic_service.index_files(files_to_update)
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic update failed for files with hash_ids: {files_to_update}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Update File',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )
+
+
+@event.listens_for(Files, 'after_delete')
+def file_delete(mapper, connection, target: Files):
+    """
+    Handles deleting this document from elastic. Note: if this fails, the file deletion will be
+    rolled back.
+    """
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
+    # NOTE: This event is rarely triggered, because we're currently flagging files for deletion
+    # rather than removing them outright. See the `after_update` event for Files.
+    try:
+        elastic_service = get_elastic_service()
+        files_to_delete = [target.hash_id]
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            family = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            ).all()
+            files_to_delete = [member.hash_id for member in family]
+        current_app.logger.info(
+            f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        elastic_service.delete_files(files_to_delete)
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic search delete failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Delete File',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )
 
 
 class AnnotationChangeCause(enum.Enum):
