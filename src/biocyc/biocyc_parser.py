@@ -187,30 +187,6 @@ def main(args):
     else:
         logger.info("No data sources specified. Loading all data sources...")
 
-
-def main(args):
-
-    logger = logging.getLogger(__name__)
-
-    parser = BiocycParser()
-
-    if args.data_sources:
-        # load only the specified data sources
-        parser.data_sources_to_load = {}
-        for data_source_name in args.data_sources:
-            if data_source_name in parser.data_sources:
-                parser.data_sources_to_load[data_source_name] = parser.data_sources[
-                    data_source_name
-                ]
-            else:
-                raise ValueError(
-                    "The specified data source was not recognized: '{}'".format(
-                        data_source_name
-                    )
-                )
-    else:
-        logger.info("No data sources specified. Loading all data sources...")
-
     database = get_database()
 
     # After loading data, we (perhaps?) need to run scripts to set displayname and description. See docs/biocyc/set_displayname_description.md
