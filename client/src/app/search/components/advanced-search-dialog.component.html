@@ -27,18 +27,24 @@
       </div>
     </div>
 
-    <!-- Projects field -->
-    <div class="form-group row">
-      <label class="col-sm-4 col-form-label">Projects:</label>
-      <div class="col-sm-8">
-        <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
-          assume the list of accessible projects will remain small as the site grows. -->
-        <app-select formId="projects" [choices]="projects"
-          [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
-          (touch)="form.get('projects').markAsTouched()"
-          [choiceLabel]="projectLabel">
-        </app-select>
+    <div>
+      <label class="m-0">Folders to Include (default all if none selected):</label>
+      <div *ngIf="hierarchyLoaded; else hierarchyNotLoaded" style="max-height: 480px; overflow: auto;">
+        <app-hierarchy-search-tree
+          [treeData]="fileHierarchyTree"
+          [initiallyCheckedNodesFilterFn]="initiallyCheckedNodesFilterFn"
+          [resetTree]="resetHierarchyTreeSubject"
+          (folderSelectionChanged)="updateFolders($event)"
+        ></app-hierarchy-search-tree>
       </div>
+      <ng-template #hierarchyNotLoaded>
+        <div class="d-flex flex-column">
+          <span class="placeholder-box w-25 mb-2">Loading loading</span>
+          <span class="placeholder-box w-25 mb-2">Loading loading</span>
+          <span class="placeholder-box w-25">Loading loading</span>
+        </div>
+      </ng-template>
+
     </div>
 
     <!-- TODO: Might add this back in the future -->

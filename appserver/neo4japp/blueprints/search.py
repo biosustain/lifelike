@@ -8,6 +8,7 @@ from flask_apispec import use_kwargs
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.projects import ProjectBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
@@ -85,9 +86,9 @@ def content_search_params_are_empty(params):
     """
     if 'q' in params and params['q']:
         return False
-    elif 'projects' in params and params['projects']:
-        return False
     elif 'types' in params and params['types']:
+        return False
+    elif 'folders' in params and params['folders']:
         return False
     return True
 
@@ -127,53 +128,54 @@ def get_types_from_params(q, advanced_args, file_type_service):
         ]
 
 
-def get_projects_from_params(q, advanced_args):
-    # Get projects from either `q` or `projects`
-    projects = []
-    if 'projects' in advanced_args and advanced_args['projects'] != '':
-        projects = advanced_args['projects'].split(';')
-
-    # Even if `projects` is in the advanced args, expect `q` might also contain some projects
-    extracted_projects = re.findall(r'\bproject:\S*', q)
-
-    if len(extracted_projects) > 0:
-        q = re.sub(r'\bproject:\S*', '', q)
-        for extracted_type in extracted_projects:
-            projects.append(extracted_type.split(':')[1])
-
-    return q, projects
+def get_folders_from_params(advanced_args):
+    try:
+        folders = advanced_args['folders'].split(';')
+    except KeyError:
+        folders = []
+    return folders
 
 
-def get_projects_filter(user_id: int, projects: List[str]):
-    query = Projects.user_has_permission_to_projects(user_id, projects)
+def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: List[Projects]):
+    """
+    Generates a lucene boolean query which filters documents based on folder/project access. Takes
+    as input two options:
+        - accessible_folders: a list of Files objects representing folders to be included in the
+        query
+        - accessible_projects: a list of Projects objects representing projects to be included in
+        the query
+    Any files present in accessible_folders which are not children of accessible_projects will be
+    ignored, and returned along with the query.
+    """
+    accessible_projects_ids = [
+        project.id
+        for project in accessible_projects
+    ]
 
-    if len(projects) > 0:
-        # TODO: Right now filtering by project name works because project names are unique.
-        # It's likely that in the future this will no longer be the case! When that happens,
-        # We can uniquely identify a project using both the username of the project owner,
-        # AND the project name. E.g., johndoe/project-name is unique.
+    filepaths = []
+    for file in accessible_folders:
+        filepaths.append(file.filename_path)
 
-        # We can further extend this behavior to directories. A directory can be uniquely
-        # identified by its path, with the owner's username as the ***ARANGO_USERNAME***.
-        query = query.filter(
-            Projects.name.in_(projects)
-        )
-        accessible_and_filtered_project_ids = [project_id for project_id, in query]
+    if len(filepaths):
         return {
             'bool': {
-                'must': [
-                    # If the document is in the filtered list of projects...
-                    {'terms': {'project_id': accessible_and_filtered_project_ids}},
+                'should': [
+                    {
+                        "term": {
+                            "file_path.tree": file_path
+                        }
+                    }
+                    for file_path in filepaths
                 ]
             }
         }
     else:
-        accessible_project_ids = [project_id for project_id, in query]
+        # If there were no accessible filepaths in the given list, search all accessible projects
         return {
             'bool': {
                 'should': [
                     # If the user has access to the project the document is in...
-                    {'terms': {'project_id': accessible_project_ids}},
+                    {'terms': {'project_id': accessible_projects_ids}},
                     # OR if the document is public.
                     {'term': {'public': True}}
                 ]
@@ -183,12 +185,12 @@ def get_projects_filter(user_id: int, projects: List[str]):
 # End Search Helpers #
 
 
-class ContentSearchView(FilesystemBaseView):
+class ContentSearchView(ProjectBaseView, FilesystemBaseView):
     decorators = [auth.login_required]
 
     @use_args(ContentSearchSchema)
     @use_args(PaginatedRequestSchema)
-    def post(self, params: dict, pagination: Pagination):
+    def get(self, params: dict, pagination: Pagination):
         current_app.logger.info(
             f'Term: {params["q"]}',
             extra=UserEventLog(
@@ -212,7 +214,7 @@ class ContentSearchView(FilesystemBaseView):
 
         q = params['q']
         q, types = get_types_from_params(q, params, file_type_service)
-        q, projects = get_projects_from_params(q, params)
+        folders = get_folders_from_params(params)
 
         # Set the search term once we've parsed 'q' for all advanced options
         search_term = q.strip()
@@ -234,6 +236,20 @@ class ContentSearchView(FilesystemBaseView):
             'number_of_fragments': 100,
         }
 
+        EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+        # Gets the full list of projects accessible by the current user.
+        accessible_projects, _ = self.get_nondeleted_projects(None, accessible_only=True)
+        # Gets the full list of folders accessible by the current user.
+        accessible_folders = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(folders),
+            attr_excl=EXCLUDE_FIELDS
+        )
+        accessible_folder_hash_ids = [folder.hash_id for folder in accessible_folders]
+        dropped_folders = [folder for folder in folders if folder not in accessible_folder_hash_ids]
+        filepaths_filter = get_filepaths_filter(
+            accessible_folders,
+            accessible_projects
+        )
         # These are the document fields that will be returned by elastic
         fields = ['id']
 
@@ -243,8 +259,9 @@ class ContentSearchView(FilesystemBaseView):
                     # The document must have the specified type...
                     {'terms': {'mime_type': types}},
                     # ...And must be accessible by the user, and in the specified list of
-                    # projects or public if no list is given...
-                    get_projects_filter(g.current_user.id, projects),
+                    # filepaths or public if no list is given...
+                    filepaths_filter
+                    # get_projects_filter(g.current_user.id, projects),
                 ]
             }
         }
@@ -308,6 +325,7 @@ class ContentSearchView(FilesystemBaseView):
             'total': elastic_result['total'],
             'query': ResultQuery(phrases=search_phrases),
             'results': results,
+            'dropped_folders': dropped_folders
         }))
 
 
