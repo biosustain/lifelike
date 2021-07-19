@@ -20,11 +20,11 @@ import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
-import { nodeLabelAccessor } from 'app/trace-viewer/components/utils';
 import { cubehelix } from 'd3';
 import visNetwork from 'vis-network';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
+
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -192,7 +192,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   parseTraceDetails(trace) {
-    const {nodes: mainNodes} = this.sankeyData;
+    const {
+      sankeyData: {
+        nodes: mainNodes
+      },
+      sankeyLayout: {
+        nodeLabel
+      }
+    } = this;
 
     const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
       from,
@@ -212,7 +219,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (node) {
         const color = cubehelix(node._color);
         color.s = 0;
-        const label = nodeLabelAccessor(node);
+        const label = nodeLabel(node);
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
@@ -296,14 +303,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
     this.sankeyLayout.colorNodes(nodes);
-    const inNodes = node_sets[networkTrace.sources];
-    const outNodes = node_sets[networkTrace.targets];
-    this.nodeAlign = inNodes.length > outNodes.length ? 'Right' : 'Left';
+    const _inNodes = node_sets[networkTrace.sources];
+    const _outNodes = node_sets[networkTrace.targets];
+    this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
-      inNodes,
-      outNodes
+      _inNodes, _outNodes
     });
   }
 
@@ -340,19 +346,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const prescaler = this.options.selectedPrescaler.fn;
 
     let minValue = data.nodes.reduce((m, n) => {
-      if (n.fixedValue !== undefined) {
-        n.fixedValue = prescaler(n.fixedValue);
-        return Math.min(m, n.fixedValue);
+      if (n._fixedValue !== undefined) {
+        n._fixedValue = prescaler(n._fixedValue);
+        return Math.min(m, n._fixedValue);
       }
       return m;
     }, 0);
     minValue = data.links.reduce((m, l) => {
-      l.value = prescaler(l.value);
-      if (l.multiple_values) {
-        l.multiple_values = l.multiple_values.map(prescaler);
-        return Math.min(m, ...l.multiple_values);
+      l._value = prescaler(l._value);
+      if (l._multiple_values) {
+        l._multiple_values = l._multiple_values.map(prescaler);
+        return Math.min(m, ...l._multiple_values);
       }
-      return Math.min(m, l.value);
+      return Math.min(m, l._value);
     }, minValue);
     if (this.options.selectedNodeValueAccessor.postprocessing) {
       Object.assign(data, this.options.selectedNodeValueAccessor.postprocessing(data) || {});
@@ -362,14 +368,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     if (minValue < 0) {
       data.nodes.forEach(n => {
-        if (n.fixedValue !== undefined) {
-          n.fixedValue = n.fixedValue - minValue;
+        if (n._fixedValue !== undefined) {
+          n._fixedValue = n._fixedValue - minValue;
         }
       });
       data.links.forEach(l => {
-        l.value = l.value - minValue;
-        if (l.multiple_values) {
-          l.multiple_values = l.multiple_values.map(v => v - minValue);
+        l._value = l._value - minValue;
+        if (l._multiple_values) {
+          l._multiple_values = l._multiple_values.map(v => v - minValue);
         }
       });
     }
@@ -389,7 +395,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           preprocessing: linkSizeByProperty(k),
           postprocessing: ({links}) => {
             links.forEach(l => {
-              l.value /= (l._adjacent_divider || 1);
+              l._value /= (l._adjacent_divider || 1);
               // take max for layer calculation
             });
           }
@@ -400,7 +406,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           preprocessing: linkSizeByArrayProperty(k),
           postprocessing: ({links}) => {
             links.forEach(l => {
-              l.multiple_values = l.multiple_values.map(d => d / (l._adjacent_divider || 1));
+              l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1));
               // take max for layer calculation
             });
           }
