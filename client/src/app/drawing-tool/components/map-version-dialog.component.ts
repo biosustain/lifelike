@@ -38,7 +38,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   public readonly loadTask: BackgroundTask<
     void,
     {versions: KnowledgeMap[]}
-  > = new BackgroundTask(() => MapService.getMapVersions(this.projectName, this.currentMap.hash_id));
+  > = new BackgroundTask(() => this.mapService.getMapVersions(this.projectName, this.currentMap.hash_id));
   private loadTaskSubscription: Subscription;
   versionChoices: string[];
   versionIDs: number[];
@@ -50,7 +50,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    // private readonly mapService: MapService,
+    private readonly mapService: MapService,
     readonly ngZone: NgZone,
     readonly mapImageProviderService: MapImageProviderService,
   ) {
@@ -111,6 +111,6 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
 
   findVersion() {
     const versionId = this.versionIDs[this.form.value.version.split('.')[0].substring(8) - 1];
-    return MapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
+    return this.mapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
   }
 }
