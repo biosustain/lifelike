@@ -155,7 +155,7 @@
     - name: Seed Elasticsearch
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose run -d -T appserver flask seed-elastic"
+        cmd: "docker-compose run -d -T appserver flask reset-elastic"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
