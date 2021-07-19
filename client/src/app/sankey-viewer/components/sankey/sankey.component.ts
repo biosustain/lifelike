@@ -13,12 +13,11 @@ import {
 } from '@angular/core';
 
 import * as d3 from 'd3';
-import * as d3Sankey from 'd3-sankey';
-import { createResizeObserver, layerWidth, composeLinkPath, calculateLinkPathParams, shortNodeText, INITIALLY_SHOWN_CHARS } from './utils';
+import * as aligns from './aligin';
+import { createResizeObserver } from './utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { colorByTraceEnding } from './algorithms/traceLogic';
-import { representativePositiveNumber, nodeLabelAccessor } from '../utils';
+import { representativePositiveNumber } from '../utils';
 import { SankeyLayoutService } from './sankey-layout.service';
 
 
@@ -39,8 +38,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       py: 10, // nodePadding
       dx: 10, // nodeWidth
       linkSort: (a, b) =>
-        (b.source.index - a.source.index) ||
-        (b.target.index - a.target.index) ||
+        (b._source.index - a._source.index) ||
+        (b._target.index - a._target.index) ||
         (b._trace.group - a._trace.group)
     });
 
@@ -92,7 +91,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
   @Input() selectedLinks = new Set<object>();
-  @Input() nodeAlign: 'Left' | 'Right' | 'Justify' | ((a: SankeyNode, b?: number) => number);
+  @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
   @Input() set data(data) {
     this._data = {...data} as SankeyData;
@@ -132,7 +131,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       if (typeof align === 'function') {
         this.sankey.align = align;
       } else if (align) {
-        this.sankey.align = d3Sankey['sankey' + align];
+        this.sankey.align = aligns[align];
       }
     }
 
@@ -216,8 +215,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   getSelectedTraces(selection) {
     const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
     const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {sourceLinks, targetLinks}) =>
-        linksAccumulator.concat(sourceLinks, targetLinks)
+      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
+        linksAccumulator.concat(_sourceLinks, _targetLinks)
       , []
     );
     return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
@@ -228,8 +227,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Graph sizing
   onResize(width, height) {
     const {zoom, margin} = this;
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerWidth = width - margin.right;
+    const innerHeight = height - margin.bottom;
 
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
@@ -338,7 +337,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.highlightNode(element);
     const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
-    const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
+    const traces = new Set([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
     this.highlightTraces(traces);
   }
 
@@ -352,31 +351,33 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   resetZoom() {
+    // it is used by its parent
     d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
   }
 
   // the function for moving the nodes
   dragmove(element, d) {
-    const nodeWidth = d.x1 - d.x0;
-    const nodeHeight = d.y1 - d.y0;
+    const {
+      id,
+      linkPath
+    } = this.sankey;
+
+    const nodeWidth = d._x1 - d._x0;
+    const nodeHeight = d._y1 - d._y0;
     const newPosition = {
-      x0: d.x0 + d3.event.dx,
-      x1: d.x0 + d3.event.dx + nodeWidth,
-      y0: d.y0 + d3.event.dy,
-      y1: d.y0 + d3.event.dy + nodeHeight
+      _x0: d._x0 + d3.event.dx,
+      _x1: d._x0 + d3.event.dx + nodeWidth,
+      _y0: d._y0 + d3.event.dy,
+      _y1: d._y0 + d3.event.dy + nodeHeight
     };
     Object.assign(d, newPosition);
     d3.select(element)
       .raise()
-      .attr('transform', `translate(${d.x0},${d.y0})`);
-    const relatedLinksIds = d.sourceLinks.concat(d.targetLinks).map(({id}) => id);
+      .attr('transform', `translate(${d._x0},${d._y0})`);
+    const relatedLinksIds = d._sourceLinks.concat(d._targetLinks).map(id);
     this.linkSelection
-      .filter(({id}) => relatedLinksIds.includes(id))
-      .attr('d', link => {
-        const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
-        link.calculated_params = newPathParams;
-        return composeLinkPath(newPathParams);
-      });
+      .filter(link => relatedLinksIds.includes(id(link)))
+      .attr('d', linkPath);
     // todo: this re-layout technique for whatever reason does not work
     // clearTimeout(this.debounceDragRelayout);
     // this.debounceDragRelayout = setTimeout(() => {
@@ -387,12 +388,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     //     .transition().duration(RELAYOUT_DURATION)
     //     .attrTween('d', link => {
     //       const newPathParams = calculateLinkPathParams(link);
-    //       const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+    //       const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
     //       return t => {
     //         const interpolatedParams = paramsInterpolator(t);
     //         // save last params on each iterration so we can interpolate from last position upon
     //         // animation interrupt/cancel
-    //         link.calculated_params = interpolatedParams;
+    //         link._calculated_params = interpolatedParams;
     //         return composeLinkPath(interpolatedParams);
     //       };
     //     });
@@ -433,8 +434,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   highlightTraces(traces: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
     this.linkSelection
-      .attr('highlighted', ({_trace, _selected}) => traces.has(_trace))
-      .filter(({_trace, _selected}) => traces.has(_trace))
+      .attr('highlighted', ({_trace}) => traces.has(_trace))
+      .filter(({_trace}) => traces.has(_trace))
       .raise();
   }
 
@@ -449,6 +450,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   highlightNode(element) {
+    const {
+      nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
+    } = this.sankey;
     const selection = d3.select(element)
       .raise()
       .attr('highlighted', true)
@@ -456,8 +460,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .call(textGroup => {
         textGroup
           .select('text')
-          .text(shortNodeText)
-          .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+          .text(nodeLabelShort)
+          .filter(nodeLabelShouldBeShorted)
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
           // .textTween(n => {
@@ -467,7 +471,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           //   return t => t === 1 ? label :
           //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
           // })
-          .text(n => nodeLabelAccessor(n));
+          .text(nodeLabel);
       });
     // postpone so the size is known
     requestAnimationFrame(_ =>
@@ -477,11 +481,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   unhighlightNode(element) {
+    const {nodeLabelShort, nodeLabelShouldBeShorted} = this.sankey;
+
     this.nodeSelection
       .attr('highlighted', false);
 
     d3.select(element).select('text')
-      .filter(n => INITIALLY_SHOWN_CHARS < nodeLabelAccessor(n).length)
+      .filter(nodeLabelShouldBeShorted)
       // todo: reenable when performance improves
       // .transition().duration(RELAYOUT_DURATION)
       // .textTween(n => {
@@ -490,7 +496,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
       //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
-      .text(shortNodeText);
+      .text(nodeLabelShort);
   }
 
   // endregion
@@ -506,7 +512,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         this.sankey.identifyCircles(data);
         const {nodes, links, ...rest} = data;
         const [circularLinks, nonCircularLinks] = links.reduce(([c, nc], n) => {
-          if (n.circular) {
+          if (n._circular) {
             c.push(n);
           } else {
             nc.push(n);
@@ -518,10 +524,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // Link into graph prev filtered links
         this.sankey.registerLinks({nodes, links: circularLinks});
         // adjust width of circular links
-        const {width, value} = nonCircularLinks[0];
-        const valueScaler = width / value;
+        const {_width, _value} = nonCircularLinks[0];
+        const valueScaler = _width / _value;
         circularLinks.forEach(link => {
-          link.width = link.value * valueScaler;
+          link._width = link._value * valueScaler;
         });
         const layout = {
           nodes,
@@ -536,21 +542,23 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Render
 
   updateNodeRect = rects => rects
-    .attr('height', n => representativePositiveNumber(n.y1 - n.y0))
-    .attr('width', ({x1, x0}) => x1 - x0)
-    .attr('width', ({x1, x0}) => x1 - x0)
+    .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
+    .attr('width', ({_x1, _x0}) => _x1 - _x0)
+    .attr('width', ({_x1, _x0}) => _x1 - _x0)
 
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size;
     return texts => texts
-      .attr('transform', ({x0, x1, y0, y1}) => `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`)
+      .attr('transform', ({_x0, _x1, _y0, _y1}) =>
+        `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
+      )
       .attr('text-anchor', 'end')
       .call(textGroup =>
         textGroup.select('text')
           .attr('dy', '0.35em')
       )
-      .filter(({x0}) => x0 < width / 2)
+      .filter(({_x0}) => _x0 < width / 2)
       .attr('text-anchor', 'start');
   }
 
@@ -560,20 +568,29 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   private updateDOM(graph) {
     const {
-      updateNodeRect, updateNodeText
+      updateNodeRect, updateNodeText,
+      sankey: {
+        id,
+        nodeColor,
+        nodeTitle,
+        nodeLabel,
+        nodeLabelShort,
+        linkColor,
+        linkPath,
+        circular
+      }
     } = this;
 
+    const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
+
     this.linkSelection
-      .data(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), ({id}) => id)
+      .data(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
       .join(
         enter => enter
           .append('path')
           .call(this.attachLinkEvents)
-          .attr('d', link => {
-            link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
-            return composeLinkPath(link.calculated_params);
-          })
-          .classed('circular', ({circular}) => circular)
+          .attr('d', linkPath)
+          .classed('circular', circular)
           .call(path =>
             path.append('title')
           ),
@@ -582,25 +599,22 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           // .transition().duration(RELAYOUT_DURATION)
           // .attrTween('d', link => {
           //   const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
-          //   const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
+          //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
           //   return t => {
           //     const interpolatedParams = paramsInterpolator(t);
           //     // save last params on each iterration so we can interpolate from last position upon
           //     // animation interrupt/cancel
-          //     link.calculated_params = interpolatedParams;
+          //     link._calculated_params = interpolatedParams;
           //     return composeLinkPath(interpolatedParams);
           //   };
           // })
-          .attr('d', link => {
-            link.calculated_params = calculateLinkPathParams(link, this.normalizeLinks);
-            return composeLinkPath(link.calculated_params);
-          }),
+          .attr('d', linkPath),
         exit => exit.remove()
       )
-      .attr('fill', ({_color}) => _color)
+      .attr('fill', linkColor)
       .call(join =>
         join.select('title')
-          .text(({description}) => description)
+          .text(nodeTitle)
       );
 
     this.nodeSelection
@@ -608,9 +622,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         graph.nodes.filter(
           // should no longer be an issue but leaving as sanity check
           // (if not satisfied visualisation brakes)
-          n => n.sourceLinks.length + n.targetLinks.length > 0
+          n => n._sourceLinks.length + n._targetLinks.length > 0
         ),
-        ({id}) => id
+        id
       )
       .join(
         enter => enter.append('g')
@@ -620,7 +634,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
             )
           )
           .call(this.attachNodeEvents)
-          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
+          .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`)
           .call(enterNode =>
             updateNodeText(
               enterNode
@@ -634,7 +648,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           )
           .call(enterNode =>
             enterNode.append('title')
-              .text(({label}) => label)
+              .text(nodeLabel)
           )
           .call(e => this.enter.emit(e)),
         update => update
@@ -654,22 +668,19 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           })
           // todo: reenable when performance improves
           // .transition().duration(RELAYOUT_DURATION)
-          .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
+          .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`),
         exit => exit.remove()
       )
       .call(joined => {
         updateNodeRect(
           joined
             .select('rect')
-            .attr('fill', (node: SankeyNode) => {
-              const traceColor = colorByTraceEnding(node);
-              return traceColor || node._color;
-            })
+            .attr('fill', nodeColor)
         );
         joined.select('g')
           .call(textGroup => {
             textGroup.select('text')
-              .text(shortNodeText);
+              .text(nodeLabelShort);
           });
       });
   }

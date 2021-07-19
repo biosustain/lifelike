@@ -6,13 +6,13 @@ interface Direction {
 }
 
 const ltr = {
-  linksAccessor: 'sourceLinks',
-  nodeAccessor: 'target'
+  linksAccessor: '_sourceLinks',
+  nodeAccessor: '_target'
 } as Direction;
 
 const rtl = {
-  linksAccessor: 'targetLinks',
-  nodeAccessor: 'source'
+  linksAccessor: '_targetLinks',
+  nodeAccessor: '_source'
 } as Direction;
 
 export class DirectedTraversal {
@@ -26,8 +26,8 @@ export class DirectedTraversal {
       inNodes.length
       - outNodes.length
     ) || (
-      sum(outNodes, ({targetLinks = []}) => targetLinks.length)
-      - sum(inNodes, ({sourceLinks = []}) => sourceLinks.length)
+      sum(outNodes, ({_targetLinks = []}) => _targetLinks.length)
+      - sum(inNodes, ({_sourceLinks = []}) => _sourceLinks.length)
     )) < 0) {
       this.direction = ltr;
       this.startNodes = inNodes;
