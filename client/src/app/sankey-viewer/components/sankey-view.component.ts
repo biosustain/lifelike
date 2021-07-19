@@ -25,6 +25,7 @@ import { cubehelix } from 'd3';
 import visNetwork from 'vis-network';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -132,6 +133,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly workSpaceManager: WorkspaceManager,
     private router: Router,
     private sessionStorage: SessionStorageService,
+    private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
@@ -507,6 +509,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       title: this.object.filename,
       fontAwesomeIcon: 'file-chart-line',
     });
+  }
+
+  openNewWindow() {
+    this.filesystemObjectActions.openNewWindow(this.object);
   }
 
   onOptionsChange() {
