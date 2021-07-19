@@ -2,11 +2,16 @@ import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProjectData } from 'app/file-browser/schema';
+
+import { Subject } from 'rxjs';
+
+import { FilesystemObjectData } from 'app/file-browser/schema';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { ContentSearchOptions } from '../content-search';
-import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-advanced-search-dialog',
@@ -20,22 +25,29 @@ export class AdvancedSearchDialogComponent implements OnInit {
       q: params.q,
       // Advanced Params
       types: params.types ? params.types : [],
-      projects: params.projects ? params.projects : [],
+      folders: params.folders ? params.folders : [],
       // synonyms: params.synonyms ? params.synonyms : false,
       // phrase: params.phrase ? params.phrase : '',
       // wildcards: params.wildcards ? params.wildcards : '',
     });
+
+    // Need to set initialCheckedNodes so we can toggle the corresponding checkboxes in the hierarchy tree
+    this.initialCheckedNodes = this.form.get('folders').value;
   }
   @Input() typeChoices: SearchType[] = [];
 
-  projects: string[] = [];
+  initialCheckedNodes: string[] = [];
+  fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
+  hierarchyLoaded = false;
+
+  resetHierarchyTreeSubject = new Subject<boolean>();
 
   // Removing `phrase` and `wildcard` for now, in favor of just putting them in `q`. See a related comment in the template.
 
   form = new FormGroup({
     q: new FormControl(''),
     types: new FormControl([]),
-    projects: new FormControl([]),
+    folders: new FormControl([])
     // synonyms: new FormControl(true),
     // phrase: new FormControl(''),
     // wildcards: new FormControl(''),
@@ -43,23 +55,22 @@ export class AdvancedSearchDialogComponent implements OnInit {
 
   constructor(
     private readonly modal: NgbActiveModal,
-    protected readonly contentSearchService: ContentSearchService,
+    protected readonly filesystemService: FilesystemService,
   ) {}
 
   ngOnInit() {
-    this.contentSearchService.getProjects().subscribe((projects: ProjectData[]) => {
-      projects.forEach(project => {
-        const projectName = project.name;
-        if (!this.projects.includes(projectName)) {
-          this.projects.push(projectName);
-        }
-      });
-
-      // Finally, if the user included any projects in the query params that they DON'T actually have access to, remove them from the form.
-      // If we don't do this, there will be "ghost" values in the app-select dropdown that won't be visible.
-      const formProjectIds = this.form.get('projects').value as string[];
-      this.form.get('projects').setValue(formProjectIds.filter(projectId => this.projects.includes(projectId)));
+    this.filesystemService.getHierarchy(true).subscribe((resp) => {
+      this.fileHierarchyTree = resp.results.map(fileNodeObjectData => this.convertFODNodetoFONode(fileNodeObjectData));
+      this.hierarchyLoaded = true;
     });
+  }
+
+  convertFODNodetoFONode(node: TreeNode<FilesystemObjectData>) {
+    return {
+      data: new FilesystemObject().update(node.data),
+      level: node.level,
+      children: node.children.map(child => this.convertFODNodetoFONode(child))
+    } as TreeNode<FilesystemObject>;
   }
 
   dismiss() {
@@ -79,10 +90,13 @@ export class AdvancedSearchDialogComponent implements OnInit {
       q: '',
       // Advanced Params
       types: [],
-      projects: [],
+      folders: [],
       // phrase: '',
       // wildcards: '',
     });
+
+    // Also reset the hierarchy tree, collapsing all open nodes and unchecking all checkboxes
+    this.resetHierarchyTreeSubject.next(true);
   }
 
   /**
@@ -100,4 +114,10 @@ export class AdvancedSearchDialogComponent implements OnInit {
   projectLabel(choice: string) {
     return choice;
   }
+
+  updateFolders(folders: string[]) {
+    this.form.get('folders').patchValue(folders);
+  }
+
+  initiallyCheckedNodesFilterFn = (t: FlatNode<FilesystemObject>) => this.form.get('folders').value.includes(t.data.hashId);
 }
