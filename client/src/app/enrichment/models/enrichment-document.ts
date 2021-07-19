@@ -270,8 +270,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       annotatedImported: synonym,
                       matched: node.name,
                       annotatedMatched: node.name,
-                      fullName: node.full_name,
-                      annotatedFullName: node.full_name,
+                      fullName: node.full_name || '',
+                      annotatedFullName: node.full_name || '',
                       link,
                       domains: this.generateGeneDomainResults(domains, domainWrapper, node)
                     });
@@ -286,7 +286,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '4',
+                  version: '5',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -449,7 +449,7 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '4';
+  version: '5';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }
