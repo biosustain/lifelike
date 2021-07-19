@@ -107,7 +107,7 @@ def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], a
             props = ['n.' + prop + '=row.' + prop for prop in update_properties if prop != id_name]
             prop_sets += props
         if update_version:
-            prop_sets.append(f'n.version={update_version}')
+            prop_sets.append(f'n.version="{update_version}"')
         if len(prop_sets) > 0:
             query_rows.append('SET ' + ','.join(prop_sets))
     return '\n'.join(query_rows)
@@ -149,7 +149,7 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
         for prop in rel_properties:
             prop_sets.append(f"r.{prop}=row.{prop}")
     if update_version:
-        prop_sets.append(f'r.version={update_version}')
+        prop_sets.append(f'r.version="{update_version}"')
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
         rows.append(f"SET {set_phrase}")
@@ -177,7 +177,7 @@ def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_
     for prop in rel_properties:
         prop_sets.append(f"r.{prop}=row.{prop}")
     if update_version:
-        prop_sets.append(f"r.version={update_version}")
+        prop_sets.append(f"r.version='{update_version}'")
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
         query_rows.append(f"SET {set_phrase}")
