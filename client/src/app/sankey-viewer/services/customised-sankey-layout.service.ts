@@ -152,15 +152,15 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   }
 
   composeLinkPath({
-                               sourceX,
-                               sourceY0,
-                               sourceY1,
-                               targetX,
-                               targetY0,
-                               targetY1,
-                               sourceBezierX,
-                               targetBezierX
-                             }) {
+                    sourceX,
+                    sourceY0,
+                    sourceY1,
+                    targetX,
+                    targetY0,
+                    targetY1,
+                    sourceBezierX,
+                    targetBezierX
+                  }) {
     return (
       `M${sourceX} ${sourceY0}` +
       `C${sourceBezierX} ${sourceY0},${targetBezierX} ${targetY0},${targetX} ${targetY0}` +
@@ -286,15 +286,15 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const groups = [...traces.map(({group}) => group)];
 
     this.linkSort = (a, b) => (
-      (a.source._order - b.source._order) ||
-      (a.target._order - b.target._order) ||
+      (a._source._order - b._source._order) ||
+      (a._target._order - b._target._order) ||
       (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group)) ||
       (traces.indexOf(a._trace) - traces.indexOf(b._trace))
     );
 
     columns.forEach(nodes => {
       const {length} = nodes;
-      const nodesHeight = sum(nodes, ({value}) => value) * ky;
+      const nodesHeight = sum(nodes, ({_value}) => _value) * ky;
       const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
       const freeSpace = height - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
@@ -305,13 +305,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         node._y1 = y + nodeHeight;
         y += nodeHeight + spacerSize;
 
-        for (const link of node.sourceLinks) {
+        for (const link of node._sourceLinks) {
           link._width = link._value * ky;
         }
       });
-      for (const {sourceLinks, targetLinks} of nodes) {
-        sourceLinks.sort(this.linkSort);
-        targetLinks.sort(this.linkSort);
+      for (const {_sourceLinks, _targetLinks} of nodes) {
+        _sourceLinks.sort(this.linkSort);
+        _targetLinks.sort(this.linkSort);
       }
       // todo: replace with
       // this.reorderLinks(nodes);
@@ -352,7 +352,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   getAndColorNetworkTraceLinks(networkTrace, links, colorMap?) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ? colorMap : new Map(
-      networkTrace.traces.map(({group}, i) => [group, christianColors[i]])
+      networkTrace.traces.map(({group}) => [group, christianColors[group]])
     );
     const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
       const color = traceGroupColorMap.get(trace.group);
@@ -392,15 +392,16 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {id} = this;
     const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
     return [
-      ...networkTraceLinks.reduce((o, {source, target}) => {
-        if (typeof source !== 'object') {
-          source = SankeyLayoutService.find(nodeById, source);
+      ...networkTraceLinks.reduce((o, link) => {
+        let {_source = link.source, _target = link.target} = link;
+        if (typeof _source !== 'object') {
+          _source = SankeyLayoutService.find(nodeById, _source);
         }
-        if (typeof target !== 'object') {
-          target = SankeyLayoutService.find(nodeById, target);
+        if (typeof _target !== 'object') {
+          _target = SankeyLayoutService.find(nodeById, _target);
         }
-        o.add(source);
-        o.add(target);
+        o.add(_source);
+        o.add(_target);
         return o;
       }, new Set())
     ];
@@ -427,8 +428,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   getRelatedTraces({nodes, links}) {
     const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {sourceLinks, targetLinks}) =>
-        linksAccumulator.concat(sourceLinks, targetLinks)
+      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
+        linksAccumulator.concat(_sourceLinks, _targetLinks)
       , []
     );
     return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
