@@ -38,8 +38,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       py: 10, // nodePadding
       dx: 10, // nodeWidth
       linkSort: (a, b) =>
-        (b.source.index - a.source.index) ||
-        (b.target.index - a.target.index) ||
+        (b._source.index - a._source.index) ||
+        (b._target.index - a._target.index) ||
         (b._trace.group - a._trace.group)
     });
 
@@ -91,7 +91,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
   @Input() selectedLinks = new Set<object>();
-  @Input() nodeAlign: 'Left' | 'Right' | 'Justify' | ((a: SankeyNode, b?: number) => number);
+  @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
   @Input() set data(data) {
     this._data = {...data} as SankeyData;
@@ -215,8 +215,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   getSelectedTraces(selection) {
     const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
     const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {sourceLinks, targetLinks}) =>
-        linksAccumulator.concat(sourceLinks, targetLinks)
+      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
+        linksAccumulator.concat(_sourceLinks, _targetLinks)
       , []
     );
     return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
@@ -227,8 +227,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Graph sizing
   onResize(width, height) {
     const {zoom, margin} = this;
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerWidth = width - margin.right;
+    const innerHeight = height - margin.bottom;
 
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
@@ -337,7 +337,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.highlightNode(element);
     const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
-    const traces = new Set([].concat(data.sourceLinks, data.targetLinks).map(link => link._trace));
+    const traces = new Set([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
     this.highlightTraces(traces);
   }
 
@@ -374,7 +374,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     d3.select(element)
       .raise()
       .attr('transform', `translate(${d._x0},${d._y0})`);
-    const relatedLinksIds = d.sourceLinks.concat(d._targetLinks).map(id);
+    const relatedLinksIds = d._sourceLinks.concat(d._targetLinks).map(id);
     this.linkSelection
       .filter(link => relatedLinksIds.includes(id(link)))
       .attr('d', linkPath);

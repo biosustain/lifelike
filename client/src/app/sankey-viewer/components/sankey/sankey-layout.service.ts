@@ -57,6 +57,7 @@ import findCircuits from 'elementary-circuits-directed-graph';
 
 import { max, min, sum } from 'd3-array';
 import { AttributeAccessors } from './attribute-accessors';
+import { justify } from './aligin';
 
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {
@@ -134,10 +135,8 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  align(node, n) {
-    console.log(node, n)
-    // justified
-    return node._sourceLinks.length ? node._depth : n - 1;
+  align(n, node) {
+    return justify(node, n);
   }
 
   update(graph) {
@@ -456,17 +455,17 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  reorderNodeLinks({sourceLinks, targetLinks}) {
+  reorderNodeLinks({_sourceLinks, _targetLinks}) {
     const {
       ascendingTargetBreadth,
       ascendingSourceBreadth
     } = SankeyLayoutService;
 
-    for (const {source} of targetLinks) {
-      source._sourceLinks.sort(ascendingTargetBreadth);
+    for (const {_source} of _targetLinks) {
+      _source._sourceLinks.sort(ascendingTargetBreadth);
     }
-    for (const {target} of sourceLinks) {
-      target._targetLinks.sort(ascendingSourceBreadth);
+    for (const {_target} of _sourceLinks) {
+      _target._targetLinks.sort(ascendingSourceBreadth);
     }
   }
 

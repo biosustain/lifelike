@@ -26,8 +26,8 @@ export class DirectedTraversal {
       inNodes.length
       - outNodes.length
     ) || (
-      sum(outNodes, ({targetLinks = []}) => targetLinks.length)
-      - sum(inNodes, ({sourceLinks = []}) => sourceLinks.length)
+      sum(outNodes, ({_targetLinks = []}) => _targetLinks.length)
+      - sum(inNodes, ({_sourceLinks = []}) => _sourceLinks.length)
     )) < 0) {
       this.direction = ltr;
       this.startNodes = inNodes;

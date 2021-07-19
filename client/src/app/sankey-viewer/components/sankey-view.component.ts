@@ -25,6 +25,7 @@ import visNetwork from 'vis-network';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 
+
 @Component({
   selector: 'app-sankey-viewer',
   templateUrl: './sankey-view.component.html',
@@ -308,7 +309,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeyLayout.colorNodes(nodes);
     const _inNodes = node_sets[networkTrace.sources];
     const _outNodes = node_sets[networkTrace.targets];
-    this.nodeAlign = _inNodes.length > _outNodes.length ? 'Right' : 'Left';
+    this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
