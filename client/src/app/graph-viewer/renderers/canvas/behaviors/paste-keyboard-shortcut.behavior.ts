@@ -34,12 +34,12 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   constructor(private readonly graphView: CanvasGraphView,
               protected readonly dataTransferDataService: DataTransferDataService) {
     super();
-    document.addEventListener('paste', this.boundPaste);
+    // document.addEventListener('paste', this.boundPaste);
   }
 
-  destroy() {
-    document.removeEventListener('paste', this.boundPaste);
-  }
+  // destroy() {
+  //   document.removeEventListener('paste', this.boundPaste);
+  // }
 
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
     const content = event.event.clipboardData.getData('text/plain');

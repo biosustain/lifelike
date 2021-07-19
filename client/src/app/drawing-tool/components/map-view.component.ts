@@ -44,16 +44,18 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
 // <<<<<<< HEAD
-    //           filesystemObjectActions: FilesystemObjectActions,
-    //           dataTransferDataService: DataTransferDataService,
-    //           protected readonly progressDialog: ProgressDialog) {
+              filesystemObjectActions: FilesystemObjectActions,
+              dataTransferDataService: DataTransferDataService,
     // super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
     //   errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService);
 // =======
               mapImageProviderService: MapImageProviderService,
               public readonly progressDialog: ProgressDialog) {
-    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler,
-      workspaceManager, filesystemService, mapImageProviderService);
+    // super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler,
+      // workspaceManager, filesystemService, mapImageProviderService);
+    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
+      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
+      mapImageProviderService);
 // >>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
