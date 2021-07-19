@@ -56,11 +56,11 @@ import { Injectable } from '@angular/core';
 import findCircuits from 'elementary-circuits-directed-graph';
 
 import { max, min, sum } from 'd3-array';
-import { sankeyJustify as justify } from 'd3-sankey';
+import { AttributeAccessors } from './attribute-accessors';
+import { justify } from './aligin';
 
 @Injectable()
-export class SankeyLayoutService {
-
+export class SankeyLayoutService extends AttributeAccessors {
   get size() {
     return [this.x1 - this.x0, this.y1 - this.y0];
   }
@@ -78,10 +78,6 @@ export class SankeyLayoutService {
     [[this.x0, this.y0], [this.x1, this.y1]] = _;
   }
 
-  constructor() {
-
-  }
-
   x0 = 0;
   y0 = 0;
   x1 = 1;
@@ -89,8 +85,7 @@ export class SankeyLayoutService {
   dy = 8;
   dx = 24; // nodeWidth
   py; // nodePadding
-  id: (d: SankeyNode, i: number, n: Array<SankeyNode>) => number | string = SankeyLayoutService.defaultId;
-  align = justify;
+
   nodeSort;
   linkSort;
   nodes: Array<SankeyNode>;
@@ -103,8 +98,6 @@ export class SankeyLayoutService {
   baseRadius = 10;
   scale = 0.3;
 
-  static defaultId = ({id}) => id;
-
   static find(nodeById, id) {
     const node = nodeById.get(id);
     if (!node) {
@@ -114,36 +107,36 @@ export class SankeyLayoutService {
   }
 
   static ascendingSourceBreadth(a, b) {
-    return SankeyLayoutService.ascendingBreadth(a.source, b.source) || a.index - b.index;
+    return SankeyLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
   }
 
   static ascendingTargetBreadth(a, b) {
-    return SankeyLayoutService.ascendingBreadth(a.target, b.target) || a.index - b.index;
+    return SankeyLayoutService.ascendingBreadth(a._target, b._target) || a._index - b._index;
   }
 
   static ascendingBreadth(a, b) {
-    return a.y0 - b.y0;
-  }
-
-  static value(d) {
-    return d.value;
+    return a._y0 - b._y0;
   }
 
   static computeLinkBreadths({nodes}: SankeyData) {
     for (const node of nodes) {
-      let y0 = node.y0;
+      let y0 = node._y0;
       let y1 = y0;
-      for (const link of node.sourceLinks) {
-        link.y0 = y0 + link.width / 2;
+      for (const link of node._sourceLinks) {
+        link._y0 = y0 + link._width / 2;
         // noinspection JSSuspiciousNameCombination
-        y0 += link.width;
+        y0 += link._width;
       }
-      for (const link of node.targetLinks) {
-        link.y1 = y1 + link.width / 2;
+      for (const link of node._targetLinks) {
+        link._y1 = y1 + link._width / 2;
         // noinspection JSSuspiciousNameCombination
-        y1 += link.width;
+        y1 += link._width;
       }
     }
+  }
+
+  align(n, node) {
+    return justify(node, n);
   }
 
   update(graph) {
@@ -156,38 +149,39 @@ export class SankeyLayoutService {
 
     const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
     for (const [i, link] of links.entries()) {
-      link.index = i;
-      let {source, target} = link;
-      if (typeof source !== 'object') {
-        source = link.source = find(nodeById, source);
+      link._index = i;
+      const {source, target} = link;
+      let {_source, _target} = link;
+      if (typeof _source !== 'object') {
+        _source = link._source = typeof source !== 'object' ? find(nodeById, source) : source;
       }
-      if (typeof target !== 'object') {
-        target = link.target = find(nodeById, target);
+      if (typeof _target !== 'object') {
+        _target = link._target = typeof target !== 'object' ? find(nodeById, target) : target;
       }
-      source.sourceLinks.push(link);
-      target.targetLinks.push(link);
+      _source._sourceLinks.push(link);
+      _target._targetLinks.push(link);
     }
     if (this.linkSort != null) {
       const relatedNodes = links.reduce(
-        (o, {source, target}) => {
-          o.add(source);
-          o.add(target);
+        (o, {_source, _target}) => {
+          o.add(_source);
+          o.add(_target);
           return o;
         },
         new Set()
       );
-      for (const {sourceLinks, targetLinks} of relatedNodes) {
-        sourceLinks.sort(this.linkSort);
-        targetLinks.sort(this.linkSort);
+      for (const {_sourceLinks, _targetLinks} of relatedNodes) {
+        _sourceLinks.sort(this.linkSort);
+        _targetLinks.sort(this.linkSort);
       }
     }
   }
 
   computeNodeLinks({nodes, links}: SankeyData) {
     for (const [i, node] of nodes.entries()) {
-      node.index = i;
-      node.sourceLinks = [];
-      node.targetLinks = [];
+      node._index = i;
+      node._sourceLinks = [];
+      node._targetLinks = [];
     }
     this.registerLinks({links, nodes});
   }
@@ -200,8 +194,8 @@ export class SankeyLayoutService {
       // Building adjacency graph
       const adjList = [];
       graph.links.forEach(link => {
-        const source = (link.source as SankeyNode).index;
-        const target = (link.target as SankeyNode).index;
+        const source = (link._source as SankeyNode)._index;
+        const target = (link._target as SankeyNode)._index;
         if (!adjList[source]) {
           adjList[source] = [];
         }
@@ -231,24 +225,24 @@ export class SankeyLayoutService {
       }
 
       graph.links.forEach(link => {
-        const target = (link.target as SankeyNode).index;
-        const source = (link.source as SankeyNode).index;
+        const target = (link._target as SankeyNode)._index;
+        const source = (link._source as SankeyNode)._index;
         // If self-linking or a back-edge
         if (target === source || (circularLinks[source] && circularLinks[source][target])) {
-          link.circular = true;
-          link.circularLinkID = circularLinkID;
+          link._circular = true;
+          link._circularLinkID = circularLinkID;
           circularLinkID = circularLinkID + 1;
         } else {
-          link.circular = false;
+          link._circular = false;
         }
       });
     } else {
       graph.links.forEach(link => {
-        if (link.source[sortNodes] < link.target[sortNodes]) {
-          link.circular = false;
+        if (link._source[sortNodes] < link._target[sortNodes]) {
+          link._circular = false;
         } else {
-          link.circular = true;
-          link.circularLinkID = circularLinkID;
+          link._circular = true;
+          link._circularLinkID = circularLinkID;
           circularLinkID = circularLinkID + 1;
         }
       });
@@ -256,11 +250,11 @@ export class SankeyLayoutService {
   }
 
   computeNodeValues({nodes}: SankeyData) {
-    const {value} = SankeyLayoutService;
+    const {value} = this;
     for (const node of nodes) {
-      node.value = node.fixedValue === undefined
-        ? Math.max(sum(node.sourceLinks, value), sum(node.targetLinks, value))
-        : node.fixedValue;
+      node._value = node._fixedValue === undefined
+        ? Math.max(sum(node._sourceLinks, value), sum(node._targetLinks, value))
+        : node._fixedValue;
     }
   }
 
@@ -271,9 +265,9 @@ export class SankeyLayoutService {
     let x = 0;
     while (current.size) {
       for (const node of current) {
-        node.depth = x;
-        for (const {target} of node.sourceLinks) {
-          next.add(target as SankeyNode);
+        node._depth = x;
+        for (const {_target} of node._sourceLinks) {
+          next.add(_target as SankeyNode);
         }
       }
       if (++x > n) {
@@ -292,9 +286,9 @@ export class SankeyLayoutService {
     while (current.size) {
       for (const node of current) {
         // noinspection JSSuspiciousNameCombination
-        node.height = x;
-        for (const {source} of node.targetLinks) {
-          next.add(source as SankeyNode);
+        node._height = x;
+        for (const {_source} of node._targetLinks) {
+          next.add(_source as SankeyNode);
         }
       }
       if (++x > n) {
@@ -307,14 +301,14 @@ export class SankeyLayoutService {
 
   computeNodeLayers({nodes}: SankeyData) {
     const {x1, x0, dx, align} = this;
-    const x = max(nodes, d => d.depth) + 1;
+    const x = max(nodes, d => d._depth) + 1;
     const kx = (x1 - x0 - dx) / (x - 1);
     const columns = new Array(x);
     for (const node of nodes) {
       const i = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
-      node.layer = i;
-      node.x0 = x0 + i * kx;
-      node.x1 = node.x0 + dx;
+      node._layer = i;
+      node._x0 = x0 + i * kx;
+      node._x1 = node._x0 + dx;
       if (columns[i]) {
         columns[i].push(node);
       } else {
@@ -330,24 +324,24 @@ export class SankeyLayoutService {
   }
 
   initializeNodeBreadths(columns) {
-    const {y1, y0, py} = this;
-    const {value} = SankeyLayoutService;
+    const {y1, y0, py, value} = this;
+
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     for (const nodes of columns) {
       let y = y0;
       for (const node of nodes) {
-        node.y0 = y;
-        node.y1 = y + node.value * ky;
-        y = node.y1 + py;
-        for (const link of node.sourceLinks) {
-          link.width = link.value * ky;
+        node._y0 = y;
+        node._y1 = y + node._value * ky;
+        y = node._y1 + py;
+        for (const link of node._sourceLinks) {
+          link._width = link._value * ky;
         }
       }
       y = (y1 - y + py) / (nodes.length + 1);
       for (let i = 0; i < nodes.length; ++i) {
         const node = nodes[i];
-        node.y0 += y * (i + 1);
-        node.y1 += y * (i + 1);
+        node._y0 += y * (i + 1);
+        node._y1 += y * (i + 1);
       }
       this.reorderLinks(nodes);
     }
@@ -373,17 +367,17 @@ export class SankeyLayoutService {
       for (const target of column) {
         let y = 0;
         let w = 0;
-        for (const {source, value} of target.targetLinks) {
-          const v = value * (target.layer - source.layer);
-          y += this.targetTop(source, target) * v;
+        for (const {_source, _value} of target._targetLinks) {
+          const v = _value * (target._layer - _source._layer);
+          y += this.targetTop(_source, target) * v;
           w += v;
         }
         if (!(w > 0)) {
           continue;
         }
-        const dy = (y / w - target.y0) * alpha;
-        target.y0 += dy;
-        target.y1 += dy;
+        const dy = (y / w - target._y0) * alpha;
+        target._y0 += dy;
+        target._y1 += dy;
         this.reorderNodeLinks(target);
       }
       if (this.nodeSort === undefined) {
@@ -402,17 +396,17 @@ export class SankeyLayoutService {
       for (const source of column) {
         let y = 0;
         let w = 0;
-        for (const {target, value} of source.sourceLinks) {
-          const v = value * (target.layer - source.layer);
-          y += this.sourceTop(source, target) * v;
+        for (const {_target, _value} of source._sourceLinks) {
+          const v = _value * (_target._layer - source._layer);
+          y += this.sourceTop(source, _target) * v;
           w += v;
         }
         if (!(w > 0)) {
           continue;
         }
-        const dy = (y / w - source.y0) * alpha;
-        source.y0 += dy;
-        source.y1 += dy;
+        const dy = (y / w - source._y0) * alpha;
+        source._y0 += dy;
+        source._y1 += dy;
         this.reorderNodeLinks(source);
       }
       if (this.nodeSort === undefined) {
@@ -429,8 +423,8 @@ export class SankeyLayoutService {
     // tslint:disable-next-line:no-bitwise
     const i = nodes.length >> 1;
     const subject = nodes[i];
-    this.resolveCollisionsBottomToTop(nodes, subject.y0 - py, i - 1, alpha);
-    this.resolveCollisionsTopToBottom(nodes, subject.y1 + py, i + 1, alpha);
+    this.resolveCollisionsBottomToTop(nodes, subject._y0 - py, i - 1, alpha);
+    this.resolveCollisionsTopToBottom(nodes, subject._y1 + py, i + 1, alpha);
     this.resolveCollisionsBottomToTop(nodes, y1, nodes.length - 1, alpha);
     this.resolveCollisionsTopToBottom(nodes, y0, 0, alpha);
   }
@@ -440,11 +434,11 @@ export class SankeyLayoutService {
     const {py} = this;
     for (; i < nodes.length; ++i) {
       const node = nodes[i];
-      const dy = (y - node.y0) * alpha;
+      const dy = (y - node._y0) * alpha;
       if (dy > 1e-6) {
-        node.y0 += dy, node.y1 += dy;
+        node._y0 += dy, node._y1 += dy;
       }
-      y = node.y1 + py;
+      y = node._y1 + py;
     }
   }
 
@@ -453,25 +447,25 @@ export class SankeyLayoutService {
     const {py} = this;
     for (; i >= 0; --i) {
       const node = nodes[i];
-      const dy = (node.y1 - y) * alpha;
+      const dy = (node._y1 - y) * alpha;
       if (dy > 1e-6) {
-        node.y0 -= dy, node.y1 -= dy;
+        node._y0 -= dy, node._y1 -= dy;
       }
-      y = node.y0 - py;
+      y = node._y0 - py;
     }
   }
 
-  reorderNodeLinks({sourceLinks, targetLinks}) {
+  reorderNodeLinks({_sourceLinks, _targetLinks}) {
     const {
       ascendingTargetBreadth,
       ascendingSourceBreadth
     } = SankeyLayoutService;
 
-    for (const {source} of targetLinks) {
-      source.sourceLinks.sort(ascendingTargetBreadth);
+    for (const {_source} of _targetLinks) {
+      _source._sourceLinks.sort(ascendingTargetBreadth);
     }
-    for (const {target} of sourceLinks) {
-      target.targetLinks.sort(ascendingSourceBreadth);
+    for (const {_target} of _sourceLinks) {
+      _target._targetLinks.sort(ascendingSourceBreadth);
     }
   }
 
@@ -481,48 +475,48 @@ export class SankeyLayoutService {
       ascendingSourceBreadth
     } = SankeyLayoutService;
 
-    for (const {sourceLinks, targetLinks} of nodes) {
-      sourceLinks.sort(ascendingTargetBreadth);
-      targetLinks.sort(ascendingSourceBreadth);
+    for (const {_sourceLinks, _targetLinks} of nodes) {
+      _sourceLinks.sort(ascendingTargetBreadth);
+      _targetLinks.sort(ascendingSourceBreadth);
     }
   }
 
-  // Returns the target.y0 that would produce an ideal link from source to target.
+  // Returns the target._y0 that would produce an ideal link from source to target.
   targetTop(source, target) {
     const {py} = this;
-    let y = source.y0 - (source.sourceLinks.length - 1) * py / 2;
-    for (const {target: node, width} of source.sourceLinks) {
+    let y = source._y0 - (source._sourceLinks.length - 1) * py / 2;
+    for (const {_target: node, _width} of source._sourceLinks) {
       if (node === target) {
         break;
       }
-      y += width + py;
+      y += _width + py;
     }
-    for (const {source: node, width} of target.targetLinks) {
+    for (const {_source: node, _width} of target._targetLinks) {
       if (node === source) {
         break;
       }
       // noinspection JSSuspiciousNameCombination
-      y -= width;
+      y -= _width;
     }
     return y;
   }
 
-  // Returns the source.y0 that would produce an ideal link from source to target.
+  // Returns the source._y0 that would produce an ideal link from source to target.
   sourceTop(source, target) {
     const {py} = this;
-    let y = target.y0 - (target.targetLinks.length - 1) * py / 2;
-    for (const {source: node, width} of target.targetLinks) {
+    let y = target._y0 - (target._targetLinks.length - 1) * py / 2;
+    for (const {_source: node, _width} of target._targetLinks) {
       if (node === source) {
         break;
       }
-      y += width + py;
+      y += _width + py;
     }
-    for (const {target: node, width} of source.sourceLinks) {
+    for (const {_target: node, _width} of source._sourceLinks) {
       if (node === target) {
         break;
       }
       // noinspection JSSuspiciousNameCombination
-      y -= width;
+      y -= _width;
     }
     return y;
   }

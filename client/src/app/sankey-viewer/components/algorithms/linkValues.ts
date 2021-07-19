@@ -2,7 +2,12 @@ import * as d3Sankey from 'd3-sankey-circular';
 import { representativePositiveNumber } from '../utils';
 
 export const fractionOfFixedNodeValue = ({links, nodes}) => {
-  links.forEach(l => l.value = 1);
+  links.forEach(l => {
+    l.value = 1;
+    l.s = l.source;
+    l.t = l.target;
+  });
+  nodes.forEach(n => n.fixedValue = n._fixedValue);
   d3Sankey.sankeyCircular()
     .nodeId(n => n.id)
     .nodePadding(1)
@@ -11,31 +16,54 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
     .nodeWidth(10)
     ({nodes, links});
   links.forEach(l => {
-    const [sv, tv] = l.multiple_values = [
+    const [sv, tv] = l._multiple_values = [
       l.source.fixedValue / l.source.sourceLinks.length,
       l.target.fixedValue / l.target.targetLinks.length
     ];
-    l.value = (sv + tv) / 2;
+    l._value = (sv + tv) / 2;
   });
   return {
-    nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0),
-    links: links.map(
-      ({
-         value = 0.001,
-         ...link
-       }) => ({
-        ...link,
-        value
+    nodes: nodes
+      .filter(n => n.sourceLinks.length + n.targetLinks.length > 0)
+      .map(({
+              value,
+              depth,
+              index,
+              height,
+              sourceLinks,
+              targetLinks,
+              layer,
+              fixedValue,
+              x0, x1,
+              y0, y1,
+              ...node
+            }) => ({
+        ...node
       })),
+    links: links.map(({
+                        value = 0.001,
+                        y0, y1,
+                        s, t,
+                        ...link
+                      }) => ({
+      ...link,
+      _value: value,
+      source: s,
+      target: t
+    })),
     _sets: {
       link: {
-        value: true
+        _value: true
       }
     }
   };
 };
-export const inputCount = ({links, nodes, inNodes}: Partial<SankeyData>) => {
-  links.forEach(l => l.value = 1);
+export const inputCount = ({links, nodes, _inNodes}: any) => {
+  links.forEach(l => {
+    l.value = 1;
+    l.s = l.source;
+    l.t = l.target;
+  });
   d3Sankey.sankeyCircular()
     .nodeId(n => n.id)
     .nodePadding(1)
@@ -44,7 +72,7 @@ export const inputCount = ({links, nodes, inNodes}: Partial<SankeyData>) => {
     .nodeWidth(10)
     ({nodes, links});
   [...nodes].sort((a, b) => a.depth - b.depth).forEach(n => {
-    if (inNodes.includes(n.id)) {
+    if (_inNodes.includes(n.id)) {
       n.value = 1;
     } else {
       n.value = 0;
@@ -56,34 +84,53 @@ export const inputCount = ({links, nodes, inNodes}: Partial<SankeyData>) => {
     });
   });
   return {
-    nodes: nodes.filter(n => n.sourceLinks.length + n.targetLinks.length > 0),
+    nodes: nodes
+      .filter(n => n.sourceLinks.length + n.targetLinks.length > 0)
+      .map(({
+              value,
+              depth,
+              index,
+              height,
+              sourceLinks,
+              targetLinks,
+              layer,
+              x0, x1,
+              y0, y1,
+              ...node
+            }) => ({
+        ...node
+      })),
     links: links.map(({
                         value = 0.001,
+                        y0, y1,
+                        s, t,
                         ...link
                       }) => ({
       ...link,
-      value
+      _value: value,
+      source: s,
+      target: t
     })),
     _sets: {
       link: {
-        value: true
+        _value: true
       }
     }
   };
 };
 export const linkSizeByProperty = property => ({links}) => {
   links.forEach(l => {
-    l.value = representativePositiveNumber(l[property]);
+    l._value = representativePositiveNumber(l[property]);
   });
   return {
     _sets: {
       link: {
-        value: true
+        _value: true
       }
     },
     _requires: {
       link: {
-        adjacent_normalisation: true
+        _adjacent_normalisation: true
       }
     }
   };
@@ -91,20 +138,20 @@ export const linkSizeByProperty = property => ({links}) => {
 export const linkSizeByArrayProperty = property => ({links}) => {
   links.forEach(l => {
     const [v1, v2] = l[property];
-    l.multiple_values = [v1, v2].map(d => representativePositiveNumber(d));
+    l._multiple_values = [v1, v2].map(d => representativePositiveNumber(d));
     // take max for layer calculation
-    l.value = Math.max(...l.multiple_values);
+    l._value = Math.max(...l._multiple_values);
   });
   return {
     _sets: {
       link: {
-        multiple_values: true,
-        value: true
+        _multiple_values: true,
+        _value: true
       }
     },
     _requires: {
       link: {
-        adjacent_normalisation: true
+        _adjacent_normalisation: true
       }
     }
   };
