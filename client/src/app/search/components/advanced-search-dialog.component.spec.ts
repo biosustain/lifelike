@@ -1,14 +1,20 @@
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { MockComponent } from 'ng-mocks';
+
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
+import { HierarchySearchTreeComponent } from './hierarchy-search-tree.component';
 import { ContentSearchService } from '../services/content-search.service';
 
 describe('AdvancedSearchDialogComponent', () => {
@@ -21,10 +27,15 @@ describe('AdvancedSearchDialogComponent', () => {
         RootStoreModule,
         SharedModule,
         BrowserAnimationsModule,
+        RouterTestingModule
       ],
-      declarations: [ AdvancedSearchDialogComponent ],
+      declarations: [
+        AdvancedSearchDialogComponent,
+        MockComponent(HierarchySearchTreeComponent)
+      ],
       providers: [
         ContentSearchService,
+        FilesystemService,
         NgbActiveModal,
       ]
     });
