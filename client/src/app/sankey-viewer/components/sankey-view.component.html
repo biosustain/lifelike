@@ -21,12 +21,12 @@
                     <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
                 </div>
 
-                <div class="module-title-bar d-flex justify-content-between">
-                    <div class="d-flex">
-                        <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="module-title-bar mr-4">
+                        <h1 class="toolbar-title text-truncate" draggable="true">
                             {{ object?.filename }}
                         </h1>
-                        <div class="d-inline-block mr-4 flex-grow-0" container="body" ngbDropdown>
+                        <div class="d-inline-block ml-1" container="body" ngbDropdown>
                             <a (click)="$event.preventDefault()" class="dropdown-no-arrow" href="#" ngbDropdownToggle>
                                 <i class="fas fa-chevron-down fa-fw text-icon"></i>
                             </a>
@@ -101,7 +101,7 @@
                                 </button>
                             </div>
                         </div>
-                        <button class="btn btn-secondary" (click)="openNewWindow()">
+                        <button class="btn btn-secondary ml-2" (click)="openNewWindow()">
                             <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
                         </button>
                     </div>
