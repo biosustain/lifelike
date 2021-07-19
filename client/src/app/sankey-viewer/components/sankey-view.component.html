@@ -14,7 +14,12 @@
     <div [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}"
          class="position-absolute w-100 h-100 d-flex flex-column">
         <div class="module">
+
             <div class="module-header">
+                <!-- Breadcrumbs -->
+                <div class="module-breadcrumb-bar mb-1" *ngIf="object">
+                    <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
+                </div>
 
                 <div class="module-title-bar d-flex justify-content-between">
                     <div class="d-flex">
