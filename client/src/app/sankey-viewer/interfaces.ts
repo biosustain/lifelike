@@ -25,8 +25,8 @@ interface SankeyNode {
 
 interface SankeyLink {
   index?: number;
-  source?: SankeyNode | string | number;
-  target?: SankeyNode | string | number;
+  source?: string | number;
+  target?: string | number;
 
   // region Used internally to compute layout
   _source?: SankeyNode | string | number;
