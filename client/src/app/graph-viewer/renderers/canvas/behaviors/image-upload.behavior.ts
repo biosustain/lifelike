@@ -2,7 +2,7 @@ import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../beh
 import { CanvasGraphView } from '../canvas-graph-view';
 import { MapImageProviderService } from '../../../../drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from '../../../actions/nodes';
-import { makeid } from '../../../../drawing-tool/services';
+import { makeid } from '../../../../shared/utils/identifiers';
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
