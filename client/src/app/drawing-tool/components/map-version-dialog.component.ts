@@ -10,7 +10,9 @@ import { CommonFormDialogComponent } from '../../shared/components/dialog/common
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription, Observable } from 'rxjs';
-import { MapService } from '../services/map.service';
+
+// TODO: find the file, put it back
+// import { MapService } from '../services/map.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
@@ -50,7 +52,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    private readonly mapService: MapService,
+    // private readonly mapService: MapService,
     readonly ngZone: NgZone,
     readonly mapImageProviderService: MapImageProviderService,
   ) {
