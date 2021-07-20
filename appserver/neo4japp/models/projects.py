@@ -1,19 +1,20 @@
 import re
-from dataclasses import dataclass
-from typing import Dict, List
 
+from dataclasses import dataclass
+from flask import current_app
 from sqlalchemy import (
     event,
-    join,
     orm,
-    select,
     and_,
     or_,
 )
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
+from typing import Dict
 
+from neo4japp.constants import LogEventType
 from neo4japp.database import db
+from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -22,6 +23,7 @@ from neo4japp.models.auth import (
     AppUser,
 )
 from neo4japp.models.common import RDBMSBase, FullTimestampMixin, HashIdMixin
+from neo4japp.utils import EventLog
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -101,7 +103,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
         )
 
     @classmethod
-    def user_has_permission_to_projects(cls, user_id: int, projects: List[str]) -> Query:
+    def get_projects_accessible_by_user(cls, user_id: int) -> Query:
         return db.session.query(
             Projects.id
         ).join(
@@ -205,3 +207,43 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
+
+
+@event.listens_for(Projects, 'after_update')
+def project_update(mapper, connection, target: Projects):
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.database import get_elastic_service
+    from neo4japp.models.files import Files
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+
+    try:
+        elastic_service = get_elastic_service()
+        family = get_nondeleted_recycled_children_query(
+            Files.id == target.***ARANGO_USERNAME***_id,
+            children_filter=and_(
+                Files.recycling_date.is_(None)
+            ),
+            lazy_load_content=True
+        ).all()
+        files_to_update = [member.hash_id for member in family]
+
+        current_app.logger.info(
+            f'Attempting to update files in elastic with hash_ids: ' +
+            f'{files_to_update}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        # TODO: Change this to an update operation, and only update file path
+        elastic_service.index_files(files_to_update)
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise ServerException(
+            title='Failed to Update Project',
+            message='Something unexpected occurred while updating your file! Please try again ' +
+                    'later.'
+        )
+
+# TODO: Need to implment some kind of deletion handler if we ever allow deletion of projects.

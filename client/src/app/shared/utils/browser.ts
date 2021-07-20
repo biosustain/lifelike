@@ -2,7 +2,7 @@ import { escapeRegExp } from 'lodash';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
-
+import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 import { WorkspaceManager } from '../workspace-manager';
 
 export function toValidLink(url: string) {
@@ -49,7 +49,6 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
       urlObject = new URL(url, window.location.href);
     }
   }
-
   const openInternally = workspaceManager.isWithinWorkspace()
     && (window.location.hostname === urlObject.hostname
       && (window.location.port || '80') === (urlObject.port || '80'));
@@ -98,6 +97,12 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
             }
 
             return false;
+          } else if (m[1] === 'bioc') {
+            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+            const biocViewComponent = component as BiocViewComponent;
+            if (fragmentMatch && fragmentMatch[1]) {
+              (biocViewComponent).scrollInOffset(fragmentMatch[1]);
+            }
           }
           return false;
         },

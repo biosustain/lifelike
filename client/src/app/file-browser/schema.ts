@@ -5,7 +5,7 @@ import {
   Meta,
 } from '../pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
-import { PaginatedRequestOptions, ResultList } from 'app/shared/schemas/common';
+import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
@@ -95,6 +95,10 @@ export interface FilesystemObjectData {
   highlight?: string[];
   fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigurations;
+  // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
+  // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
+  trueFilename: string;
+  filePath: string;
 }
 
 interface ContentValue {
@@ -173,6 +177,13 @@ export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectConten
 export interface ObjectExportRequest {
   format: string;
   exportLinked: boolean;
+}
+
+// Responses
+// ----------------------------------------
+
+export interface FileHierarchyResponse {
+  results: TreeNode<FilesystemObjectData>[];
 }
 
 // ========================================

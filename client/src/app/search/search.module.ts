@@ -10,7 +10,8 @@ import { ContentSearchFormComponent } from './components/content-search-form.com
 import { FileRecordsComponent } from './components/file-records.component';
 import { GraphSearchComponent } from './components/graph-search.component';
 import { GraphSearchFormComponent } from './components/graph-search-form.component';
-import { RejectedSynonymsDialogComponent } from './components/rejected-synonyms-dialog.component';
+import { HierarchySearchTreeComponent } from './components/hierarchy-search-tree.component';
+import { RejectedOptionsDialogComponent } from './components/rejected-options-dialog.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
 import { SynonymSearchComponent } from './components/synonym-search.component';
@@ -25,7 +26,8 @@ const components = [
   FileRecordsComponent,
   GraphSearchComponent,
   GraphSearchFormComponent,
-  RejectedSynonymsDialogComponent,
+  HierarchySearchTreeComponent,
+  RejectedOptionsDialogComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
   SynonymSearchComponent
@@ -39,7 +41,7 @@ const components = [
   ],
   entryComponents: [
     AdvancedSearchDialogComponent,
-    RejectedSynonymsDialogComponent,
+    RejectedOptionsDialogComponent,
     SynonymSearchComponent
   ],
   declarations: components,

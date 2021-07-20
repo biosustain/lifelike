@@ -14,14 +14,19 @@
     <div [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}"
          class="position-absolute w-100 h-100 d-flex flex-column">
         <div class="module">
-            <div class="module-header">
 
-                <div class="module-title-bar d-flex justify-content-between">
-                    <div class="d-flex">
-                        <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
+            <div class="module-header">
+                <!-- Breadcrumbs -->
+                <div class="module-breadcrumb-bar mb-1" *ngIf="object">
+                    <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="module-title-bar mr-4">
+                        <h1 class="toolbar-title text-truncate" draggable="true">
                             {{ object?.filename }}
                         </h1>
-                        <div class="d-inline-block mr-4 flex-grow-0" container="body" ngbDropdown>
+                        <div class="d-inline-block ml-1" container="body" ngbDropdown>
                             <a (click)="$event.preventDefault()" class="dropdown-no-arrow" href="#" ngbDropdownToggle>
                                 <i class="fas fa-chevron-down fa-fw text-icon"></i>
                             </a>
@@ -67,7 +72,7 @@
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body" [style.whiteSpace]="'pre-line'">
                                             {{ sankeyData.graph.description }}
                                         </div>
                                     </ng-template>
@@ -84,8 +89,10 @@
                                         </div>
                                         <div class="modal-body">
                                             <pre [style.marginBottom]="0">{{ getJSONDetails(sankeyData) }}</pre>
-                                            <small>This view contains reduced object representation. Nested objects has been mapped to
-                                                their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                                            <small>This view contains reduced object representation. Nested objects has
+                                                been mapped to
+                                                their ids or indexes (if available); <s>shown arrays contains only top 3
+                                                    rows;</s>
                                                 numbers
                                                 has been
                                                 limited to 6 digits after comma.</small>
@@ -94,6 +101,9 @@
                                 </button>
                             </div>
                         </div>
+                        <button class="btn btn-secondary ml-2" (click)="openNewWindow()">
+                            <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+                        </button>
                     </div>
                     <div class="btn-group btn-group-toggle">
                         <button (click)="resetZoom()" class="btn btn-secondary" container="body"
@@ -102,12 +112,12 @@
                             <i class="fas fa-expand-arrows-alt"></i>
                         </button>
                         <button (click)="zoomIn()" class="btn btn-secondary" container="body"
-                  ngbTooltip="Zoom In" placement="bottom"
+                                ngbTooltip="Zoom In" placement="bottom"
                                 type="button">
                             <i class="fas fa-search-plus"></i>
                         </button>
                         <button (click)="zoomOut()" class="btn btn-secondary" container="body"
-                  ngbTooltip="Zoom Out" placement="bottom"
+                                ngbTooltip="Zoom Out" placement="bottom"
                                 type="button">
                             <i class="fas fa-search-minus"></i>
                         </button>
@@ -173,7 +183,6 @@
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="border-bottom border-secondary pb-3 mb-3">
-
                             <app-sankey-details-panel *ngIf="selectionWithTraces | async"
                                                       [details]="selectionWithTraces | async">
                             </app-sankey-details-panel>
@@ -195,7 +204,7 @@
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="border-bottom border-secondary pb-3 mb-3">
-                            <app-sankey-advanced-panel [(options)]="options" (optionsChange)="onOptionsChange($event)">
+                            <app-sankey-advanced-panel [(options)]="options" (optionsChange)="onOptionsChange()">
                             </app-sankey-advanced-panel>
                         </div>
                     </div>
@@ -221,7 +230,8 @@
                 </ngb-panel>
                 <ngb-panel *ngIf="!graphLink._multiple_values else multipleValues" [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Value</b>
                             {{ parseProperty(graphLink.value) }}
                         </button>
@@ -258,25 +268,9 @@
                                 <b>Group</b>
                                 {{ graphLink._trace.group }}
                             </li>
-                            <li class="list-group-item">
-                                <ng-template #content let-modal>
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Trace details</h4>
-                                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                                type="button">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body vh-75">
-                                        <app-trace-details
-                                                [data]="sankeyData"
-                                                [trace]="graphLink._trace"
-                                        >
-                                        </app-trace-details>
-                                    </div>
-                                </ng-template>
-                                <button (click)="open(content)" class="btn btn-outline-primary">Show detailed
-                                    network
+                            <li class="list-group-item" *ngIf="graphLink._trace.detail_edges">
+                                <button (click)="gotoDynamic(graphLink._trace)" class="btn btn-outline-primary">
+                                    Show detailed network
                                 </button>
                             </li>
                         </ul>
@@ -334,7 +328,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Value</b>
                             {{ parseProperty(node.value) }}
                         </button>
@@ -342,7 +337,8 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Label</b>
                             {{ parseProperty(node.label) }}
                         </button>
@@ -408,7 +404,8 @@
             <ngb-accordion ngbAccordion activeIds="source target">
                 <ngb-panel id="source">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Source</b>
                             {{ getNodeById(trace.source).id }}
                         </button>
@@ -419,7 +416,8 @@
                 </ngb-panel>
                 <ngb-panel id="target">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Target</b>
                             {{ getNodeById(trace.target).id }}
                         </button>
@@ -430,31 +428,16 @@
                 </ngb-panel>
                 <ngb-panel [disabled]="true">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between" ngbPanelToggle>
+                        <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                                ngbPanelToggle>
                             <b>Group</b>
                             {{ parseProperty(trace.group) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
-                <ngb-panel>
+                <ngb-panel *ngIf="trace.detail_edges">
                     <ng-template disabled="true" ngbPanelHeader>
-                        <ng-template #content let-modal>
-                            <div class="modal-header">
-                                <h4 class="modal-title">Trace details</h4>
-                                <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                        type="button">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body vh-75">
-                                <app-trace-details
-                                        [data]="sankeyData"
-                                        [trace]="trace"
-                                >
-                                </app-trace-details>
-                            </div>
-                        </ng-template>
-                        <button (click)="open(content)" class="btn btn-link">Show detailed
+                        <button (click)="gotoDynamic(trace)" class="btn btn-link">Show detailed
                             network
                         </button>
                     </ng-template>
