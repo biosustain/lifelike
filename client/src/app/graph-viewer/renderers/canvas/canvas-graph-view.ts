@@ -20,7 +20,6 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
-// import { nullCoalesce } from 'app/shared/utils/types';
 import { nullCoalesce } from '../../../shared/utils/types';
 import { PlacedObjectRenderTree } from './render-tree';
 
@@ -1134,14 +1133,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   canvasDragOver(event): void {
     const behaviorEvent = {
-      event,
+      // event,
+      event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
   }
 
   canvasDrop(event): void {
     const behaviorEvent = {
-      event,
+      // event,
+      event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
   }
