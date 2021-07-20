@@ -1088,20 +1088,20 @@ class FileExportView(FilesystemBaseView):
                         # Fetch linked maps and check permissions, before we start to export them
                         if map_hash not in maps_to_export:
                             maps_to_export.add(map_hash)
-                            file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
-                                                                     lazy_load_content=True)
-                            self.check_file_permissions([file], current_user, ['readable'],
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True)
+                            self.check_file_permissions([child_file], current_user, ['readable'],
                                                         permit_recycled=True)
-                            files.append(file)
+                            files.append(child_file)
         out_files = []
-        for file in files:
+        for child_file in files:
             try:
-                export = file_type.generate_export(file, params['format'])
+                export = file_type.generate_export(child_file, params['format'])
             except ExportFormatError:
                 raise ValidationError("Unknown or invalid export format for the requested file.",
                                       params["format"])
             out_files.append(io.BytesIO(export.content.getvalue()))
-        merger = LinkedMapExportProvider(params['format'])
+        merger = LinkedMapExportProvider(params['format'], file.filename)
         export = merger.merge(out_files)
         return export
 
