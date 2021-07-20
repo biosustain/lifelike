@@ -1130,49 +1130,38 @@ class FileExportView(FilesystemBaseView):
         maps_to_export = {file.hash_id}
         files = [file]
         for node in json_graph['nodes']:
-            if node['data'].get('sources') or node['data'].get('hyperlinks'):
-                data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
-                for link in data:
-                    url = link.get('url', "").lstrip()
-                    if MAPS_RE.match(url):
-                        map_hash = url.split('/')[-1]
-                        # Fetch linked maps and check permissions, before we start to export them
-                        if map_hash not in maps_to_export:
-                            maps_to_export.add(map_hash)
-                            try:
-                                child_file = self.get_nondeleted_recycled_file(
-                                    Files.hash_id == map_hash, lazy_load_content=True)
-                                self.check_file_permissions([child_file], current_user,
-                                                            ['readable'], permit_recycled=True)
-                                files.append(child_file)
-                            except RecordNotFound:
-                                current_app.logger.info(
-                                    f'Map file: {map_hash} requested for linked '
-                                    f'export does not exist.',
-                                    extra=UserEventLog(
-                                        username=current_user.username,
-                                        event_type=LogEventType.FILE_NOT_FOUND.value).to_dict()
-                                )
-
-        if len(files) > 1:
-            out_files = []
-            for child_file in files:
-                try:
-                    export = file_type.generate_export(child_file, params['format'])
-                except ExportFormatError:
-                    raise ValidationError("Unknown or invalid export "
-                                          "format for the requested file.", params["format"])
-                out_files.append(io.BytesIO(export.content.getvalue()))
-            merger = LinkedMapExportProvider(params['format'], file.filename)
-            export = merger.merge(out_files)
-        else:
+            data = (node['data'].get('sources') or []) + (node['data'].get('hyperlinks') or [])
+            for link in data:
+                url = link.get('url', "").lstrip()
+                if MAPS_RE.match(url):
+                    map_hash = url.split('/')[-1]
+                    # Fetch linked maps and check permissions, before we start to export them
+                    if map_hash not in maps_to_export:
+                        maps_to_export.add(map_hash)
+                        try:
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True)
+                            self.check_file_permissions([child_file], current_user,
+                                                        ['readable'], permit_recycled=True)
+                            files.append(child_file)
+                        except RecordNotFound:
+                            current_app.logger.info(
+                                f'Map file: {map_hash} requested for linked '
+                                f'export does not exist.',
+                                extra=UserEventLog(
+                                    username=current_user.username,
+                                    event_type=LogEventType.FILESYSTEM.value).to_dict()
+                            )
+        out_files = []
+        for child_file in files:
             try:
-                export = file_type.generate_export(file, params['format'])
+                export = file_type.generate_export(child_file, params['format'])
             except ExportFormatError:
-                raise ValidationError("Unknown or invalid export format for the requested file.",
-                                      params["format"])
-
-        return export
+                raise ValidationError("Unknown or invalid export "
+                                      "format for the requested file.", params["format"])
+            out_files.append(io.BytesIO(export.content.getvalue()))
+        merger = LinkedMapExportProvider(params['format'], file.filename)
+        return merger.merge(out_files)
 
 
 class FileBackupView(FilesystemBaseView):
