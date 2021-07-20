@@ -1,0 +1,24 @@
+<app-vis-js-network
+        [config]="config"
+        [data]="data"
+        [legend]="legend"
+>
+    <ng-template #selection let-nodes="nodes" let-edges="edges">
+        <ng-container *ngIf="nodes?.length">
+            Nodes:
+            <ul>
+                <li *ngFor="let node of nodes">
+                    <pre>{{ getJSONDetails(node) }}</pre>
+                </li>
+            </ul>
+        </ng-container>
+        <ng-container *ngIf="edges?.length">
+            Edges:
+            <ul>
+                <li *ngFor="let edge of edges">
+                    <pre>{{ getJSONDetails(edge) }}</pre>
+                </li>
+            </ul>
+        </ng-container>
+    </ng-template>
+</app-vis-js-network>
