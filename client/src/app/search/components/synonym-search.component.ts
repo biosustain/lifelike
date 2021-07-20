@@ -6,7 +6,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { isNullOrUndefined } from 'util';
 
-import { KG_VIZ_FILTER_TYPES, ORGANISM_SHORTLIST } from 'app/shared/constants';
+import { ENTITY_TYPES, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { ORGANISM_SHORTLIST } from 'app/shared/constants';
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContentSearchService } from '../services/content-search.service';
@@ -23,7 +24,7 @@ export class SynonymSearchComponent {
   synonymData: SynonymData[];
   entityChecklistSelection = new SelectionModel<SynonymData>(true /* multiple */);
 
-  typeFilters = KG_VIZ_FILTER_TYPES.filter(type => type !== 'Protein');
+  typeFilters = ENTITY_TYPES.map(entity => entity.name);
   selectedTypeFilters: string[] = [];
   organismFilters = Array.from(ORGANISM_SHORTLIST.keys());
   selectedOrganismFilters: string[] = [];
@@ -68,7 +69,7 @@ export class SynonymSearchComponent {
     this.contentSearchService.getSynoynms(
       this.form.value.q,
       this.selectedOrganismFilters.map((organism) => ORGANISM_SHORTLIST.get(organism)),
-      this.selectedTypeFilters,
+      this.selectedTypeFilters.map((type: string) => ENTITY_TYPE_MAP[type].name.split(' ').join('')),
       this.page,
       this.SYNONYM_SEARCH_LIMIT
     ).subscribe(
