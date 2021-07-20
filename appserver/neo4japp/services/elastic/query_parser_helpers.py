@@ -14,21 +14,30 @@ class BoolOperand:
     def to_dict(self):
         wildcard_regex = r'^\S*(\?|\*)\S*$'
         file_type_regex = r'^\btype:\S*$'
+        term_is_phrase = self.term[0] == '"' and self.term[-1] == '"' and len(self.term) >= 3
+        normalized_term = self.term[1:-1] if term_is_phrase else self.term
 
         # Check if the operand is a wildcard, and use the corresponding query...
-        if re.match(wildcard_regex, self.term):
+        if re.match(wildcard_regex, normalized_term) and not term_is_phrase:
             return {
-                'wildcard': {
-                    field: {
-                        'value': self.term,
-                        'boost': self.text_field_boosts[field],
-                        'case_insensitive': True
-                    } for field in self.text_fields
+                'bool': {
+                    'should': [
+                        {
+                            'wildcard': {
+                                field: {
+                                    'value': normalized_term,
+                                    'boost': self.text_field_boosts[field],
+                                    'case_insensitive': True
+                                }
+                            }
+                        }
+                        for field in self.text_fields
+                    ]
                 }
             }
         # ...otherwise, check if it is a filter, and use the corresponding query...
-        elif re.match(file_type_regex, self.term):
-            file_type_to_match = self.term.split(':')[1]
+        elif re.match(file_type_regex, normalized_term) and not term_is_phrase:
+            file_type_to_match = normalized_term.split(':')[1]
             file_type_service = get_file_type_service()
             shorthand_to_mime_type_map = file_type_service.get_shorthand_to_mime_type_map()
             # TODO: Probably want to log if the given type is unknown, and report to the user that
@@ -45,7 +54,7 @@ class BoolOperand:
         else:
             multi_match_query = {
                 'multi_match': {
-                    'query': self.term,  # type:ignore
+                    'query': normalized_term,  # type:ignore
                     'type': 'phrase',  # type:ignore
                     'fields': [
                         f'{field}^{self.text_field_boosts[field]}'
@@ -56,12 +65,12 @@ class BoolOperand:
 
             # If the term is not a phrase, and it contains punctuation, then add exact term matches
             # for each search field
-            if ' ' not in self.term and any([c in string.punctuation for c in self.term]):
+            if ' ' not in normalized_term and any([c in string.punctuation for c in normalized_term]):
                 term_queries = [
                     {
                         'term': {
                             field: {
-                                'value': self.term,
+                                'value': normalized_term,
                                 'boost': self.text_field_boosts[field]
                             }
                         }
