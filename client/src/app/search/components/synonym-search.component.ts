@@ -4,6 +4,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { isNullOrUndefined } from 'util';
+
 import { KG_VIZ_FILTER_TYPES, ORGANISM_SHORTLIST } from 'app/shared/constants';
 import { uuidv4 } from 'app/shared/utils';
 
@@ -87,17 +89,19 @@ export class SynonymSearchComponent {
   }
 
   submit() {
-    const synonymsToAdd = new Set<string>();
-    this.synonymData.forEach(entity => {
+    const expressionsToAdd = this.synonymData.map(entity => {
       if (this.entityChecklistSelection.isSelected(entity)) {
         const regex = /\W+/g;
-        entity.synonyms.forEach((synonym: string) => {
-          const synonymHasNonWordChars = synonym.match(regex);
-          synonymsToAdd.add((synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase()));
-        });
+        const synonyms = entity.synonyms
+          .map((synonym: string) => {
+            const synonymHasNonWordChars = synonym.match(regex);
+            return synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase();
+          })
+          .join(' or ');
+        return isNullOrUndefined(entity.organism) ? `(${synonyms})` : `((${synonyms}) and "${entity.organism}")`;
       }
     });
-    this.modal.close(Array.from(synonymsToAdd));
+    this.modal.close(expressionsToAdd);
   }
 
   toggleEntitySelection(entity: SynonymData) {
