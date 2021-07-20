@@ -3,6 +3,7 @@ import { Options } from 'vis-network';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
+import { parseForRendering } from '../../sankey-viewer/components/utils';
 
 @Component({
   selector: 'app-trace-details',
@@ -31,7 +32,14 @@ export class TraceDetailsComponent implements OnChanges {
       }
     },
     nodes: {
-      shape: 'dot'
+      shape: 'dot',
+      widthConstraint: {
+        maximum: 60
+      },
+      chosen: true
+    },
+    interaction: {
+      // hover: true
     }
   };
 
@@ -48,5 +56,9 @@ export class TraceDetailsComponent implements OnChanges {
         return o;
       }, new Map([['source / target', ['transparent', 'black']]]));
     }
+  }
+
+  getJSONDetails(details) {
+    return JSON.stringify(details, (k, p) => parseForRendering(p, k), 1);
   }
 }
