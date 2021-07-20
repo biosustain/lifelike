@@ -18,7 +18,7 @@ from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, cont
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
-from constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
