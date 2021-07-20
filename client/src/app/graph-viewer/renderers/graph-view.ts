@@ -753,6 +753,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   private colaTicked(): void {
     // TODO: Turn off caching temporarily instead or do something else
     this.invalidateAll();
+    this.requestRender();
   }
 
   /**
