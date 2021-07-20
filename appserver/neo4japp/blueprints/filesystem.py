@@ -8,7 +8,7 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
-from flask import Blueprint, jsonify, g, request, make_response
+from flask import Blueprint, jsonify, g, request, make_response, current_app
 from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
@@ -18,7 +18,7 @@ from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, cont
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
-from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE, LogEventType
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
@@ -62,6 +62,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTyp
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.service import GenericFileTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -1087,11 +1088,21 @@ class FileExportView(FilesystemBaseView):
                         # Fetch linked maps and check permissions, before we start to export them
                         if map_hash not in maps_to_export:
                             maps_to_export.add(map_hash)
-                            child_file = self.get_nondeleted_recycled_file(
-                                Files.hash_id == map_hash, lazy_load_content=True)
-                            self.check_file_permissions([child_file], current_user, ['readable'],
-                                                        permit_recycled=True)
-                            files.append(child_file)
+                            try:
+                                child_file = self.get_nondeleted_recycled_file(
+                                    Files.hash_id == map_hash, lazy_load_content=True)
+                                self.check_file_permissions([child_file], current_user,
+                                                            ['readable'], permit_recycled=True)
+                                files.append(child_file)
+                            except RecordNotFound:
+                                current_app.logger.info(
+                                    f'Map file: {map_hash} requested for linked '
+                                    f'export does not exist.',
+                                    extra=UserEventLog(
+                                        username=current_user.username,
+                                        event_type=LogEventType.FILE_NOT_FOUND.value).to_dict()
+                                )
+
         if len(files) > 1:
             out_files = []
             for child_file in files:
