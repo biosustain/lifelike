@@ -28,7 +28,7 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: 'Documents'}),
+      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: 'BioCyc'}),
     ];
   }
 
