@@ -1,6 +1,10 @@
 import * as d3Sankey from 'd3-sankey';
+import { TruncatePipe } from '../../../shared/pipes';
 
 export class AttributeAccessors {
+  constructor(readonly truncatePipe: TruncatePipe) {
+  }
+
   static labelEllipsis = 10;
 
   get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
@@ -12,8 +16,8 @@ export class AttributeAccessors {
   }
 
   get nodeLabelShort() {
-    const {nodeLabel} = this;
-    return n => nodeLabel(n).slice(0, AttributeAccessors.labelEllipsis);
+    const {nodeLabel, truncatePipe: { transform }} = this;
+    return n => transform(nodeLabel(n), AttributeAccessors.labelEllipsis);
   }
 
   get nodeLabelShouldBeShorted() {
