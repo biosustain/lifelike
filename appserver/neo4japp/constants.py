@@ -58,6 +58,7 @@ class LogEventType(Enum):
     ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
     FILE_NOT_FOUND = 'file_not_found'
+    FILESYSTEM = 'filesystem'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
     RESET_PASSWORD = 'reset_password'

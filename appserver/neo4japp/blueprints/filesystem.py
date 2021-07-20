@@ -8,7 +8,7 @@ import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
-from flask import Blueprint, jsonify, g, request, make_response, current_app
+from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
