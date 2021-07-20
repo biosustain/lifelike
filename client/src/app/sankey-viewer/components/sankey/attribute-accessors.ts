@@ -2,11 +2,6 @@ import * as d3Sankey from 'd3-sankey';
 import { TruncatePipe } from '../../../shared/pipes';
 
 export class AttributeAccessors {
-  constructor(readonly truncatePipe: TruncatePipe) {
-  }
-
-  static labelEllipsis = 10;
-
   get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
     return ({id}) => id;
   }
@@ -48,4 +43,8 @@ export class AttributeAccessors {
   get circular() {
     return ({_circular}) => _circular;
   }
+
+  static labelEllipsis = 10;
+  // inheritance in angular makes it hard to use DI
+  readonly truncatePipe = new TruncatePipe();
 }
