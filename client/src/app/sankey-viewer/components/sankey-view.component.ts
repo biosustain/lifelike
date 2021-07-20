@@ -199,7 +199,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         nodes: mainNodes
       },
       sankeyLayout: {
-        nodeLabel
+        nodeLabel,
+        nodeLabelShort
       }
     } = this;
 
@@ -225,11 +226,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
+        const {_sourceLinks, _targetLinks, ...otherProperties} = node;
         return {
-          id: node.id,
+          ...otherProperties,
           color: '' + color,
           databaseLabel: node.type,
-          label
+          label: nodeLabelShort(node),
+          title: label
         };
       } else {
         console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
