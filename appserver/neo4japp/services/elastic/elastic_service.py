@@ -111,78 +111,67 @@ class ElasticService(ElasticConnection, GraphConnection):
             self.update_or_create_index(index_id, index_mapping_file)
         return 'done'
 
-    def parallel_bulk_documents(self, documents):
-        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
-        # `raise_on_exception` set to False so that we don't error out if one of the documents
-        # fails to index
-        results = parallel_bulk(
-            self.elastic_client,
-            documents,
-            raise_on_error=False,
-            raise_on_exception=False
+    def reindex_all_documents(self):
+        self.index_files()
+
+    def update_files(self, hash_ids: List[str] = None):
+        raise NotImplementedError()
+
+    def delete_files(self, hash_ids: List[str]):
+        self._streaming_bulk_documents([
+            self._get_delete_obj(hash_id, FILE_INDEX_ID)
+            for hash_id in hash_ids
+        ])
+        self.elastic_client.indices.refresh(FILE_INDEX_ID)
+
+    def index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+        """
+        Adds the files with the given ids to Elastic. If no IDs are given,
+        all non-deleted files will be indexed.
+        :param ids: a list of file table IDs (integers)
+        :param batch_size: number of documents to index per batch
+        """
+        filters = [
+            Files.deletion_date.is_(None),
+            Files.recycling_date.is_(None),
+        ]
+
+        if hash_ids is not None:
+            filters.append(Files.hash_id.in_(hash_ids))
+
+        # Gets the file/project pairs -- plus _all_ parents -- for the given file ids
+        query = self._get_file_hierarchy_query(
+            and_(*filters)
         )
 
-        for success, info in results:
-            # TODO: Evaluate the data egress size. When seeding the staging database
-            # locally, this could output ~1gb of data. Question: Should we conditionally
-            # turn this off?
-            if success:
-                current_app.logger.info(
-                    f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-            else:
-                current_app.logger.warning(
-                    f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-                )
+        # Removes any unnecessary parent rows, we only need to index what was given in hash_ids,
+        # if anything
+        if hash_ids is not None:
+            query = query.filter(
+                Files.hash_id.in_(hash_ids)
+            )
 
-    def streaming_bulk_documents(self, documents):
-        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
-        # `raise_on_exception` set to False so that we don't error out if one of the documents
-        # fails to index
-        results = streaming_bulk(
-            client=self.elastic_client,
-            actions=documents,
-            max_retries=5,
-            raise_on_error=False,
-            raise_on_exception=False
+        # Just return Files and Projects data, we don't care about any other columns
+        query = query.with_entities(Files, Projects)
+
+        self._streaming_bulk_documents(
+            self._lazy_create_index_docs_for_streaming_bulk(
+                self._windowed_query(query, Files.hash_id, batch_size)
+            )
         )
 
-        for success, info in results:
-            # TODO: Evaluate the data egress size. When seeding the staging database
-            # locally, this could output ~1gb of data. Question: Should we conditionally
-            # turn this off?
-            if success:
-                current_app.logger.info(
-                    f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-            else:
-                current_app.logger.warning(
-                    f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-                )
-
-    def delete_documents(self, document_ids: List[str], index_id: str):
+    def _get_file_hierarchy_query(self, filter):
         """
-        Deletes all documents with the given file hash IDs from Elastic.
+        Generate the query to get files that will be indexed.
+        :param filter: SQL Alchemy filter
+        :return: the query
         """
-        self.streaming_bulk_documents(({
-            '_op_type': 'delete',
-            '_index': index_id,
-            '_id': document_id
-        } for document_id in document_ids))
-        self.elastic_client.indices.refresh(index_id)
+        return build_file_hierarchy_query(filter, Projects, Files) \
+            .options(raiseload('*'),
+                     joinedload(Files.user),
+                     joinedload(Files.content))
 
-    def index_or_delete_files(self, hash_ids: List[str]):
-        self._delete_files(hash_ids)
-        self._index_files(hash_ids)
-
-    def _delete_files(self, hash_ids: List[str]):
-        self.delete_documents(hash_ids, FILE_INDEX_ID)
-
-    def windowed_query(self, q, column, windowsize):
+    def _windowed_query(self, q, column, windowsize):
         """"Break a Query into chunks on a given column."""
 
         single_entity = q.is_single_entity
@@ -203,66 +192,77 @@ class ElasticService(ElasticConnection, GraphConnection):
                 else:
                     yield row[0:-1]
 
-    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
         """
-        Adds the files with the given ids to Elastic. If no IDs are given,
-        all non-deleted files will be indexed.
-        :param ids: a list of file table IDs (integers)
-        :param batch_size: number of documents to index per batch
+        Get the file's contents in a format that can be indexed by Elastic, or is
+        better indexed by Elatic.
+        :param file: the file
+        :return: the bytes to send to Elastic
         """
-        filters = [
-            Files.deletion_date.is_(None),
-            Files.recycling_date.is_(None),
-        ]
+        if file.content:
+            content = file.content.raw_file
+            file_type_service = get_file_type_service()
+            return file_type_service.get(file).to_indexable_content(BytesIO(content))
+        else:
+            return BytesIO()
 
-        if hash_ids is not None:
-            filters.append(Files.hash_id.in_(hash_ids))
-
-        query = self._get_file_hierarchy_query(and_(*filters))
-        self.streaming_bulk_documents(
-            self._lazy_create_es_docs_for_streaming_bulk(
-                self.windowed_query(query, Files.hash_id, batch_size)
-            )
-        )
-
-    def _lazy_create_es_docs_for_parallel_bulk(self, batch):
+    def _lazy_create_index_docs_for_parallel_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
-        :param batch: results from the 'query.yield_per'
+        :param batch: iterable of file/project pairs
         :return: indexable object in generator form
         """
 
         # Preserve context that is lost from threading when used
         # with the elasticsearch parallel_bulk
         with app.app_context():
-            for file, _, _, project, *_ in batch:
-                yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+            for file, project in batch:
+                yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-    def _lazy_create_es_docs_for_streaming_bulk(self, windowed_query):
+    def _lazy_create_index_docs_for_streaming_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
-        :param windowed_query: results from 'windowed_query(query, Files.hash_id, batch_size)'
+        :param batch: iterable of file/project pairs
         :return: indexable object in generator form
         """
-        for file, _, _, project, *_ in windowed_query:
-            yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+        for file, project in batch:
+            yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-    def _get_file_hierarchy_query(self, filter):
-        """
-        Generate the query to get files that will be indexed.
-        :param filter: SQL Alchemy filter
-        :return: the query
-        """
-        return build_file_hierarchy_query(filter, Projects, Files) \
-            .options(raiseload('*'),
-                     joinedload(Files.user),
-                     joinedload(Files.content))
+    def _get_update_action_obj(self, file_hash_id: str, index_id: str, changes: dict = {}) -> dict:
+        # 'filename': file.filename,
+        # 'description': file.description,
+        # 'uploaded_date': file.creation_date,
+        # 'data': base64.b64encode(indexable_content).decode('utf-8'),
+        # 'user_id': file.user_id,
+        # 'username': file.user.username,
+        # 'project_id': project.id,
+        # 'project_hash_id': project.hash_id,
+        # 'project_name': project.name,
+        # 'doi': file.doi,
+        # 'public': file.public,
+        # 'id': file.id,
+        # 'hash_id': file.hash_id,
+        # 'mime_type': file.mime_type,
+        # 'data_ok': data_ok,
+        return {
+            '_op_type': 'update',
+            '_index': index_id,
+            '_id': file_hash_id,
+            'doc': changes,
+        }
 
-    def _get_elastic_document(self, file: Files, project: Projects, index_id) -> dict:
+    def _get_delete_obj(self, file_hash_id: str, index_id: str) -> dict:
+        return {
+            '_op_type': 'delete',
+            '_index': index_id,
+            '_id': file_hash_id
+        }
+
+    def _get_index_obj(self, file: Files, project: Projects, index_id) -> dict:
         """
-        Generate the Elastic document sent to Elastic for the given file.
+        Generate an index operation object from the given file and project
         :param file: the file
         :param project: the project that file is within
         :param index_id: the index
@@ -293,6 +293,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_id': file.hash_id,
             '_source': {
                 'filename': file.filename,
+                'file_path': file.filename_path,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
                 'data': base64.b64encode(indexable_content).decode('utf-8'),
@@ -310,22 +311,64 @@ class ElasticService(ElasticConnection, GraphConnection):
             }
         }
 
-    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
+    def _parallel_bulk_documents(self, documents):
         """
-        Get the file's contents in a format that can be indexed by Elastic, or is
-        better indexed by Elatic.
-        :param file: the file
-        :return: the bytes to send to Elastic
+        Performs a series of bulk operations in elastic, determined by the `documents` input.
+        These operations are executed in parallel, on 4 threads by default.
         """
-        if file.content:
-            content = file.content.raw_file
-            file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(BytesIO(content))
-        else:
-            return BytesIO()
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = parallel_bulk(
+            self.elastic_client,
+            documents,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
 
-    def reindex_all_documents(self):
-        self._index_files()
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
+
+    def _streaming_bulk_documents(self, documents):
+        """
+        Performs a series of bulk operations in elastic, determined by the `documents` input.
+        These operations are done in series.
+        """
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = streaming_bulk(
+            client=self.elastic_client,
+            actions=documents,
+            max_retries=5,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
+
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
 
     # End indexing methods
 
@@ -526,6 +569,8 @@ class ElasticService(ElasticConnection, GraphConnection):
         search_term = search_term.strip()
 
         if search_term == '':
+            # Even if the search_term is empty, we may still want to get results. E.g. if a user
+            # is looking only for _all_ map content in a specific folder.
             return {
                 'query': {
                     'bool': {
@@ -534,8 +579,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                         ],
                     }
                 },
-                'highlight': highlight
-            }, [], {}
+                'fields': fields,
+                'highlight': highlight,
+                # Set `_source` to False so we only return the properties specified in `fields`
+                '_source': False,
+            }, []
 
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
 
