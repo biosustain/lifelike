@@ -650,9 +650,12 @@ class LinkedMapExportProvider:
                                   requested_format)
 
     def merge(self, files):
-
+        if len(files) > 1:
+            content = self.merger(files)
+        else:
+            content = files[0]
         return FileExport(
-            content=self.merger(files),
+            content=content,
             mime_type=extension_mime_types[self.ext],
             filename=f"{self.filename}{self.ext}"
         )
