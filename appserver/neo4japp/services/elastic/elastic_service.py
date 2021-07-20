@@ -483,7 +483,7 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         See the helper classes in `query_parser_helpers.py` for the object structure.
         """
-        boolOperand = QuotedString('"') | Word(printables, excludeChars='()')
+        boolOperand = QuotedString('"', unquoteResults=False) | Word(printables, excludeChars='()')
         boolOperand.setParseAction(
             lambda token: BoolOperand(
                 token,
