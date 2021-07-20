@@ -638,8 +638,9 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
 
 class LinkedMapExportProvider:
-    def __init__(self, requested_format):
+    def __init__(self, requested_format, filename):
         self.ext = f".{requested_format}"
+        self.filename = filename
         if requested_format == 'png':
             self.merger = self.merge_pngs_vertically
         elif requested_format == 'pdf':
@@ -653,7 +654,7 @@ class LinkedMapExportProvider:
         return FileExport(
             content=self.merger(files),
             mime_type=extension_mime_types[self.ext],
-            filename=f"{files[0].filename}{self.ext}"
+            filename=f"{self.filename}{self.ext}"
         )
 
     def merge_pngs_vertically(self, files):
