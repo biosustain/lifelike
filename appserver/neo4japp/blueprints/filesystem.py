@@ -17,9 +17,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
-from PyPDF2 import PdfFileMerger
-from PIL import Image
 
+from constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
@@ -57,9 +56,9 @@ from neo4japp.schemas.filesystem import (
     FileLockDeleteRequest,
     FileLockListResponse
 )
-from neo4japp.services.file_types.exports import ExportFormatError, FileExport
+from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider, \
-    extension_mime_types
+     LinkedMapExportProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
@@ -1041,14 +1040,11 @@ class FileContentView(FilesystemBaseView):
 class FileExportView(FilesystemBaseView):
     decorators = [auth.login_required]
     # Move that to constants if accepted
-    maps_re = re.compile('^/projects/[a-zA-Z0-9]+/maps/.+$')
 
     @use_args(FileExportRequestSchema)
     def post(self, params: dict, hash_id: str):
         """Export a file."""
         current_user = g.current_user
-
-        print(params)
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
@@ -1056,8 +1052,7 @@ class FileExportView(FilesystemBaseView):
         file_type_service = get_file_type_service()
         file_type = file_type_service.get(file)
 
-        # Should I check the format here?
-        if params['export_linked'] and params['format'] in ['pdf', 'png']:
+        if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
             export = self.export_multiple_maps(params, file_type, file)
 
         else:
@@ -1088,8 +1083,9 @@ class FileExportView(FilesystemBaseView):
                 data = node['data'].get('sources') or [] + node['data'].get('hyperlinks') or []
                 for link in data:
                     url = link.get('url', "").lstrip()
-                    if self.maps_re.match(url):
+                    if MAPS_RE.match(url):
                         map_hash = url.split('/')[-1]
+                        # Fetch linked maps and check permissions, before we start to export them
                         if map_hash not in maps_to_export:
                             maps_to_export.add(map_hash)
                             file = self.get_nondeleted_recycled_file(Files.hash_id == map_hash,
@@ -1106,55 +1102,8 @@ class FileExportView(FilesystemBaseView):
                                       params["format"])
             out_files.append(io.BytesIO(export.content.getvalue()))
         merger = LinkedMapExportProvider(params['format'])
-        final_bytes = merger.merge(out_files)
-        ext = f".{params['format']}"
-        return FileExport(
-            content=final_bytes,
-            mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
-        )
-
-
-class LinkedMapExportProvider():
-    def __init__(self, format):
-
-        if format == 'png':
-            self.merger = self.merge_pngs_vertically
-        elif format == 'pdf':
-            self.merger = self.merge_pdfs
-        else:
-            raise ValidationError("Unknown or invalid export format for the requested file.",
-                                  format)
-
-    def merge(self, files):
-        return self.merger(files)
-
-    def merge_pngs_vertically(self, files):
-        final_bytes = io.BytesIO()
-        images = [Image.open(x) for x in files]
-        cropped_images = [image.crop(image.getbbox()) for image in images]
-        widths, heights = zip(*(i.size for i in cropped_images))
-
-        max_width = max(widths)
-        total_height = sum(heights)
-
-        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
-        y_offset = 0
-
-        for im in cropped_images:
-            x_offset = int((max_width - im.size[0]) / 2)
-            new_im.paste(im, (x_offset, y_offset))
-            y_offset += im.size[1]
-        new_im.save(final_bytes, format='PNG')
-        return final_bytes
-
-    def merge_pdfs(self, files):
-        final_bytes = io.BytesIO()
-        merger = PdfFileMerger(strict=False)
-        for out_file in files:
-            merger.append(out_file)
-        merger.write(final_bytes)
-        return final_bytes
+        export = merger.merge(out_files)
+        return export
 
 
 class FileBackupView(FilesystemBaseView):

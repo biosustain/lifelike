@@ -1,5 +1,6 @@
 import os
 import codecs
+import re
 import string
 
 from datetime import timezone
@@ -366,3 +367,7 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+
+# Start constants for export of merged maps
+SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png']
+MAPS_RE = re.compile('^/projects/[a-zA-Z0-9]+/maps/.+$')
