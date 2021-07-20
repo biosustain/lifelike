@@ -10,7 +10,8 @@
         <option *ngFor="let exporter of exporters; let i = index" [value]="i">{{ exporter.name }}</option>
       </select>
     </app-form-row>
-    <app-form-row [control]="form.get('exportLinked')" [hidden]="!isLinkedExportSupported()">
+    <app-form-row [control]="form.get('exportLinked')" [hidden]="!isLinkedExportSupported()"
+                  (click)="form.get('exportLinked').setValue(!form.get('exportLinked').value)">
       <mat-checkbox formControlName="exportLinked" id="exportLinked"
                     [appFormInput]="form.get('bundledExport')" ngbTooltip="If the map contains any links to other maps,
 those would be exported as consecutive pages of the PDF or appended vertically to the PNG image." placement="bottom">
