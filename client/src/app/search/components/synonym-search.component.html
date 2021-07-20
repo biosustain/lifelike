@@ -127,7 +127,7 @@
             </th>
             <td class="col-1">{{ entity.type }}</td>
             <td class="col-3">{{ entity.name }}</td>
-            <td class="col-2">{{entity.organism }}</td>
+            <td class="col-2">{{ entity.organism }}</td>
             <td class="col-3">
               <div *ngFor="let a of entity.synonyms; let j = index" class="mr-2" style="display: inline-block;">
                 {{a + (j < entity.synonyms.length - 1 ? ';' : '')}}
