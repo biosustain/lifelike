@@ -1054,7 +1054,6 @@ class FileExportView(FilesystemBaseView):
 
         if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
             export = self.export_multiple_maps(params, file_type, file)
-
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
@@ -1093,16 +1092,24 @@ class FileExportView(FilesystemBaseView):
                             self.check_file_permissions([child_file], current_user, ['readable'],
                                                         permit_recycled=True)
                             files.append(child_file)
-        out_files = []
-        for child_file in files:
+        if len(files) > 1:
+            out_files = []
+            for child_file in files:
+                try:
+                    export = file_type.generate_export(child_file, params['format'])
+                except ExportFormatError:
+                    raise ValidationError("Unknown or invalid export "
+                                          "format for the requested file.", params["format"])
+                out_files.append(io.BytesIO(export.content.getvalue()))
+            merger = LinkedMapExportProvider(params['format'], file.filename)
+            export = merger.merge(out_files)
+        else:
             try:
-                export = file_type.generate_export(child_file, params['format'])
+                export = file_type.generate_export(file, params['format'])
             except ExportFormatError:
                 raise ValidationError("Unknown or invalid export format for the requested file.",
                                       params["format"])
-            out_files.append(io.BytesIO(export.content.getvalue()))
-        merger = LinkedMapExportProvider(params['format'], file.filename)
-        export = merger.merge(out_files)
+
         return export
 
 
