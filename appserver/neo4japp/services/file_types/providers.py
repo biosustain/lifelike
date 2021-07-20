@@ -13,9 +13,10 @@ from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON a
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
+from marshmallow import ValidationError
+from PyPDF2 import PdfFileMerger
+from PIL import Image
 
-import neo4japp.utils.string
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -634,3 +635,50 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def handle_content_update(self, file: Files):
         file.enrichment_annotations = None
+
+
+class LinkedMapExportProvider:
+    def __init__(self, requested_format):
+        self.ext = f".{requested_format}"
+        if requested_format == 'png':
+            self.merger = self.merge_pngs_vertically
+        elif requested_format == 'pdf':
+            self.merger = self.merge_pdfs
+        else:
+            raise ValidationError("Unknown or invalid export format for the requested file.",
+                                  requested_format)
+
+    def merge(self, files):
+
+        return FileExport(
+            content=self.merger(files),
+            mime_type=extension_mime_types[self.ext],
+            filename=f"{files[0].filename}{self.ext}"
+        )
+
+    def merge_pngs_vertically(self, files):
+        final_bytes = io.BytesIO()
+        images = [Image.open(x) for x in files]
+        cropped_images = [image.crop(image.getbbox()) for image in images]
+        widths, heights = zip(*(i.size for i in cropped_images))
+
+        max_width = max(widths)
+        total_height = sum(heights)
+
+        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
+        y_offset = 0
+
+        for im in cropped_images:
+            x_offset = int((max_width - im.size[0]) / 2)
+            new_im.paste(im, (x_offset, y_offset))
+            y_offset += im.size[1]
+        new_im.save(final_bytes, format='PNG')
+        return final_bytes
+
+    def merge_pdfs(self, files):
+        final_bytes = io.BytesIO()
+        merger = PdfFileMerger(strict=False)
+        for out_file in files:
+            merger.append(out_file)
+        merger.write(final_bytes)
+        return final_bytes
