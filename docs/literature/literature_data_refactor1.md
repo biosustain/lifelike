@@ -71,3 +71,58 @@ drop index on :Synonym(name);
 
 create constraint constraint_synonym_name on (n:Synonym) assert n.name is unique;
 ```
+
+## Additional fix
+Add entry1_type and entry2_type in association nodes
+```
+call apoc.periodic.iterate(
+    "match(n:db_Literature:Association)-[:HAS_TYPE]-(t) where not t.name in ['B', 'J'] with n, apoc.text.split(t.direction, '-')  as entryTypes return n, entryTypes[0] as entry1_type, entryTypes[1] as entry2_type",
+    "set n.entry1_type = entry1_type, n.entry2_type = entry2_type",
+    {batchSize: 10000}
+)
+```
+Association type B has relationships for chemical-gene or gene-gene;   
+```
+call apoc.periodic.iterate(
+"match(t:AssociationType {name:'B'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids 
+with n, case
+when ids[0] starts with 'CHEBI' then 'chemical'
+when ids[0] starts with 'MESH' then 'chemical'
+else 'gene' end as entry1_type
+return n, entry1_type, 'gene' as entry2_type",
+"set n.entry1_type = entry1_type, n.entry2_type = entry2_type",
+{batchSize:10000}
+)
+```
+
+Association type J has relationships for chemical-disease or gene-disease
+```
+call apoc.periodic.iterate(
+"match(t:AssociationType {name:'J'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids 
+with n, case
+when ids[0] starts with 'CHEBI' then 'chemical'
+when ids[0] starts with 'MESH' then 'chemical'
+else 'disease' end as entry1_type
+return n, entry1_type, 'gene' as entry2_type",
+"set n.entry1_type = entry1_type, n.entry2_type = entry2_type",
+{batchSize:10000}
+)
+```
+
+### Change relationship PREDICTS to INDICATES
+```
+call apoc.periodic.iterate(
+"match(n:Snippet)-[r:PREDICTS]->(n2) return n, n2, r",
+"create (n)-[r2:INDICATES]->(n2) 
+set r2.entry1_text = r.entry1_text, r2.entry2_text=r.entry2_text, 
+r2.path=r.path, r2.raw_score=r.raw_score, r2.normalized_score=r.normalized_score",
+{batchSize:5000}
+);
+
+call apoc.periodic.iterate(
+    "match(n:Snippet)-[r:PREDICTS]->() return r",
+    "delete r",
+    {batchSize: 5000}
+);
+
+```
