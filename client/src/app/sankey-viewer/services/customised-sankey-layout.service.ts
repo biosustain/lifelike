@@ -188,10 +188,11 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         value,
         enabled
       },
-      nodeLabel
+      nodeLabel,
+      truncatePipe: { transform }
     } = this;
     if (enabled) {
-      return n => nodeLabel(n).slice(0, value);
+      return n => transform(nodeLabel(n), value);
     } else {
       return n => nodeLabel(n);
     }
