@@ -70,7 +70,8 @@ export const ORGANISM_SHORTLIST = new Map<string, string>([
   ['Saccharomyces cerevisiae S288C',	'559292'],
   ['Pseudomonas aeruginosa PAO1',	'208964'],
   ['Clostridium difficile	Strain 630',	'272563'],
-  ['Staphylococcus aureus USA300',	'367830']
+  ['Staphylococcus aureus USA300',	'367830'],
+  ['Homo sapiens', '9606']
 ]);
 
 export const KG_VIZ_FILTER_TYPES = [
