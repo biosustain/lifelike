@@ -19,7 +19,6 @@ import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-// <<<<<<< HEAD
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -32,30 +31,12 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-// import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { SelectableEntityBehavior } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
-// import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
-// <<<<<<<
-
-// >>>>>>>
-// import { ModuleProperties } from '../../shared/modules';
-// import { ActivatedRoute } from '@angular/router';
-// import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-// import { MessageDialog } from '../../shared/services/message-dialog.service';
-// import { BackgroundTask } from '../../shared/rxjs/background-task';
-// import { map } from 'rxjs/operators';
-// import { ErrorHandler } from '../../shared/services/error-handler.service';
-// import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
-// import { WorkspaceManager } from '../../shared/workspace-manager';
-// import { tokenizeQuery } from '../../shared/utils/find';
-// import { FilesystemService } from '../../file-browser/services/filesystem.service';
-// import { SelectableEntityBehavior } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior';
-// >>>>>>> 979038cdc (Use .behavior.ts suffix.)
-
 
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 
 @Component({
   selector: 'app-map',
@@ -148,13 +129,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         nodeRenderStyle: style,
         edgeRenderStyle: style,
       });
-// =======
-    // const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService));
-    // this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-    //   nodeRenderStyle: style,
-    //   edgeRenderStyle: style,
-    // });
-// >>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
       this.registerGraphBehaviors();
 
@@ -229,14 +203,9 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   registerGraphBehaviors() {
-// <<<<<<< HEAD
-    // this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
-    // this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
-    // this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
-// =======
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
-// 979038cdc (Use .behavior.ts suffix.)
   }
 
   ngOnDestroy() {

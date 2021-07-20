@@ -3,7 +3,6 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 import { NodeCreation } from '../../../actions/nodes';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
-// import { makeid } from 'app/drawing-tool/services';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
 import { smartTruncate } from '../../../utils/strings';

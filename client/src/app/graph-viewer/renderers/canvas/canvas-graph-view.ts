@@ -1133,16 +1133,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   canvasDragOver(event): void {
     const behaviorEvent = {
-      // event,
-      event: d3.event,
+      event,
+      // event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
   }
 
   canvasDrop(event): void {
     const behaviorEvent = {
-      // event,
-      event: d3.event,
+      event,
+      // event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
   }
