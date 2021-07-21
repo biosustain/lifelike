@@ -197,6 +197,12 @@ class AnnotationGraphService(GraphConnection):
                     temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
                     data_sources[data_source_key] = data_source
 
+        # this will still not work if a gene has both BioCyc and NCBI
+        # e.g CRP
+        # if BioCyc shows up in the result first, it will get used
+        # but with the new model in the graph, there will only be a NCBI row
+        # if the BioCyc gene comes back, in the if statement
+        # we add another if to check the data_sources[key] == NCBI or BioCyc
         for _, v in temp_gene_to_organism.items():
             syn_key, data_dict = v
             if syn_key in gene_to_organism_map:

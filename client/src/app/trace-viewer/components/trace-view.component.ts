@@ -34,7 +34,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     const content = this.sessionStorage.get(storageId);
     if (content) {
       this.data = getTraceDetailsGraph(content);
-      const {startNode: {label: startLabel}, endNode: {label: endLabel}} = this.data;
+      const {startNode: {title: startLabel}, endNode: {title: endLabel}} = this.data;
       this.title = `${startLabel} → ${endLabel}`;
     } else {
       this.openError = true;

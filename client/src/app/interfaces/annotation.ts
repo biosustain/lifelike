@@ -10,10 +10,11 @@ export interface InclusionMeta {
 
 export interface GlobalAnnotationListItem {
     globalId: number;
-    creator: string;
+    synonymId?: number;
     fileUuid: string;
+    creator: string;
     fileDeleted: boolean;
-    contentReference: string;
+    // contentReference: string;
     type: string;
     creationDate: string;
     text: string;

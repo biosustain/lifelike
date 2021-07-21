@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input } from '@angular/core';
+import { AfterViewInit, Component, Input, ContentChild } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
@@ -8,6 +8,8 @@ import { Color, Edge, Network, Node, Options } from 'vis-network';
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
 import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 
 @Component({
@@ -44,6 +46,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.createNetwork();
     }
   }
+
   @Input() set data(data: GraphData) {
     this.networkData.nodes.update(data.nodes);
     this.networkData.edges.update(data.edges);
@@ -51,7 +54,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.setNetworkData();
     }
   }
+
   @Input() legend: Map<string, string[]>;
+
+  @ContentChild('selection', {static: true}) selection;
 
   SCALE_MODIFIER = 0.11;
 
@@ -77,7 +83,16 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   cursorStyle: string;
 
+  selected;
+
   constructor() {
+    this.selected = new BehaviorSubject({nodes: [], edges: []}).pipe(
+      map(({nodes, edges}) => ({
+        nodes: this.networkData.nodes.get(nodes),
+        edges: this.networkData.edges.get(edges)
+      }))
+    );
+
     this.legend = new Map<string, string[]>();
 
     this.networkConfig = {};
@@ -129,7 +144,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   /**
    * Defines smoothMap Map object, where the keys are Vis.js accepted edge smooth types, and the values are UI appropriate strings.
    */
-   setupSmoothMap() {
+  setupSmoothMap() {
     this.smoothMap = new Map<string, string>();
 
     for (const solver in networkEdgeSmoothers) {
@@ -191,7 +206,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     };
 
     this.networkGraph.setOptions({
-        ...this.networkConfig,
+      ...this.networkConfig,
     });
   }
 
@@ -217,7 +232,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
    * UI.
    * @param smoothType string representing the newly selected layout smoother, expected to be one of networkEdgeSmoothers
    */
-   updateNetworkEdgeSmooth(smoothType: string) {
+  updateNetworkEdgeSmooth(smoothType: string) {
     this.currentSmooth = smoothType;
 
     let smooth = {
@@ -240,7 +255,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     };
 
     this.networkGraph.setOptions({
-        ...this.networkConfig,
+      ...this.networkConfig,
     });
   }
 
@@ -264,7 +279,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     }
 
     this.networkGraph.setOptions({
-        ...this.networkConfig,
+      ...this.networkConfig,
     });
   }
 
@@ -352,6 +367,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
    * Contains all of the event handling features for the network graph.
    */
   setupEventBinds() {
+    const {selected} = this;
     this.networkGraph.on('stabilizationIterationsDone', (params) => {
       this.stabilized = true;
       this.networkGraph.fit();
@@ -360,10 +376,12 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.networkGraph.on('dragStart', (params) => {
       this.cursorStyle = params.nodes.length > 0 ? 'grabbing' : 'move';
     });
-
     this.networkGraph.on('dragEnd', (params) => {
       this.cursorStyle = 'default';
     });
 
+    this.networkGraph.on('select', ({nodes, edges}) => selected.next({nodes, edges}));
+    this.networkGraph.on('deselectNode', ({nodes, edges}) => selected.next({nodes, edges}));
+    this.networkGraph.on('deselectEdge', ({nodes, edges}) => selected.next({nodes, edges}));
   }
 }

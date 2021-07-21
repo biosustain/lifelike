@@ -61,6 +61,46 @@ def get_protein_to_organism_query():
     """
 
 
+def get_global_inclusions_query():
+    return """
+    MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
+    WHERE s.global_inclusion = true AND exists(r.inclusion_date)
+    RETURN
+        id(n) AS node_internal_id,
+        id(s) AS syn_node_internal_id,
+        n.id AS entity_id,
+        n.external_id AS external_id,
+        s.name AS synonym,
+        n.data_source AS data_source,
+        r.entity_type AS entity_type,
+        r.file_reference AS file_reference,
+        r.user AS creator,
+        r.inclusion_date AS creation_date
+    ORDER BY toLower(synonym)
+    """
+
+
+def get_global_inclusions_paginated_query():
+    return """
+    MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
+    WHERE s.global_inclusion = true AND exists(r.inclusion_date)
+    RETURN
+        id(n) AS node_internal_id,
+        id(s) AS syn_node_internal_id,
+        n.id AS entity_id,
+        n.external_id AS external_id,
+        s.name AS synonym,
+        n.data_source AS data_source,
+        r.entity_type AS entity_type,
+        r.file_reference AS file_reference,
+        r.user AS creator,
+        r.inclusion_date AS creation_date
+    ORDER BY toLower(synonym)
+    SKIP $skip
+    LIMIT $limit
+    """
+
+
 def get_nodes_by_ids(entity_type):
     if entity_type not in node_labels:
         return ''
@@ -94,7 +134,7 @@ def get_global_inclusions_by_type_query(entity_type):
 
     return f"""
     MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
-    WHERE exists(s.global_inclusion) AND exists(r.inclusion_date)
+    WHERE s.global_inclusion = true AND exists(r.inclusion_date)
     RETURN id(n) AS internal_id, n.id AS entity_id, n.name AS entity_name,
         s.name AS synonym, n.data_source AS data_source
     """
@@ -196,11 +236,14 @@ def get_create_mesh_global_inclusion_query(entity_type):
     MATCH (n:db_MESH) WHERE n.id = 'MESH:' + $entity_id
     SET n:replace_with_param
     MERGE (s: Synonym {name: row.synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = $entity_type
     """.replace('replace_with_param', query_label)
 
 
@@ -208,11 +251,14 @@ def get_create_chemical_global_inclusion_query():
     return """
     MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = 'Chemical'
     """
 
 
@@ -220,11 +266,14 @@ def get_create_compound_global_inclusion_query():
     return """
     MATCH (n:db_BioCyc:Compound) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = 'Compound'
     """
 
 
@@ -232,11 +281,14 @@ def get_create_gene_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Gene) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = 'Gene'
     """
 
 
@@ -244,11 +296,14 @@ def get_create_species_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Taxonomy) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = 'Species'
     """
 
 
@@ -256,11 +311,14 @@ def get_create_protein_global_inclusion_query():
     return """
     MATCH (n:db_UniProt:Protein) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.user = $user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = 'Protein'
     """
 
 
@@ -290,9 +348,12 @@ def get_create_lifelike_global_inclusion_query(entity_type):
         n.user = $user
     WITH n
     MERGE (s:Synonym {name: $synonym})
-    SET s.global_inclusion = 1
+    ON CREATE
+    SET s.global_inclusion = true
     MERGE (n)-[r:HAS_SYNONYM]->(s)
+    ON CREATE
     SET r.inclusion_date = n.inclusion_date,
         r.user = n.user,
-        r.file_reference = $file_uuid
+        r.file_reference = $file_uuid,
+        r.entity_type = $entity_type
     """.replace('replace_with_param', query_label)
