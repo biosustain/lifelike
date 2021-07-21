@@ -14,7 +14,7 @@ class Domain(Enum):
     UNIPROT = 'UniProt'
     STRING = 'String'
     GO = 'GO'
-    BIOCYC = 'Biocyc'
+    BIOCYC = 'BioCyc'
     KEGG = 'KEGG'
 
 
