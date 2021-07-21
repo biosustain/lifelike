@@ -26,7 +26,7 @@
     <input [(ngModel)]="options.nodeHeight.max.ratio" (ngModelChange)="update($event)"
            [disabled]="!options.nodeHeight.max.enabled"
            class="scrollbar-with-value"
-           max="20" min="1"
+           max="60" min="1"
            ngbButton
            type="range">
     {{options.nodeHeight.max.ratio}}
