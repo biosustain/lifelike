@@ -2,7 +2,7 @@
   <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
 </div>
 <ng-template #stable>
-  <div class="network-navigation-container">
+  <div class="network-container navigation">
     <div class="d-flex">
       <div class="pointer-events-on">
         <app-legend [legend]="legend"></app-legend>
@@ -47,7 +47,7 @@
       </div>
     </div>
   </div>
-  <div class="network-utilities-container">
+  <div class="network-container utilities bottom-0">
     <app-collapsible-window title="Network Layout Options" [reversed]="true" class="flex-fill">
       <div class="window-body">
         <form>
@@ -81,6 +81,13 @@
                    step="0.10">
           </div>
         </form>
+      </div>
+    </app-collapsible-window>
+  </div>
+  <div class="network-container selection right-0 bottom-0" *ngIf="(selected | async)?.edges?.length">
+    <app-collapsible-window title="Selection" [reversed]="true" class="flex-fill">
+      <div class="window-body" style="max-height: 80vh;">
+          <ng-container *ngTemplateOutlet="selection; context: selected | async"></ng-container>
       </div>
     </app-collapsible-window>
   </div>
