@@ -12,7 +12,15 @@ from neo4japp.database import db
 from neo4japp.factory import create_app
 from neo4japp.models import Files
 from neo4japp.services.annotations.constants import DEFAULT_ANNOTATION_CONFIGS
-from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
+from neo4japp.services.annotations.pipeline import Pipeline
+from neo4japp.services.annotations.initializer import (
+    get_annotation_db_service,
+    get_annotation_graph_service,
+    get_recognition_service,
+    get_annotation_tokenizer,
+    get_annotation_service,
+    get_bioc_document_service
+)
 
 
 # reference to this directory
@@ -59,7 +67,7 @@ def main():
 
         pdf = os.path.join(
             directory,
-            '../../../../tests/database/services/annotations/pdf_samples/Protein Protein Interactions for Covid.pdf')  # noqa
+            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf')  # noqa
 
         hash_id = None
         with open(pdf, 'rb') as f:
@@ -76,11 +84,30 @@ def main():
 
         f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
         with cprofiled():
-            annotations = create_annotations_from_pdf(
-                annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+            text, parsed = Pipeline.parse(
+              f.mime_type, file_id=f.id,
+              exclude_references=DEFAULT_ANNOTATION_CONFIGS['exclude_references'])
+
+            pipeline = Pipeline(
+                {
+                    'adbs': get_annotation_db_service,
+                    'ags': get_annotation_graph_service,
+                    'aers': get_recognition_service,
+                    'tkner': get_annotation_tokenizer,
+                    'as': get_annotation_service,
+                    'bs': get_bioc_document_service
+                },
+                text=text, parsed=parsed)
+
+            pipeline.get_globals(
+                excluded_annotations=f.excluded_annotations or [],
+                custom_annotations=f.custom_annotations or []
+            ).identify(
+                annotation_methods=DEFAULT_ANNOTATION_CONFIGS['annotation_methods']
+            ).annotate(
                 specified_organism_synonym=ORGANISM_SYNONYM,
                 specified_organism_tax_id=ORGANISM_TAX_ID,
-                document=f,
+                custom_annotations=f.custom_annotations or [],
                 filename=f.filename)
 
 

@@ -10,15 +10,15 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 
 from neo4japp.services.annotations.constants import (
-    ANATOMY_MESH_LMDB,
-    CHEMICALS_CHEBI_LMDB,
-    COMPOUNDS_BIOCYC_LMDB,
-    DISEASES_MESH_LMDB,
-    FOODS_MESH_LMDB,
-    GENES_NCBI_LMDB,
-    PHENOTYPES_CUSTOM_LMDB,
-    PROTEINS_UNIPROT_LMDB,
-    SPECIES_NCBI_LMDB,
+    ANATOMY_LMDB,
+    CHEMICALS_LMDB,
+    COMPOUNDS_LMDB,
+    DISEASES_LMDB,
+    FOODS_LMDB,
+    GENES_LMDB,
+    PHENOTYPES_LMDB,
+    PROTEINS_LMDB,
+    SPECIES_LMDB,
 )
 
 from neo4japp.database import db
@@ -93,23 +93,23 @@ def _open_env(parentdir, db_name):
 
 def open_env(entity_type, parentdir):
     if entity_type == 'anatomy':
-        env, db = _open_env(parentdir, ANATOMY_MESH_LMDB)
+        env, db = _open_env(parentdir, ANATOMY_LMDB)
     elif entity_type == 'chemicals':
-        env, db = _open_env(parentdir, CHEMICALS_CHEBI_LMDB)
+        env, db = _open_env(parentdir, CHEMICALS_LMDB)
     elif entity_type == 'compounds':
-        env, db = _open_env(parentdir, COMPOUNDS_BIOCYC_LMDB)
+        env, db = _open_env(parentdir, COMPOUNDS_LMDB)
     elif entity_type == 'diseases':
-        env, db = _open_env(parentdir, DISEASES_MESH_LMDB)
+        env, db = _open_env(parentdir, DISEASES_LMDB)
     elif entity_type == 'foods':
-        env, db = _open_env(parentdir, FOODS_MESH_LMDB)
+        env, db = _open_env(parentdir, FOODS_LMDB)
     elif entity_type == 'genes':
-        env, db = _open_env(parentdir, GENES_NCBI_LMDB)
+        env, db = _open_env(parentdir, GENES_LMDB)
     elif entity_type == 'phenotypes':
-        env, db = _open_env(parentdir, PHENOTYPES_CUSTOM_LMDB)
+        env, db = _open_env(parentdir, PHENOTYPES_LMDB)
     elif entity_type == 'proteins':
-        env, db = _open_env(parentdir, PROTEINS_UNIPROT_LMDB)
+        env, db = _open_env(parentdir, PROTEINS_LMDB)
     elif entity_type == 'species':
-        env, db = _open_env(parentdir, SPECIES_NCBI_LMDB)
+        env, db = _open_env(parentdir, SPECIES_LMDB)
     else:
         print_help()
         sys.exit(2)
