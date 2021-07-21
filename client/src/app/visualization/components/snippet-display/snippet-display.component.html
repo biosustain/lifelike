@@ -41,9 +41,9 @@
             [expandedHeight]="'100%'"
             draggable="true" (dragstart)="snippetDragStart($event, snippet)"
         >
-          <mat-panel-title class="snippet-panel-title d-flex align-items-center text-primary">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</mat-panel-title>
+          <mat-panel-title class="snippet-panel-title d-flex align-items-center text-primary">{{ (snippet.publication.data.title || 'Unknown') | truncate:240 }}</mat-panel-title>
           <mat-panel-description class="snippet-panel-pub-data d-flex justify-content-end">
-            <i class="text-right">{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
+            <i class="text-right">{{ (snippet.publication.data.journal || 'Unknown') | truncate:100 }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
           </mat-panel-description>
         </mat-expansion-panel-header>
 
