@@ -251,10 +251,16 @@ export class FilesystemObjectActions {
       mergeMap(res => merge(res)),
       map(result => results.push(result)),
       finalize(() => {
+        const check = [];
         progressDialogRef.close();
-        const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
-        modalRef.componentInstance.objects = targets;
-        modalRef.componentInstance.results = results;
+        results.forEach(result => Object.entries(result.mapping).forEach(r => {
+          check.push(r[1].success);
+        }));
+        if (check.some(c => c === false)) {
+            const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+            modalRef.componentInstance.objects = targets;
+            modalRef.componentInstance.results = results;
+        }
       }),
       this.errorHandler.create({label: 'Re-annotate object'}),
     ).toPromise();
