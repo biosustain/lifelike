@@ -3,8 +3,9 @@
 ## Table of Contents
 * [Installation](#installation)
 * [How Liquibase Works](#how-liquibase-works)
-* [Running Migrations](#running-migrations)
 * [Checking Migration Version Logs](#checking-migration-version-logs)
+* [Rolling Back](#rolling-back)
+* [Running Migrations](#running-migrations)
 
 ## Installation
 Migration uses Liquibase for Neo4j (https://neo4j.com/labs/liquibase/):
@@ -114,12 +115,56 @@ The bare `.xml` should be something like this:
 ```
 Both `id` and `author` are required.
 
-**NOTE**: Each `changeSet` represents a transaction, neo4j does not allow changing the schema (dropping an index, etc) and a write query in the same transaction, otherwise you will get the error `Tried to execute Write query after executing Schema modification`. This means you will need two `changeSet`.
+**IMPORTANT NOTE**: Each `changeSet` represents a transaction, neo4j does not allow changing the schema (dropping an index, etc) and a write query in the same transaction, otherwise you will get the error `Tried to execute Write query after executing Schema modification`. This means you will need two `changeSet`, so group them together using the `id="some text-#"` naming convention. (See for more info: https://stackoverflow.com/a/56705198).
+
+**IMPORTANT**: Each `changeSet` can only have **one** `<sql>` tag, to run multiple queries, you separate each with a semi-colon "`;`" and set `<sql splitStatements="true">` (splitStatements is true by default). If you have multiple `<sql>` tags in one change set, it will create a deadlock in the database and never finish.
+
+```xml
+<!--
+  correct, but seems to have its own issues
+  better to just make on <sql> per changeset
+
+  a changeset is like a transaction
+-->
+<changeSet>
+  <comment>Testing create query</comment>
+  <sql>
+    CREATE (:Foo {name: 'Foo'});
+    CREATE (:Foo {name: 'Foo Boo'});
+  </sql>
+</changeSet>
+```
 
 As you can see, the `<sql>` tag is where the cypher query is placed. This works for "simple" queries. But if we need to parse a data file and write many queries, we might need to write a separate script and programmatically create the `.xml` file to place into `changelogs/`.
 - can consider using https://docs.python.org/3/library/xml.etree.elementtree.html
 
 More information can be found: https://docs.liquibase.com/concepts/home.html
+
+### Queries that Return and APOC Functions
+As of this writing (7/21/2021), there is a bug in liquibase that causes it to hang for queries that return a value. APOC functions have implicit returns.
+
+See: https://github.com/liquibase/liquibase-neo4j/issues/14
+
+The workaround for APOC functions is to not use them, at least until the bug is fixed.
+
+## Checking Migration Version Logs
+Liquibase will create two node labels in the database: `__LiquibaseChangeLog` and `__LiquibaseChangeSet`.
+- `__LiquibaseChangeLog`: when the database was last updated and the related changelog files.
+- `__LiquibaseChangeSet`: the migration version chain (or change sets) associated with the changelog files.
+
+## Rolling Back
+Liquibase handles rolling back automatically if there is an error: https://docs.liquibase.com/concepts/basic/changeset.html
+
+> Liquibase attempts to execute each changeset in a transaction that is committed at the end, or rolled back if there is an error. Some databases will auto-commit statements which interferes with this transaction setup and could lead to an unexpected database state. Therefore, it is best practice to have just one change per changeset unless there is a group of non-auto-committing changes that you want to apply as a transaction such as inserting data.
+
+However, if you prefer to rollback manually, you can do so...
+
+Before running migrations, you can tag the current state of the database so if the migration fails, you can rollback.
+```bash
+liquibase tag "some text description" --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass>
+
+liquibase rollback "some text description" --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml
+```
 
 ## Running Migrations
 There are two commands you can use. The first time you run these commands, you will see a prompt:
@@ -137,11 +182,7 @@ This command will give you a preview of what liquibase will run. You can use thi
 
 ```bash
 # don't need port in ip address
-liquibase --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
+# --log-level is optional
+liquibase --log-level=debug --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
 ```
 This command will run the queries and update the database.
-
-## Checking Migration Version Logs
-Liquibase will create two node labels in the database: `__LiquibaseChangeLog` and `__LiquibaseChangeSet`.
-- `__LiquibaseChangeLog`: when the database was last updated and the related changelog files.
-- `__LiquibaseChangeSet`: the migration version chain (or change sets) associated with the changelog files.
