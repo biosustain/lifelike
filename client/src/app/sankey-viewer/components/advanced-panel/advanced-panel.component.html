@@ -18,18 +18,6 @@
     {{options.nodeHeight.min.value}}
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update($event)"
-           ngbButton
-           type="checkbox">
-    Max shown label characters
-    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update($event)"
-           [disabled]="!options.labelEllipsis.enabled"
-           max="50" min="0"
-           ngbButton
-           type="range">
-    {{options.labelEllipsis.value}}
-</label>
-<label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
     <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update($event)"
            ngbButton
            type="checkbox">
@@ -40,6 +28,18 @@
            ngbButton
            type="range">
     {{options.nodeHeight.max.ratio}}
+</label>
+<label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
+    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update($event)"
+           ngbButton
+           type="checkbox">
+    Max shown label characters
+    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update($event)"
+           [disabled]="!options.labelEllipsis.enabled"
+           max="50" min="0"
+           ngbButton
+           type="range">
+    {{options.labelEllipsis.value}}
 </label>
 <div class="dropdown-divider"></div>
 <div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup name="link"
