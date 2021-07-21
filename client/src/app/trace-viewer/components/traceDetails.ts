@@ -1,9 +1,4 @@
-import visNetwork from 'vis-network';
-import { uuidv4 } from 'app/shared/utils';
-import { isDevMode } from '@angular/core';
 import { GraphData } from 'app/interfaces/vis-js.interface';
-import { cubehelix } from 'd3';
-import { nodeLabelAccessor } from './utils';
 import { IntermediateNodeType } from '../../sankey-viewer/components/interfaces';
 
 function find(nodeById, id) {
