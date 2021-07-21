@@ -50,15 +50,12 @@ class EnrichmentAnnotationService(AnnotationService):
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
-        organism_ids = list(self.organism_frequency)
 
         gene_match_time = time.time()
         fallback_graph_results = \
-            self.graph.get_gene_to_organism_match_result(
+            self.graph.get_genes_to_organisms(
                 genes=gene_names_list,
-                postgres_genes=self.db.get_organism_genes(
-                    genes=gene_names_list, organism_ids=organism_ids),
-                matched_organism_ids=[self.specified_organism.organism_id],
+                organisms=[self.specified_organism.organism_id],
             )
         current_app.logger.info(
             f'Gene fallback organism KG query time {time.time() - gene_match_time}',
@@ -70,6 +67,8 @@ class EnrichmentAnnotationService(AnnotationService):
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
+            organism_id = self.specified_organism.organism_id
+
             try:
                 entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             except KeyError:
@@ -94,10 +93,7 @@ class EnrichmentAnnotationService(AnnotationService):
                     except KeyError:
                         continue
                     else:
-                        # the postgres table `organism_gene_match`
-                        # doesn't have data_source like the KG since that's recent
-                        # hotfix for now until that table is replaced with a better implementation
-                        if gene_id in gene_data_sources and entity['id_type'] != gene_data_sources[gene_id]:  # noqa
+                        if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:  # noqa
                             continue
                         entities_to_create.append(
                             CreateAnnotationObjParams(

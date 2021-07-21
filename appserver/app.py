@@ -22,10 +22,7 @@ from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
-from neo4japp.models import (
-    AppUser,
-    OrganismGeneMatch,
-)
+from neo4japp.models import AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent, Files
 from neo4japp.utils.logger import EventLog
 
@@ -185,36 +182,6 @@ def set_role(email, role):
     user = AppUser.query.filter_by(email=email).one()
     get_role = account_service.get_or_create_role(role)
     user.roles.extend([get_role])
-    db.session.commit()
-
-
-@app.cli.command('seed-organism-gene-match-table')
-def seed_organism_gene_match_table():
-    # reference to this directory
-    directory = os.path.realpath(os.path.dirname(__file__))
-
-    rows = []
-    with open(os.path.join(directory, './migrations/upgrade_data/gene_names_for_4organisms.csv'), 'r') as f:  # noqa
-        for i, line in enumerate(f.readlines()):
-            if i == 0:
-                continue
-
-            # GeneID,GeneName,Synonym,Tax_ID, Organism
-            data = line.split(',')
-
-            row = OrganismGeneMatch(
-                gene_id=data[0].strip(),
-                gene_name=data[1].strip(),
-                synonym=data[2].strip(),
-                taxonomy_id=data[3].strip(),
-                organism=data[4].strip(),
-            )
-            rows.append(row)
-
-            if i % 1000 == 0:
-                db.session.bulk_save_objects(rows)
-                db.session.flush()
-                rows = []
     db.session.commit()
 
 

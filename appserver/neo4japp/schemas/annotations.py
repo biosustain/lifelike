@@ -73,7 +73,8 @@ class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
 
 class AnnotationLinksSchema(Schema):
     # These fields are camel case even in Python
-    ncbi = fields.String(required=True)
+    ncbi_taxonomy = fields.String(required=True)
+    ncbi_gene = fields.String(required=True)
     uniprot = fields.String(required=True)
     chebi = fields.String(required=True)
     pubchem = fields.String(required=True)
