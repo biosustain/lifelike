@@ -14,7 +14,7 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 from marshmallow import ValidationError
-from PyPDF4 import PdfFileMerger
+from PyPDF4 import PdfFileMerger, PdfFileWriter, PdfFileReader
 from PIL import Image
 
 from neo4japp.models import Files
@@ -383,6 +383,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
+        origin = {
+            'name': 'origin',
+            'pos': '0,0!',
+        }
+
+        graph.node(**origin)
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
@@ -681,8 +687,15 @@ class LinkedMapExportProvider:
 
     def merge_pdfs(self, files):
         final_bytes = io.BytesIO()
-        merger = PdfFileMerger(strict=False)
-        for out_file in files:
-            merger.append(out_file)
-        merger.write(final_bytes)
+        # merger = PdfFileMerger(strict=False)
+        writer = PdfFileWriter()
+        for i, out_file in enumerate(files):
+            reader = PdfFileReader(out_file, strict=False)
+            writer.appendPagesFromReader(reader)
+            # writer.addLink(0, 1, [0, 0, 1000, 1000], 'dott')
+            # merger.append(out_file)
+        # merger.write(final_bytes)
+        writer.addLink(0, 1, [0, 0, 100, 100], 'dot')
+
+        writer.write(final_bytes)
         return final_bytes
