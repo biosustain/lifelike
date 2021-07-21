@@ -4,8 +4,6 @@ from common.constants import *
 import pandas as pd
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 """
 Download ncbi genes from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/.  Parse gene_info file, and gene2go.
@@ -27,6 +25,7 @@ class GeneParser(BaseParser):
         BaseParser.__init__(self, 'gene', base_dir)
         self.gene_info_file = os.path.join(self.download_dir, 'gene_info.gz')
         self.gene2go_file = os.path.join(self.download_dir, 'gene2go.gz')
+        self.logger = logging.getLogger(__name__)
 
     def create_indexes(self, database: Database):
         database.create_constraint(NODE_GENE, PROP_ID, 'constraint_gene_id')
@@ -37,16 +36,15 @@ class GeneParser(BaseParser):
         self._parse_and_write_gene_info()
         self._parse_and_write_gene2go()
 
-    def load_data_to_neo4j(self, database: Database, update=True):
+    def load_data_to_neo4j(self, database: Database):
         """
         2021-06-08 23:44:05,201 Processed genes: 32227060, gene2syns: 6159188
         :param database:
-        :param update: if False, initial load, otherwise, update data
         :return:
         """
-        logging.info('parse and load bioinfo')
-        self._load_bioinfo_to_neo4j(database, update)
-        logging.info('parse and load gene2go')
+        self.logger.info("Parse and load bioinfo")
+        self._load_bioinfo_to_neo4j(database)
+        self.logger.info("Parse and load gene2go")
         self._load_gene2go_to_neo4j(database)
         self._update_gene_synonyms_in_neo4j(database)
 
@@ -84,13 +82,13 @@ class GeneParser(BaseParser):
             df_syns.drop_duplicates(inplace=True)
             # remove synonyms with only one letter, or do not have non-digit chars
             df_syns = df_syns[df_syns['synonym'].str.len() > 1 & df_syns['synonym'].str.contains('[a-zA-Z]')]
-            print(len(df_names), len(df_syn), len(df_syns))
+            self.logger.info(len(df_names), len(df_syn), len(df_syns))
             df_syns[PROP_DATA_SOURCE] = DS_NCBI_GENE
             df_syns.sort_values(by=[PROP_ID], inplace=True)
             count += len(df_syns)
             df_syns.to_csv(outfile, header=header, sep='\t', mode='a', index=False)
             header = False
-        logging.info(f'rows processed: {count}')
+        self.logger.info(f"Rows processed: {count}")
 
     def extract_organism_geneinfo(self, tax_id)->pd.DataFrame:
         """
@@ -127,7 +125,7 @@ class GeneParser(BaseParser):
         open(gene2tax_file, 'w').close()
         open(gene2synonym_file, 'w').close()
 
-        logging.info('Parse and load gene.info')
+        self.logger.info("Parse and load gene.info")
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
         header = True
@@ -141,9 +139,9 @@ class GeneParser(BaseParser):
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
-            # print(len(df_syn))
+            # self.logger.info(len(df_syn))
             df_syn = df_syn[df_syn['synonym'].str.len() > 1]
-            # print(len(df_syn))
+            # self.logger.info(len(df_syn))
             df_gene.to_csv(gene_file, header=header, sep='\t', mode='a')
             df_tax.to_csv(gene2tax_file, header=header, sep='\t', mode='a')
             df_syn.to_csv(gene2synonym_file, header=header, sep='\t', mode='a')
@@ -173,7 +171,7 @@ class GeneParser(BaseParser):
                                            [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
                                            [NODE_NCBI])
         query_synonyms = get_create_synonym_relationships_query(NODE_GENE, PROP_ID, PROP_ID, 'synonym')
-        print(query_synonyms)
+        self.logger.debug(query_synonyms)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
         geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=10000, usecols=gene_info_cols)
         count_gene = 0
@@ -233,15 +231,18 @@ class GeneParser(BaseParser):
         {batchSize:10000}
         );
         '''
-        logging.info('add gene name as synonym')
+        self.logger.info("add gene name as synonym")
         database.run_query(query_add_name_as_synonym)
-        logging.info('add locustag as synonym')
+        self.logger.info("add locustag as synonym")
         database.run_query(query_add_locustag_as_synonym)
 
 
-if __name__ == '__main__':
-    parser = GeneParser('/Users/rcai/data')
-    database = get_database(Neo4jInstance.LOCAL, 'lifelike-qa')
-    # database = get_database(Neo4jInstance.GOOGLE_PROD, 'neo4j')
+def main():
+    parser = GeneParser()
+    database = get_database()
     parser.load_data_to_neo4j(database)
     database.close()
+
+
+if __name__ == "__main__":
+    main()

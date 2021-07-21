@@ -23,9 +23,12 @@ def load_pruned_terms_as_disease_synonym(file, database):
     database.load_data_from_dataframe(df, query)
 
 
-if __name__ == '__main__':
-    file = os.path.join(get_data_dir(), 'Pruned mesh_terms_ends_with_disease.csv')
-    # database = get_database(Neo4jInstance.LOCAL)
-    database = get_database(Neo4jInstance.GOOGLE_PROD)
+def main():
+    file = os.path.join(get_data_dir(), "Pruned mesh_terms_ends_with_disease.csv")
+    database = get_database()
     load_pruned_terms_as_disease_synonym(file, database)
     database.close()
+
+
+if __name__ == "__main__":
+    main()
