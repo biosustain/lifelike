@@ -4,8 +4,6 @@ from common.constants import *
 import pandas as pd
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 """
 URL = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/'
@@ -60,9 +58,10 @@ class TaxonomyParser(BaseParser):
         self.names_file = os.path.join(self.download_dir, 'new_taxdump', 'names.dmp')
         self.lineage_file = os.path.join(self.download_dir, 'new_taxdump', 'fullnamelineage.dmp')
         self.top_class_nodes = []
+        self.logger = logging.getLogger(__name__)
 
     def parse_node_file(self):
         df = pd.read_csv(self.nodes_file, sep='|', names=['tax_id', 'parent_id', 'rank'], usecols=[0, 1, 2])
-        print(len(df))
+        self.logger.debug(f"Length df: {len(df)}")
         df_pc = df[['tax_id', 'parent_id']].groupby('parent_id', as_index=False).agg(list)
-        print(len(df_pc))
+        self.logger.debug(f"Length df_pc: {len(df_pc)}")
