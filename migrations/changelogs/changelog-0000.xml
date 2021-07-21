@@ -4,318 +4,66 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
-  <changeSet id="LL-2193" author="Binh Vu">
-    <comment>Init and update graph model so snippets are unique</comment>
-    <!--
-      add association id
-    -->
+  <!--
+    Neo4j does not allow the same transaction for changing the scheme and writes.
+    So group changeSets together by id="some text-#"
+    And separate changeSets grouping by empty new line space
+  -->
+
+  <changeSet id="LL-2193-drop-index-association-id-1" author="Binh Vu">
+    <comment>Init and See changeset id to group changesets together</comment>
     <sql>DROP INDEX ON :Association(id)</sql>
+  </changeSet>
+  <changeSet id="LL-2193-drop-index-association-id-2" author="Binh Vu">
+    <comment>See changeset id to group changesets together</comment>
     <sql>
-      CALL apoc.periodic.iterate(
-        "match (n1)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(n2) return n1, a, n2", 
-        "set a.id = n1.id + '-' + n2.id + '-' + a.type", {batchSize:10000, parallel: true}
-      )
+      MATCH (n1)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(n2)
+      SET a.id = n1.id + '-' + n2.id + '-' + a.type
     </sql>
+  </changeSet>
+  <changeSet id="LL-2193-drop-index-association-id-3" author="Binh Vu">
+    <comment>See changeset id to group changesets together</comment>
     <sql>CREATE CONSTRAINT constraint_association_id ON (n:Association) ASSERT n.id IS UNIQUE</sql>
-    <!--
-      set snippet id
-    -->
+  </changeSet>
+
+  <!-- ##### -->
+
+  <changeSet id="LL-2193-drop-index-snippet-id-1" author="Binh Vu">
+    <comment>See changeset id to group changesets together</comment>
     <sql>DROP INDEX ON :Snippet(id)</sql>
+  </changeSet>
+  <changeSet id="LL-2193-drop-index-snippet-id-2" author="Binh Vu">
+    <comment>See changeset id to group changesets together</comment>
     <sql>
-      CALL apoc.periodic.iterate(
-        "match (n:Snippet)-[:IN_PUB]-(p) return n, p",
-        "set n.id = p.pmid + '-' + n.sentence_num", {batchSize:10000, parallel: true}
-      )
-    </sql>
-    <!--
-      set predicts properties
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match (n:Snippet)-[p:PREDICTS]-(a) return n, p",
-        "set p.entry1_text = n.entry1_text, p.entry2_text = n.entry2_text, p.path = n.path",
-        {batchSize:5000, parallel: true}
-      )
-    </sql>
-    <!--
-      remove snippet properties
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match (n:Snippet) return n",
-        "remove n.path, n.pmid, n.entry1_text, n.entry1_type, n.entry2_text, n.entry2_type, n.sentence_num",
-        {batchSize:5000, parallel: true}
-      )
-    </sql>
-    <!--
-      merge snippets
-    -->
-    <sql>
-      CALL apoc.periodic.commit(
-        "match (n:Snippet) with n.id as id, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
-        call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
-        RETURN COUNT(*)", {limit:5000}
-      )
-    </sql>
-    <!--
-      remove redudent [IN_PUB] relationship
-    -->
-    <sql>
-      CALL apoc.periodic.commit(
-        "match(s:Snippet)-[r:IN_PUB]-(p) with s, p limit $limit set s.pmid = p.pmid return count(*)",
-        {limit:10000}
-      )
-    </sql>
-    <sql>
-      MATCH (n:Snippet) WITH n MATCH (p:Publication {pmid:n.pmid}) CREATE (n)-[:IN_PUB]->(p)
-    </sql>
-    <!--
-      merge synonym nodes
-    -->
-    <sql>
-      CALL apoc.periodic.commit(
-        "match (n:Synonym) with n.name as name, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
-        call apoc.refactor.mergeNodes(nodes, {properties: {name:'discard',`.*`: 'discard'}}) yield node
-        RETURN COUNT(*)", {limit:10000}
-      )
-    </sql>
-    <sql>
-      DROP INDEX ON :Synonym(name)
-    </sql>
-    <sql>
-      CREATE CONSTRAINT constraint_synonym_name ON (n:Synonym) ASSERT n.name IS UNIQUE
-    </sql>
-    <!--
-      add entry1_type and entry2_type in association nodes
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:db_Literature:Association)-[:HAS_TYPE]-(t) where not t.name in ['B', 'J'] with n, apoc.text.split(t.direction, '-')  as entryTypes return n, entryTypes[0] as entry1_type, entryTypes[1] as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize: 10000}
-      )
-    </sql>
-    <!--
-      assocation type B has relationships for chemical-gene or gene-gene
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(t:AssociationType {name:'B'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids 
-        with n, case
-        when ids[0] starts with 'CHEBI' then 'chemical'
-        when ids[0] starts with 'MESH' then 'chemical'
-        else 'gene' end as entry1_type
-        return n, entry1_type, 'gene' as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
-      )
-    </sql>
-    <!--
-      assocation type J has relationships for chemical-disease or gene-disease
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(t:AssociationType {name:'J'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids 
-        with n, case
-        when ids[0] starts with 'CHEBI' then 'chemical'
-        when ids[0] starts with 'MESH' then 'chemical'
-        else 'disease' end as entry1_type
-        return n, entry1_type, 'gene' as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
-      )
-    </sql>
-    <!--
-      change relationship PREDICTS to INDICATES
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:Snippet)-[r:PREDICTS]->(n2) return n, n2, r",
-        "create (n)-[r2:INDICATES]->(n2) 
-        set r2.entry1_text = r.entry1_text, r2.entry2_text=r.entry2_text, 
-        r2.path=r.path, r2.raw_score=r.raw_score, r2.normalized_score=r.normalized_score",
-        {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:Snippet)-[r:PREDICTS]->() return r",
-        "delete r",
-        {batchSize: 5000}
-      )
+    <!-- this query seems to be crashing neo4j -->
+      MATCH (n:Snippet)-[:IN_PUB]-(p)
+      SET n.id = p.pmid + '-' + n.sentence_num
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3049" author="Binh Vu">
+  <!-- ##### -->
+
+  <changeSet id="LL-2193-data-transforms" author="Binh Vu">
     <comment>
-      Refactor literature nodes to create LiteratureEntity nodes based on GraphAware suggestions.
-      Old model: Entity is either NCBI gene, MESH disease or CHEBI/MESH chemical.
-      New model: New entity nodes created with id and name properties; all entity nodes are labeled as literatureentity and db_literature.
+      Set predicts properties, remove snippet properties, merge snippets and remove redundant [IN_PUB] relationship
     </comment>
-    <!--
-      create literature disease
-    -->
     <sql>
-      CREATE CONSTRAINT constraint_literaturedisease_id ON (n:LiteratureDisease) ASSERT n.id IS UNIQUE
-    </sql>
-    <sql>
-      MATCH (n:Disease:db_Literature)
-      MERGE (x:LiteratureDisease {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <sql>
-      MATCH (n:Disease) WHERE (n)-[:ASSOCIATED]-() AND NOT 'db_Literature' IN labels(n)
-      MERGE (x:LiteratureDisease {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <!--
-      create literature chemical
-    -->
-    <sql>
-      CREATE CONSTRAINT constraint_literaturechemical_id ON (x:LiteratureChemical) ASSERT n.id IS UNIQUE
-    </sql>
-    <sql>
-      MATCH (n:Chemical:db_Literature)
-      MERGE (x:LiteratureChemical {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <sql>
-      MATCH (n:Chemical) WHERE (n)-[:ASSOCIATED]-() AND NOT 'db_Literature' IN labels(n) 
-      MERGE (x:LiteratureChemical {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <sql>
-      MATCH (x:db_MESH)-[r:MAPPED_TO]->(y) WHERE (x)-[:MAP_TO]->(y) DELETE r
-    </sql>
-    <sql>
-      MATCH (x:db_MESH)-[r:MAPPED_TO]->(y) MERGE (x)-[:MAP_TO]->(y) DELETE r
-    </sql>
-    <!--
-      create literature gene
-    -->
-    <sql>
-      CREATE CONSTRAINT constraint_literaturegene_id ON (n:LiteratureGene) ASSERT n.id IS UNIQUE
-    </sql>
-    <sql>
-      MATCH (n:db_Literature:Gene)
-      MERGE (x:LiteratureGene {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <!--
-      create disease associations
-        < : &lt;
-        > : &gt;
-        some reason the < character breaks the xml, the > is fine;
-        so need to escape that character
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureDisease)-[:MAPPED_TO]-(d:Disease)&lt;-[:HAS_ASSOCIATION]-(a) return n, a",
-        "merge(a)-[:HAS_ASSOCIATION]->(n)",
-        {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureDisease)-[:MAPPED_TO]-(d:Disease)-[:HAS_ASSOCIATION]->(a) return n, a",
-        "merge(n)-[:HAS_ASSOCIATION]->(a)",
-        {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      MATCH (n:Disease)-[r:HAS_ASSOCIATION]-(a) DELETE r
-    </sql>
-    <!--
-      create chemical associations
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureChemical)-[:MAPPED_TO]-(d:Chemical)&lt;-[:HAS_ASSOCIATION]-(a) return n, a",
-        "merge(a)-[:HAS_ASSOCIATION]->(n)", {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureChemical)-[:MAPPED_TO]-(d:Chemical)-[:HAS_ASSOCIATION]->(a) return n, a",
-        "merge(n)-[:HAS_ASSOCIATION]->(a)", {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:Chemical)-[r:HAS_ASSOCIATION]-() return r",
-        "delete r", {batchSize: 5000}
-      )
-    </sql>
-    <!--
-      create gene associations
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureGene)-[:MAPPED_TO]-(d:Gene)&lt;-[:HAS_ASSOCIATION]-(a) return n, a",
-        "merge(a)-[:HAS_ASSOCIATION]->(n)", {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:LiteratureGene)-[:MAPPED_TO]-(d:Gene)-[:HAS_ASSOCIATION]->(a) return n, a",
-        "merge(n)-[:HAS_ASSOCIATION]->(a)", {batchSize:5000}
-      )
-    </sql>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:db_Literature:Gene)-[r:HAS_ASSOCIATION]-() return r",
-        "delete r", {batchSize: 5000}
-      )
-    </sql>
-    <sql>
-      <!-- a gene had association but not labeled as db_literature (MYC). Create literature gene for it -->
-      MATCH (n:Gene) WHERE (n)-[:HAS_ASSOCIATION]-()
-      MERGE (x:LiteratureGene {id:n.id}) SET x:db_Literature, x:LiteratureEntity, x.name = n.name
-      MERGE (x)-[:MAPPED_TO]->(n)
-    </sql>
-    <sql>
-      <!-- add missed associations -->
-      MATCH (n:LiteratureGene)-[:MAPPED_TO]-(g:Gene) WHERE NOT (g:db_Literature)
-      WITH n, g MATCH (g)-[:HAS_ASSOCIATION]->(a)
-      MERGE (n)-[:HAS_ASSOCIATION]->(a)
-    </sql>
-    <sql>
-      MATCH (n:LiteratureGene)-[:MAPPED_TO]-(g:Gene) WHERE NOT (g:db_Literature)
-      WITH n, g MATCH (g)&lt;-[:HAS_ASSOCIATION]-(a)
-      MERGE (a)-[:HAS_ASSOCIATION]->(n)
-    </sql>
-    <sql>
-      <!-- delete old associations that had an entity without db_literature label -->
-      MATCH (n:LiteratureGene)-[:MAPPED_TO]-(g:Gene) WHERE NOT (g:db_Literature) 
-      WITH g MATCH (g)-[r:HAS_ASSOCIATION]-(a) DELETE r
-    </sql>
-    <!--
-      create entity entity associations
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(x:LiteratureEntity)-[:HAS_ASSOCIATION]->(a)-[:HAS_ASSOCIATION]->(y:LiteratureEntity) return x, y, a",
-        "create (x)-[r:ASSOCIATED]->(y) set r.type = a.type, r.description = a.description",
-        {batchSize:5000}
-      )
-    </sql>
-    <!--
-      remove old entity entity associations
-    -->
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match (n:LiteratureEntity)-[:ASSOCIATED]->(n2)-[:MAPPED_TO]-(y) with n, n2, y match (n)-[:MAPPED_TO]-(x)-[r:ASSOCIATED]->(y) return r",
-        "delete r", {batchSize:5000}
-      )
-    </sql>
-    <!--
-      remove old db_Literature labels for gene, disease and chemical
-    -->
-    <sql>
-      MATCH (n:db_Literature:Chemical) REMOVE n:db_Literature
-    </sql>
-    <sql>
-      MATCH (n:db_Literature:Disease) REMOVE n:db_Literature
-    </sql>
-    <sql>
-      MATCH (n:db_Literature:Gene) REMOVE n:db_Literature
+      MATCH (n:Snippet)-[p:PREDICTS]-(a)
+      SET p.entry1_text = n.entry1_text, p.entry2_text = n.entry2_text, p.path = n.path;
+      MATCH (n:Snippet)
+      REMOVE n.path, n.pmid, n.entry1_text, n.entry1_type, n.entry2_text, n.entry2_type, n.sentence_num;
+      <!--
+        TODO: need to figure out how to rewrite the apoc.refactor.mergeNodes()
+        since liquibase currently does not work with queries that return values (a known bug)
+
+        trying to yield and set a node property so it's not techniqcally returning
+        let's see if this works
+      -->
+      MATCH (n:Snippet) WITH collect(n) AS nodes WHERE size(nodes) > 1
+      WITH nodes limit 5000
+      CALL apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) YIELD node
+      SET node.liquibase = true;
+      MATCH (n:Snippet) WHERE exists(n.liquibase) REMOVE n.liquibase;
     </sql>
   </changeSet>
 </databaseChangeLog>
