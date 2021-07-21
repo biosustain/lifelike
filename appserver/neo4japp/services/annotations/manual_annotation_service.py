@@ -161,7 +161,7 @@ class ManualAnnotationService:
                 file.content_id,
                 file.id,
                 file.hash_id,
-                user
+                user.username
             )
 
         try:
@@ -249,7 +249,7 @@ class ManualAnnotationService:
                 file.content_id,
                 file.id,
                 file.hash_id,
-                user
+                user.username
             )
 
         try:
@@ -333,7 +333,15 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
-    def save_global(self, annotation, inclusion_type, file_content_id, file_id, file_hash_id, user):
+    def save_global(
+        self,
+        annotation: dict,
+        inclusion_type: str,
+        file_content_id: str,
+        file_id: int,
+        file_hash_id: str,
+        username: str
+    ):
         """Adds global inclusion to the KG, and global exclusion to postgres.
 
         For the KG, if a global inclusion (seen as a synonym) matches to an
@@ -353,8 +361,7 @@ class ManualAnnotationService:
                 synonym = annotation['meta']['allText']
                 inclusion_date = annotation['inclusion_date']
                 hyperlink = annotation['meta']['idHyperlink']
-                is_case_insensitive = annotation['meta']['isCaseInsensitive']
-                user_full_name = f'{user.first_name} {user.last_name}'
+                username = username
             except KeyError:
                 raise AnnotationError(
                     title='Failed to Create Custom Annotation',
@@ -365,9 +372,9 @@ class ManualAnnotationService:
             createval = {
                 'entity_type': entity_type,
                 'entity_id': entity_id,
-                'synonym': synonym.lower() if is_case_insensitive else synonym,
+                'synonym': synonym,
                 'inclusion_date': inclusion_date,
-                'user': user_full_name,
+                'user': username,
                 'data_source': data_source if data_source != 'None' else None,
                 'hyperlink': hyperlink,
                 'common_name': common_name,
