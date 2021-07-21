@@ -946,7 +946,7 @@ class GlobalAnnotationListView(MethodView):
 
         graph = get_annotation_graph_service()
         global_inclusions = graph.exec_read_query_with_params(
-            get_global_inclusions_paginated_query(), {'skip': 0, 'limit': 5})
+            get_global_inclusions_paginated_query(), {'skip': 0 if page == 1 else limit, 'limit': limit})  # noqa
 
         file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
         file_data_query = db.session.query(
