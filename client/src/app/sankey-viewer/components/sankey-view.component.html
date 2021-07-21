@@ -156,7 +156,6 @@
                 <as-split-area [order]="0">
                     <app-sankey #sankey
                                 *ngIf="filteredSankeyData"
-                                (adjustLayout)="sankeyLayoutAdjustment($event)"
                                 (linkClicked)="openLinkDetails($event)"
                                 (nodeClicked)="openNodeDetails($event)"
                                 [nodeAlign]="nodeAlign"
