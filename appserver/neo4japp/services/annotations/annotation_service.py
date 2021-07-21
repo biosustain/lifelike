@@ -142,11 +142,16 @@ class AnnotationService:
                 # can't use multi pycode ignore/noqa...
                 link = ENTITY_HYPERLINKS
                 try:
-                    hyperlink = link[param.entity['id_type']]
-                except KeyError:
                     if param.entity['id_type'] == 'BioCyc':
                         # temp until LL-3296 is done
-                        hyperlink = link[DatabaseType.BIOCYC.value]
+                        hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+                    else:
+                        hyperlink = link[param.entity['id_type']]
+                except KeyError:
+                    if param.entity['id_type'] == 'BioCyc':
+                        e_type = DatabaseType.BIOCYC.value
+                        # temp until LL-3296 is done
+                        hyperlink = link[e_type][param.token_type]  # type: ignore
                     else:
                         raise
 
@@ -441,7 +446,7 @@ class AnnotationService:
                 else:
                     # for genes
                     try:
-                        # prioritize common name match over synonym
+                        # prioritize common name that is same as synonym
                         fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
                     except KeyError:
                         # only take the first gene/protein for the organism
@@ -520,11 +525,9 @@ class AnnotationService:
         organism_ids = list(self.organism_frequency)
 
         gene_match_time = time.time()
-        graph_results = self.graph.get_gene_to_organism_match_result(
+        graph_results = self.graph.get_genes_to_organisms(
             genes=gene_names_list,
-            postgres_genes=self.db.get_organism_genes(
-                genes=gene_names_list, organism_ids=organism_ids),
-            matched_organism_ids=organism_ids,
+            organisms=organism_ids,
         )
         current_app.logger.info(
             f'Gene organism KG query time {time.time() - gene_match_time}',
@@ -540,11 +543,9 @@ class AnnotationService:
         if self.specified_organism.synonym:
             gene_match_time = time.time()
             fallback_graph_results = \
-                self.graph.get_gene_to_organism_match_result(
+                self.graph.get_genes_to_organisms(
                     genes=gene_names_list,
-                    postgres_genes=self.db.get_organism_genes(
-                        genes=gene_names_list, organism_ids=organism_ids),
-                    matched_organism_ids=[self.specified_organism.organism_id],
+                    organisms=[self.specified_organism.organism_id],
                 )
             current_app.logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
@@ -553,30 +554,33 @@ class AnnotationService:
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
 
+        gene_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
+            token_offset = (token.lo_location_offset, token.hi_location_offset)
+            synonym_common_name_tuple = (entity['name'], entity['synonym'])
 
             entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in gene_organism_matches:
                 try:
-                    # prioritize common name match over synonym
+                    # prioritize common name that is same as synonym
                     organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
                 except KeyError:
-                    # only take the first gene for the organism
-                    # no way for us to infer which to use
                     for d in list(gene_organism_matches[entity_synonym].values()):
-                        key = next(iter(d))
-                        if key not in organisms_to_match:
-                            organisms_to_match[key] = d[key]
+                        organisms_to_match = {**organisms_to_match, **d}
 
-                best_match = self._find_best_organism_match(
-                    token=token,
-                    entity_synonym=entity_synonym,
-                    organisms_to_match=organisms_to_match,
-                    fallback_organism_matches=fallback_gene_organism_matches,
-                    entity_type=EntityType.GENE.value)
+                try:
+                    best_match = gene_mem[(synonym_common_name_tuple, token_offset)]
+                except KeyError:
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity_synonym=entity_synonym,
+                        organisms_to_match=organisms_to_match,
+                        fallback_organism_matches=fallback_gene_organism_matches,
+                        entity_type=EntityType.GENE.value)
+                    gene_mem[(synonym_common_name_tuple, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -587,16 +591,13 @@ class AnnotationService:
                 specified_organism_id = best_match.specified_organism_id
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
             elif entity_synonym in fallback_gene_organism_matches:
+                organism_id = self.specified_organism.organism_id
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
                 except KeyError:
-                    # only take the first gene for the organism
-                    # no way for us to infer which to use
                     for d in list(fallback_gene_organism_matches[entity_synonym].values()):
-                        key = next(iter(d))
-                        if key not in organisms_to_match:
-                            organisms_to_match[key] = d[key]
+                        organisms_to_match = {**organisms_to_match, **d}
                 try:
                     gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                     category = self.specified_organism.category
@@ -604,10 +605,7 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
-                # the postgres table `organism_gene_match`
-                # doesn't have data_source like the KG since that's recent
-                # hotfix for now until that table is replaced with a better implementation
-                if gene_id in gene_data_sources and entity['id_type'] != gene_data_sources[gene_id]:
+                if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:
                     continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
@@ -674,18 +672,25 @@ class AnnotationService:
 
             fallback_protein_organism_matches = fallback_graph_results.matches
 
+        protein_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             protein_id = entity[EntityIdStr.PROTEIN.value]
             entity_synonym = entity['synonym']
+            token_offset = (token.lo_location_offset, token.hi_location_offset)
+            synonym_common_name_tuple = (entity['name'], entity['synonym'])
 
             if entity_synonym in protein_organism_matches:
-                best_match = self._find_best_organism_match(
-                    token=token,
-                    entity_synonym=entity_synonym,
-                    organisms_to_match=protein_organism_matches[entity_synonym],
-                    fallback_organism_matches=fallback_protein_organism_matches,
-                    entity_type=EntityType.PROTEIN.value)
+                try:
+                    best_match = protein_mem[(synonym_common_name_tuple, token_offset)]
+                except KeyError:
+                    best_match = self._find_best_organism_match(
+                        token=token,
+                        entity_synonym=entity_synonym,
+                        organisms_to_match=protein_organism_matches[entity_synonym],
+                        fallback_organism_matches=fallback_protein_organism_matches,
+                        entity_type=EntityType.PROTEIN.value)
+                    protein_mem[(synonym_common_name_tuple, token_offset)] = best_match
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -802,58 +807,9 @@ class AnnotationService:
             species_annotations_with_local += filtered_local_species_annotations
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
-            self._get_entity_frequency_location_and_category(
-                annotations=species_annotations_with_local)
+            self._get_entity_frequency_location_and_category(species_annotations_with_local)
 
         return species_annotations
-
-    def _update_entity_frequency_map(
-        self,
-        entity_frequency: Dict[str, int],
-        annotation
-    ) -> Dict[str, int]:
-        entity_id = annotation.meta.id
-        if entity_frequency.get(entity_id, None) is not None:
-            entity_frequency[entity_id] += 1
-        else:
-            entity_frequency[entity_id] = 1
-
-        # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-            if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
-                entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
-            else:
-                entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
-
-        return entity_frequency
-
-    def _update_entity_location_map(
-        self,
-        matched_entity_locations: Dict[str, List[Tuple[int, int]]],
-        annotation
-    ) -> Dict[str, List[Tuple[int, int]]]:
-        if matched_entity_locations.get(annotation.meta.id, None) is not None:
-            matched_entity_locations[annotation.meta.id].append(
-                (annotation.lo_location_offset, annotation.hi_location_offset)
-            )
-        else:
-            matched_entity_locations[annotation.meta.id] = [
-                (annotation.lo_location_offset, annotation.hi_location_offset)
-            ]
-
-        # If the annotation represents a virus, then also mark this location as a human
-        # annotation
-        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-            if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
-                matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
-                    (annotation.lo_location_offset, annotation.hi_location_offset)
-                )
-            else:
-                matched_entity_locations[HOMO_SAPIENS_TAX_ID] = [
-                    (annotation.lo_location_offset, annotation.hi_location_offset)
-                ]
-
-        return matched_entity_locations
 
     def _get_entity_frequency_location_and_category(
         self,
@@ -870,20 +826,39 @@ class AnnotationService:
         entity_frequency: Dict[str, int] = {}
         entity_categories: Dict[str, str] = {}
 
+        locations: Dict[str, Set[Tuple[int, int]]] = {}
         for annotation in annotations:
-            entity_frequency = self._update_entity_frequency_map(
-                entity_frequency=entity_frequency,
-                annotation=annotation,
-            )
-            matched_entity_locations = self._update_entity_location_map(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
-            entity_categories[annotation.meta.id] = annotation.meta.category or ''
+            entity_id = annotation.meta.id
+            offset_pairs = (annotation.lo_location_offset, annotation.hi_location_offset)
+
+            if entity_frequency.get(entity_id, None):
+                entity_frequency[entity_id] += 1
+            else:
+                entity_frequency[entity_id] = 1
+
+            if locations.get(entity_id, None):
+                locations[entity_id].add(offset_pairs)
+            else:
+                locations[entity_id] = {offset_pairs}
 
             # Need to add an entry for humans if we annotated a virus
-            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:
+                if locations.get(HOMO_SAPIENS_TAX_ID, None):
+                    locations[HOMO_SAPIENS_TAX_ID].add(offset_pairs)
+                else:
+                    locations[HOMO_SAPIENS_TAX_ID] = {offset_pairs}
+
+                if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None):
+                    entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
+                else:
+                    entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
+
                 entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
+
+            entity_categories[entity_id] = annotation.meta.category or ''
+
+        for k, v in locations.items():
+            matched_entity_locations[k] = sorted(v)
 
         return entity_frequency, matched_entity_locations, entity_categories
 

@@ -9,7 +9,6 @@ from .auth import (
 )
 from .neo4j import GraphNode, GraphRelationship
 from .projects import Projects, projects_collaborator_role
-from .organism_match import OrganismGeneMatch
 from .annotations import AnnotationStopWords, GlobalList
 from .entity_resources import DomainURLsMap, AnnotationStyle
 from .files import Files, FileContent, FileVersion, FileBackup, Worksheet, \
