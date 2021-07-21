@@ -217,46 +217,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
           }
           return null;
         })
-// >>>>>>> current change, renders fine, doesn't support drag-n-drop or copy-paste
         .on('start', this.canvasDragStarted.bind(this))
         .on('drag', this.canvasDragged.bind(this))
         .on('end', this.canvasDragEnded.bind(this)))
       .call(this.zoom)
       .on('dblclick.zoom', null);
-// <<<<<<< current change
-/**
-// >>>>>>> Albert's d3 code, renders empty graph
-        .on('dragover', () => {
-          canvasMouseMoveSubject.next();
-        })
-        .on('mouseleave', this.canvasMouseLeave.bind(this))
-        .on('mouseup', this.canvasMouseUp.bind(this))
-        .call(d3.drag()
-            .container(this.canvas)
-            .filter(() => !d3.event.button)
-            .subject((): CanvasSubject => {
-              if (this.behaviors.call('shouldDrag', {
-                event: d3.event.sourceEvent,
-              })) {
-                return {
-                  entity: null,
-                };
-              }
-              const entity = this.getEntityAtMouse();
-              if (entity) {
-                return {
-                  entity,
-                };
-              }
-              return null;
-            })
-            .on('start', this.canvasDragStarted.bind(this))
-            .on('drag', this.canvasDragged.bind(this))
-            .on('end', this.canvasDragEnded.bind(this)))
-        .call(this.zoom)
-        .on('dblclick.zoom', null));
-// <<<<<<< Albert's d3 code, renders empty graph
-*/
 
     this.trackedSubscriptions.push(
       canvasMouseMoveSubject
@@ -1133,16 +1098,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   canvasDragOver(event): void {
     const behaviorEvent = {
-      event,
-      // event: d3.event,
+      // event,
+      event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
   }
 
   canvasDrop(event): void {
     const behaviorEvent = {
-      event,
-      // event: d3.event,
+      // event,
+      event: d3.event,
     };
     this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
   }

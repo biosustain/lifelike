@@ -36,7 +36,7 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
+// import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 
 @Component({
   selector: 'app-map',
@@ -203,7 +203,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   registerGraphBehaviors() {
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
+    // this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
   }
