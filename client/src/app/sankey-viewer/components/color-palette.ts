@@ -37,17 +37,16 @@ export const colorPaletteGenerator = (
   size,
   {
     hue = (i, n) => i / n,
-    saturation = (_i, _n) => 0.75,
+    saturation = (_i, _n) => 0.35,
     lightness = (_i, _n) => 0.75,
-    alpha = (_i, _n) => 0.75
+    alpha = (_i, _n) => 1
   } = {}
 ) => {
-  const zeroIndexedSize = size - 1;
   return i => cubehelix(
-    360 * hue(i, zeroIndexedSize),
-    2 * saturation(i, zeroIndexedSize),
-    lightness(i, zeroIndexedSize),
-    alpha(i, zeroIndexedSize)
+    360 * hue(i, size),
+    2 * saturation(i, size),
+    lightness(i, size),
+    alpha(i, size)
   );
 };
 
@@ -56,7 +55,7 @@ export const colorPaletteGenerator = (
 // with special case of only one interval when default value is returned.
 // By design this function operates on floats as well as on integers.
 function skewNorm(min: number, max: number, init: number, steps: number, i: number): number {
-  if (steps <= 1) {
+  if (steps <= 1.5) {
     return init;
   }
   const size = max - min;
