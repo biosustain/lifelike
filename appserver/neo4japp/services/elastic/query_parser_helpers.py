@@ -65,7 +65,8 @@ class BoolOperand:
 
             # If the term is not a phrase, and it contains punctuation, then add exact term matches
             # for each search field
-            if ' ' not in normalized_term and any([c in string.punctuation for c in normalized_term]):
+            term_has_punctuation = any([c in string.punctuation for c in normalized_term])
+            if ' ' not in normalized_term and term_has_punctuation:
                 term_queries = [
                     {
                         'term': {
