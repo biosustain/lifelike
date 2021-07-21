@@ -14,7 +14,7 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 from marshmallow import ValidationError
-from PyPDF2 import PdfFileMerger
+from PyPDF4 import PdfFileMerger
 from PIL import Image
 
 from neo4japp.models import Files
