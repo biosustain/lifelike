@@ -144,6 +144,7 @@
         <td class="align-middle text-nowrap">{{ object.type }}</td>
         <td class="align-middle text-nowrap">{{ object.entityType }}</td>
         <td class="align-middle text-nowrap">{{ object.entityId }}</td>
+        <td class="align-middle text-nowrap">{{ object.contentReference | truncate:15 }}</td>
         <td class="align-middle text-nowrap">{{ object.fileDeleted }}</td>
         <td class="align-middle text-nowrap">{{ object.creator }}</td>
         <td class="align-middle text-nowrap">{{ object.reason }}</td>
@@ -151,7 +152,7 @@
           *ngIf="object.comment; else noComment"
           class="align-middle text-nowrap"
         >
-          {{ object.comment | truncate:['20'] }}
+          {{ object.comment | truncate:20 }}
         </td>
         <ng-template #noComment>
           <td class="align-middle text-nowrap">{{ object.comment }}</td>
