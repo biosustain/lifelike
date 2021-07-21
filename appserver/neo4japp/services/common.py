@@ -1,4 +1,5 @@
 import abc
+from datetime import datetime
 
 from neo4j.exceptions import ServiceUnavailable
 from sqlalchemy.exc import SQLAlchemyError
@@ -75,6 +76,18 @@ class GraphConnection(DatabaseConnection):
 
         def __exit__(self, exc_type, exc_val, exc_traceback):
             self.session.close()
+
+    def convert_datetime(self, graph_date):
+        """Convert a neo4j Datetime to python datetime"""
+        return datetime(
+            graph_date.year,
+            graph_date.month,
+            graph_date.day,
+            graph_date.hour,
+            graph_date.minute,
+            int(graph_date.second),
+            int(graph_date.second * 1000000 % 1000000),
+            tzinfo=graph_date.tzinfo)
 
     def begin(self, **kwargs):
         return self._context(self.conn)
