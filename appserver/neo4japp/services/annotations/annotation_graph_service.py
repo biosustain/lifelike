@@ -1,8 +1,8 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from flask import current_app
 
-from .constants import EntityType
+from .constants import DatabaseType, EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
@@ -164,26 +164,6 @@ class AnnotationGraphService(GraphConnection):
             included_entities=inclusion_dicts[EntityType.ENTITY.value],
         )
 
-    def get_gene_to_organism_match_result(
-        self,
-        genes: List[str],
-        postgres_genes: Dict[str, Dict[str, Dict[str, str]]],
-        matched_organism_ids: List[str],
-    ) -> GeneOrProteinToOrganism:
-        """Returns a map of gene name to gene id."""
-        postgres_result = postgres_genes
-
-        # Collect all the genes that were not matched to an organism in the table, and search
-        # the Neo4j database for them
-        second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
-        neo4j_result = self.get_genes_to_organisms(second_round_genes, matched_organism_ids)
-
-        # Join the results of the two queries
-        postgres_result.update(neo4j_result.matches)
-
-        return GeneOrProteinToOrganism(
-            matches=postgres_result, data_sources=neo4j_result.data_sources)
-
     def get_genes_to_organisms(
         self,
         genes: List[str],
@@ -191,6 +171,7 @@ class AnnotationGraphService(GraphConnection):
     ) -> GeneOrProteinToOrganism:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
         data_sources: Dict[str, str] = {}
+        temp_gene_to_organism: Dict[str, Tuple[str, Dict[str, dict]]] = {}
 
         result = self.exec_read_query_with_params(
             get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
@@ -201,16 +182,36 @@ class AnnotationGraphService(GraphConnection):
             gene_id = row['gene_id']
             organism_id = row['organism_id']
             data_source = row['data_source']
+            data_source_key = f'{gene_synonym}{organism_id}'
 
-            data_sources[gene_id] = data_source
-
-            if gene_to_organism_map.get(gene_synonym, None) is not None:
-                if gene_to_organism_map[gene_synonym].get(gene_name, None):
-                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
-                else:
-                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
+            # using gene_synonym and organism id as the key
+            # we are guaranteed to have exactly one copy (first one or NCBI)
+            # and be able to choose NCBI over BioCyc
+            if data_source_key not in data_sources:
+                # not in data_sources means not in temp_gene_to_organism
+                temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
+                data_sources[data_source_key] = data_source
             else:
-                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
+                # data_source_key in data_sources
+                if data_source == DatabaseType.NCBI_GENE.value and data_sources[data_source_key] != data_source:  # noqa
+                    temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
+                    data_sources[data_source_key] = data_source
+
+        # this will still not work if a gene has both BioCyc and NCBI
+        # e.g CRP
+        # if BioCyc shows up in the result first, it will get used
+        # but with the new model in the graph, there will only be a NCBI row
+        # if the BioCyc gene comes back, in the if statement
+        # we add another if to check the data_sources[key] == NCBI or BioCyc
+        for _, v in temp_gene_to_organism.items():
+            syn_key, data_dict = v
+            if syn_key in gene_to_organism_map:
+                curr_gene_name = next(iter(data_dict))
+                # keep the first gene/organism since can't infer which to use
+                if curr_gene_name not in gene_to_organism_map[syn_key]:
+                    gene_to_organism_map[syn_key] = {**gene_to_organism_map[syn_key], **data_dict}
+            else:
+                gene_to_organism_map[syn_key] = data_dict
 
         return GeneOrProteinToOrganism(matches=gene_to_organism_map, data_sources=data_sources)
 

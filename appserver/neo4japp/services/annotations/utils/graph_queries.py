@@ -272,6 +272,11 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     if entity_type == EntityType.SPECIES.value:
         query_label = 'Organism'
 
+    # NOTE: a new gene should not be created, because
+    # we have no option to specify an organism relationship
+    # rather a new synonym of an existing gene can be created
+    # so no need to add a :Master Gene label
+
     return """
     MERGE (n:db_Lifelike {id:'Lifelike:' + $entity_id})
     ON CREATE
