@@ -13,7 +13,7 @@ import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixe
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
+import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
@@ -25,6 +25,7 @@ import visNetwork from 'vis-network';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
+import { linkPalettes, createMapToColor } from './color-palette';
 
 
 @Component({
@@ -115,7 +116,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     selectedNodeValueAccessor: undefined,
     selectedPredefinedValueAccessor: undefined,
     prescalers,
-    selectedPrescaler: prescalers[0]
+    selectedPrescaler: prescalers.default,
+    linkPalettes,
+    selectedLinkPalette: linkPalettes.default
   };
   parseProperty = parseForRendering;
   @ViewChild('sankey', {static: false}) sankey;
@@ -300,9 +303,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
+    const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
       networkTrace.traces.map(({group}) => group),
-      {alpha: _ => 1, saturation: _ => 0.35}
+      {alpha: _ => 1, saturation: _ => 0.35},
+      palette
     );
     const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
