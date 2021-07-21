@@ -69,3 +69,11 @@
         <input ngbButton type="radio" [value]="prescaler"> {{prescaler.name}}
     </label>
 </div>
+<div class="dropdown-divider"></div>
+<div class="form-check" ngbRadioGroup name="linkPalette"
+     [(ngModel)]="options.selectedLinkPalette" (ngModelChange)="update($event)" title="Link palette">
+    <div class="mb-1">Link palette:</div>
+    <label ngbButtonLabel *ngFor="let palette of options.linkPalettes" class="mb-0">
+        <input ngbButton type="radio" [value]="palette"> {{palette.name}}
+    </label>
+</div>
