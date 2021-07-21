@@ -14,17 +14,13 @@ import { SharedModule } from 'app/shared/shared.module';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyTypeProvider } from './providers/sankey-type-provider';
-import { SankeyModule } from './components/sankey/sankey.module';
-import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
+import { TraceViewComponent } from './components/trace-view.component';
+import { TraceDetailsComponent } from './components/trace-details.component';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent
+    TraceViewComponent,
+    TraceDetailsComponent
   ],
   imports: [
     CommonModule,
@@ -42,20 +38,9 @@ import { SankeyDetailsPanelComponent } from './components/details-panel/details-
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
-    RouterModule.forRoot([]),
-    SankeyModule,
+    RouterModule.forRoot([])
   ],
-  entryComponents: [],
-  providers: [{
-    provide: TYPE_PROVIDER,
-    useClass: SankeyTypeProvider,
-    multi: true,
-  }],
-  exports: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent
-  ],
+  entryComponents: []
 })
-export class SankeyViewerLibModule {
+export class TraceViewerLibModule {
 }
