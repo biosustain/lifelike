@@ -82,13 +82,17 @@ export class EnrichmentTable {
             text: this.usePlainText ? resultGene.matched : resultGene.annotatedMatched,
           });
 
-          row.push({
-            text: this.usePlainText ? resultGene.fullName : resultGene.annotatedFullName,
-            singleLink: {
-              link: resultGene.link,
-              linkText: 'NCBI Link',
-            },
-          });
+          if (resultGene.fullName && resultGene.annotatedFullName) {
+            row.push({
+              text: this.usePlainText ? resultGene.fullName : resultGene.annotatedFullName,
+              singleLink: {
+                link: resultGene.link,
+                linkText: 'NCBI Link',
+              },
+            });
+          } else {
+            row.push({text: ''});
+          }
 
           for (const domainId of document.domains) {
             const domainInfo = domainInfoMap[domainId];

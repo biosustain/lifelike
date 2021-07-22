@@ -84,7 +84,8 @@ from ..services.annotations.sorted_annotation_service import (
 )
 from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
-    get_global_inclusions_query
+    get_global_inclusions_query,
+    get_global_inclusions_count_query
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
@@ -978,7 +979,11 @@ class GlobalAnnotationListView(MethodView):
             'synonym_id': i['syn_node_internal_id'],
             'creator': i['creator'],
             'file_uuid': i['file_reference'],
-            'file_deleted': True if file_uuids_map[i['file_reference']] else False,
+            # if not in this something must've happened to the file
+            # since a global inclusion referenced it
+            # so mark it as deleted
+            # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+            'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
             'type': ManualAnnotationType.INCLUSION.value,
             'creation_date': graph.convert_datetime(i['creation_date']),
             'text': i['synonym'],
@@ -990,7 +995,8 @@ class GlobalAnnotationListView(MethodView):
         } for i in global_inclusions]
 
         results = {
-            'total': len(data),
+            'total': exclusions.total + graph.exec_read_query(
+                get_global_inclusions_count_query())[0]['total'],
             # have to reorder again since we're combining from
             # two different data sources
             'results': sorted(data, key=lambda d: d['text'].lower())

@@ -61,6 +61,14 @@ def get_protein_to_organism_query():
     """
 
 
+def get_global_inclusions_count_query():
+    return """
+    MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
+    WHERE s.global_inclusion = true AND exists(r.inclusion_date)
+    RETURN count(s) AS total
+    """
+
+
 def get_global_inclusions_query():
     return """
     MATCH (s:Synonym)-[r:HAS_SYNONYM]-(n)
