@@ -30,11 +30,11 @@
     {{options.nodeHeight.max.ratio}}
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
     Max shown label characters
-    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update()"
            [disabled]="!options.labelEllipsis.enabled"
            max="50" min="0"
            ngbButton
@@ -43,7 +43,7 @@
 </label>
 <div class="dropdown-divider"></div>
 <div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup name="link"
-     [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingupdate()" title="Link size">
+     [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()" title="Link size">
     <div class="mb-1">Link Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueGenerators">
@@ -58,7 +58,7 @@
 </div>
 <div class="dropdown-divider"></div>
 <div class="form-check" ngbRadioGroup name="node"
-     [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingupdate()" title="Node fixed size">
+     [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()" title="Node fixed size">
     <div class="mb-1">Node Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueGenerators">
