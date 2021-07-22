@@ -65,17 +65,17 @@ export class SankeyLayoutService extends AttributeAccessors {
     return [this.x1 - this.x0, this.y1 - this.y0];
   }
 
-  set size(_) {
-    this.x1 = this.x0 + _[0];
-    this.y1 = this.y0 + _[1];
+  set size(size) {
+    this.x1 = this.x0 + size[0];
+    this.y1 = this.y0 + size[1];
   }
 
   get extent() {
     return [[this.x0, this.y0], [this.x1, this.y1]];
   }
 
-  set extent(_) {
-    [[this.x0, this.y0], [this.x1, this.y1]] = _;
+  set extent(extent) {
+    [[this.x0, this.y0], [this.x1, this.y1]] = extent;
   }
 
   x0 = 0;
@@ -101,7 +101,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   static find(nodeById, id) {
     const node = nodeById.get(id);
     if (!node) {
-      throw new Error('missing: ' + id);
+      // todo: use our error handler when figure out how to deal with inheritance
+      throw new Error(`Node (id: ${id}) needed to render this graph has not be provided in file.`);
     }
     return node as SankeyNode;
   }
@@ -161,7 +162,7 @@ export class SankeyLayoutService extends AttributeAccessors {
       _source._sourceLinks.push(link);
       _target._targetLinks.push(link);
     }
-    if (this.linkSort != null) {
+    if (this.linkSort) {
       const relatedNodes = links.reduce(
         (o, {_source, _target}) => {
           o.add(_source);

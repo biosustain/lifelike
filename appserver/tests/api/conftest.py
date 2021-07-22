@@ -110,14 +110,14 @@ def mock_global_list(fix_admin_user, fix_project, session):
         },
         'user_id': fix_admin_user.id
     }
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_content_id=file_content.id,
-        reviewed=True,
-        approved=True,
-    )
-    session.add(inclusion)
+    # inclusion = GlobalList(
+    #     annotation=annotation,
+    #     type=ManualAnnotationType.INCLUSION.value,
+    #     file_content_id=file_content.id,
+    #     reviewed=True,
+    #     approved=True,
+    # )
+    # session.add(inclusion)
     session.flush()
 
     annotation = {
@@ -180,7 +180,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationGraphService,
-        'get_organisms_from_gene_ids',
+        'get_organisms_from_gene_ids_query',
         get_organisms_from_gene_ids_result,
     )
 
