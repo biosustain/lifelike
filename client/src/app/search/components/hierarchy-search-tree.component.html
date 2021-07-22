@@ -23,7 +23,7 @@
              [checked]="checklistSelection.isSelected(node)"
              (change)="itemSelectionToggle(node)">
       <label class="custom-control-label" [for]="node.data.id + '-checkbox'">
-        {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + node.data.fontAwesomeIcon"></i>
+        {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + (node.level === 0 ? 'fas fa-layer-group' : node.data.fontAwesomeIcon)"></i>
       </label>
     </div>
   </mat-tree-node>
