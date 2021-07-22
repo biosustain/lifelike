@@ -60,12 +60,11 @@ export const colorPalletGenerator = (
     alpha = (_i, _n) => 0.75
   } = {}
 ) => {
-  const zeroIndexedSize = size - 1;
   return i => cubehelix(
-    360 * hue(i, zeroIndexedSize),
-    2 * saturation(i, zeroIndexedSize),
-    lightness(i, zeroIndexedSize),
-    alpha(i, zeroIndexedSize)
+    360 * hue(i, size),
+    2 * saturation(i, size),
+    lightness(i, size),
+    alpha(i, size)
   );
 };
 
@@ -105,5 +104,3 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
   }
   return v;
 };
-
-export const nodeLabelAccessor = ({label}) => label;
