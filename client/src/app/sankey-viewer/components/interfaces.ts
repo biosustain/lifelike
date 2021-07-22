@@ -48,6 +48,7 @@ export interface SankeyAdvancedOptions {
   normalizeLinks: boolean;
   linkPalettes: Array<any>;
   selectedLinkPalette: any;
+  labelEllipsis: any;
 }
 
 import visNetwork from 'vis-network';

@@ -207,8 +207,8 @@ export class NodeFormComponent implements AfterViewInit {
       this.node.data.hyperlinks = [];
     }
 
-    const [domain, url, isDatabase] = ['', '', false];
-    this.node.data.hyperlinks.push({url, domain, isDatabase});
+    const [domain, url] = ['', ''];
+    this.node.data.hyperlinks.push({url, domain});
   }
 
   /**

@@ -227,8 +227,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Graph sizing
   onResize(width, height) {
     const {zoom, margin} = this;
-    const innerWidth = width - margin.right;
-    const innerHeight = height - margin.bottom;
+    const extentRight = width - margin.right;
+    const extentLeft = height - margin.bottom;
 
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
@@ -240,7 +240,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
-    this.sankey.extent = [[margin.left, margin.top], [innerWidth, innerHeight]];
+    this.sankey.extent = [[margin.left, margin.top], [extentRight, extentLeft]];
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }

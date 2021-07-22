@@ -24,7 +24,7 @@ export class GlobalAnnotationService extends AbstractService {
         );
     }
 
-    deleteAnnotations(pids: number[]): Observable<string> {
+    deleteAnnotations(pids: number[][]): Observable<string> {
         return this.http.post<{result: string}>(
             `${this.baseUrl}/global-list`,
             {pids},

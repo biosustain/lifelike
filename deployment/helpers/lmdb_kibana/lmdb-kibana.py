@@ -16,17 +16,17 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 
 
-ANATOMY_MESH_LMDB = 'anatomy_mesh'
-CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
+ANATOMY_LMDB = 'anatomy_lmdb'
+CHEMICALS_LMDB = 'chemicals_lmdb'
 CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
-COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
-DISEASES_MESH_LMDB = 'diseases_mesh'
-FOODS_MESH_LMDB = 'foods_mesh'
-GENES_NCBI_LMDB = 'genes_ncbi'
-PHENOMENAS_MESH_LMDB = 'phenomenas_mesh'
-PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
-PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
-SPECIES_NCBI_LMDB = 'species_ncbi'
+COMPOUNDS_LMDB = 'compounds_lmdb'
+DISEASES_LMDB = 'diseases_lmdb'
+FOODS_LMDB = 'foods_lmdb'
+GENES_LMDB = 'genes_lmdb'
+PHENOMENAS_LMDB = 'phenomenas_lmdb'
+PHENOTYPES_LMDB = 'phenotypes_lmdb'
+PROTEINS_LMDB = 'proteins_lmdb'
+SPECIES_LMDB = 'species_lmdb'
 
 
 def _open_env(parentdir, db_name):
@@ -37,25 +37,25 @@ def _open_env(parentdir, db_name):
 
 def open_env(entity_type, parentdir):
     if entity_type == 'anatomy':
-        env, db = _open_env(parentdir, ANATOMY_MESH_LMDB)
+        env, db = _open_env(parentdir, ANATOMY_LMDB)
     elif entity_type == 'chemicals':
-        env, db = _open_env(parentdir, CHEMICALS_CHEBI_LMDB)
+        env, db = _open_env(parentdir, CHEMICALS_LMDB)
     elif entity_type == 'compounds':
-        env, db = _open_env(parentdir, COMPOUNDS_BIOCYC_LMDB)
+        env, db = _open_env(parentdir, COMPOUNDS_LMDB)
     elif entity_type == 'diseases':
-        env, db = _open_env(parentdir, DISEASES_MESH_LMDB)
+        env, db = _open_env(parentdir, DISEASES_LMDB)
     elif entity_type == 'foods':
-        env, db = _open_env(parentdir, FOODS_MESH_LMDB)
+        env, db = _open_env(parentdir, FOODS_LMDB)
     elif entity_type == 'genes':
-        env, db = _open_env(parentdir, GENES_NCBI_LMDB)
+        env, db = _open_env(parentdir, GENES_LMDB)
     elif entity_type == 'phenomenas':
-        env, db = _open_env(parentdir, PHENOMENAS_MESH_LMDB)
+        env, db = _open_env(parentdir, PHENOMENAS_LMDB)
     elif entity_type == 'phenotypes':
-        env, db = _open_env(parentdir, PHENOTYPES_CUSTOM_LMDB)
+        env, db = _open_env(parentdir, PHENOTYPES_LMDB)
     elif entity_type == 'proteins':
-        env, db = _open_env(parentdir, PROTEINS_UNIPROT_LMDB)
+        env, db = _open_env(parentdir, PROTEINS_LMDB)
     elif entity_type == 'species':
-        env, db = _open_env(parentdir, SPECIES_NCBI_LMDB)
+        env, db = _open_env(parentdir, SPECIES_LMDB)
     else:
         sys.exit(2)
     return env, db
