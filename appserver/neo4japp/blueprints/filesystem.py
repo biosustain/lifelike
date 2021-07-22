@@ -1143,15 +1143,12 @@ class FileExportView(FilesystemBaseView):
     def get_all_linked_maps(self, file: Files, map_hash_set: list):
         current_user = g.current_user
         json_graph = json.loads(file.content.raw_file)
-        # print(json_graph)
         for node in json_graph['nodes']:
             data = (node['data'].get('sources') or []) + (node['data'].get('hyperlinks') or [])
             for link in data:
                 url = link.get('url', "").lstrip()
                 if MAPS_RE.match(url):
                     map_hash = url.split('/')[-1]
-                    print(map_hash)
-
                     # Fetch linked maps and check permissions, before we start to export them
                     if map_hash not in map_hash_set:
                         map_hash_set.append(map_hash)
