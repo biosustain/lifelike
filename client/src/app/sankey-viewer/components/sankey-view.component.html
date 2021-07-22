@@ -209,30 +209,6 @@
                     </div>
                 </as-split-area>
             </as-split>
-            <div *ngIf="colorPalete" class="d-flex" [style.height.em]="1">
-                <span [style.width.ch]="10">Palette: </span>
-                <span *ngFor="let mapping of colorPalete"
-                      [style.backgroundColor]="mapping"
-                      class="flex-grow-1" [style.margin.px]="0.5"> </span>
-            </div>
-            <div *ngIf="colorPaleteH" class="d-flex" [style.height.em]="1">
-                <span [style.width.ch]="10">Hue: </span>
-                <span *ngFor="let mapping of colorPaleteH" [style.backgroundColor]="mapping"
-                      class="flex-grow-1" [style.margin.px]="0.5"> </span>
-            </div>
-            <div *ngIf="colorPaleteS" class="d-flex" [style.height.em]="1">
-                <span [style.width.ch]="10">Saturation: </span>
-                <span *ngFor="let mapping of colorPaleteS"
-                      [style.backgroundColor]="mapping"
-                      class="flex-grow-1" [style.margin.px]="0.5"> </span>
-            </div>
-            <div *ngIf="colorPaleteL" class="d-flex" [style.height.em]="1"
-            [style.marginBottom.px]="3">
-                <span [style.width.ch]="10">Lightness: </span>
-                <span *ngFor="let mapping of colorPaleteL"
-                      [style.backgroundColor]="mapping"
-                      class="flex-grow-1" [style.margin.px]="0.5"> </span>
-            </div>
         </div>
     </div>
 </div>
