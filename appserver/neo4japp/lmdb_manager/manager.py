@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import sqlalchemy
+
 from dataclasses import dataclass
 from datetime import datetime
 from azure.common import AzureMissingResourceHttpError
@@ -173,13 +174,14 @@ class LMDBFile:
 Base: DeclarativeMeta = declarative_base()
 
 
-class LMDBsDates(Base):
-    __tablename__ = 'lmdbs_dates'
+class LMDB(Base):
+    __tablename__ = 'lmdb'
     name = Column(String, primary_key=True)
-    date = Column(TIMESTAMP(timezone=True), nullable=False)
+    checksum_md5 = Column(String, nullable=False)
+    modified_date = Column(TIMESTAMP(timezone=True), nullable=False)
 
     def __repr__(self):
-        return f'<LMDBsDates(name={self.name}:updated={self.date})>'
+        return f'<LMDBsDates(name={self.name}:updated={self.modified_date})>'
 
 
 class LMDBManager:
@@ -291,27 +293,42 @@ class LMDBManager:
         """ Downloads lmdb files from a remote path to a specified local path """
         self.cloud_provider.download(self.storage_object, remote_path, save_path)
 
-    def update_all_dates(self):
+    def update_all_dates(self, file_dir):
         for category in self.lmdb_versions.keys():
-            self.update_date(category)
+            self.update_date(category, file_dir)
 
-    def update_date(self, lmdb_category):
+    def update_date(self, lmdb_category, file_dir):
         """ Updates RDBMS database to contain the file upload date from the cloud storage """
         lmdb_metadata = self.generate_path(lmdb_category)
         data_mdb_path = lmdb_metadata.data_mdb_path
-        lmdb_db = self.db.query(LMDBsDates) \
+
+        with open(f'{file_dir}/{lmdb_category}/data.mdb', 'rb') as mdb_file:
+            hash_fn = hashlib.md5()
+            while chunk := mdb_file.read(8192):
+                hash_fn.update(chunk)
+            checksum = hash_fn.hexdigest()
+
+        lmdb_db = self.db.query(LMDB) \
                          .filter_by(name=lmdb_category) \
                          .one_or_none()
         if lmdb_db is None:
-            lmdb_db = LMDBsDates(name=lmdb_category, date=datetime.utcnow())
+            lmdb_db = LMDB(
+                name=lmdb_category,
+                modified_date=datetime.utcnow(),
+                checksum_md5=checksum
+            )
             self.db.add(lmdb_db)
             self.db.commit()
 
         cloud_file_date = self.cloud_provider.get_file_date(self.storage_object, data_mdb_path)
-        if lmdb_db.date != cloud_file_date:
-            self.db.query(LMDBsDates) \
+
+        if lmdb_db.modified_date != cloud_file_date:
+            # if date is different, then most likely hash is also different
+            # don't need to check hash because we're using
+            # files that were just downloaded
+            self.db.query(LMDB) \
                    .filter_by(name=lmdb_category) \
-                   .update({LMDBsDates.date: cloud_file_date})
+                   .update({LMDB.modified_date: cloud_file_date, LMDB.checksum_md5: checksum})
             self.db.commit()
             log.debug(f'LMDB Database {lmdb_category} timestamp has been updated.')
         else:

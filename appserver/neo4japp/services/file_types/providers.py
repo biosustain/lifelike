@@ -2,12 +2,14 @@ import io
 import json
 import re
 import typing
+
 from io import BufferedIOBase
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 import textwrap
 import graphviz
 import requests
+
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
@@ -16,6 +18,7 @@ import bioc
 from marshmallow import ValidationError
 from PyPDF4 import PdfFileMerger, PdfFileWriter, PdfFileReader
 from PIL import Image
+
 
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -36,9 +39,16 @@ from neo4japp.constants import (
     IMAGE_HEIGHT_INCREMENT,
     FONT_SIZE_MULTIPLIER,
     SCALING_FACTOR,
+    LIFELIKE_DOMAIN,
+    FILE_MIME_TYPE_DIRECTORY,
+    FILE_MIME_TYPE_PDF,
+    FILE_MIME_TYPE_BIOC,
+    FILE_MIME_TYPE_MAP,
+    FILE_MIME_TYPE_SANKEY,
+    FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
     LIFELIKE_DOMAIN
-    )
+)
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -190,7 +200,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
 
 
 class DirectoryTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.filesystem/directory'
+    MIME_TYPE = FILE_MIME_TYPE_DIRECTORY
     SHORTHAND = 'directory'
     mime_types = (MIME_TYPE,)
 
@@ -207,7 +217,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
 
 
 class PDFTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'application/pdf'
+    MIME_TYPE = FILE_MIME_TYPE_PDF
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
@@ -286,7 +296,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
 
 class BiocTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.document/bioc'
+    MIME_TYPE = FILE_MIME_TYPE_BIOC
     SHORTHAND = 'BioC'
     mime_types = (MIME_TYPE,)
     ALLOWED_TYPES = ['.xml', '.bioc']
@@ -322,7 +332,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
 
 
 class MapTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.document/map'
+    MIME_TYPE = FILE_MIME_TYPE_MAP
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
@@ -536,7 +546,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
 
 class SankeyTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.document/sankey'
+    MIME_TYPE = FILE_MIME_TYPE_SANKEY
     SHORTHAND = 'Sankey'
     mime_types = (MIME_TYPE,)
 
@@ -579,7 +589,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'vnd.lifelike.document/enrichment-table'
+    MIME_TYPE = FILE_MIME_TYPE_ENRICHMENT_TABLE
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 

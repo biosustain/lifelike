@@ -40,6 +40,13 @@ DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
 
+FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
+FILE_MIME_TYPE_PDF = 'application/pdf'
+FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
+FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
+FILE_MIME_TYPE_SANKEY = 'vnd.lifelike.document/sankey'
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
+
 
 # enrichment labels
 class EnrichmentDomain(Enum):
@@ -47,7 +54,7 @@ class EnrichmentDomain(Enum):
     REGULON = 'Regulon'
     STRING = 'String'
     GO = 'GO'
-    BIOCYC = 'Biocyc'
+    BIOCYC = 'BioCyc'
 
 
 class LogEventType(Enum):
