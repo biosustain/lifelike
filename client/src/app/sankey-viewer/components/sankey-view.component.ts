@@ -142,6 +142,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
+    this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -233,7 +234,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
-        const {_sourceLinks, _targetLinks, ...otherProperties} = node;
+        const {_sourceLinks, sourceLinks, _targetLinks, targetLinks, ...otherProperties} = node as any;
         return {
           ...otherProperties,
           color: '' + color,
