@@ -28,7 +28,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     'UniProt',
     'String',
     'GO',
-    'Biocyc',
+    'BioCyc',
     'KEGG'
   ];
 

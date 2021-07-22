@@ -118,7 +118,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     prescalers,
     selectedPrescaler: prescalers.default,
     linkPalettes,
-    selectedLinkPalette: linkPalettes.default
+    selectedLinkPalette: linkPalettes.default,
+    labelEllipsis: {
+      enabled: true,
+      value: SankeyLayoutService.labelEllipsis
+    }
   };
   parseProperty = parseForRendering;
   @ViewChild('sankey', {static: false}) sankey;
@@ -446,18 +450,26 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
         description: name,
         callback: () => {
+          const { options } = this;
+          const {
+            nodeValueAccessors,
+            nodeValueGenerators,
+            linkValueAccessors,
+            linkValueGenerators
+          } = options;
           if (node_sizing) {
-            const nodeValueAccessor = this.options.nodeValueAccessors.find(({description}) => description === node_sizing);
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+            options.selectedNodeValueAccessor = nodeValueAccessors.find(
+              ({description}) => description === node_sizing
+            );
           } else {
-            const nodeValueAccessor = this.options.nodeValueGenerators[0];
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+            options.selectedNodeValueAccessor = nodeValueGenerators[0];
           }
           if (link_sizing) {
-            const linkValueAccessor = this.options.linkValueAccessors.find(({description}) => description === link_sizing);
-            this.options.selectedLinkValueAccessor = linkValueAccessor;
+            options.selectedLinkValueAccessor = linkValueAccessors.find(
+              ({description}) => description === link_sizing
+            );
           } else {
-            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[1];
+            options.selectedLinkValueAccessor = linkValueGenerators[1];
           }
           this.onOptionsChange();
         }
@@ -527,6 +539,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   onOptionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
+    this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
