@@ -107,11 +107,7 @@ export class AnnotationTagHandler extends TagHandler {
         } catch (e) {
         }
 
-        hyperlinks.push({
-          domain: hyperlinkText,
-          url: hyperlink,
-          isDatabase: false,
-        });
+        hyperlinks.push({domain: hyperlinkText, url: hyperlink});
 
         references.push({
           type: 'DATABASE',

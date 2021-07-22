@@ -4,6 +4,7 @@ import os
 import sentry_sdk
 import traceback
 
+from neo4j.exceptions import ServiceUnavailable
 from functools import partial
 
 from flask import (
@@ -188,6 +189,8 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(ServerException, handle_error)
+    app.register_error_handler(BrokenPipeError, handle_error)
+    app.register_error_handler(ServiceUnavailable, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
     return app
 
@@ -199,7 +202,10 @@ def register_blueprints(app, pkgname):
             app.register_blueprint(mod.bp)
 
 
-def handle_error(ex: ServerException):
+def handle_error(ex):
+    if isinstance(ex, BrokenPipeError) or isinstance(ex, ServiceUnavailable):
+        # hopefully these were caught at the query level
+        ex = ServerException(message=str(ex))
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
