@@ -35,8 +35,8 @@ interface SankeyNodeHeight {
 
 export interface SankeyAdvancedOptions {
   nodeHeight: SankeyNodeHeight;
-  prescalers: Array<any>;
-  selectedPrescaler: any;
+  prescalers: ArrayWithDefault<Prescaler>;
+  selectedPrescaler: Prescaler;
   selectedNodeValueAccessor: any;
   selectedLinkValueAccessor: any;
   selectedPredefinedValueAccessor: any;
@@ -46,8 +46,8 @@ export interface SankeyAdvancedOptions {
   nodeValueGenerators: Array<any>;
   linkValueGenerators: Array<any>;
   normalizeLinks: boolean;
-  linkPalettes: Array<any>;
-  selectedLinkPalette: any;
+  linkPalettes: ArrayWithDefault<Palette>;
+  selectedLinkPalette: Palette;
   labelEllipsis: any;
 }
 
