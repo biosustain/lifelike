@@ -1,7 +1,7 @@
 // region Colors
 import { isDevMode } from '@angular/core';
 import { cubehelix } from 'd3';
-import { ArrayWithDefault, Prescaler, Palette } from './interfaces';
+import { ArrayWithDefault, Palette } from './interfaces';
 
 export const christianColors = [
   '#1CE6FF', '#FF34FF', '#FF4A46', '#008941', '#006FA6', '#A30059', '#FFFF00',
@@ -72,10 +72,18 @@ export const expandingColorPalletGenerator = (
   // = 0 - PBCC is not affected by size
   // increase - PBCC is more neglectable for higher size
   // decrease - PBCC is more significant for higher size
-  const unificationCoeff = 0.8;
-  const hueCoeff = 24 / size + unificationCoeff;
-  const satCoeff = 8 / size + unificationCoeff;
-  const ligCoeff = 1 / size + unificationCoeff;
+  const unificationCoeff = 0.4;
+  let hueCoeff = 32 / size + unificationCoeff;
+  let satCoeff = 4 / size + unificationCoeff;
+  let ligCoeff = 1 / size + unificationCoeff;
+  if (hueCoeff >= size) {
+    hueCoeff = size;
+    satCoeff = 1;
+    ligCoeff = 1;
+  } else if (hueCoeff * satCoeff >= size) {
+    satCoeff = size / hueCoeff;
+    ligCoeff = 1;
+  }
   // factor to normalise coefficients to make their multiplication equal to size
   // hueSteps * saturationSteps * lightnessSteps === size
   const normFact = Math.cbrt(size / (hueCoeff * satCoeff * ligCoeff));
@@ -97,19 +105,13 @@ export const expandingColorPalletGenerator = (
   });
 };
 
-export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
-  const uniq = arr instanceof Set ? arr : new Set(arr);
-  const palette = generator(uniq.size, params);
-  return new Map([...uniq].map((v, i) => [v, palette(i)]));
-};
-
 export const linkPalettes: ArrayWithDefault<Palette> = [
   {
     name: 'Hue palette',
     palette: colorPaletteGenerator
   },
   {
-    name: 'Adaptive hue, saturation, lightness palette',
+    name: 'Adaptive hue, saturation, lightness',
     palette: expandingColorPalletGenerator
   },
   {
@@ -119,3 +121,9 @@ export const linkPalettes: ArrayWithDefault<Palette> = [
 ];
 
 linkPalettes.default = linkPalettes[0];
+
+export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
+  const uniq = arr instanceof Set ? arr : new Set(arr);
+  const palette = generator(uniq.size, params);
+  return new Map([...uniq].map((v, i) => [v, palette(i)]));
+};
