@@ -378,4 +378,4 @@ LIFELIKE_DOMAIN = os.getenv('DOMAIN')
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png']
-MAPS_RE = re.compile('^/projects/[a-zA-Z0-9]+/maps/.+$')
+MAPS_RE = re.compile('^/projects/.+/maps/.+$')
