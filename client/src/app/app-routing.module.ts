@@ -30,6 +30,7 @@ import {EnrichmentVisualisationViewerComponent} from './enrichment/components/vi
 import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component';
 import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
 import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
+import { TraceViewComponent } from './trace-viewer/components/trace-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -132,6 +133,15 @@ const routes: Routes = [
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
+      fontAwesomeIcon: 'file-chart-line',
+    },
+  },
+  {
+    path: 'projects/:project_name/trace/:file_id/:id',
+    canActivate: [AuthGuard],
+    component: TraceViewComponent,
+    data: {
+      title: 'Trace details',
       fontAwesomeIcon: 'file-chart-line',
     },
   },

@@ -548,12 +548,6 @@ class FileBackup(RDBMSBase, FullTimestampMixin, HashIdMixin):
     user = db.relationship('AppUser', foreign_keys=user_id)
 
 
-class LMDBsDates(RDBMSBase):
-    __tablename__ = 'lmdbs_dates'
-    name = db.Column(db.String(256), primary_key=True)
-    date = db.Column(TIMESTAMP(timezone=True), nullable=False)
-
-
 # TODO: Adding the _bare minimum_ columns to this table for now. I imagine that eventually
 # we will want to manage permissions on worksheets, just as we do for pdf files. However,
 # we also don't currently have a home in the UI for managing these worksheets.

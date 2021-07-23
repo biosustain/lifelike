@@ -15,7 +15,7 @@ export class BaseEnrichmentDocument {
     'UniProt',
     'String',
     'GO',
-    'Biocyc',
+    'BioCyc',
     'KEGG'
   ];
   result: EnrichmentResult = null;
@@ -39,7 +39,7 @@ export class BaseEnrichmentDocument {
 
     // parse for column order/domain input
     if (domains == null) {
-      domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc', 'KEGG'];
+      domains = this.domains;
     }
 
     const duplicateGenes = this.getDuplicates(rawImportGenes);
@@ -270,8 +270,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       annotatedImported: synonym,
                       matched: node.name,
                       annotatedMatched: node.name,
-                      fullName: node.full_name,
-                      annotatedFullName: node.full_name,
+                      fullName: node.full_name || '',
+                      annotatedFullName: node.full_name || '',
                       link,
                       domains: this.generateGeneDomainResults(domains, domainWrapper, node)
                     });
@@ -286,7 +286,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '4',
+                  version: '5',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -294,7 +294,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     UniProt: {labels: ['Function']},
                     String: {labels: ['Annotation']},
                     GO: {labels: ['Annotation']},
-                    Biocyc: {labels: ['Pathways']},
+                    BioCyc: {labels: ['Pathways']},
                     KEGG: {labels: ['Pathways']}
                   },
                   genes: genesList,
@@ -382,10 +382,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       }
     }
 
-    if (domains.includes('Biocyc')) {
+    if (domains.includes('BioCyc')) {
       if (wrapper.biocyc !== null) {
         const text = wrapper.biocyc.result ? wrapper.biocyc.result.join('; ') : '';
-        results.Biocyc = {
+        results.BioCyc = {
           Pathways: {
             text,
             annotatedText: text,
@@ -449,7 +449,7 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '4';
+  version: '5';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }
