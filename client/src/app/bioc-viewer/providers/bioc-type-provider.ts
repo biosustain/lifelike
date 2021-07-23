@@ -1,13 +1,18 @@
-import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
-  Exporter,
-} from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
+
 import { Observable, of } from 'rxjs';
-import { SearchType } from '../../search/shared';
 import { map } from 'rxjs/operators';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import {
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
+  Exporter,
+} from 'app/file-browser/services/object-type.service';
+import { SearchType } from 'app/search/shared';
+import { DatabaseType } from 'app/shared/annotation-types';
+
 
 
 export const BIOC_MIMETYPE = 'vnd.lifelike.document/bioc';
@@ -28,7 +33,7 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: 'BioCyc'}),
+      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: DatabaseType.BIOCYC}),
     ];
   }
 
