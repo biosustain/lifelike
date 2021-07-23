@@ -50,11 +50,15 @@ Liquibase Community 4.4.1 by Datical
 ```
 
 ### JAR Files
-You will need to JARs to get liquibase to work:
+You will need two `.jar` files for liquibase to work:
 - liquibase-neo4j: https://github.com/liquibase/liquibase-neo4j/releases
 - Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
+    - Update 7/23/2021: Check out the 4.0 branch and build it instead.
+    - The reason is because a bug fix (about frozen return queries) was merged but hasn't been released yet.
+    - Run `mvn package -DskipTest` and copy the `target/neo4j-jdbc-driver-4.0.1.jar` file.
+    - Note: The `mvn` (maven) should have been installed along with the OpenJDK.
 
-Download the JARs based on the neo4j version, e.g 4.x jars for our neo4j. Put the JARs in the `$LIQUIBASE_HOME/lib` folder location.
+Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
 
 ```bash
 > pwd
@@ -95,7 +99,7 @@ The above order, `changelog-10.0.xml` will run **before** `changelog-2.0.xml`. O
 
 We will increment by 10s, as this should allow us to increment alphabetically up to 1000, 1010, 1020, etc...
 
-The bare `.xml` should be something like this:
+The simplest changeset `.xml` should be something like this:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -122,7 +126,7 @@ Both `id` and `author` are required.
 ```xml
 <!--
   correct, but seems to have its own issues
-  better to just make on <sql> per changeset
+  better to just have one query in a <sql>
 
   a changeset is like a transaction
 -->
@@ -140,22 +144,16 @@ As you can see, the `<sql>` tag is where the cypher query is placed. This works 
 
 More information can be found: https://docs.liquibase.com/concepts/home.html
 
-### Queries that Return and APOC Functions
-As of this writing (7/21/2021), there is a bug in liquibase that causes it to hang for queries that return a value. APOC functions have implicit returns.
-
-See: https://github.com/liquibase/liquibase-neo4j/issues/14
-
-The workaround for APOC functions is to not use them, at least until the bug is fixed.
-
 ## Checking Migration Version Logs
-Liquibase will create two node labels in the database: `__LiquibaseChangeLog` and `__LiquibaseChangeSet`.
+Liquibase will create node labels in the database, two of them include: `__LiquibaseChangeLog` and `__LiquibaseChangeSet`.
 - `__LiquibaseChangeLog`: when the database was last updated and the related changelog files.
-- `__LiquibaseChangeSet`: the migration version chain (or change sets) associated with the changelog files.
+- `__LiquibaseChangeSet`: the migration version chain (or changesets) associated with the changelog files.
 
 ## Rolling Back
 Liquibase handles rolling back automatically if there is an error: https://docs.liquibase.com/concepts/basic/changeset.html
 
 > Liquibase attempts to execute each changeset in a transaction that is committed at the end, or rolled back if there is an error. Some databases will auto-commit statements which interferes with this transaction setup and could lead to an unexpected database state. Therefore, it is best practice to have just one change per changeset unless there is a group of non-auto-committing changes that you want to apply as a transaction such as inserting data.
+  - Again, see for more info: https://stackoverflow.com/a/56705198
 
 However, if you prefer to rollback manually, you can do so...
 
@@ -183,6 +181,6 @@ This command will give you a preview of what liquibase will run. You can use thi
 ```bash
 # don't need port in ip address
 # --log-level is optional
-liquibase --log-level=debug --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
+liquibase --log-level=info --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
 ```
 This command will run the queries and update the database.
