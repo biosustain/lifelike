@@ -105,17 +105,29 @@ class Database:
             df = pd.DataFrame(results.values(), columns=results.keys())
         return df
 
-    def load_data_from_rows(self, query: str, data_rows: []):
+    def load_data_from_rows(self, query: str, data_rows: [], return_node_count: bool = False):
         """
         run the query by passing data rows
         :param query: the query with $dict parameter (see query_builder.py)
         :param data_rows: list of dict that can get from a dataframe as rows = dataframe.to_dict('records')
-        :return: none
+        :return_node_count: If True, return count. The query is expected to return COUNT(n).
+        :return: ResultSummary.counters. If return_node_count=True, also return node_count.
         """
         with self.driver.session(database=self.dbname) as session:
             rows_dict = {'rows': data_rows}
-            result = session.run(query, dict=rows_dict).consume()
-            self.logger.info(result.counters)
+            node_count = 0
+            result = session.run(query, dict=rows_dict)
+            if return_node_count:
+                record = result.single()
+                if record:
+                    node_count = record.value()
+            info = result.consume()
+            self.logger.info(info.counters)
+
+            if return_node_count:
+                return node_count, info.counters
+
+            return info.counters
 
     def load_data_from_dataframe(self, data_frame: pd.DataFrame, query: str, chunksize=None):
         """
@@ -179,5 +191,40 @@ class Database:
                     # self.logger.info(result.counters)
                 self.logger.info("Rows processed: " + str(count))
 
+    def log_etl_load_start(self, domain: str, node_labels: [], node_version: str):
+        """Log an etl load start by creating an EtlLoad node.
+        :param domain: Name of the domain to be loaded, e.g. "BioCyc" or "NCBI".
+        :param nodel_labels: A list of labels applied to the nodes.
+        :param node_version: A string representing the node version.
+        :return: etl_load_id as uuid
+        """
+        query = (
+            "CREATE (n:EtlLoad { etl_load_id: apoc.create.uuid(), domain: '"
+            + domain
+            + "', node_labels: '"
+            + ",".join(node_labels)
+            + "', started_at: datetime(), version: '"
+            + node_version
+            + "'}) RETURN n.etl_load_id"
+        )
+        df = self.get_data(query)
+        etl_load_id = df.loc[0][0]
+        return etl_load_id
 
-
+    def log_etl_load_finished(self, etl_load_id: str, no_of_created_nodes : int = None, no_of_updated_nodes : int = None, no_of_created_relations: int = None, no_of_updated_relations : int = None):
+        """Log etl load finish by updating an EtlLoad node.
+        param etl_load_id: etl_load_id of the load to log as finished.
+        param no_of_created_nodes: number of nodes created by the load
+        param no_of_updated_nodes: number of nodes updated by the load
+        param no_of_created_relations: number of relations created by the load
+        param no_of_updated_relations: number of relations updated by the load
+        """
+        query = f"""
+        MATCH (n:EtlLoad) WHERE n.etl_load_id = '{etl_load_id}' 
+        SET n.finished_at = datetime()
+            , n.no_of_created_nodes = {no_of_created_nodes}
+            , n.no_of_updated_nodes = {no_of_updated_nodes}
+            , n.no_of_created_relations = {no_of_created_relations}
+            , n.no_of_updated_relations = {no_of_updated_relations}
+        """
+        self.run_query(query)

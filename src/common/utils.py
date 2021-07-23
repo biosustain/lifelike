@@ -1,4 +1,7 @@
-import zipfile, os, re
+import os
+import zipfile
+
+import git
 
 
 def file_compress(inp_file_names, out_zip_file):
@@ -28,4 +31,15 @@ def get_data_dir():
     return os.path.join(basedir, 'data')
 
 
+def get_git_version(short: int = None):
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.commit.hexsha
+    if short:
+        return repo.git.rev_parse(sha, short=short)
+    else:
+        return sha
 
+
+def get_node_version(data_source_version):
+    git_commit_sha = get_git_version(7)
+    return f"etl:{git_commit_sha};source:{data_source_version}"
