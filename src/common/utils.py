@@ -39,7 +39,7 @@ def get_git_version(short: int = None):
     else:
         return sha
 
+
 def get_node_version(data_source_version):
     git_commit_sha = get_git_version(7)
     return f"etl:{git_commit_sha};source:{data_source_version}"
-
