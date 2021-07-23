@@ -1,7 +1,6 @@
 import json
 import logging
 from pathlib import Path
-from typing import List
 
 from common import utils as common_utils
 from common.constants import *
@@ -142,11 +141,32 @@ class BiocycParser(object):
                 if parser:
                     nodes = parser.parse_data_file()
                     data_source_version = parser.version
-                    if nodes:
-                        node_version = common_utils.get_node_version(data_source_version)
-                        parser.update_nodes_in_graphdb(nodes, database, node_version)
-                        parser.add_edges_to_graphdb(nodes, database, node_version)
+                    node_version = common_utils.get_node_version(data_source_version)
 
+                    # Create EtlLoad node
+                    etl_load_id = database.log_etl_load_start("BioCyc", parser.node_labels, node_version)
+                    self.logger.debug(f"etl_load_id: {etl_load_id}")
+
+                    no_of_created_nodes = 0
+                    no_of_updated_nodes = 0
+                    no_of_created_relations = 0
+                    no_of_updated_relations = 0
+
+                    if nodes:
+                        node_count, result_counters = parser.update_nodes_in_graphdb(nodes, database, etl_load_id)
+                        no_of_created_nodes += result_counters.nodes_created
+                        no_of_updated_nodes += (node_count - result_counters.nodes_created)
+                        _no_of_created_nodes, _no_of_updated_nodes, _no_of_created_relations, _no_of_updated_relations = parser.add_edges_to_graphdb(nodes, database, etl_load_id)
+
+                        no_of_created_nodes += _no_of_created_nodes
+                        no_of_updated_nodes += _no_of_updated_nodes
+                        no_of_created_relations += _no_of_created_relations
+                        no_of_updated_relations += _no_of_updated_relations
+
+                    # TODO: Add number of entities in file and number of parsed nodes ?
+                    # TODO: Include numbers from scripts run after this
+
+                    database.log_etl_load_finished(etl_load_id, no_of_created_nodes, no_of_updated_nodes, no_of_created_relations, no_of_updated_relations)
 
     def write_entity_datafile(self, db_name, data_file, entities: []):
         for entity in entities:
@@ -191,18 +211,3 @@ def main(args):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
