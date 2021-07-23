@@ -123,12 +123,12 @@ class BaseDataFileParser(BaseParser):
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
 
-    def update_nodes_in_graphdb(self, nodes:[], database:Database, version):
+    def update_nodes_in_graphdb(self, nodes:[], database:Database, etl_load_id: str):
         """
         Load or update nodes in KG. This can also be called for initial loading.
         :param nodes: list of nodes
         :param database: neo4j Database
-        :param version: 
+        :param etl_load: Id that (virtually) links a node to an EtlLoad node.
         :return:
         """
         if not nodes:
@@ -138,10 +138,14 @@ class BaseDataFileParser(BaseParser):
         for node in nodes:
             rows.append(node.to_dict())
         attrs = self.attrs + [PROP_DATA_SOURCE]
-        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, update_version=version)
-        database.load_data_from_rows(query, rows)
+        query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, etl_load_id=etl_load_id, return_node_count=True)
+        return database.load_data_from_rows(query, rows, return_node_count=True)
 
-    def add_edges_to_graphdb(self, nodes:[], database:Database, update_version):
+    def add_edges_to_graphdb(self, nodes:[], database:Database, etl_load_id):
+        no_of_created_nodes = 0
+        no_of_updated_nodes = 0
+        no_of_created_relations = 0
+        no_of_updated_relations = 0
         entity_rel_dict = dict()
         db_link_dict = dict()
         synonym_list = []
@@ -172,27 +176,43 @@ class BaseDataFileParser(BaseParser):
 
         if synonym_list:
             self.logger.info('Add synonyms')
-            query = get_create_synonym_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, PROP_BIOCYC_ID, PROP_NAME, [], update_version)
+            query = get_create_synonym_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, PROP_BIOCYC_ID, PROP_NAME, [], etl_load_id=etl_load_id, return_node_count=True)
             self.logger.debug(query)
-            database.load_data_from_rows(query, synonym_list)
+            node_count, result_counters = database.load_data_from_rows(query, synonym_list, return_node_count=True)
+            no_of_created_nodes += result_counters.nodes_created
+            no_of_updated_nodes += (node_count - result_counters.nodes_created)
         for rel in entity_rel_dict.keys():
             self.logger.info('Add relationship ' + rel)
             query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel, update_version=update_version)
+                                                              NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', rel, etl_load_id=etl_load_id, return_node_count=True)
             self.logger.debug(query)
-            database.load_data_from_rows(query, entity_rel_dict[rel])
+            node_count, result_counters = database.load_data_from_rows(query, entity_rel_dict[rel], return_node_count=True)
+            no_of_created_relations += result_counters.relationships_created
+            no_of_updated_relations += (node_count - result_counters.relationships_created)
 
-        self.add_dblinks_to_graphdb(db_link_dict, database, update_version)
+        _no_of_created_relations, _no_of_updated_relations = self.add_dblinks_to_graphdb(db_link_dict, database, etl_load_id)
 
-    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database, update_version):
+        no_of_created_relations += _no_of_created_relations
+        no_of_updated_relations += _no_of_updated_relations
+
+        return no_of_created_nodes, no_of_updated_nodes, no_of_created_relations, no_of_updated_relations
+
+    def add_dblinks_to_graphdb(self, db_link_dict:dict, database:Database, etl_load_id):
+        no_of_created_relations = 0
+        no_of_updated_relations = 0
         for db_name in db_link_dict.keys():
             self.logger.info('Add DB Link relationship to ' + db_name )
             dest_label = 'db_' + db_name
             rel = db_name.upper() + '_LINK'
             query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id',
-                                                              dest_label, PROP_ID, 'to_id', rel, update_version=update_version)
+                                                              dest_label, PROP_ID, 'to_id', rel, etl_load_id=etl_load_id, return_node_count=True)
             self.logger.debug(query)
-            database.load_data_from_rows(query, db_link_dict[db_name])
+            node_count, result_counters = database.load_data_from_rows(query, db_link_dict[db_name], return_node_count=True)
+            no_of_created_relations += result_counters.relationships_created
+            no_of_updated_relations += (node_count - result_counters.relationships_created)
+
+        return no_of_created_relations, no_of_updated_relations
+
 
     def write_entity_data_files(self, nodes:[]):
         os.makedirs(self.db_output_dir, 0o777, True)
