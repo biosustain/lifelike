@@ -2,21 +2,19 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
-.network-navigation-container {
-    margin-left: $spacer;
-    margin-top: $spacer;
-    min-width: 6rem;
-    position: absolute;
-    z-index: 1;
-    pointer-events: none;
-}
+.network-container {
+  position: absolute;
+  z-index: 1;
+  margin: $spacer;
 
-.network-utilities-container {
-    margin-left: $spacer;
-    margin-bottom: $spacer;
-    bottom: 0;
-    position: absolute;
-    z-index: 1;
+  &.navigation {
+    min-width: 6rem;
+    pointer-events: none;
+  }
+
+  &.selection {
+    max-width: 50%;
+  }
 }
 
 .physics-shadow-on {
