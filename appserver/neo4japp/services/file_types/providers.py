@@ -497,18 +497,18 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if node['data'].get('sources'):
-                doi_src = next((src for src in node['data'].get('sources') if src.get(
-                        'domain') == "DOI"), None)
-                if doi_src:
-                    params['href'] = doi_src.get('url')
-                else:
-                    params['href'] = node['data']['sources'][-1].get('url')
-            elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][-1].get('url')
-            # If url points to internal file, append it with the domain address
-            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
-                params['href'] = LIFELIKE_DOMAIN + params['href']
+            # if node['data'].get('sources'):
+            #     doi_src = next((src for src in node['data'].get('sources') if src.get(
+            #             'domain') == "DOI"), None)
+            #     if doi_src:
+            #         params['href'] = doi_src.get('url')
+            #     else:
+            #         params['href'] = node['data']['sources'][-1].get('url')
+            # elif node['data'].get('hyperlinks'):
+            #     params['href'] = node['data']['hyperlinks'][-1].get('url')
+            # # If url points to internal file, append it with the domain address
+            # if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+            #     params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
         for edge in json_graph['edges']:
@@ -654,9 +654,15 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
 
 class LinkedMapExportProvider:
-    def __init__(self, requested_format, filename):
-        self.ext = f".{requested_format}"
-        self.filename = filename
+    """ Export multiple files as self contained document
+    Params:
+    requested_format: str holding lowercase format
+    file_type: provider allowing to generate the export from provided files
+    """
+    def __init__(self, requested_format, file_type: BaseFileTypeProvider):
+        self.requested_format = requested_format
+        self.file_type = file_type
+        self.PDF_MARGIN = 3 * 96
         if requested_format == 'png':
             self.merger = self.merge_pngs_vertically
         elif requested_format == 'pdf':
@@ -665,18 +671,41 @@ class LinkedMapExportProvider:
             raise ValidationError("Unknown or invalid export format for the requested file.",
                                   requested_format)
 
-    def merge(self, files):
+    def merge(self, files: list, links=None):
+        """ Export, merge and prepare as FileExport the list of files
+        Params:
+        files: List of Files objects. The first entry is always the main map, rest is pretty random
+        (based on the ocurrence order in json graph)
+        links: List of dict objects storing info about links that should be embedded:
+            x: x pos; y: y pos;
+            pageOrigin: which page contains icon;
+            pageDest: where should it take you
+        """
+        ext = f'.{self.requested_format}'
         if len(files) > 1:
-            content = self.merger(files)
+            content = self.merger(files, links)
         else:
-            content = files[0]
+            content = io.BytesIO(self.get_file_export(files[0]).content.getvalue())
         return FileExport(
             content=content,
-            mime_type=extension_mime_types[self.ext],
-            filename=f"{self.filename}{self.ext}"
+            mime_type=extension_mime_types[ext],
+            filename=f"{files[0].filename}{ext}"
         )
 
-    def merge_pngs_vertically(self, files):
+    def get_file_export(self, file):
+        """ Get the exported version of the file in requested format """
+        try:
+            return io.BytesIO(self.file_type.generate_export
+                              (file, self.requested_format).content.getvalue())
+        except ExportFormatError:
+            raise ValidationError("Unknown or invalid export "
+                                  "format for the requested file.", self.requested_format)
+
+    def merge_pngs_vertically(self, files, _=None):
+        """ Append pngs vertically.
+        params:
+        files: list of files to export
+        _: Links parameter: omitted in case of png, added to match the merge_pdfs signature"""
         final_bytes = io.BytesIO()
         images = [Image.open(x) for x in files]
         cropped_images = [image.crop(image.getbbox()) for image in images]
@@ -695,17 +724,51 @@ class LinkedMapExportProvider:
         new_im.save(final_bytes, format='PNG')
         return final_bytes
 
-    def merge_pdfs(self, files):
+    def merge_pdfs(self, files: list, links=None):
+        """ Merge pdfs and add links to map. """
+        links = links or []
+        DEFAULT_DPI = 96.0
         final_bytes = io.BytesIO()
         # merger = PdfFileMerger(strict=False)
         writer = PdfFileWriter()
         for i, out_file in enumerate(files):
+            out_file = self.get_file_export(out_file)
             reader = PdfFileReader(out_file, strict=False)
             writer.appendPagesFromReader(reader)
             # writer.addLink(0, 1, [0, 0, 1000, 1000], 'dott')
             # merger.append(out_file)
-        # merger.write(final_bytes)
-        writer.addLink(0, 1, [0, 0, 100, 100], 'dot')
+        bbox = self.get_bounding_box(files[0])
+        map_size = (bbox[2] - bbox[0]) / SCALING_FACTOR + 6.0
 
+        print("SIZE OF !ST MAP: ", map_size)
+        # merger.write(final_bytes)
+        # writer.addLink(0, 4, [0, 0, 100, 100], 'dot')
+        # writer.addLink(0, 5, [100, 0, 200, 100], 'dot')
+        for link in links:
+            file_index = link['page_origin']
+            bounding_box = self.get_bounding_box(files[file_index])
+            x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * DEFAULT_DPI) + \
+                self.PDF_MARGIN
+            y_base = ((link['y'] - bounding_box[1]) / SCALING_FACTOR * DEFAULT_DPI) + \
+                self.PDF_MARGIN
+            size = int(ICON_SIZE) * DEFAULT_DPI
+            print(link)
+            print('location:', x_base, y_base)
+            writer.addLink(file_index, link['page_destination'],
+                           [x_base, y_base, x_base + size, y_base + size], border='dott')
+        writer.addLink(0, 2,
+                       [0, 0, 0 + 100, 0 + 100], border=['dot', 'dot', 'dot', 'dot'])
         writer.write(final_bytes)
         return final_bytes
+
+    def get_bounding_box(self, file):
+        """ Gets bounding box of the file, allowing to resolve the cooridnates in which
+        links should be placed"""
+        x_values, y_values = [], []
+        json_graph = json.loads(file.content.raw_file)
+        for node in json_graph['nodes']:
+            x_values.append(node['data']['x'])
+            y_values.append(node['data']['y'])
+        if not x_values:
+            return [self.PDF_MARGIN for _ in range(4)]
+        return [min(x_values), min(y_values), max(x_values), max(y_values)]
