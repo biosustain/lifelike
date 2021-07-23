@@ -121,6 +121,9 @@ class BiocycParser(object):
         :param database: the neo4j database to load data
         """
 
+        # Ensure constraint on EtlLoad
+        database.create_constraint("EtlLoad", "etl_load_id", "constraint_etlload_etl_load_id")
+
         # Create constraints and indices if they don't exist
         database.create_constraint(
             NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
