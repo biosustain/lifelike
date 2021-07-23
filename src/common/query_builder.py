@@ -78,7 +78,7 @@ def get_create_nodes_query(node_label:str, id_name: str, properties:[], addition
     return '\n'.join(query_rows)
 
 
-def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], update_only=False, update_version=None):
+def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], update_only=False, etl_load_id: str=None, return_node_count: bool=False):
     """
     Build query to update nodes.  If a node not exists, and update_only = False, create one then update.
     The query will take a param $dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
@@ -90,6 +90,8 @@ def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], a
     :param update_properties: node property names to be updated
     :param additional_labels: other node labels if exists
     :param update_only: if true, no new nodes will be added. Otherwise use merge node to add new nodes
+    :param etl_load_id: Id that (virtually) links a node to an EtlLoad node.
+    :return_node_count: If True, return COUNT(n).
     :return: query with param $dict
     """
     query_rows = list()
@@ -106,10 +108,12 @@ def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], a
         if update_properties:
             props = ['n.' + prop + '=row.' + prop for prop in update_properties if prop != id_name]
             prop_sets += props
-        if update_version:
-            prop_sets.append(f'n.version={update_version}')
+        if etl_load_id:
+            prop_sets.append(f'n.etl_load_id="{etl_load_id}"')
         if len(prop_sets) > 0:
             query_rows.append('SET ' + ','.join(prop_sets))
+    if return_node_count:
+        query_rows.append('RETURN COUNT(n)')
     return '\n'.join(query_rows)
 
 
@@ -125,7 +129,7 @@ def get_delete_nodes_query(node_label: str, id_name: str):
 
 
 def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
-                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[], update_version=None):
+                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[], etl_load_id=None, return_node_count: bool=False):
     """
     Build the query to create relationships from dataframe.  Dataframe need to transfer to dictionary using the following code:
     dict = {'rows': dataframe.to_dict('Records')}
@@ -137,6 +141,8 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
     :param node2_col: dataframe column name for the ending node id
     :param relationship: the relationship type
     :param rel_properties: relationship properties
+    :param etl_load_id: Id that (virtually) links a node to an EtlLoad node.
+    :return_node_count: If True, return COUNT(r).
     :return: cypher query with parameter $dict
     """
     rows = list()
@@ -148,15 +154,17 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
     if rel_properties:
         for prop in rel_properties:
             prop_sets.append(f"r.{prop}=row.{prop}")
-    if update_version:
-        prop_sets.append(f'r.version={update_version}')
+    if etl_load_id:
+        prop_sets.append(f'r.etl_load_id="{etl_load_id}"')
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
         rows.append(f"SET {set_phrase}")
+    if return_node_count:
+        rows.append('RETURN COUNT(r)')
     return '\n'.join(rows)
 
 
-def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_col:str, synonym_col, rel_properties=[], update_version=None):
+def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_col:str, synonym_col, rel_properties=[], etl_load_id=None, return_node_count: bool=False):
     """
     Build the query to create node, then create relationship with another existing node using dataframe data.
     Dataframe need to transfer to dictionary using the following code: dict = {'rows': dataframe.to_dict('Records')}
@@ -165,7 +173,8 @@ def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_
     :param node_id_col: the node id column name in the dataframe, e.g. 'start_id', 'string_id'
     :param synonym_col: the dataframe column name for synonym
     :param rel_properties: relationship properties for HAS_SYNONYM
-    :param update_version: the version
+    :param etl_load_id: the version
+    :return_node_count: If True, return COUNT(r).
     :return: cypher query with parameter $dict
     """
     query_rows = list()
@@ -176,9 +185,11 @@ def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_
     prop_sets = []
     for prop in rel_properties:
         prop_sets.append(f"r.{prop}=row.{prop}")
-    if update_version:
-        prop_sets.append(f"r.version={update_version}")
+    if etl_load_id:
+        prop_sets.append(f"r.etl_load_id='{etl_load_id}'")
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
         query_rows.append(f"SET {set_phrase}")
+    if return_node_count:
+        query_rows.append('RETURN COUNT(r)')
     return '\n'.join(query_rows)

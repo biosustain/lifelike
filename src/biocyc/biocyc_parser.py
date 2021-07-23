@@ -1,27 +1,16 @@
 import json
 import logging
 from pathlib import Path
-from typing import List
 
+from common import utils as common_utils
 from common.constants import *
 from common.database import *
 
-from biocyc import (
-    class_parser,
-    compound_parser,
-    dnabindsite_parser,
-    enzymereaction_parser,
-    gene_parser,
-    pathway_parser,
-    promoter_parser,
-    protein_parser,
-    reaction_parser,
-    regulation_parser,
-    rna_parser,
-    terminator_parser,
-    transcripitionunit_parser,
-)
-
+from biocyc import (class_parser, compound_parser, dnabindsite_parser,
+                    enzymereaction_parser, gene_parser, pathway_parser,
+                    promoter_parser, protein_parser, reaction_parser,
+                    regulation_parser, rna_parser, terminator_parser,
+                    transcripitionunit_parser)
 
 ENTITIES = [NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE, NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
             NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
@@ -132,6 +121,9 @@ class BiocycParser(object):
         :param database: the neo4j database to load data
         """
 
+        # Ensure constraint on EtlLoad
+        database.create_constraint("EtlLoad", "etl_load_id", "constraint_etlload_etl_load_id")
+
         # Create constraints and indices if they don't exist
         database.create_constraint(
             NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
@@ -151,11 +143,33 @@ class BiocycParser(object):
                 parser.version = version
                 if parser:
                     nodes = parser.parse_data_file()
-                    version = parser.version
-                    if nodes:
-                        parser.update_nodes_in_graphdb(nodes, database)
-                        parser.add_edges_to_graphdb(nodes, database)
+                    data_source_version = parser.version
+                    node_version = common_utils.get_node_version(data_source_version)
 
+                    # Create EtlLoad node
+                    etl_load_id = database.log_etl_load_start("BioCyc", parser.node_labels, node_version)
+                    self.logger.debug(f"etl_load_id: {etl_load_id}")
+
+                    no_of_created_nodes = 0
+                    no_of_updated_nodes = 0
+                    no_of_created_relations = 0
+                    no_of_updated_relations = 0
+
+                    if nodes:
+                        node_count, result_counters = parser.update_nodes_in_graphdb(nodes, database, etl_load_id)
+                        no_of_created_nodes += result_counters.nodes_created
+                        no_of_updated_nodes += (node_count - result_counters.nodes_created)
+                        _no_of_created_nodes, _no_of_updated_nodes, _no_of_created_relations, _no_of_updated_relations = parser.add_edges_to_graphdb(nodes, database, etl_load_id)
+
+                        no_of_created_nodes += _no_of_created_nodes
+                        no_of_updated_nodes += _no_of_updated_nodes
+                        no_of_created_relations += _no_of_created_relations
+                        no_of_updated_relations += _no_of_updated_relations
+
+                    # TODO: Add number of entities in file and number of parsed nodes ?
+                    # TODO: Include numbers from scripts run after this
+
+                    database.log_etl_load_finished(etl_load_id, no_of_created_nodes, no_of_updated_nodes, no_of_created_relations, no_of_updated_relations)
 
     def write_entity_datafile(self, db_name, data_file, entities: []):
         for entity in entities:
@@ -200,18 +214,3 @@ def main(args):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
