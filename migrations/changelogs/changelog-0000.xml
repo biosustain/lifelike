@@ -10,60 +10,177 @@
     And separate changeSets grouping by empty new line space
   -->
 
-  <changeSet id="LL-2193-drop-index-association-id-1" author="Binh Vu">
-    <comment>Init and See changeset id to group changesets together</comment>
+  <changeSet id="LL-2193-association-id-constraint-1" author="Binh Vu">
+    <comment>Add association id constraint (1st changeset)</comment>
     <sql>DROP INDEX ON :Association(id)</sql>
   </changeSet>
-  <changeSet id="LL-2193-drop-index-association-id-2" author="Binh Vu">
-    <comment>See changeset id to group changesets together</comment>
+  <changeSet id="LL-2193-association-id-constraint-2" author="Binh Vu">
+    <comment>Add association id constraint (2nd changeset)</comment>
     <sql>
-      MATCH (n1)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(n2)
-      SET a.id = n1.id + '-' + n2.id + '-' + a.type
+      CALL apoc.periodic.iterate(
+        "match (n1)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(n2) return n1, a, n2",
+        "set a.id = n1.id + '-' + n2.id + '-' + a.type", {batchSize:10000, parallel: true}
+      )
     </sql>
   </changeSet>
-  <changeSet id="LL-2193-drop-index-association-id-3" author="Binh Vu">
-    <comment>See changeset id to group changesets together</comment>
+  <changeSet id="LL-2193-association-id-constraint-3" author="Binh Vu">
+    <comment>Add association id constraint (3rd changeset)</comment>
     <sql>CREATE CONSTRAINT constraint_association_id ON (n:Association) ASSERT n.id IS UNIQUE</sql>
   </changeSet>
 
-  <!-- ##### -->
+  <!-- ######## -->
 
-  <changeSet id="LL-2193-drop-index-snippet-id-1" author="Binh Vu">
-    <comment>See changeset id to group changesets together</comment>
+  <changeSet id="LL-2193-set-snippet-id-1" author="Binh Vu">
+    <comment>Set snippet id (1st changeset)</comment>
     <sql>DROP INDEX ON :Snippet(id)</sql>
   </changeSet>
-  <changeSet id="LL-2193-drop-index-snippet-id-2" author="Binh Vu">
-    <comment>See changeset id to group changesets together</comment>
+  <changeSet id="LL-2193-set-snippet-id-2" author="Binh Vu">
+    <comment>Set snippet id (2nd changeset)</comment>
     <sql>
-    <!-- this query seems to be crashing neo4j -->
-      MATCH (n:Snippet)-[:IN_PUB]-(p)
-      SET n.id = p.pmid + '-' + n.sentence_num
+    <!-- takes about 10 minutes -->
+      CALL apoc.periodic.iterate(
+        "match (n:Snippet)-[:IN_PUB]-(p) return n, p",
+        "set n.id = p.pmid + '-' + n.sentence_num", {batchSize:10000, parallel: true}
+      )
     </sql>
   </changeSet>
 
-  <!-- ##### -->
+  <!-- ######## -->
 
-  <changeSet id="LL-2193-data-transforms" author="Binh Vu">
-    <comment>
-      Set predicts properties, remove snippet properties, merge snippets and remove redundant [IN_PUB] relationship
-    </comment>
+  <changeSet id="LL-2193-set-predicts-properties" author="Binh Vu">
+    <comment>Set properties for PREDICTS relationship</comment>
     <sql>
-      MATCH (n:Snippet)-[p:PREDICTS]-(a)
-      SET p.entry1_text = n.entry1_text, p.entry2_text = n.entry2_text, p.path = n.path;
-      MATCH (n:Snippet)
-      REMOVE n.path, n.pmid, n.entry1_text, n.entry1_type, n.entry2_text, n.entry2_type, n.sentence_num;
-      <!--
-        TODO: need to figure out how to rewrite the apoc.refactor.mergeNodes()
-        since liquibase currently does not work with queries that return values (a known bug)
+      CALL apoc.periodic.iterate(
+        "match (n:Snippet)-[p:PREDICTS]-(a) return n, p",
+        "set p.entry1_text = n.entry1_text, p.entry2_text = n.entry2_text, p.path = n.path",
+        {batchSize:5000, parallel: true}
+      )
+    </sql>
+  </changeSet>
 
-        trying to yield and set a node property so it's not techniqcally returning
-        let's see if this works
-      -->
-      MATCH (n:Snippet) WITH collect(n) AS nodes WHERE size(nodes) > 1
-      WITH nodes limit 5000
-      CALL apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) YIELD node
-      SET node.liquibase = true;
-      MATCH (n:Snippet) WHERE exists(n.liquibase) REMOVE n.liquibase;
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-remove-snippet-properties" author="Binh Vu">
+    <comment>Remove snippet properties</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "match (n:Snippet) return n",
+        "remove n.path, n.pmid, n.entry1_text, n.entry1_type, n.entry2_text, n.entry2_type, n.sentence_num",
+        {batchSize:5000, parallel: true}
+      )
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-merge-snippets" author="Binh Vu">
+    <comment>Merge snippets</comment>
+    <sql>
+      CALL apoc.periodic.commit(
+        "match (n:Snippet) with n.id as id, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
+        call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
+        RETURN COUNT(*)", {limit:500}
+      )
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-remove-in-pub-relationships" author="Binh Vu">
+    <comment>Remove any redundent [IN_PUB] relationships</comment>
+    <sql>
+      CALL apoc.periodic.commit(
+        "match(s:Snippet)-[r:IN_PUB]-(p) with s, p limit $limit set s.pmid = p.pmid return count(*)",
+        {limit:10000}
+      );
+      MATCH (n:Snippet) WITH n MATCH (p:Publication {pmid:n.pmid}) CREATE (n)-[:IN_PUB]->(p);
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-merge-synonym-nodes-1" author="Binh Vu">
+    <comment>Merge synonym nodes (1st changeset)</comment>
+    <sql>
+      CALL apoc.periodic.commit(
+        "match (n:Synonym) with n.name as name, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
+        call apoc.refactor.mergeNodes(nodes, {properties: {name:'discard',`.*`: 'discard'}}) yield node
+        RETURN COUNT(*)", {limit:10000}
+      )
+    </sql>
+  </changeSet>
+  <changeSet id="LL-2193-merge-synonym-nodes-2" author="Binh Vu">
+    <comment>Merge synonym nodes (2nd changeset)</comment>
+    <sql>DROP INDEX ON :Synonym(name)</sql>
+  </changeSet>
+  <changeSet id="LL-2193-merge-synonym-nodes-3" author="Binh Vu">
+    <comment>Merge synonym nodes (3rd changeset)</comment>
+    <sql>CREATE CONSTRAINT constraint_synonym_name ON (n:Synonym) ASSERT n.name IS UNIQUE</sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-add-entry-types-to-association-nodes" author="Binh Vu">
+    <comment>Add entry1_type and entry2_type to association nodes</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "match(n:db_Literature:Association)-[:HAS_TYPE]-(t) where not t.name in ['B', 'J'] with n, apoc.text.split(t.direction, '-')  as entryTypes return n, entryTypes[0] as entry1_type, entryTypes[1] as entry2_type",
+        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize: 10000}
+      )
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-association-type-b-rel" author="Binh Vu">
+    <comment>Association type B has relationships for chemical-gene or gene-gene</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "match(t:AssociationType {name:'B'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids
+        with n, case
+        when ids[0] starts with 'CHEBI' then 'chemical'
+        when ids[0] starts with 'MESH' then 'chemical'
+        else 'gene' end as entry1_type
+        return n, entry1_type, 'gene' as entry2_type",
+        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
+      )
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-association-type-j-rel" author="Binh Vu">
+    <comment>Association type J has relationships for chemical-disease or gene-disease</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "match(t:AssociationType {name:'J'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids
+        with n, case
+        when ids[0] starts with 'CHEBI' then 'chemical'
+        when ids[0] starts with 'MESH' then 'chemical'
+        else 'disease' end as entry1_type
+        return n, entry1_type, 'gene' as entry2_type",
+        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
+      )
+    </sql>
+  </changeSet>
+
+  <!-- ######## -->
+
+  <changeSet id="LL-2193-change-predicts-rel" author="Binh Vu">
+    <comment>Change PREDICTS relationship to INDICATES</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "match(n:Snippet)-[r:PREDICTS]->(n2) return n, n2, r",
+        "create (n)-[r2:INDICATES]->(n2)
+        set r2.entry1_text = r.entry1_text, r2.entry2_text=r.entry2_text,
+        r2.path=r.path, r2.raw_score=r.raw_score, r2.normalized_score=r.normalized_score",
+        {batchSize:5000}
+      );
+      CALL apoc.periodic.iterate(
+        "match(n:Snippet)-[r:PREDICTS]->() return r",
+        "delete r",
+        {batchSize: 5000}
+      );
     </sql>
   </changeSet>
 </databaseChangeLog>
