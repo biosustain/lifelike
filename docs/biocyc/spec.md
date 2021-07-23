@@ -204,3 +204,23 @@ id has the same value for biocyc_id, and displayName and pathways attributes wer
 | TranscriptionUnit | HAS_SYNONYM | Synonym | + |	
 
 
+### Scripts to run after biocyc data updated
+1. add protein synonyms for uniprot (see biocyc_protein_synonyms_for_uniprot.md)
+2. set displayname and description
+3. set data sources
+```
+match(n:db_BioCyc) set n.data_source='BioCyc'
+```
+
+### Set PseudomonasCyc genes as Master genes for Lifelike searching and annotations  
+Since Pseudomonas putida KT2440 (taxID 160488) genes do not have NCBI gene links for now, we need to set Pseudomoas genes as Master gene.
+Once NCBI integrated those genes, the steps can be removed  
+- Follow the steps described in file 'Label_biocyc_genes_as_master.md' to update neo4j
+- Generate LMDB annotation file if PseudomonasCyc updated, and handle to Binh.
+```
+src/biocyc/LMDB_annotation.generate_pseudomonas_genelist_for_LMDB
+```
+
+
+
+
