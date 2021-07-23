@@ -111,6 +111,7 @@
               <div class="d-flex align-items-center text-truncate"
                    popoverTitle="Description" container="body" triggers="mouseenter:mouseleave"
                    placement="right"
+                   [popoverClass]="'tooltip-newlines'"
                    [ngbPopover]="object.description"
                    [disablePopover]="object.description == null || object.description.length === 0">
                 <div class="d-inline-block mr-1">

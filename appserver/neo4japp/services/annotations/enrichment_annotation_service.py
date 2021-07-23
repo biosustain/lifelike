@@ -8,21 +8,19 @@ from typing import Dict, List, Set, Tuple
 from flask import current_app
 
 from neo4japp.constants import LogEventType
-from neo4japp.services.annotations.annotation_service import AnnotationService
-from neo4japp.services.annotations import (
-    AnnotationService,
-    AnnotationDBService,
-    AnnotationGraphService
-)
-from neo4japp.services.annotations.constants import EntityIdStr, EntityType
-from neo4japp.services.annotations.data_transfer_objects import (
+from neo4japp.utils.logger import EventLog
+
+from .annotation_service import AnnotationService
+from .annotation_db_service import AnnotationDBService
+from .annotation_graph_service import AnnotationGraphService
+from .constants import EntityIdStr, EntityType
+from .data_transfer_objects import (
     Annotation,
     CreateAnnotationObjParams,
     RecognizedEntities,
     LMDBMatch,
     SpecifiedOrganismStrain
 )
-from neo4japp.utils.logger import EventLog
 
 
 class EnrichmentAnnotationService(AnnotationService):
@@ -52,25 +50,25 @@ class EnrichmentAnnotationService(AnnotationService):
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
-        organism_ids = list(self.organism_frequency)
-        fallback_gene_organism_matches = {}
 
         gene_match_time = time.time()
-        fallback_gene_organism_matches = \
-            self.graph.get_gene_to_organism_match_result(
+        fallback_graph_results = \
+            self.graph.get_genes_to_organisms(
                 genes=gene_names_list,
-                postgres_genes=self.db.get_genes(
-                    genes=gene_names_list, organism_ids=organism_ids),
-                matched_organism_ids=[self.specified_organism.organism_id],
+                organisms=[self.specified_organism.organism_id],
             )
         current_app.logger.info(
             f'Gene fallback organism KG query time {time.time() - gene_match_time}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
+        fallback_gene_organism_matches = fallback_graph_results.matches
+        gene_data_sources = fallback_graph_results.data_sources
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
+            organism_id = self.specified_organism.organism_id
+
             try:
                 entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             except KeyError:
@@ -95,6 +93,8 @@ class EnrichmentAnnotationService(AnnotationService):
                     except KeyError:
                         continue
                     else:
+                        if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:  # noqa
+                            continue
                         entities_to_create.append(
                             CreateAnnotationObjParams(
                                 token=token,
@@ -126,10 +126,9 @@ class EnrichmentAnnotationService(AnnotationService):
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
-        fallback_protein_organism_matches = {}
 
         protein_match_time = time.time()
-        fallback_protein_organism_matches = \
+        fallback_graph_results = \
             self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=[self.specified_organism.organism_id],
@@ -138,6 +137,7 @@ class EnrichmentAnnotationService(AnnotationService):
             f'Protein fallback organism KG query time {time.time() - protein_match_time}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
+        fallback_protein_organism_matches = fallback_graph_results.matches
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
@@ -192,7 +192,7 @@ class EnrichmentAnnotationService(AnnotationService):
             f'Time to clean and run annotation interval tree {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
-        return self.add_primary_name(annotations=cleaned)
+        return self._add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,

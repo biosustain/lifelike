@@ -97,6 +97,16 @@ def graph(request, app) -> Session:
 
 
 @pytest.fixture(scope='function')
+def graph_driver(request, app):
+    host = os.getenv('NEO4J_HOST', '0.0.0.0')
+    scheme = os.getenv('NEO4J_SCHEME', 'bolt')
+    port = os.getenv('NEO4J_PORT', '7687')
+    url = f'{scheme}://{host}:{port}'
+    username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+    return GraphDatabase.driver(url, auth=basic_auth(username, password))
+
+
+@pytest.fixture(scope='function')
 def account_service(app, session):
     return AccountService(session)
 
@@ -375,6 +385,7 @@ def create_has_taxonomy_relationship(
 
 # End Graph Data Helpers #
 
+
 # Begin Entity Node Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene(graph: Session) -> Node:
@@ -476,6 +487,7 @@ def penicillins_to_gas_gangrene_treatment_edge(
     return penicillins_to_gas_gangrene_treatment_edge
 
 # End Entity -> Entity Relationship Fixtures #
+
 
 # Start Misc. Fixtures #
 @pytest.fixture(scope='function')
@@ -702,32 +714,6 @@ def example4_pdf_gene_and_organism_network(
             )
     return graph
 
-
-@pytest.fixture(scope='function')
-def human_gene_pdf_gene_and_organism_network(
-    graph: Session,
-):
-    with graph.begin_transaction() as tx:
-        ace2 = create_gene_node(
-            tx=tx,
-            gene_name='ace2',
-            gene_id='59272'
-        )
-
-        human = create_taxonomy_node(
-            tx=tx,
-            name='Homo Sapiens',
-            rank='species',
-            tax_id='9606',
-        )
-
-        create_has_taxonomy_relationship(
-            tx=tx,
-            source_id=ace2.id,
-            target_id=human.id,
-        )
-    return graph
-
 # End Graph Data Fixtures #
 
 # Start DTO Fixtures #
@@ -743,7 +729,7 @@ def gas_gangrene_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
-        data = snake_to_camel_dict(dict(gas_gangrene), {}),
+        data=snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
 
@@ -771,7 +757,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
-        data = snake_to_camel_dict(dict(gas_gangrene), {}),
+        data=snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
 
@@ -800,7 +786,7 @@ def oxygen_duplicate_vis_node(oxygen: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=oxygen.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]),  # noqa
-        data = snake_to_camel_dict(dict(oxygen), {}),
+        data=snake_to_camel_dict(dict(oxygen), {}),
         url=None,
     )
 
@@ -829,7 +815,7 @@ def penicillins_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
-        data = snake_to_camel_dict(dict(penicillins), {}),
+        data=snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
 
@@ -857,7 +843,7 @@ def penicillins_duplicate_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
-        data = snake_to_camel_dict(dict(penicillins), {}),
+        data=snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
 
@@ -886,7 +872,7 @@ def pomc_vis_node(pomc: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
-        data = snake_to_camel_dict(dict(pomc), {}),
+        data=snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
 
@@ -914,7 +900,7 @@ def pomc_duplicate_vis_node(pomc: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
-        data = snake_to_camel_dict(dict(pomc), {}),
+        data=snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
 
