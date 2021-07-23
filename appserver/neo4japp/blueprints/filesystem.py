@@ -1125,22 +1125,24 @@ class FileExportView(FilesystemBaseView):
 
     def export_multiple_maps(self, params: dict, file_type: MapTypeProvider, file: Files):
         maps_to_export = [file.hash_id]
-        self.get_all_linked_maps(file, maps_to_export)
+        files = [file]
+        links = []  # type: List[dict]
+        self.get_all_linked_maps(file, maps_to_export, files, links)
 
-        out_files = []
-        for child_hash in maps_to_export:
-            try:
-                child_file = self.get_nondeleted_recycled_file(
-                                Files.hash_id == child_hash, lazy_load_content=True)
-                export = file_type.generate_export(child_file, params['format'])
-            except ExportFormatError:
-                raise ValidationError("Unknown or invalid export "
-                                      "format for the requested file.", params["format"])
-            out_files.append(io.BytesIO(export.content.getvalue()))
-        merger = LinkedMapExportProvider(params['format'], file.filename)
-        return merger.merge(out_files)
+        # out_files = []
+        # for child_hash in maps_to_export:
+        #     try:
+        #         child_file = self.get_nondeleted_recycled_file(
+        #                         Files.hash_id == child_hash, lazy_load_content=True)
+        #         export = file_type.generate_export(child_file, params['format'])
+        #     except ExportFormatError:
+        #         raise ValidationError("Unknown or invalid export "
+        #                               "format for the requested file.", params["format"])
+        # out_files.append(io.BytesIO(export.content.getvalue()))
+        merger = LinkedMapExportProvider(params['format'], file_type)
+        return merger.merge(files, links)
 
-    def get_all_linked_maps(self, file: Files, map_hash_set: list):
+    def get_all_linked_maps(self, file: Files, map_hash_set: list, files: list, links: list):
         current_user = g.current_user
         json_graph = json.loads(file.content.raw_file)
         for node in json_graph['nodes']:
@@ -1149,15 +1151,24 @@ class FileExportView(FilesystemBaseView):
                 url = link.get('url', "").lstrip()
                 if MAPS_RE.match(url):
                     map_hash = url.split('/')[-1]
+                    link_data = {
+                        'x': node['data']['x'],
+                        'y': node['data']['y'],
+                        'page_origin': map_hash_set.index(file.hash_id),
+                        'page_destination': len(files)
+                    }
                     # Fetch linked maps and check permissions, before we start to export them
                     if map_hash not in map_hash_set:
-                        map_hash_set.append(map_hash)
                         try:
                             child_file = self.get_nondeleted_recycled_file(
                                 Files.hash_id == map_hash, lazy_load_content=True)
                             self.check_file_permissions([child_file], current_user,
                                                         ['readable'], permit_recycled=True)
-                            self.get_all_linked_maps(child_file, map_hash_set)
+                            map_hash_set.append(map_hash)
+                            files.append(child_file)
+
+                            self.get_all_linked_maps(child_file, map_hash_set, files, links)
+
                         except RecordNotFound:
                             current_app.logger.info(
                                 f'Map file: {map_hash} requested for linked '
@@ -1166,6 +1177,10 @@ class FileExportView(FilesystemBaseView):
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()
                             )
+                            link_data['page_destination'] = link_data['page_origin']
+                    else:
+                        link_data['page_destination'] = map_hash_set.index(map_hash)
+                    links.append(link_data)
 
 
 class FileBackupView(FilesystemBaseView):
