@@ -2,7 +2,6 @@
 The following steps are for PseudomonasCyc genes, but similar steps can apply to other biocyc databases 
 if NCBI gene links not available, and Lifelike need to search and annotate those genes
 
-1. Link genes to taxonomy
 - add Master label
 ```
 match(n:db_PseudomonasCyc:Gene) set n:Master
