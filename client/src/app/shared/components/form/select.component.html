@@ -33,7 +33,7 @@
       </button>
     </div>
 
-    <ng-container *ngFor="let choice of choices; index as i">
+    <div *ngFor="let choice of choices; index as i" class="text-nowrap">
       <div class="custom-control custom-checkbox"
            (click)="changeChoiceSelection(choice, !selection.has(choice)); $event.preventDefault()">
         <input class="custom-control-input" type="checkbox" [id]="componentId + '-choice-' + i"
@@ -44,6 +44,6 @@
           {{ choiceLabel(choice) }}
         </label>
       </div>
-    </ng-container>
+    </div>
   </div>
 </div>
