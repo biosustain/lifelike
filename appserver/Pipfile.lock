@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2a3e81329dd6ecff2997c03fdf4e1851fd16b1d5aac52e5ac83b2daad10fbb8a"
+            "sha256": "26f1d6d3074b722ab6c15a527345e2ad6c7835e893dc2ccb33ba69e5381b1852"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -352,11 +352,11 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:9bd25d835c01ca3dd9045ea0b50f036e3fe3868ee2c5a9773a661925bbdf46ca",
-                "sha256:a756a33978fac611e4f00b69715b80e35467c30cc6262132d29d33a0e398ac55"
+                "sha256:036dd68c1e8baa422b6b61619b8e02793da2e20f55e69514612de6c080468755",
+                "sha256:7665c04f2df13cc938dc7d9066cddb1f8af62b038bc8b2306848c1b23121865f"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
-            "version": "==1.33.0"
+            "version": "==1.33.1"
         },
         "google-cloud-core": {
             "hashes": [
@@ -656,11 +656,11 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:77368dfedad93c3a041cbbdbce0b33fac1d8608c9e2e2288408a43ce3493d2ff",
-                "sha256:d4090ca9a36cd129126ad8b10c3982c47d4644a6e3ccb20534b512badce95f35"
+                "sha256:c67929438fd73a2be92128caa0325b1b5ed8b626d91a094d2f7f2771bf1f1c0e",
+                "sha256:dd4724335d3c2b870b641ffe4a2f8728a1380cd2e7e2312756715ffeaa82b842"
             ],
             "markers": "python_version >= '3'",
-            "version": "==3.12.2"
+            "version": "==3.13.0"
         },
         "marshmallow-dataclass": {
             "hashes": [
@@ -1440,11 +1440,11 @@
         },
         "pycodestyle": {
             "hashes": [
-                "sha256:95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56",
-                "sha256:e40a936c9a450ad81df37f549d676d127b1b66000a6c500caa2b085bc0ca976c"
+                "sha256:514f76d918fcc0b55c6680472f0a37970994e07bbb80725808c17089be302068",
+                "sha256:c389c1d06bf7904078ca03399a4816f974a1d590090fecea0c63ec26ebaf1cef"
             ],
             "index": "pypi",
-            "version": "==2.5.0"
+            "version": "==2.7.0"
         },
         "pyparsing": {
             "hashes": [
