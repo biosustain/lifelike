@@ -1,10 +1,7 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
 from common.constants import *
 from common.graph_models import *
-import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 PROP_TRANS_DIRECTION = 'transcription_direction'
 ATTR_NAMES = {

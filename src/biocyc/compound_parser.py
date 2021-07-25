@@ -1,10 +1,7 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
 from common.graph_models import *
 from biocyc.utils import cleanhtml
-import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),

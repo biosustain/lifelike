@@ -7,8 +7,6 @@ from common.graph_models import NodeData
 from common.query_builder import *
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 attribute_map = {
             'id': (PROP_ID, 'str'),
@@ -38,35 +36,44 @@ class ChebiOboParser(OboParser, BaseParser):
     def __init__(self, basedir=None):
         BaseParser.__init__(self, 'chebi', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_CHEBI, PROP_ID)
+        self.logger = logging.getLogger(__name__)
 
     def create_indexes(self, database: Database):
-        database.create_constraint(NODE_CHEBI, PROP_ID, 'constraint_chebi_id')
-        database.create_index(NODE_GO, PROP_NAME, 'index_chebi_name')
-        # database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
+        """
+        Create indices and constraint if thet don't already exist
+        """
+        database.create_constraint(NODE_CHEBI, PROP_ID, "constraint_chebi_id")
+        database.create_index(NODE_CHEBI, PROP_NAME, "index_chebi_name")
+        database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
 
     def parse_obo_file(self)->[NodeData]:
-        logging.info('parsing chebi.obo')
+        self.logger.info("Parsing chebi.obo")
         file = os.path.join(self.download_dir, 'chebi.obo')
         nodes = self.parse_file(file)
-        logging.info(f'total chebi nodes: {len(nodes)}')
+        self.logger.info(f"Number of chebi nodes parsed from chebi.obo: {len(nodes)}")
         return nodes
 
-    def load_data_to_neo4j(self, database: Database, update=True):
+    def load_data_to_neo4j(self, database: Database):
         nodes = self.parse_obo_file()
         if not nodes:
             return
-        logging.info('add nodes to ' + NODE_GO)
-        # database.create_index(NODE_GO, PROP_ID)
+
+        self.create_indexes(database)
+
+        self.logger.info("Add nodes to " + NODE_CHEBI)
         self.load_nodes(database, nodes, NODE_CHEBI, NODE_CHEMICAL, PROP_ID, NODE_ATTRS)
+        self.logger.info("Add synonyms to " + NODE_CHEBI)
         self.load_synonyms(database, nodes, NODE_CHEBI, PROP_ID)
+        self.logger.info("Add edges to " + NODE_CHEBI)
         self.load_edges(database, nodes, NODE_CHEBI, PROP_ID)
 
 
-if __name__ == '__main__':
+def main():
     parser = ChebiOboParser()
-    # use the right database
-    database = get_database(Neo4jInstance.LOCAL, 'neo4j')
+    database = get_database()
     parser.load_data_to_neo4j(database)
     database.close()
 
 
+if __name__ == "__main__":
+    main()
