@@ -79,7 +79,7 @@
       CALL apoc.periodic.commit(
         "match (n:Snippet) with n.id as id, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
         call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
-        RETURN COUNT(*)", {limit:500}
+        RETURN COUNT(*)", {limit:5000}
       )
     </sql>
   </changeSet>
