@@ -7,9 +7,6 @@ from common.graph_models import NodeData
 from common.query_builder import *
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
-
 attribute_map = {
             'id': (PROP_ID, 'str'),
             'name': (PROP_NAME, 'str'),
@@ -35,6 +32,7 @@ class GoOboParser(OboParser, BaseParser):
     def __init__(self, basedir=None):
         BaseParser.__init__(self, 'go', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_GO, PROP_ID)
+        self.logger = logging.getLogger(__name__)
 
     def create_indexes(self, database: Database):
         database.create_constraint(NODE_GO, PROP_ID, 'constraint_go_id')
@@ -42,18 +40,20 @@ class GoOboParser(OboParser, BaseParser):
         database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
 
     def parse_obo_file(self)->[NodeData]:
-        logging.info('parsing go.obo')
+        self.logger.info("Parsing go.obo")
         go_file = os.path.join(self.download_dir, 'go.obo')
         nodes = self.parse_file(go_file)
-        logging.info(f'total go nodes: {len(nodes)}')
+        self.logger.info(f"Total go nodes: {len(nodes)}")
         return nodes
 
     def load_data_to_neo4j(self, database: Database, update=True):
         nodes = self.parse_obo_file()
         if not nodes:
             return
-        logging.info('add nodes to ' + NODE_GO)
-        # database.create_index(NODE_GO, PROP_ID)
+        
+        self.create_indexes(database)
+
+        self.logger.info("Add nodes to " + NODE_GO)
         node_dict = dict()
         for node in nodes:
             node_label = node.get_attribute('namespace')
@@ -68,11 +68,14 @@ class GoOboParser(OboParser, BaseParser):
         self.load_edges(database, nodes, NODE_GO, PROP_ID)
 
 
-if __name__ == '__main__':
-    parser = GoOboParser("/Users/rcai/data")
-    # use the right database
-    database = get_database(Neo4jInstance.LOCAL, 'lifelike-qa')
+def main():
+    parser = GoOboParser()
+    database = get_database()
     parser.load_data_to_neo4j(database)
     database.close()
+
+
+if __name__ == "__main__":
+    main()
 
 

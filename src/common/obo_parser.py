@@ -7,8 +7,6 @@ import logging
 import gzip
 import re
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
 
 class OboParser(object):
     """
@@ -43,8 +41,8 @@ class OboParser(object):
                     else:
                         attr_name, attr_val = line.split(': ', 1)
                         self._process_property(node, attr_name, attr_val)
-        print('total nodes', len(nodes))
-        print('relationships:', self.rel_names)
+        logging.info(f"Total nodes: {len(nodes)}")
+        logging.info(f"Relationships: {self.rel_names}")
         return nodes
 
     def _process_property(self, node: NodeData, attr_name: str, attr_val: str):
@@ -90,6 +88,7 @@ class OboParser(object):
             return
         node_rows = [node.to_dict() for node in nodes]
         query = get_create_nodes_query(db_node_label, id_name, node_attributes, [entity_node_label])
+        logging.debug(query)
         database.load_data_from_rows(query, node_rows)
 
     @classmethod
@@ -110,8 +109,9 @@ class OboParser(object):
                 entity2synonym_list.append({node_id_name: id, PROP_NAME: syn})
         if not entity2synonym_list:
             return
-        logging.info(f'add {node_label} synonyms')
+        logging.info(f'Add {node_label} synonyms')
         query = get_create_synonym_relationships_query(node_label, node_id_name, node_id_name, PROP_NAME)
+        logging.debug(query)
         database.load_data_from_rows(query, entity2synonym_list)
 
     @classmethod
@@ -128,6 +128,6 @@ class OboParser(object):
         if not entity2entity_dict:
             return
         for rel in entity2entity_dict.keys():
-            logging.info("relationship: " + rel)
+            logging.info("Relationship: " + rel)
             query = get_create_relationships_query(node_label, node_id_name, 'from_id', node_label, node_id_name, 'to_id', rel)
             database.load_data_from_rows(query, entity2entity_dict[rel])
