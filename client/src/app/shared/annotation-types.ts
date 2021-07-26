@@ -38,8 +38,7 @@ export const ENTITY_TYPES = [
   new EntityType('Anatomy', annotationTypesMap.get('anatomy').color, [DatabaseType.MESH, DatabaseType.NONE]),
   new EntityType('Lab Strain', annotationTypesMap.get('lab strain').color, [DatabaseType.NONE]),
   new EntityType('Lab Sample', annotationTypesMap.get('lab sample').color, [DatabaseType.NONE]),
-  // TODO: find an appropriate type for images
-  new EntityType('Image', annotationTypesMap.get('image').color, [DatabaseType.NONE]),
+  new EntityType('Image', annotationTypesMap.get('image').color, [DatabaseType.NONE])
 ];
 
 export const ENTITY_TYPE_MAP = ENTITY_TYPES.reduce((map, item) => {
