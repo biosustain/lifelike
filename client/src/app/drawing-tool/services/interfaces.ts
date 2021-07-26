@@ -82,7 +82,6 @@ export interface GraphEntity {
 export interface Hyperlink {
   url: string;
   domain: string;
-  isDatabase: boolean;
 }
 
 export interface Source {

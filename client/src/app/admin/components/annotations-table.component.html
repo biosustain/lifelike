@@ -116,9 +116,6 @@
         <td>
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td>
-          <span class="placeholder-box">Loading loading</span>
-        </td>
       </tr>
       </tbody>
 
@@ -140,14 +137,13 @@
           </button>
         </td>
         <ng-template #noSuchFile>
-          <td class="align-middle text-nowrap">File no longer available</td>
+          <td class="align-middle text-nowrap">No longer available</td>
         </ng-template>
         <td class="align-middle text-nowrap">{{ object.text }}</td>
         <td class="align-middle text-nowrap">{{ object.caseInsensitive }}</td>
         <td class="align-middle text-nowrap">{{ object.type }}</td>
         <td class="align-middle text-nowrap">{{ object.entityType }}</td>
         <td class="align-middle text-nowrap">{{ object.entityId }}</td>
-        <td class="align-middle text-nowrap">{{ object.contentReference | truncate:15 }}</td>
         <td class="align-middle text-nowrap">{{ object.fileDeleted }}</td>
         <td class="align-middle text-nowrap">{{ object.creator }}</td>
         <td class="align-middle text-nowrap">{{ object.reason }}</td>

@@ -211,8 +211,8 @@ export class NodeFormComponent implements AfterViewInit {
       this.node.data.hyperlinks = [];
     }
 
-    const [domain, url, isDatabase] = ['', '', false];
-    this.node.data.hyperlinks.push({url, domain, isDatabase});
+    const [domain, url] = ['', ''];
+    this.node.data.hyperlinks.push({url, domain});
   }
 
   /**
@@ -274,8 +274,7 @@ export class NodeFormComponent implements AfterViewInit {
   searchMapNodeInContent(node, types: string) {
     this.workspaceManager.navigate(['/search/content'], {
       queryParams: {
-        q: '',
-        phrase: node.display_name,
+        q: `"${node.display_name}"`,
         types,
         limit: 20,
         page: 1

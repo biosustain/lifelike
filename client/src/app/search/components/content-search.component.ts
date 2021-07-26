@@ -365,8 +365,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
     modalRef.result
       // Synonym search was submitted
-      .then((synonymsToAdd: string[]) => {
-        this.queryString = (synonymsToAdd.join(' ') + (isNullOrUndefined(this.queryString) ? '' : ` ${this.queryString}`)).trim();
+      .then((expressionsToAdd: string[]) => {
+        this.queryString = ((isNullOrUndefined(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')).trim();
       })
       // Synonym search dialog was dismissed or rejected
       .catch(() => {
