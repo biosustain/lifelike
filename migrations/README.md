@@ -1,11 +1,19 @@
 # Migrations
 
 ## Table of Contents
+* [Why Use Migrations](#why-use-migration)
 * [Installation](#installation)
 * [How Liquibase Works](#how-liquibase-works)
 * [Checking Migration Version Logs](#checking-migration-version-logs)
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
+
+## Why Use Migrations
+Using migrations allows us to consistently deploy a copy of the current graph model on any server. Without migrations, we have to keep creating a database backup file and download/upload them. This takes a long time because of how large the files are.
+
+It also helps to avoid having to parse data files if people do not want to download the backup files. Because all the data has already been parsed beforehand and transformed into queries in the `changelog.xml` files.
+
+The good thing about using liquibase is if it fails at a step, it will start at that step when you re-run it.
 
 ## Installation
 Migration uses Liquibase for Neo4j (https://neo4j.com/labs/liquibase/):
@@ -176,7 +184,7 @@ Simply enter `N` and continue.
 # don't need port in ip address
 liquibase --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml updateSQL
 ```
-This command will give you a preview of what liquibase will run. You can use this command to **make sure the changelog files are going to execute in order**.
+This command (dry run) will give you a preview of what liquibase will run. You can use this command to **make sure the changelog files are going to execute in order**.
 
 ```bash
 # don't need port in ip address

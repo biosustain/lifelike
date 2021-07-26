@@ -72,16 +72,35 @@
   </changeSet>
 
   <!-- ######## -->
-
   <changeSet id="LL-2193-merge-snippets" author="Binh Vu">
     <comment>Merge snippets</comment>
+    <!-- Remove any possible locks from previously erroring out -->
+    <sql>MATCH (c:__LiquibaseLock) DELETE c;</sql>
     <sql>
       CALL apoc.periodic.commit(
-        "match (n:Snippet) with n.id as id, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
+        "match (n:Snippet) where not exists (n.migrated) with n.id as id, collect(n) as nodes
+        where size(nodes) > 1 with nodes limit $limit
         call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
+        SET node.migrated = 1
         RETURN COUNT(*)", {limit:5000}
-      )
+      );
     </sql>
+  </changeSet>
+
+  <!--
+    This changeset will only run if the preconditions are true
+  -->
+  <changeSet id="LL-2193-remove-migrated-property" author="Binh Vu">
+    <!-- MARK_RAN is a skip -->
+    <preConditions onFail="MARK_RAN" onFailMessage="There are no nodes with n.migrated property">
+      <sqlCheck expectedResult="true">
+        MATCH (n:Snippet) WHERE exists(n.migrated)
+        WITH collect(n) AS nodes
+        RETURN size(nodes) > 0
+      </sqlCheck>
+    </preConditions>
+    <comment>Migration is done, so remove the migrated property</comment>
+    <sql>MATCH (n:Snippet) WHERE exists(n.migrated) REMOVE n.migrated</sql>
   </changeSet>
 
   <!-- ######## -->
