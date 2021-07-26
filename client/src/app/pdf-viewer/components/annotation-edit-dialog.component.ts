@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -24,7 +24,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
   isTextEnabled = false;
 
-  readonly entityTypeChoices = ENTITY_TYPES;
+  readonly entityTypeChoices = ENTITY_TYPES.map(m => m.id != 'Image');
   readonly errors = {
     url: 'The provided URL is not valid.',
   };
@@ -49,6 +49,9 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   get databaseTypeChoices(): string[] {
     const value = this.form.get('entityType').value;
+    if (ENTITY_TYPE_MAP) {
+      // ????
+    }
     if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
       return ENTITY_TYPE_MAP[value].sources;
     }
