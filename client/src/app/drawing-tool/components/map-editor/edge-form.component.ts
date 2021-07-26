@@ -131,8 +131,8 @@ export class EdgeFormComponent implements AfterViewInit {
       this.edge.data.hyperlinks = [];
     }
 
-    const [domain, url, isDatabase] = ['', '', false];
-    this.edge.data.hyperlinks.push({url, domain, isDatabase});
+    const [domain, url] = ['', ''];
+    this.edge.data.hyperlinks.push({url, domain});
   }
 
   /**

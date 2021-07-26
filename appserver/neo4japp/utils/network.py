@@ -1,10 +1,10 @@
 import re
 import socket
-import urllib
 from http.client import HTTPSConnection, HTTPConnection
 from http.cookiejar import CookieJar
 from io import BytesIO, StringIO
 from typing import List, Tuple
+from urllib.error import URLError
 from urllib.parse import urlsplit, urlunsplit, quote
 from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
     UnknownHandler, HTTPRedirectHandler, \
@@ -159,7 +159,7 @@ class ControlledHTTPSHandler(HTTPSHandler):
                             context=self._context, check_hostname=self._check_hostname)
 
 
-class ContentTooLongError(urllib.error.URLError):
+class ContentTooLongError(URLError):
     """Raised when the content is too big."""
 
 
