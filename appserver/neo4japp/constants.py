@@ -39,6 +39,13 @@ DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
 
+FILE_MIME_TYPE_DIRECTORY = 'vnd.***ARANGO_DB_NAME***.filesystem/directory'
+FILE_MIME_TYPE_PDF = 'application/pdf'
+FILE_MIME_TYPE_BIOC = 'vnd.***ARANGO_DB_NAME***.document/bioc'
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
+FILE_MIME_TYPE_SANKEY = 'vnd.***ARANGO_DB_NAME***.document/sankey'
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
+
 
 # enrichment labels
 class EnrichmentDomain(Enum):
@@ -46,7 +53,7 @@ class EnrichmentDomain(Enum):
     REGULON = 'Regulon'
     STRING = 'String'
     GO = 'GO'
-    BIOCYC = 'Biocyc'
+    BIOCYC = 'BioCyc'
 
 
 class LogEventType(Enum):
@@ -56,6 +63,7 @@ class LogEventType(Enum):
     ELASTIC = 'elastic'
     ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
+    FILESYSTEM = 'filesystem'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
     RESET_PASSWORD = 'reset_password'

@@ -22,10 +22,7 @@ from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
-from neo4japp.models import (
-    AppUser,
-    OrganismGeneMatch,
-)
+from neo4japp.models import AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent, Files
 from neo4japp.utils.logger import EventLog
 
@@ -188,38 +185,8 @@ def set_role(email, role):
     db.session.commit()
 
 
-@app.cli.command('seed-organism-gene-match-table')
-def seed_organism_gene_match_table():
-    # reference to this directory
-    directory = os.path.realpath(os.path.dirname(__file__))
-
-    rows = []
-    with open(os.path.join(directory, './migrations/upgrade_data/gene_names_for_4organisms.csv'), 'r') as f:  # noqa
-        for i, line in enumerate(f.readlines()):
-            if i == 0:
-                continue
-
-            # GeneID,GeneName,Synonym,Tax_ID, Organism
-            data = line.split(',')
-
-            row = OrganismGeneMatch(
-                gene_id=data[0].strip(),
-                gene_name=data[1].strip(),
-                synonym=data[2].strip(),
-                taxonomy_id=data[3].strip(),
-                organism=data[4].strip(),
-            )
-            rows.append(row)
-
-            if i % 1000 == 0:
-                db.session.bulk_save_objects(rows)
-                db.session.flush()
-                rows = []
-    db.session.commit()
-
-
-@app.cli.command('seed-elastic')
-def seed_elasticsearch():
+@app.cli.command('reset-elastic')
+def reset_elastic():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
     elastic_service = get_elastic_service()
@@ -277,7 +244,7 @@ def load_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
-    manager.update_all_dates()
+    manager.update_all_dates(lmdb_dir_path)
 
 
 @app.cli.command('upload-lmdb')

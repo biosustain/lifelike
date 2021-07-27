@@ -6,15 +6,6 @@ export const PUBMEDURL = 'https://pubmed.ncbi.nlm.nih.gov/';
 
 export const VIZ_SEARCH_LIMIT = 10;
 
-export enum Hyperlink {
-  Chebi = 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
-  Mesh = 'https://www.ncbi.nlm.nih.gov/mesh/',
-  Uniprot = 'https://www.uniprot.org/uniprot/?sort=score&query=',
-  NcbiGenes = 'https://www.ncbi.nlm.nih.gov/gene/',
-  NcbiSpecies = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
-  Go = 'http://amigo.geneontology.org/amigo/term/'
-}
-
 export enum DBHostname {
   ChEBI = 'www.ebi.ac.uk',
   UniProt = 'www.uniprot.org',
@@ -34,14 +25,6 @@ export enum AnnotationType {
   Mutation = 'Mutation',
   Pathway = 'Pathway',
   Entity = 'Entity',
-}
-
-export enum DatabaseType {
-  Chebi = 'CHEBI',
-  Mesh = 'MESH',
-  Uniprot = 'UNIPROT',
-  Ncbi = 'NCBI',
-  Biocyc = 'BIOCYC',
 }
 
 export const LOGOUT_SUCCESS = '[Auth] Logout Success';
@@ -70,7 +53,8 @@ export const ORGANISM_SHORTLIST = new Map<string, string>([
   ['Saccharomyces cerevisiae S288C',	'559292'],
   ['Pseudomonas aeruginosa PAO1',	'208964'],
   ['Clostridium difficile	Strain 630',	'272563'],
-  ['Staphylococcus aureus USA300',	'367830']
+  ['Staphylococcus aureus USA300',	'367830'],
+  ['Homo sapiens', '9606']
 ]);
 
 export const KG_VIZ_FILTER_TYPES = [

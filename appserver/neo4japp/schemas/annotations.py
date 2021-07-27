@@ -73,7 +73,8 @@ class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
 
 class AnnotationLinksSchema(Schema):
     # These fields are camel case even in Python
-    ncbi = fields.String(required=True)
+    ncbi_taxonomy = fields.String(required=True)
+    ncbi_gene = fields.String(required=True)
     uniprot = fields.String(required=True)
     chebi = fields.String(required=True)
     pubchem = fields.String(required=True)
@@ -136,10 +137,10 @@ class AnnotationUUIDListSchema(ResultListSchema):
 
 class GlobalAnnotationListItemSchema(CamelCaseSchema):
     global_id = fields.Integer()
+    synonym_id = fields.Integer(required=False, missing=lambda: None)
     file_uuid = fields.String()
     creator = fields.String()
     file_deleted = fields.Boolean()
-    content_reference = fields.String()
     type = fields.String()
     creation_date = fields.Date()
     text = fields.String()
@@ -285,4 +286,4 @@ class FileAnnotationHistoryResponseSchema(ResultListSchema):
 # ----------------------------------------
 
 class GlobalAnnotationsDeleteSchema(Schema):
-    pids = fields.List(fields.Integer())
+    pids = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))

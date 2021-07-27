@@ -53,12 +53,15 @@ scheme = os.getenv('NEO4J_SCHEME', 'bolt')
 port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'
 username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
-driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
+graph = GraphDatabase.driver(url, auth=basic_auth(username, password))
 
 
+# TODO: with the DatabaseConnection class
+# these functions that save to `g` are no longer needed
+# remove them when possible
 def get_neo4j_db():
     if not hasattr(g, 'neo4j_db'):
-        g.neo4j_db = driver.session()
+        g.neo4j_db = graph.session()
     return g.neo4j_db
 
 
@@ -213,16 +216,6 @@ def get_elastic_service():
         from neo4japp.services.elastic import ElasticService
         g.elastic_service = ElasticService()
     return g.elastic_service
-
-
-def get_manual_annotation_service():
-    from neo4japp.services.annotations import (
-        AnnotationGraphService,
-        ManualAnnotationService
-    )
-    return ManualAnnotationService(
-        graph=AnnotationGraphService()
-    )
 
 
 def get_sorted_annotation_service(sort_id, *, mime_type=None):
