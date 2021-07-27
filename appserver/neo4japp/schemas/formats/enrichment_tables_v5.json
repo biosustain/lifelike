@@ -16,9 +16,31 @@
   },
   "properties": {
     "data": {
-      "type": "string",
-      "minLength": 0,
-      "maxLength": 100000
+      "type": "object",
+      "properties": {
+        "genes": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100000
+        },
+        "taxId": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "organism": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["BioCyc", "GO", "KEGG", "Regulon", "String", "UniProt"]
+          }
+        }
+      }
     },
     "result": {
       "type": "object",
