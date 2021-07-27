@@ -40,4 +40,14 @@ export interface SankeyAdvancedOptions {
   nodeValueGenerators: Array<any>;
   linkValueGenerators: Array<any>;
   normalizeLinks: boolean;
+  labelEllipsis: any;
 }
+
+import visNetwork from 'vis-network';
+
+interface LinkedNode {
+  fromEdges: Array<any>;
+  toEdges: Array<any>;
+}
+
+export type IntermediateNodeType = visNetwork.Node & SankeyNode & LinkedNode;

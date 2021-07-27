@@ -1,12 +1,12 @@
 {
-    "anatomy": "v2",
-    "chemicals": "v1",
-    "compounds": "v1",
-    "diseases": "v3",
-    "foods": "v2",
-    "genes": "v3",
-    "phenomenas": "v2",
-    "proteins": "v2",
-    "species": "v1",
-    "phenotypes": "v1"
+    "anatomy": "v4",
+    "chemicals": "v3",
+    "compounds": "v3",
+    "diseases": "v5",
+    "foods": "v4",
+    "genes": "v6",
+    "phenomenas": "v4",
+    "phenotypes": "v3",
+    "proteins": "v4",
+    "species": "v4"
 }

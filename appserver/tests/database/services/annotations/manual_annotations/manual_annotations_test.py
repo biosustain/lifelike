@@ -65,6 +65,7 @@ def test_add_custom_annotation_inclusion_multi_word(
         custom_annotation=custom,
         annotate_all=True
     )
+
     assert len(inclusions) == 2
 
 

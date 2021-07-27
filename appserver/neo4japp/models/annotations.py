@@ -1,6 +1,5 @@
-from enum import Enum
-
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase, TimestampMixin
@@ -22,3 +21,12 @@ class GlobalList(RDBMSBase, TimestampMixin):
 class AnnotationStopWords(RDBMSBase):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     word = db.Column(db.String(80), nullable=False)
+
+
+class LMDB(RDBMSBase):
+    __tablename__ = 'lmdb'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(64), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    # azure file storage uses md5
+    checksum_md5 = db.Column(db.String(32), nullable=False, index=True, unique=True)

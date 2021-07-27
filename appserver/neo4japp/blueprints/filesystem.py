@@ -6,20 +6,19 @@ import typing
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
-from urllib.error import URLError
-
 from deepdiff import DeepDiff
-from flask import Blueprint, jsonify, g, request, make_response
+from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
+from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
 from neo4japp.models import (
@@ -32,34 +31,36 @@ from neo4japp.models import (
 )
 from neo4japp.models.files import FileLock, FileAnnotationsVersion
 from neo4japp.models.files_queries import (
-    FileHierarchy,
+    add_file_user_role_columns,
     build_file_hierarchy_query,
-    build_file_children_cte,
-    add_file_user_role_columns
+    FileHierarchy,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
-    FileUpdateRequestSchema,
-    FileResponseSchema,
-    FileCreateRequestSchema,
     BulkFileRequestSchema,
-    MultipleFileResponseSchema,
     BulkFileUpdateRequestSchema,
-    FileListSchema,
-    FileSearchRequestSchema,
     FileBackupCreateRequestSchema,
-    FileVersionHistorySchema,
+    FileCreateRequestSchema,
     FileExportRequestSchema,
+    FileHierarchyRequestSchema,
+    FileHierarchyResponseSchema,
+    FileListSchema,
     FileLockCreateRequest,
     FileLockDeleteRequest,
-    FileLockListResponse
+    FileLockListResponse,
+    FileResponseSchema,
+    FileSearchRequestSchema,
+    FileUpdateRequestSchema,
+    FileVersionHistorySchema,
+    MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
 from neo4japp.services.file_types.service import GenericFileTypeProvider
 
@@ -218,45 +219,6 @@ class FilesystemBaseView(MethodView):
 
         # In the end, we just return a list of Files instances!
         return files
-
-    def get_nondeleted_recycled_children(
-            self,
-            filter,
-            children_filter=None,
-            lazy_load_content=False
-    ) -> List[Files]:
-        """
-        Retrieve all files that match the provided filter, including the children of those
-        files, even if those children do not match the filter. The files returned by
-        this method do not have complete information to determine permissions.
-
-        :param filter: the SQL Alchemy filter
-        :param lazy_load_content: whether to load the file's content into memory
-        :return: the result, which may be an empty list
-        """
-        q_hierarchy = build_file_children_cte(and_(
-                filter,
-                Files.deletion_date.is_(None)
-        ))
-
-        t_parent_files = aliased(Files)
-
-        query = db.session.query(Files) \
-            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
-            .outerjoin(t_parent_files, t_parent_files.id == Files.parent_id) \
-            .options(raiseload('*'),
-                     contains_eager(Files.parent, alias=t_parent_files),
-                     joinedload(Files.user),
-                     joinedload(Files.fallback_organism)) \
-            .order_by(q_hierarchy.c.level)
-
-        if children_filter is not None:
-            query = query.filter(children_filter)
-
-        if lazy_load_content:
-            query = query.options(lazyload(Files.content))
-
-        return query.all()
 
     def check_file_permissions(
             self,
@@ -559,6 +521,88 @@ class FilesystemBaseView(MethodView):
             if hash_id not in found_hash_ids:
                 missing.add(hash_id)
         return missing
+
+
+class FileHierarchyView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(FileHierarchyRequestSchema)
+    def get(self, params: dict):
+        """
+        Fetches a representation of the complete file hierarchy accessible by the current user.
+        """
+        current_app.logger.info(
+            f'Attempting to generate file hierarchy...',
+            extra=UserEventLog(
+                username=g.current_user.username,
+                event_type=LogEventType.FILESYSTEM.value
+            ).to_dict()
+        )
+
+        EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
+        filters = [
+            Files.recycling_date.is_(None)
+        ]
+
+        if params['directories_only']:
+            filters.append(Files.mime_type == DirectoryTypeProvider.MIME_TYPE)
+
+        hierarchy = self.get_nondeleted_recycled_files(
+            and_(*filters),
+            attr_excl=EXCLUDE_FIELDS
+        )
+
+        root = {}  # type: ignore
+        curr_dir = root
+        for file in hierarchy:
+            # Privileges are calculated in `get_nondeleted_recycled_files` above
+            if file and file.calculated_privileges[g.current_user.id].readable:
+                curr_dir = root
+                id_path_list = [f.id for f in file.file_path]
+                for id in id_path_list:
+                    if id not in curr_dir:
+                        curr_dir[id] = {}
+                    curr_dir = curr_dir[id]
+
+        def generate_node_tree(id, children):
+            file = db.session.query(
+                Files
+            ).options(
+                defer('annotations'),
+                defer('enrichment_annotations')
+            ).get(id)
+            filename_path = file.filename_path
+            if children is None:
+                return {
+                    'data': file,
+                    'level': len(filename_path.split('/')) - 2
+                }
+            return {
+                'data': file,
+                'level': len(filename_path.split('/')) - 2,
+                'children': [
+                    generate_node_tree(id, grandchildren)
+                    for id, grandchildren in children.items()
+                ]
+            }
+
+        results = [
+            generate_node_tree(project_id, children)
+            for project_id, children in root.items()
+        ]
+
+        current_app.logger.info(
+            f'Generated file hierarchy!',
+            extra=UserEventLog(
+                username=g.current_user.username,
+                event_type=LogEventType.FILESYSTEM.value
+            ).to_dict()
+        )
+        return jsonify(FileHierarchyResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'results': results,
+        }))
 
 
 class FileListView(FilesystemBaseView):
@@ -1382,6 +1426,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
 bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
