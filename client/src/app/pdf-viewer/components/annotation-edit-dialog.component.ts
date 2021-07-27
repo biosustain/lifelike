@@ -49,9 +49,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   get databaseTypeChoices(): string[] {
     const value = this.form.get('entityType').value;
-    if (ENTITY_TYPE_MAP) {
-      // ????
-    }
     if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
       return ENTITY_TYPE_MAP[value].sources;
     }
