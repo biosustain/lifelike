@@ -27,7 +27,14 @@ export class HighlightSnippetComponent implements OnChanges {
     ngOnChanges() {
         const spaceRegex = / /gi;
 
-        const entry1Colors = this.legend.get(this.entry1Type) || ['#000', '#000'];
+        console.log(this.legend);
+        console.log(this.entry1Type);
+        console.log(this.entry2Type);
+
+        // Because the `entryType` properties of snippet nodes DOES NOT match the label of the entity nodes, we do an extra check here.
+        // E.g., a snippet associated with a `LiteratureGene` node will have the "gene" as its entry type, not "literaturegene."
+        const entry1Colors = this.legend.get(this.entry1Type) || this.legend.get(`Literature${this.entry1Type}`) || ['#000', '#000'];
+
         const entry1BackgroundColor = entry1Colors[0];
         const entry1StyleString = `
             background-color: ${hexToRGBA(entry1BackgroundColor, 0.3)};
@@ -38,7 +45,8 @@ export class HighlightSnippetComponent implements OnChanges {
         `;
         const entry1TextJoinedByUnderscore = this.entry1Text.replace(spaceRegex, '_');
 
-        const entry2Colors = this.legend.get(this.entry2Type) || ['#000', '#000'];
+        const entry2Colors = this.legend.get(this.entry2Type) || this.legend.get(`Literature${this.entry2Type}`) || ['#000', '#000'];
+
         const entry2BackgroundColor = entry2Colors[0];
         const entry2StyleString = `
             background-color: ${hexToRGBA(entry2BackgroundColor, 0.3)};
