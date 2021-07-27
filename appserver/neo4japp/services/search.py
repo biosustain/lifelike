@@ -280,18 +280,18 @@ class SearchService(GraphBaseDao):
             record for record in tx.run(
                 f"""
                 CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-                YIELD node, score
+                YIELD node
                 MATCH (node)-[]-(n)
                 WHERE {result_filters}
-                WITH n, score, toLower(n.name) = toLower($search_term) as matches_input
+                WITH n, toLower(n.name) = toLower($search_term) as matches_input
                 {organism_match_string}
-                WITH n, t, score, matches_input, n.namespace as go_class
+                WITH n, t, matches_input, n.namespace as go_class
                 MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
-                WITH collect(n) + collect(m) as nodes, t, score, matches_input, go_class
+                WITH collect(n) + collect(m) as nodes, t, matches_input, go_class
                 UNWIND nodes as node
                 RETURN DISTINCT node AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, go_class AS go_class, score, matches_input
-                ORDER BY matches_input DESC, score DESC
+                    t.name AS taxonomy_name, go_class AS go_class, matches_input
+                ORDER BY matches_input DESC
                 SKIP $amount
                 LIMIT $limit
                 """,
