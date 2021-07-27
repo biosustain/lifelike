@@ -22,7 +22,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, ResultList, SearchableRequestOptions } from 'app/shared/schemas/common';
+import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { uuidv4 } from 'app/shared/utils';
@@ -36,10 +36,12 @@ import {
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
+import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
 import { SynonymSearchComponent } from './synonym-search.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
+import { ContentSearchResponse } from '../schema';
 
 
 @Component({
@@ -73,9 +75,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
     const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
-    const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
+    const foldersExists = this.params.hasOwnProperty('folders') && this.params.folders.length !== 0;
 
-    return !(qExists || typesExists || projectsExists);
+    return !(qExists || typesExists || foldersExists);
   }
 
   constructor(private modalService: NgbModal,
@@ -110,15 +112,25 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
+  getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     // No point sending a request if the params are completely empty
     if (this.emptyParams) {
-      return of({total: 0, results: []});
+      return of({
+        total: 0,
+        results: [],
+        synonyms: {},
+        droppedFolders: []
+      });
     }
     return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
         this.highlightTerms = response.query.phrases;
+        const rejectedFolders: string[] = response.droppedFolders;
+
+        if (rejectedFolders.length) {
+          this.openRejectedOptions(rejectedFolders);
+        }
       })
     );
   }
@@ -140,10 +152,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('types')) {
       params.types.forEach(type => q.push(`type:${type.shorthand}`));
     }
-    if (params.hasOwnProperty('projects')) {
-      params.projects.forEach(project => q.push(`project:${project}`));
-    }
-
     return q.join(' ');
   }
 
@@ -153,8 +161,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('types')) {
       advancedParams.types = getChoicesFromQuery(params, 'types', this.searchTypesMap);
     }
-    if (params.hasOwnProperty('projects')) {
-      advancedParams.projects = params.projects === '' ? [] : params.projects.split(';');
+    if (params.hasOwnProperty('folders')) {
+      advancedParams.folders = params.folders === '' ? [] : params.folders.split(';');
     }
     if (params.hasOwnProperty('phrase')) {
       advancedParams.phrase = params.phrase;
@@ -179,8 +187,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('types')) {
       advancedParams.types = params.types.map(value => value.shorthand).join(';');
     }
-    if (params.hasOwnProperty('projects')) {
-      advancedParams.projects = params.projects.join(';');
+    if (params.hasOwnProperty('folders')) {
+      advancedParams.folders = params.folders.join(';');
     }
     return advancedParams;
   }
@@ -311,11 +319,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     );
     q = q.replace(/\btype:\S*/g, '');
 
-    // Remove 'projects' from q and add to the projects option of the advancedParams
-    const projectMatches = q.match(/\bproject:\S*/g);
-    const extractedProjects = projectMatches === null ? [] : projectMatches.map(projectVal => projectVal.split(':')[1]);
-    advancedParams.projects = extractedProjects;
-    q = q.replace(/\bproject:\S*/g, '');
+    // Remove 'folders' from q and add to the folders option of the advancedParams
+    // const folderMatches = q.match(/\bfolder:\S*/g);
+    // const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
+    // advancedParams.folders = extractedFilepaths;
+    // q = q.replace(/\bfolder:\S*/g, '');
+    // TODO: If we ever want to put folders back into the query string, uncomment the above
+    advancedParams.folders = this.params.folders || [];
 
     // Do one last whitespace replacement to clean up the query string
     q = q.replace(/\s+/g, ' ').trim();
@@ -355,12 +365,28 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
     modalRef.result
       // Synonym search was submitted
-      .then((synonymsToAdd: string[]) => {
-        this.queryString = (synonymsToAdd.join(' ') + (isNullOrUndefined(this.queryString) ? '' : ` ${this.queryString}`)).trim();
+      .then((expressionsToAdd: string[]) => {
+        this.queryString = ((isNullOrUndefined(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')).trim();
       })
       // Synonym search dialog was dismissed or rejected
       .catch(() => {
       });
+  }
+
+  /**
+   * Opens the rejected options dialog. This will show the user any erroneous search inputs, if any.
+   */
+   openRejectedOptions(rejectedFolders: string[]) {
+    const modalRef = this.modalService.open(RejectedOptionsDialogComponent, {
+      size: 'md',
+    });
+    // Get the starting options from the content search form query
+    modalRef.componentInstance.rejectedFolders = rejectedFolders;
+    modalRef.result
+      // Currently there's no "Submit" action on this dialog, but maybe we'll add one later
+      .then(() => {})
+      // Rejected options dialog was dismissed or rejected
+      .catch(() => {});
   }
 
   itemDragStart(event: DragEvent, object: FilesystemObject, force = false) {

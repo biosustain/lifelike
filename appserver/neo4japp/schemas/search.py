@@ -19,7 +19,7 @@ class ContentSearchSchema(CamelCaseSchema):
         required=True,
     )
     types = ma.String(default='', required=False)
-    projects = ma.String(default='', required=False)
+    folders = ma.String(default='', required=False)
 
 
 class SynonymSearchSchema(CamelCaseSchema):
@@ -33,6 +33,7 @@ class SynonymSearchSchema(CamelCaseSchema):
 
 class ContentSearchResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(RankedFileSchema))
+    dropped_folders = fields.List(fields.String())
 
 
 class SynonymData(CamelCaseSchema):
@@ -50,6 +51,7 @@ class SynonymSearchResponseSchema(CamelCaseSchema):
 # ========================================
 # Text Annotation API
 # ========================================
+
 
 class AnnotateRequestSchema(ma.Schema):
     texts = fields.List(fields.String(validate=validate.Length(min=1, max=1500)),

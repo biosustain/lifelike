@@ -18,15 +18,13 @@ import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { TraceDetailsComponent } from './components/trace-details/trace-details.component';
 import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
     SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent,
-    TraceDetailsComponent
+    SankeyDetailsPanelComponent
   ],
   imports: [
     CommonModule,
@@ -56,8 +54,7 @@ import { SankeyDetailsPanelComponent } from './components/details-panel/details-
   exports: [
     SankeyViewComponent,
     SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent,
-    TraceDetailsComponent
+    SankeyDetailsPanelComponent
   ],
 })
 export class SankeyViewerLibModule {

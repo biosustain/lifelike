@@ -20,103 +20,116 @@ $non-active-node-opacity: .50;
     height: 100%;
     background-color: white;
 
-    .nodes {
-      z-index: 1;
-
-      &:hover > g > rect {
+    g {
+      // tune out links out when node is hovered
+      &:hover .links path {
         opacity: $non-active-node-opacity;
       }
 
-      g {
-        // todo reenable when performance improves
-        //transition: opacity 250ms 250ms;
+      .nodes {
+        z-index: 1;
 
-        rect {
-          cursor: move;
-          fill-opacity: $node-opacity;
-          shape-rendering: crispEdges;
-          stroke: #000000;
-          stroke-opacity: $node-stroke-opacity;
-          transition: opacity 200ms;
-
-          &:hover {
-            opacity: $node-opacity;
-            stroke: $node-active-stroke-opacity;
-          }
-        }
-
-        &[selected=false] {
-          & > rect {
-            opacity: $non-active-node-opacity;
-          }
-        }
-
-        &[highlighted=true] {
-          & > rect {
-            opacity: $node-opacity;
-          }
-        }
-
-        &[selected=true] {
-          & > rect {
-            opacity: $node-opacity;
-            stroke-opacity: $node-active-stroke-opacity;
-          }
-        }
-
-        .text-shadow {
-          mix-blend-mode: lighten;
-          stroke: none;
-          fill: #bbb;
-          display: none;
-          filter: blur(0.1em);
-          transform: scaleY(1.5);
-        }
-
-        &:hover .text-shadow {
-          display: initial;
-        }
-
-        text {
-          font-size: 0.5em;
-          // todo: reenable when performance improves
-          //transition: font-size 250ms 250ms, fill 250ms 250ms;
-          pointer-events: none;
-        }
-
-        &:hover text {
-          font-size: 1em;
-          fill: black;
-        }
-      }
-    }
-
-    .links {
-      fill: none;
-      stroke: #000;
-      transition: opacity 200ms;
-
-      &:hover path {
-        opacity: $non-active-link-opacity;
-      }
-
-      path {
-        // todo reenable when performance improves
-        //transition: opacity 250ms 250ms;
-        opacity: $link-opacity;
-        stroke-opacity: $link-stroke-opacity;
-
-        &[selected=false] {
+        // tune out other nodes when ones are hovered
+        &:hover > g > rect {
           opacity: $non-active-link-opacity;
         }
 
-        &[highlighted=true], &[selectedTrace=true] {
-          opacity: $link-opacity;
+        g {
+          // todo reenable when performance improves
+          //transition: opacity 250ms 250ms;
+
+          rect {
+            cursor: move;
+            fill-opacity: $node-opacity;
+            shape-rendering: crispEdges;
+            stroke: #000000;
+            stroke-opacity: $node-stroke-opacity;
+            transition: opacity 200ms;
+
+            &:hover {
+              opacity: $node-opacity;
+              stroke: $node-active-stroke-opacity;
+            }
+          }
+
+          &[selected=false] {
+            & > rect {
+              opacity: $non-active-node-opacity;
+            }
+          }
+
+          &[highlighted=true] {
+            & > rect {
+              opacity: $node-opacity;
+            }
+          }
+
+          &[selected=true] {
+            & > rect {
+              opacity: $node-opacity;
+              stroke-opacity: $node-active-stroke-opacity;
+            }
+          }
+
+          .text-shadow {
+            mix-blend-mode: lighten;
+            stroke: none;
+            fill: #bbb;
+            display: none;
+            filter: blur(0.1em);
+            transform: scaleY(1.5);
+          }
+
+          &:hover .text-shadow {
+            display: initial;
+          }
+
+          text {
+            font-size: 0.5em;
+            // todo: reenable when performance improves
+            //transition: font-size 250ms 250ms, fill 250ms 250ms;
+            pointer-events: none;
+          }
+
+          &:hover text {
+            font-size: 1em;
+            fill: black;
+          }
+        }
+      }
+
+      .links {
+        fill: none;
+        stroke: #000;
+        transition: opacity 200ms;
+
+        // tune out other links when one is hovered
+        &:hover path {
+          opacity: $non-active-link-opacity;
         }
 
-        &[selected=true], &:hover {
+        path {
+          // todo reenable when performance improves
+          //transition: opacity 250ms 250ms;
           opacity: $link-opacity;
-          stroke-opacity: $link-active-stroke-opacity;
+          stroke-opacity: $link-stroke-opacity;
+
+          &.circular {
+            stroke-dasharray: 4 4;
+          }
+
+          &[selected=false] {
+            opacity: $non-active-link-opacity;
+          }
+
+          &[highlighted=true], &[selectedTrace=true] {
+            opacity: $link-opacity;
+          }
+
+          &[selected=true], &:hover {
+            opacity: $link-opacity;
+            stroke-opacity: $link-active-stroke-opacity;
+          }
         }
       }
     }

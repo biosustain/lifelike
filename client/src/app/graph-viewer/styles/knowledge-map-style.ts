@@ -147,11 +147,17 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         for (const link of links) {
           try {
             const url = new URL(link, window.location.href);
-            if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+            if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
+              iconCode = '\uf15b';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
               iconCode = '\uf0ce';
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
               iconCode = '\uf542';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//)) {
+              iconCode = '\uf659';
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
               iconCode = '\uf15b';

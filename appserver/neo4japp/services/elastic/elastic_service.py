@@ -1,23 +1,33 @@
 import base64
-import json
-import re
-import string
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk, streaming_bulk
 from flask import current_app
 from io import BytesIO
-from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
+import json
+import re
+
+from pyparsing import (
+    CaselessLiteral,
+    Optional,
+    ParserElement,
+    QuotedString,
+    Word,
+    ZeroOrMore,
+    infixNotation,
+    opAssoc,
+    printables,
+)
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, raiseload
 from typing import (
+    Any,
     Dict,
     List,
-    Tuple
 )
 
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
-from neo4japp.database import db, get_file_type_service, ElasticConnection, GraphConnection
+from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
 from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     Files, Projects,
@@ -28,8 +38,16 @@ from neo4japp.services.elastic import (
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
 )
+from neo4japp.services.elastic.query_parser_helpers import (
+    BoolMust,
+    BoolMustNot,
+    BoolOperand,
+    BoolShould
+)
 from neo4japp.utils import EventLog
 from app import app
+
+ParserElement.enablePackrat()
 
 
 class ElasticService(ElasticConnection, GraphConnection):
@@ -111,78 +129,67 @@ class ElasticService(ElasticConnection, GraphConnection):
             self.update_or_create_index(index_id, index_mapping_file)
         return 'done'
 
-    def parallel_bulk_documents(self, documents):
-        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
-        # `raise_on_exception` set to False so that we don't error out if one of the documents
-        # fails to index
-        results = parallel_bulk(
-            self.elastic_client,
-            documents,
-            raise_on_error=False,
-            raise_on_exception=False
+    def reindex_all_documents(self):
+        self.index_files()
+
+    def update_files(self, hash_ids: List[str] = None):
+        raise NotImplementedError()
+
+    def delete_files(self, hash_ids: List[str]):
+        self._streaming_bulk_documents([
+            self._get_delete_obj(hash_id, FILE_INDEX_ID)
+            for hash_id in hash_ids
+        ])
+        self.elastic_client.indices.refresh(FILE_INDEX_ID)
+
+    def index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+        """
+        Adds the files with the given ids to Elastic. If no IDs are given,
+        all non-deleted files will be indexed.
+        :param ids: a list of file table IDs (integers)
+        :param batch_size: number of documents to index per batch
+        """
+        filters = [
+            Files.deletion_date.is_(None),
+            Files.recycling_date.is_(None),
+        ]
+
+        if hash_ids is not None:
+            filters.append(Files.hash_id.in_(hash_ids))
+
+        # Gets the file/project pairs -- plus _all_ parents -- for the given file ids
+        query = self._get_file_hierarchy_query(
+            and_(*filters)
         )
 
-        for success, info in results:
-            # TODO: Evaluate the data egress size. When seeding the staging database
-            # locally, this could output ~1gb of data. Question: Should we conditionally
-            # turn this off?
-            if success:
-                current_app.logger.info(
-                    f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-            else:
-                current_app.logger.warning(
-                    f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-                )
+        # Removes any unnecessary parent rows, we only need to index what was given in hash_ids,
+        # if anything
+        if hash_ids is not None:
+            query = query.filter(
+                Files.hash_id.in_(hash_ids)
+            )
 
-    def streaming_bulk_documents(self, documents):
-        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
-        # `raise_on_exception` set to False so that we don't error out if one of the documents
-        # fails to index
-        results = streaming_bulk(
-            client=self.elastic_client,
-            actions=documents,
-            max_retries=5,
-            raise_on_error=False,
-            raise_on_exception=False
+        # Just return Files and Projects data, we don't care about any other columns
+        query = query.with_entities(Files, Projects)
+
+        self._streaming_bulk_documents(
+            self._lazy_create_index_docs_for_streaming_bulk(
+                self._windowed_query(query, Files.hash_id, batch_size)
+            )
         )
 
-        for success, info in results:
-            # TODO: Evaluate the data egress size. When seeding the staging database
-            # locally, this could output ~1gb of data. Question: Should we conditionally
-            # turn this off?
-            if success:
-                current_app.logger.info(
-                    f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-            else:
-                current_app.logger.warning(
-                    f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-                )
-
-    def delete_documents(self, document_ids: List[str], index_id: str):
+    def _get_file_hierarchy_query(self, filter):
         """
-        Deletes all documents with the given file hash IDs from Elastic.
+        Generate the query to get files that will be indexed.
+        :param filter: SQL Alchemy filter
+        :return: the query
         """
-        self.streaming_bulk_documents(({
-            '_op_type': 'delete',
-            '_index': index_id,
-            '_id': document_id
-        } for document_id in document_ids))
-        self.elastic_client.indices.refresh(index_id)
+        return build_file_hierarchy_query(filter, Projects, Files) \
+            .options(raiseload('*'),
+                     joinedload(Files.user),
+                     joinedload(Files.content))
 
-    def index_or_delete_files(self, hash_ids: List[str]):
-        self._delete_files(hash_ids)
-        self._index_files(hash_ids)
-
-    def _delete_files(self, hash_ids: List[str]):
-        self.delete_documents(hash_ids, FILE_INDEX_ID)
-
-    def windowed_query(self, q, column, windowsize):
+    def _windowed_query(self, q, column, windowsize):
         """"Break a Query into chunks on a given column."""
 
         single_entity = q.is_single_entity
@@ -203,66 +210,77 @@ class ElasticService(ElasticConnection, GraphConnection):
                 else:
                     yield row[0:-1]
 
-    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
         """
-        Adds the files with the given ids to Elastic. If no IDs are given,
-        all non-deleted files will be indexed.
-        :param ids: a list of file table IDs (integers)
-        :param batch_size: number of documents to index per batch
+        Get the file's contents in a format that can be indexed by Elastic, or is
+        better indexed by Elatic.
+        :param file: the file
+        :return: the bytes to send to Elastic
         """
-        filters = [
-            Files.deletion_date.is_(None),
-            Files.recycling_date.is_(None),
-        ]
+        if file.content:
+            content = file.content.raw_file
+            file_type_service = get_file_type_service()
+            return file_type_service.get(file).to_indexable_content(BytesIO(content))
+        else:
+            return BytesIO()
 
-        if hash_ids is not None:
-            filters.append(Files.hash_id.in_(hash_ids))
-
-        query = self._get_file_hierarchy_query(and_(*filters))
-        self.streaming_bulk_documents(
-            self._lazy_create_es_docs_for_streaming_bulk(
-                self.windowed_query(query, Files.hash_id, batch_size)
-            )
-        )
-
-    def _lazy_create_es_docs_for_parallel_bulk(self, batch):
+    def _lazy_create_index_docs_for_parallel_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
-        :param batch: results from the 'query.yield_per'
+        :param batch: iterable of file/project pairs
         :return: indexable object in generator form
         """
 
         # Preserve context that is lost from threading when used
         # with the elasticsearch parallel_bulk
         with app.app_context():
-            for file, _, _, project, *_ in batch:
-                yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+            for file, project in batch:
+                yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-    def _lazy_create_es_docs_for_streaming_bulk(self, windowed_query):
+    def _lazy_create_index_docs_for_streaming_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
         process to prevent loading everything into memory.
-        :param windowed_query: results from 'windowed_query(query, Files.hash_id, batch_size)'
+        :param batch: iterable of file/project pairs
         :return: indexable object in generator form
         """
-        for file, _, _, project, *_ in windowed_query:
-            yield self._get_elastic_document(file, project, FILE_INDEX_ID)
+        for file, project in batch:
+            yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-    def _get_file_hierarchy_query(self, filter):
-        """
-        Generate the query to get files that will be indexed.
-        :param filter: SQL Alchemy filter
-        :return: the query
-        """
-        return build_file_hierarchy_query(filter, Projects, Files) \
-            .options(raiseload('*'),
-                     joinedload(Files.user),
-                     joinedload(Files.content))
+    def _get_update_action_obj(self, file_hash_id: str, index_id: str, changes: dict = {}) -> dict:
+        # 'filename': file.filename,
+        # 'description': file.description,
+        # 'uploaded_date': file.creation_date,
+        # 'data': base64.b64encode(indexable_content).decode('utf-8'),
+        # 'user_id': file.user_id,
+        # 'username': file.user.username,
+        # 'project_id': project.id,
+        # 'project_hash_id': project.hash_id,
+        # 'project_name': project.name,
+        # 'doi': file.doi,
+        # 'public': file.public,
+        # 'id': file.id,
+        # 'hash_id': file.hash_id,
+        # 'mime_type': file.mime_type,
+        # 'data_ok': data_ok,
+        return {
+            '_op_type': 'update',
+            '_index': index_id,
+            '_id': file_hash_id,
+            'doc': changes,
+        }
 
-    def _get_elastic_document(self, file: Files, project: Projects, index_id) -> dict:
+    def _get_delete_obj(self, file_hash_id: str, index_id: str) -> dict:
+        return {
+            '_op_type': 'delete',
+            '_index': index_id,
+            '_id': file_hash_id
+        }
+
+    def _get_index_obj(self, file: Files, project: Projects, index_id) -> dict:
         """
-        Generate the Elastic document sent to Elastic for the given file.
+        Generate an index operation object from the given file and project
         :param file: the file
         :param project: the project that file is within
         :param index_id: the index
@@ -293,6 +311,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_id': file.hash_id,
             '_source': {
                 'filename': file.filename,
+                'file_path': file.filename_path,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
                 'data': base64.b64encode(indexable_content).decode('utf-8'),
@@ -310,298 +329,244 @@ class ElasticService(ElasticConnection, GraphConnection):
             }
         }
 
-    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
+    def _parallel_bulk_documents(self, documents):
         """
-        Get the file's contents in a format that can be indexed by Elastic, or is
-        better indexed by Elatic.
-        :param file: the file
-        :return: the bytes to send to Elastic
+        Performs a series of bulk operations in elastic, determined by the `documents` input.
+        These operations are executed in parallel, on 4 threads by default.
         """
-        if file.content:
-            content = file.content.raw_file
-            file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(BytesIO(content))
-        else:
-            return BytesIO()
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = parallel_bulk(
+            self.elastic_client,
+            documents,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
 
-    def reindex_all_documents(self):
-        self._index_files()
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
+
+    def _streaming_bulk_documents(self, documents):
+        """
+        Performs a series of bulk operations in elastic, determined by the `documents` input.
+        These operations are done in series.
+        """
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = streaming_bulk(
+            client=self.elastic_client,
+            actions=documents,
+            max_retries=5,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
+
+        for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+            else:
+                current_app.logger.warning(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                )
 
     # End indexing methods
 
     # Begin search methods
+    def _get_words_phrases_and_wildcards(self, string):
+        """
+        Extracts all word, phrase, and wildcard tokens from the given input string. Duplicates are
+        removed, and the keywords "and," "not," and "or" are discarded.
+        """
+        if not len(string):
+            return []
 
-    def get_matches(self, pattern, string, match_group):
-        matches = []
-        match = re.search(pattern, string)
-        while(match):
-            # Add the match to the list, stripping whitespace
-            matches.append(match.group(match_group).strip())
+        stripped_parens_str = ''.join([c for c in string if c not in ['(', ')']])
+        token = QuotedString('"', unquoteResults=False) | Word(printables)
+        parser = ZeroOrMore(token)
 
-            # Get the start and end indices
-            start, end = (match.start(), match.end())
+        unique_non_keyword_tokens = list(set([
+            t for t in list(parser.parseString(stripped_parens_str))
+            if t.lower() not in ['and', 'not', 'or']]
+        ))
 
-            # Splice the string: get everything before start, and after end, placing
-            # a single whitespace character between them. The reason we need a
-            # buffer between the two halves is because there may have not been a
-            # boundary between the matched term and its neighbors. e.g.
-            # 'apples" and "bananas' would turn into 'applesbananas' without the
-            # buffer in a phrase match.
-            string = string[:start] + ' ' + string[end:]
+        return unique_non_keyword_tokens
 
-            # Get a new match object, if one exists
-            match = re.search(pattern, string)
-        return matches, string
+    def _pre_process_query(self, query):
+        """
+        Given a user-generated query string, returns a new string in a psuedo-Lucene grammar. The
+        user-generated query is expected to be a space-delimited list of search terms, operators,
+        and filters.
 
-    def get_words_phrases_and_wildcards(self, string):
-        phrase_regex = r'\"((?:\"\"|[^\"])*)\"'
-        wildcard_regex = r'\S*(\?|\*)\S*'
+        The output of this function is expected to be used as the input to the parser generated by
+        `_get_query_parser` below.
+        """
+        open_parens = Word('(')
+        closed_parens = Word(')')
+        term = term = Word(printables)
+        # Need to include these optional parens, otherwise something like '(r and "p and q")' will
+        # be tokenized as ['(r', 'and', '"p', 'and', 'q")']
+        quoted_term = QuotedString('"', unquoteResults=False)
+        quoted_term_with_parens = Optional(open_parens) + quoted_term + Optional(closed_parens)
+        quoted_term_with_parens.setParseAction(''.join)
+        operand = quoted_term_with_parens | term
+        query_parser = ZeroOrMore(operand)
 
-        phrases, string = self.get_matches(phrase_regex, string, 1)
-        wildcards, string = self.get_matches(wildcard_regex, string, 0)
-        string = string.strip()
-        words = re.split(r'\s+', string) if len(string) > 0 else []
+        unstackable_logical_ops = ['and', 'or']
+        new_query = []
+        _next = None
+        tokens = list(query_parser.parseString(query))
+        for i, curr in enumerate(tokens):
+            # If we're at the last element in the list, just add it to the new list of tokens.
+            if i == len(tokens) - 1:
+                new_query += [curr]
+                continue
 
-        return words, phrases, wildcards
+            _next = tokens[i + 1]
 
-    def generate_multi_match_subclause(
+            if curr.lower() == 'not':
+                if _next.lower() in unstackable_logical_ops:
+                    raise ServerException(
+                        title='Content Search Error',
+                        message='Your query appears malformed. A logical operator (AND/OR) was ' +
+                                'encountered immediately following a NOT operator, e.g. ' +
+                                '"dog not and cat." Please examine your query for possible ' +
+                                'errors and try again.',
+                        code=400
+                    )
+                new_query += [curr]
+            elif curr.lower() in unstackable_logical_ops:
+                if _next.lower() in unstackable_logical_ops:
+                    raise ServerException(
+                        title='Content Search Error',
+                        message='Your query appears malformed. Two logical operators (AND/OR) ' +
+                                'were encountered in succession, e.g. "dog and and cat." Please ' +
+                                'examine your query for possible errors and try again.',
+                        code=400
+                    )
+                new_query += [curr]
+            elif _next.lower() not in unstackable_logical_ops:
+                new_query += [curr, 'and']
+            else:
+                new_query += [curr]
+        return ' '.join(new_query)
+
+    def _get_query_parser(
         self,
-        phrase: str,
         text_fields: List[str],
         text_field_boosts: Dict[str, int],
     ):
-        return {
-            'bool': {
-                'should': [
-                    {
-                        'multi_match': {
-                            'query': term,  # type:ignore
-                            'type': 'phrase',  # type:ignore
-                            'fields': [
-                                f'{field}^{text_field_boosts[field]}'
-                                for field in text_fields
-                            ]
-                        }
-                    }
-                    for term in [phrase]
-                ]
-            }
-        }
+        """
+        Generates a parser which expects a pseudo-Lucene query string, and returns an object
+        representing:
 
-    def generate_wildcard_match_subclause(
-        self,
-        wildcard: str,
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int]
-    ):
-        return {
-            'bool': {
-                'should': [
-                    {
-                        'wildcard': {
-                            field: {
-                                'value': wildcard,
-                                'boost': text_field_boosts[field],
-                                'case_insensitive': True
-                            }
-                        }
-                    } for field in text_fields
-                ]
-            }
-        }
+        - A simple Elastic match query in the case of a single term
+        - An Elastic bool query in the case of a logical expression
 
-    # TODO: Currently unused in favor of using an inline approach. Keeping just in case we need
-    # this pattern elsewhere in the future.
-    def get_text_match_objs(
-            self,
-            fields: List[str],
-            boost_fields: Dict[str, int],
-            word: str,
-    ):
-        return [
-            {
-                'term': {
-                    field: {
-                        'value': word,
-                        'boost': boost_fields[field]
-                    }
-                }
-            } for field in fields
-        ]
-
-    def get_text_match_queries(
-        self,
-        words: List[str],
-        phrases: List[str],
-        wildcards: List[str],
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int],
-    ):
-        # Create single word match subclauses (this is the same as phrase matching below, with the
-        # addition of exact text matching; This helps with words that contain punctuation)
-        word_operands = [
-            {
-                'bool': {
-                    'should': [
-                        self.generate_multi_match_subclause(
-                            word,
-                            text_fields,
-                            text_field_boosts
-                        )
-                    ] + ([
-                        # Duplicates the get_text_match_objs above, if we ever need this pattern
-                        # elsewhere, replace this with the function
-                        {
-                            'term': {
-                                field: {
-                                    'value': word,
-                                    'boost': text_field_boosts[field]
-                                }
-                            }
-                        } for field in text_fields
-                    ] if any([c in string.punctuation for c in word]) else [])
-                }
-            }
-            for word in words
-        ]
-
-        # Create phrase match subclauses
-        phrase_operands = [
-            self.generate_multi_match_subclause(
-                phrase,
+        See the helper classes in `query_parser_helpers.py` for the object structure.
+        """
+        boolOperand = QuotedString('"', unquoteResults=False) | Word(printables, excludeChars='()')
+        boolOperand.setParseAction(
+            lambda token: BoolOperand(
+                token,
                 text_fields,
                 text_field_boosts
-            )
-            for phrase in phrases
-        ]
+            ),
+        )
 
-        # Create wildcard subclauses
-        wildcard_operands = [
-            self.generate_wildcard_match_subclause(
-                wildcard,
-                text_fields,
-                text_field_boosts
-            )
-            for wildcard in wildcards
-        ]
+        # Define expression, based on expression operand and list of operations in precedence order
+        boolExpr = infixNotation(
+            boolOperand,
+            [
+                (CaselessLiteral('not'), 1, opAssoc.RIGHT, BoolMustNot),
+                (CaselessLiteral('and'), 2, opAssoc.LEFT, BoolMust),
+                (CaselessLiteral('or'), 2, opAssoc.LEFT, BoolShould),
+            ],
+        )
 
-        return {
-            'bool': {
-                'must': word_operands + phrase_operands + wildcard_operands,  # type:ignore
-            }
-        }
-
-    def get_keyword_match_queries(
-            self,
-            search_term: str,
-            keyword_fields: List[str],
-            keyword_field_boosts: Dict[str, int]
-    ):
-        return {
-            'bool': {
-                'should': [
-                    {
-                        'term': {
-                            field: {
-                                'value': search_term,
-                                'boost': keyword_field_boosts[field]
-                            }
-                        }
-                    } for field in keyword_fields
-                ]
-            }
-        }
+        return boolExpr
 
     def _build_query_clause(
-            self,
-            search_term: str,
-            text_fields: List[str],
-            text_field_boosts: Dict[str, int],
-            keyword_fields: List[str],
-            keyword_field_boosts: Dict[str, int],
-            fields: List[str],
-            query_filter,
-            highlight,
+        self,
+        user_search_query: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        return_fields: List[str],
+        filter_: List[Any],
+        highlight: Dict[Any, Any],
     ):
-        search_term = search_term.strip()
-
-        if search_term == '':
+        """
+        Given a user-generated query string and Elastic match option objects, generates an Elastic
+        match object.
+        """
+        if user_search_query == '':
+            # Even if the user_search_query is empty, we may still want to get results. E.g. if a
+            # user is looking only for content in a specific folder.
             return {
                 'query': {
                     'bool': {
-                        'must': [
-                            query_filter,
-                        ],
+                        'must': filter_,
                     }
                 },
-                'highlight': highlight
-            }, [], {}
+                'fields': return_fields,
+                'highlight': highlight,
+                # Set `_source` to False so we only return the properties specified in `fields`
+                '_source': False,
+            }, []
 
-        words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
-
-        search_queries = []
-        if len(text_fields) > 0:
-            search_queries.append(
-                self.get_text_match_queries(
-                    words,
-                    phrases,
-                    wildcards,
-                    text_fields,
-                    text_field_boosts,
-                )
-            )
-
-        if len(keyword_fields) > 0:
-            search_queries.append(
-                self.get_keyword_match_queries(
-                    search_term,
-                    keyword_fields,
-                    keyword_field_boosts
-                )
-            )
+        words_phrases_and_wildcards = self._get_words_phrases_and_wildcards(user_search_query)
+        processed_query = self._pre_process_query(user_search_query)
+        parser = self._get_query_parser(text_fields, text_field_boosts)
+        result = parser.parseString(processed_query)[0].to_dict()
 
         return {
             'query': {
                 'bool': {
-                    'must': [
-                        {
-                            'bool': {
-                                'should': search_queries,
-
-                            }
-                        },
-                        query_filter,
-                    ],
+                    'must': [result] + filter_,
                 }
             },
-            'fields': fields,
+            'fields': return_fields,
             'highlight': highlight,
             # Set `_source` to False so we only return the properties specified in `fields`
             '_source': False,
-        }, phrases + words + wildcards
+        }, words_phrases_and_wildcards
 
     def search(
             self,
             index_id: str,
-            search_term: str,
+            user_search_query: str,
             text_fields: List[str],
             text_field_boosts: Dict[str, int],
-            keyword_fields: List[str],
-            keyword_field_boosts: Dict[str, int],
-            fields: List[str],
+            return_fields: List[str],
             offset: int = 0,
             limit: int = 10,
-            query_filter=None,
+            filter_=None,
             highlight=None
     ):
         es_query, search_phrases = self._build_query_clause(
-            search_term=search_term,
+            user_search_query=user_search_query,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            fields=fields,
-            query_filter=query_filter,
+            return_fields=return_fields,
+            filter_=filter_,
             highlight=highlight,
         )
 
