@@ -72,6 +72,7 @@
   </changeSet>
 
   <!-- ######## -->
+
   <changeSet id="LL-2193-merge-snippets" author="Binh Vu">
     <comment>Merge snippets</comment>
     <sql>
@@ -79,9 +80,8 @@
         "match (n:Snippet) with n.id as id, collect(n) as nodes
         where size(nodes) > 1 with nodes limit $limit
         call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
-        SET node.migrated = 1
         RETURN COUNT(*)", {limit:5000}
-      );
+      )
     </sql>
   </changeSet>
 
