@@ -33,6 +33,28 @@ const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
 const BIOC_MIMETYPE = 'vnd.lifelike.document/bioc';
 
+
+// TODO: Really should move these to a shared file...or into the relevant type provider. This doesn't seem like the right place for them to
+// live.
+export const DIRECTORY_UNICODE = '\uf07b';
+export const MAP_UNICODE = '\uf542';
+// Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
+// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
+// other unicode values, they WILL NOT work.
+export const SANKEY_UNICODE = '\ue000';
+export const ENRICHMENT_TABLE_UNICODE = '\uf0ce';
+export const PDF_UNICODE = '\uf1c1';
+export const BIOC_UNICODE = '\uf1c1';
+export const DEFAULT_UNICODE = '\uf15b';
+
+export const DIRECTORY_FA_CLASS = 'fa fa-folder';
+export const MAP_FA_CLASS = 'fa fa-project-diagram';
+export const SANKEY_FA_CLASS = 'fak fa-diagram-sankey-solid';
+export const ENRICHMENT_TABLE_FA_CLASS = 'fa fa-table';
+export const PDF_FA_CLASS = 'fa fa-file-pdf';
+export const BIOC_FA_CLASS = 'fa fa-file-pdf';
+export const DEFAULT_FA_CLASS = 'fa fa-file';
+
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
   /**
@@ -299,19 +321,19 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
-        return 'fa fa-folder';
+        return DIRECTORY_FA_CLASS;
       case MAP_MIMETYPE:
-        return 'fa fa-project-diagram';
+        return MAP_FA_CLASS;
       case BIOC_MIMETYPE:
-        return 'fa fa-file';
+        return BIOC_FA_CLASS;
       case ENRICHMENT_TABLE_MIMETYPE:
-        return 'fa fa-table';
+        return ENRICHMENT_TABLE_FA_CLASS;
       case SANKEY_MIMETYPE:
-        return 'fa fa-file-chart-line';
-      case 'application/pdf':
-        return 'fa fa-file-pdf';
+        return SANKEY_FA_CLASS;
+      case PDF_MIMETYPE:
+        return PDF_FA_CLASS;
       default:
-        return 'fa fa-file';
+        return DEFAULT_FA_CLASS;
     }
   }
 
@@ -319,19 +341,19 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
-        return '\uf07b';
+        return DIRECTORY_UNICODE;
       case MAP_MIMETYPE:
-        return '\uf542';
+        return MAP_UNICODE;
       case BIOC_MIMETYPE:
-        return '\uf1c1';
+        return BIOC_UNICODE;
       case ENRICHMENT_TABLE_MIMETYPE:
-        return '\uf0ce';
+        return ENRICHMENT_TABLE_UNICODE;
       case SANKEY_MIMETYPE:
-        return '\uf659';
-      case 'application/pdf':
-        return '\uf1c1';
+        return SANKEY_UNICODE;
+      case PDF_MIMETYPE:
+        return PDF_UNICODE;
       default:
-        return '\uf15b';
+        return DEFAULT_UNICODE;
     }
   }
 
