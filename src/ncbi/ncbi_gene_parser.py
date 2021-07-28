@@ -31,14 +31,10 @@ class GeneParser(BaseParser):
         database.create_constraint(NODE_GENE, PROP_ID, 'constraint_gene_id')
         database.create_index(NODE_GENE, PROP_NAME, 'index_gene_name')
         database.create_index(NODE_GENE, PROP_LOCUS_TAG, 'index_locus_tag')
-
-    def parse_and_write_data_files(self):
-        self._parse_and_write_gene_info()
-        self._parse_and_write_gene2go()
+        database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
 
     def load_data_to_neo4j(self, database: Database):
         """
-        2021-06-08 23:44:05,201 Processed genes: 32227060, gene2syns: 6159188
         :param database:
         :return:
         """
@@ -48,115 +44,6 @@ class GeneParser(BaseParser):
         self._load_gene2go_to_neo4j(database)
         self._update_gene_synonyms_in_neo4j(database)
 
-    def write_lmdb_annotation_file(self):
-        """
-        2021-06-08 14:28:36,984 rows processed: 43259367
-        LMDB gene annotation file has the following columns:
-        id, name, synonym, data_source.
-
-        Since the gene.info file is very big, data were loaded and write in chunks
-        """
-        outfile = os.path.join(self.output_dir, 'gene_list_for_LMDB.tsv')
-        open(outfile, 'w').close()
-        gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
-        count = 0
-        header = True
-        for chunk in geneinfo_chunks:
-            df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
-            # remove any gene that has a new 'NEWENTRY'.
-            df = df[df['name'] != 'NEWENTRY']
-            df = df.replace('-', '')
-            # get columns for synonym, then expand the synonyms so that each synonym in one row
-            df_syn = df[[PROP_ID, PROP_NAME, PROP_SYNONYMS]]
-            df_syn = df_syn.set_index([PROP_ID, PROP_NAME]).synonyms.str.split('|', expand=True).stack()
-            df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, PROP_NAME, 'synonym']]
-            # add gene name as synonym
-            df_names = df[[PROP_ID, PROP_NAME]]
-            df_names['synonym'] = df_names[PROP_NAME]
-            # add locus tag as synonym
-            df_locus = df[[PROP_ID, PROP_NAME, PROP_LOCUS_TAG]]
-            df_locus = df_locus.rename(columns={PROP_LOCUS_TAG: 'synonym'})
-            # combine dataframes
-            df_syns = pd.concat([df_names, df_locus, df_syn])
-            df_syns.drop_duplicates(inplace=True)
-            # remove synonyms with only one letter, or do not have non-digit chars
-            df_syns = df_syns[df_syns['synonym'].str.len() > 1 & df_syns['synonym'].str.contains('[a-zA-Z]')]
-            self.logger.info(len(df_names), len(df_syn), len(df_syns))
-            df_syns[PROP_DATA_SOURCE] = DS_NCBI_GENE
-            df_syns.sort_values(by=[PROP_ID], inplace=True)
-            count += len(df_syns)
-            df_syns.to_csv(outfile, header=header, sep='\t', mode='a', index=False)
-            header = False
-        self.logger.info(f"Rows processed: {count}")
-
-    def extract_organism_geneinfo(self, tax_id)->pd.DataFrame:
-        """
-        extract geneinfo rows for given organism
-        :param tax_id: the tax_id for the organism
-        :return: dataframe containing gene info
-        """
-        gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
-        df_org = pd.DataFrame()
-        process = False
-        for chunk in geneinfo_chunks:
-            df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
-            df = df[df[PROP_TAX_ID] == tax_id]
-            if len(df) > 0:
-                process = True
-                df = df[df['name'] != 'NEWENTRY']
-                df_org = pd.concat([df_org, df])
-            elif process:
-                break
-        return df_org
-
-    def _parse_and_write_gene_info(self):
-        """
-        parse gene info, and write data into three tsv files for gene nodes and relationships importing.
-        The gene2syn.tsv has only the synonyms listed in geneinfo file.  gene name and locus tag need to be added as synonyms after
-        finishing data loading. Loading using cypher query is much faster than load with python
-        """
-        # create new empty output files
-        gene_file = os.path.join(self.output_dir, 'gene.tsv')
-        gene2tax_file = os.path.join(self.output_dir, 'gene2tax.tsv')
-        gene2synonym_file = os.path.join(self.output_dir, 'gene2syn.tsv')
-        open(gene_file, 'w').close()
-        open(gene2tax_file, 'w').close()
-        open(gene2synonym_file, 'w').close()
-
-        self.logger.info("Parse and load gene.info")
-        gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
-        header = True
-        for chunk in geneinfo_chunks:
-            df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
-            df = df[df['name'] != 'NEWENTRY']
-            df = df.replace('-', '').replace('')
-            df_gene = df[[PROP_ID, PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID]]
-            df_gene[PROP_DATA_SOURCE] = DS_NCBI_GENE
-            df_tax = df[[PROP_ID, PROP_TAX_ID]]
-            df_syn = df[[PROP_ID, PROP_SYNONYMS]]
-            df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-            df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
-            # self.logger.info(len(df_syn))
-            df_syn = df_syn[df_syn['synonym'].str.len() > 1]
-            # self.logger.info(len(df_syn))
-            df_gene.to_csv(gene_file, header=header, sep='\t', mode='a')
-            df_tax.to_csv(gene2tax_file, header=header, sep='\t', mode='a')
-            df_syn.to_csv(gene2synonym_file, header=header, sep='\t', mode='a')
-            header = False
-
-    def _parse_and_write_gene2go(self):
-        gene2go_file = os.path.join(self.output_dir, 'gene2go.tsv')
-        open(gene2go_file, 'w').close()
-        chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])
-        header = True
-        for chunk in chunks:
-            df = chunk.drop_duplicates()
-            df.to_csv(gene2go_file, header=header, sep='\t', mode='a')
-            header = False
-
     def _load_bioinfo_to_neo4j(self, database: Database, update=False):
         """
         Read bioinfo file, and load gene nodes, gene synonyms listed in the synonyms column.  Associate genes with taxonomy
@@ -165,11 +52,11 @@ class GeneParser(BaseParser):
         """
         query_genes = get_update_nodes_query(NODE_GENE, PROP_ID,
                                        [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
-                                       [NODE_NCBI])
+                                       [NODE_NCBI, NODE_MASTER])
         if not update:
             query_genes = get_create_nodes_query(NODE_GENE, PROP_ID,
                                            [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
-                                           [NODE_NCBI])
+                                           [NODE_NCBI, NODE_MASTER])
         query_synonyms = get_create_synonym_relationships_query(NODE_GENE, PROP_ID, PROP_ID, 'synonym')
         self.logger.debug(query_synonyms)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
@@ -178,6 +65,7 @@ class GeneParser(BaseParser):
         count_gene2syn = 0
         for chunk in geneinfo_chunks:
             df = chunk.rename(columns=GENE_INFO_ATTR_MAP)
+            # if gene name is 'NEWENTRY', ignore.
             df = df[df['name'] != 'NEWENTRY']
             df = df.replace('-', '')
             df = df.astype('str')
@@ -185,18 +73,18 @@ class GeneParser(BaseParser):
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
+            # ignore single letter synonym, and synonyms without letters
             df_syn = df_syn[df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
-            df_syn[PROP_LOWERCASE_NAME] = df_syn['synonym'].str.lower()
             # add Gene Nodes
             database.load_data_from_dataframe(df, query_genes)
             count_gene += len(df)
             # load synonyms
             database.load_data_from_dataframe(df_syn, query_synonyms)
             count_gene2syn += len(df_syn)
-        logging.info(f'Processed genes: {count_gene}, gene2syns: {count_gene2syn}')
+        self.logger.info(f'Processed genes: {count_gene}, gene2syns: {count_gene2syn}')
 
-        # use the following cypher query to load HAS_TAXONOMY relationship is much faster than using python
-        logging.info('add gene2tax relationships')
+        # use the following cypher query to create HAS_TAXONOMY relationship is much faster than using python
+        self.logger.info('add gene2tax relationships')
         query_gene2tax = '''
         call apoc.periodic.iterate(
         "match(n:Gene:db_NCBI), (t:Taxonomy {id:n.tax_id}) return n, t",
@@ -214,7 +102,13 @@ class GeneParser(BaseParser):
             df = chunk.astype('str')
             count = count + len(df)
             database.load_data_from_dataframe(df, query)
-        logging.info(f'Gene-Go processed: {count}')
+        self.logger.info(f'Gene-Go processed: {count}')
+
+        # add tax_id property for GO_LINK
+        query = """
+        match(n:db_GO)-[r:GO_LINK]-(g:Gene) set r.tax_id = g.tax_id
+        """
+        database.run_query(query)
 
     def _update_gene_synonyms_in_neo4j(self, database: Database):
         query_add_name_as_synonym = '''
