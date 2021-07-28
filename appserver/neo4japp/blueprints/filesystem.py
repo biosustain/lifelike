@@ -580,16 +580,19 @@ class FileHierarchyView(FilesystemBaseView):
             return {
                 'data': file,
                 'level': len(filename_path.split('/')) - 2,
-                'children': [
-                    generate_node_tree(id, grandchildren)
-                    for id, grandchildren in children.items()
-                ]
+                'children': sorted([
+                        generate_node_tree(id, grandchildren)
+                        for id, grandchildren in children.items()
+                    ], key=lambda f: f['data'].filename
+                )
             }
 
-        results = [
-            generate_node_tree(project_id, children)
-            for project_id, children in root.items()
-        ]
+        results = sorted([
+                generate_node_tree(project_id, children)
+                for project_id, children in root.items()
+            ], key=lambda f: f['data'].true_filename
+            # Need `true_filename` here since these top-level files all have the name "/"
+        )
 
         current_app.logger.info(
             f'Generated file hierarchy!',
