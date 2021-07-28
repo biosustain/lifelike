@@ -24,7 +24,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
   isTextEnabled = false;
 
-  readonly entityTypeChoices = ENTITY_TYPES;
+  readonly entityTypeChoices = ENTITY_TYPES.filter(
+    type => type.id !== 'Mutation' && type.id !== 'Pathway' && type.id !== 'Lab Strain' && type.id !== 'Lab Sample');
   readonly errors = {
     url: 'The provided URL is not valid.',
   };
