@@ -155,7 +155,7 @@ class AnnotationService:
                     else:
                         raise
 
-                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in param.entity_id:  # noqa
+                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
                     hyperlink += param.entity_id[5:]  # type: ignore
                 else:
                     hyperlink += param.entity_id  # type: ignore
