@@ -74,9 +74,17 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
+    let image_hashes = new Set();
+    for (const node of this.graphCanvas.getGraph().nodes) {
+      if (node.image_id !== undefined) {
+        image_hashes.add(node.hash)
+      }
+    }
+    console.log(image_hashes)
+
     const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
       type: MAP_MIMETYPE,
-    });
+    }); // change this blob to include images (and zip it)
 
     // Push to backend to save
     this.filesystemService.save([this.locator], {
