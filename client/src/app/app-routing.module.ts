@@ -133,7 +133,7 @@ const routes: Routes = [
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {
@@ -142,7 +142,7 @@ const routes: Routes = [
     component: TraceViewComponent,
     data: {
       title: 'Trace details',
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {
