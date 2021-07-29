@@ -4,7 +4,7 @@ import {
   UniversalGraphEdge,
   UniversalGraphNode,
 } from '../services/interfaces';
-import { makeid } from '../../shared/utils/identifiers';
+import { makeid, uuidv4 } from '../../shared/utils/identifiers';
 import { GraphAction } from '../../graph-viewer/actions/actions';
 import { GRAPH_ENTITY_TOKEN } from '../providers/data-transfer-data/graph-entity-data.provider';
 import { NodeCreation } from '../../graph-viewer/actions/nodes';
@@ -49,7 +49,7 @@ export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: num
   for (const entity of entities) {
     if (entity.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
-      const newId = makeid();
+      const newId = uuidv4();
       nodeHashMap.set(node.hash, newId);
       newEntities.push({
         type: GraphEntityType.Node,
