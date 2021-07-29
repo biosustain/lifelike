@@ -7,7 +7,7 @@ import {
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { makeid } from 'app/shared/utils/identifiers';
+import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
 import { extractGraphEntityActions } from '../../../../drawing-tool/utils/data';
 import { DataTransferDataService } from '../../../../shared/services/data-transfer-data.service';
@@ -69,7 +69,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
             actions.push(new NodeCreation(
               `Paste content from clipboard`, {
                 ...node,
-                hash: makeid(),
+                hash: uuidv4(),
                 data: {
                   ...node.data,
                   x: position.x,
@@ -84,12 +84,13 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         }
       }
     } catch (e) {
+      // TODO: throw error?
     }
 
     return new NodeCreation(
       `Paste content from clipboard`, {
         display_name: 'Note',
-        hash: makeid(),
+        hash: uuidv4(),
         label: 'note',
         sub_labels: [],
         data: {
