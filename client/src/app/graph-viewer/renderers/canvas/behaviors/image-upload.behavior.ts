@@ -2,7 +2,7 @@ import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../beh
 import { CanvasGraphView } from '../canvas-graph-view';
 import { MapImageProviderService } from '../../../../drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from '../../../actions/nodes';
-import { makeid } from '../../../../shared/utils/identifiers';
+import { makeid, uuidv4 } from '../../../../shared/utils/identifiers';
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
@@ -91,7 +91,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
       this.mapImageProvider.setMemoryImage(imageId, URL.createObjectURL(file));
       this.graphView.execute(new NodeCreation(
         `Insert image`, {
-          hash: makeid(),
+          hash: uuidv4(),
           image_id: imageId,
           display_name: '',
           label: 'image',
