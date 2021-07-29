@@ -244,7 +244,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
     MATCH (n:db_MESH) WHERE n.id = 'MESH:' + $entity_id
     SET n:replace_with_param
     MERGE (s: Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -259,7 +259,7 @@ def get_create_chemical_global_inclusion_query():
     return """
     MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -274,7 +274,7 @@ def get_create_compound_global_inclusion_query():
     return """
     MATCH (n:db_BioCyc:Compound) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -289,7 +289,7 @@ def get_create_gene_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Gene) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -304,7 +304,7 @@ def get_create_species_global_inclusion_query():
     return """
     MATCH (n:db_NCBI:Taxonomy) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -319,7 +319,7 @@ def get_create_protein_global_inclusion_query():
     return """
     MATCH (n:db_UniProt:Protein) WHERE n.id = $entity_id
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
@@ -356,7 +356,7 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
         n.user = $user
     WITH n
     MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion
+    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
     SET r.inclusion_date = n.inclusion_date,
