@@ -30,6 +30,7 @@ import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-
 import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
+import { SANKEY_UNICODE } from 'app/file-browser/models/filesystem-object';
 
 /**
  * Implements the style used on the Knowledge Graph.
@@ -132,11 +133,6 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       // Generic icon node + Note
       // ---------------------------------
 
-      const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
-      const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
-      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, '\'Font Awesome 5 Pro\'');
-      const iconFont = `${iconSize}px ${iconFontFace}`;
-
       // Override icon for link types
       if (d.label === 'link') {
         const links: string[] = [
@@ -157,7 +153,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
               iconCode = '\uf542';
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//)) {
-              iconCode = '\uf659';
+              iconCode = '\ue000';
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
               iconCode = '\uf15b';
@@ -172,6 +168,12 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           }
         }
       }
+
+      const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
+      const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
+      const fontAwesomeFont = iconCode === SANKEY_UNICODE ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, fontAwesomeFont);
+      const iconFont = `${iconSize}px ${iconFontFace}`;
 
       // Textbox to draw the icon
       const iconTextbox = new TextElement(ctx, {
