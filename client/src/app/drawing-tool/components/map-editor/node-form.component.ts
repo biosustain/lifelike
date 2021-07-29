@@ -59,7 +59,7 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   isImageNode() {
-    return this.node.label == 'image';
+    return this.node.label === 'image';
   }
 
   get nodeSubtypeChoices() {
