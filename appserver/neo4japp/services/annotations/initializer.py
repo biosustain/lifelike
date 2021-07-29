@@ -8,6 +8,10 @@ from .enrichment_annotation_service import EnrichmentAnnotationService
 from .entity_recognition import EntityRecognitionService
 from .manual_annotation_service import ManualAnnotationService
 from .lmdb_service import LMDBService
+from .sorted_annotation_service import (
+    sorted_annotations_dict,
+    sorted_annotations_per_file_type_dict
+)
 from .tokenizer import Tokenizer
 
 from neo4japp.database import graph
@@ -43,11 +47,8 @@ configs = {
 }
 
 
-def get_annotation_service():
-    return AnnotationService(
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService(graph)
-    )
+def get_annotation_tokenizer():
+    return Tokenizer()
 
 
 def get_annotation_db_service():
@@ -58,10 +59,24 @@ def get_annotation_graph_service():
     return AnnotationGraphService(graph)
 
 
+def get_manual_annotation_service():
+    return ManualAnnotationService(
+        graph=get_annotation_graph_service(),
+        tokenizer=get_annotation_tokenizer()
+    )
+
+
+def get_annotation_service():
+    return AnnotationService(
+        db=get_annotation_db_service(),
+        graph=get_annotation_graph_service()
+    )
+
+
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
-        db=AnnotationDBService(),
-        graph=AnnotationGraphService(graph)
+        db=get_annotation_db_service(),
+        graph=get_annotation_graph_service()
     )
 
 
@@ -69,24 +84,24 @@ def get_bioc_document_service():
     return BiocDocumentService()
 
 
-def get_annotation_tokenizer():
-    return Tokenizer()
-
-
 def get_lmdb_service():
     return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
-
-
-def get_manual_annotation_service():
-    return ManualAnnotationService(
-        graph=AnnotationGraphService(graph),
-        tokenizer=Tokenizer()
-    )
 
 
 def get_recognition_service(exclusions, inclusions):
     return EntityRecognitionService(
         exclusions=exclusions,
         inclusions=inclusions,
-        lmdb=LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+        lmdb=get_lmdb_service()
+    )
+
+
+def get_sorted_annotation_service(sort_id, *, mime_type=None):
+    if not mime_type:
+        return sorted_annotations_dict[sort_id](
+            annotation_service=get_manual_annotation_service()
+        )
+
+    return sorted_annotations_per_file_type_dict[mime_type][sort_id](
+            annotation_service=get_manual_annotation_service()
     )
