@@ -25,7 +25,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   isTextEnabled = false;
 
   readonly entityTypeChoices = ENTITY_TYPES.filter(
-    type => type.id !== 'Mutation' && type.id !== 'Pathway' && type.id !== 'Lab Strain' && type.id !== 'Lab Sample');
+    type => !(['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(type.id)));
   readonly errors = {
     url: 'The provided URL is not valid.',
   };
