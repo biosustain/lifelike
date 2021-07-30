@@ -22,7 +22,7 @@ export class EntityType {
 }
 
 export const ENTITY_TYPES = [
-  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI_GENE, DatabaseType.NONE]),
+  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI_GENE, DatabaseType.BIOCYC, DatabaseType.NONE]),
   new EntityType('Protein', annotationTypesMap.get('protein').color, [DatabaseType.UNIPROT, DatabaseType.NONE]),
   new EntityType('Disease', annotationTypesMap.get('disease').color, [DatabaseType.MESH, DatabaseType.NONE]),
   new EntityType('Species', annotationTypesMap.get('species').color, [DatabaseType.NCBI_TAXONOMY, DatabaseType.NONE]),
