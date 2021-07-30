@@ -654,7 +654,8 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         file.enrichment_annotations = None
 
 
-DEFAULT_DPI = 72.75
+DEFAULT_DPI = 96.0
+POINT_TO_PXL = 72.0
 VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
 HORIZONTAL_TEXT_PADDING = 0.11 * DEFAULT_DPI
 LABEL_OFFSET = 25
@@ -735,23 +736,20 @@ class LinkedMapExportProvider:
         """ Merge pdfs and add links to map. """
         links = links or []
         final_bytes = io.BytesIO()
-        # merger = PdfFileMerger(strict=False)
         writer = PdfFileWriter()
         for i, out_file in enumerate(files):
             out_file = self.get_file_export(out_file)
             reader = PdfFileReader(out_file, strict=False)
-            print('Page: ', i + 1, ' size:', reader.getPage(0).mediaBox)
             writer.appendPagesFromReader(reader)
-            # writer.addLink(0, 1, [0, 0, 1000, 1000], 'dott')
-            # merger.append(out_file)
         writer.removeLinks()
         for link in links:
             file_index = link['page_origin']
             bounding_box = self.get_bounding_box(files[file_index])
-            x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN
-            y_base = ((-1 * link['y'] - bounding_box[1]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN
+            print("Bounding box x ", bounding_box[2])
+            x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * POINT_TO_PXL) + \
+                self.PDF_MARGIN + bounding_box[2]
+            y_base = ((-1 * link['y'] - bounding_box[1]) / SCALING_FACTOR * POINT_TO_PXL) + \
+                self.PDF_MARGIN - bounding_box[3]
             half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
             writer.addLink(file_index, link['page_destination'],
                            [x_base - half_size, y_base - half_size - LABEL_OFFSET,
@@ -773,12 +771,14 @@ class LinkedMapExportProvider:
             x_values.append(node['data']['x'])
             y_values.append(-node['data']['y'])
             label_width = min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH)
-            font_size = node.get('style', {}).get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-            x_offset = label_width * DEFAULT_FONT_SIZE / 2.0 + HORIZONTAL_TEXT_PADDING
+            font_size = node.get('style', {}).get('fontSizeScale', 1.0) * 9.5
+            x_offset = max(label_width, 0) * font_size / 2.0 - DEFAULT_DPI / 2 - 0.15 * DEFAULT_DPI
+            # x_offset = 0
             y_offset = math.ceil(len(node['display_name']) / label_width) * \
                 (font_size + VERTICAL_TEXT_PADDING) / 2.0 + VERTICAL_TEXT_PADDING
             x_offsets.append(x_offset)
             y_offsets.append(y_offset)
         leftmost = x_values.index(min(x_values))
         lowest = y_values.index(min(y_values))
+        # return [x_values[leftmost], y_values[lowest], 60, y_offsets[lowest]]
         return [x_values[leftmost], y_values[lowest], x_offsets[leftmost], y_offsets[lowest]]
