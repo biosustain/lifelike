@@ -400,12 +400,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
-        origin = {
-            'name': 'origin',
-            'pos': '0,0!',
-        }
-
-        graph.node(**origin)
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
@@ -709,20 +703,18 @@ class LinkedMapExportProvider:
 
     def merge(self, files: list, links=None):
         """ Export, merge and prepare as FileExport the list of files
-        Params:
-        files: List of Files objects. The first entry is always the main map, rest is pretty random
-        (based on the ocurrence order in json graph)
-        links: List of dict objects storing info about links that should be embedded:
+        :param files: List of Files objects. The first entry is always the main map,
+        :param links: List of dict objects storing info about links that should be embedded:
             x: x pos; y: y pos;
-            pageOrigin: which page contains icon;
-            pageDest: where should it take you
+            page_origin: which page contains icon;
+            page_destination: where should it take you
         return an exportable file.
         """
         ext = f'.{self.requested_format}'
         if len(files) > 1:
             content = self.merger(files, links)
         else:
-            content = io.BytesIO(self.get_file_export(files[0]).content.getvalue())
+            content = self.get_file_export(files[0])
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
