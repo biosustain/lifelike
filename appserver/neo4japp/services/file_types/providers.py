@@ -382,7 +382,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
-    def generate_export(self, file: Files, format: str) -> FileExport:
+    def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
@@ -504,18 +504,19 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if node['data'].get('sources'):
-                doi_src = next((src for src in node['data'].get('sources') if src.get(
-                        'domain') == "DOI"), None)
-                if doi_src:
-                    params['href'] = doi_src.get('url')
-                else:
-                    params['href'] = node['data']['sources'][-1].get('url')
-            elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][-1].get('url')
-            # If url points to internal file, append it with the domain address
-            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
-                params['href'] = LIFELIKE_DOMAIN + params['href']
+            if not self_contained_export:
+                if node['data'].get('sources'):
+                    doi_src = next((src for src in node['data'].get('sources') if src.get(
+                            'domain') == "DOI"), None)
+                    if doi_src:
+                        params['href'] = doi_src.get('url')
+                    else:
+                        params['href'] = node['data']['sources'][-1].get('url')
+                elif node['data'].get('hyperlinks'):
+                    params['href'] = node['data']['hyperlinks'][-1].get('url')
+                # If url points to internal file, append it with the domain address
+                if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+                    params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
         for edge in json_graph['edges']:
@@ -732,7 +733,7 @@ class LinkedMapExportProvider:
         """ Get the exported version of the file in requested format """
         try:
             return io.BytesIO(self.file_type.generate_export
-                              (file, self.requested_format).content.getvalue())
+                              (file, self.requested_format, True).content.getvalue())
         except ExportFormatError:
             raise ValidationError("Unknown or invalid export "
                                   "format for the requested file.", self.requested_format)
@@ -761,7 +762,7 @@ class LinkedMapExportProvider:
         return final_bytes
 
     def merge_pdfs(self, files: list, links=None):
-        """ Merge pdfs and add links to map. """
+        """ Merge pdfs and add links to map."""
         links = links or []
         final_bytes = io.BytesIO()
         writer = PdfFileWriter()
@@ -770,7 +771,6 @@ class LinkedMapExportProvider:
             out_file = self.get_file_export(out_file)
             reader = PdfFileReader(out_file, strict=False)
             writer.appendPagesFromReader(reader)
-        writer.removeLinks()
         for link in links:
             file_index = link['page_origin']
             coord_offset, pixel_offset = get_content_offsets(files[file_index])
@@ -780,6 +780,6 @@ class LinkedMapExportProvider:
                 PDF_MARGIN * DEFAULT_DPI - pixel_offset[1]
             writer.addLink(file_index, link['page_destination'],
                            [x_base - half_size, y_base - half_size - LABEL_OFFSET,
-                            x_base + half_size, y_base + half_size], border=[1, 1, 1])
+                            x_base + half_size, y_base + half_size])
         writer.write(final_bytes)
         return final_bytes
