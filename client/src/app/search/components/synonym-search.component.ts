@@ -96,7 +96,7 @@ export class SynonymSearchComponent {
         const synonyms = entity.synonyms
           .map((synonym: string) => {
             const synonymHasNonWordChars = synonym.match(regex);
-            return synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase();
+            return synonymHasNonWordChars ? `"${synonym}"` : synonym;
           })
           .join(' or ');
         return isNullOrUndefined(entity.organism) ? `(${synonyms})` : `((${synonyms}) and "${entity.organism}")`;
