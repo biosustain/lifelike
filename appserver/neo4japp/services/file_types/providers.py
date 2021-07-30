@@ -55,7 +55,8 @@ from neo4japp.constants import (
     LABEL_OFFSET,
     MAP_ICON_OFFSET,
     PDF_MARGIN,
-    MAPS_RE
+    MAPS_RE,
+    NAME_NODE_OFFSET
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -401,9 +402,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
+        x_values, y_values = [], []
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
+            x_values.append(node['data']['x'])
+            y_values.append(node['data']['y'])
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             params = {
@@ -514,7 +518,24 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['href'] = ""
                 else:
                     params['href'] = LIFELIKE_DOMAIN + params['href']
+
             graph.node(**params)
+
+        if self_contained_export:
+            name_node = {
+                'name': file.filename,
+                'pos': (
+                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
+                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+                ),
+                'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
+                                                        )['defaultimagecolor'],
+                'fontsize': '40.0',
+                'shape': 'box',
+                'style': 'rounded',
+                'margin': '0.33,0.165'
+            }
+            graph.node(**name_node)
 
         for edge in json_graph['edges']:
             style = edge.get('style', {})
