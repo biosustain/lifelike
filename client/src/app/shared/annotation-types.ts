@@ -38,7 +38,6 @@ export const ENTITY_TYPES = [
   new EntityType('Phenotype', annotationTypesMap.get('phenotype').color, [DatabaseType.MESH, DatabaseType.NONE]),
   new EntityType('Protein', annotationTypesMap.get('protein').color, [DatabaseType.UNIPROT, DatabaseType.NONE]),
   new EntityType('Species', annotationTypesMap.get('species').color, [DatabaseType.NCBI_TAXONOMY, DatabaseType.NONE]),
-
 ];
 
 export const ENTITY_TYPE_MAP = ENTITY_TYPES.reduce((map, item) => {
