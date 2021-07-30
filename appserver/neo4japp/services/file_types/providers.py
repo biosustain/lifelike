@@ -654,9 +654,10 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         file.enrichment_annotations = None
 
 
-DEFAULT_DPI = 96.0
+DEFAULT_DPI = 72.75
 VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
 HORIZONTAL_TEXT_PADDING = 0.11 * DEFAULT_DPI
+LABEL_OFFSET = 25
 
 
 class LinkedMapExportProvider:
@@ -739,6 +740,7 @@ class LinkedMapExportProvider:
         for i, out_file in enumerate(files):
             out_file = self.get_file_export(out_file)
             reader = PdfFileReader(out_file, strict=False)
+            print('Page: ', i + 1, ' size:', reader.getPage(0).mediaBox)
             writer.appendPagesFromReader(reader)
             # writer.addLink(0, 1, [0, 0, 1000, 1000], 'dott')
             # merger.append(out_file)
@@ -747,12 +749,13 @@ class LinkedMapExportProvider:
             file_index = link['page_origin']
             bounding_box = self.get_bounding_box(files[file_index])
             x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN - bounding_box[2]
-            y_base = ((link['y'] - bounding_box[1]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN - bounding_box[3]
-            size = int(ICON_SIZE) * DEFAULT_DPI
+                self.PDF_MARGIN
+            y_base = ((-1 * link['y'] - bounding_box[1]) / SCALING_FACTOR * DEFAULT_DPI) + \
+                self.PDF_MARGIN
+            half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
             writer.addLink(file_index, link['page_destination'],
-                           [x_base, y_base, x_base + size, y_base + size], border=[1, 1, 1])
+                           [x_base - half_size, y_base - half_size - LABEL_OFFSET,
+                            x_base + half_size, y_base + half_size], border=[1, 1, 1])
         writer.addLink(0, 2,
                        [0, 0, 0 + 100, 0 + 100], border=[16, 16, 1])
         writer.write(final_bytes)
@@ -768,7 +771,7 @@ class LinkedMapExportProvider:
 
         for node in json_graph['nodes']:
             x_values.append(node['data']['x'])
-            y_values.append(node['data']['y'])
+            y_values.append(-node['data']['y'])
             label_width = min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH)
             font_size = node.get('style', {}).get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
             x_offset = label_width * DEFAULT_FONT_SIZE / 2.0 + HORIZONTAL_TEXT_PADDING
