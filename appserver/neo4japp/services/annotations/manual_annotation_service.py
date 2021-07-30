@@ -69,7 +69,18 @@ class ManualAnnotationService:
         entity_id = custom_annotation['meta']['id']
         entity_type = custom_annotation['meta']['type']
         try:
-            if entity_type != EntityType.COMPANY and entity_type != EntityType.ENTITY.value:
+            if entity_type in [
+                EntityType.ANATOMY.value,
+                EntityType.DISEASE.value,
+                EntityType.FOOD.value,
+                EntityType.PHENOMENA.value,
+                EntityType.PHENOTYPE.value,
+                EntityType.CHEMICAL.value,
+                EntityType.COMPOUND.value,
+                EntityType.GENE.value,
+                EntityType.PROTEIN.value,
+                EntityType.SPECIES.value
+            ]:
                 primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
             else:
                 primary_name = custom_annotation['meta']['allText']

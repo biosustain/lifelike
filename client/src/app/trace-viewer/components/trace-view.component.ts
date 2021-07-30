@@ -50,7 +50,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.title,
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     });
   }
 }
