@@ -15,6 +15,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from sqlalchemy.sql.expression import text
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -123,7 +124,7 @@ class FilesystemBaseView(MethodView):
             filter,
             lazy_load_content=False,
             require_hash_ids: List[str] = None,
-            sort=None,
+            sort: List[str] = [],
             attr_excl: List[str] = None
     ) -> List[Files]:
         """
@@ -135,6 +136,7 @@ class FilesystemBaseView(MethodView):
         :param lazy_load_content: whether to load the file's content into memory
         :param require_hash_ids: a list of file hash IDs that must be in the result
         :param attr_excl: list of file attributes to exclude from the query
+        :param sort: str list of file attributes to order by
         :return: the result, which may be an empty list
         """
         current_user = g.current_user
@@ -163,7 +165,7 @@ class FilesystemBaseView(MethodView):
             .options(raiseload('*'),
                      joinedload(t_file.user),
                      joinedload(t_file.fallback_organism)) \
-            .order_by(*sort or [])
+            .order_by(*[text(f'_file.{col}') for col in sort])
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
         # etc.) for the current user, which then can be read later by FileHierarchy or manually.
@@ -577,22 +579,56 @@ class FileHierarchyView(FilesystemBaseView):
                     'data': file,
                     'level': len(filename_path.split('/')) - 2
                 }
+
+            # Unfortunately, Python doesn't seem to have a built-in for sorting strings the same
+            # way Postgres sorts them with collation. Ideally, we would create our own sorting
+            # function that would do this. This temporary solution of querying the children,
+            # sorting them, and then ordering our data based on that order will work, but it will
+            # also be relatively slow.
+            ordered_children = [
+                (child_id, children[child_id] )
+                for child_id, in db.session.query(
+                    Files.id
+                ).filter(
+                    Files.id.in_(c_id for c_id in children)
+                ).order_by(
+                    Files.filename
+                )
+            ]
+
             return {
                 'data': file,
                 'level': len(filename_path.split('/')) - 2,
-                'children': sorted([
-                        generate_node_tree(id, grandchildren)
-                        for id, grandchildren in children.items()
-                    ], key=lambda f: f['data'].filename
-                )
+                'children': [
+                    generate_node_tree(id, grandchildren)
+                    for id, grandchildren in ordered_children
+                ]
             }
 
-        results = sorted([
-                generate_node_tree(project_id, children)
-                for project_id, children in root.items()
-            ], key=lambda f: f['data'].true_filename
-            # Need `true_filename` here since these top-level files all have the name "/"
-        )
+        ordered_projects = [
+            root_id
+            for root_id, in db.session.query(
+                Projects.root_id
+            ).filter(
+                Projects.root_id.in_([project_id for project_id in root.keys()])
+            ).order_by(
+                Projects.name
+            )
+        ]
+
+        # Unfortunately can't just sort by the filenames of root folders, since they all have the
+        # filename '/'. Instead, get the sorted project names, and then sort the list using that
+        # order. Also, it doesn't seem that Python has a builtin method for sorting with string
+        # collation, as is done by the Postgres order by. Otherwise, we would do that.
+        sorted_root = [
+            (project_id, root[project_id])
+            for project_id in ordered_projects
+        ]
+
+        results = [
+            generate_node_tree(project_id, children)
+            for project_id, children in sorted_root
+        ]
 
         current_app.logger.info(
             f'Generated file hierarchy!',
