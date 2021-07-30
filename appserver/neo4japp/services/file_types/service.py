@@ -135,7 +135,7 @@ class BaseFileTypeProvider:
         # the highlights will look like garbage to the user
         return False
 
-    def generate_export(self, file: Files, format: str) -> FileExport:
+    def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         """
         Generate an export for this file of the provided format. If the format is not
         supported, then an exception should be raised. The file.content field of the
@@ -143,6 +143,7 @@ class BaseFileTypeProvider:
 
         :param file: the file
         :param format: the format
+        :param self_contained_export: if so, it will not create external links
         :return: an export
         :raises ExportFormatError: raised if the export is not supported
         """
