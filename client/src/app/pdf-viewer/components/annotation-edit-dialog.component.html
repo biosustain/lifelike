@@ -20,7 +20,13 @@
     </div>
 
     <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
-      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus>
+      <select
+        formControlName="entityType"
+        class="custom-select w-100"
+        id="entity-type"
+        (change)="disableGlobalOption()"
+        appAutoFocus
+      >
         <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
           {{choice.name | titlecase}}
         </option>
