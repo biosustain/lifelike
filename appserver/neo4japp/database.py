@@ -218,28 +218,6 @@ def get_elastic_service():
     return g.elastic_service
 
 
-def get_sorted_annotation_service(sort_id, *, mime_type=None):
-    from neo4japp.services.annotations import (
-        AnnotationGraphService,
-        ManualAnnotationService
-    )
-    if not mime_type:
-        from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
-        return sorted_annotations_dict[sort_id](
-            annotation_service=ManualAnnotationService(
-                graph=AnnotationGraphService()
-            )
-        )
-
-    from neo4japp.services.annotations.sorted_annotation_service import \
-        sorted_annotations_per_file_type_dict
-    return sorted_annotations_per_file_type_dict[mime_type][sort_id](
-            annotation_service=ManualAnnotationService(
-                    graph=AnnotationGraphService()
-            )
-    )
-
-
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
     return ExcelExportService()
