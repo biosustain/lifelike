@@ -67,7 +67,7 @@ export class SynonymSearchComponent {
     this.synonymData = [];
     this.mostRecentSearchTerm = this.form.value.q;
     this.contentSearchService.getSynoynms(
-      this.form.value.q,
+      (this.form.value.q as string).split(/\s/).filter((s: string) => s !== '').join(' '),
       this.selectedOrganismFilters.map((organism) => ORGANISM_SHORTLIST.get(organism)),
       this.selectedTypeFilters.map((type: string) => ENTITY_TYPE_MAP[type].name.split(' ').join('')),
       this.page,
