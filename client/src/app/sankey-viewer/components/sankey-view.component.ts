@@ -516,7 +516,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     });
   }
 

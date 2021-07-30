@@ -563,15 +563,10 @@ class FileHierarchyView(FilesystemBaseView):
             if file and file.calculated_privileges[g.current_user.id].readable:
                 curr_dir = root
                 id_path_list = [f.id for f in file.file_path]
-                for id in id_path_list[:-1]:
+                for id in id_path_list:
                     if id not in curr_dir:
                         curr_dir[id] = {}
                     curr_dir = curr_dir[id]
-                # id_path_list[-1] and file.id are the same
-                if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                    curr_dir[id_path_list[-1]] = {}
-                else:
-                    curr_dir[id_path_list[-1]] = None
 
         def generate_node_tree(id, children):
             file = db.session.query(
@@ -589,16 +584,19 @@ class FileHierarchyView(FilesystemBaseView):
             return {
                 'data': file,
                 'level': len(filename_path.split('/')) - 2,
-                'children': [
-                    generate_node_tree(id, grandchildren)
-                    for id, grandchildren in children.items()
-                ]
+                'children': sorted([
+                        generate_node_tree(id, grandchildren)
+                        for id, grandchildren in children.items()
+                    ], key=lambda f: f['data'].filename
+                )
             }
 
-        results = [
-            generate_node_tree(project_id, children)
-            for project_id, children in root.items()
-        ]
+        results = sorted([
+                generate_node_tree(project_id, children)
+                for project_id, children in root.items()
+            ], key=lambda f: f['data'].true_filename
+            # Need `true_filename` here since these top-level files all have the name "/"
+        )
 
         current_app.logger.info(
             f'Generated file hierarchy!',
