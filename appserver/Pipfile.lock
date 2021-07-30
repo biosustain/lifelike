@@ -1465,7 +1465,7 @@
                 "sha256:f91c7ae919bbc3f96cd5e5b2e786b2b108343d1d7972ea130f7de27fdd547cf3"
             ],
             "index": "pypi",
-            "version": "==0.812"
+            "version": "==0.770"
         },
         "mypy-extensions": {
             "hashes": [
