@@ -24,7 +24,7 @@ export class SynonymSearchComponent {
   synonymData: SynonymData[];
   entityChecklistSelection = new SelectionModel<SynonymData>(true /* multiple */);
 
-  typeFilters = ENTITY_TYPES.map(entity => entity.name);
+  typeFilters = ENTITY_TYPES.sort((a, b) => a.name.localeCompare(b.name)).map(entity => entity.name);
   selectedTypeFilters: string[] = [];
   organismFilters = Array.from(ORGANISM_SHORTLIST.keys());
   selectedOrganismFilters: string[] = [];
