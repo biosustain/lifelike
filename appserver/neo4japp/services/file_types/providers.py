@@ -40,7 +40,6 @@ from neo4japp.constants import (
     IMAGE_HEIGHT_INCREMENT,
     FONT_SIZE_MULTIPLIER,
     SCALING_FACTOR,
-    LIFELIKE_DOMAIN,
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_PDF,
     FILE_MIME_TYPE_BIOC,
@@ -48,7 +47,14 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_SANKEY,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN
+    LIFELIKE_DOMAIN,
+    DEFAULT_DPI,
+    POINT_TO_PIXEL,
+    VERTICAL_TEXT_PADDING,
+    HORIZONTAL_TEXT_PADDING,
+    LABEL_OFFSET,
+    MAP_ICON_OFFSET,
+    PDF_MARGIN
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -381,7 +387,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ExportFormatError()
 
         json_graph = json.loads(file.content.raw_file)
-        graph_attr = [('margin', '3')]
+        graph_attr = [('margin', str(PDF_MARGIN))]
 
         if format == 'png':
             graph_attr.append(('dpi', '300'))
@@ -498,18 +504,18 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            # if node['data'].get('sources'):
-            #     doi_src = next((src for src in node['data'].get('sources') if src.get(
-            #             'domain') == "DOI"), None)
-            #     if doi_src:
-            #         params['href'] = doi_src.get('url')
-            #     else:
-            #         params['href'] = node['data']['sources'][-1].get('url')
-            # elif node['data'].get('hyperlinks'):
-            #     params['href'] = node['data']['hyperlinks'][-1].get('url')
-            # # If url points to internal file, append it with the domain address
-            # if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
-            #     params['href'] = LIFELIKE_DOMAIN + params['href']
+            if node['data'].get('sources'):
+                doi_src = next((src for src in node['data'].get('sources') if src.get(
+                        'domain') == "DOI"), None)
+                if doi_src:
+                    params['href'] = doi_src.get('url')
+                else:
+                    params['href'] = node['data']['sources'][-1].get('url')
+            elif node['data'].get('hyperlinks'):
+                params['href'] = node['data']['hyperlinks'][-1].get('url')
+            # If url points to internal file, append it with the domain address
+            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+                params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
         for edge in json_graph['edges']:
@@ -654,13 +660,6 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         file.enrichment_annotations = None
 
 
-DEFAULT_DPI = 96.0
-POINT_TO_PXL = 72.0
-VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
-HORIZONTAL_TEXT_PADDING = 0.11 * DEFAULT_DPI
-LABEL_OFFSET = 25
-
-
 class LinkedMapExportProvider:
     """ Export multiple files as self contained document
     Params:
@@ -670,7 +669,6 @@ class LinkedMapExportProvider:
     def __init__(self, requested_format, file_type: BaseFileTypeProvider):
         self.requested_format = requested_format
         self.file_type = file_type
-        self.PDF_MARGIN = 3 * 96
         if requested_format == 'png':
             self.merger = self.merge_pngs_vertically
         elif requested_format == 'pdf':
@@ -745,17 +743,14 @@ class LinkedMapExportProvider:
         for link in links:
             file_index = link['page_origin']
             bounding_box = self.get_bounding_box(files[file_index])
-            print("Bounding box x ", bounding_box[2])
-            x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * POINT_TO_PXL) + \
-                self.PDF_MARGIN + bounding_box[2]
-            y_base = ((-1 * link['y'] - bounding_box[1]) / SCALING_FACTOR * POINT_TO_PXL) + \
-                self.PDF_MARGIN - bounding_box[3]
+            x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI + bounding_box[2]
+            y_base = ((-1 * link['y'] - bounding_box[1]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI - bounding_box[3]
             half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
             writer.addLink(file_index, link['page_destination'],
                            [x_base - half_size, y_base - half_size - LABEL_OFFSET,
                             x_base + half_size, y_base + half_size], border=[1, 1, 1])
-        writer.addLink(0, 2,
-                       [0, 0, 0 + 100, 0 + 100], border=[16, 16, 1])
         writer.write(final_bytes)
         return final_bytes
 
@@ -765,20 +760,17 @@ class LinkedMapExportProvider:
         x_values, y_values = [], []
         x_offsets, y_offsets = [], []
         json_graph = json.loads(file.content.raw_file)
-        # default graphviz value * default dpi
-
         for node in json_graph['nodes']:
             x_values.append(node['data']['x'])
             y_values.append(-node['data']['y'])
             label_width = min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH)
-            font_size = node.get('style', {}).get('fontSizeScale', 1.0) * 9.5
-            x_offset = max(label_width, 0) * font_size / 2.0 - DEFAULT_DPI / 2 - 0.15 * DEFAULT_DPI
-            # x_offset = 0
+            font_size = node.get('style', {}).get('fontSizeScale', 1.0) * 8
+            x_offset = max(label_width - 6, 0) * font_size / 2.0 - \
+                MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING
             y_offset = math.ceil(len(node['display_name']) / label_width) * \
                 (font_size + VERTICAL_TEXT_PADDING) / 2.0 + VERTICAL_TEXT_PADDING
             x_offsets.append(x_offset)
             y_offsets.append(y_offset)
         leftmost = x_values.index(min(x_values))
         lowest = y_values.index(min(y_values))
-        # return [x_values[leftmost], y_values[lowest], 60, y_offsets[lowest]]
         return [x_values[leftmost], y_values[lowest], x_offsets[leftmost], y_offsets[lowest]]
