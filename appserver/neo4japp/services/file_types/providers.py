@@ -686,26 +686,18 @@ def get_content_offsets(file):
         file: A Files object of map that is supposed to be analyzed
         Return: two pairs of coordinates: x & y.
         First denotes the offset to the pdf origin (in the units used by front-end renderer)
-        Second denotes the offset from center of the node to its edge (from which the margin is
+        Second denotes the offset created by the map name node (from which the margin is
         calculated) in pixels.
     """
     x_values, y_values = [], []
-    x_offsets, y_offsets = [], []
     json_graph = json.loads(file.content.raw_file)
     for node in json_graph['nodes']:
         x_values.append(node['data']['x'])
         y_values.append(-node['data']['y'])
-        label_width = min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH)
-        font_size = node.get('style', {}).get('fontSizeScale', 1.0) * 8
-        x_offset = max(label_width - 6, 0) * font_size / 2.0 - \
-            MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING
-        y_offset = math.ceil(len(node['display_name']) / label_width) * \
-            (font_size + VERTICAL_TEXT_PADDING) / 2.0 + VERTICAL_TEXT_PADDING
-        x_offsets.append(x_offset)
-        y_offsets.append(y_offset)
-    leftmost = x_values.index(min(x_values))
-    lowest = y_values.index(min(y_values))
-    return (x_values[leftmost], y_values[lowest]), (x_offsets[leftmost], y_offsets[lowest])
+    x_offset = max(len(file.filename), 0) * 18 / 2.0 - \
+        MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * 7
+    y_offset = (0.165 * POINT_TO_PIXEL) / 2.0
+    return (min(x_values), min(y_values)), (x_offset, y_offset)
 
 
 class LinkedMapExportProvider:
