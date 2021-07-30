@@ -155,9 +155,9 @@ export class SnippetDisplayComponent implements OnDestroy {
 
     snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
         const dataTransfer: DataTransfer = event.dataTransfer;
-        dataTransfer.setData('text/plain', snippet.publication.displayName);
+        dataTransfer.setData('text/plain', snippet.reference.data.sentence);
         GenericDataProvider.setURIs(dataTransfer, [{
-            title: snippet.publication.displayName,
+            title: snippet.reference.data.sentence,
             uri: snippet.publication.data.pmid ?
                 'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid :
                 snippet.publication.entityUrl,
