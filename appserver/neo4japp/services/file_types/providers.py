@@ -54,7 +54,8 @@ from neo4japp.constants import (
     HORIZONTAL_TEXT_PADDING,
     LABEL_OFFSET,
     MAP_ICON_OFFSET,
-    PDF_MARGIN
+    PDF_MARGIN,
+    MAPS_RE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -498,18 +499,20 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if not self_contained_export:
-                if node['data'].get('sources'):
-                    doi_src = next((src for src in node['data'].get('sources') if src.get(
-                            'domain') == "DOI"), None)
-                    if doi_src:
-                        params['href'] = doi_src.get('url')
-                    else:
-                        params['href'] = node['data']['sources'][-1].get('url')
-                elif node['data'].get('hyperlinks'):
-                    params['href'] = node['data']['hyperlinks'][-1].get('url')
-                # If url points to internal file, append it with the domain address
-                if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+            if node['data'].get('sources'):
+                doi_src = next((src for src in node['data'].get('sources') if src.get(
+                        'domain') == "DOI"), None)
+                if doi_src:
+                    params['href'] = doi_src.get('url')
+                else:
+                    params['href'] = node['data']['sources'][-1].get('url')
+            elif node['data'].get('hyperlinks'):
+                params['href'] = node['data']['hyperlinks'][-1].get('url')
+            # If url points to internal file, append it with the domain address
+            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
+                if MAPS_RE.match(params['href']) and self_contained_export:
+                    params['href'] = ""
+                else:
                     params['href'] = LIFELIKE_DOMAIN + params['href']
             graph.node(**params)
 
