@@ -1,5 +1,6 @@
 import io
 import json
+import math
 import re
 import typing
 
@@ -653,6 +654,11 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         file.enrichment_annotations = None
 
 
+DEFAULT_DPI = 96.0
+VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
+HORIZONTAL_TEXT_PADDING = 0.11 * DEFAULT_DPI
+
+
 class LinkedMapExportProvider:
     """ Export multiple files as self contained document
     Params:
@@ -727,7 +733,6 @@ class LinkedMapExportProvider:
     def merge_pdfs(self, files: list, links=None):
         """ Merge pdfs and add links to map. """
         links = links or []
-        DEFAULT_DPI = 96.0
         final_bytes = io.BytesIO()
         # merger = PdfFileMerger(strict=False)
         writer = PdfFileWriter()
@@ -737,27 +742,19 @@ class LinkedMapExportProvider:
             writer.appendPagesFromReader(reader)
             # writer.addLink(0, 1, [0, 0, 1000, 1000], 'dott')
             # merger.append(out_file)
-        bbox = self.get_bounding_box(files[0])
-        map_size = (bbox[2] - bbox[0]) / SCALING_FACTOR + 6.0
-
-        print("SIZE OF !ST MAP: ", map_size)
-        # merger.write(final_bytes)
-        # writer.addLink(0, 4, [0, 0, 100, 100], 'dot')
-        # writer.addLink(0, 5, [100, 0, 200, 100], 'dot')
+        writer.removeLinks()
         for link in links:
             file_index = link['page_origin']
             bounding_box = self.get_bounding_box(files[file_index])
             x_base = ((link['x'] - bounding_box[0]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN
+                self.PDF_MARGIN - bounding_box[2]
             y_base = ((link['y'] - bounding_box[1]) / SCALING_FACTOR * DEFAULT_DPI) + \
-                self.PDF_MARGIN
+                self.PDF_MARGIN - bounding_box[3]
             size = int(ICON_SIZE) * DEFAULT_DPI
-            print(link)
-            print('location:', x_base, y_base)
             writer.addLink(file_index, link['page_destination'],
-                           [x_base, y_base, x_base + size, y_base + size], border='dott')
+                           [x_base, y_base, x_base + size, y_base + size], border=[1, 1, 1])
         writer.addLink(0, 2,
-                       [0, 0, 0 + 100, 0 + 100], border=['dot', 'dot', 'dot', 'dot'])
+                       [0, 0, 0 + 100, 0 + 100], border=[16, 16, 1])
         writer.write(final_bytes)
         return final_bytes
 
@@ -765,10 +762,20 @@ class LinkedMapExportProvider:
         """ Gets bounding box of the file, allowing to resolve the cooridnates in which
         links should be placed"""
         x_values, y_values = [], []
+        x_offsets, y_offsets = [], []
         json_graph = json.loads(file.content.raw_file)
+        # default graphviz value * default dpi
+
         for node in json_graph['nodes']:
             x_values.append(node['data']['x'])
             y_values.append(node['data']['y'])
-        if not x_values:
-            return [self.PDF_MARGIN for _ in range(4)]
-        return [min(x_values), min(y_values), max(x_values), max(y_values)]
+            label_width = min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH)
+            font_size = node.get('style', {}).get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+            x_offset = label_width * DEFAULT_FONT_SIZE / 2.0 + HORIZONTAL_TEXT_PADDING
+            y_offset = math.ceil(len(node['display_name']) / label_width) * \
+                (font_size + VERTICAL_TEXT_PADDING) / 2.0 + VERTICAL_TEXT_PADDING
+            x_offsets.append(x_offset)
+            y_offsets.append(y_offset)
+        leftmost = x_values.index(min(x_values))
+        lowest = y_values.index(min(y_values))
+        return [x_values[leftmost], y_values[lowest], x_offsets[leftmost], y_offsets[lowest]]
