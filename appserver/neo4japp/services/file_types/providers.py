@@ -16,7 +16,6 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -36,7 +35,6 @@ from neo4japp.constants import (
     IMAGE_HEIGHT_INCREMENT,
     FONT_SIZE_MULTIPLIER,
     SCALING_FACTOR,
-    LIFELIKE_DOMAIN,
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_PDF,
     FILE_MIME_TYPE_BIOC,
