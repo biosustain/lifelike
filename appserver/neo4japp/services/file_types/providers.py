@@ -100,6 +100,11 @@ unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
 characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+# Used to match the links in maps during the export
+SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
+MAIL_RE = re.compile(r'^ *mailto:.+$')
+ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
+DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -388,10 +393,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
-        SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
-        MAIL_RE = re.compile(r'^ *mailto:.+$')
-        ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
-        DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
