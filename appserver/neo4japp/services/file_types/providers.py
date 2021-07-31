@@ -388,6 +388,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
+        SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
@@ -463,10 +464,14 @@ class MapTypeProvider(BaseFileTypeProvider):
                             elif any(link.get('url').lstrip().startswith('mailto:')
                                      for link in data):
                                 label = 'email'
+                            elif any(SANKEY_RE.match(link.get('url')) for link in data):
+                                label = 'sankey'
                     icon_params['image'] = (
-                            f'/home/n4j/assets/{label}/{label}'
-                            f'_{style.get("fillColor") or default_icon_color}.png'
+                            f'/home/n4j/assets/{label}.png'
                         )
+                    icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
+                    icon_params['style'] = 'filled'
+                    icon_params['shape'] = 'box'
                     icon_params['height'] = ICON_SIZE
                     icon_params['width'] = ICON_SIZE
                     icon_params['fixedsize'] = 'true'
