@@ -389,6 +389,9 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         node_hash_type_dict = {}
         SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
+        MAIL_RE = re.compile(r'^ *mailto:.+$')
+        ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
+        DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
@@ -453,19 +456,15 @@ class MapTypeProvider(BaseFileTypeProvider):
                         if node['data'].get('sources') or node['data'].get('hyperlinks'):
                             data = node['data'].get('sources') or [] \
                                    + node['data'].get('hyperlinks') or []
-                            if any(link.get('url').lstrip().startswith('/projects/') and
-                                   'enrichment-table' in link.get('url').split('/')
-                                   for link in data):
+                            if any(ENRICHMENT_TABLE_RE.match(link['url']) for link in data):
                                 label = 'enrichment_table'
-                            elif any(link.get('url').lstrip().startswith('/projects/') and
-                                     'files' in link.get('url').split('/')
-                                     for link in data):
-                                label = 'document'
-                            elif any(link.get('url').lstrip().startswith('mailto:')
-                                     for link in data):
-                                label = 'email'
-                            elif any(SANKEY_RE.match(link.get('url')) for link in data):
+                            elif any(SANKEY_RE.match(link['url']) for link in data):
                                 label = 'sankey'
+                            elif any(DOCUMENT_RE.match(link['url']) for link in data):
+                                label = 'document'
+                            elif any(MAIL_RE.match(link['url']) for link in data):
+                                label = 'email'
+
                     icon_params['image'] = (
                             f'/home/n4j/assets/{label}.png'
                         )
