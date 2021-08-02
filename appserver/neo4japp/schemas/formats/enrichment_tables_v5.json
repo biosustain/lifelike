@@ -115,27 +115,235 @@
               },
               "domains": {
                 "type": "object",
-                "additionalProperties": {
-                  "type": "object",
-                  "additionalProperties": {
+                "additionalProperties": false,
+                "patternProperties": {
+                  "^GO$": {
                     "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "text",
-                      "link"
-                    ],
                     "properties": {
-                      "text": {
-                        "type": "string",
-                        "minLength": 0,
-                        "maxLength": 512000
+                      "Annotation": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "^BioCyc$": {
+                    "type": "object",
+                    "properties": {
+                      "Pathways": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "^String$": {
+                    "type": "object",
+                    "properties": {
+                      "Annotation": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "^Regulon$": {
+                    "type": "object",
+                    "properties": {
+                      "Activated By": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
                       },
-                      "annotatedText": {
-                        "type": "string",
-                        "minLength": 0
+                      "Repressed By": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
                       },
-                      "link": {
-                        "$ref": "#/definitions/safeUrl"
+                      "Regulator Family": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "^UniProt$": {
+                    "type": "object",
+                    "properties": {
+                      "Function": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "^KEGG$": {
+                    "type": "object",
+                    "properties": {
+                      "Pathways": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "additionalProperties": false,
+                          "required": [
+                            "text",
+                            "link"
+                          ],
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 512000
+                            },
+                            "annotatedText": {
+                              "type": "string",
+                              "minLength": 0
+                            },
+                            "link": {
+                              "$ref": "#/definitions/safeUrl"
+                            }
+                          }
+                        }
                       }
                     }
                   }

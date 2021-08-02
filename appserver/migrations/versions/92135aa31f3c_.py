@@ -144,8 +144,9 @@ def data_upgrades():
                         enriched_table = json.loads(current)
                         validate_enrichment_table(enriched_table)
 
+                        file_obj = {'id': fid}
+
                         if found_err:
-                            file_obj = {'id': fid}
                             new_hash = hashlib.sha256(current).digest()
 
                             # because we are fixing JSONs, it is possible
@@ -157,23 +158,30 @@ def data_upgrades():
                             else:
                                 file_obj['content_id'] = file_content_hashes[new_hash]
 
-                            if annos:
-                                if 'result' not in annos and 'version' in annos:
-                                    annos = {'result': annos}
-                                annos['result']['version'] = current_version
-                                annos['data'] = enriched_table['data']
+                        if annos:
+                            if 'result' not in annos and 'version' in annos:
+                                annos = {'result': annos}
+                            annos['result']['version'] = current_version
+                            annos['data'] = enriched_table['data']
 
-                                if 'domainInfo' not in annos['result']:
-                                    # in EnrichmentAnnotationsView, the enrichment annotations
-                                    # is being returned to the client using EnrichmentTableSchema
-                                    # since what is in the db validates against that schema
-                                    # it should be the same here
-                                    annos = EnrichmentTableSchema().dump(annos)
+                            if 'domainInfo' not in annos['result']:
+                                # in EnrichmentAnnotationsView, the enrichment annotations
+                                # is being returned to the client using EnrichmentTableSchema
+                                # since what is in the db validates against that schema
+                                # it should be the same here
+                                annos = EnrichmentTableSchema().dump(annos)
+
+                            try:
                                 validate_enrichment_table(annos)
                                 file_obj['enrichment_annotations'] = annos
+                            except Exception:
+                                # separate migration to handle the annotations
+                                # as this while loop will get too complicated
+                                # trying to do both
+                                pass
 
-                            if len(file_obj) > 1:
-                                files_to_update.append(file_obj)
+                        if len(file_obj) > 1:
+                            files_to_update.append(file_obj)
                         break
                     except Exception as e:
                         found_err = True
@@ -208,6 +216,37 @@ def data_upgrades():
                                 elif s.lower() == 'uniprot':
                                     new_sources.append('UniProt')
                             enriched_table['data']['sources'] = new_sources
+
+                        if 'domains must not contain' in err:
+                            acceptable_domains = {'GO', 'BioCyc', 'String', 'Regulon', 'UniProt', 'KEGG'}  # noqa
+                            for gene in enriched_table['result']['genes']:
+                                if 'domains' not in gene:
+                                    # valid not an error
+                                    continue
+                                domain_keys = [d for d in gene['domains']]
+                                for domain in domain_keys:
+                                    if domain not in acceptable_domains:
+                                        data = gene['domains'][domain]
+                                        domain_lowered = domain.lower()
+
+                                        if domain_lowered == 'biocyc':
+                                            gene['domains']['BioCyc'] = data
+                                            gene['domains'].pop(domain)
+                                        elif domain_lowered == 'go':
+                                            gene['domains']['GO'] = data
+                                            gene['domains'].pop(domain)
+                                        elif domain_lowered == 'kegg':
+                                            gene['domains']['KEGG'] = data
+                                            gene['domains'].pop(domain)
+                                        elif domain_lowered == 'regulon':
+                                            gene['domains']['Regulon'] = data
+                                            gene['domains'].pop(domain)
+                                        elif domain_lowered == 'string':
+                                            gene['domains']['String'] = data
+                                            gene['domains'].pop(domain)
+                                        elif domain_lowered == 'uniprot':
+                                            gene['domains']['UniProt'] = data
+                                            gene['domains'].pop(domain)
 
                         current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')
         try:
