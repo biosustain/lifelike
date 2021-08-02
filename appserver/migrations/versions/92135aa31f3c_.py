@@ -15,6 +15,10 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import table, column, and_
 from sqlalchemy.orm.session import Session
 
+from marshmallow import fields
+
+from neo4japp.schemas.base import CamelCaseSchema
+
 from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
 from neo4japp.models import Files, FileContent
@@ -25,6 +29,50 @@ revision = '92135aa31f3c'
 down_revision = 'd509d9c60fdb'
 branch_labels = None
 depends_on = None
+
+
+# copied from neo4japp.schemas.enrichment
+# changed to snakecase to easily convert to camelcase
+class EnrichmentValue(CamelCaseSchema):
+    text = fields.String(required=True)
+    annotated_text = fields.String(allow_none=True)
+    link = fields.String(required=True)
+
+
+class EnrichedGene(CamelCaseSchema):
+    imported = fields.String(allow_none=True)
+    matched = fields.String(allow_none=True)
+    full_name = fields.String(allow_none=True)
+    annotated_imported = fields.String(allow_none=True)
+    annotated_matched = fields.String(allow_none=True)
+    annotated_full_name = fields.String(allow_none=True)
+    link = fields.String(allow_none=True)
+    domains = fields.Dict(
+        keys=fields.String(), values=fields.Dict(
+            keys=fields.String(), values=fields.Nested(EnrichmentValue)), allow_none=True)
+
+
+class DomainInfo(CamelCaseSchema):
+    labels = fields.List(fields.String())
+
+
+class EnrichmentResult(CamelCaseSchema):
+    version = fields.String(required=True)
+    domain_info = fields.Dict(
+        keys=fields.String(), values=fields.Nested(DomainInfo), required=True)
+    genes = fields.List(fields.Nested(EnrichedGene), required=True)
+
+
+class EnrichmentData(CamelCaseSchema):
+    genes = fields.String(required=True)
+    tax_id = fields.String(required=True)
+    organism = fields.String(required=True)
+    sources = fields.List(fields.String())
+
+
+class EnrichmentTableSchema(CamelCaseSchema):
+    data = fields.Nested(EnrichmentData, required=True)
+    result = fields.Nested(EnrichmentResult, required=True)
 
 
 def upgrade():
@@ -82,69 +130,86 @@ def data_upgrades():
         for fid, annos, fcid, raw in chunk:
             current = raw
             found_err = False
-            while True:
-                try:
-                    enriched_table = json.loads(current)
-                    validate_enrichment_table(enriched_table)
 
-                    if found_err:
-                        file_obj = {'id': fid}
-                        new_hash = hashlib.sha256(current).digest()
+            try:
+                json.loads(current)
+            except Exception:
+                # TODO: what to do with these?
+                # they're literal strings, e.g 'AK3,AK4/9606/Homo sapiens/...'
+                # only in STAGE db
+                continue
+            else:
+                while True:
+                    try:
+                        enriched_table = json.loads(current)
+                        validate_enrichment_table(enriched_table)
 
-                        # because we are fixing JSONs, it is possible
-                        # to have collision since fixing a JSON
-                        # can potentially result in an existing JSON
-                        if new_hash not in file_content_hashes:
-                            file_content_hashes[new_hash] = fcid
-                            raws_to_update.append({'id': fcid, 'raw_file': current, 'checksum_sha256': new_hash})  # noqa
-                        else:
-                            file_obj['content_id'] = file_content_hashes[new_hash]
+                        if found_err:
+                            file_obj = {'id': fid}
+                            new_hash = hashlib.sha256(current).digest()
 
-                        if annos:
-                            file_obj['enrichment_annotations'] = annos
+                            # because we are fixing JSONs, it is possible
+                            # to have collision since fixing a JSON
+                            # can potentially result in an existing JSON
+                            if new_hash not in file_content_hashes:
+                                file_content_hashes[new_hash] = fcid
+                                raws_to_update.append({'id': fcid, 'raw_file': current, 'checksum_sha256': new_hash})  # noqa
+                            else:
+                                file_obj['content_id'] = file_content_hashes[new_hash]
 
-                        if len(file_obj) > 1:
-                            files_to_update.append(file_obj)
-                    break
-                except Exception as e:
-                    found_err = True
-                    err = str(e)
+                            if annos:
+                                if 'result' not in annos and 'version' in annos:
+                                    annos = {'result': annos}
+                                annos['result']['version'] = current_version
+                                annos['data'] = enriched_table['data']
 
-                    if 'data.result.version' in err:
-                        enriched_table['result']['version'] = current_version
-                        if annos:
-                            annos['result']['version'] = current_version
+                                if 'domainInfo' not in annos['result']:
+                                    # in EnrichmentAnnotationsView, the enrichment annotations
+                                    # is being returned to the client using EnrichmentTableSchema
+                                    # since what is in the db validates against that schema
+                                    # it should be the same here
+                                    annos = EnrichmentTableSchema().dump(annos)
+                                validate_enrichment_table(annos)
+                                file_obj['enrichment_annotations'] = annos
 
-                    if err == 'data.data must be object':
-                        data_split = enriched_table['data'].split('/')
-                        enriched_table['data'] = {
-                            'genes': data_split[0],
-                            'taxId': data_split[1],
-                            'organism': data_split[2],
-                            'sources': [d for d in data_split[-1].split(',')] if data_split[-1] else []  # noqa
-                        }
-                        if annos:
-                            annos['data'] = enriched_table['data']
+                            if len(file_obj) > 1:
+                                files_to_update.append(file_obj)
+                        break
+                    except Exception as e:
+                        found_err = True
+                        err = str(e)
 
-                    if 'data.data.sources' in err and 'must be one of' in err:
-                        curr_sources = enriched_table['data']['sources']
-                        new_sources = []
-                        for s in curr_sources:
-                            if s.lower() == 'biocyc':
-                                new_sources.append('BioCyc')
-                            elif s.lower() == 'go':
-                                new_sources.append('GO')
-                            elif s.lower() == 'kegg':
-                                new_sources.append('KEGG')
-                            elif s.lower() == 'regulon':
-                                new_sources.append('Regulon')
-                            elif s.lower() == 'string':
-                                new_sources.append('String')
-                            elif s.lower() == 'uniprot':
-                                new_sources.append('UniProt')
-                        enriched_table['data']['sources'] = new_sources
+                        if 'data.result.version' in err:
+                            enriched_table['result']['version'] = current_version
 
-                    current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')
+                        if err == 'data.data must be object':
+                            data_split = enriched_table['data'].split('/')
+                            enriched_table['data'] = {
+                                'genes': data_split[0],
+                                'taxId': data_split[1],
+                                'organism': data_split[2],
+                                'sources': [d for d in data_split[-1].split(',')] if data_split[-1] else []  # noqa
+                            }
+
+                        if 'data.data.sources' in err and 'must be one of' in err:
+                            curr_sources = enriched_table['data']['sources']
+                            new_sources = []
+                            for s in curr_sources:
+                                if s.lower() == 'biocyc':
+                                    new_sources.append('BioCyc')
+                                elif s.lower() == 'go':
+                                    new_sources.append('GO')
+                                elif s.lower() == 'kegg':
+                                    new_sources.append('KEGG')
+                                elif s.lower() == 'regulon':
+                                    new_sources.append('Regulon')
+                                elif s.lower() == 'string':
+                                    new_sources.append('String')
+                                elif s.lower() == 'uniprot':
+                                    new_sources.append('UniProt')
+                            enriched_table['data']['sources'] = new_sources
+
+                        current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.bulk_update_mappings(FileContent, raws_to_update)
