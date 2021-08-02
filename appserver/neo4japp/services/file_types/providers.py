@@ -454,7 +454,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
                     if label == 'link':
-                        data = node['data'].get('sources') + node['data'].get('hyperlinks')
+                        data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
                         for link in data:
                             if ENRICHMENT_TABLE_RE.match(link['url']):
                                 label = 'enrichment_table'
