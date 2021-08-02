@@ -1127,16 +1127,6 @@ class FileExportView(FilesystemBaseView):
         links = []  # type: List[dict]
         self.get_all_linked_maps(file, maps_to_export, files, links)
 
-        # out_files = []
-        # for child_hash in maps_to_export:
-        #     try:
-        #         child_file = self.get_nondeleted_recycled_file(
-        #                         Files.hash_id == child_hash, lazy_load_content=True)
-        #         export = file_type.generate_export(child_file, params['format'])
-        #     except ExportFormatError:
-        #         raise ValidationError("Unknown or invalid export "
-        #                               "format for the requested file.", params["format"])
-        # out_files.append(io.BytesIO(export.content.getvalue()))
         merger = LinkedMapExportProvider(params['format'], file_type)
         return merger.merge(files, links)
 
@@ -1144,7 +1134,7 @@ class FileExportView(FilesystemBaseView):
         current_user = g.current_user
         json_graph = json.loads(file.content.raw_file)
         for node in json_graph['nodes']:
-            data = (node['data'].get('sources') or []) + (node['data'].get('hyperlinks') or [])
+            data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
             for link in data:
                 url = link.get('url', "").lstrip()
                 if MAPS_RE.match(url):
