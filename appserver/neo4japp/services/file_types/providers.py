@@ -454,16 +454,20 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
                     if label == 'link':
-                        if node['data'].get('sources') or node['data'].get('hyperlinks'):
-                            data = node['data'].get('sources') or [] \
-                                   + node['data'].get('hyperlinks') or []
-                            if any(ENRICHMENT_TABLE_RE.match(link['url']) for link in data):
+                        data = node['data'].get('hyperlinks') or [] \
+                               + node['data'].get('sources') or []
+                        for link in data[::-1]:
+                            if ENRICHMENT_TABLE_RE.match(link['url']):
                                 label = 'enrichment_table'
-                            elif any(SANKEY_RE.match(link['url']) for link in data):
+                                break
+                            elif SANKEY_RE.match(link['url']):
                                 label = 'sankey'
-                            elif any(DOCUMENT_RE.match(link['url']) for link in data):
+                                break
+                            elif DOCUMENT_RE.match(link['url']):
                                 label = 'document'
-                            elif any(MAIL_RE.match(link['url']) for link in data):
+                                break
+                            # We do not break on email, as email icon has lower precedence than others.
+                            elif MAIL_RE.match(link['url']):
                                 label = 'email'
 
                     icon_params['image'] = (
