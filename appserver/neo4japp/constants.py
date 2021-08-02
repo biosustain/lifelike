@@ -98,6 +98,9 @@ TYPE_DISEASE = 'Disease'
 TYPE_DNA_BINDING_SITE = 'DNABindingSite'
 TYPE_GENE = 'Gene'
 TYPE_GENE_PRODUCT = 'GeneProduct'
+TYPE_LITERATURE_CHEMICAL = 'LiteratureChemical'
+TYPE_LITERATURE_GENE = 'LiteratureGene'
+TYPE_LITERATURE_DISEASE = 'LiteratureDisease'
 TYPE_PUBLICATION = 'Publication'
 TYPE_SNIPPET = 'Snippet'
 TYPE_TAXONOMY = 'Taxonomy'
@@ -120,6 +123,9 @@ DISPLAY_NAME_MAP = {
     TYPE_DNA_BINDING_SITE: 'displayName',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
+    TYPE_LITERATURE_CHEMICAL: 'name',
+    TYPE_LITERATURE_GENE: 'name',
+    TYPE_LITERATURE_DISEASE: 'name',
     TYPE_MOLECULAR_FUNCTION: 'name',
     TYPE_OPERON: 'name',
     TYPE_PATHWAY: 'name',
@@ -318,7 +324,20 @@ ANNOTATION_STYLES_DICT = {
     'terminator': {
         'color': '#e5a731',
         'label': 'terminator'
-    }
+    },
+    # Literature types
+    'literaturegene': {
+        'color': '#673ab7',
+        'label': 'gene',
+    },
+    'literaturedisease': {
+        'color': '#ff9800',
+        'label': 'disease',
+    },
+    'literaturechemical': {
+        'color': '#4caf50',
+        'label': 'chemical',
+    },
 }
 
 # Style constants

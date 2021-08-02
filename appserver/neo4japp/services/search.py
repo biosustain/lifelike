@@ -92,7 +92,6 @@ class SearchService(GraphBaseDao):
         domains_map = {
             'chebi': 'n:db_CHEBI',
             'go': 'n:db_GO',
-            'literature': 'n:db_Literature',
             'mesh': 'n:db_MESH',
             'ncbi': 'n:db_NCBI',
             'uniprot': 'n:db_UniProt'
@@ -160,6 +159,29 @@ class SearchService(GraphBaseDao):
 
         result_filters = self.sanitize_filter(domains, entities)
 
+        literature_in_selected_domains = any([
+            normalize_str(domain) == 'literature'
+            for domain in domains
+        ])
+        # Return nodes in one or more domains, plus mapped Literature nodes
+        if domains == [] or (len(domains) > 1 and literature_in_selected_domains):
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class
+                OPTIONAL MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
+                WITH collect(n) + collect(m) as nodes, t, go_class
+                UNWIND nodes as node
+            """
+        # Return nodes in one or more domains, without Literature nodes
+        elif not literature_in_selected_domains:
+            literature_match_string = 'WITH n as node, t, n.namespace as go_class'
+        # Return only Literature nodes
+        else:
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class
+                MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
+                WITH m as node, t, go_class
+            """
+
         result = self.graph.read_transaction(
             self.visualizer_search_query,
             term,
@@ -167,7 +189,8 @@ class SearchService(GraphBaseDao):
             (page - 1) * limit,
             limit,
             result_filters,
-            organism_match_string
+            organism_match_string,
+            literature_match_string
         )
 
         records = self._visualizer_search_result_formatter(result)
@@ -180,7 +203,8 @@ class SearchService(GraphBaseDao):
                 0,
                 1001,
                 result_filters,
-                organism_match_string
+                organism_match_string,
+                literature_match_string
             )
         )
 
@@ -271,7 +295,8 @@ class SearchService(GraphBaseDao):
         amount: int,
         limit: int,
         result_filters: str,
-        organism_match_string: str
+        organism_match_string: str,
+        literature_match_string: str
     ) -> List[N4jRecord]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
@@ -283,11 +308,11 @@ class SearchService(GraphBaseDao):
                 YIELD node
                 MATCH (node)-[]-(n)
                 WHERE {result_filters}
-                WITH n, toLower(n.name) = toLower($search_term) as matches_input
+                WITH n
                 {organism_match_string}
-                RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, n.namespace AS go_class, matches_input
-                ORDER BY matches_input DESC
+                {literature_match_string}
+                RETURN DISTINCT node AS node, t.id AS taxonomy_id,
+                    t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
                 """,
