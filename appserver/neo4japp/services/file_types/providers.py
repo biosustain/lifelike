@@ -16,7 +16,6 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -36,7 +35,6 @@ from neo4japp.constants import (
     IMAGE_HEIGHT_INCREMENT,
     FONT_SIZE_MULTIPLIER,
     SCALING_FACTOR,
-    LIFELIKE_DOMAIN,
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_PDF,
     FILE_MIME_TYPE_BIOC,
@@ -102,6 +100,11 @@ unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
 characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+# Used to match the links in maps during the export
+SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
+MAIL_RE = re.compile(r'^ *mailto:.+$')
+ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
+DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -451,24 +454,27 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                                     {'defaultimagecolor': 'black'}
                                                                     )['defaultimagecolor']
                     if label == 'link':
-                        if node['data'].get('sources') or node['data'].get('hyperlinks'):
-                            data = node['data'].get('sources') or [] \
-                                   + node['data'].get('hyperlinks') or []
-                            if any(link.get('url').lstrip().startswith('/projects/') and
-                                   'enrichment-table' in link.get('url').split('/')
-                                   for link in data):
+                        data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+                        for link in data:
+                            if ENRICHMENT_TABLE_RE.match(link['url']):
                                 label = 'enrichment_table'
-                            elif any(link.get('url').lstrip().startswith('/projects/') and
-                                     'files' in link.get('url').split('/')
-                                     for link in data):
+                                break
+                            elif SANKEY_RE.match(link['url']):
+                                label = 'sankey'
+                                break
+                            elif DOCUMENT_RE.match(link['url']):
                                 label = 'document'
-                            elif any(link.get('url').lstrip().startswith('mailto:')
-                                     for link in data):
+                                break
+                            # We do not break on email, as email icon has lower precedence.
+                            elif MAIL_RE.match(link['url']):
                                 label = 'email'
+
                     icon_params['image'] = (
-                            f'/home/n4j/assets/{label}/{label}'
-                            f'_{style.get("fillColor") or default_icon_color}.png'
+                            f'/home/n4j/assets/{label}.png'
                         )
+                    icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
+                    icon_params['style'] = 'filled'
+                    icon_params['shape'] = 'box'
                     icon_params['height'] = ICON_SIZE
                     icon_params['width'] = ICON_SIZE
                     icon_params['fixedsize'] = 'true'

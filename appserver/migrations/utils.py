@@ -1,7 +1,7 @@
 import multiprocessing as mp
 
 from neo4japp.models import Files
-from neo4japp.services.annotations import AnnotationGraphService
+from neo4japp.services.annotations.initializer import get_annotation_graph_service
 from neo4japp.services.annotations.constants import EntityType
 
 
@@ -30,7 +30,7 @@ def get_primary_names(annotations):
     organism_ids = set()
     mesh_ids = set()
 
-    neo4j = AnnotationGraphService()
+    neo4j = get_annotation_graph_service()
     updated_annotations = []
 
     # Note: We need to split the ids by colon because
