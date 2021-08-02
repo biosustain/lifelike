@@ -94,7 +94,7 @@ export class BaseEnrichmentDocument {
             // Old enrichment table format was just a string for the data
             const split = s.split('/');
             return {
-              data: {genes: split[0], taxId: split[1], organism: split[2], sources: split[4].split(',')},
+              data: {genes: split[0], taxId: split[1], organism: split[2], sources: split[3].split(',')},
             };
           }
         }),
