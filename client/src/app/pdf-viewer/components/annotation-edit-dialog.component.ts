@@ -51,6 +51,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     if (['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(this.form.get('entityType').value)) {
       this.form.get('includeGlobally').patchValue(false);
       this.form.get('includeGlobally').disable();
+      this.toggleIdFieldValidity();
     } else {
       this.form.get('includeGlobally').enable();
     }
