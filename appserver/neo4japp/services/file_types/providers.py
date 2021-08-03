@@ -380,7 +380,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ExportFormatError()
 
         json_graph = json.loads(file.content.raw_file)
-        graph_attr = [('margin', '3')]
+        graph_attr = [('margin', '3'), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
             graph_attr.append(('dpi', '300'))
