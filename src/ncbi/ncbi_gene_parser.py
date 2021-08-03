@@ -44,7 +44,7 @@ class GeneParser(BaseParser):
         self._load_gene2go_to_neo4j(database)
         self._update_gene_synonyms_in_neo4j(database)
 
-    def _load_bioinfo_to_neo4j(self, database: Database, update=False):
+    def _load_bioinfo_to_neo4j(self, database: Database):
         """
         Read bioinfo file, and load gene nodes, gene synonyms listed in the synonyms column.  Associate genes with taxonomy
         :param database: database to laod data
@@ -53,10 +53,7 @@ class GeneParser(BaseParser):
         query_genes = get_update_nodes_query(NODE_GENE, PROP_ID,
                                        [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
                                        [NODE_NCBI, NODE_MASTER])
-        if not update:
-            query_genes = get_create_nodes_query(NODE_GENE, PROP_ID,
-                                           [PROP_NAME, PROP_LOCUS_TAG, PROP_FULLNAME, PROP_TAX_ID, PROP_DATA_SOURCE],
-                                           [NODE_NCBI, NODE_MASTER])
+
         query_synonyms = get_create_synonym_relationships_query(NODE_GENE, PROP_ID, PROP_ID, 'synonym')
         self.logger.debug(query_synonyms)
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]

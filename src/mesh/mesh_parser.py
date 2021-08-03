@@ -118,7 +118,7 @@ class MeshParser(BaseParser):
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
         query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID,
-                                               'descriptor_id', REL_MAP_TO, [PROP_TYPE])
+                                               'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
         to_database.load_data_from_dataframe(df, query)
 
     def _load_disease(self, from_database, to_database):
@@ -139,7 +139,7 @@ class MeshParser(BaseParser):
             """
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAP_TO, [PROP_TYPE])
+        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
         to_database.load_data_from_dataframe(df, query)
 
     def _load_synonym(self, from_database, to_database):

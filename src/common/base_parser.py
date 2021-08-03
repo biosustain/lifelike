@@ -18,13 +18,6 @@ class BaseParser:
         self.output_dir = os.path.join(self.base_dir, 'processed', data_dir_name)
         os.makedirs(self.output_dir, 0o777, True)
 
-    def set_database(self, database: Database):
-        self.database = database
-
-    def close_database(self):
-        if self.database:
-            self.database.close()
-
     def output_sample_import_file(self):
         """
         This is for exam data only.  Some files are too big to view.
@@ -48,7 +41,7 @@ class BaseParser:
     def create_indexes(self, database: Database):
         pass
 
-    def load_data_to_neo4j(self, database: Database, update=True):
+    def load_data_to_neo4j(self, database: Database):
         pass
 
 
