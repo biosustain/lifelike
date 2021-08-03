@@ -81,6 +81,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
       }
     }
     console.log(image_hashes)
+    if (image_hashes.size !== 0) {
+      // TODO: save images. Otherwise no images so move on with regular save
+    }
 
     const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
       type: MAP_MIMETYPE,
