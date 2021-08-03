@@ -87,6 +87,8 @@ export interface Reference extends GraphNode {
     data: {
         entry1Text: string;
         entry2Text: string;
+        entry1Type: string;
+        entry2Type: string;
         id: string;
         sentence: string;
     };
