@@ -46,7 +46,7 @@ class GoOboParser(OboParser, BaseParser):
         self.logger.info(f"Total go nodes: {len(nodes)}")
         return nodes
 
-    def load_data_to_neo4j(self, database: Database, update=True):
+    def load_data_to_neo4j(self, database: Database):
         nodes = self.parse_obo_file()
         if not nodes:
             return
