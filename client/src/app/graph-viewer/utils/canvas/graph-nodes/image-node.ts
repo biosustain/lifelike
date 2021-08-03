@@ -20,7 +20,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   readonly imageId: string;
   protected readonly subscriptions = new Subscription();
 
-  private image: CanvasImageSource;
+  image: CanvasImageSource;
 
   constructor(ctx: CanvasRenderingContext2D, options: ImageNodeOptions) {
     super(ctx, options);
