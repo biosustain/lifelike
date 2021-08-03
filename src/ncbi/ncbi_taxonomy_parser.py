@@ -175,9 +175,7 @@ class TaxonomyParser(BaseParser):
         database.create_index(NODE_TAXONOMY, PROP_NAME, 'index_taxonomy_name')
         database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
 
-    def load_data_to_neo4j(self, database: Database, update=True):
-        if not update:
-            self.create_indexes(database)
+    def load_data_to_neo4j(self, database: Database):
         self.logger.info('load taxnomy.tsv')
         file = os.path.join(self.output_dir, 'taxonomy.tsv')
         query = get_update_nodes_query(NODE_TAXONOMY, PROP_ID, self.TAXONOMY_FILE_HEADER, [NODE_NCBI])
@@ -216,7 +214,8 @@ def main():
     parser.parse_and_write_data_files()
     database = get_database()
     # for initial loading.  Without index /constraint, the data loading is very very slow
-    parser.load_data_to_neo4j(database, False)
+    parser.create_indexes(database)
+    parser.load_data_to_neo4j(database)
     database.close()
 
 
