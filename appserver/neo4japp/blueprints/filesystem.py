@@ -1122,15 +1122,12 @@ class FileExportView(FilesystemBaseView):
         )
 
     def export_multiple_maps(self, params: dict, file_type: MapTypeProvider, file: Files):
-        maps_to_export = [file.hash_id]
-        files = [file]
-        links = []  # type: List[dict]
-        self.get_all_linked_maps(file, maps_to_export, files, links)
+        files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
 
         merger = LinkedMapExportProvider(params['format'], file_type)
         return merger.merge(files, links)
 
-    def get_all_linked_maps(self, file: Files, map_hash_set: list, files: list, links: list):
+    def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
         current_user = g.current_user
         json_graph = json.loads(file.content.raw_file)
         for node in json_graph['nodes']:
@@ -1142,7 +1139,8 @@ class FileExportView(FilesystemBaseView):
                     link_data = {
                         'x': node['data']['x'],
                         'y': node['data']['y'],
-                        'page_origin': map_hash_set.index(file.hash_id),
+                        'page_origin': next(i for i, file in enumerate(files)
+                                            if file.hash_id == map_hash),
                         'page_destination': len(files)
                     }
                     # Fetch linked maps and check permissions, before we start to export them
@@ -1152,10 +1150,11 @@ class FileExportView(FilesystemBaseView):
                                 Files.hash_id == map_hash, lazy_load_content=True)
                             self.check_file_permissions([child_file], current_user,
                                                         ['readable'], permit_recycled=True)
-                            map_hash_set.append(map_hash)
+                            map_hash_set.add(map_hash)
                             files.append(child_file)
 
-                            self.get_all_linked_maps(child_file, map_hash_set, files, links)
+                            files, links = self.get_all_linked_maps(child_file,
+                                                                    map_hash_set, files, links)
 
                         except RecordNotFound:
                             current_app.logger.info(
@@ -1167,8 +1166,10 @@ class FileExportView(FilesystemBaseView):
                             )
                             link_data['page_destination'] = link_data['page_origin']
                     else:
-                        link_data['page_destination'] = map_hash_set.index(map_hash)
+                        link_data['page_destination'] = next(i for i, file in enumerate(files) if
+                                                             file.hash_id == map_hash)
                     links.append(link_data)
+        return files, links
 
 
 class FileBackupView(FilesystemBaseView):
