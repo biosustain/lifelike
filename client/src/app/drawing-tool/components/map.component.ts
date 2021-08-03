@@ -121,7 +121,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
-// <<<<<<< HEAD
     Promise.resolve().then(() => {
       // const style = new KnowledgeMapStyle();
       const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService)); // from below
