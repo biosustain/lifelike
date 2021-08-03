@@ -1,9 +1,5 @@
-import attr
-
 from flask import Blueprint, request, jsonify
 from flask_apispec import use_kwargs
-
-from typing import List
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -22,7 +18,7 @@ from neo4japp.request_schemas.visualizer import (
 from neo4japp.exceptions import (
     InvalidArgument,
 )
-from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
+from neo4japp.util import SuccessResponse, jsonify_with_class
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 

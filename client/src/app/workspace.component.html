@@ -43,6 +43,10 @@
                     <a class="dropdown-item" href="#" (click)="closeTab(pane, tab); $event.preventDefault()">Close</a>
                     <a class="dropdown-item" [class.disabled]="pane.tabs.length <= 1" href="#"
                        (click)="closeOtherTabs(pane, tab); $event.preventDefault()">Close other tabs</a>
+                    <a class="dropdown-item" href="#"
+                       (click)="closeAllTabs(pane); $event.preventDefault()">Close all tabs</a>
+                    <a class="dropdown-item" href="#"
+                       (click)="closeWorkbench(); $event.preventDefault()">Close workbench</a>
                   </div>
                 </div>
                 <div class="ml-2 mt-1 d-flex align-items-start">
