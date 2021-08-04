@@ -105,6 +105,7 @@ SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
+ANY_FILE_RE = re.compile(r'^ */files/\w+$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -513,10 +514,14 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
+            current_link = params.get('href', "").lstrip()
             # If url points to internal file, append it with the domain address
-            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
-                params['href'] = LIFELIKE_DOMAIN + params['href'].lstrip()
-
+            if current_link.startswith('/'):
+                # Remove Lifelike links to files that we do not create
+                if ANY_FILE_RE.match(current_link):
+                    params['href'] = ''
+                else:
+                    params['href'] = LIFELIKE_DOMAIN + current_link
             graph.node(**params)
 
         for edge in json_graph['edges']:
