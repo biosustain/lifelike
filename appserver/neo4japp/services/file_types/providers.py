@@ -611,7 +611,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         :param files: list of files to export
         :param _: links: omitted in case of png, added to match the merge_pdfs signature"""
         final_bytes = io.BytesIO()
-        images = [Image.open(x) for x in files]
+        images = [Image.open(self.get_file_export(file, 'png')) for file in files]
         cropped_images = [image.crop(image.getbbox()) for image in images]
         widths, heights = zip(*(i.size for i in cropped_images))
 
