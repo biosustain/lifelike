@@ -59,8 +59,7 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider, \
-     LinkedMapExportProvider
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.logger import UserEventLog
@@ -1103,7 +1102,8 @@ class FileExportView(FilesystemBaseView):
         file_type = file_type_service.get(file)
 
         if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
-            export = self.export_multiple_maps(params, file_type, file)
+            files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
+            export = file_type.merge(files, params['format'], links)
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
@@ -1120,12 +1120,6 @@ class FileExportView(FilesystemBaseView):
                 filename=export.filename,
                 mime_type=export.mime_type,
         )
-
-    def export_multiple_maps(self, params: dict, file_type: MapTypeProvider, file: Files):
-        files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
-
-        merger = LinkedMapExportProvider(params['format'], file_type)
-        return merger.merge(files, links)
 
     def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
         current_user = g.current_user
