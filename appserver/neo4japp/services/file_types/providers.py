@@ -54,7 +54,13 @@ from neo4japp.constants import (
     MAP_ICON_OFFSET,
     PDF_MARGIN,
     MAPS_RE,
-    NAME_NODE_OFFSET
+    NAME_NODE_OFFSET,
+    TRANSPARENT_PIXEL,
+    VERTICAL_NODE_PADDING,
+    NAME_LABEL_FONT_AVERAGE_WIDTH,
+    NAME_LABEL_PADDING_MULTIPLIER,
+    FILENAME_LABEL_MARGIN,
+    FILENAME_LABEL_FONT_SIZE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -528,10 +534,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                 ),
                 'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
                                                         )['defaultimagecolor'],
-                'fontsize': '40.0',
+                'fontsize': str(FILENAME_LABEL_FONT_SIZE),
                 'shape': 'box',
                 'style': 'rounded',
-                'margin': '0.33,0.165'
+                'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
             }
             graph.node(**name_node)
 
@@ -618,7 +624,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         max_width = max(widths)
         total_height = sum(heights)
 
-        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
+        new_im = Image.new('RGBA', (max_width, total_height), TRANSPARENT_PIXEL)
         y_offset = 0
 
         for im in cropped_images:
@@ -779,7 +785,7 @@ def get_content_offsets(file):
     for node in json_graph['nodes']:
         x_values.append(node['data']['x'])
         y_values.append(-node['data']['y'])
-    x_offset = max(len(file.filename), 0) * 18 / 2.0 - \
-        MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * 7
-    y_offset = (0.165 * POINT_TO_PIXEL) / 2.0
+    x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
+        MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
+    y_offset = VERTICAL_NODE_PADDING
     return (min(x_values), min(y_values)), (x_offset, y_offset)
