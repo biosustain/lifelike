@@ -568,6 +568,92 @@ class MapTypeProvider(BaseFileTypeProvider):
                 filename=f"{file.filename}{ext}"
         )
 
+    def merge(self, files: list, requested_format: str, links=None):
+        """ Export, merge and prepare as FileExport the list of files
+        :param files: List of Files objects. The first entry is always the main map,
+        :param requested_format: export format
+        :param links: List of dict objects storing info about links that should be embedded:
+            x: x pos; y: y pos;
+            page_origin: which page contains icon;
+            page_destination: where should it take you
+        return an exportable file.
+        """
+        if requested_format == 'png':
+            merger = self.merge_pngs_vertically
+        elif requested_format == 'pdf':
+            merger = self.merge_pdfs
+        else:
+            raise ValidationError("Unknown or invalid export format for the requested file.",
+                                  requested_format)
+        ext = f'.{format}'
+        if len(files) > 1:
+            content = merger(files, links)
+        else:
+            content = self.get_file_export(files[0], requested_format)
+        return FileExport(
+            content=content,
+            mime_type=extension_mime_types[ext],
+            filename=f"{files[0].filename}{ext}"
+        )
+
+    def get_file_export(self, file, format):
+        """ Get the exported version of the file in requested format """
+        try:
+            return self.generate_export(file, format, self_contained_export=True)
+        except ExportFormatError:
+            raise ValidationError("Unknown or invalid export "
+                                  "format for the requested file.", format)
+
+    def merge_pngs_vertically(self, files, _=None):
+        """ Append pngs vertically.
+        params:
+        :param files: list of files to export
+        :param _: links: omitted in case of png, added to match the merge_pdfs signature"""
+        final_bytes = io.BytesIO()
+        images = [Image.open(x) for x in files]
+        cropped_images = [image.crop(image.getbbox()) for image in images]
+        widths, heights = zip(*(i.size for i in cropped_images))
+
+        max_width = max(widths)
+        total_height = sum(heights)
+
+        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
+        y_offset = 0
+
+        for im in cropped_images:
+            x_offset = int((max_width - im.size[0]) / 2)
+            new_im.paste(im, (x_offset, y_offset))
+            y_offset += im.size[1]
+        new_im.save(final_bytes, format='PNG')
+        return final_bytes
+
+    def merge_pdfs(self, files: list, links=None):
+        """ Merge pdfs and add links to map.
+        params:
+        :param files - list of files to export.
+        :param links - list of dicts describing internal map links
+        """
+        links = links or []
+        final_bytes = io.BytesIO()
+        writer = PdfFileWriter()
+        half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
+        for i, out_file in enumerate(files):
+            out_file = self.get_file_export(out_file, 'pdf')
+            reader = PdfFileReader(out_file, strict=False)
+            writer.appendPagesFromReader(reader)
+        for link in links:
+            file_index = link['page_origin']
+            coord_offset, pixel_offset = get_content_offsets(files[file_index])
+            x_base = ((link['x'] - coord_offset[0]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI + pixel_offset[0]
+            y_base = ((-1 * link['y'] - coord_offset[1]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI - pixel_offset[1]
+            writer.addLink(file_index, link['page_destination'],
+                           [x_base - half_size, y_base - half_size - LABEL_OFFSET,
+                            x_base + half_size, y_base + half_size])
+        writer.write(final_bytes)
+        return final_bytes
+
 
 class SankeyTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_SANKEY
@@ -696,96 +782,3 @@ def get_content_offsets(file):
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * 7
     y_offset = (0.165 * POINT_TO_PIXEL) / 2.0
     return (min(x_values), min(y_values)), (x_offset, y_offset)
-
-
-class LinkedMapExportProvider:
-    """ Export multiple files as self contained document
-    Params:
-    requested_format: str holding lowercase format
-    file_type: provider allowing to generate the export from provided files
-    """
-    def __init__(self, requested_format, file_type: BaseFileTypeProvider):
-        self.requested_format = requested_format
-        self.file_type = file_type
-        if requested_format == 'png':
-            self.merger = self.merge_pngs_vertically
-        elif requested_format == 'pdf':
-            self.merger = self.merge_pdfs
-        else:
-            raise ValidationError("Unknown or invalid export format for the requested file.",
-                                  requested_format)
-
-    def merge(self, files: list, links=None):
-        """ Export, merge and prepare as FileExport the list of files
-        :param files: List of Files objects. The first entry is always the main map,
-        :param links: List of dict objects storing info about links that should be embedded:
-            x: x pos; y: y pos;
-            page_origin: which page contains icon;
-            page_destination: where should it take you
-        return an exportable file.
-        """
-        ext = f'.{self.requested_format}'
-        if len(files) > 1:
-            content = self.merger(files, links)
-        else:
-            content = self.get_file_export(files[0])
-        return FileExport(
-            content=content,
-            mime_type=extension_mime_types[ext],
-            filename=f"{files[0].filename}{ext}"
-        )
-
-    def get_file_export(self, file):
-        """ Get the exported version of the file in requested format """
-        try:
-            return io.BytesIO(self.file_type.generate_export
-                              (file, self.requested_format, True).content.getvalue())
-        except ExportFormatError:
-            raise ValidationError("Unknown or invalid export "
-                                  "format for the requested file.", self.requested_format)
-
-    def merge_pngs_vertically(self, files, _=None):
-        """ Append pngs vertically.
-        params:
-        files: list of files to export
-        _: Links parameter: omitted in case of png, added to match the merge_pdfs signature"""
-        final_bytes = io.BytesIO()
-        images = [Image.open(x) for x in files]
-        cropped_images = [image.crop(image.getbbox()) for image in images]
-        widths, heights = zip(*(i.size for i in cropped_images))
-
-        max_width = max(widths)
-        total_height = sum(heights)
-
-        new_im = Image.new('RGBA', (max_width, total_height), (255, 255, 255, 0))
-        y_offset = 0
-
-        for im in cropped_images:
-            x_offset = int((max_width - im.size[0]) / 2)
-            new_im.paste(im, (x_offset, y_offset))
-            y_offset += im.size[1]
-        new_im.save(final_bytes, format='PNG')
-        return final_bytes
-
-    def merge_pdfs(self, files: list, links=None):
-        """ Merge pdfs and add links to map."""
-        links = links or []
-        final_bytes = io.BytesIO()
-        writer = PdfFileWriter()
-        half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
-        for i, out_file in enumerate(files):
-            out_file = self.get_file_export(out_file)
-            reader = PdfFileReader(out_file, strict=False)
-            writer.appendPagesFromReader(reader)
-        for link in links:
-            file_index = link['page_origin']
-            coord_offset, pixel_offset = get_content_offsets(files[file_index])
-            x_base = ((link['x'] - coord_offset[0]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
-                PDF_MARGIN * DEFAULT_DPI + pixel_offset[0]
-            y_base = ((-1 * link['y'] - coord_offset[1]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
-                PDF_MARGIN * DEFAULT_DPI - pixel_offset[1]
-            writer.addLink(file_index, link['page_destination'],
-                           [x_base - half_size, y_base - half_size - LABEL_OFFSET,
-                            x_base + half_size, y_base + half_size])
-        writer.write(final_bytes)
-        return final_bytes
