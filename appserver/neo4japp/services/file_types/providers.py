@@ -1,6 +1,5 @@
 import io
 import json
-import math
 import re
 import typing
 
@@ -17,7 +16,7 @@ from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
 from marshmallow import ValidationError
-from PyPDF4 import PdfFileMerger, PdfFileWriter, PdfFileReader
+from PyPDF4 import PdfFileWriter, PdfFileReader
 from PIL import Image
 
 
@@ -50,7 +49,6 @@ from neo4japp.constants import (
     LIFELIKE_DOMAIN,
     DEFAULT_DPI,
     POINT_TO_PIXEL,
-    VERTICAL_TEXT_PADDING,
     HORIZONTAL_TEXT_PADDING,
     LABEL_OFFSET,
     MAP_ICON_OFFSET,
