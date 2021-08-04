@@ -18,7 +18,7 @@ from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, cont
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
-from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE, LogEventType
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -62,7 +62,6 @@ from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.service import GenericFileTypeProvider
