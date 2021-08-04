@@ -229,8 +229,6 @@ def data_upgrades():
                                             elif domain_lowered == 'uniprot':
                                                 gene['domains']['UniProt'] = data
                                                 gene['domains'].pop(domain)
-
-                            current = json.dumps(annos, separators=(',', ':')).encode('utf-8')
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.commit()
