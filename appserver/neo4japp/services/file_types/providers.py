@@ -101,11 +101,11 @@ characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 # Used to match the links in maps during the export
-SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
-MAIL_RE = re.compile(r'^ *mailto:.+$')
-ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
-DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
-ANY_FILE_RE = re.compile(r'^ */files/\w+$')
+SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+ *$')
+MAIL_RE = re.compile(r'^ *mailto:.+ *$')
+ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+ *$')
+DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+ *$')
+ANY_FILE_RE = re.compile(r'^ */files/\w+ *$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -514,7 +514,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
-            current_link = params.get('href', "").lstrip()
+            current_link = params.get('href', "").strip()
             # If url points to internal file, append it with the domain address
             if current_link.startswith('/'):
                 # Remove Lifelike links to files that we do not create
