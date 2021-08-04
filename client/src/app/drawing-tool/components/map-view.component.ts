@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -19,6 +19,7 @@ import { cloneDeep } from 'lodash';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-map-view',
@@ -77,7 +78,17 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     let image_hashes = new Set();
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) {
-        image_hashes.add(node.hash)
+        image_hashes.add(node.image_id);
+        let oneImage$: Observable<CanvasImageSource> = this.mapImageProviderService.get(node.image_id)
+        oneImage$.pipe(first()) // only take the first element
+          .subscribe({
+            next(img) {
+              // store the actual image somewhere
+            },
+            error(msg) {
+              console.error("error with subscriber: " + msg)
+            }
+          });
       }
     }
     console.log(image_hashes)
