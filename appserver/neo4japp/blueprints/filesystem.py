@@ -1132,9 +1132,8 @@ class FileExportView(FilesystemBaseView):
                     link_data = {
                         'x': node['data']['x'],
                         'y': node['data']['y'],
-                        'page_origin': next(i for i, file in enumerate(files)
-                                            if file.hash_id == map_hash),
-                        'page_destination': len(files)
+                        'page_origin': next(i for i, f in enumerate(files)
+                                            if file.hash_id == f.hash_id),
                     }
                     # Fetch linked maps and check permissions, before we start to export them
                     if map_hash not in map_hash_set:
@@ -1157,10 +1156,10 @@ class FileExportView(FilesystemBaseView):
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()
                             )
-                            link_data['page_destination'] = link_data['page_origin']
+                            link_data['page_destination'] = len(files) - 1
                     else:
-                        link_data['page_destination'] = next(i for i, file in enumerate(files) if
-                                                             file.hash_id == map_hash)
+                        link_data['page_destination'] = next(i for i, f in enumerate(files) if
+                                                             f.hash_id == map_hash)
                     links.append(link_data)
         return files, links
 
