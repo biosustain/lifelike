@@ -101,10 +101,11 @@ characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 # Used to match the links in maps during the export
-SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+$')
-MAIL_RE = re.compile(r'^ *mailto:.+$')
-ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+$')
-DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+$')
+SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+ *$')
+MAIL_RE = re.compile(r'^ *mailto:.+ *$')
+ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+ *$')
+DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+ *$')
+ANY_FILE_RE = re.compile(r'^ */files/\w+ *$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -380,7 +381,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ExportFormatError()
 
         json_graph = json.loads(file.content.raw_file)
-        graph_attr = [('margin', '3')]
+        graph_attr = [('margin', '3'), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
             graph_attr.append(('dpi', '300'))
@@ -398,6 +399,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = node.get('style', {})
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
+            label = node['label']
             params = {
                 'name': node['hash'],
                 'label': '\n'.join(textwrap.TextWrapper(
@@ -422,7 +424,6 @@ class MapTypeProvider(BaseFileTypeProvider):
             }
 
             if node['label'] in ['map', 'link', 'note']:
-                label = node['label']
                 if style.get('showDetail'):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
@@ -458,16 +459,29 @@ class MapTypeProvider(BaseFileTypeProvider):
                         for link in data:
                             if ENRICHMENT_TABLE_RE.match(link['url']):
                                 label = 'enrichment_table'
+                                node['link'] = link['url']
                                 break
                             elif SANKEY_RE.match(link['url']):
                                 label = 'sankey'
+                                node['link'] = link['url']
                                 break
                             elif DOCUMENT_RE.match(link['url']):
                                 label = 'document'
+                                doi_src = next(
+                                    (src for src in node['data'].get('sources') if src.get(
+                                        'domain') == "DOI"), None)
+                                # If there is a valid doi, link to DOI
+                                if doi_src and is_valid_doi(doi_src['url']):
+                                    node['link'] = doi_src['url']
+                                elif link in node['data'].get('sources', []):
+                                    node['data']['sources'].remove(link)
+                                else:
+                                    node['data']['hyperlinks'].remove(link)
                                 break
                             # We do not break on email, as email icon has lower precedence.
                             elif MAIL_RE.match(link['url']):
                                 label = 'email'
+                                node['link'] = link['url']
 
                     icon_params['image'] = (
                             f'/home/n4j/assets/{label}.png'
@@ -494,24 +508,28 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if node['data'].get('sources'):
-                doi_src = next((src for src in node['data'].get('sources') if src.get(
-                        'domain') == "DOI"), None)
-                if doi_src:
-                    params['href'] = doi_src.get('url')
-                else:
-                    params['href'] = node['data']['sources'][-1].get('url')
+            if node.get('link'):
+                params['href'] = node['data']['sources'][-1].get('url')
+            elif node['data'].get('sources'):
+                params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
+            current_link = params.get('href', "").strip()
             # If url points to internal file, append it with the domain address
-            if params.get('href', "").lstrip().startswith(('/projects/', '/files/')):
-                params['href'] = LIFELIKE_DOMAIN + params['href']
+            if current_link.startswith('/'):
+                # Remove Lifelike links to files that we do not create
+                if ANY_FILE_RE.match(current_link):
+                    params['href'] = ''
+                else:
+                    params['href'] = LIFELIKE_DOMAIN + current_link
             graph.node(**params)
 
         for edge in json_graph['edges']:
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
+            url_data = edge['data'].get('hyperlinks', []) + edge['data'].get('sources', [])
+            url = next((src['url'] for src in url_data[::-1]), "")
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
                 default_line_style = 'dashed'
@@ -529,7 +547,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                             'lineType') != 'none'
                     else '0.0',
                     fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                    style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style)
+                    style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
+                    URL=url
 
             )
 
