@@ -585,7 +585,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         else:
             raise ValidationError("Unknown or invalid export format for the requested file.",
                                   requested_format)
-        ext = f'.{format}'
+        ext = f'.{requested_format}'
         if len(files) > 1:
             content = merger(files, links)
         else:
@@ -599,7 +599,8 @@ class MapTypeProvider(BaseFileTypeProvider):
     def get_file_export(self, file, format):
         """ Get the exported version of the file in requested format """
         try:
-            return self.generate_export(file, format, self_contained_export=True)
+            return io.BytesIO(self.generate_export(file, format, self_contained_export=True)
+                              .content.getvalue())
         except ExportFormatError:
             raise ValidationError("Unknown or invalid export "
                                   "format for the requested file.", format)
