@@ -39,10 +39,10 @@ from ..exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
-    FileContent,
     GlobalList,
     FallbackOrganism
 )
+from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
@@ -524,6 +524,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         user_id=current_user.id,
                         enrichment=enrichment
                     )
+
+                    validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
                         'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
