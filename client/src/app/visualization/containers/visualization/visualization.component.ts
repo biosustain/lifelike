@@ -68,7 +68,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   loadingClustersDialogRef;
 
   // TODO: Will we need to add more of these?
-  LITERATURE_LABELS = ['disease', 'chemical', 'gene'];
+  LITERATURE_LABELS = ['literaturedisease', 'literaturechemical', 'literaturegene'];
 
   constructor(
     private route: ActivatedRoute,
@@ -131,7 +131,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         if (this.LITERATURE_LABELS.includes(label)) {
           // Keys of the result dict are all lowercase, need to change the first character
           // to uppercase to match Neo4j labels
-          const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1);
+          const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1, 10) + label.slice(10, 11).toUpperCase() + label.slice(11);
           this.legend.set(formattedLabel, [legend[label].color, '#0c8caa']);
         }
       });
