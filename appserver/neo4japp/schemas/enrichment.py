@@ -33,9 +33,16 @@ class EnrichmentResult(CamelCaseSchema):
     genes = fields.List(fields.Nested(EnrichedGene), required=True)
 
 
+class EnrichmentData(CamelCaseSchema):
+    genes = fields.String(required=True)
+    taxId = fields.String(required=True)
+    organism = fields.String(required=True)
+    sources = fields.List(fields.String())
+
+
 # Requests
 # ----------------------------------------
 
 class EnrichmentTableSchema(CamelCaseSchema):
-    data = fields.String(required=True)
+    data = fields.Nested(EnrichmentData, required=True)
     result = fields.Nested(EnrichmentResult, required=True)
