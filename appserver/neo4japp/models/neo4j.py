@@ -1,7 +1,4 @@
-from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-
 from neo4japp.models.common import NEO4JBase
-from neo4japp.util import snake_to_camel_dict
 
 
 class GraphNode(NEO4JBase):
