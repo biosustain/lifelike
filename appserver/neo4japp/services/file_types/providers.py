@@ -633,9 +633,8 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         data = json.load(buffer)
         content = io.StringIO()
 
-        data_tokens = data['data'].split('/')
-        genes = data_tokens[0].split(',')
-        organism = data_tokens[2]
+        genes = data['data']['genes'].split(',')
+        organism = data['data']['organism']
         content.write(', '.join(genes))
         content.write('\r\n\r\n')
         content.write(organism)
