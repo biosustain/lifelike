@@ -75,8 +75,6 @@ describe('SnippetDisplayComponentComponent', () => {
             {
                 publication: mockPublication,
                 reference: mockReference,
-                rawScore: 1,
-                normalizedScore: 1.0
             }
         ];
 
