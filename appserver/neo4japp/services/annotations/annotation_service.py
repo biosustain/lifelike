@@ -135,30 +135,36 @@ class AnnotationService:
             keyword_ending_idx = param.token.hi_location_offset
             link_search_term = param.token.keyword
 
+            # TODO: clean this up, getting a bit messy
+            # trying to determine the hyperlink
+            hyperlink = ''
             # entity here is data structure from LMDB
             # see services/annotations/utils/lmdb.py for definition
             if not param.entity_id_hyperlink:
-                # assign to avoid line being too long
-                # can't use multi pycode ignore/noqa...
-                link = ENTITY_HYPERLINKS
-                try:
-                    if param.entity['id_type'] == 'BioCyc':
-                        # temp until LL-3296 is done
-                        hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
-                    else:
-                        hyperlink = link[param.entity['id_type']]
-                except KeyError:
-                    if param.entity['id_type'] == 'BioCyc':
-                        e_type = DatabaseType.BIOCYC.value
-                        # temp until LL-3296 is done
-                        hyperlink = link[e_type][param.token_type]  # type: ignore
-                    else:
-                        raise
+                # we allow no id for global inclusions now
+                if param.entity_id:
+                    # assign to avoid line being too long
+                    # can't use multi pycode ignore/noqa...
+                    link = cast(dict, ENTITY_HYPERLINKS)
+                    try:
+                        if param.entity['id_type'] == 'BioCyc':
+                            # temp until LL-3296 is done
+                            linkval = link[param.entity['id_type']][param.token_type]
+                            hyperlink = linkval
+                        else:
+                            hyperlink = link[param.entity['id_type']]  # type: ignore
+                    except KeyError:
+                        if param.entity['id_type'] == 'BioCyc':
+                            e_type = DatabaseType.BIOCYC.value
+                            # temp until LL-3296 is done
+                            hyperlink = link[e_type][param.token_type]  # type: ignore
+                        else:
+                            raise
 
-                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
-                    hyperlink += param.entity_id[5:]  # type: ignore
-                else:
-                    hyperlink += param.entity_id  # type: ignore
+                    if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
+                        hyperlink += param.entity_id[5:]  # type: ignore
+                    else:
+                        hyperlink += param.entity_id  # type: ignore
             else:
                 hyperlink = param.entity_id_hyperlink
 
