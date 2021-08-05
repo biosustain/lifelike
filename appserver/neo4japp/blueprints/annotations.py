@@ -836,7 +836,7 @@ class GlobalAnnotationExportInclusions(MethodView):
             }
 
         data = [get_inclusion_for_review(
-            inclusion, file_uuids_map, graph) for inclusion in inclusions]
+            inclusion, file_uuids_map, graph) for inclusion in inclusions if inclusion['file_reference'] in file_uuids_map]  # noqa
 
         exporter = get_excel_export_service()
         response = make_response(exporter.get_bytes(data), 200)
