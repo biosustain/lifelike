@@ -161,21 +161,6 @@ describe('SnippetDisplayComponentComponent', () => {
         expect(link.textContent).toEqual('123456');
     });
 
-    it('should show the normalized confidence score for a snippet', () => {
-        const snippetPanel = document.getElementsByClassName('snippet-panel-title')[0] as HTMLElement;
-        snippetPanel.click();
-
-        fixture.detectChanges();
-
-        const confidenceScoreContainers = document.getElementsByClassName('snippet-confidence-score-container');
-
-        expect(confidenceScoreContainers.length).toEqual(1);
-
-        const confidenceScoreContainer = confidenceScoreContainers[0];
-
-        expect(confidenceScoreContainer.textContent).toEqual('Snippet Score:1.000');
-    });
-
     it('should show "Showing 0 - 0" of 0" and no page limit selector if there are no results', () => {
         const resultsDisplayContainer = document.getElementById('num-snippets-container');
         component.totalResults = 0;
