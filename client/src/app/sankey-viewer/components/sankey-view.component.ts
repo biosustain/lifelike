@@ -230,7 +230,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
-        const {_sourceLinks, _targetLinks, ...otherProperties} = node;
+        const {_sourceLinks, _targetLinks, sourceLinks, targetLinks, ...otherProperties} = node;
         return {
           ...otherProperties,
           color: '' + color,
