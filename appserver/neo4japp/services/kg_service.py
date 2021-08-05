@@ -5,9 +5,11 @@ import time
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List, Type
+from typing import Dict, List
 
-from neo4japp.constants import BIOCYC_ORG_ID_DICT
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT,
+)
 from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
@@ -19,9 +21,6 @@ from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
     LogEventType,
-    TYPE_CHEMICAL,
-    TYPE_GENE,
-    TYPE_DISEASE,
 )
 from neo4japp.util import (
     get_first_known_label_from_node,
@@ -33,61 +32,6 @@ from neo4japp.utils.logger import EventLog
 class KgService(HybridDBDao):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
-
-    def _get_uri_of_node_entity(self, node: N4jDriverNode):
-        """Given a node and a map of domains -> URLs, returns the appropriate
-        URL formatted with the node entity identifier.
-        """
-        label = get_first_known_label_from_node(node)
-        entity_id = node.get('id')
-
-        url_map = {
-            domain: base_url
-            for domain, base_url in self.session.query(
-                DomainURLsMap.domain,
-                DomainURLsMap.base_URL,
-            )
-        }
-
-        # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
-        # is DISTINCT from the `id` property a given node might have, which represents the node
-        # entity! I.e. ID(n) = 123456789 vs. (n: {id: 'CHEBI:0000'})}
-
-        # Can't get the URI of the node if there is no 'id' property, so return None
-        if entity_id is None:
-            current_app.logger.warning(
-                f'Node with ID {node.id} does not have a URI.',
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
-            )
-            return None
-
-        url = None
-        try:
-            if label == TYPE_CHEMICAL:
-                db_prefix, uid = entity_id.split(':')
-                if db_prefix == 'CHEBI':
-                    url = url_map['chebi'].format(uid)
-                else:
-                    url = url_map['MESH'].format(uid)
-            elif label == TYPE_DISEASE:
-                db_prefix, uid = entity_id.split(':')
-                if db_prefix == 'MESH':
-                    url = url_map['MESH'].format(uid)
-                else:
-                    url = url_map['omim'].format(uid)
-            elif label == TYPE_GENE:
-                url = url_map['NCBI_Gene'].format(entity_id)
-        except KeyError:
-            current_app.logger.warning(
-                f'url_map did not contain the expected key value for node with:\n' +
-                f'\tID: {node.id}\n'
-                f'\tLabel: {label}\n' +
-                f'\tURI: {entity_id}\n'
-                'There may be something wrong in the database.',
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
-            )
-        finally:
-            return url
 
     def _neo4j_objs_to_graph_objs(
         self,
