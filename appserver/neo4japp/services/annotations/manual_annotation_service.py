@@ -65,35 +65,35 @@ class ManualAnnotationService:
 
         Returns the added inclusions.
         """
-        primary_name = ''
+        primary_name = custom_annotation['meta']['allText']
         entity_id = custom_annotation['meta']['id']
         entity_type = custom_annotation['meta']['type']
-        try:
-            if entity_type in [
-                EntityType.ANATOMY.value,
-                EntityType.DISEASE.value,
-                EntityType.FOOD.value,
-                EntityType.PHENOMENA.value,
-                EntityType.PHENOTYPE.value,
-                EntityType.CHEMICAL.value,
-                EntityType.COMPOUND.value,
-                EntityType.GENE.value,
-                EntityType.PROTEIN.value,
-                EntityType.SPECIES.value
-            ]:
-                primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
-            else:
-                primary_name = custom_annotation['meta']['allText']
-        except KeyError:
-            primary_name = custom_annotation['meta']['allText']
-        except (BrokenPipeError, ServiceUnavailable):
-            raise
-        except Exception:
-            raise AnnotationError(
-                title='Failed to Create Custom Annotation',
-                message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+
+        if entity_id:
+            try:
+                if entity_type in [
+                    EntityType.ANATOMY.value,
+                    EntityType.DISEASE.value,
+                    EntityType.FOOD.value,
+                    EntityType.PHENOMENA.value,
+                    EntityType.PHENOTYPE.value,
+                    EntityType.CHEMICAL.value,
+                    EntityType.COMPOUND.value,
+                    EntityType.GENE.value,
+                    EntityType.PROTEIN.value,
+                    EntityType.SPECIES.value
+                ]:
+                    primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
+            except KeyError:
+                pass
+            except (BrokenPipeError, ServiceUnavailable):
+                raise
+            except Exception:
+                raise AnnotationError(
+                    title='Failed to Create Custom Annotation',
+                    message='A system error occurred while creating the annotation, '
+                            'we are working on a solution. Please try again later.',
+                    code=500)
 
         annotation_to_add = {
             **custom_annotation,
@@ -427,7 +427,7 @@ class ManualAnnotationService:
                     if query:
                         self.graph.exec_write_query_with_params(query, createval)
                     else:
-                        query = get_create_lifelike_global_inclusion_query(entity_type)
+                        query = get_create_lifelike_global_inclusion_query(entity_type, createval['entity_id'] != '')  # noqa
                         self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -438,7 +438,7 @@ class ManualAnnotationService:
                     )
             elif not check['node_exist']:
                 try:
-                    query = get_create_lifelike_global_inclusion_query(entity_type)
+                    query = get_create_lifelike_global_inclusion_query(entity_type, createval['entity_id'] != '')  # noqa
                     self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -486,7 +486,7 @@ class ManualAnnotationService:
         # do not exist in the normal domain/labels
         query = queries.get(values['entity_type'], '')
         try:
-            result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+            check = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception:
@@ -495,12 +495,12 @@ class ManualAnnotationService:
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
-        if result['node_exist']:
-            return result
+        if check['node_exist']:
+            return check
         else:
             try:
                 query = get_lifelike_global_inclusion_exist_query(values['entity_type'])
-                result = self.graph.exec_read_query_with_params(query, values)[0]
+                check = self.graph.exec_read_query_with_params(query, values)[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise
             except Exception:
@@ -509,7 +509,7 @@ class ManualAnnotationService:
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 
-        return result
+        return check
 
     def _global_annotation_exists(self, annotation, inclusion_type):
         global_annotations = GlobalList.query.filter_by(type=inclusion_type).all()
