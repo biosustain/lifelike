@@ -797,9 +797,7 @@ class AnnotationService:
 
         # clean species annotations first
         # because genes depend on them
-        species_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=species_annotations
-        )
+        species_annotations = self._clean_annotations(annotations=species_annotations)
 
         species_annotations_with_local = [anno for anno in species_annotations]
 
@@ -989,8 +987,7 @@ class AnnotationService:
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation],
-        **kwargs
+        annotations: List[Annotation]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
