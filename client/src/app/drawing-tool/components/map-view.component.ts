@@ -75,15 +75,28 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
+                  /**
+                   * steps to approach:
+                   * zip the map w/o images
+                   * get the raw image from ???
+                   * zip the map w/ images
+                   * unzip the map, populate image from `image_id`
+                   */
     let image_hashes = new Set();
     for (const node of this.graphCanvas.getGraph().nodes) {
-      if (node.image_id !== undefined) {
+      if (node.image_id !== undefined) { // is image node
         image_hashes.add(node.image_id);
         let oneImage$: Observable<CanvasImageSource> = this.mapImageProviderService.get(node.image_id)
         oneImage$.pipe(first()) // only take the first element
           .subscribe({
             next(img) {
-              // store the actual image somewhere
+              img = img as HTMLImageElement;
+              console.log("image src is: " + img.src);
+              // one way to get the original image blob. It's a PROMISE though
+              let blob = fetch(img.src).then(r => r.blob());
+              console.log("image blob is:");
+              console.log(blob);
+              console.log("END image blob");
             },
             error(msg) {
               console.error("error with subscriber: " + msg)
