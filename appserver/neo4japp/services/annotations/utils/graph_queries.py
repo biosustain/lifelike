@@ -23,6 +23,7 @@ node_labels = {
     EntityType.COMPOUND.value: 'Compound',
     EntityType.GENE.value: 'Gene',
     EntityType.SPECIES.value: 'Taxonomy',
+    EntityType.PATHWAY.value: 'Pathway',
     EntityType.PROTEIN.value: 'Protein',
     EntityType.PHENOTYPE.value: 'Phenotype',
     EntityType.ENTITY.value: 'Entity',
@@ -206,6 +207,15 @@ def get_compound_global_inclusion_exist_query():
 def get_gene_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
+    WHERE n.id = $entity_id
+    RETURN n IS NOT NULL AS node_exist,
+        $synonym IN collect(s.name) AS synonym_exist
+    """
+
+
+def get_pathway_global_inclusion_exist_query():
+    return """
+    OPTIONAL MATCH (n:Pathway)-[:HAS_SYNONYM]->(s)
     WHERE n.id = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
