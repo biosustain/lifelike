@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import current_app
 from neo4j.exceptions import ServiceUnavailable
 from typing import List
+from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -380,6 +381,9 @@ class ManualAnnotationService:
                             'the data is corrupted. Please try again.',
                     code=500)
 
+            if entity_id == '':
+                entity_id = f'NULL_{str(uuid4())}'
+
             createval = {
                 'entity_type': entity_type,
                 'entity_id': entity_id,
@@ -427,7 +431,7 @@ class ManualAnnotationService:
                     if query:
                         self.graph.exec_write_query_with_params(query, createval)
                     else:
-                        query = get_create_lifelike_global_inclusion_query(entity_type, createval['entity_id'] != '')  # noqa
+                        query = get_create_lifelike_global_inclusion_query(entity_type)
                         self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -438,7 +442,7 @@ class ManualAnnotationService:
                     )
             elif not check['node_exist']:
                 try:
-                    query = get_create_lifelike_global_inclusion_query(entity_type, createval['entity_id'] != '')  # noqa
+                    query = get_create_lifelike_global_inclusion_query(entity_type)
                     self.graph.exec_write_query_with_params(query, createval)
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
