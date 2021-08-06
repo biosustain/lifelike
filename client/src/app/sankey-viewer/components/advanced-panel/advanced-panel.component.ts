@@ -12,12 +12,10 @@ export class SankeyAdvancedPanelComponent {
   @Output() optionsChange = new EventEmitter<SankeyAdvancedOptions>();
 
   update($event) {
-    console.log($event);
     this.optionsChange.emit(this.options);
   }
 
   customSizingUpdate($event) {
-    console.log($event);
     this.options.selectedPredefinedValueAccessor = {
       description: 'Customised'
     };

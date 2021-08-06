@@ -41,6 +41,7 @@ export interface SankeyAdvancedOptions {
   linkValueGenerators: Array<any>;
   normalizeLinks: boolean;
   labelEllipsis: any;
+  fontSize: number;
 }
 
 import visNetwork from 'vis-network';
