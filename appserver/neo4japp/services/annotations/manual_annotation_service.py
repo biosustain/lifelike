@@ -423,7 +423,8 @@ class ManualAnnotationService:
                     EntityType.COMPOUND.value: get_create_compound_global_inclusion_query(),
                     EntityType.GENE.value: get_create_gene_global_inclusion_query(),
                     EntityType.PROTEIN.value: get_create_protein_global_inclusion_query(),
-                    EntityType.SPECIES.value: get_create_species_global_inclusion_query()
+                    EntityType.SPECIES.value: get_create_species_global_inclusion_query(),
+                    EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
                 }
 
                 query = queries.get(entity_type, '')
@@ -483,7 +484,8 @@ class ManualAnnotationService:
             EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
             EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
             EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query(),
-            EntityType.SPECIES.value: get_species_global_inclusion_exist_query()
+            EntityType.SPECIES.value: get_species_global_inclusion_exist_query(),
+            EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
         }
 
         # query can be empty string because some entity types
