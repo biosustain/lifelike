@@ -180,10 +180,7 @@ def get_mesh_global_inclusion_exist_query(entity_type):
     OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
     WHERE n.id = 'MESH:' + $entity_id
     RETURN n IS NOT NULL AS node_exist,
-        CASE WHEN
-            n IS NOT NULL THEN '{query_label}' IN labels(n)
-        ELSE
-            false END AS node_has_entity_label,
+        '{query_label}' IN labels(n) AS node_has_entity_label,
         $synonym IN collect(s.name) AS synonym_exist
     """
 
@@ -244,7 +241,7 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) OR
         CASE WHEN
-            n IS NOT NULL THEN NOT exists(n.id)
+            n IS NOT NULL THEN NOT 'NULL_' IN n.id
         ELSE false END AS synonym_exist
     """
 
@@ -350,7 +347,7 @@ def get_create_protein_global_inclusion_query():
     """
 
 
-def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type, has_entity_id):
+def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     if entity_type not in node_labels:
         return ''
 
@@ -363,38 +360,17 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type, has_enti
     # rather a new synonym of an existing gene can be created
     # so no need to add a :Master Gene label
 
-    query = """
+    return """
     MERGE (n:db_Lifelike {name: $common_name, entity_type: $entity_type})
     ON CREATE
-    """
-
-    # if no entity_id given, we do not set the n.id
-    # this is to prevent creating additional synonyms
-    # for this node, BUT we want to create the initial synonym
-    # for the node itself
-    if has_entity_id:
-        query += """
-        SET n.id = 'Lifelike:' + $entity_id,
-            n:GlobalInclusion:replace_with_param,
-            n.data_source = $data_source,
-            n.name = $common_name,
-            n.entity_type = $entity_type,
-            n.hyperlink = $hyperlink,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-            n.user = $user
-        """
-    else:
-        query += """
-        SET n:GlobalInclusion:replace_with_param,
-            n.data_source = $data_source,
-            n.name = $common_name,
-            n.entity_type = $entity_type,
-            n.hyperlink = $hyperlink,
-            n.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-            n.user = $user
-        """
-
-    query += """
+    SET n.id = 'Lifelike:' + $entity_id,
+        n:GlobalInclusion:replace_with_param,
+        n.data_source = $data_source,
+        n.name = $common_name,
+        n.entity_type = $entity_type,
+        n.hyperlink = $hyperlink,
+        n.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
+        n.user = $user
     WITH n
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
@@ -406,6 +382,4 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type, has_enti
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlink = $hyperlink
-    """
-
-    return query.replace('replace_with_param', query_label)
+    """.replace('replace_with_param', query_label)
