@@ -1,12 +1,15 @@
-import { Component, EventEmitter, OnDestroy, ViewChild, isDevMode } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import * as CryptoJS from 'crypto-js';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map } from 'rxjs/operators';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
 import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
@@ -20,8 +23,6 @@ import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
-import { cubehelix } from 'd3';
-import visNetwork from 'vis-network';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
@@ -197,72 +198,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  parseTraceDetails(trace) {
-    const {
-      sankeyData: {
-        nodes: mainNodes
-      },
-      sankeyLayout: {
-        nodeLabel,
-        nodeLabelShort
-      }
-    } = this;
-
-    const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
-      from,
-      to,
-      id: uuidv4(),
-      arrows: 'to',
-      label: d.type,
-      ...(d || {})
-    }));
-    const nodeIds = [...edges.reduce((nodesSet, {from, to}) => {
-      nodesSet.add(from);
-      nodesSet.add(to);
-      return nodesSet;
-    }, new Set())];
-    const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
-      const node = mainNodes.find(({id}) => id === nodeId);
-      if (node) {
-        const color = cubehelix(node._color);
-        color.s = 0;
-        const label = nodeLabel(node);
-        if (isDevMode() && !label) {
-          console.error(`Node ${node.id} has no label property.`, node);
-        }
-        const {_sourceLinks, _targetLinks, sourceLinks, targetLinks, ...otherProperties} = node;
-        return {
-          ...otherProperties,
-          color: '' + color,
-          databaseLabel: node.type,
-          label: nodeLabelShort(node),
-          title: label
-        };
-      } else {
-        console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
-        return {
-          id: nodeId,
-          label: nodeId,
-          databaseLabel: 'Implicitly defined',
-          color: 'red'
-        };
-      }
-    });
-
-    return {
-      ...trace,
-      nodes,
-      edges
-    };
-  }
-
   gotoDynamic(trace) {
-    const traceDetails = this.parseTraceDetails(trace);
-    const id = this.sessionStorage.set(traceDetails);
-    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${id}`;
-    this.workSpaceManager.navigateByUrl(url, {
-      sideBySide: true, newTab: true
-    });
+    const hash = CryptoJS.MD5(JSON.stringify({
+      ...this.selectedNetworkTrace,
+      traces: [],
+      source: trace.source,
+      target: trace.target
+    })).toString();
+    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${hash}`;
+
+    window.open(url);
   }
 
   getJSONDetails(details) {
@@ -272,7 +217,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   getNodeById(nodeId) {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
   }
-
 
   open(content) {
     this.modalService.open(content, {
