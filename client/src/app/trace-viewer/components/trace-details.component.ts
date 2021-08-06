@@ -1,7 +1,7 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '@angular/core';
+
 import { Options } from 'vis-network';
 
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
 import { parseForRendering } from '../../sankey-viewer/components/utils';
 
@@ -48,7 +48,7 @@ export class TraceDetailsComponent implements OnChanges {
   @Input() data;
 
   ngOnChanges({data}: SimpleChanges) {
-    if (data) {
+    if (data.currentValue) {
       this.legend = data.currentValue.nodes.reduce((o, n) => {
         if (!o.has(n.databaseLabel) && typeof n.color === 'string') {
           o.set(n.databaseLabel, [n.color, n.color]);
