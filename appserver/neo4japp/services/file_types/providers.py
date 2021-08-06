@@ -528,9 +528,9 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
-            if edge.get('data'):
-                url_data = edge['data'].get('hyperlinks', []) + edge['data'].get('sources', [])
-                url = next((src['url'] for src in url_data[::-1]), "")
+            edge_data = edge.get('data', {})
+            url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
+            url = next((src['url'] for src in url_data[::-1]), "")
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
                 default_line_style = 'dashed'
