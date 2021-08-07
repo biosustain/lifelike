@@ -531,6 +531,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             edge_data = edge.get('data', {})
             url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
             url = next((src['url'] for src in url_data[::-1]), "")
+            url = url_data[-1]['url'] if len(url_data) else ''
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
                 default_line_style = 'dashed'
