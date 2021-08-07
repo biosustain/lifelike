@@ -23,6 +23,7 @@ node_labels = {
     EntityType.COMPOUND.value: 'Compound',
     EntityType.GENE.value: 'Gene',
     EntityType.SPECIES.value: 'Taxonomy',
+    EntityType.PATHWAY.value: 'Pathway',
     EntityType.PROTEIN.value: 'Protein',
     EntityType.PHENOTYPE.value: 'Phenotype',
     EntityType.ENTITY.value: 'Entity',
@@ -77,7 +78,6 @@ def get_global_inclusions_query():
         id(n) AS node_internal_id,
         id(s) AS syn_node_internal_id,
         n.id AS entity_id,
-        n.external_id AS external_id,
         s.name AS synonym,
         n.data_source AS data_source,
         r.entity_type AS entity_type,
@@ -96,7 +96,6 @@ def get_global_inclusions_paginated_query():
         id(n) AS node_internal_id,
         id(s) AS syn_node_internal_id,
         n.id AS entity_id,
-        n.external_id AS external_id,
         s.name AS synonym,
         n.data_source AS data_source,
         r.entity_type AS entity_type,
@@ -143,8 +142,13 @@ def get_global_inclusions_by_type_query(entity_type):
     return f"""
     MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
     WHERE r.global_inclusion = true AND exists(r.inclusion_date)
-    RETURN id(n) AS internal_id, n.id AS entity_id, n.name AS entity_name,
-        s.name AS synonym, n.data_source AS data_source
+    RETURN
+        id(n) AS internal_id,
+        n.id AS entity_id,
+        n.name AS entity_name,
+        n.data_source AS data_source,
+        s.name AS synonym,
+        r.hyperlink AS hyperlink
     """
 
 
@@ -158,8 +162,13 @@ def get_lifelike_global_inclusions_by_type_query(entity_type):
 
     return f"""
     MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
-    RETURN id(n) AS internal_id, n.id AS entity_id, n.name AS entity_name,
-        s.name AS synonym, n.data_source AS data_source, n.hyperlink AS hyperlink
+    RETURN
+        id(n) AS internal_id,
+        n.id AS entity_id,
+        n.name AS entity_name,
+        n.data_source AS data_source,
+        s.name AS synonym,
+        r.hyperlink AS hyperlink
     """
 
 
@@ -204,6 +213,15 @@ def get_gene_global_inclusion_exist_query():
     """
 
 
+def get_pathway_global_inclusion_exist_query():
+    return """
+    OPTIONAL MATCH (n:Pathway)-[:HAS_SYNONYM]->(s)
+    WHERE n.id = $entity_id
+    RETURN n IS NOT NULL AS node_exist,
+        $synonym IN collect(s.name) AS synonym_exist
+    """
+
+
 def get_protein_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
@@ -229,9 +247,12 @@ def get_lifelike_global_inclusion_exist_query(entity_type):
     query_label = node_labels[entity_type]
     return f"""
     OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
-    WHERE n.external_id = 'Lifelike:' + $entity_id AND n.data_source = $data_source
+    WHERE n.name = $common_name AND n.entity_type = $entity_type
     RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+        $synonym IN collect(s.name) OR
+        CASE WHEN
+            n IS NOT NULL THEN NOT 'NULL_' IN n.id
+        ELSE false END AS synonym_exist
     """
 
 
@@ -251,7 +272,8 @@ def get_create_mesh_global_inclusion_query(entity_type):
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = $entity_type
+        r.entity_type = $entity_type,
+        r.hyperlink = $hyperlink
     """.replace('replace_with_param', query_label)
 
 
@@ -266,7 +288,8 @@ def get_create_chemical_global_inclusion_query():
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = 'Chemical'
+        r.entity_type = 'Chemical',
+        r.hyperlink = $hyperlink
     """
 
 
@@ -281,7 +304,8 @@ def get_create_compound_global_inclusion_query():
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = 'Compound'
+        r.entity_type = 'Compound',
+        r.hyperlink = $hyperlink
     """
 
 
@@ -296,7 +320,8 @@ def get_create_gene_global_inclusion_query():
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = 'Gene'
+        r.entity_type = 'Gene',
+        r.hyperlink = $hyperlink
     """
 
 
@@ -311,7 +336,8 @@ def get_create_species_global_inclusion_query():
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = 'Species'
+        r.entity_type = 'Species',
+        r.hyperlink = $hyperlink
     """
 
 
@@ -326,7 +352,8 @@ def get_create_protein_global_inclusion_query():
         r.global_inclusion = true,
         r.user = $user,
         r.file_reference = $file_uuid,
-        r.entity_type = 'Protein'
+        r.entity_type = 'Protein',
+        r.hyperlink = $hyperlink
     """
 
 
@@ -344,11 +371,11 @@ def get_create_lifelike_global_inclusion_query(entity_type):
     # so no need to add a :Master Gene label
 
     return """
-    MERGE (n:db_Lifelike {id:'Lifelike:' + $entity_id})
+    MERGE (n:db_Lifelike {name: $common_name, entity_type: $entity_type})
     ON CREATE
-    SET n:GlobalInclusion:replace_with_param,
+    SET n.id = 'Lifelike:' + $entity_id,
+        n:GlobalInclusion:replace_with_param,
         n.data_source = $data_source,
-        n.external_id = $entity_id,
         n.name = $common_name,
         n.entity_type = $entity_type,
         n.hyperlink = $hyperlink,
@@ -363,5 +390,6 @@ def get_create_lifelike_global_inclusion_query(entity_type):
         r.global_inclusion = true,
         r.user = n.user,
         r.file_reference = $file_uuid,
-        r.entity_type = $entity_type
+        r.entity_type = $entity_type,
+        r.hyperlink = $hyperlink
     """.replace('replace_with_param', query_label)
