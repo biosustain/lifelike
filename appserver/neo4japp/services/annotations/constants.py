@@ -94,6 +94,7 @@ class EntityType(Enum):
     DISEASE = 'Disease'
     FOOD = 'Food'
     GENE = 'Gene'
+    PATHWAY = 'Pathway'
     PHENOMENA = 'Phenomena'
     PHENOTYPE = 'Phenotype'
     PROTEIN = 'Protein'
