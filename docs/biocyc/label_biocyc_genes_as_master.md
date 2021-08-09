@@ -4,24 +4,23 @@ if NCBI gene links not available, and Lifelike need to search and annotate those
 
 - add Master label
 ```
-match(n:db_PseudomonasCyc:Gene) set n:Master
+match(n:db_PseudomonasCyc:Gene) set n:Master;
 ```
 
 - Link genes with taxnomy nodes
 ```
+match(n:db_PseudomonasCyc:Gene) set n.tax_id = '160488';
+
 match(n:db_PseudomonasCyc:Gene), (t:Taxonomy {id:'160488'}) 
-merge (n)-[:HAS_TAXONOMY]->(t)
+merge (n)-[:HAS_TAXONOMY]->(t);
 ```
 
 - associate with taxonomy and GO
 ```
-match(n:db_PseudomonasCyc:Gene), (t:Taxonomy {id:'160488'}) merge (n)-[:HAS_TAXONOMY]->(t);
-match(n:db_PseudomonasCyc:Gene) set n.tax_id = '160488'
 match(n:db_PseudomonasCyc:Gene)-[:ENCODES]-()-[r:GO_LINK]->(go) merge (n)-[:GO_LINK]->(go);
 ```
 - create links with STRING
 ```
-create index index_gene_accession for (n:Gene) on (n.accession);
 match(n:db_STRING {tax_id:'160488'}) with n, apoc.text.split(n.id, '\.')[1] as accession match(g:db_PseudomonasCyc:Gene) where g.accession = accession 
 merge (n)-[:HAS_GENE]->(g);
 ```
@@ -29,7 +28,7 @@ merge (n)-[:HAS_GENE]->(g);
 An additional parser can be created to load gene-links.dat file. For now I just put the code snippet here
 (I used Jupyter notebook to run, but it would be better to integrated with other biocyc parsers)
 ```
-file = "~download/biocyc/pput160488cyc/22.0/data/gene-links.dat"
+file = "~/download/biocyc/pput160488cyc/22.0/data/gene-links.dat"
 df = pd.read_table(file, skiprows=12, header=None, names=['id', 'uniprotId', 'geneName', 'none'])
 df = df[df.uniprotId.notnull()]
 rows = df[['id', 'uniprotId']].to_dict('records')
