@@ -3,8 +3,8 @@ import { Injectable, isDevMode } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { christianColors, createMapToColor } from '../components/utils';
 import { symmetricDifference, normalizeGenerator } from '../components/sankey/utils';
+import { christianColors, createMapToColor } from '../components/color-palette';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -419,7 +419,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
           // all but not extreme (white, black)
           return (i + 1) / (n + 2);
         },
-        saturation: () => 0
+        saturation: () => 0,
+        alpha: () => 0.75
       }
     );
     nodes.forEach(node => {

@@ -832,7 +832,7 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
-                'entity_id': inclusion['external_id'] if inclusion['external_id'] else inclusion['entity_id'],  # noqa
+                'entity_id': inclusion['entity_id'],
                 'reason': '',
                 'comment': ''
             }
@@ -991,7 +991,7 @@ class GlobalAnnotationListView(MethodView):
             'text': i['synonym'],
             'case_insensitive': True,
             'entity_type': i['entity_type'],
-            'entity_id': i['external_id'] if i['external_id'] else i['entity_id'],
+            'entity_id': i['entity_id'],
             'reason': '',
             'comment': ''
         } for i in global_inclusions]
