@@ -548,6 +548,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
       )
       .attr('text-anchor', 'end')
+      .attr('font-size', `${fontSize}px`)
       .call(textGroup =>
         textGroup.select('text')
           .attr('dy', '0.35em')
