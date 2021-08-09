@@ -19,7 +19,7 @@ import bioc
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.sankey import validate_sankey
+from neo4japp.schemas.formats.graph import validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.constants import (
@@ -39,7 +39,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_PDF,
     FILE_MIME_TYPE_BIOC,
     FILE_MIME_TYPE_MAP,
-    FILE_MIME_TYPE_SANKEY,
+    FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
     LIFELIKE_DOMAIN
@@ -563,9 +563,9 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
 
-class SankeyTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = FILE_MIME_TYPE_SANKEY
-    SHORTHAND = 'Sankey'
+class GraphTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = FILE_MIME_TYPE_GRAPH
+    SHORTHAND = 'Graph'
     mime_types = (MIME_TYPE,)
 
     def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
@@ -575,7 +575,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
                     # buffer in here is actually wrapper of BufferedIOBase and it contains
                     # filename even if type check fails
                     buffer.filename  # type: ignore[attr-defined]
-            ))[1] == '.sankey':
+            ))[1] == '.graph':
                 return [(0, self.MIME_TYPE)]
             else:
                 return []
@@ -589,7 +589,7 @@ class SankeyTypeProvider(BaseFileTypeProvider):
 
     def validate_content(self, buffer: BufferedIOBase):
         data = json.loads(buffer.read())
-        validate_sankey(data)
+        validate_graph(data)
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
