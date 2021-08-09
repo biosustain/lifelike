@@ -403,7 +403,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
-            graph_attr.append(('dpi', '300'))
+            graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
                 file.filename,
@@ -645,7 +645,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         :param files: list of files to export
         :param _: links: omitted in case of png, added to match the merge_pdfs signature"""
         final_bytes = io.BytesIO()
-        images = [Image.open(self.get_file_export(file, 'png')) for file in files]
+        try:
+            images = [Image.open(self.get_file_export(file, 'png')) for file in files]
+        except Image.DecompressionBombError as e:
+            raise SystemError('One of the files exceeds the maximum size - it cannot be exported'
+                              'as part of the linked export')
         cropped_images = [image.crop(image.getbbox()) for image in images]
         widths, heights = zip(*(i.size for i in cropped_images))
 
