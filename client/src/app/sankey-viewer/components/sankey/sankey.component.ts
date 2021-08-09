@@ -542,7 +542,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size;
-    const fontSize = this.sankey.fontSize;
+    const { fontSize } = this.sankey;
     return texts => texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
