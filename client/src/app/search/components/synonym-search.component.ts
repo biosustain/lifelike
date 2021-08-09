@@ -99,7 +99,7 @@ export class SynonymSearchComponent {
             return synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase();
           })
           .join(' or ');
-        return isNullOrUndefined(entity.organism) ? `(${synonyms})` : `((${synonyms}) and "${entity.organism}")`;
+        return `(${synonyms})`;
       }
     });
     this.modal.close(expressionsToAdd);
