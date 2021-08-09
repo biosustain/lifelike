@@ -1,35 +1,5 @@
-<div *ngIf="(loadTask?.status$ | async) as status" class="d-flex flex-column position-relative h-100">
-  <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
-                       style="z-index: 2">
-      <div>
-          Downloading file...
-      </div>
-  </app-module-progress>
-
-  <app-module-error *ngIf="status.failedErrorShown" [error]="status.error"
-                    class="position-absolute w-100 h-100 bg-white p-4" style="z-index: 2">
-      <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-  </app-module-error>
-
-  <app-module-error *ngIf="error" [error]="error"
-                    class="position-absolute w-100 h-100 bg-white p-4" style="z-index: 2">
-      <a [appLink]="sourceFileURL">Go to Source <i class="fa fa-fw fa-arrow-right"></i></a>
-  </app-module-error>
-
-  <div *ngIf="status.resultsShown && !error" [ngStyle]="{'z-index': 0, 'display': 'initial'}" class="position-absolute w-100 h-100 d-flex flex-column">
-    <div class="module">
-      <div class="module-header">
-          <div class="module-title-bar d-flex justify-content-between">
-              <div class="d-flex">
-                  <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
-                      {{ title }}
-                  </h1>
-              </div>
-          </div>
-      </div>
-      <div class="w-100 h-100">
+<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [title]="title">
+      <div body class="w-100 h-100">
           <app-trace-details [data]="data"></app-trace-details>
       </div>
-    </div>
-  </div>
-</div>
+</app-tab>

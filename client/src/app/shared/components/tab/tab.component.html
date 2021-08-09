@@ -1,0 +1,52 @@
+<div class="d-flex flex-column position-relative h-100">
+    <app-module-progress *ngIf="status?.running" class="position-absolute w-100 h-100 bg-white p-4"
+                         style="z-index: 2">
+        <div>
+            Downloading file...
+        </div>
+    </app-module-progress>
+    <app-module-error *ngIf="status?.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
+                      [error]="status?.error" style="z-index: 2">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+    <div *ngIf="status?.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+        <div class="module">
+            <div class="module-header">
+                <!-- Breadcrumbs -->
+                <div class="module-breadcrumb-bar mb-1">
+                    <app-object-path [object]="object?.parent" [newTab]="true"></app-object-path>
+                </div>
+                <div class="module-title-bar">
+                    <button type="button" class="module-title-bar-back mr-2" [appLink]="returnUrl" *ngIf="returnUrl">
+                        <i class="fa fa-fw fa-arrow-left"></i>
+                    </button>
+                    <h1 class="toolbar-title text-truncate mr-1" draggable="true"
+                        (dragstart)="dragStarted.next($event)">
+                        {{ title || object?.filename }}
+                    </h1>
+
+                    <div ngbDropdown class="d-inline-block mr-4" container="body">
+                        <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+                            <i class="fas fa-chevron-down fa-fw text-icon"></i>
+                        </a>
+                        <div ngbDropdownMenu>
+                            <app-object-menu *ngIf="object" [object]="object" [forEditing]="true" [showOpen]="false"
+                                             [showDelete]="false" (objectRefresh)="requestRefresh()">
+                            </app-object-menu>
+                            <ng-content select="[objectMenu]"></ng-content>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary ml-2" (click)="openNewWindow()">
+                        <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+                    </button>
+                    <ng-content select="[header]"></ng-content>
+                </div>
+            </div>
+            <ng-content
+                    select="[body]"
+                    class="module-body overflow-auto flex-fill d-flex h-100"
+            ></ng-content>
+        </div>
+    </div>
+    <ng-content></ng-content>
+</div>
