@@ -26,7 +26,7 @@ import { SessionStorageService } from 'app/shared/services/session-storage.servi
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
-import { linkPalettes, createMapToColor } from './color-palette';
+import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
 
 
 @Component({
@@ -255,7 +255,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
       networkTrace.traces.map(({group}) => group),
-      {alpha: _ => 1, saturation: _ => 0.35},
+      {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
     const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
