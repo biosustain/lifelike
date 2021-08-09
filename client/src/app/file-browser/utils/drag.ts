@@ -1,4 +1,4 @@
-import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
+import { FilesystemObject, ProjectImpl, SANKEY_UNICODE } from '../models/filesystem-object';
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
 import { DragImage } from 'app/shared/utils/drag';
@@ -15,9 +15,11 @@ function createDragImage(label: string, fontAwesomeIconCode: string): DragImage 
   let width = paddingX * 2 + shadowSize;
   let height = paddingY * 2 + shadowSize;
 
+  // Specifies the correct font to use depending on whether the icon is in our custom kit or not
+  const fontAwesomeFont = fontAwesomeIconCode === SANKEY_UNICODE ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
   const iconTextElement = new TextElement(ctx, {
     text: fontAwesomeIconCode,
-    font: '900 16px "Font Awesome 5 Pro"',
+    font: `900 16px ${fontAwesomeFont}`,
     fillStyle: '#adb5bd',
   });
 

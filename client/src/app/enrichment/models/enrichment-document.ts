@@ -92,8 +92,9 @@ export class BaseEnrichmentDocument {
             return JSON.parse(s) as EnrichmentData;
           } catch (e) {
             // Old enrichment table format was just a string for the data
+            const split = s.split('/');
             return {
-              data: s,
+              data: {genes: split[0], taxId: split[1], organism: split[2], sources: split[3].split(',')},
             };
           }
         }),
@@ -104,28 +105,22 @@ export class BaseEnrichmentDocument {
 
   encode({importGenes, taxID, organism, domains, result}): EnrichmentData {
     return {
-      data: [
-        importGenes.join(','),
-        taxID,
+      data: {
+        genes: importGenes.join(','),
+        taxId: taxID,
         organism,
-        domains.join(','),
-      ].join('/'),
+        sources: domains
+      },
       result
     };
   }
 
   decode({data, ...rest}: EnrichmentData): EnrichmentParsedData {
     // parse the file content to get gene list and organism tax id and name
-    const resultArray = data.split('/');
-    const importGenes = resultArray[0].split(',');
-    const taxID = resultArray[1];
-    const organism = resultArray[2];
-    let domains = [];
-    // Ensure we aren't saving any empty strings to the `domains` list
-    if (resultArray.length > 3 && resultArray[3].length) {
-      // ...or, if we already have, filter out the empty values to avoid issues in the enrichment viewer
-      domains = resultArray[3].split(',').filter(domain => domain.length);
-    }
+    const importGenes = data.genes.split(',');
+    const taxID = data.taxId;
+    const organism = data.organism;
+    const domains = data.sources.filter(domain => domain.length);
     return {
       importGenes, taxID, organism, domains, ...rest
     };
@@ -270,8 +265,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       annotatedImported: synonym,
                       matched: node.name,
                       annotatedMatched: node.name,
-                      fullName: node.full_name,
-                      annotatedFullName: node.full_name,
+                      fullName: node.full_name || '',
+                      annotatedFullName: node.full_name || '',
                       link,
                       domains: this.generateGeneDomainResults(domains, domainWrapper, node)
                     });
@@ -286,7 +281,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '4',
+                  version: '5',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -449,7 +444,7 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '4';
+  version: '5';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }
@@ -459,7 +454,12 @@ export interface EnrichmentData {
    * @deprecated the filename does this job
    */
   name?: string;
-  data: string;
+  data: {
+    genes: string;
+    taxId: string;
+    organism: string;
+    sources: string[];
+  };
   result?: EnrichmentResult;
 }
 

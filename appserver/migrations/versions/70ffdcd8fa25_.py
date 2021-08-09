@@ -104,7 +104,20 @@ def data_upgrades():
         need_to_update = []
         for fid, annotations_json in chunk:
             new_annotations = []
-            annotations = annotations_json['documents'][0]['passages'][0]['annotations']
+
+            if type(annotations_json) is list:
+                # stage has bad data from previous bad implementation
+                annotations = annotations_json[0]['documents'][0]['passages'][0]['annotations']
+            else:
+                try:
+                    annotations = annotations_json['documents'][0]['passages'][0]['annotations']
+                except Exception:
+                    # odd that the where clause above failed to filter this out
+                    # is it possible '[]' in an update is different from default '[]'?
+                    # TODO: need new JIRA card to make a new NULLABLE annotations
+                    # column and copy the annotations over
+                    if annotations_json == '[]':
+                        continue
 
             for annotation in annotations:
                 anno_type = annotation['meta']['type']
@@ -120,7 +133,12 @@ def data_upgrades():
                     # probably from testing or something...
                     continue
                 new_annotations.append(annotation)
-            annotations_json['documents'][0]['passages'][0]['annotations'] = new_annotations
+
+            if type(annotations_json) is list:
+                # stage has bad data from previous bad implementation
+                annotations = annotations_json[0]['documents'][0]['passages'][0]['annotations'] = new_annotations  # noqa
+            else:
+                annotations_json['documents'][0]['passages'][0]['annotations'] = new_annotations
             need_to_update.append({'id': fid, 'annotations': annotations_json})
         try:
             session.bulk_update_mappings(Files, need_to_update)

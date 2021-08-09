@@ -135,18 +135,22 @@ class AnnotationService:
             keyword_ending_idx = param.token.hi_location_offset
             link_search_term = param.token.keyword
 
+            # TODO: clean this up, getting a bit messy
+            # trying to determine the hyperlink
+            hyperlink = ''
             # entity here is data structure from LMDB
             # see services/annotations/utils/lmdb.py for definition
             if not param.entity_id_hyperlink:
                 # assign to avoid line being too long
                 # can't use multi pycode ignore/noqa...
-                link = ENTITY_HYPERLINKS
+                link = cast(dict, ENTITY_HYPERLINKS)
                 try:
                     if param.entity['id_type'] == 'BioCyc':
                         # temp until LL-3296 is done
-                        hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
+                        linkval = link[param.entity['id_type']][param.token_type]
+                        hyperlink = linkval
                     else:
-                        hyperlink = link[param.entity['id_type']]
+                        hyperlink = link[param.entity['id_type']]  # type: ignore
                 except KeyError:
                     if param.entity['id_type'] == 'BioCyc':
                         e_type = DatabaseType.BIOCYC.value
@@ -155,7 +159,7 @@ class AnnotationService:
                     else:
                         raise
 
-                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in param.entity_id:  # noqa
+                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
                     hyperlink += param.entity_id[5:]  # type: ignore
                 else:
                     hyperlink += param.entity_id  # type: ignore
@@ -797,9 +801,7 @@ class AnnotationService:
 
         # clean species annotations first
         # because genes depend on them
-        species_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=species_annotations
-        )
+        species_annotations = self._clean_annotations(annotations=species_annotations)
 
         species_annotations_with_local = [anno for anno in species_annotations]
 
@@ -989,8 +991,7 @@ class AnnotationService:
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation],
-        **kwargs
+        annotations: List[Annotation]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)

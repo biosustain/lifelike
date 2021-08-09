@@ -33,17 +33,16 @@ from ..constants import LogEventType, TIMEZONE
 from ..database import (
     db,
     get_excel_export_service,
-    get_sorted_annotation_service,
     get_enrichment_table_service
 )
 from ..exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
-    FileContent,
     GlobalList,
     FallbackOrganism
 )
+from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
@@ -76,7 +75,8 @@ from ..services.annotations.initializer import (
     get_bioc_document_service,
     get_enrichment_annotation_service,
     get_manual_annotation_service,
-    get_recognition_service
+    get_recognition_service,
+    get_sorted_annotation_service
 )
 from ..services.annotations.sorted_annotation_service import (
     default_sorted_annotation,
@@ -84,7 +84,8 @@ from ..services.annotations.sorted_annotation_service import (
 )
 from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
-    get_global_inclusions_query
+    get_global_inclusions_query,
+    get_global_inclusions_count_query
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
@@ -523,6 +524,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         user_id=current_user.id,
                         enrichment=enrichment
                     )
+
+                    validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
                         'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
@@ -829,13 +832,13 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
-                'entity_id': inclusion['external_id'] if inclusion['external_id'] else inclusion['entity_id'],  # noqa
+                'entity_id': inclusion['entity_id'],
                 'reason': '',
                 'comment': ''
             }
 
         data = [get_inclusion_for_review(
-            inclusion, file_uuids_map, graph) for inclusion in inclusions]
+            inclusion, file_uuids_map, graph) for inclusion in inclusions if inclusion['file_reference'] in file_uuids_map]  # noqa
 
         exporter = get_excel_export_service()
         response = make_response(exporter.get_bytes(data), 200)
@@ -978,19 +981,24 @@ class GlobalAnnotationListView(MethodView):
             'synonym_id': i['syn_node_internal_id'],
             'creator': i['creator'],
             'file_uuid': i['file_reference'],
-            'file_deleted': True if file_uuids_map[i['file_reference']] else False,
+            # if not in this something must've happened to the file
+            # since a global inclusion referenced it
+            # so mark it as deleted
+            # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+            'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
             'type': ManualAnnotationType.INCLUSION.value,
             'creation_date': graph.convert_datetime(i['creation_date']),
             'text': i['synonym'],
             'case_insensitive': True,
             'entity_type': i['entity_type'],
-            'entity_id': i['external_id'] if i['external_id'] else i['entity_id'],
+            'entity_id': i['entity_id'],
             'reason': '',
             'comment': ''
         } for i in global_inclusions]
 
         results = {
-            'total': len(data),
+            'total': exclusions.total + graph.exec_read_query(
+                get_global_inclusions_count_query())[0]['total'],
             # have to reorder again since we're combining from
             # two different data sources
             'results': sorted(data, key=lambda d: d['text'].lower())

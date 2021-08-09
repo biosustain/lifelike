@@ -133,16 +133,16 @@ const routes: Routes = [
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {
-    path: 'projects/:project_name/trace/:file_id/:id',
+    path: 'projects/:project_name/trace/:file_id/:trace_hash',
     canActivate: [AuthGuard],
     component: TraceViewComponent,
     data: {
       title: 'Trace details',
-      fontAwesomeIcon: 'file-chart-line',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {
