@@ -65,19 +65,17 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
-import {
-  DATA_TRANSFER_DATA_PROVIDER,
-  DataTransferDataService,
-} from './services/data-transfer-data.service';
+import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-
-} from './services/highlight-text.service';
+import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
+import { TabComponent } from './components/tab/tab.component';
+import { ObjectPathComponent } from './components/object-path/object-path.component';
+import { ObjectMenuComponent } from './components/object-menu/object-menu.component';
+import { ProjectIconComponent } from './components/project-icon/project-icon.component';
+import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -122,6 +120,10 @@ const components = [
   OrganismComponent,
   ResultControlComponent,
   PaginationComponent,
+  ObjectPathComponent,
+  ObjectMenuComponent,
+  ProjectIconComponent,
+  ProjectMenuComponent,
 ];
 
 @NgModule({
@@ -152,6 +154,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
+    TabComponent,
   ],
   providers: [
     ApiService,
@@ -201,6 +204,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
+    TabComponent,
   ],
 })
 export class SharedModule {
