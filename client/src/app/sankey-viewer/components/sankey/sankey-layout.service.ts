@@ -87,6 +87,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   py; // nodePadding
 
   fontSize = 12;
+  fontSizeScale = 1.0;
 
   nodeSort;
   linkSort;
