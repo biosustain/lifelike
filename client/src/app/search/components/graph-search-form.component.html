@@ -20,7 +20,7 @@
           Domains:
         </label>
         <div class="d-flex flex-column">
-          <app-select formId="domain" [choices]="domainChoices" style="width: 200px"
+          <app-select formId="domain" [choices]="domainChoices"
                       [values]="form.value.domains" (valuesChange)="form.get('domains').setValue($event)"
                       (touch)="form.get('domains').markAsDirty()"
                       [choiceLabel]="choiceLabel">
@@ -36,7 +36,7 @@
         </label>
 
         <div class="d-flex flex-column">
-          <app-select formId="entity-types" [choices]="entityChoices" style="width: 200px"
+          <app-select formId="entity-types" [choices]="entityChoices"
                       [values]="form.value.entities" (valuesChange)="form.get('entities').setValue($event)"
                       (touch)="form.get('entities').markAsDirty()"
                       [choiceLabel]="choiceLabel">
