@@ -4,7 +4,7 @@ import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotati
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { cloneDeep } from 'lodash';
@@ -34,7 +34,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     entityType: new FormControl('', Validators.required),
     id: new FormControl(''),
     source: new FormControl(DatabaseType.NONE, Validators.required),
-    sourceLink: new FormControl(''),
+    sourceLinks: new FormArray([]), // new FormControl(''),
     includeGlobally: new FormControl(false),
   });
   caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
@@ -112,5 +112,15 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   enableTextField() {
     this.isTextEnabled = true;
     this.form.controls.text.enable();
+  }
+
+  deleteSourceLink(index: number) {
+    const links = this.form.get('sourceLinks') as FormArray;
+    links.removeAt(index);
+  }
+
+  addSourceLink() {
+    const links = this.form.get('sourceLinks') as FormArray;
+    links.push(new FormGroup({label: new FormControl(''), link: new FormControl('')}));
   }
 }
