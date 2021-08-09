@@ -6,6 +6,11 @@ interface SankeyNode {
   label?: string;
   type?: string;
 
+  // Temp definitions to fix LL-3499
+  sourceLinks?: Array<SankeyLink>;
+  targetLinks?: Array<SankeyLink>;
+  // End temp definitions
+
   // region Used internally to compute layout
   _index?: number;
   _sourceLinks?: Array<SankeyLink>;
