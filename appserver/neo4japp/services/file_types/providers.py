@@ -566,9 +566,10 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
-            if edge.get('data'):
-                url_data = edge['data'].get('hyperlinks', []) + edge['data'].get('sources', [])
-                url = next((src['url'] for src in url_data[::-1]), "")
+            edge_data = edge.get('data', {})
+            url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
+            url = next((src['url'] for src in url_data[::-1]), "")
+            url = url_data[-1]['url'] if len(url_data) else ''
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
                 default_line_style = 'dashed'
@@ -775,9 +776,8 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         data = json.load(buffer)
         content = io.StringIO()
 
-        data_tokens = data['data'].split('/')
-        genes = data_tokens[0].split(',')
-        organism = data_tokens[2]
+        genes = data['data']['genes'].split(',')
+        organism = data['data']['organism']
         content.write(', '.join(genes))
         content.write('\r\n\r\n')
         content.write(organism)
