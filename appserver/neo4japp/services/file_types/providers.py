@@ -9,6 +9,7 @@ from typing import Optional, List
 import textwrap
 import graphviz
 import requests
+import svg_stack
 
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -612,6 +613,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             merger = self.merge_pngs_vertically
         elif requested_format == 'pdf':
             merger = self.merge_pdfs
+        elif requested_format == 'svg':
+            merger = self.merge_svgs
         else:
             raise ValidationError("Unknown or invalid export format for the requested file.",
                                   requested_format)
@@ -661,8 +664,8 @@ class MapTypeProvider(BaseFileTypeProvider):
     def merge_pdfs(self, files: list, links=None):
         """ Merge pdfs and add links to map.
         params:
-        :param files - list of files to export.
-        :param links - list of dicts describing internal map links
+        :param files: list of files to export.
+        :param links: list of dicts describing internal map links
         """
         links = links or []
         final_bytes = io.BytesIO()
@@ -683,6 +686,21 @@ class MapTypeProvider(BaseFileTypeProvider):
                            [x_base - half_size, y_base - half_size - LABEL_OFFSET,
                             x_base + half_size, y_base + half_size])
         writer.write(final_bytes)
+        return final_bytes
+
+    def merge_svgs(self, files: list, links=None):
+        """ Merge svg files together with svg_stack
+        params:
+        :param files: list of files to be merged
+        :param links: list of links to be included in the document
+        """
+        final_bytes = io.BytesIO()
+        outfile = svg_stack.Document()
+        layout2 = svg_stack.VBoxLayout()
+        for file in files:
+            layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
+        outfile.setLayout(layout2)
+        outfile.save(final_bytes)
         return final_bytes
 
 

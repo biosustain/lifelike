@@ -13,7 +13,7 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input() title = 'Export';
 
   private _exporters: Exporter[];
-  private _linkedExporters  = ['PDF', 'PNG'];
+  private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
 
   readonly form: FormGroup = new FormGroup({
     exporter: new FormControl(null, Validators.required),
