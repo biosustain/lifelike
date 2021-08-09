@@ -1,5 +1,5 @@
 <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
-    <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
     Normalize links
@@ -14,11 +14,11 @@
   {{options.fontSize}}
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-    <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
     Min node height
-    <input [(ngModel)]="options.nodeHeight.min.value" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.nodeHeight.min.value" (ngModelChange)="update()"
            [disabled]="!options.nodeHeight.min.enabled"
            max="20" min="0"
            ngbButton
@@ -26,11 +26,11 @@
     {{options.nodeHeight.min.value}}
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-    <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
     Max node ratio
-    <input [(ngModel)]="options.nodeHeight.max.ratio" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.nodeHeight.max.ratio" (ngModelChange)="update()"
            [disabled]="!options.nodeHeight.max.enabled"
            max="60" min="1"
            ngbButton
@@ -38,11 +38,11 @@
     {{options.nodeHeight.max.ratio}}
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
     Max shown label characters
-    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update($event)"
+    <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update()"
            [disabled]="!options.labelEllipsis.enabled"
            max="50" min="0"
            ngbButton
@@ -50,8 +50,8 @@
     {{options.labelEllipsis.value}}
 </label>
 <div class="dropdown-divider"></div>
-<div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup name="link"
-     [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate($event)" title="Link size">
+<div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup [name]="'link' + uuid"
+     [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()" title="Link size">
     <div class="mb-1">Link Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueGenerators">
@@ -65,8 +65,8 @@
     </label>
 </div>
 <div class="dropdown-divider"></div>
-<div class="form-check" ngbRadioGroup name="node"
-     [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate($event)" title="Node fixed size">
+<div class="form-check" ngbRadioGroup [name]="'node' + uuid"
+     [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()" title="Node fixed size">
     <div class="mb-1">Node Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueGenerators">
@@ -80,10 +80,18 @@
     </label>
 </div>
 <div class="dropdown-divider"></div>
-<div class="form-check" ngbRadioGroup name="prescaler"
-     [(ngModel)]="options.selectedPrescaler" (ngModelChange)="update($event)" title="Prescaler">
+<div class="form-check" ngbRadioGroup [name]="'prescaler' + uuid"
+     [(ngModel)]="options.selectedPrescaler" (ngModelChange)="update()" title="Prescaler">
     <div class="mb-1">Prescaler:</div>
     <label ngbButtonLabel *ngFor="let prescaler of options.prescalers" [title]="prescaler.description" class="mb-0">
         <input ngbButton type="radio" [value]="prescaler"> {{prescaler.name}}
+    </label>
+</div>
+<div class="dropdown-divider"></div>
+<div class="form-check" ngbRadioGroup [name]="'linkPalette' + uuid"
+     [(ngModel)]="options.selectedLinkPalette" (ngModelChange)="update()" title="Link palette">
+    <div class="mb-1">Link palette:</div>
+    <label ngbButtonLabel *ngFor="let palette of options.linkPalettes" class="mb-0" [style.textAlign]="'left'">
+        <input ngbButton type="radio" [value]="palette"> {{palette.name}}
     </label>
 </div>

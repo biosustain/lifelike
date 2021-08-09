@@ -1,30 +1,32 @@
-import { Component, EventEmitter, OnDestroy, ViewChild, isDevMode } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import * as CryptoJS from 'crypto-js';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map } from 'rxjs/operators';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
 import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { parseForRendering, isPositiveNumber, createMapToColor } from './utils';
+import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
-import { cubehelix } from 'd3';
-import visNetwork from 'vis-network';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
+import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
 
 
 @Component({
@@ -115,7 +117,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     selectedNodeValueAccessor: undefined,
     selectedPredefinedValueAccessor: undefined,
     prescalers,
-    selectedPrescaler: prescalers[0],
+    selectedPrescaler: prescalers.default,
+    linkPalettes,
+    selectedLinkPalette: linkPalettes.default,
     labelEllipsis: {
       enabled: true,
       value: SankeyLayoutService.labelEllipsis
@@ -140,6 +144,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
+    this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -198,72 +203,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  parseTraceDetails(trace) {
-    const {
-      sankeyData: {
-        nodes: mainNodes
-      },
-      sankeyLayout: {
-        nodeLabel,
-        nodeLabelShort
-      }
-    } = this;
-
-    const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
-      from,
-      to,
-      id: uuidv4(),
-      arrows: 'to',
-      label: d.type,
-      ...(d || {})
-    }));
-    const nodeIds = [...edges.reduce((nodesSet, {from, to}) => {
-      nodesSet.add(from);
-      nodesSet.add(to);
-      return nodesSet;
-    }, new Set())];
-    const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
-      const node = mainNodes.find(({id}) => id === nodeId);
-      if (node) {
-        const color = cubehelix(node._color);
-        color.s = 0;
-        const label = nodeLabel(node);
-        if (isDevMode() && !label) {
-          console.error(`Node ${node.id} has no label property.`, node);
-        }
-        const {_sourceLinks, _targetLinks, sourceLinks, targetLinks, ...otherProperties} = node;
-        return {
-          ...otherProperties,
-          color: '' + color,
-          databaseLabel: node.type,
-          label: nodeLabelShort(node),
-          title: label
-        };
-      } else {
-        console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
-        return {
-          id: nodeId,
-          label: nodeId,
-          databaseLabel: 'Implicitly defined',
-          color: 'red'
-        };
-      }
-    });
-
-    return {
-      ...trace,
-      nodes,
-      edges
-    };
-  }
-
   gotoDynamic(trace) {
-    const traceDetails = this.parseTraceDetails(trace);
-    const id = this.sessionStorage.set(traceDetails);
-    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${id}`;
-    this.workSpaceManager.navigateByUrl(url, {
-      sideBySide: true, newTab: true
-    });
+    const hash = CryptoJS.MD5(JSON.stringify({
+      ...this.selectedNetworkTrace,
+      traces: [],
+      source: trace.source,
+      target: trace.target
+    })).toString();
+    const url = `/projects/${this.object.project.name}/trace/${this.object.hashId}/${hash}`;
+
+    window.open(url);
   }
 
   getJSONDetails(details) {
@@ -273,7 +222,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   getNodeById(nodeId) {
     return (this.filteredSankeyData.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
   }
-
 
   open(content) {
     this.modalService.open(content, {
@@ -305,9 +253,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
+    const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
       networkTrace.traces.map(({group}) => group),
-      {alpha: _ => 1, saturation: _ => 0.35}
+      {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
+      palette
     );
     const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
@@ -446,18 +396,26 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
         description: name,
         callback: () => {
+          const { options } = this;
+          const {
+            nodeValueAccessors,
+            nodeValueGenerators,
+            linkValueAccessors,
+            linkValueGenerators
+          } = options;
           if (node_sizing) {
-            const nodeValueAccessor = this.options.nodeValueAccessors.find(({description}) => description === node_sizing);
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+            options.selectedNodeValueAccessor = nodeValueAccessors.find(
+              ({description}) => description === node_sizing
+            );
           } else {
-            const nodeValueAccessor = this.options.nodeValueGenerators[0];
-            this.options.selectedNodeValueAccessor = nodeValueAccessor;
+            options.selectedNodeValueAccessor = nodeValueGenerators[0];
           }
           if (link_sizing) {
-            const linkValueAccessor = this.options.linkValueAccessors.find(({description}) => description === link_sizing);
-            this.options.selectedLinkValueAccessor = linkValueAccessor;
+            options.selectedLinkValueAccessor = linkValueAccessors.find(
+              ({description}) => description === link_sizing
+            );
           } else {
-            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[1];
+            options.selectedLinkValueAccessor = linkValueGenerators[1];
           }
           this.onOptionsChange();
         }
