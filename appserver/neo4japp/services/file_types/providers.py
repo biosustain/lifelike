@@ -689,20 +689,21 @@ class MapTypeProvider(BaseFileTypeProvider):
         writer.write(final_bytes)
         return final_bytes
 
-    def merge_svgs(self, files: list, links=None):
+    def merge_svgs(self, files: list, _=None):
         """ Merge svg files together with svg_stack
         params:
         :param files: list of files to be merged
-        :param links: list of links to be included in the document
+        :param _: links: omitted in case of svg, added to match the merge_pdfs signature
         """
-        final_bytes = io.BytesIO()
-        outfile = svg_stack.Document()
+        doc = svg_stack.Document()
         layout2 = svg_stack.VBoxLayout()
+        # String is used, since svg_stack cannot save to IOBytes - raises an error
+        result_string = io.StringIO()
         for file in files:
             layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
-        outfile.setLayout(layout2)
-        outfile.save(final_bytes)
-        return final_bytes
+        doc.setLayout(layout2)
+        doc.save(result_string)
+        return io.BytesIO(result_string.getvalue().encode('utf-8'))
 
 
 class SankeyTypeProvider(BaseFileTypeProvider):
