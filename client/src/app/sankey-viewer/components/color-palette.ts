@@ -3,6 +3,10 @@ import { isDevMode } from '@angular/core';
 import { cubehelix } from 'd3';
 import { ArrayWithDefault, Palette } from './interfaces';
 
+export const DEFAULT_SATURATION = 0.35;
+export const DEFAULT_LIGHTNESS = 0.75;
+export const DEFAULT_ALPHA = 1;
+
 export const christianColors = [
   '#1CE6FF', '#FF34FF', '#FF4A46', '#008941', '#006FA6', '#A30059', '#FFFF00',
   '#FFDBE5', '#7A4900', '#0000A6', '#63FFAC', '#B79762', '#004D43', '#8FB0FF', '#997D87',
@@ -37,9 +41,9 @@ export const colorPaletteGenerator = (
   size,
   {
     hue = (i, n) => i / n,
-    saturation = (_i, _n) => 0.35,
-    lightness = (_i, _n) => 0.75,
-    alpha = (_i, _n) => 1
+    saturation = (_i, _n) => DEFAULT_SATURATION,
+    lightness = (_i, _n) => DEFAULT_LIGHTNESS,
+    alpha = (_i, _n) => DEFAULT_ALPHA
   } = {}
 ) => {
   return i => cubehelix(
@@ -93,11 +97,11 @@ export const expandingColorPalletGenerator = (
   // 3d table (hueSteps x saturationSteps x lightnessSteps) walk based on i
   const hue = i => i % hueSteps / hueSteps;
   const saturation = i => skewNorm(
-    0, 1, 0.35, saturationSteps,
+    0, 1, DEFAULT_SATURATION, saturationSteps,
     (i / hueSteps) % saturationSteps
   );
   const lightness = i => skewNorm(
-    0.2, 0.8, 0.75, lightnessSteps,
+    0.2, 0.8, DEFAULT_LIGHTNESS, lightnessSteps,
     (i / hueSteps / saturationSteps) % lightnessSteps
   );
   return colorPaletteGenerator(size, {
