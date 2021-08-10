@@ -6,7 +6,7 @@
 >
     <ng-container header>
         <div class="btn-group ml-auto mr-2 d-flex align-items-stretch">
-            <div ngbDropdown container="body" class="d-flex align-items-stretch">
+            <div ngbDropdown container="body" class="d-flex align-items-stretch btn-group">
                 <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle>
                     <i class="fa fa-fw fa-search"></i>
                 </button>
@@ -53,7 +53,7 @@
             </ng-template>
         </div>
         <div class="btn-group" role="group">
-            <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
+            <div ngbDropdown class="d-inline-block btn-group" #dropdown placement="bottom-right" container="body">
                 <button class="btn btn-secondary" [id]="id + '-filters-dropdown'" ngbDropdownToggle>
                     <i class="fa fa-fw fa-filter"></i>
                 </button>

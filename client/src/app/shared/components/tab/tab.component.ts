@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output, TemplateRef } from '@angular/core';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { TaskStatus } from '../../rxjs/background-task';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
@@ -11,9 +11,9 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
 export class TabComponent {
   @Input() status: TaskStatus;
   @Input() object: FilesystemObject;
+  @Input() header: string|TemplateRef<any>;
   requestRefresh;
   returnUrl: string;
-  title: string;
   @Output() dragStarted: EventEmitter<any>;
 
   constructor(

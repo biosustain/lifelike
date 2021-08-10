@@ -17,15 +17,20 @@
                     <app-object-path [object]="object?.parent" [newTab]="true"></app-object-path>
                 </div>
                 <div class="module-title-bar">
-                    <button type="button" class="module-title-bar-back mr-2" [appLink]="returnUrl" *ngIf="returnUrl">
+                    <button type="button" class="module-title-bar-back mr-2 ml-0" [appLink]="returnUrl"
+                            *ngIf="returnUrl">
                         <i class="fa fa-fw fa-arrow-left"></i>
                     </button>
-                    <h1 class="toolbar-title text-truncate mr-1" draggable="true"
+                    <h1 class="toolbar-title text-truncate mr-1 ml-0" draggable="true"
                         (dragstart)="dragStarted.next($event)">
-                        {{ title || object?.filename }}
+                        <span #tabTitle>
+                            <ng-content select="[tabTitle]"></ng-content>
+                        </span>
+                        <ng-container *ngIf="!tabTitle.childNodes.length">
+                            {{ object?.filename }}
+                        </ng-container>
                     </h1>
-
-                    <div ngbDropdown class="d-inline-block mr-4" container="body">
+                    <div ngbDropdown class="d-inline-block mr-4 ml-0" container="body">
                         <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                             <i class="fas fa-chevron-down fa-fw text-icon"></i>
                         </a>
@@ -36,9 +41,9 @@
                             <ng-content select="[objectMenu]"></ng-content>
                         </div>
                     </div>
-                    <button class="btn btn-secondary ml-2" (click)="openNewWindow()">
-                        <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
-                    </button>
+                    <button class="btn btn-secondary ml-2 mr-0" (click)="openNewWindow()">
+                            <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+                        </button>
                     <ng-content select="[header]"></ng-content>
                 </div>
             </div>

@@ -1,4 +1,5 @@
-<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [object]="object" [title]="title">
+<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [object]="object">
+    <ng-container tabTitle>{{ title }}</ng-container>
     <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
                          style="z-index: 2">
         <div>
@@ -6,8 +7,8 @@
         </div>
     </app-module-progress>
 
-    <div class="d-flex" header>
-        <div class="d-flex align-items-center mr-3">
+    <ng-container header>
+        <div class="d-flex align-items-center px-3 mx-auto">
             <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" [id]="id + '-toggle-shown-text-checkbox'"
                        [checked]="false"
@@ -16,7 +17,7 @@
                     Names</label>
             </div>
         </div>
-        <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
+        <div class="btn-group ml-auto d-flex align-items-stretch ml-auto" role="group">
             <button class="btn btn-secondary text-nowrap"
                     ngbTooltip="Copy Cloud to Clipboard"
                     placement="bottom top left right"
@@ -58,7 +59,7 @@
                 </app-sorting-algorithms>
             </div>
         </div>
-    </div>
+    </ng-container>
 
     <as-split body unit="pixel"
               direction="horizontal"
