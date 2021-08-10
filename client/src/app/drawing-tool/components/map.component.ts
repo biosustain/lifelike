@@ -36,7 +36,8 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
-// import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
+import JSZip from "jszip";
+import { unzip } from 'zlib';
 
 @Component({
   selector: 'app-map',
@@ -186,19 +187,26 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
-    ).subscribe(graph => {
-      this.graphCanvas.setGraph(graph);
-      this.graphCanvas.zoomToFit(0);
-
-      if (this.highlightTerms != null && this.highlightTerms.length) {
-        this.graphCanvas.highlighting.replace(
-          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-        );
-      }
-    }, e => {
-      // Data is corrupt
-      // TODO: Prevent the user from editing or something so the user doesnt lose data?
-    }));
+      ).subscribe(graph => {
+        this.graphCanvas.setGraph(graph);
+        this.graphCanvas.zoomToFit(0);
+        
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+            );
+          }
+        }, e => {
+          // Data is corrupt
+          // TODO: Prevent the user from editing or something so the user doesnt lose data?
+        }));
+        
+    /*
+    var unzipped = new JSZip();
+    unzipped.loadAsync(this.contentValue).then(function (zip) {
+      console.log(zip);
+    });
+    */
   }
 
   registerGraphBehaviors() {
