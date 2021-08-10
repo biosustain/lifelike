@@ -1,6 +1,6 @@
 <app-tab *ngIf="(loadTask.status$ | async) as status"
-         [status]="status" [object]="object"
-         [title]="'Statistical Enrichment'">
+         [status]="status" [object]="object">
+    <ng-container #tabTitle>Statistical Enrichment</ng-container>
     <div body class="module-body flex-fill overflow-auto space-cards">
         <app-group
                 *ngFor="let d of data | keyvalue: originalOrder; let i = index"
