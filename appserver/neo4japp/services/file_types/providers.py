@@ -515,9 +515,9 @@ class MapTypeProvider(BaseFileTypeProvider):
             if node.get('link'):
                 params['href'] = node['link']
             elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][-1].get('url')
+                params['href'] = node['data']['hyperlinks'][0].get('url')
             elif node['data'].get('sources'):
-                params['href'] = node['data']['sources'][-1].get('url')
+                params['href'] = node['data']['sources'][0].get('url')
             current_link = params.get('href', "").strip()
             # If url points to internal file, append it with the domain address
             if current_link.startswith('/'):
