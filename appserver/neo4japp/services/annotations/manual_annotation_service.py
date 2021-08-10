@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import current_app
 from neo4j.exceptions import ServiceUnavailable
 from typing import List
+from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -65,35 +66,35 @@ class ManualAnnotationService:
 
         Returns the added inclusions.
         """
-        primary_name = ''
+        primary_name = custom_annotation['meta']['allText']
         entity_id = custom_annotation['meta']['id']
         entity_type = custom_annotation['meta']['type']
-        try:
-            if entity_type in [
-                EntityType.ANATOMY.value,
-                EntityType.DISEASE.value,
-                EntityType.FOOD.value,
-                EntityType.PHENOMENA.value,
-                EntityType.PHENOTYPE.value,
-                EntityType.CHEMICAL.value,
-                EntityType.COMPOUND.value,
-                EntityType.GENE.value,
-                EntityType.PROTEIN.value,
-                EntityType.SPECIES.value
-            ]:
-                primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
-            else:
-                primary_name = custom_annotation['meta']['allText']
-        except KeyError:
-            primary_name = custom_annotation['meta']['allText']
-        except (BrokenPipeError, ServiceUnavailable):
-            raise
-        except Exception:
-            raise AnnotationError(
-                title='Failed to Create Custom Annotation',
-                message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+
+        if entity_id:
+            try:
+                if entity_type in [
+                    EntityType.ANATOMY.value,
+                    EntityType.DISEASE.value,
+                    EntityType.FOOD.value,
+                    EntityType.PHENOMENA.value,
+                    EntityType.PHENOTYPE.value,
+                    EntityType.CHEMICAL.value,
+                    EntityType.COMPOUND.value,
+                    EntityType.GENE.value,
+                    EntityType.PROTEIN.value,
+                    EntityType.SPECIES.value
+                ]:
+                    primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
+            except KeyError:
+                pass
+            except (BrokenPipeError, ServiceUnavailable):
+                raise
+            except Exception:
+                raise AnnotationError(
+                    title='Failed to Create Custom Annotation',
+                    message='A system error occurred while creating the annotation, '
+                            'we are working on a solution. Please try again later.',
+                    code=500)
 
         annotation_to_add = {
             **custom_annotation,
@@ -380,6 +381,9 @@ class ManualAnnotationService:
                             'the data is corrupted. Please try again.',
                     code=500)
 
+            if entity_id == '':
+                entity_id = f'NULL-{str(uuid4())}'
+
             createval = {
                 'entity_type': entity_type,
                 'entity_id': entity_id,
@@ -419,7 +423,8 @@ class ManualAnnotationService:
                     EntityType.COMPOUND.value: get_create_compound_global_inclusion_query(),
                     EntityType.GENE.value: get_create_gene_global_inclusion_query(),
                     EntityType.PROTEIN.value: get_create_protein_global_inclusion_query(),
-                    EntityType.SPECIES.value: get_create_species_global_inclusion_query()
+                    EntityType.SPECIES.value: get_create_species_global_inclusion_query(),
+                    EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
                 }
 
                 query = queries.get(entity_type, '')
@@ -479,14 +484,15 @@ class ManualAnnotationService:
             EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
             EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
             EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query(),
-            EntityType.SPECIES.value: get_species_global_inclusion_exist_query()
+            EntityType.SPECIES.value: get_species_global_inclusion_exist_query(),
+            EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
         }
 
         # query can be empty string because some entity types
         # do not exist in the normal domain/labels
         query = queries.get(values['entity_type'], '')
         try:
-            result = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+            check = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception:
@@ -495,12 +501,12 @@ class ManualAnnotationService:
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
-        if result['node_exist']:
-            return result
+        if check['node_exist']:
+            return check
         else:
             try:
                 query = get_lifelike_global_inclusion_exist_query(values['entity_type'])
-                result = self.graph.exec_read_query_with_params(query, values)[0]
+                check = self.graph.exec_read_query_with_params(query, values)[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise
             except Exception:
@@ -509,7 +515,7 @@ class ManualAnnotationService:
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 
-        return result
+        return check
 
     def _global_annotation_exists(self, annotation, inclusion_type):
         global_annotations = GlobalList.query.filter_by(type=inclusion_type).all()
