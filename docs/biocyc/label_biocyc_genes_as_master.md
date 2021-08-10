@@ -17,7 +17,7 @@ merge (n)-[:HAS_TAXONOMY]->(t);
 
 - associate with taxonomy and GO
 ```
-match(n:db_PseudomonasCyc:Gene)-[:ENCODES]-()-[r:GO_LINK]->(go) merge (n)-[:GO_LINK]->(go);
+match(n:db_PseudomonasCyc:Gene)-[:ENCODES]-()-[r:GO_LINK]->(go) merge (n)-[r:GO_LINK]->(go) set r.tax_id=n.tax_id;
 ```
 - create links with STRING
 ```
