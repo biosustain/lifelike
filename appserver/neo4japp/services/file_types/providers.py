@@ -432,7 +432,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['label'] = '\n'.join(
                             textwrap.TextWrapper(
                                     width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                                    replace_whitespace=False).wrap(detail_text))
+                                    replace_whitespace=False).wrap(detail_text)) + '\n'
+                    # Align the text to the left with Graphviz custom escape sequence '\l'
+                    params['label'] = params['label'].replace('\n', r'\l')
                     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                      {'bgcolor': 'black'}
                                                                      ).get('bgcolor')
