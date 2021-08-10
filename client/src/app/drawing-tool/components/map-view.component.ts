@@ -16,10 +16,11 @@ import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
-import { MAP_MIMETYPE } from '../providers/map.type-provider';
+import { MAP_MIMETYPE, MAP_SHORTHAND } from '../providers/map.type-provider';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { first } from 'rxjs/operators';
+import JSZip from 'jszip';
 
 @Component({
   selector: 'app-map-view',
@@ -82,6 +83,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    * zip the map w/ images
                    * unzip the map, populate image from `image_id`
                    */
+    /*
     let image_hashes = new Set();
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image node
@@ -108,15 +110,72 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     if (image_hashes.size !== 0) {
       // TODO: save images. Otherwise no images so move on with regular save
     }
+    */
 
+    /*
     const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
       type: MAP_MIMETYPE,
     }); // change this blob to include images (and zip it)
+    */
 
-    // Push to backend to save
-    this.filesystemService.save([this.locator], {
-      contentValue,
-    })
+    /** an example that might be working
+     * var zip = new JSZip();
+     * zip.file("Hello.txt", "Hello World\n");
+     * var img = zip.folder("images");
+     * img.file("smile.gif", imgData, {base64: true});
+     * var content = zip.generate();
+     * location.href="data:application/zip;base64,"+content;
+     */
+
+    let mapImages = new Map();
+    for (const node of this.graphCanvas.getGraph().nodes) {
+      if (node.image_id !== undefined) { // is image node
+        mapImages.set(node.image_id, node.image_id);
+        let oneImage$: Observable<CanvasImageSource> = this.mapImageProviderService.get(node.image_id)
+        oneImage$.pipe(first()) // only take the first element
+          .subscribe({
+            async next(img) {
+              img = img as HTMLImageElement;
+              let imageBlob = await fetch(img.src).then(r => r.blob()); // TODO: wait til this is done before moving on
+              console.log(imageBlob.type.substring(imageBlob.type.indexOf("/") + 1));
+              mapImages.set(node.image_id, imageBlob);
+            },
+            error(msg) {
+              console.error("error with subscriber: " + msg);
+              // should we abort the save function as well?
+            }
+          });
+      }
+    } // at this point, `mapImages` has `image_id`s -> `image blob`s
+
+    const contentValue = new JSZip();
+    // look for zipping byte array or input streams, or make a tmp dir and zip from that
+    const imgs = contentValue.folder("images");
+    for (const id of mapImages) {
+      const actualImg = mapImages.get(id);
+      console.log("when zipping images");
+      console.log(actualImg);
+      imgs.file(id + actualImg.type.substring(actualImg.type.indexOf("/") + 1), actualImg, {base64: true});
+    }
+
+    contentValue.generateAsync({type: MAP_SHORTHAND})
+      .then((contentValue) => {
+        this.filesystemService.save([this.locator], {contentValue})
+          .pipe(this.errorHandler.create({label: "Update Map"}))
+          .subscribe(() => {
+            this.unsavedChanges$.next(false);
+            this.emitModuleProperties();
+            this.snackBar.open('Map saved.', null, {
+              duration: 2000,
+            });
+          })
+      })
+      /*
+
+      // Push to backend to save
+      this.filesystemService.save([this.locator], {
+        contentValue,
+      })
       .pipe(this.errorHandler.create({label: 'Update map'}))
       .subscribe(() => {
         this.unsavedChanges$.next(false);
@@ -125,6 +184,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
           duration: 2000,
         });
       });
+      */
   }
 
   openCloneDialog() {
