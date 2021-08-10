@@ -557,7 +557,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         ext = f".{format}"
 
         return FileExport(
-                content=io.BytesIO(graph.pipe()),
+                content=io.BytesIO(graph.pipe(renderer='cairo')),
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
