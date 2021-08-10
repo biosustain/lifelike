@@ -1,23 +1,27 @@
 import { sum } from 'd3-array';
 
 interface Direction {
-  linksAccessor: string;
+  nextLinksAccessor: string;
+  prevLinksAccessor: string;
   nodeAccessor: string;
 }
 
 const ltr = {
-  linksAccessor: '_sourceLinks',
+  nextLinksAccessor: '_sourceLinks',
+  prevLinksAccessor: '_targetLinks',
   nodeAccessor: '_target'
 } as Direction;
 
 const rtl = {
-  linksAccessor: '_targetLinks',
+  nextLinksAccessor: '_targetLinks',
+  prevLinksAccessor: '_sourceLinks',
   nodeAccessor: '_source'
 } as Direction;
 
 export class DirectedTraversal {
   direction: Direction;
   startNodes: Array<any>;
+  private endNodes: Array<any>;
 
   constructor([inNodes, outNodes]) {
     // figure out if we traverse ltr or rtl based on the number of nodes on each side (and their links)
@@ -31,14 +35,33 @@ export class DirectedTraversal {
     )) < 0) {
       this.direction = ltr;
       this.startNodes = inNodes;
+      this.endNodes = outNodes;
     } else {
       this.direction = rtl;
       this.startNodes = outNodes;
+      this.endNodes = inNodes;
     }
   }
 
+  reverse() {
+    const { direction, startNodes, endNodes } = this;
+    this.direction = direction === rtl ? ltr : rtl;
+    this.startNodes = endNodes;
+    this.endNodes = startNodes;
+  }
+
+  depthSorter(asc = true) {
+    const { direction } = this;
+    const sortDirection = Math.pow(-1, Number(asc !== (direction === ltr)));
+    return (a, b) => sortDirection * (a.depth - b.depth);
+  }
+
   nextLinks(node) {
-    return node[this.direction.linksAccessor];
+    return node[this.direction.nextLinksAccessor];
+  }
+
+  prevLinks(node) {
+    return node[this.direction.prevLinksAccessor];
   }
 
   nextNode(link) {
