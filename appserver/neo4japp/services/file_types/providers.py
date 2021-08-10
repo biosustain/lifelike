@@ -424,6 +424,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             }
 
             if node['label'] in ['map', 'link', 'note']:
+                link_data = node['data'].get('hyperlinks', []) + node['data'].get('sources')
+                node['link'] = link_data[-1].get('url') if link_data else None
                 if style.get('showDetail'):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
@@ -510,10 +512,10 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node.get('link'):
                 params['href'] = node['link']
-            elif node['data'].get('sources'):
-                params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
                 params['href'] = node['data']['hyperlinks'][-1].get('url')
+            elif node['data'].get('sources'):
+                params['href'] = node['data']['sources'][-1].get('url')
             current_link = params.get('href', "").strip()
             # If url points to internal file, append it with the domain address
             if current_link.startswith('/'):
