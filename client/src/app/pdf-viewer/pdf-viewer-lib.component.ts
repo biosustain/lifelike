@@ -431,15 +431,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
-    if (an.meta.id) {
-      if (an.meta.idHyperlink) {
-        base.push(`Id: <a href=${escape(an.meta.idHyperlink)} target="_blank">${escape(an.meta.id)}</a>`);
-      } else {
-        base.push(`Id: ${escape(an.meta.id)}`);
-      }
-    }
+    base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
+    base.push(an.meta.idHyperlink ? `Source Link: <a href=${escape(an.meta.idHyperlink)} target="_blank">Click here</a>` : 'Source Link: None');
+
     if (an.meta.idType) {
-      base.push(`Id Type: ${escape(an.meta.idType)}`);
+      base.push(`Data Source: ${escape(an.meta.idType)}`);
     }
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
