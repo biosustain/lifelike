@@ -61,7 +61,7 @@ class MeshParser(BaseParser):
 
     def _load_treenumber(self, from_database, to_database):
         self.logger.info("Load treenumber nodes")
-        query = "match(t:TreeNumber) return t.label as id"
+        query = f"match(t:TreeNumber) return t.label as {PROP_ID}"
         df = from_database.get_data(query)
         df[PROP_OBSOLETE] = df[PROP_ID].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -70,7 +70,7 @@ class MeshParser(BaseParser):
         to_database.load_data_from_dataframe(df, load_query)
 
         self.logger.info("node treenumber has_parent relationship")
-        query = "match(t:TreeNumber)-[:parentTreeNumber]->(p:TreeNumber) return t.label as id, p.label as parent_id"
+        query = f"match(t:TreeNumber)-[:parentTreeNumber]->(p:TreeNumber) return t.label as {PROP_ID}, p.label as {PROP_PARENT_ID}"
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -80,17 +80,17 @@ class MeshParser(BaseParser):
 
     def _load_topical_descriptor(self, from_database, to_database):
         self.logger.info("load topicaldescriptor nodes")
-        query = "match (d:TopicalDescriptor) return 'MESH:' + d.identifier as id, d.label as name"
+        query = f"match (d:TopicalDescriptor) return d.identifier as {PROP_ID}, d.label as {PROP_NAME}"
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
-        df[PROP_OBSOLETE] = df['name'].str.startswith('[OBSOLETE]').astype(int)
-        df[PROP_NAME] = df['name'].str.replace('[OBSOLETE]', '', regex=False).str.strip()
+        df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
+        df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
 
         query = get_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_TOPICALDESC])
         to_database.load_data_from_dataframe(df, query)
 
         self.logger.info("map mesh to tree-number")
-        query = "match(t:TreeNumber)-[]-(d:TopicalDescriptor) return 'MESH:' + d.identifier as id, t.label as treenumber"
+        query = f"match(t:TreeNumber)-[]-(d:TopicalDescriptor) return d.identifier as {PROP_ID}, t.label as treenumber"
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
         df['treenumber'] = df['treenumber'].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -100,7 +100,7 @@ class MeshParser(BaseParser):
 
     def _load_chemical(self, from_database, to_database):
         self.logger.info("node mesh chemical nodes")
-        query = "match (n:SCR_Chemical) return 'MESH:' + n.identifier as id, n.label as name"
+        query = f"match (n:SCR_Chemical) return n.identifier as {PROP_ID}, n.label as {PROP_NAME}"
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
@@ -110,10 +110,10 @@ class MeshParser(BaseParser):
         to_database.load_data_from_dataframe(df, query)
 
         self.logger.info("map chemical to topical descriptor")
-        query = """
+        query = f"""
             match(n:SCR_Chemical)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
             with n, d, r match(d)-[:treeNumber]-(t:TreeNumber) where substring(t.label, 0, 1) = 'D'
-            return distinct 'MESH:' + n.identifier as id, 'MESH:' + d.identifier as descriptor_id, type(r) as type 
+            return distinct n.identifier as {PROP_ID}, d.identifier as descriptor_id, type(r) as {PROP_TYPE} 
             """
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
@@ -123,7 +123,7 @@ class MeshParser(BaseParser):
 
     def _load_disease(self, from_database, to_database):
         self.logger.info("load mesh disease ndoes")
-        query = "match (n:SCR_Disease) return 'MESH:' + n.identifier as id, n.label as name"
+        query = f"match (n:SCR_Disease) return n.identifier as {PROP_ID}, n.label as {PROP_NAME}"
         df = from_database.get_data(query)
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -132,10 +132,10 @@ class MeshParser(BaseParser):
         to_database.load_data_from_dataframe(df, query)
 
         self.logger.info("map disease to topical descriptor")
-        query = """
+        query = f"""
             match(n:SCR_Disease)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
             with n, d, r match(d)-[:treeNumber]-(t:TreeNumber) where substring(t.label, 0, 1) = 'C'
-            return distinct 'MESH:' + n.identifier as id, 'MESH:' + d.identifier as descriptor_id, type(r) as type
+            return distinct n.identifier as {PROP_ID}, d.identifier as descriptor_id, type(r) as {PROP_TYPE} 
             """
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")
@@ -143,21 +143,21 @@ class MeshParser(BaseParser):
         to_database.load_data_from_dataframe(df, query)
 
     def _load_synonym(self, from_database, to_database):
-        query = """
+        query = f"""
             match (n:TopicalDescriptor)-[]-(:Concept) -[]-(t:Term)
             with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
             unwind terms as synonym
-            return 'MESH:' + n.identifier as id, synonym
+            return n.identifier as {PROP_ID}, synonym
             UNION
             match (n:SCR_Chemical)-[]-(:Concept)-[]-(t:Term)
             with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
             unwind terms as synonym
-            return 'MESH:'+n.identifier as id, synonym
+            return n.identifier as {PROP_ID}, synonym
             UNION
             match (n:SCR_Disease)-[]-(:Concept)-[]-(t:Term)
             with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
             unwind terms as synonym
-            return 'MESH:'+n.identifier as id, synonym
+            return n.identifier as {PROP_ID}, synonym
         """
         df = from_database.get_data(query)
         self.logger.info(f"{len(df)}")

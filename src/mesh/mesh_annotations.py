@@ -25,7 +25,7 @@ def add_annotation_entity_labels(database:Database):
         Exclude the first two levels in hierarchy tree except 'mental disorders'
     """
     query_disease = """
-    match (t:TreeNumber) where t.obsolete=0 and t.id starts with 'C' and t.id contains '.' 
+    match (t:TreeNumber) where t.obsolete=0 and t.eid starts with 'C' and t.eid contains '.' 
     with t match (t)-[:HAS_TREENUMBER]-(td:TopicalDescriptor) where td.obsolete = 0 
     with distinct td as t set t:Disease
     """
@@ -33,7 +33,7 @@ def add_annotation_entity_labels(database:Database):
 
     query_anatomy = """
     match (n:TreeNumber) 
-    where n.obsolete = 0 and n.id starts with 'A' and not n.id in ['A', 'A01', 'A13', 'A18', 'A19', 'A20', 'A21']
+    where n.obsolete = 0 and n.eid starts with 'A' and not n.eid in ['A', 'A01', 'A13', 'A18', 'A19', 'A20', 'A21']
     with n match (n)-[]-(td:TopicalDescriptor) where td.obsolete = 0
     with distinct td as t set t:Anatomy
     """
@@ -41,10 +41,10 @@ def add_annotation_entity_labels(database:Database):
 
     query_phenomena = """
     match (t:TreeNumber) 
-    where t.id starts with 'G' or t.id starts with 'F03'
+    where t.eid starts with 'G' or t.eid starts with 'F03'
     with t match (t)-[:HAS_TREENUMBER]-(mesh:TopicalDescriptor) where mesh.obsolete = 0 and t.obsolete = 0
     with mesh match (mesh)-[:HAS_TREENUMBER]-(t) where t.obsolete = 0
-    with mesh, collect(t.id) as treenumbers
+    with mesh, collect(t.eid) as treenumbers
     where not mesh.name contains 'Phenomena' 
     and none(t in treenumbers where t starts with 'G07.203.300'
     or t starts with 'G07.203.100' 
@@ -61,7 +61,7 @@ def add_annotation_entity_labels(database:Database):
 
     query_food = """
     match (n:db_MESH {name:'Food'})-[:HAS_TREENUMBER]-(t:TreeNumber) 
-    with t match (tr:TreeNumber) where tr.id starts with t.id and tr.id <> t.id
+    with t match (tr:TreeNumber) where tr.eid starts with t.eid and tr.eid <> t.eid
     match (tr)-[:HAS_TREENUMBER]-(m:db_MESH) where m.obsolete = 0
     with distinct m as term set term:Food
     """
