@@ -608,7 +608,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             x: x pos; y: y pos;
             page_origin: which page contains icon;
             page_destination: where should it take you
-        return an exportable file.
+        :return: an exportable file.
+        :raises: ValidationError if provided format is invalid
         """
         if requested_format == 'png':
             merger = self.merge_pngs_vertically
@@ -631,7 +632,14 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
     def get_file_export(self, file, format):
-        """ Get the exported version of the file in requested format """
+        """ Get the exported version of the file in requested format
+            wrapper around abstract method to add map specific params and catch exception
+         params
+         :param file: map file to export
+         :param format: wanted format
+         :raises ValidationError: When provided format is invalid
+         :return: Exported map as BytesIO
+         """
         try:
             return io.BytesIO(self.generate_export(file, format, self_contained_export=True)
                               .content.getvalue())
@@ -643,7 +651,10 @@ class MapTypeProvider(BaseFileTypeProvider):
         """ Append pngs vertically.
         params:
         :param files: list of files to export
-        :param _: links: omitted in case of png, added to match the merge_pdfs signature"""
+        :param _: links: omitted in case of png, added to match the merge_pdfs signature
+        :returns: maps concatenated vertically
+        :raises SystemError: when one of the images exceeds PILLOW decompression bomb size limits
+        """
         final_bytes = io.BytesIO()
         try:
             images = [Image.open(self.get_file_export(file, 'png')) for file in files]
