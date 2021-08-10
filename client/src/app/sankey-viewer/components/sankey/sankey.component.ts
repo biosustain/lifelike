@@ -29,7 +29,6 @@ import { SankeyLayoutService } from './sankey-layout.service';
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
-    private elRef: ElementRef,
     private clipboard: ClipboardService,
     private readonly snackBar: MatSnackBar,
     private sankey: SankeyLayoutService
@@ -58,8 +57,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   // region Properties (&Accessors)
-  static MIN_FONT = 12;
-  static MAX_FONT = 48;
   static MARGIN = 10;
   margin = {
     top: SankeyComponent.MARGIN,
@@ -111,10 +108,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('y', y)
       .attr('width', width)
       .attr('height', height);
-  }
-
-  static getFontSize(normSize) {
-    return this.MIN_FONT + (normSize || 0) * (SankeyComponent.MAX_FONT - SankeyComponent.MIN_FONT);
   }
 
   static nodeGroupAccessor({type}) {
@@ -549,17 +542,20 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size;
+    const { fontSize } = this.sankey;
     return texts => texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
       )
       .attr('text-anchor', 'end')
+      .attr('font-size', `${fontSize}px`)
       .call(textGroup =>
         textGroup.select('text')
           .attr('dy', '0.35em')
       )
       .filter(({_x0}) => _x0 < width / 2)
-      .attr('text-anchor', 'start');
+      .attr('text-anchor', 'start')
+      .attr('font-size', `${fontSize}px`);
   }
 
   /**
