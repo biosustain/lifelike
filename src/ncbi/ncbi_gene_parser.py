@@ -103,7 +103,11 @@ class GeneParser(BaseParser):
 
         # add tax_id property for GO_LINK
         query = """
-        match(n:db_GO)-[r:GO_LINK]-(g:Gene) set r.tax_id = g.tax_id
+        call apoc.periodic.iterate(
+        "match(n:db_GO)-[r:GO_LINK]-(g:Gene) return g.tax_id as taxid, r",
+        "set r.tax_id = taxid",
+        {batchSize: 5000}
+        )
         """
         database.run_query(query)
 

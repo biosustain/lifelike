@@ -20,18 +20,19 @@ attribute_map = {
 
 relationship_map = {
         # 'alt_id': RelationshipType(REL_ALT_ID, 'to', DB_GO, PROP_GO_ID, ),
-        'is_a': RelationshipType(REL_IS_A, 'to', DB_GO, PROP_ID),
-        'replaced_by': RelationshipType('replaced_by'.upper(), 'to', DB_GO, PROP_ID),
+        'is_a': RelationshipType(REL_IS_A, 'to', NODE_GO, PROP_ID),
+        'replaced_by': RelationshipType('replaced_by'.upper(), 'to', NODE_GO, PROP_ID),
         'relationship': None
 }
 
-NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DESCRIPTION, PROP_ALT_ID, PROP_OBSOLETE]
+NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DESCRIPTION, PROP_ALT_ID, PROP_OBSOLETE, PROP_DATA_SOURCE]
 
 
 class GoOboParser(OboParser, BaseParser):
     def __init__(self, basedir=None):
         BaseParser.__init__(self, 'go', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_GO, PROP_ID)
+        self.id_prefix = 'GO:'
         self.logger = logging.getLogger(__name__)
 
     def create_indexes(self, database: Database):
@@ -43,6 +44,9 @@ class GoOboParser(OboParser, BaseParser):
         self.logger.info("Parsing go.obo")
         go_file = os.path.join(self.download_dir, 'go.obo')
         nodes = self.parse_file(go_file)
+        # remove prefix 'GO:' from id
+        for node in nodes:
+            node.update_attribute(PROP_DATA_SOURCE, DB_GO)
         self.logger.info(f"Total go nodes: {len(nodes)}")
         return nodes
 
@@ -61,7 +65,7 @@ class GoOboParser(OboParser, BaseParser):
                 node_dict[node_label] = []
             node_dict[node_label].append(node.to_dict())
         for label in node_dict.keys():
-            query = get_update_nodes_query(NODE_GO, PROP_ID, self.attributes_map.keys(), [label.title().replace('_', '')])
+            query = get_update_nodes_query(NODE_GO, PROP_ID, NODE_ATTRS, [label.title().replace('_', '')])
             database.load_data_from_rows(query, node_dict[label])
 
         self.load_synonyms(database, nodes, NODE_GO, PROP_ID)

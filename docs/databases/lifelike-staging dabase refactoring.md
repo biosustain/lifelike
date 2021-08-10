@@ -373,6 +373,21 @@ call apoc.periodic.iterate(
 #### Associate Pseudomonas gene as Master since it cannot map to NCBI genes.
 follow the steps described in docs/biocyc/label_biocyc_genes_as_master.md
 
+## 10. Replace all node id property as 'eid'
+see "docs/databases/Replace ***ARANGO_DB_NAME*** kg nodes id with eid.md"
+
+## 11. Add tax_id to relationship GO_LINK for enrichment statistics 
+The code was in NCBI gene parser and docs/biocyc/label_biocyc_genes_as_master.md (for pseudomonas gene go links)
+
+Update the database with the following query:
+``` 
+call apoc.periodic.iterate(
+"match(n:db_GO)-[r:GO_LINK]-(g:Gene) return g.tax_id as taxid, r",
+"set r.tax_id = taxid",
+{batchSize: 5000}
+)
+```
+
 
 
 

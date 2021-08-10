@@ -1,10 +1,9 @@
-import pandas as pd
 from common.database import *
 from common.constants import *
 
 
-def _write_entity_list_for_LMDB(entity_node_label, database, output_dir):
-    query = f"match (n:{entity_node_label}:{NODE_MESH})-[:HAS_SYNONYM]-(s) return n.id as id, n.name as name, s.name as synonym, n.data_source as data_source"
+def _write_entity_list_for_LMDB(entity_node_label: str, database: Database, output_dir: str):
+    query = f"match (n:{entity_node_label}:{NODE_MESH})-[:HAS_SYNONYM]-(s) return n.eid as id, n.name as name, s.name as synonym, n.data_source as data_source"
     df = database.get_data(query)
     filename = f"{entity_node_label}_list_for_LMDB.tsv"
     df.to_csv(os.path.join(output_dir, filename), sep='\t', index=False)
