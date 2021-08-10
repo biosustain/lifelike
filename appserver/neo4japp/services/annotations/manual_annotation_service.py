@@ -382,7 +382,7 @@ class ManualAnnotationService:
                     code=500)
 
             if entity_id == '':
-                entity_id = f'NULL_{str(uuid4())}'
+                entity_id = f'NULL-{str(uuid4())}'
 
             createval = {
                 'entity_type': entity_type,
