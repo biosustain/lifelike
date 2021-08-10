@@ -509,7 +509,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['style'] += ',filled'
 
             if node.get('link'):
-                params['href'] = node['data']['sources'][-1].get('url')
+                params['href'] = node['link']
             elif node['data'].get('sources'):
                 params['href'] = node['data']['sources'][-1].get('url')
             elif node['data'].get('hyperlinks'):
