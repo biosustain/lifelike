@@ -1,4 +1,5 @@
-<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [title]="title">
+<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status">
+    <ng-container #tabTitle>{{ title }}</ng-container>
       <div body class="w-100 h-100">
           <app-trace-details [data]="data"></app-trace-details>
       </div>

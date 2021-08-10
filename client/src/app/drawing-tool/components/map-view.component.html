@@ -3,29 +3,27 @@
         (dragStarted)="dragStarted($event)"
 >
     <ng-container header>
-        <div class="btn-group ml-2">
+        <div class="btn-group ml-2 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"
                     [appLink]="['/projects', map?.project.name, 'maps', map?.hashId, 'edit']">
                 <i class="fa fa-fw fa-pencil-alt"></i> Edit
             </button>
         </div>
-        <div class="module-toolbar d-flex align-items-center ml-auto">
-            <div class="ml-auto d-flex">
-                <div class="btn-group mr-2">
-                    <button type="button" class="btn btn-secondary" container="body"
-                            ngbTooltip="Fit Map to Window" placement="bottom"
-                            (click)="zoomToFit()">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                    </button>
-                </div>
-
-                <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
-                                    [resultIndex]="entitySearchListIdx"
-                                    [resultCount]="entitySearchList.length"
-                                    (previous)="previous()" (next)="next()">
-                </app-search-control>
+        <div class="ml-auto d-flex">
+            <div class="btn-group mr-2">
+                <button type="button" class="btn btn-secondary" container="body"
+                        ngbTooltip="Fit Map to Window" placement="bottom"
+                        (click)="zoomToFit()">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </button>
             </div>
+
+            <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
+                                [resultIndex]="entitySearchListIdx"
+                                [resultCount]="entitySearchList.length"
+                                (previous)="previous()" (next)="next()">
+            </app-search-control>
         </div>
     </ng-container>
     <div body class="flex-fill position-relative overflow-hidden" style="z-index: 0">

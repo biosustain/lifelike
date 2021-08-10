@@ -1,6 +1,6 @@
 <app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [object]="object">
     <ng-container header>
-        <div class="btn-group btn-group-toggle">
+        <div class="btn-group btn-group-toggle mx-auto">
             <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"
                     type="button">
@@ -17,7 +17,7 @@
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <div class="btn-group btn-group-toggle">
+        <div class="btn-group btn-group-toggle ml-auto">
             <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
                 <button class="btn btn-primary" ngbDropdownToggle>
                     {{ selectedNetworkTrace ? selectedNetworkTrace.description : 'Select Trace Network' }}
