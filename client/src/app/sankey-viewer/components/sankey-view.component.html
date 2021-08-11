@@ -150,7 +150,7 @@
                     <div class="btn-group btn-group-toggle">
                       <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
                                           [resultIndex]="entitySearchListIdx"
-                                          [resultCount]="entitySearchList.length"
+                                          [resultCount]="entitySearchList.size"
                                           (previous)="previous()" (next)="next()">
                       </app-search-control>
                     </div>
@@ -169,6 +169,8 @@
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
+                                [searchedNodes]="entitySearchList"
+                                [focusedNode]="searchFocus"
                     >
                     </app-sankey>
                 </as-split-area>
