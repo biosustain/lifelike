@@ -172,7 +172,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isFigure(passage) {
-    const TYPES = ['fig_caption'];
+    const TYPES = ['fig_caption', 'fig_caption_title'];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
