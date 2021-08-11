@@ -28,6 +28,7 @@ import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { emptyIfNull } from '../../shared/utils/types';
+import { isNodeMatching, isLinkMatching } from './search-match';
 
 
 @Component({
@@ -586,19 +587,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const {nodes, links} = this.filteredSankeyData;
 
     for (const node of nodes) {
-      const label = this.sankeyLayout.nodeLabel(node);
-      const text = (emptyIfNull(label)).toLowerCase();
-
-      if (matcher(text)) {
+      if (isNodeMatching(matcher, node)) {
         matches.add(node);
       }
     }
 
     for (const link of links) {
-      const label = this.sankeyLayout.linkTitle(link);
-      const text = (emptyIfNull(label)).toLowerCase();
-
-      if (matcher(text)) {
+      if (isLinkMatching(matcher, link, this.sankeyData)) {
         matches.add(link);
       }
     }
