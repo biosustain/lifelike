@@ -5,10 +5,9 @@
 
 .link-item-text {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-height: 100px;
+  overflow: visible;
+  max-height: none;
 }
 
 .link-item.active {
