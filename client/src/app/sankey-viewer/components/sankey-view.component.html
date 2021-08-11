@@ -128,7 +128,7 @@
                             </button>
                             <div ngbDropdownMenu>
                                 <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
-                                        ngbDropdownItem>{{trace.description}}</button>
+                                        ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
                             </div>
                         </div>
                         <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
