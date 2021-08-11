@@ -1,3 +1,5 @@
+import { linkPalettes } from './color-palette';
+
 export interface ValueGenerator {
   disabled?: () => boolean;
   description: string;
@@ -15,6 +17,10 @@ export interface Prescaler {
   fn: (v: number) => number;
 }
 
+export interface Palette {
+  name: string;
+  palette: (size: number, params: object) => (i: number) => string | object;
+}
 
 interface SankeyNodeHeight {
   min: {
@@ -29,8 +35,8 @@ interface SankeyNodeHeight {
 
 export interface SankeyAdvancedOptions {
   nodeHeight: SankeyNodeHeight;
-  prescalers: Array<any>;
-  selectedPrescaler: any;
+  prescalers: ArrayWithDefault<Prescaler>;
+  selectedPrescaler: Prescaler;
   selectedNodeValueAccessor: any;
   selectedLinkValueAccessor: any;
   selectedPredefinedValueAccessor: any;
@@ -40,7 +46,10 @@ export interface SankeyAdvancedOptions {
   nodeValueGenerators: Array<any>;
   linkValueGenerators: Array<any>;
   normalizeLinks: boolean;
+  linkPalettes: ArrayWithDefault<Palette>;
+  selectedLinkPalette: Palette;
   labelEllipsis: any;
+  fontSize: number;
 }
 
 import visNetwork from 'vis-network';
