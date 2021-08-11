@@ -87,7 +87,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() normalizeLinks = true;
   @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
-  @Input() searchedNodes = new Set<object>();
+  @Input() searchedEntities = new Set<object>();
   @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
@@ -119,7 +119,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedNodes, focusedNode, data, nodeAlign}: SimpleChanges) {
+  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -155,21 +155,25 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       const selectedTraces = this.getSelectedTraces({links});
       this.selectTraces(selectedTraces);
     }
-    if (searchedNodes) {
-      const nodes = searchedNodes.currentValue;
-      if (nodes.size) {
-        this.searchNodes(nodes);
+    if (searchedEntities) {
+      const entities = searchedEntities.currentValue;
+      if (entities.size) {
+        this.searchNodes(entities);
+        this.searchLinks(entities);
       } else {
         this.stopSearchNodes();
+        this.stopSearchLinks();
       }
     }
     if (focusedNode) {
       const {currentValue, previousValue} = focusedNode;
       if (previousValue) {
         this.unFocusNode(previousValue);
+        this.unFocusLink(previousValue);
       }
       if (currentValue) {
         this.focusNode(currentValue);
+        this.focusLink(currentValue);
       }
     }
   }
@@ -469,6 +473,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('searched', undefined);
   }
 
+  searchLinks(links: Set<object>) {
+    this.linkSelection
+      .filter(l => links.has(l))
+      .raise()
+      .attr('searched', true);
+  }
+
+  stopSearchLinks() {
+    // tslint:disable-next-line:no-unused-expression
+    this.linkSelection
+      .attr('searched', undefined);
+  }
   // endregion
 
   // region Focus
@@ -511,6 +527,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       selection
         .each(SankeyComponent.updateTextShadow)
     );
+  }
+
+  focusLink(link: object) {
+    this.linkSelection
+      .filter(l => link === l)
+      .raise()
+      .attr('focused', true);
+  }
+
+  unFocusLink(link: object) {
+    this.linkSelection
+      .attr('focused', undefined);
   }
 
   // endregion
@@ -566,7 +594,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   unhighlightNode(element) {
-    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedNodes} = this;
+    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
 
     this.nodeSelection
       .attr('highlighted', false);
@@ -585,7 +613,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .text(nodeLabelShort);
 
     // resize shadow back to shorter test when it is ussed as search result
-    if (searchedNodes.size) {
+    if (searchedEntities.size) {
       // postpone so the size is known
       requestAnimationFrame(_ =>
         selection.select('g')
@@ -671,6 +699,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         id,
         nodeColor,
         nodeTitle,
+        linkTitle,
         nodeLabel,
         nodeLabelShort,
         linkColor,
@@ -712,7 +741,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('fill', linkColor)
       .call(join =>
         join.select('title')
-          .text(nodeTitle)
+          .text(linkTitle)
       );
 
     this.nodeSelection
