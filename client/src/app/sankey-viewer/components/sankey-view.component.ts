@@ -18,7 +18,6 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
-import { UniversalGraphNode, GraphEntity } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -134,8 +133,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   private currentFileId: any;
 
   entitySearchTerm = '';
-  entitySearchList = [];
+  entitySearchList = new Set();
   entitySearchListIdx = -1;
+  searchFocus = undefined;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -515,7 +515,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             'sankey', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    }));
   }
 
   toggleSelect(entity, type, template: HTMLTemplateElement) {
@@ -581,31 +581,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
    */
   findMatching(terms: string[], options: FindOptions = {}) {
     const matcher = compileFind(terms, options);
-    const matches: GraphEntity[] = [];
+    const matches = new Set();
 
-    const {nodes, links} = this.sankeyData;
+    const {nodes} = this.filteredSankeyData;
 
     for (const node of nodes) {
       const label = this.sankeyLayout.nodeLabel(node);
       const text = (emptyIfNull(label)).toLowerCase();
 
       if (matcher(text)) {
-        matches.push({
-          type: 'node',
-          entity: node,
-        });
-      }
-    }
-
-    for (const edge of links) {
-      const label = edge.description;
-
-      const text = (emptyIfNull(label)).toLowerCase();
-      if (matcher(text)) {
-        matches.push({
-          type: 'link',
-          entity: edge,
-        });
+        matches.add(node);
       }
     }
 
@@ -614,35 +599,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   search() {
     if (this.entitySearchTerm.length) {
-      const tokens = tokenizeQuery(this.entitySearchTerm, {
-        singleTerm: true,
-      });
-      console.log(tokens);
-      const {nodes, links} = this.sankeyData;
-      // todo
       this.entitySearchList = this.findMatching(
         tokenizeQuery(this.entitySearchTerm, {
           singleTerm: true,
         }), {
           wholeWord: false,
         });
-      this.entitySearchList = [];
-      this.entitySearchListIdx = -1;
-
-      // todo
-      // this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
-      // this.graphCanvas.searchFocus.replace([]);
-      // this.graphCanvas.requestRender();
-
     } else {
-      this.entitySearchList = [];
-      this.entitySearchListIdx = -1;
-
-      // todo
-      // this.graphCanvas.searchHighlighting.replace([]);
-      // this.graphCanvas.searchFocus.replace([]);
-      // this.graphCanvas.requestRender();
+      this.entitySearchList = new Set();
     }
+    this.entitySearchListIdx = -1;
+    this.searchFocus = undefined;
   }
 
   clearSearchQuery() {
@@ -651,26 +618,29 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   next() {
-    // we need rule ...
     this.entitySearchListIdx++;
-    if (this.entitySearchListIdx >= this.entitySearchList.length) {
+    if (this.entitySearchListIdx >= this.entitySearchList.size) {
       this.entitySearchListIdx = 0;
     }
-    // todo
-    // this.sankey.zoom.panToEntity(
-    //   this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
-    // );
+    this.searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.sankey.sankeySelection.transition().call(
+      this.sankey.zoom.translateTo,
+      this.searchFocus._x0,
+      this.searchFocus._y0
+    );
   }
 
   previous() {
     // we need rule ..
     this.entitySearchListIdx--;
     if (this.entitySearchListIdx <= -1) {
-      this.entitySearchListIdx = this.entitySearchList.length - 1;
+      this.entitySearchListIdx = this.entitySearchList.size - 1;
     }
-    // todo
-    // this.graphCanvas.panToEntity(
-    //   this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
-    // );
+    this.searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.sankey.sankeySelection.transition().call(
+      this.sankey.zoom.translateTo,
+      this.searchFocus._x0,
+      this.searchFocus._y0
+    );
   }
 }
