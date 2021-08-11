@@ -124,7 +124,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       enabled: true,
       value: SankeyLayoutService.labelEllipsis
     },
-    fontSize: 12,
     fontSizeScale: 1.0
   };
   parseProperty = parseForRendering;
@@ -487,7 +486,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   onOptionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
-    this.sankeyLayout.fontSize = this.options.fontSize;
     this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
