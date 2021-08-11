@@ -3,18 +3,15 @@ import time
 from bisect import bisect_left
 from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
+from urllib.parse import quote as uri_encode
 from uuid import uuid4
 
 from flask import current_app
 
-from neo4japp.constants import LogEventType
-from neo4japp.services.annotations import (
-    AnnotationDBService,
-    AnnotationGraphService,
-    AnnotationInterval,
-    AnnotationIntervalTree
-)
-from neo4japp.services.annotations.constants import (
+from .annotation_db_service import AnnotationDBService
+from .annotation_graph_service import AnnotationGraphService
+from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
+from .constants import (
     DatabaseType,
     EntityIdStr,
     EntityType,
@@ -25,8 +22,7 @@ from neo4japp.services.annotations.constants import (
     ORGANISM_DISTANCE_THRESHOLD,
     SEARCH_LINKS,
 )
-from .utils.common import has_center_point
-from neo4japp.services.annotations.data_transfer_objects import (
+from .data_transfer_objects import (
     Annotation,
     BestOrganismMatch,
     CreateAnnotationObjParams,
@@ -37,6 +33,9 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFWord,
     SpecifiedOrganismStrain
 )
+from .utils.common import has_center_point
+
+from neo4japp.constants import LogEventType
 from neo4japp.exceptions import AnnotationError
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
@@ -134,33 +133,25 @@ class AnnotationService:
             keyword_starting_idx = param.token.lo_location_offset
             keyword_ending_idx = param.token.hi_location_offset
             link_search_term = param.token.keyword
+            hyperlink = ''
 
-            # entity here is data structure from LMDB
-            # see services/annotations/utils/lmdb.py for definition
-            if not param.entity_id_hyperlink:
-                # assign to avoid line being too long
-                # can't use multi pycode ignore/noqa...
-                link = ENTITY_HYPERLINKS
-                try:
-                    if param.entity['id_type'] == 'BioCyc':
-                        # temp until LL-3296 is done
-                        hyperlink = link[param.entity['id_type']][param.token_type]  # type: ignore
-                    else:
-                        hyperlink = link[param.entity['id_type']]
-                except KeyError:
-                    if param.entity['id_type'] == 'BioCyc':
-                        e_type = DatabaseType.BIOCYC.value
-                        # temp until LL-3296 is done
-                        hyperlink = link[e_type][param.token_type]  # type: ignore
-                    else:
+            if 'NULL' not in param.entity_id:
+                if not param.entity_id_hyperlink:
+                    entity_data_source = param.entity['id_type']
+                    try:
+                        if entity_data_source == DatabaseType.BIOCYC.value:
+                            hyperlink = cast(dict, ENTITY_HYPERLINKS[entity_data_source])[param.token_type]  # noqa
+                        else:
+                            hyperlink = cast(str, ENTITY_HYPERLINKS[entity_data_source])
+                    except KeyError:
                         raise
 
-                if param.entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
-                    hyperlink += param.entity_id[5:]  # type: ignore
+                    if entity_data_source == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
+                        hyperlink += uri_encode(param.entity_id[5:])
+                    else:
+                        hyperlink += uri_encode(param.entity_id)
                 else:
-                    hyperlink += param.entity_id  # type: ignore
-            else:
-                hyperlink = param.entity_id_hyperlink
+                    hyperlink = param.entity_id_hyperlink
 
             id_type = param.entity_id_type or param.entity['id_type']
             synonym = param.entity['synonym']
@@ -173,7 +164,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=cast(str, hyperlink),
+                    id_hyperlink=hyperlink,
                     links=OrganismAnnotation.OrganismMeta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -204,7 +195,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=cast(str, hyperlink),
+                    id_hyperlink=hyperlink,
                     links=GeneAnnotation.GeneMeta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -230,7 +221,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=cast(str, hyperlink),
+                    id_hyperlink=hyperlink,
                     links=Annotation.Meta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -987,8 +978,7 @@ class AnnotationService:
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation],
-        **kwargs
+        annotations: List[Annotation]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
