@@ -452,12 +452,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // region Search
   searchNodes(nodes: Set<object>) {
-    const {nodeLabel} = this.sankey;
-    // tslint:disable-next-line:no-unused-expression
     const selection = this.nodeSelection
+      .attr('searched', n => nodes.has(n))
       .filter(n => nodes.has(n))
       .raise()
-      .attr('searched', true)
       .select('g');
 
     // postpone so the size is known
@@ -475,9 +473,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   searchLinks(links: Set<object>) {
     this.linkSelection
+      .attr('searched', l => links.has(l))
       .filter(l => links.has(l))
-      .raise()
-      .attr('searched', true);
+      .raise();
   }
 
   stopSearchLinks() {
