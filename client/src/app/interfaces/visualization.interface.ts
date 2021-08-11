@@ -12,8 +12,6 @@ import {
 export interface AssociationSnippet {
     reference: Reference;
     publication: Publication;
-    rawScore: number;
-    normalizedScore: number;
 }
 
 export enum AssociatedType {
@@ -87,6 +85,8 @@ export interface Reference extends GraphNode {
     data: {
         entry1Text: string;
         entry2Text: string;
+        entry1Type: string;
+        entry2Type: string;
         id: string;
         sentence: string;
     };

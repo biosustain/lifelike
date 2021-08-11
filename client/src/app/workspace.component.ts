@@ -81,7 +81,14 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   closeOtherTabs(pane: Pane, tab: Tab) {
-    const targetTabs = pane.tabs.filter(o => o !== tab);
+    this.closeTabs(pane, pane.tabs.filter(o => o !== tab));
+  }
+
+  closeAllTabs(pane: Pane) {
+    this.closeTabs(pane, pane.tabs.slice());
+  }
+
+  closeTabs(pane: Pane, targetTabs: Tab[]) {
     let canClose = true;
     for (const targetTab of targetTabs) {
       if (this.workspaceManager.shouldConfirmTabUnload(targetTab)) {
@@ -95,6 +102,12 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
       }
       this.workspaceManager.save();
       this.workspaceManager.emitEvents();
+    }
+  }
+
+  clearWorkbench() {
+    for (const pane of this.workspaceManager.panes.panes) {
+      this.closeAllTabs(pane);
     }
   }
 
