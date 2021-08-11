@@ -2,6 +2,7 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -21,6 +22,7 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { first } from 'rxjs/operators';
 import JSZip from 'jszip';
+import { ConsoleReporter } from 'jasmine';
 
 @Component({
   selector: 'app-map-view',
@@ -127,49 +129,45 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      * location.href="data:application/zip;base64,"+content;
      */
 
-    let mapImages = new Map();
-    for (const node of this.graphCanvas.getGraph().nodes) {
-      if (node.image_id !== undefined) { // is image node
-        mapImages.set(node.image_id, node.image_id);
-        let oneImage$: Observable<CanvasImageSource> = this.mapImageProviderService.get(node.image_id)
-        oneImage$.pipe(first()) // only take the first element
-          .subscribe({
-            async next(img) {
-              img = img as HTMLImageElement;
-              let imageBlob = await fetch(img.src).then(r => r.blob()); // TODO: wait til this is done before moving on
-              console.log(imageBlob.type.substring(imageBlob.type.indexOf("/") + 1));
-              mapImages.set(node.image_id, imageBlob);
-            },
-            error(msg) {
-              console.error("error with subscriber: " + msg);
-              // should we abort the save function as well?
-            }
-          });
-      }
-    } // at this point, `mapImages` has `image_id`s -> `image blob`s
-
     const contentValue = new JSZip();
-    // look for zipping byte array or input streams, or make a tmp dir and zip from that
     const imgs = contentValue.folder("images");
-    for (const id of mapImages) {
-      const actualImg = mapImages.get(id);
-      console.log("when zipping images");
-      console.log(actualImg);
-      imgs.file(id + actualImg.type.substring(actualImg.type.indexOf("/") + 1), actualImg, {base64: true});
+    const imageNodeObservables = []
+    for (const node of this.graphCanvas.getGraph().nodes) {
+      if (node.image_id !== undefined) {
+        imageNodeObservables.push(this.mapImageProviderService.get(node.image_id));
+      }
+    }
+    console.log(imageNodeObservables);
+    const mapLoop = async _ => {
+      const promises = imageNodeObservables.map(async ob => {
+        return await firstValueFrom(ob);
+        // CF: https://indepth.dev/posts/1287/rxjs-heads-up-topromise-is-being-deprecated
+        // TODO: figure out `rxjs` version, use `toPromise()` if needed
+      });
+      const imageBlobs = await Promise.all(promises);
+      console.log(imageBlobs);
     }
 
-    contentValue.generateAsync({type: MAP_SHORTHAND})
-      .then((contentValue) => {
-        this.filesystemService.save([this.locator], {contentValue})
-          .pipe(this.errorHandler.create({label: "Update Map"}))
-          .subscribe(() => {
-            this.unsavedChanges$.next(false);
-            this.emitModuleProperties();
-            this.snackBar.open('Map saved.', null, {
-              duration: 2000,
-            });
-          })
-      })
+    // contentValue.generateAsync({ type: "base64" }).then(function (base64) {
+    //   location.href = "data:application/zip;base64," + base64;
+    // });
+
+    // zip all images
+    // look for zipping byte array or input streams, or make a tmp dir and zip from that
+
+    // TODO: how to zip the map with ref to images?
+    // contentValue.generateAsync({type: MAP_SHORTHAND})
+    //   .then((contentValue) => {
+    //     this.filesystemService.save([this.locator], {contentValue})
+    //       .pipe(this.errorHandler.create({label: "Update Map"}))
+    //       .subscribe(() => {
+    //         this.unsavedChanges$.next(false);
+    //         this.emitModuleProperties();
+    //         this.snackBar.open('Map saved.', null, {
+    //           duration: 2000,
+    //         });
+    //       })
+    //   })
       /*
 
       // Push to backend to save
