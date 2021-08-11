@@ -135,7 +135,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   entitySearchTerm = '';
   entitySearchList = new Set();
   entitySearchListIdx = -1;
-  private _searchFocus = undefined;
+  searchFocus = undefined;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -626,26 +626,27 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.search();
   }
 
-  set searchFocus(searchFocus) {
-    this._searchFocus = searchFocus;
-    if (searchFocus) {
-      const y = (searchFocus._y0 + searchFocus._y1) / 2;
-      let x = 0;
-      if (searchFocus._x0 !== undefined) {
-        x = (searchFocus._x0 + searchFocus._x1) / 2;
-      } else {
-        x = (searchFocus._source._x1 + searchFocus._target._x0) / 2;
-      }
-      this.sankey.sankeySelection.transition().call(
-        this.sankey.zoom.translateTo,
-        x,
-        y
-      );
+  panToEntity(entity) {
+    const y = (entity._y0 + entity._y1) / 2;
+    let x = 0;
+    if (entity._x0 !== undefined) {
+      x = (entity._x0 + entity._x1) / 2;
+    } else {
+      x = (entity._source._x1 + entity._target._x0) / 2;
     }
+    this.sankey.sankeySelection.transition().call(
+      this.sankey.zoom.translateTo,
+      x,
+      y
+    );
   }
 
-  get searchFocus() {
-    return this._searchFocus;
+  setSearchFocus() {
+    const searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.searchFocus = searchFocus;
+    if (searchFocus) {
+      this.panToEntity(searchFocus);
+    }
   }
 
   next() {
@@ -653,7 +654,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.entitySearchListIdx >= this.entitySearchList.size) {
       this.entitySearchListIdx = 0;
     }
-    this.searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.setSearchFocus();
   }
 
   previous() {
@@ -662,11 +663,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.entitySearchListIdx <= -1) {
       this.entitySearchListIdx = this.entitySearchList.size - 1;
     }
-    this.searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
-    this.sankey.sankeySelection.transition().call(
-      this.sankey.zoom.translateTo,
-      this.searchFocus._x0,
-      this.searchFocus._y0
-    );
+    this.setSearchFocus();
   }
 }
