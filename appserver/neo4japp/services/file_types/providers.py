@@ -424,13 +424,17 @@ class MapTypeProvider(BaseFileTypeProvider):
             }
 
             if node['label'] in ['map', 'link', 'note']:
+                link_data = node['data'].get('hyperlinks', []) + node['data'].get('sources', [])
+                node['link'] = link_data[-1].get('url') if link_data else None
                 if style.get('showDetail'):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
                     params['label'] = '\n'.join(
                             textwrap.TextWrapper(
                                     width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                                    replace_whitespace=False).wrap(detail_text))
+                                    replace_whitespace=False).wrap(detail_text)) + '\n'
+                    # Align the text to the left with Graphviz custom escape sequence '\l'
+                    params['label'] = params['label'].replace('\n', r'\l')
                     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                                      {'bgcolor': 'black'}
                                                                      ).get('bgcolor')
@@ -509,11 +513,11 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['style'] += ',filled'
 
             if node.get('link'):
-                params['href'] = node['data']['sources'][-1].get('url')
-            elif node['data'].get('sources'):
-                params['href'] = node['data']['sources'][-1].get('url')
+                params['href'] = node['link']
             elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][-1].get('url')
+                params['href'] = node['data']['hyperlinks'][0].get('url')
+            elif node['data'].get('sources'):
+                params['href'] = node['data']['sources'][0].get('url')
             current_link = params.get('href', "").strip()
             # If url points to internal file, append it with the domain address
             if current_link.startswith('/'):
