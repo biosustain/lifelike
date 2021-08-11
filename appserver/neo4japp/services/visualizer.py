@@ -289,8 +289,6 @@ class VisualizerService(KgService):
                             None,
                             None,
                         ),
-                        raw_score=reference['raw_score'],
-                        normalized_score=reference['normalized_score']
                     )
                 )
 
@@ -354,8 +352,6 @@ class VisualizerService(KgService):
                         None,
                         None,
                     ),
-                    raw_score=reference['raw_score'],
-                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -425,8 +421,6 @@ class VisualizerService(KgService):
                         None,
                         None,
                     ),
-                    raw_score=reference['raw_score'],
-                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -542,9 +536,7 @@ class VisualizerService(KgService):
                                 pmid: p.pmid,
                                 pub_year: p.pub_year
                             }
-                        },
-                        raw_score:r.raw_score,
-                        normalized_score:r.normalized_score
+                        }
                     }) as references,
                     max(p.pub_year) as max_pub_year,
                     from_id,
@@ -608,9 +600,7 @@ class VisualizerService(KgService):
                                 pmid: p.pmid,
                                 pub_year: p.pub_year
                             }
-                        },
-                        raw_score:r.raw_score,
-                        normalized_score:r.normalized_score
+                        }
                     }) as references,
                     max(p.pub_year) as max_pub_year,
                     from_id,

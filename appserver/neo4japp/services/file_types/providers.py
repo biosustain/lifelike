@@ -101,11 +101,11 @@ characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
 # Used to match the links in maps during the export
-SANKEY_RE = re.compile(r'^ */projects/.+/sankey/\w+ *$')
-MAIL_RE = re.compile(r'^ *mailto:.+ *$')
-ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/\w+ *$')
-DOCUMENT_RE = re.compile(r'^ */projects/.+/files/\w+ *$')
-ANY_FILE_RE = re.compile(r'^ */files/\w+ *$')
+SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
+MAIL_RE = re.compile(r'^ *mailto:.+$')
+ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
+DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
+ANY_FILE_RE = re.compile(r'^ */files/.+$')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -528,8 +528,10 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = edge.get('style', {})
             default_line_style = 'solid'
             default_arrow_head = 'arrow'
-            url_data = edge['data'].get('hyperlinks', []) + edge['data'].get('sources', [])
+            edge_data = edge.get('data', {})
+            url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
             url = next((src['url'] for src in url_data[::-1]), "")
+            url = url_data[-1]['url'] if len(url_data) else ''
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
                 default_line_style = 'dashed'
@@ -632,9 +634,8 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         data = json.load(buffer)
         content = io.StringIO()
 
-        data_tokens = data['data'].split('/')
-        genes = data_tokens[0].split(',')
-        organism = data_tokens[2]
+        genes = data['data']['genes'].split(',')
+        organism = data['data']['organism']
         content.write(', '.join(genes))
         content.write('\r\n\r\n')
         content.write(organism)

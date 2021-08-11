@@ -261,6 +261,90 @@ def upload_lmdb():
     manager.upload_all(lmdb_dir_path)
 
 
+@app.cli.command('seed-neo4j-globals')
+@click.argument('filename')
+def seed_globals_into_graph(filename):
+    """Delete after LL-3523 related prod release is done"""
+    import csv
+    import datetime
+    import os
+    from enum import Enum
+
+    directory = os.path.realpath(os.path.dirname(__file__))
+
+    from neo4japp.services.annotations.initializer import get_manual_annotation_service
+
+    class DatabaseType(Enum):
+        CHEBI = 'ChEBI'
+        CUSTOM = 'Custom'
+        MESH = 'MeSH'
+        UNIPROT = 'UniProt'
+        NCBI_GENE = 'NCBI Gene'
+        NCBI_TAXONOMY = 'NCBI Taxonomy'
+        BIOCYC = 'BioCyc'
+        PUBCHEM = 'PubChem'
+
+    db_types = {
+        'chebi': DatabaseType.CHEBI.value,
+        'mesh': DatabaseType.MESH.value,
+        'uniprot': DatabaseType.UNIPROT.value,
+        'ncbi gene': DatabaseType.NCBI_GENE.value,
+        'ncbi taxonomy': DatabaseType.NCBI_TAXONOMY.value,
+        'biocyc': DatabaseType.BIOCYC.value,
+        'pubchem': DatabaseType.PUBCHEM.value
+    }
+
+    service = get_manual_annotation_service()
+
+    with open(os.path.join(directory, filename), 'r') as f:
+        reader = csv.reader(f, delimiter=',', quotechar='"')
+        # skip header
+        headers = next(reader)
+        for line in reader:
+            print(line)
+            domain = line[0].strip().lower()
+            data_source = db_types[line[1].strip().lower()] if 'None' not in line[1] else None
+            entity_id = line[2]
+            text = line[3]
+            entity_type = line[4]
+            hyperlink = line[5]
+            creation_date = str(datetime.datetime.now())
+            creator = line[7]
+
+            usernames = {
+                'Evelyn Travnik': 'evtravnik',
+                'Sebastian Schulz': 'Sebastian',
+                'Sharon Wiback': 'shawib'
+            }
+
+            if creator not in usernames:
+                continue
+
+            createval = {
+                'primaryName': text,
+                'inclusion_date': creation_date,
+                'meta': {
+                    'type': entity_type,
+                    'id': entity_id,
+                    'idType': data_source,
+                    'allText': text,
+                    'idHyperlink': hyperlink
+                }
+            }
+
+            try:
+                service.save_global(
+                    annotation=createval,
+                    inclusion_type='inclusion',
+                    file_content_id=-1,
+                    file_id=-1,
+                    file_hash_id='',
+                    username=usernames[creator]
+                )
+            except Exception:
+                raise Exception(f'Failed to execute query for line {line}.')
+
+
 @app.cli.command('merge-maps')
 @click.option('--user-id', '-u', required=True, type=int)
 @click.option('--parent-id', '-p', required=True, type=int)
