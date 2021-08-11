@@ -586,7 +586,7 @@ class FileHierarchyView(FilesystemBaseView):
             # sorting them, and then ordering our data based on that order will work, but it will
             # also be relatively slow.
             ordered_children = [
-                (child_id, children[child_id] )
+                (child_id, children[child_id])
                 for child_id, in db.session.query(
                     Files.id
                 ).filter(
