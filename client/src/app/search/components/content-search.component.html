@@ -4,8 +4,7 @@
       <div class="module-toolbar mt-2">
         <ng-container *ngIf="searchTypes">
           <app-content-search-form class="w-100"
-                                   [queryString]="queryString"
-                                   (formChange)="contentSearchFormChanged($event)"
+                                   [(queryString)]="queryString"
                                    (formResult)="search($event)">
           </app-content-search-form>
         </ng-container>

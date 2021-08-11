@@ -67,7 +67,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   searchTypesMap: Map<string, SearchType>;
 
   queryString = '';
-  contentSearchFormVal: SearchableRequestOptions;
 
   get emptyParams(): boolean {
     if (isNullOrUndefined(this.params)) {
@@ -201,11 +200,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     };
   }
 
-  contentSearchFormChanged(form: SearchableRequestOptions) {
-    this.contentSearchFormVal = form;
-  }
-
-  search(form: ContentSearchOptions) {
+  search(form: SearchableRequestOptions) {
     this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
       queryParams: {
         ...this.serializeParams({
@@ -222,7 +217,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * Special version of search which handles the existence of advanced query params.
    * @param params object representing the search query options
    */
-  advancedSearch(params) {
+  advancedSearch(params: ContentSearchOptions) {
     this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
       queryParams: {
         ...this.serializeParams({
@@ -305,9 +300,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * from 'q' and added to the params object.
    * @param params object representing the content search options
    */
-  extractAdvancedParams(params: SearchableRequestOptions) {
+   extractAdvancedParamsFromString(q: string) {
     const advancedParams: ContentSearchOptions = {};
-    let q = isNullOrUndefined(params.q) ? '' : params.q;
 
     // Remove 'types' from q and add to the types option of the advancedParams
     const typeMatches = q.match(/\btype:\S*/g);
@@ -343,15 +337,17 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       size: 'md',
     });
     // Get the starting options from the content search form query
-    modalRef.componentInstance.params = this.extractAdvancedParams(this.contentSearchFormVal);
+    modalRef.componentInstance.params = this.extractAdvancedParamsFromString(this.queryString);
     modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
       // Advanced search was triggered
-      .then((params) => {
+      .then((params: ContentSearchOptions) => {
         this.advancedSearch(params);
       })
       // Advanced search dialog was dismissed or rejected
-      .catch((params) => {
+      .catch((params: ContentSearchOptions) => {
+        // Need to update the folders param here to be consistent with how we use queryString...
+        this.params.folders = params.folders;
         this.queryString = this.getQueryStringFromParams(params);
       });
   }
