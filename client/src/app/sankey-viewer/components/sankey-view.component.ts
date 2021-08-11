@@ -135,7 +135,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   entitySearchTerm = '';
   entitySearchList = new Set();
   entitySearchListIdx = -1;
-  searchFocus = undefined;
+  private _searchFocus = undefined;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -583,7 +583,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const matcher = compileFind(terms, options);
     const matches = new Set();
 
-    const {nodes} = this.filteredSankeyData;
+    const {nodes, links} = this.filteredSankeyData;
 
     for (const node of nodes) {
       const label = this.sankeyLayout.nodeLabel(node);
@@ -591,6 +591,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
       if (matcher(text)) {
         matches.add(node);
+      }
+    }
+
+    for (const link of links) {
+      const label = this.sankeyLayout.linkTitle(link);
+      const text = (emptyIfNull(label)).toLowerCase();
+
+      if (matcher(text)) {
+        matches.add(link);
       }
     }
 
@@ -617,17 +626,34 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.search();
   }
 
+  set searchFocus(searchFocus) {
+    this._searchFocus = searchFocus;
+    if (searchFocus) {
+      const y = (searchFocus._y0 + searchFocus._y1) / 2;
+      let x = 0;
+      if (searchFocus._x0 !== undefined) {
+        x = (searchFocus._x0 + searchFocus._x1) / 2;
+      } else {
+        x = (searchFocus._source._x1 + searchFocus._target._x0) / 2;
+      }
+      this.sankey.sankeySelection.transition().call(
+        this.sankey.zoom.translateTo,
+        x,
+        y
+      );
+    }
+  }
+
+  get searchFocus() {
+    return this._searchFocus;
+  }
+
   next() {
     this.entitySearchListIdx++;
     if (this.entitySearchListIdx >= this.entitySearchList.size) {
       this.entitySearchListIdx = 0;
     }
     this.searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
-    this.sankey.sankeySelection.transition().call(
-      this.sankey.zoom.translateTo,
-      this.searchFocus._x0,
-      this.searchFocus._y0
-    );
   }
 
   previous() {
