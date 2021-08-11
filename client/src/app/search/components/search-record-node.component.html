@@ -24,8 +24,10 @@
               'color': '#0c8caa',
               'margin-left': '10px',
               'padding': '0 5px'
-            }"
-      >{{ domain.slice(3) }}</span>
+            }">
+            <ng-container *ngIf="domain === 'Literature'; else nonLiteratureDomain">{{ domain }}</ng-container>
+            <ng-template #nonLiteratureDomain>{{ domain.split('_')[1] }}</ng-template>
+      </span>
     </h5>
   </div>
 

@@ -59,18 +59,26 @@ class SearchService(GraphBaseDao):
     def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for record in result:
-            node = record['node']
+            mapped_entity, literature_node = (
+                record['node_pair']['mapped_entity'],
+                record['node_pair']['literature_entity']
+            )
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
 
             graph_node = GraphNode(
-                id=node.id,
-                label=get_first_known_label_from_node(node),
-                sub_labels=list(node.labels),
-                domain_labels=get_known_domain_labels_from_node(node),
-                display_name=node.get('name'),
-                data=snake_to_camel_dict(dict(node), {}),
+                # When it exists, we use the literature node ID instead so the node can be expanded
+                # in the visualizer
+                id=mapped_entity.id if literature_node is None else literature_node.id,
+                label=get_first_known_label_from_node(mapped_entity),
+                sub_labels=list(mapped_entity.labels),
+                domain_labels=(
+                    get_known_domain_labels_from_node(mapped_entity) +
+                    (['Literature'] if literature_node is not None else [])
+                ),
+                display_name=mapped_entity.get('name'),
+                data=snake_to_camel_dict(dict(mapped_entity), {}),
                 url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
@@ -92,7 +100,6 @@ class SearchService(GraphBaseDao):
         domains_map = {
             'chebi': 'n:db_CHEBI',
             'go': 'n:db_GO',
-            'literature': 'n:db_Literature',
             'mesh': 'n:db_MESH',
             'ncbi': 'n:db_NCBI',
             'uniprot': 'n:db_UniProt'
@@ -160,6 +167,28 @@ class SearchService(GraphBaseDao):
 
         result_filters = self.sanitize_filter(domains, entities)
 
+        literature_in_selected_domains = any([
+            normalize_str(domain) == 'literature'
+            for domain in domains
+        ])
+        # Return nodes in one or more domains, with mapped Literature data (if it exists)
+        if domains == [] or (len(domains) > 1 and literature_in_selected_domains):
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class
+                OPTIONAL MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
+            """
+        # Return nodes in one or more domains, and *exclude* Literature data from the result
+        elif not literature_in_selected_domains:
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class, NULL as m
+            """
+        # Return only nodes mapped to Literature nodes
+        else:
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class
+                MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
+            """
+
         result = self.graph.read_transaction(
             self.visualizer_search_query,
             term,
@@ -167,7 +196,8 @@ class SearchService(GraphBaseDao):
             (page - 1) * limit,
             limit,
             result_filters,
-            organism_match_string
+            organism_match_string,
+            literature_match_string
         )
 
         records = self._visualizer_search_result_formatter(result)
@@ -180,7 +210,8 @@ class SearchService(GraphBaseDao):
                 0,
                 1001,
                 result_filters,
-                organism_match_string
+                organism_match_string,
+                literature_match_string
             )
         )
 
@@ -271,7 +302,8 @@ class SearchService(GraphBaseDao):
         amount: int,
         limit: int,
         result_filters: str,
-        organism_match_string: str
+        organism_match_string: str,
+        literature_match_string: str
     ) -> List[N4jRecord]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
@@ -283,11 +315,16 @@ class SearchService(GraphBaseDao):
                 YIELD node
                 MATCH (node)-[]-(n)
                 WHERE {result_filters}
-                WITH n, toLower(n.name) = toLower($search_term) as matches_input
+                WITH n
                 {organism_match_string}
-                RETURN DISTINCT n AS node, t.id AS taxonomy_id,
-                    t.name AS taxonomy_name, n.namespace AS go_class, matches_input
-                ORDER BY matches_input DESC
+                {literature_match_string}
+                WITH collect({{
+                    mapped_entity: n,
+                    literature_entity: m
+                }}) as node_pairs, t, go_class
+                UNWIND node_pairs as node_pair
+                RETURN DISTINCT node_pair AS node_pair, t.id AS taxonomy_id,
+                    t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
                 """,

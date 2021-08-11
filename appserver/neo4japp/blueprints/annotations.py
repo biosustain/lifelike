@@ -39,10 +39,10 @@ from ..exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
-    FileContent,
     GlobalList,
     FallbackOrganism
 )
+from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
@@ -524,6 +524,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         user_id=current_user.id,
                         enrichment=enrichment
                     )
+
+                    validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
                         'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
@@ -830,13 +832,13 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
-                'entity_id': inclusion['external_id'] if inclusion['external_id'] else inclusion['entity_id'],  # noqa
+                'entity_id': inclusion['entity_id'],
                 'reason': '',
                 'comment': ''
             }
 
         data = [get_inclusion_for_review(
-            inclusion, file_uuids_map, graph) for inclusion in inclusions]
+            inclusion, file_uuids_map, graph) for inclusion in inclusions if inclusion['file_reference'] in file_uuids_map]  # noqa
 
         exporter = get_excel_export_service()
         response = make_response(exporter.get_bytes(data), 200)
@@ -989,7 +991,7 @@ class GlobalAnnotationListView(MethodView):
             'text': i['synonym'],
             'case_insensitive': True,
             'entity_type': i['entity_type'],
-            'entity_id': i['external_id'] if i['external_id'] else i['entity_id'],
+            'entity_id': i['entity_id'],
             'reason': '',
             'comment': ''
         } for i in global_inclusions]
