@@ -215,7 +215,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   /**
    * Special version of search which handles the existence of advanced query params.
-   * @param params object representing the search query options
+   * @param params Object representing the search query options.
    */
   advancedSearch(params: ContentSearchOptions) {
     this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {

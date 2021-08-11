@@ -11,7 +11,6 @@ import {
   Exporter,
 } from 'app/file-browser/services/object-type.service';
 import { SearchType } from 'app/search/shared';
-import { DatabaseType } from 'app/shared/annotation-types';
 
 
 
@@ -33,7 +32,7 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: 'BioC'}),
+      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: BIOC_SHORTHAND}),
     ];
   }
 
