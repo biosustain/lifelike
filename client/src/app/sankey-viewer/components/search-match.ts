@@ -13,8 +13,8 @@ const linkToMatchTerms = (link, graph) =>
       } else {
         o = o.concat(filterObjects(n));
       }
-    } else if (typeof n === 'object' && n !== null && n.nodes !== undefined) {
-      o = o.concat(nodesIdToMatchTerms(n.nodes, graph.nodes));
+    } else if (typeof n === 'object' && n !== null && (n as { nodes: Array<number> }).nodes !== undefined) {
+      o = o.concat(nodesIdToMatchTerms((n as { nodes: Array<number> }).nodes, graph.nodes));
     } else if (typeof n !== 'object' && n !== null) {
       o.push(n);
     }
@@ -27,7 +27,7 @@ export function isLinkMatching(matcher, link, graph?) {
 }
 
 const nodeToMatchTerms = node =>
-  Object.values(node).reduce((o, n) => {
+  Object.values(node).reduce((o: Array<any>, n) => {
     if (Array.isArray(n)) {
       o = o.concat(filterObjects(n));
     } else if (typeof n !== 'object' && n !== null) {
