@@ -14,8 +14,7 @@
        [class.active]="activeLinkIndex === index" tabindex="0" (focus)="linkFocus($event, link, index)">
     <div class="card-body bg-light p-2"
          (click)="activeLinkIndex = index">
-      <div 
-           [ngClass]="editable ? 'link-item-text' : 'link-item-text-readonly'"
+      <div [ngClass]="editable ? 'link-item-text' : 'link-item-text-readonly'"
            *ngIf="link.domain != '' && link.domain != null">
         <ng-container *ngTemplateOutlet="linkText"></ng-container>
       </div>
