@@ -90,8 +90,9 @@ export class SynonymSearchComponent {
   }
 
   submit() {
-    const expressionsToAdd = this.synonymData.map(entity => {
-      if (this.entityChecklistSelection.isSelected(entity)) {
+    const expressionsToAdd = this.synonymData
+      .filter(entity => this.entityChecklistSelection.isSelected(entity))
+      .map(entity => {
         const regex = /\W+/g;
         const synonyms = entity.synonyms
           .map((synonym: string) => {
@@ -100,8 +101,7 @@ export class SynonymSearchComponent {
           })
           .join(' or ');
         return `(${synonyms})`;
-      }
-    });
+      });
     this.modal.close(expressionsToAdd);
   }
 
