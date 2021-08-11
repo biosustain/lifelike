@@ -90,8 +90,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedText = '';
   createdNode;
 
-  referenceSeen = false;
-
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
