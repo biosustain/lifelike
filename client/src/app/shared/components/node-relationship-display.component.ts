@@ -22,12 +22,19 @@ export class NodeRelationshipComponent {
   constructor() {
   }
 
+  getDTCompatibleLabel(label: string) {
+    if (label.match(/^Literature([a-zA-Z]+)$/)) {
+      return label.slice(10).toLowerCase();
+    }
+    return label.toLowerCase();
+  }
+
   nodeDragStart(event: DragEvent, displayName: string, label: string, databaseUrl: string) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', displayName);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: displayName,
-      label: label.toLowerCase(),
+      label: this.getDTCompatibleLabel(label),
       sub_labels: [],
       data: {
         hyperlinks: [{
