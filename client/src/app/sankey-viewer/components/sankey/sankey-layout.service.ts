@@ -86,6 +86,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   dx = 24; // nodeWidth
   py; // nodePadding
 
+  fontSize = 12;
+
   nodeSort;
   linkSort;
   nodes: Array<SankeyNode>;
