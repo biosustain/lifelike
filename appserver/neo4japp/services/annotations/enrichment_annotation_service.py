@@ -176,6 +176,7 @@ class EnrichmentAnnotationService(AnnotationService):
         **kwargs
     ) -> List[Annotation]:
         self.specified_organism = specified_organism
+        self.enrichment_mappings = kwargs['enrichment_mappings']
 
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
@@ -184,9 +185,7 @@ class EnrichmentAnnotationService(AnnotationService):
         )
 
         start = time.time()
-        cleaned = self._clean_annotations(
-            annotations=annotations,
-            enrichment_mappings=kwargs['enrichment_mappings'])
+        cleaned = self._clean_annotations(annotations=annotations)
 
         current_app.logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
@@ -196,8 +195,7 @@ class EnrichmentAnnotationService(AnnotationService):
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation],
-        **kwargs
+        annotations: List[Annotation]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
@@ -206,7 +204,7 @@ class EnrichmentAnnotationService(AnnotationService):
         # a text in a cell could be removed due to
         # overlapping with an adjacent cell
         split = defaultdict(list)
-        offsets = [i for i, _ in kwargs['enrichment_mappings']]
+        offsets = [i for i, _ in self.enrichment_mappings]
         for anno in fixed_unified_annotations:
             # get first offset that is greater than hi_location_offset
             # this means the annotation is part of that cell/sublist
