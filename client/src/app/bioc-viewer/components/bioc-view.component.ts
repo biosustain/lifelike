@@ -447,6 +447,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
+  reBindType(type: string) {
+    const typeMap = {
+      SNP: 'Mutation',
+      DNAMutation: 'Mutation',
+      ProteinMutation: 'Mutation'
+    };
+    return typeMap[type] ? typeMap[type] : type;
+  }
+
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
     // I will replace this code
@@ -454,7 +463,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as any).innerHTML;
     const clazz = (event.target as any).classList;
-    const type = (clazz && clazz.length > 1) ? clazz[1] : 'link';
+    const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
     if (!clazz) {
       dataTransfer.setData('text/plain', this.selectedText);
       dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
