@@ -90,6 +90,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedText = '';
   createdNode;
 
+  referenceSeen = false;
+
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
@@ -121,6 +123,19 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       value: [file],
     }) => {
       this.biocData = content.splice(0, 1);
+      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
+      if (ref > -1) {
+        // then insert here the References Title
+        const referencesTitleObj: any = {};
+        referencesTitleObj.infons = {
+          section_type: 'INTRO',
+          type: 'title_1'
+        };
+        referencesTitleObj.offset = 0;
+        referencesTitleObj.annotations = [];
+        referencesTitleObj.text = 'References';
+        ((this.biocData[0] as any).passages as any[]).splice(ref, 0 , referencesTitleObj);
+      }
       this.object = object;
       this.emitModuleProperties();
 
@@ -148,6 +163,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
   isGeneric(passage) {
     return !this.isTableView(passage) && !this.isFigure(passage);
+  }
+
+  isReference(passage: any) {
+    const infons = passage.infons || {};
+    const type = infons.type && infons.type.toLowerCase();
+    if (type === 'ref') {
+      return true;
+    }
+    return false;
   }
 
   isTableView(passage) {
@@ -526,5 +550,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
     return fallback.url.replace(/%s/, encodeURIComponent(identifier));
   }
+
 }
 
