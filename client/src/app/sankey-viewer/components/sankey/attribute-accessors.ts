@@ -32,6 +32,10 @@ export class AttributeAccessors {
     return ({description}) => description;
   }
 
+  get linkTitle(): (node: SankeyNode) => string {
+    return ({description}) => description;
+  }
+
   get value() {
     return ({_value}) => _value;
   }
