@@ -165,15 +165,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     return !this.isTableView(passage) && !this.isFigure(passage);
   }
 
-  isReference(passage: any) {
-    const infons = passage.infons || {};
-    const type = infons.type && infons.type.toLowerCase();
-    if (type === 'ref') {
-      return true;
-    }
-    return false;
-  }
-
   isTableView(passage) {
     const TYPES = ['table', 'table_caption', 'table_footnote'];
     const infons = passage.infons || {};
