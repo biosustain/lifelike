@@ -22,12 +22,20 @@ export class NodeRelationshipComponent {
   constructor() {
   }
 
+  getDTCompatibleLabel(label: string) {
+    const match = label.match(/^Literature([a-zA-Z]+)$/);
+    if (match) {
+      return match[1].toLowerCase();
+    }
+    return label.toLowerCase();
+  }
+
   nodeDragStart(event: DragEvent, displayName: string, label: string, databaseUrl: string) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', displayName);
     dataTransfer.setData('application/lifelike-node', JSON.stringify({
       display_name: displayName,
-      label: label.toLowerCase(),
+      label: this.getDTCompatibleLabel(label),
       sub_labels: [],
       data: {
         hyperlinks: [{
