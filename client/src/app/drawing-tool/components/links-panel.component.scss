@@ -3,11 +3,18 @@
 .link-item {
 }
 
-.link-item-text {
+.link-item-text-readonly {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  overflow: visible;
   max-height: none;
+}
+
+.link-item-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 100px;
 }
 
 .link-item.active {
