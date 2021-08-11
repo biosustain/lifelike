@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -7,12 +7,13 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from 'app/shared/links';
-import { cloneDeep } from 'lodash';
 import { AnnotationType } from 'app/shared/constants';
 
 @Component({
   selector: 'app-annotation-panel',
   templateUrl: './annotation-edit-dialog.component.html',
+  // needed to make links inside *ngFor to work and be clickable
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() pageNumber: number;
@@ -21,8 +22,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() set allText(allText: string) {
     this.form.patchValue({text: allText});
   }
-  linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
   isTextEnabled = false;
+  sourceLinks: Hyperlink[] = [];
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
@@ -33,7 +34,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     text: new FormControl({value: '', disabled: true}, Validators.required),
     entityType: new FormControl('', Validators.required),
     id: new FormControl(''),
-    source: new FormControl(DatabaseType.NONE, Validators.required),
+    source: new FormControl(DatabaseType.NONE),
     sourceLinks: new FormArray([]), // new FormControl(''),
     includeGlobally: new FormControl(false),
   });
@@ -41,10 +42,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
-  }
-
-  get entityTypeChosen(): boolean {
-    return this.form.get('entityType').value !== '';
   }
 
   disableGlobalOption() {
@@ -58,11 +55,33 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   get databaseTypeChoices(): string[] {
+    let choices = null;
     const value = this.form.get('entityType').value;
-    if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
-      return ENTITY_TYPE_MAP[value].sources;
+    const dropdown = this.form.get('source');
+    if (value === '') {
+      dropdown.disable();
+      choices = [DatabaseType.NONE];
+    } else {
+      dropdown.enable();
+      if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
+        if (ENTITY_TYPE_MAP[value].sources.indexOf(DatabaseType.NONE) > -1) {
+          dropdown.disable();
+          choices = [DatabaseType.NONE];
+        } else {
+          dropdown.enable();
+          choices = ENTITY_TYPE_MAP[value].sources;
+        }
+      }
     }
-    return [DatabaseType.NONE];
+    return choices;
+  }
+
+  get getSearchLinks() {
+    const formRawValues = this.form.getRawValue();
+    const text = formRawValues.text.trim();
+
+    return SEARCH_LINKS.map(link => (
+      {domain: `${link.domain.replace('_', ' ')}`, link: `${link.url}${text}`}));
   }
 
   getValue(): Annotation {
@@ -70,7 +89,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     // getRawValue will return values of disabled controls too
     const formRawValues = this.form.getRawValue();
     const text = formRawValues.text.trim();
-    this.linkTemplates.forEach(link => {
+    SEARCH_LINKS.forEach(link => {
       links[link.domain.toLowerCase()] = this.substituteLink(link.url, text);
     });
 
@@ -82,7 +101,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }),
       meta: {
         id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
-        idHyperlink: this.form.value.sourceLink.trim(),
+        idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(link => `${link.domain}/***ARANGO_DB_NAME***split/${link.url}`) : [],
         idType: this.form.value.source,
         type: this.form.value.entityType,
         links,
@@ -102,25 +121,14 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     // user should provide id if annotation is flagged for a global inclusion
     if (this.form.value.includeGlobally) {
       this.form.controls.id.setValidators([Validators.required]);
-      this.form.controls.id.updateValueAndValidity();
     } else {
       this.form.controls.id.setValidators(null);
-      this.form.controls.id.updateValueAndValidity();
     }
+    this.form.controls.id.updateValueAndValidity();
   }
 
   enableTextField() {
     this.isTextEnabled = true;
     this.form.controls.text.enable();
-  }
-
-  deleteSourceLink(index: number) {
-    const links = this.form.get('sourceLinks') as FormArray;
-    links.removeAt(index);
-  }
-
-  addSourceLink() {
-    const links = this.form.get('sourceLinks') as FormArray;
-    links.push(new FormGroup({label: new FormControl(''), link: new FormControl('')}));
   }
 }
