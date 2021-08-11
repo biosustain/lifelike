@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict, Union
 
 
 # lmdb database names
@@ -94,6 +95,7 @@ class EntityType(Enum):
     DISEASE = 'Disease'
     FOOD = 'Food'
     GENE = 'Gene'
+    PATHWAY = 'Pathway'
     PHENOMENA = 'Phenomena'
     PHENOTYPE = 'Phenotype'
     PROTEIN = 'Protein'
@@ -174,7 +176,7 @@ SEARCH_LINKS = {
     'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+',
     'google': 'https://www.google.com/search?q=',
 }
-ENTITY_HYPERLINKS = {
+ENTITY_HYPERLINKS: Dict[str, Union[str, Dict[str, str]]] = {
     DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',

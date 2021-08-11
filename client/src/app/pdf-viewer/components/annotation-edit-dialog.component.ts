@@ -47,6 +47,16 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     return this.form.get('entityType').value !== '';
   }
 
+  disableGlobalOption() {
+    if (['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(this.form.get('entityType').value)) {
+      this.form.get('includeGlobally').patchValue(false);
+      this.form.get('includeGlobally').disable();
+      this.toggleIdFieldValidity();
+    } else {
+      this.form.get('includeGlobally').enable();
+    }
+  }
+
   get databaseTypeChoices(): string[] {
     const value = this.form.get('entityType').value;
     if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
@@ -58,7 +68,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   getValue(): Annotation {
     const links = {};
     // getRawValue will return values of disabled controls too
-    const text = this.form.getRawValue().text.trim();
+    const formRawValues = this.form.getRawValue();
+    const text = formRawValues.text.trim();
     this.linkTemplates.forEach(link => {
       links[link.domain.toLowerCase()] = this.substituteLink(link.url, text);
     });
@@ -77,7 +88,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         links,
         isCustom: true,
         allText: text,
-        includeGlobally: this.form.value.includeGlobally,
+        includeGlobally: formRawValues.includeGlobally,
         isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
       },
     };

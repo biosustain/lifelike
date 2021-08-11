@@ -6,7 +6,10 @@ from neo4japp.constants import (
     LogEventType,
     TYPE_CHEMICAL,
     TYPE_DISEASE,
-    TYPE_GENE
+    TYPE_GENE,
+    TYPE_LITERATURE_CHEMICAL,
+    TYPE_LITERATURE_DISEASE,
+    TYPE_LITERATURE_GENE
 )
 from neo4japp.data_transfer_objects.visualization import (
     Direction,
@@ -34,7 +37,7 @@ class VisualizerService(KgService):
         super().__init__(graph=graph, session=session)
 
     def _get_uri_of_node_data(self, id: int, label: str, entity_id: str):
-        """Given node meta data and a map of domains -> URLs, returns the appropriate
+        """Given node meta data returns the appropriate
         URL formatted with the node entity identifier.
         """
         url_map = {
@@ -72,6 +75,20 @@ class VisualizerService(KgService):
                 else:
                     url = url_map['omim'].format(uid)
             elif label == TYPE_GENE:
+                url = url_map['NCBI_Gene'].format(entity_id)
+            elif label == TYPE_LITERATURE_CHEMICAL:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'CHEBI':
+                    url = url_map['chebi'].format(uid)
+                else:
+                    url = url_map['MESH'].format(uid)
+            elif label == TYPE_LITERATURE_DISEASE:
+                db_prefix, uid = entity_id.split(':')
+                if db_prefix == 'MESH':
+                    url = url_map['MESH'].format(uid)
+                else:
+                    url = url_map['omim'].format(uid)
+            elif label == TYPE_LITERATURE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError:
             current_app.logger.warning(
@@ -255,25 +272,23 @@ class VisualizerService(KgService):
                 snippets.append(
                     Snippet(
                         reference=GraphNode(
-                            reference['snippet'].id,
+                            reference['snippet']['id'],
                             'Snippet',
                             [],
-                            snake_to_camel_dict(dict(reference['snippet']), {}),
+                            snake_to_camel_dict(reference['snippet']['data'], {}),
                             [],
                             None,
                             None,
                         ),
                         publication=GraphNode(
-                            reference['publication'].id,
+                            reference['publication']['id'],
                             'Publication',
                             [],
-                            snake_to_camel_dict(dict(reference['publication']), {}),
+                            snake_to_camel_dict(reference['publication']['data'], {}),
                             [],
                             None,
                             None,
                         ),
-                        raw_score=reference['raw_score'],
-                        normalized_score=reference['normalized_score']
                     )
                 )
 
@@ -320,25 +335,23 @@ class VisualizerService(KgService):
                 association=row['description'],
                 snippets=[Snippet(
                     reference=GraphNode(
-                        reference['snippet'].id,
+                        reference['snippet']['id'],
                         'Snippet',
                         [],
-                        snake_to_camel_dict(dict(reference['snippet']), {}),
+                        snake_to_camel_dict(reference['snippet']['data'], {}),
                         [],
                         None,
                         None,
                     ),
                     publication=GraphNode(
-                        reference['publication'].id,
+                        reference['publication']['id'],
                         'Publication',
                         [],
-                        snake_to_camel_dict(dict(reference['publication']), {}),
+                        snake_to_camel_dict(reference['publication']['data'], {}),
                         [],
                         None,
                         None,
                     ),
-                    raw_score=reference['raw_score'],
-                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -391,25 +404,23 @@ class VisualizerService(KgService):
                 association=row['description'],
                 snippets=[Snippet(
                     reference=GraphNode(
-                        reference['snippet'].id,
+                        reference['snippet']['id'],
                         'Snippet',
                         [],
-                        snake_to_camel_dict(dict(reference['snippet']), {}),
+                        snake_to_camel_dict(reference['snippet']['data'], {}),
                         [],
                         None,
                         None,
                     ),
                     publication=GraphNode(
-                        reference['publication'].id,
+                        reference['publication']['id'],
                         'Publication',
                         [],
-                        snake_to_camel_dict(dict(reference['publication']), {}),
+                        snake_to_camel_dict(reference['publication']['data'], {}),
                         [],
                         None,
                         None,
                     ),
-                    raw_score=reference['raw_score'],
-                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -473,7 +484,7 @@ class VisualizerService(KgService):
                     a AS association,
                     t.name as name,
                     ID(t) as node_id
-                MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 RETURN name, node_id, COUNT(s) as snippet_count
                 ORDER BY snippet_count DESC
                 """,
@@ -503,14 +514,29 @@ class VisualizerService(KgService):
                     ID(f) as from_id,
                     ID(t) as to_id,
                     a.description as description
-                MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
                     COUNT(s) as snippet_count,
-                    collect({
-                        snippet:s,
-                        publication:p,
-                        raw_score:r.raw_score,
-                        normalized_score:r.normalized_score
+                    collect(distinct {
+                        snippet: {
+                            id: s.id,
+                            data: {
+                                entry1_text: r.entry1_text,
+                                entry2_text: r.entry2_text,
+                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
+                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
+                                sentence: s.sentence
+                            }
+                        },
+                        publication: {
+                            id: p.id,
+                            data: {
+                                journal: p.journal,
+                                title: p.title,
+                                pmid: p.pmid,
+                                pub_year: p.pub_year
+                            }
+                        }
                     }) as references,
                     max(p.pub_year) as max_pub_year,
                     from_id,
@@ -524,7 +550,7 @@ class VisualizerService(KgService):
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) as references, from_id, to_id, description
                 """,
@@ -552,14 +578,29 @@ class VisualizerService(KgService):
                     ID(f) as from_id,
                     ID(t) as to_id,
                     a.description as description
-                MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
                     COUNT(s) as snippet_count,
                     collect({
-                        snippet:s,
-                        publication:p,
-                        raw_score:r.raw_score,
-                        normalized_score:r.normalized_score
+                        snippet: {
+                            id: s.id,
+                            data: {
+                                entry1_text: r.entry1_text,
+                                entry2_text: r.entry2_text,
+                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
+                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
+                                sentence: s.sentence
+                            }
+                        },
+                        publication: {
+                            id: p.id,
+                            data: {
+                                journal: p.journal,
+                                title: p.title,
+                                pmid: p.pmid,
+                                pub_year: p.pub_year
+                            }
+                        }
                     }) as references,
                     max(p.pub_year) as max_pub_year,
                     from_id,
@@ -599,7 +640,7 @@ class VisualizerService(KgService):
                 a AS association,
                 ID(f) as from_id,
                 ID(t) as to_id
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN COUNT(s) as snippet_count
             """,
             from_ids=from_ids, to_ids=to_ids, description=description
@@ -621,7 +662,7 @@ class VisualizerService(KgService):
                 a AS association,
                 ID(f) as from_id,
                 ID(t) as to_id
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN COUNT(s) as snippet_count
             """,
             from_id=from_id, to_id=to_id
@@ -648,7 +689,7 @@ class VisualizerService(KgService):
                     ID(t) as to_id,
                     labels(f) as from_labels,
                     labels(t) as to_labels
-                OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                OPTIONAL MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
                     COUNT(s) as snippet_count,
                     collect({
