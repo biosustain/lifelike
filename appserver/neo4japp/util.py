@@ -11,7 +11,7 @@ from neo4j.graph import Node as N4jDriverNode
 from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
 
-from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS, LogEventType
+from neo4japp.constants import DOMAIN_LABELS, ENTITY_LABELS, LogEventType
 from neo4japp.utils.logger import EventLog
 
 
@@ -405,7 +405,7 @@ def get_first_known_label_from_node(node: N4jDriverNode):
 
 def get_first_known_label_from_list(labels: List[str]):
     for label in labels:
-        if label in DISPLAY_NAME_MAP:
+        if label in ENTITY_LABELS:
             return label
     raise ValueError('Detected node label of an unknown type!')
 
