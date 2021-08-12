@@ -72,7 +72,7 @@ class AnnotationGraphService(GraphConnection):
                 inclusion_dict[normalized_synonym] = Inclusion(
                     entities=[entity],
                     entity_id_type=inclusion['data_source'],
-                    entity_id_hyperlink=inclusion.get('hyperlink', '')
+                    entity_id_hyperlinks=inclusion.get('hyperlinks', [])
                 )
 
     def get_entity_inclusions(self, inclusions: List[dict]) -> GlobalInclusions:
@@ -115,7 +115,7 @@ class AnnotationGraphService(GraphConnection):
             try:
                 entity_id = local_inclusion['meta']['id']
                 entity_id_type = local_inclusion['meta']['idType']
-                entity_id_hyperlink = local_inclusion['meta']['idHyperlink']
+                entity_id_hyperlinks = local_inclusion['meta']['idHyperlinks']
                 synonym = local_inclusion['meta']['allText']
             except KeyError:
                 current_app.logger.error(
@@ -146,7 +146,7 @@ class AnnotationGraphService(GraphConnection):
                         local_inclusion_dicts[entity_type][normalized_synonym] = Inclusion(
                             entities=[entity],
                             entity_id_type=entity_id_type,
-                            entity_id_hyperlink=entity_id_hyperlink
+                            entity_id_hyperlinks=entity_id_hyperlinks
                         )
         return GlobalInclusions(
             included_anatomy=inclusion_dicts[EntityType.ANATOMY.value],

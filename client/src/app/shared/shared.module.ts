@@ -65,6 +65,7 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
+import { LinksPanelComponent } from '../drawing-tool/components/links-panel.component';
 import {
   DATA_TRANSFER_DATA_PROVIDER,
   DataTransferDataService,
@@ -122,6 +123,7 @@ const components = [
   OrganismComponent,
   ResultControlComponent,
   PaginationComponent,
+  LinksPanelComponent,
 ];
 
 @NgModule({
@@ -129,6 +131,7 @@ const components = [
     MessageDialogComponent,
     ProgressDialogComponent,
     ShareDialogComponent,
+    LinksPanelComponent,
   ],
   imports: [
     CommonModule,

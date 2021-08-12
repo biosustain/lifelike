@@ -24,7 +24,7 @@ def test_add_custom_annotation_inclusion_annotate_all(
             'type': EntityType.SPECIES.value,
             'allText': 'Pikachu',
             'idType': '',
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'isCaseInsensitive': True,
             'includeGlobally': False
         }
@@ -53,7 +53,7 @@ def test_add_custom_annotation_inclusion_multi_word(
             'type': EntityType.SPECIES.value,
             'allText': 'caught a Pikachu',
             'idType': '',
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'isCaseInsensitive': True,
             'includeGlobally': False
         }
@@ -83,7 +83,7 @@ def test_add_custom_annotation_inclusion(
             'type': EntityType.SPECIES.value,
             'allText': 'Pikachu',
             'idType': '',
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'isCaseInsensitive': True,
             'includeGlobally': False
         }
@@ -112,7 +112,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
             'type': EntityType.GENE.value,
             'allText': 'caught a Pikachu',  # GENE max limit is 1 word
             'idType': '',
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'isCaseInsensitive': True,
             'includeGlobally': False
         }
@@ -141,7 +141,7 @@ def test_add_custom_annotation_inclusion_multi_word_food_limit(
             'type': EntityType.GENE.value,
             'allText': 'I just caught a Pikachu',  # FOOD max limit is 4 word
             'idType': '',
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'isCaseInsensitive': True,
             'includeGlobally': False
         }
