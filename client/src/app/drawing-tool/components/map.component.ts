@@ -37,7 +37,7 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
 import JSZip from "jszip";
-import { unzip } from 'zlib';
+import JSZipUtils from 'jszip-utils';
 
 @Component({
   selector: 'app-map',
@@ -182,6 +182,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
+    /*
     this.emitModuleProperties();
 
     this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
@@ -200,13 +201,26 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           // Data is corrupt
           // TODO: Prevent the user from editing or something so the user doesnt lose data?
         }));
-        
-    /*
-    var unzipped = new JSZip();
-    unzipped.loadAsync(this.contentValue).then(function (zip) {
-      console.log(zip);
-    });
     */
+        
+    JSZipUtils.getBinaryContent(this.contentValue, function (err, data) {
+      if (err) {
+        console.error(err);
+        // abort?
+      }
+      JSZip.loadAsync(data).then(function () {
+        graph => {
+          this.graphCanvas.setGraph(graph);
+          this.graphCanvas.zoomToFit(0);
+          
+          if (this.highlightTerms != null && this.highlightTerms.length) {
+            this.graphCanvas.highlighting.replace(
+              this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+              );
+            }
+          }
+        });
+    });
   }
 
   registerGraphBehaviors() {
