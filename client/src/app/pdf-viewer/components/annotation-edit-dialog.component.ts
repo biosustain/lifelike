@@ -35,7 +35,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     entityType: new FormControl('', Validators.required),
     id: new FormControl(''),
     source: new FormControl(DatabaseType.NONE),
-    sourceLinks: new FormArray([]), // new FormControl(''),
+    sourceLinks: new FormArray([]),
     includeGlobally: new FormControl(false),
   });
   caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
