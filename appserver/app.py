@@ -330,9 +330,9 @@ def seed_globals_into_graph(filename):
                     'id': entity_id,
                     'idType': data_source,
                     'allText': text,
-                    'idHyperlinks': json.dumps({
+                    'idHyperlinks': [json.dumps({
                         'label': urlparse(hyperlink).netloc.replace('www.', ''),
-                        'url': hyperlink})
+                        'url': hyperlink})] if hyperlink else []
                 }
             }
 
