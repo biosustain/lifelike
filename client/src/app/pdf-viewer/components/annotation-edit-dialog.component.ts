@@ -101,7 +101,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }),
       meta: {
         id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
-        idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(link => `${link.domain}/***ARANGO_DB_NAME***split/${link.url}`) : [],
+        idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(
+          link => JSON.stringify({label: link.domain, url: link.url})) : [],
         idType: this.form.value.source,
         type: this.form.value.entityType,
         links,
