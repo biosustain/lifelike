@@ -1,3 +1,4 @@
+import json
 import time
 
 from bisect import bisect_left
@@ -133,10 +134,10 @@ class AnnotationService:
             keyword_starting_idx = param.token.lo_location_offset
             keyword_ending_idx = param.token.hi_location_offset
             link_search_term = param.token.keyword
-            hyperlink = ''
+            hyperlinks = []
 
             if 'NULL' not in param.entity_id:
-                if not param.entity_id_hyperlink:
+                if not param.entity_id_hyperlinks:
                     entity_data_source = param.entity['id_type']
                     try:
                         if entity_data_source == DatabaseType.BIOCYC.value:
@@ -150,8 +151,11 @@ class AnnotationService:
                         hyperlink += uri_encode(param.entity_id[5:])
                     else:
                         hyperlink += uri_encode(param.entity_id)
+
+                    hyperlinks.append(json.dumps(
+                        {'label': param.entity['id_type'], 'url': hyperlink}))
                 else:
-                    hyperlink = param.entity_id_hyperlink
+                    hyperlinks = param.entity_id_hyperlinks
 
             id_type = param.entity_id_type or param.entity['id_type']
             synonym = param.entity['synonym']
@@ -164,7 +168,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=hyperlink,
+                    id_hyperlinks=hyperlinks,
                     links=OrganismAnnotation.OrganismMeta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -195,7 +199,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=hyperlink,
+                    id_hyperlinks=hyperlinks,
                     links=GeneAnnotation.GeneMeta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -221,7 +225,7 @@ class AnnotationService:
                     type=param.token_type,
                     id=param.entity_id,
                     id_type=id_type,
-                    id_hyperlink=hyperlink,
+                    id_hyperlinks=hyperlinks,
                     links=Annotation.Meta.Links(
                         **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                     ),
@@ -309,7 +313,7 @@ class AnnotationService:
                             entity=entity,
                             entity_id=entity[id_str],
                             entity_id_type=match.id_type,
-                            entity_id_hyperlink=match.id_hyperlink,
+                            entity_id_hyperlinks=match.id_hyperlinks,
                             entity_category=entity.get('category', '')
                         )
                     )
@@ -510,7 +514,7 @@ class AnnotationService:
                 entity_synonym = entity['synonym']
                 gene_names.add(entity_synonym)
                 entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlink, match.token))
+                    (entity, match.id_type, match.id_hyperlinks, match.token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
@@ -546,7 +550,7 @@ class AnnotationService:
             gene_data_sources.update(fallback_graph_results.data_sources)
 
         gene_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
             gene_id = None
             category = None
             token_offset = (token.lo_location_offset, token.hi_location_offset)
@@ -605,7 +609,7 @@ class AnnotationService:
                         entity=entity,
                         entity_id=gene_id,
                         entity_id_type=entity_id_type,
-                        entity_id_hyperlink=entity_id_hyperlink,
+                        entity_id_hyperlinks=entity_id_hyperlinks,
                         entity_category=category
                     )
                 )
@@ -631,7 +635,7 @@ class AnnotationService:
                 entity_synonym = entity['synonym']
                 protein_names.add(entity_synonym)
                 entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlink, match.token))
+                    (entity, match.id_type, match.id_hyperlinks, match.token))
 
         protein_names_list = list(protein_names)
 
@@ -664,7 +668,7 @@ class AnnotationService:
             fallback_protein_organism_matches = fallback_graph_results.matches
 
         protein_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
             category = entity.get('category', '')
             protein_id = entity[EntityIdStr.PROTEIN.value]
             entity_synonym = entity['synonym']
@@ -705,7 +709,7 @@ class AnnotationService:
                     entity=entity,
                     entity_id=protein_id,
                     entity_id_type=entity_id_type,
-                    entity_id_hyperlink=entity_id_hyperlink,
+                    entity_id_hyperlinks=entity_id_hyperlinks,
                     entity_category=category
                 )
             )
@@ -736,7 +740,7 @@ class AnnotationService:
                             entity=entity,
                             entity_id=entity[EntityIdStr.SPECIES.value],
                             entity_id_type=match.id_type,
-                            entity_id_hyperlink=match.id_hyperlink,
+                            entity_id_hyperlinks=match.id_hyperlinks,
                             entity_category=entity.get('category', '')
                         )
                     )

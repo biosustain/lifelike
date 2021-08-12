@@ -1033,7 +1033,7 @@ def mock_global_chemical_inclusion_annotation():
             'entity_name': 'fake-chemical-(12345)',
             'synonym': 'fake-chemical-(12345)',
             'data_source': 'ChEBI',
-            'hyperlink': ''
+            'hyperlinks': []
         }
     ]
 
@@ -1042,7 +1042,7 @@ def mock_global_chemical_inclusion_annotation():
             entities=[create_ner_type_chemical(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc['hyperlink']
+            entity_id_hyperlinks=inc['hyperlinks']
         ) for inc in inclusions
     }
 
@@ -1055,7 +1055,7 @@ def mock_global_compound_inclusion_annotation():
             'entity_name': 'compound-(12345)',
             'synonym': 'compound-(12345)',
             'data_source': 'BioCyc',
-            'hyperlink': ''
+            'hyperlinks': []
         }
     ]
 
@@ -1064,7 +1064,7 @@ def mock_global_compound_inclusion_annotation():
             entities=[create_ner_type_compound(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc['hyperlinks']
         ) for inc in inclusions
     }
 
@@ -1084,7 +1084,7 @@ def mock_global_gene_inclusion_annotation():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlinks', [])
         ) for inc in inclusions
     }
 
@@ -1104,7 +1104,7 @@ def mock_global_inclusion_normalized_already_in_lmdb():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1125,7 +1125,7 @@ def mock_global_disease_inclusion_annotation():
             entities=[create_ner_type_disease(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1146,7 +1146,7 @@ def mock_global_phenomena_inclusion_annotation():
             entities=[create_ner_type_phenomena(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1167,7 +1167,7 @@ def mock_global_phenotype_inclusion_annotation():
             entities=[create_ner_type_phenotype(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1187,7 +1187,7 @@ def mock_global_protein_inclusion_annotation():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_protein(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1208,6 +1208,6 @@ def mock_global_species_inclusion_annotation():
             entities=[create_ner_type_species(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }

@@ -2,11 +2,11 @@
   <div class="d-flex align-items-start mb-2" *ngIf="showHeader">
     <label class="m-0 mr-4">{{ title }}:</label>
     <button type="button" *ngIf="editable" class="btn btn-primary btn-xs ml-auto"
-            (click)="openCreateDialog()"><i
+            (click)="openCreateDialog()" [disabled]="limit !== null && value?.length > limit - 1"><i
       class="fa fa-plus"></i></button>
   </div>
 
-  <div *ngIf="editable" class="drop-zone">
+  <div *ngIf="editable && draggable" class="drop-zone">
     Drag links or snippets here
   </div>
 
