@@ -47,7 +47,7 @@ class EnrichmentAnnotationService(AnnotationService):
                 entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                 gene_names.add(entity_synonym)
                 entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlink, match.token))
+                    (entity, match.id_type, match.id_hyperlinks, match.token))
 
         gene_names_list = list(gene_names)
 
@@ -64,7 +64,7 @@ class EnrichmentAnnotationService(AnnotationService):
         fallback_gene_organism_matches = fallback_graph_results.matches
         gene_data_sources = fallback_graph_results.data_sources
 
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
             gene_id = None
             category = None
             organism_id = self.specified_organism.organism_id
@@ -102,7 +102,7 @@ class EnrichmentAnnotationService(AnnotationService):
                                 entity=entity,
                                 entity_id=gene_id,
                                 entity_id_type=entity_id_type,
-                                entity_id_hyperlink=entity_id_hyperlink,
+                                entity_id_hyperlinks=entity_id_hyperlinks,
                                 entity_category=category
                             )
                         )
@@ -123,7 +123,7 @@ class EnrichmentAnnotationService(AnnotationService):
                 entity_synonym = entity['synonym']
                 protein_names.add(entity_synonym)
                 entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlink, match.token))
+                    (entity, match.id_type, match.id_hyperlinks, match.token))
 
         protein_names_list = list(protein_names)
 
@@ -139,7 +139,7 @@ class EnrichmentAnnotationService(AnnotationService):
         )
         fallback_protein_organism_matches = fallback_graph_results.matches
 
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -161,7 +161,7 @@ class EnrichmentAnnotationService(AnnotationService):
                                 entity=entity,
                                 entity_id=protein_id,
                                 entity_id_type=entity_id_type,
-                                entity_id_hyperlink=entity_id_hyperlink,
+                                entity_id_hyperlinks=entity_id_hyperlinks,
                                 entity_category=category
                             )
                         )

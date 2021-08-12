@@ -268,6 +268,7 @@ def seed_globals_into_graph(filename):
     import csv
     import datetime
     import os
+    import json
     from enum import Enum
 
     directory = os.path.realpath(os.path.dirname(__file__))
@@ -328,7 +329,7 @@ def seed_globals_into_graph(filename):
                     'id': entity_id,
                     'idType': data_source,
                     'allText': text,
-                    'idHyperlink': hyperlink
+                    'idHyperlinks': json.dumps({'label': domain, 'url': hyperlink})
                 }
             }
 
