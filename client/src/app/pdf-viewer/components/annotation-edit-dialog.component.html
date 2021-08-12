@@ -21,7 +21,7 @@
 
     <app-form-row for="search-links" label="Search">
       <ng-container *ngFor="let searchLink of getSearchLinks; let i = index" id="search-links">
-        <a href="{{substituteLink(searchLink.link)}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="i < getSearchLinks.length - 1">, </span>
+        <a href="{{searchLink.link}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="i < getSearchLinks.length - 1">, </span>
       </ng-container>
     </app-form-row>
 
