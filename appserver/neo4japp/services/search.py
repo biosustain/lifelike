@@ -161,7 +161,7 @@ class SearchService(GraphBaseDao):
             return FTSResult(term, [], 0, page, limit)
 
         if organism:
-            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {id: $organism})'
+            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {eid: $organism})'
         else:
             organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
 
@@ -294,6 +294,7 @@ class SearchService(GraphBaseDao):
         )
         return results[0]['count']
 
+    # TODO This may need to be checked
     def visualizer_search_query(
         self,
         tx: Neo4jTx,
@@ -323,7 +324,7 @@ class SearchService(GraphBaseDao):
                     literature_entity: m
                 }}) as node_pairs, t, go_class
                 UNWIND node_pairs as node_pair
-                RETURN DISTINCT node_pair AS node_pair, t.id AS taxonomy_id,
+                RETURN DISTINCT node_pair AS node_pair, t.eid AS taxonomy_id,
                     t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
@@ -340,13 +341,14 @@ class SearchService(GraphBaseDao):
         return [
             record for record in tx.run(
                 """
-                MATCH (t:Taxonomy {id: $tax_id})
-                RETURN t.id AS tax_id, t.name AS organism_name
+                MATCH (t:Taxonomy {eid: $tax_id})
+                RETURN t.eid AS tax_id, t.name AS organism_name
                 """,
                 tax_id=tax_id
             ).data()
         ]
 
+    # TODO This may need to be checked
     def get_organisms_query(self, tx: Neo4jTx, term: str, limit: int) -> List[Dict]:
         return [
             record for record in tx.run(
@@ -355,12 +357,13 @@ class SearchService(GraphBaseDao):
                 YIELD node, score
                 MATCH (node)-[]-(t:Taxonomy)
                 with t, collect(node.name) as synonyms LIMIT $limit
-                RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
+                RETURN t.eid AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
                 """,
                 term=term, limit=limit
             ).data()
         ]
 
+    # TODO This may need to be checked
     def get_synonyms_query(
         self,
         tx: Neo4jTx,
@@ -380,7 +383,7 @@ class SearchService(GraphBaseDao):
 
         tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
         if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
 
         return list(
             tx.run(
@@ -432,7 +435,7 @@ class SearchService(GraphBaseDao):
 
         tax_match_str = ''
         if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
 
         return tx.run(
             f"""
