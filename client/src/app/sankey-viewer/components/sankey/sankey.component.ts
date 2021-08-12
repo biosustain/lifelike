@@ -133,25 +133,30 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
+    let nodes;
+    let links;
     if (selectedNodes) {
-      const nodes = selectedNodes.currentValue;
+      nodes = selectedNodes.currentValue;
       if (nodes.size) {
         this.selectNodes(nodes);
       } else {
         this.deselectNodes();
       }
-      const selectedTraces = this.getSelectedTraces({nodes});
-      this.selectTraces(selectedTraces);
+    } else {
+      nodes = this.selectedNodes;
     }
     if (selectedLinks) {
-      const links = selectedLinks.currentValue;
+      links = selectedLinks.currentValue;
       if (links.size) {
         this.selectLinks(links);
       } else {
         this.deselectLinks();
       }
-      const selectedTraces = this.getSelectedTraces({links});
-      this.selectTraces(selectedTraces);
+    } else {
+      links = this.selectedLinks;
+    }
+    if (selectedNodes || selectedLinks) {
+      this.selectTraces({links, nodes});
     }
   }
 
@@ -273,34 +278,32 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   attachNodeEvents(d3Nodes) {
     const {dragmove, nodeClick, nodeMouseOver, nodeMouseOut} = this;
-    let dragging = false;
     d3Nodes
       .on('mouseover', function(data) {
-        return dragging || nodeMouseOver(this, data);
+        return nodeMouseOver(this, data);
       })
       .on('mouseout', function(data) {
-        return dragging || nodeMouseOut(this, data);
+        return nodeMouseOut(this, data);
       })
       .call(
         d3.drag()
-          .clickDistance(1000)
           .on('start', function() {
-            this.parentNode.appendChild(this);
+            d3.select(this).raise();
           })
           .on('drag', function(d) {
-            dragging = true;
             dragmove(this, d);
           })
-          // tslint:disable-next-line:only-arrow-functions
           .on('end', function(d) {
-            // tslint:disable-next-line:no-unused-expression
-            dragging || nodeClick(this, d);
-            dragging = false;
+            const {dx, dy} = d3.event;
+            // d3v5 does not include implementation for this
+            if (Math.hypot(dx, dy) < 10) {
+              return nodeClick(this, d);
+            }
           })
       );
   }
 
-  linkClick(element, data) {
+  async linkClick(element, data) {
     this.linkClicked.emit(data);
     this.clipboard.writeToClipboard(data.path).then(_ =>
         this.snackBar.open(
@@ -314,19 +317,19 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     // this.showPopOverForSVGElement(element, {link: data});
   }
 
-  nodeClick(element, data) {
+  async nodeClick(element, data) {
     this.nodeClicked.emit(data);
   }
 
-  pathMouseOver(element, data) {
+  async pathMouseOver(element, data) {
     this.highlightTraces(new Set([data._trace]));
   }
 
-  pathMouseOut(element, _data) {
+  async pathMouseOut(element, _data) {
     this.unhighlightTraces();
   }
 
-  nodeMouseOver(element, data) {
+  async nodeMouseOver(element, data) {
     this.highlightNode(element);
     const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
@@ -334,7 +337,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.highlightTraces(traces);
   }
 
-  nodeMouseOut(element, _data) {
+  async nodeMouseOut(element, _data) {
     this.unhighlightNode(element);
     this.unhighlightTraces();
   }
@@ -400,13 +403,24 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // endregion
 
+  // Assign attr based on accessor and raise trueish results
+  assignAttrAndRaise(selection, attr, accessor) {
+    selection
+      .each(function(s) {
+        // use each so we search traces only once
+        const selected = accessor(s);
+        const element = d3.select(this)
+          .attr('selectedTrace', selected);
+        if (selected) {
+          element.raise();
+        }
+      });
+  }
+
   // region Select
-  selectTraces(traces: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
-    this.linkSelection
-      .attr('selectedTrace', ({_trace}) => traces.has(_trace))
-      .filter(({_trace}) => traces.has(_trace))
-      .raise();
+  selectTraces(selection) {
+    const selectedTraces = this.getSelectedTraces(selection);
+    this.assignAttrAndRaise(this.linkSelection, 'selectedTrace', ({_trace}) => selectedTraces.has(_trace));
   }
 
   selectNodes(nodes: Set<object>) {
@@ -425,11 +439,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // region Highlight
   highlightTraces(traces: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
-    this.linkSelection
-      .attr('highlighted', ({_trace}) => traces.has(_trace))
-      .filter(({_trace}) => traces.has(_trace))
-      .raise();
+    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({_trace}) => traces.has(_trace));
   }
 
   unhighlightTraces() {
@@ -542,7 +552,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size;
-    const { fontSize } = this.sankey;
+    const {fontSize} = this.sankey;
     return texts => texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
