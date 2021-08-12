@@ -121,6 +121,19 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       value: [file],
     }) => {
       this.biocData = content.splice(0, 1);
+      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
+      if (ref > -1) {
+        // then insert here the References Title
+        const referencesTitleObj: any = {};
+        referencesTitleObj.infons = {
+          section_type: 'INTRO',
+          type: 'title_1'
+        };
+        referencesTitleObj.offset = 0;
+        referencesTitleObj.annotations = [];
+        referencesTitleObj.text = 'References';
+        ((this.biocData[0] as any).passages as any[]).splice(ref, 0 , referencesTitleObj);
+      }
       this.object = object;
       this.emitModuleProperties();
 
@@ -159,7 +172,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isFigure(passage) {
-    const TYPES = ['fig_caption'];
+    const TYPES = ['fig_caption', 'fig_caption_title'];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -434,6 +447,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
+  reBindType(type: string) {
+    const typeMap = {
+      SNP: 'Mutation',
+      DNAMutation: 'Mutation',
+      ProteinMutation: 'Mutation'
+    };
+    return typeMap[type] ? typeMap[type] : type;
+  }
+
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
     // I will replace this code
@@ -441,7 +463,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as any).innerHTML;
     const clazz = (event.target as any).classList;
-    const type = (clazz && clazz.length > 1) ? clazz[1] : 'link';
+    const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
     if (!clazz) {
       dataTransfer.setData('text/plain', this.selectedText);
       dataTransfer.setData('application/lifelike-node', JSON.stringify({
@@ -526,5 +548,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
     return fallback.url.replace(/%s/, encodeURIComponent(identifier));
   }
+
 }
 

@@ -1,6 +1,11 @@
 import { Hyperlink } from '../drawing-tool/services/interfaces';
 
-export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
+export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([
+{
+  domain: 'NCBI',
+  url: 'https://www.ncbi.nlm.nih.gov/search/all/?term=%s'
+},
+{
   domain: 'NCBI_Taxonomy',
   url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s'
 }, {
@@ -10,7 +15,7 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   domain: 'UniProt',
   url: 'https://www.uniprot.org/uniprot/?sort=score&query=%s'
 }, {
-  domain: 'Mesh',
+  domain: 'MeSH',
   url: 'https://www.ncbi.nlm.nih.gov/mesh/?term=%s'
 }, {
   domain: 'ChEBI',
