@@ -54,9 +54,9 @@
      [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()" title="Link size">
     <div class="mb-1">Link Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
-           *ngFor="let valueAccessor of options.linkValueGenerators">
-        <input ngbButton type="radio" [value]="valueAccessor"
-               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+           *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
+        <input ngbButton type="radio" [value]="valueAccessor.value"
+               [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueAccessors">
@@ -69,9 +69,9 @@
      [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()" title="Node fixed size">
     <div class="mb-1">Node Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
-           *ngFor="let valueAccessor of options.nodeValueGenerators">
-        <input ngbButton type="radio" [value]="valueAccessor"
-               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+           *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
+        <input ngbButton type="radio" [value]="valueAccessor.value"
+               [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueAccessors">
