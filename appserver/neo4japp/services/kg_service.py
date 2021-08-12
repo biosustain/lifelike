@@ -492,7 +492,7 @@ class KgService(HybridDBDao):
             UNWIND $ncbi_gene_ids AS node_id
             MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
             WHERE id(g)=node_id
-            RETURN node_id, x.function AS function, x.id AS uniprot_id
+            RETURN node_id, x.function AS function, x.eid AS uniprot_id
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
@@ -503,7 +503,7 @@ class KgService(HybridDBDao):
             UNWIND $ncbi_gene_ids AS node_id
             MATCH (g)-[:HAS_GENE]-(x:db_STRING)
             WHERE id(g)=node_id
-            RETURN node_id, x.id AS string_id, x.annotation AS annotation
+            RETURN node_id, x.eid AS string_id, x.annotation AS annotation
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
@@ -549,15 +549,16 @@ class KgService(HybridDBDao):
             WHERE id(g)=node_id
             WITH node_id, x
             MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)-[:HAS_PATHWAY]-(gen:Genome)
-            WHERE gen.id = x.genome
-            RETURN node_id, x.id AS kegg_id, collect(p.name) AS pathway
+            WHERE gen.eid = x.genome
+            RETURN node_id, x.eid AS kegg_id, collect(p.name) AS pathway
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
 
+    # TODO This may need to be checked
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
         return list(tx.run("""
-            MATCH (chem:db_CHEBI:Chemical) WHERE chem.id IN ['CHEBI:18064']
+            MATCH (chem:db_CHEBI:Chemical) WHERE chem.eid IN ['CHEBI:18064']
             WITH chem
             MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
             WHERE none(r IN relationships(p) WHERE type(r) IN [
@@ -572,6 +573,7 @@ class KgService(HybridDBDao):
             RETURN nodes(p) AS nodes, relationships(p) AS edges
             """))
 
+    # TODO This may need to be checked
     def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
@@ -588,6 +590,7 @@ class KgService(HybridDBDao):
             RETURN nodes(p) AS nodes, relationships(p) AS edges
         """))
 
+    # TODO This may need to be checked
     def get_icd_to_rhse_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH p=allShortestPaths(
@@ -597,23 +600,26 @@ class KgService(HybridDBDao):
             RETURN nodes(p) AS nodes, relationships(p) AS edges
         """))
 
+    # TODO This may need to be checked
     def get_sirt5_to_nfe2l2_literature_query(self, tx: Neo4jTx):
         return list(tx.run("""
-            MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'}),
+            MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'}),
             (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
             MATCH p=allShortestPaths((g)-[*]-(g2))
             WHERE all(rel IN relationships(p) WHERE type(rel) = 'ASSOCIATED')
             RETURN nodes(p) AS nodes, relationships(p) AS edges
         """))
 
+    # TODO This may need to be checked
     def get_ctnnb1_to_diarrhea_literature_query(self, tx: Neo4jTx):
         return list(tx.run("""
-            MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'})
+            MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})
             MATCH p=allShortestPaths((g)-[*]-(d))
             RETURN nodes(p) AS nodes, relationships(p) AS edges
         """))
 
+    # TODO This may need to be checked
     def get_two_pathways_biocyc_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (p1:Pathway {biocyc_id:'PWY-6151'}), (p2:Pathway {biocyc_id: 'PWY-6123'})
@@ -624,6 +630,7 @@ class KgService(HybridDBDao):
             RETURN nodes(p) AS nodes, relationships(p) AS edges
         """))
 
+    # TODO This may need to be checked
     def get_glycolisis_regulon_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH path=
