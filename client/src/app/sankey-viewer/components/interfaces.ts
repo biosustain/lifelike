@@ -49,7 +49,7 @@ export interface SankeyAdvancedOptions {
   linkPalettes: ArrayWithDefault<Palette>;
   selectedLinkPalette: Palette;
   labelEllipsis: any;
-  fontSize: number;
+  fontSizeScale: number;
 }
 
 import visNetwork from 'vis-network';
