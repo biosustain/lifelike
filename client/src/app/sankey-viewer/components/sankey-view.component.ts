@@ -12,7 +12,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { map } from 'rxjs/operators';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
-import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
+import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue, fixedValue } from './algorithms/linkValues';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
@@ -28,6 +28,15 @@ import { CustomisedSankeyLayoutService } from '../services/customised-sankey-lay
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
 
+const LINK_VALUE = {
+  default: 'Default',
+  input_count: 'Input count',
+  fraction_of_fixed_node_value: 'Fraction of fixed node value',
+};
+
+const NODE_VALUE = {
+  none: 'None',
+};
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -85,34 +94,48 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     normalizeLinks: false,
     linkValueAccessors: [],
     nodeValueAccessors: [],
-    predefinedValueAccessors: [{
-      description: 'Input count',
-      callback: () => {
-        this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.find(({description}) => description === 'Input count');
-        this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
-        this.onOptionsChange();
-      }
-    }],
-    linkValueGenerators: [
+    predefinedValueAccessors: [
       {
-        description: 'Input count',
+        description: LINK_VALUE.default,
+        callback: () => {
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          this.onOptionsChange();
+        }
+      },
+      {
+        description: LINK_VALUE.input_count,
+        callback: () => {
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          this.onOptionsChange();
+        }
+    }],
+    linkValueGenerators: {
+      default: {
+        description: LINK_VALUE.default,
+        preprocessing: fixedValue,
+        disabled: () => false
+      } as ValueGenerator,
+      input_count: {
+        description: LINK_VALUE.input_count,
         preprocessing: inputCount,
         disabled: () => false
       } as ValueGenerator,
-      {
-        description: 'Fraction of fixed node value',
-        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators[0],
-        requires: ({node: {fixedValue}}) => fixedValue,
+      fraction_of_fixed_node_value: {
+        description: LINK_VALUE.fraction_of_fixed_node_value,
+        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
+        requires: ({node}) => node.fixedValue,
         preprocessing: fractionOfFixedNodeValue
       } as ValueGenerator
-    ],
-    nodeValueGenerators: [
-      {
-        description: 'None',
+    },
+    nodeValueGenerators: {
+      none: {
+        description: NODE_VALUE.none,
         preprocessing: noneNodeValue,
         disabled: () => false
       } as ValueGenerator
-    ],
+    },
     selectedLinkValueAccessor: undefined,
     selectedNodeValueAccessor: undefined,
     selectedPredefinedValueAccessor: undefined,
@@ -124,7 +147,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       enabled: true,
       value: SankeyLayoutService.labelEllipsis
     },
-    fontSize: 12
+    fontSizeScale: 1.0
   };
   parseProperty = parseForRendering;
   @ViewChild('sankey', {static: false}) sankey;
@@ -141,8 +164,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
+    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
+    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
@@ -415,7 +438,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
               ({description}) => description === link_sizing
             );
           } else {
-            options.selectedLinkValueAccessor = linkValueGenerators[1];
+            options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
           }
           this.onOptionsChange();
         }
@@ -486,7 +509,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   onOptionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
-    this.sankeyLayout.fontSize = this.options.fontSize;
+    this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
