@@ -12,18 +12,17 @@ from sendgrid import SendGridAPIClient
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset
-TYPE_GENE = 'Gene'
-TYPE_PATHWAY = 'Pathway'
-TYPE_PROTEIN = 'Protein'
+TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
+TYPE_CELLULAR_COMPONENT = 'CellularComponent'
+TYPE_COMPOUND = 'Compound'
 TYPE_ENZREACTION = 'EnzReaction'
+TYPE_MOLECULAR_FUNCTION = 'MolecularFunction'
+TYPE_PATHWAY = 'Pathway'
+TYPE_PHENOMENA = 'Phenomena'
+TYPE_PHENOTYPE = 'Phenotype'
 TYPE_REACTION = 'Reaction'
 TYPE_REGULATION = 'Regulation'
 TYPE_RNA = 'RNA'
-TYPE_CHEMICAL = 'Chemical'
-TYPE_COMPOUND = 'Compound'
-TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
-TYPE_CELLULAR_COMPONENT = 'CellularComponent'
-TYPE_MOLECULAR_FUNCTION = 'MolecularFunction'
 
 PROP_CHEBI_ID = 'chebi_id'
 PROP_BIOCYC_ID = 'biocyc_id'
@@ -90,12 +89,16 @@ BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
 # Start Text Mining Dataset
 
+TYPE_ANATOMY = 'Anatomy'
 TYPE_ASSOCIATION = 'Association'
 TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_CLASS = 'Class'
+TYPE_COMPANY = 'Company'
 TYPE_DISEASE = 'Disease'
 TYPE_DNA_BINDING_SITE = 'DNABindingSite'
+TYPE_ENTITY = 'Entity'
+TYPE_FOOD = 'Food'
 TYPE_GENE = 'Gene'
 TYPE_GENE_PRODUCT = 'GeneProduct'
 TYPE_LITERATURE_CHEMICAL = 'LiteratureChemical'
@@ -107,28 +110,35 @@ TYPE_TAXONOMY = 'Taxonomy'
 TYPE_OPERON = 'Operon'
 TYPE_PROMOTER = 'Promoter'
 TYPE_PROTEIN = 'Protein'
+TYPE_SPECIES = 'Species'
 TYPE_TERMINATOR = 'Terminator'
 TYPE_TRANSCRIPTION_FACTOR = 'TranscriptionFactor'
 TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 
 DISPLAY_NAME_MAP = {
+    TYPE_ANATOMY: 'name',
     TYPE_ASSOCIATION: 'description',
     TYPE_ASSOCIATION_TYPE: 'name',
     TYPE_BIOLOGICAL_PROCESS: 'name',
     TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
     TYPE_CLASS: 'biocyc_id',
+    TYPE_COMPANY: 'name',
     TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
     TYPE_DNA_BINDING_SITE: 'displayName',
+    TYPE_ENTITY: 'name',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
+    TYPE_FOOD: 'name',
     TYPE_LITERATURE_CHEMICAL: 'name',
     TYPE_LITERATURE_GENE: 'name',
     TYPE_LITERATURE_DISEASE: 'name',
     TYPE_MOLECULAR_FUNCTION: 'name',
     TYPE_OPERON: 'name',
     TYPE_PATHWAY: 'name',
+    TYPE_PHENOMENA: 'name',
+    TYPE_PHENOTYPE: 'name',
     TYPE_PROMOTER: 'name',
     TYPE_PROTEIN: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
@@ -137,11 +147,29 @@ DISPLAY_NAME_MAP = {
     TYPE_REGULATION: 'displayName',
     TYPE_RNA: 'displayName',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
+    TYPE_SPECIES: 'name',
     TYPE_TAXONOMY: 'name',
     TYPE_TERMINATOR: 'biocyc_id',
     TYPE_TRANSCRIPTION_FACTOR: 'name',
     TYPE_TRANSCRIPTION_UNIT: 'displayName',
 }
+
+ENTITY_LABELS = [
+    TYPE_ANATOMY,
+    TYPE_CHEMICAL,
+    TYPE_COMPANY,
+    TYPE_COMPOUND,
+    TYPE_DISEASE,
+    TYPE_ENTITY,
+    TYPE_FOOD,
+    TYPE_GENE,
+    TYPE_PATHWAY,
+    TYPE_PHENOMENA,
+    TYPE_PHENOTYPE,
+    TYPE_PROTEIN,
+    TYPE_SPECIES,
+    TYPE_TAXONOMY,
+]
 
 # Start Text Mining Dataset
 
