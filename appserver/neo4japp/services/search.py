@@ -376,7 +376,7 @@ class SearchService(GraphBaseDao):
         """
         type_match_str = ''
         if len(types):
-            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+            type_match_str = ' AND any(x IN $types WHERE x IN labels(entity))'
 
         tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
         if len(organisms):
