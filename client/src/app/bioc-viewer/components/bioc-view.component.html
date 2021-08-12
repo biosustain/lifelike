@@ -40,13 +40,14 @@
             </div>
             <div class="module-body overflow-auto">
                 <div class="document" *ngFor="let doc of biocData">
-                    <h1 class="title">
+                    <h1 class="title ordertop">
                         <app-bioc-annotated-text [text]="doc.passages[0].text"
                             [annotations]="doc.passages[0].annotations" [offset]="doc.passages[0].offset"
                             [ngClass]="doc.passages[0].infons.type">
                         </app-bioc-annotated-text>
                     </h1>
                     <ng-template ngFor let-passage [ngForOf]="doc.passages.slice(1)">
+
                         <!-- generic component -->
                         <app-bioc-annotated-text *ngIf="isGeneric(passage)" [text]="passage.text"
                             [annotations]="passage.annotations" [offset]="passage.offset"
@@ -81,6 +82,7 @@
                             </div>
                         </div>
                     </ng-template>
+
                     <div class="date" *ngIf="doc.created">{{doc.created.$date | date}}</div>
                     <div *ngIf="doc.accessions && doc.accessions.length > 0" class="accessions">
                         Accessions:
