@@ -346,8 +346,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       })
       // Advanced search dialog was dismissed or rejected
       .catch((params: ContentSearchOptions) => {
-        // Need to update the folders param here to be consistent with how we use queryString...
-        this.params.folders = params.folders;
         this.queryString = this.getQueryStringFromParams(params);
       });
   }
