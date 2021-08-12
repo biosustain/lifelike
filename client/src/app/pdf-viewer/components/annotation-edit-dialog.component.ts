@@ -81,7 +81,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     const text = formRawValues.text.trim();
 
     return SEARCH_LINKS.map(link => (
-      {domain: `${link.domain.replace('_', ' ')}`, link: `${link.url}${text}`}));
+      {domain: `${link.domain.replace('_', ' ')}`, link: this.substituteLink(link.url, text)}));
   }
 
   getValue(): Annotation {
