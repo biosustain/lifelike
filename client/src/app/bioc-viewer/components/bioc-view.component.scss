@@ -24,6 +24,11 @@ mat-sidenav {
     }
   }
 
+  .ordertop {
+    order: -1;
+    color: black !important;
+  }
+
   .title {
     margin-bottom: 15px;
     font-size: 25px;
@@ -31,7 +36,7 @@ mat-sidenav {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 600;
     display: block;
-    order: -1;
+    color: #237aaa;
   }
 
   .title_1 {
