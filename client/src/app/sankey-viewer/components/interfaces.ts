@@ -1,5 +1,3 @@
-import { linkPalettes } from './color-palette';
-
 export interface ValueGenerator {
   disabled?: () => boolean;
   description: string;
@@ -43,13 +41,17 @@ export interface SankeyAdvancedOptions {
   nodeValueAccessors: Array<any>;
   linkValueAccessors: Array<any>;
   predefinedValueAccessors: Array<any>;
-  nodeValueGenerators: Array<any>;
-  linkValueGenerators: Array<any>;
+  nodeValueGenerators: {
+    [key: string]: ValueGenerator
+  };
+  linkValueGenerators: {
+    [key: string]: ValueGenerator
+  };
   normalizeLinks: boolean;
   linkPalettes: ArrayWithDefault<Palette>;
   selectedLinkPalette: Palette;
   labelEllipsis: any;
-  fontSize: number;
+  fontSizeScale: number;
 }
 
 import visNetwork from 'vis-network';
