@@ -1,4 +1,4 @@
-"""empty message
+"""Update annotation related JSON to have idHyperlinks as a list to allow multiple source links
 
 Revision ID: d75017512d42
 Revises: ba94cdb023f4
