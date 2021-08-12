@@ -42,7 +42,7 @@ FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
 FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
 FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
-FILE_MIME_TYPE_SANKEY = 'vnd.lifelike.document/sankey'
+FILE_MIME_TYPE_GRAPH = 'vnd.lifelike.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
 
 
