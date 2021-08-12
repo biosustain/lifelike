@@ -100,8 +100,8 @@ export class SynonymSearchComponent {
             return synonymHasNonWordChars ? `"${synonym}"` : synonym;
           })
           .join(' or ');
-        return isNullOrUndefined(entity.organism) ? `(${synonyms})` : `((${synonyms}) and "${entity.organism}")`;
-    });
+        return `(${synonyms})`;
+      });
     this.modal.close(expressionsToAdd);
   }
 
