@@ -202,24 +202,42 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           // TODO: Prevent the user from editing or something so the user doesnt lose data?
         }));
     */
-        
+
+    JSZip.loadAsync(this.contentValue, { base64: true }).then(function (zip) {
+      console.log(zip.files);
+    });
+
     JSZipUtils.getBinaryContent(this.contentValue, function (err, data) {
       if (err) {
         console.error(err);
         // abort?
       }
-      JSZip.loadAsync(data).then(function () {
-        graph => {
-          this.graphCanvas.setGraph(graph);
-          this.graphCanvas.zoomToFit(0);
-          
-          if (this.highlightTerms != null && this.highlightTerms.length) {
-            this.graphCanvas.highlighting.replace(
-              this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-              );
-            }
-          }
-        });
+      JSZip.loadAsync(data, { base64: true }).then(function (zip) {
+        console.log(zip.files);
+        /*
+        this.emitModuleProperties();
+
+        this.subscriptions.add(readBlobAsBuffer(data).pipe(
+          mapBufferToJson<UniversalGraph>(),
+          this.errorHandler.create({label: 'Parse map data'}),
+        ).subscribe(
+          graph => {
+            this.graphCanvas.setGraph(graph);
+            this.graphCanvas.zoomToFit(0);
+
+            if (this.highlightTerms != null && this.highlightTerms.length) {
+              this.graphCanvas.highlighting.replace(
+                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+                );
+              }
+            },
+          e => {
+            // Data is corrupt
+            // TODO: Prevent the user from editing or something so the user doesnt lose data?
+          })
+        );
+        */
+      });
     });
   }
 
