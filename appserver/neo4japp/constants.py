@@ -393,3 +393,10 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+
+# Bitmaps of icons, used in the creation of SVG files
+# Make a wrapper around this and lazy load the values?
+ICON_DATA = {}
+for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
+    with open(f'/home/n4j/assets/{key}.b', 'r') as file:
+        ICON_DATA[f'/home/n4j/assets/{key}.png'] = file.read()
