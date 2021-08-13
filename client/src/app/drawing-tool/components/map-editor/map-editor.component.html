@@ -8,9 +8,7 @@
         </app-module-error>
     </ng-container>
     <app-module-header *ngIf="map" [object]="map"
-                       (dragStarted)="dragStarted($event)"
-                       (objectRestore)="restore($event)"
-                       (objectUpdate)="emitModuleProperties()">
+                       (dragStarted)="dragStarted($event)">
                 <app-object-menu [object]="map" [forEditing]="true"
                                  [showOpen]="false" [showDelete]="false"
                                  [showRestore]="true" (objectRestore)="restore($event)"
