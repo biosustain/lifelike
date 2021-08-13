@@ -651,28 +651,24 @@ def example4_pdf_gene_and_organism_network(
             tx=tx,
             gene_name='cysB',
             gene_id='945771',
-            locus_tag='b1275'
         )
 
         mcrB = create_gene_node(
             tx=tx,
             gene_name='mcrB',
             gene_id='949122',
-            locus_tag='b4346'
         )
 
         oxyR_e_coli = create_gene_node(
             tx=tx,
             gene_name='oxyR',
             gene_id='948462',
-            locus_tag='b3961'
         )
 
         oxyR_salmonella = create_gene_node(
             tx=tx,
             gene_name='cysB',
             gene_id='1255651',
-            locus_tag='STM4125'
         )
 
         e_coli = create_taxonomy_node(
