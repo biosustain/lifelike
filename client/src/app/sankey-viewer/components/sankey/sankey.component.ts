@@ -29,7 +29,6 @@ import { SankeyLayoutService } from './sankey-layout.service';
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
-    private elRef: ElementRef,
     private clipboard: ClipboardService,
     private readonly snackBar: MatSnackBar,
     private sankey: SankeyLayoutService
@@ -58,8 +57,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   // region Properties (&Accessors)
-  static MIN_FONT = 12;
-  static MAX_FONT = 48;
   static MARGIN = 10;
   margin = {
     top: SankeyComponent.MARGIN,
@@ -90,6 +87,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() normalizeLinks = true;
   @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
+  @Input() searchedEntities = new Set<object>();
+  @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
@@ -113,10 +112,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('height', height);
   }
 
-  static getFontSize(normSize) {
-    return this.MIN_FONT + (normSize || 0) * (SankeyComponent.MAX_FONT - SankeyComponent.MIN_FONT);
-  }
-
   static nodeGroupAccessor({type}) {
     return type;
   }
@@ -124,7 +119,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, data, nodeAlign}: SimpleChanges) {
+  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -159,6 +154,27 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
       const selectedTraces = this.getSelectedTraces({links});
       this.selectTraces(selectedTraces);
+    }
+    if (searchedEntities) {
+      const entities = searchedEntities.currentValue;
+      if (entities.size) {
+        this.searchNodes(entities);
+        this.searchLinks(entities);
+      } else {
+        this.stopSearchNodes();
+        this.stopSearchLinks();
+      }
+    }
+    if (focusedNode) {
+      const {currentValue, previousValue} = focusedNode;
+      if (previousValue) {
+        this.unFocusNode(previousValue);
+        this.unFocusLink(previousValue);
+      }
+      if (currentValue) {
+        this.focusNode(currentValue);
+        this.focusLink(currentValue);
+      }
     }
   }
 
@@ -202,6 +218,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       });
   }
 
+  get sankeySelection() {
+    return d3.select(this.svg && this.svg.nativeElement);
+  }
+
   deselectNodes() {
     this.nodeSelection
       .attr('selected', undefined);
@@ -231,7 +251,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const extentLeft = height - margin.bottom;
 
     // Get the svg element and update
-    d3.select(this.svg.nativeElement)
+    this.sankeySelection
       .attr('width', width)
       .attr('height', height)
       .call(
@@ -347,12 +367,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   scaleZoom(scaleBy) {
-    d3.select(this.svg.nativeElement).transition().call(this.zoom.scaleBy, scaleBy);
+    this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
   }
 
   resetZoom() {
     // it is used by its parent
-    d3.select(this.svg.nativeElement).call(this.zoom.transform, d3.zoomIdentity);
+    this.sankeySelection.call(this.zoom.transform, d3.zoomIdentity);
   }
 
   // the function for moving the nodes
@@ -430,6 +450,97 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // endregion
 
+  // region Search
+  searchNodes(nodes: Set<object>) {
+    const selection = this.nodeSelection
+      .attr('searched', n => nodes.has(n))
+      .filter(n => nodes.has(n))
+      .raise()
+      .select('g');
+
+    // postpone so the size is known
+    requestAnimationFrame(_ =>
+      selection
+        .each(SankeyComponent.updateTextShadow)
+    );
+  }
+
+  stopSearchNodes() {
+    // tslint:disable-next-line:no-unused-expression
+    this.nodeSelection
+      .attr('searched', undefined);
+  }
+
+  searchLinks(links: Set<object>) {
+    this.linkSelection
+      .attr('searched', l => links.has(l))
+      .filter(l => links.has(l))
+      .raise();
+  }
+
+  stopSearchLinks() {
+    // tslint:disable-next-line:no-unused-expression
+    this.linkSelection
+      .attr('searched', undefined);
+  }
+  // endregion
+
+  // region Focus
+  focusNode(node: object) {
+    const {nodeLabel} = this.sankey;
+    // tslint:disable-next-line:no-unused-expression
+    const selection = this.nodeSelection
+      .filter(n => node === n)
+      .raise()
+      .attr('focused', true)
+      .select('g')
+      .call(textGroup => {
+        textGroup
+          .select('text')
+          .text(nodeLabel);
+      });
+
+    // postpone so the size is known
+    requestAnimationFrame(_ =>
+      selection
+        .each(SankeyComponent.updateTextShadow)
+    );
+  }
+
+  unFocusNode(node: object) {
+    const {nodeLabelShort} = this.sankey;
+    // tslint:disable-next-line:no-unused-expression
+    const selection = this.nodeSelection
+      .attr('focused', undefined)
+      .filter(n => node === n)
+      .select('g')
+      .call(textGroup => {
+        textGroup
+          .select('text')
+          .text(nodeLabelShort);
+      });
+
+    // postpone so the size is known
+    requestAnimationFrame(_ =>
+      selection
+        .each(SankeyComponent.updateTextShadow)
+    );
+  }
+
+  focusLink(link: object) {
+    this.linkSelection
+      .filter(l => link === l)
+      .raise()
+      .attr('focused', true);
+  }
+
+  unFocusLink(link: object) {
+    this.linkSelection
+      .attr('focused', undefined);
+  }
+
+  // endregion
+
   // region Highlight
   highlightTraces(traces: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
@@ -481,12 +592,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   unhighlightNode(element) {
-    const {nodeLabelShort, nodeLabelShouldBeShorted} = this.sankey;
+    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
 
     this.nodeSelection
       .attr('highlighted', false);
 
-    d3.select(element).select('text')
+    const selection = d3.select(element);
+    selection.select('text')
       .filter(nodeLabelShouldBeShorted)
       // todo: reenable when performance improves
       // .transition().duration(RELAYOUT_DURATION)
@@ -497,6 +609,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
       // });
       .text(nodeLabelShort);
+
+    // resize shadow back to shorter test when it is ussed as search result
+    if (searchedEntities.size) {
+      // postpone so the size is known
+      requestAnimationFrame(_ =>
+        selection.select('g')
+          .each(SankeyComponent.updateTextShadow)
+      );
+    }
   }
 
   // endregion
@@ -549,17 +670,20 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
     const [width, _height] = this.sankey.size;
+    const {fontSize} = this.sankey;
     return texts => texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
       )
       .attr('text-anchor', 'end')
+      .attr('font-size', fontSize)
       .call(textGroup =>
         textGroup.select('text')
           .attr('dy', '0.35em')
       )
       .filter(({_x0}) => _x0 < width / 2)
-      .attr('text-anchor', 'start');
+      .attr('text-anchor', 'start')
+      .attr('font-size', fontSize);
   }
 
   /**
@@ -573,6 +697,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         id,
         nodeColor,
         nodeTitle,
+        linkTitle,
         nodeLabel,
         nodeLabelShort,
         linkColor,
@@ -614,7 +739,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('fill', linkColor)
       .call(join =>
         join.select('title')
-          .text(nodeTitle)
+          .text(linkTitle)
       );
 
     this.nodeSelection

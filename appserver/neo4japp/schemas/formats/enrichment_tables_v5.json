@@ -56,19 +56,107 @@
         },
         "domainInfo": {
           "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "labels"
-            ],
-            "properties": {
-              "labels": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
+          "additionalProperties": false,
+          "patternProperties": {
+            "^GO$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            },
+            "^BioCyc$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            },
+            "^String$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            },
+            "^Regulon$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            },
+            "^UniProt$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            },
+            "^KEGG$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "labels"
+              ],
+              "properties": {
+                "labels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
                 }
               }
             }

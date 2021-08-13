@@ -59,18 +59,26 @@ class SearchService(GraphBaseDao):
     def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for record in result:
-            node = record['node']
+            mapped_entity, literature_node = (
+                record['node_pair']['mapped_entity'],
+                record['node_pair']['literature_entity']
+            )
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
 
             graph_node = GraphNode(
-                id=node.id,
-                label=get_first_known_label_from_node(node),
-                sub_labels=list(node.labels),
-                domain_labels=get_known_domain_labels_from_node(node),
-                display_name=node.get('name'),
-                data=snake_to_camel_dict(dict(node), {}),
+                # When it exists, we use the literature node ID instead so the node can be expanded
+                # in the visualizer
+                id=mapped_entity.id if literature_node is None else literature_node.id,
+                label=get_first_known_label_from_node(mapped_entity),
+                sub_labels=list(mapped_entity.labels),
+                domain_labels=(
+                    get_known_domain_labels_from_node(mapped_entity) +
+                    (['Literature'] if literature_node is not None else [])
+                ),
+                display_name=mapped_entity.get('name'),
+                data=snake_to_camel_dict(dict(mapped_entity), {}),
                 url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
@@ -163,23 +171,22 @@ class SearchService(GraphBaseDao):
             normalize_str(domain) == 'literature'
             for domain in domains
         ])
-        # Return nodes in one or more domains, plus mapped Literature nodes
+        # Return nodes in one or more domains, with mapped Literature data (if it exists)
         if domains == [] or (len(domains) > 1 and literature_in_selected_domains):
             literature_match_string = """
                 WITH n, t, n.namespace as go_class
                 OPTIONAL MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
-                WITH collect(n) + collect(m) as nodes, t, go_class
-                UNWIND nodes as node
             """
-        # Return nodes in one or more domains, without Literature nodes
+        # Return nodes in one or more domains, and *exclude* Literature data from the result
         elif not literature_in_selected_domains:
-            literature_match_string = 'WITH n as node, t, n.namespace as go_class'
-        # Return only Literature nodes
+            literature_match_string = """
+                WITH n, t, n.namespace as go_class, NULL as m
+            """
+        # Return only nodes mapped to Literature nodes
         else:
             literature_match_string = """
                 WITH n, t, n.namespace as go_class
                 MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
-                WITH m as node, t, go_class
             """
 
         result = self.graph.read_transaction(
@@ -311,7 +318,12 @@ class SearchService(GraphBaseDao):
                 WITH n
                 {organism_match_string}
                 {literature_match_string}
-                RETURN DISTINCT node AS node, t.id AS taxonomy_id,
+                WITH collect({{
+                    mapped_entity: n,
+                    literature_entity: m
+                }}) as node_pairs, t, go_class
+                UNWIND node_pairs as node_pair
+                RETURN DISTINCT node_pair AS node_pair, t.id AS taxonomy_id,
                     t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
@@ -364,7 +376,7 @@ class SearchService(GraphBaseDao):
         """
         type_match_str = ''
         if len(types):
-            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+            type_match_str = ' AND any(x IN $types WHERE x IN labels(entity))'
 
         tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
         if len(organisms):

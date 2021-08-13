@@ -48,7 +48,7 @@ def get_recognition_service(get_lmdb_service, exclusions=None, inclusions=None):
     )
 
 
-def create_mock_entity_annotations(data: List[Tuple[str, str, int, int, str]]):
+def create_mock_entity_annotations(data: Tuple[str, str, int, int, str]):
     kw, tid, lo, hi, kwtype = data
     return Annotation(
         page_number=1,
@@ -57,20 +57,20 @@ def create_mock_entity_annotations(data: List[Tuple[str, str, int, int, str]]):
         hi_location_offset=hi,
         keyword_length=len(kw),
         text_in_document=tid,
-        keywords=[''],
+        keywords=[],
         rects=[[1, 2]],
         meta=Annotation.Meta(
             type=kwtype,
             id='',
             id_type='',
-            id_hyperlink='',
+            id_hyperlinks=[],
             links=Annotation.Meta.Links(),
         ),
         uuid='',
     )
 
 
-def create_mock_gene_annotations(data: List[Tuple[str, str, int, int, str]]):
+def create_mock_gene_annotations(data: Tuple[str, str, int, int, str]):
     kw, tid, lo, hi, _ = data
     return GeneAnnotation(
         page_number=1,
@@ -79,13 +79,13 @@ def create_mock_gene_annotations(data: List[Tuple[str, str, int, int, str]]):
         hi_location_offset=hi,
         keyword_length=len(kw),
         text_in_document=tid,
-        keywords=[''],
+        keywords=[],
         rects=[[1, 2]],
         meta=GeneAnnotation.GeneMeta(
             type=EntityType.GENE.value,
             id='',
             id_type='',
-            id_hyperlink='',
+            id_hyperlinks=[],
             links=Annotation.Meta.Links(),
             category=OrganismCategory.EUKARYOTA.value,
         ),

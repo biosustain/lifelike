@@ -67,19 +67,9 @@ def test_get_snippets_for_edge(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet1.raw_score == 1
-        assert snippet1.normalized_score == 0.222
-
         assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
-        assert snippet2.raw_score == 3
-        assert snippet2.normalized_score == 0.456
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet2.raw_score == 1
-        assert snippet2.normalized_score == 0.222
-
         assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
-        assert snippet1.raw_score == 3
-        assert snippet1.normalized_score == 0.456
     else:
         assert False
 
@@ -164,19 +154,9 @@ def test_get_snippets_for_cluster(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet1.raw_score == 1
-        assert snippet1.normalized_score == 0.222
-
         assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
-        assert snippet2.raw_score == 3
-        assert snippet2.normalized_score == 0.456
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet2.raw_score == 1
-        assert snippet2.normalized_score == 0.222
-
         assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
-        assert snippet1.raw_score == 3
-        assert snippet1.normalized_score == 0.456
     else:
         assert False
 

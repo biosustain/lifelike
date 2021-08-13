@@ -65,7 +65,11 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
-import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
+import { LinksPanelComponent } from '../drawing-tool/components/links-panel.component';
+import {
+  DATA_TRANSFER_DATA_PROVIDER,
+  DataTransferDataService,
+} from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
 import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
@@ -120,6 +124,7 @@ const components = [
   OrganismComponent,
   ResultControlComponent,
   PaginationComponent,
+  LinksPanelComponent,
   ObjectPathComponent,
   ObjectMenuComponent,
   ProjectIconComponent,
@@ -131,6 +136,7 @@ const components = [
     MessageDialogComponent,
     ProgressDialogComponent,
     ShareDialogComponent,
+    LinksPanelComponent,
   ],
   imports: [
     CommonModule,
@@ -154,7 +160,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
-    ModuleHeaderComponent
+    ModuleHeaderComponent,
   ],
   providers: [
     ApiService,
@@ -204,7 +210,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
-    ModuleHeaderComponent
+    ModuleHeaderComponent,
   ],
 })
 export class SharedModule {
