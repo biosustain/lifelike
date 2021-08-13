@@ -1,0 +1,19 @@
+<app-module-progress *ngIf="status?.running || status?.loading"
+                     class="module-body h-100"
+                     [style.zIndex]="2"
+>
+    <ng-container *ngIf="!progressTemplate; else progressTemplate">
+        Downloading file...
+    </ng-container>
+</app-module-progress>
+<app-module-error *ngIf="status?.failedErrorShown || status?.error"
+                  class="module-body h-100"
+                  [error]="status?.error" [style.zIndex]="2"
+>
+    <ng-container *ngIf="!errorTemplate; else errorTemplate">
+        Error downloading file...
+    </ng-container>
+</app-module-error>
+<ng-container *ngIf="status?.resultsShown || status?.value">
+    <ng-content></ng-content>
+</ng-container>

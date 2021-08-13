@@ -2,8 +2,9 @@
         *ngIf="(loadTask.status$ | async) as status"
         [status]="status"
         [object]="object"
+        [titleTemplate]="tabTitle"
 >
-    <ng-container #tabTitle>
+    <ng-template #tabTitle>
         <ng-container *ngIf="object?.isDirectory && !object.parent">
             Project Navigator for: {{object.project.name}}
         </ng-container>
@@ -13,8 +14,8 @@
         <ng-container *ngIf="!object?.isDirectory">
             File Navigator
         </ng-container>
-    </ng-container>
-    <div body class="flex-fill overflow-auto">
+    </ng-template>
+    <div class="flex-fill overflow-auto">
         <!-- Body -->
         <div class="module-body" *ngIf="object?.isFile" [class.border-bottom]="object.hasWordCloud">
             <app-associated-maps [object]="object"></app-associated-maps>
