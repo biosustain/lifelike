@@ -13,6 +13,7 @@ from neo4japp.data_transfer_objects import (
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
+    get_first_known_label_from_list,
     get_first_known_label_from_node,
     get_known_domain_labels_from_node,
     normalize_str,
@@ -261,22 +262,20 @@ class SearchService(GraphBaseDao):
         synonym_data = []
 
         for row in results:
-            type = get_first_known_label_from_node(row['entity'])
-            synonyms = row['synonyms']
-            name = ''
-            organism = None
-
-            if row['t'] is not None:
-                organism = row['t'].get('name', None)
-
-            if row['entity'].get('name', None) is not None:
-                name = row['entity']['name']
+            try:
+                type = get_first_known_label_from_list(row['entity_labels'])
+            except ValueError:
+                type = 'Unknown'
+                current_app.logger.warning(
+                    f"Node had an unexpected list of labels: {row['entity_labels']}",
+                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                )
 
             synonym_data.append({
                 'type': type,
-                'name': name,
-                'organism': organism,
-                'synonyms': synonyms,
+                'name': row['entity_name'],
+                'organism': row['taxonomy_name'],
+                'synonyms': row['synonyms'],
             })
         return synonym_data
 
@@ -348,7 +347,6 @@ class SearchService(GraphBaseDao):
             ).data()
         ]
 
-    # TODO This may need to be checked
     def get_organisms_query(self, tx: Neo4jTx, term: str, limit: int) -> List[Dict]:
         return [
             record for record in tx.run(
@@ -363,7 +361,6 @@ class SearchService(GraphBaseDao):
             ).data()
         ]
 
-    # TODO This may need to be checked
     def get_synonyms_query(
         self,
         tx: Neo4jTx,
@@ -402,8 +399,9 @@ class SearchService(GraphBaseDao):
                 ORDER BY size(synonyms) DESC
                 {tax_match_str}
                 RETURN
-                    entity,
-                    t,
+                    entity.name as entity_name,
+                    t.name as taxonomy_name,
+                    labels(entity) as entity_labels,
                     collect(DISTINCT synonyms) AS synonyms,
                     COUNT(DISTINCT synonyms) AS synonym_count,
                     matches_term
