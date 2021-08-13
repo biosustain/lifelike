@@ -1,5 +1,5 @@
 /**
- * Commonly-used imports are grouped here for simplier use by feature modules.
+ * Commonly-used imports are grouped here for simpler use by feature modules.
  */
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -71,13 +71,11 @@ import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/hi
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
-import { TabComponent } from './components/tab/tab.component';
 import { ObjectPathComponent } from './components/object-path/object-path.component';
 import { ObjectMenuComponent } from './components/object-menu/object-menu.component';
 import { ProjectIconComponent } from './components/project-icon/project-icon.component';
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
 import { UnifiedHeaderComponent } from './components/unified-header/unified-header.component';
-import { StatusPlaceholdersComponent } from './components/status-placeholders/status-placeholders.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -156,9 +154,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
-    UnifiedHeaderComponent,
-    TabComponent,
-    StatusPlaceholdersComponent
+    UnifiedHeaderComponent
   ],
   providers: [
     ApiService,
@@ -208,9 +204,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
-    UnifiedHeaderComponent,
-    TabComponent,
-    StatusPlaceholdersComponent
+    UnifiedHeaderComponent
   ],
 })
 export class SharedModule {

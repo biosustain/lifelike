@@ -8,12 +8,12 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
   styleUrls: ['./unified-header.component.scss']
 })
 export class UnifiedHeaderComponent {
-  @Input() object: FilesystemObject;
+  @Input() object!: FilesystemObject;
   @Input() header: TemplateRef<any>;
   @Input() titleTemplate: TemplateRef<any>;
-  requestRefresh;
-  returnUrl: string;
+  @Input() returnUrl: string;
   @Output() dragStarted: EventEmitter<any>;
+  @Output() requestRefresh: EventEmitter<any>;
 
   constructor(
     private readonly filesystemObjectActions: FilesystemObjectActions
