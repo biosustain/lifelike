@@ -85,7 +85,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    */
     const contentValue = new JSZip();
     contentValue.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
-    contentValue.generateAsync({ type: "blob" })
+    contentValue.generateAsync({ type: "base64" })
       .then(function (content) {
         this.filesystemService.save([this.locator], { content })
           .pipe(this.errorHandler.create({label: 'Update map'}))
