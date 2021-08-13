@@ -8,7 +8,10 @@
             <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
         </app-module-error>
     </ng-container>
-    <app-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
+    <app-module-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
+                <app-object-menu [object]="map" [forEditing]="false"
+                                 [showOpen]="false" [showDelete]="false">
+                </app-object-menu>
         <div class="btn-group ml-2 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"
@@ -31,7 +34,7 @@
                                 (previous)="previous()" (next)="next()">
             </app-search-control>
         </div>
-    </app-header>
+    </app-module-header>
     <div class="module-body m-0 w-100 h-100" style="z-index: 0">
         <ng-container *ngIf="(loadTask.status$ | async) as status">
             <div class="detail-overlay">

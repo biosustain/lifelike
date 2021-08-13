@@ -8,10 +8,14 @@
     </app-module-error>
 
     <ng-container *ngIf="status.resultsShown">
-        <app-header
-                [object]="object"
-                (dragStarted)="dragStarted.emit($event)"
-        ></app-header>
+        <app-module-header *ngIf="object"
+                           [object]="object"
+                           (dragStarted)="dragStarted($event)"
+        >
+            <app-object-menu [object]="object" [forEditing]="true" [showOpen]="false"
+                             [showDelete]="false" (objectRefresh)="requestRefresh()">
+            </app-object-menu>
+        </app-module-header>
         <div class="module-body overflow-auto" style="z-index: 0">
             <div class="document" *ngFor="let doc of biocData">
                 <h1 class="title">

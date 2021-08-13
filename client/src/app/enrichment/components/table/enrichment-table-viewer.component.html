@@ -8,11 +8,14 @@
     </app-module-progress>
 
     <ng-container *ngIf="result.object.value">
-        <app-header
+        <app-module-header
                 [object]="result.object.value"
                 (dragStarted)="dragStarted($event, result.object.value)">
-            <!--                   todo (objectRestore)="restore($event)"-->
-            <!--                   todo (objectUpdate)="objectUpdate()"-->
+                  <app-object-menu [object]="result.object.value" [forEditing]="true"
+                                   [showOpen]="false" [showDelete]="false"
+                                   [showRestore]="true" (objectRestore)="restore($event)"
+                                   (objectUpdate)="objectUpdate()">
+                  </app-object-menu>
             <div *ngIf="queuedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
@@ -92,7 +95,7 @@
                 </ng-template>
             </div>
 
-        </app-header>
+        </app-module-header>
 
         <div
                 *ngIf="result.document?.duplicateGenes?.length"

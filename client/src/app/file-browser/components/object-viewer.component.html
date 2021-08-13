@@ -7,7 +7,11 @@
     </app-module-progress>
 
     <ng-container *ngIf="result.value">
-        <app-header [object]="result.value"></app-header>
+        <app-module-header [object]="result.value">
+                <app-object-menu [object]="result.value" [forEditing]="false"
+                                 [showOpen]="false" [showDelete]="false">
+                </app-object-menu>
+        </app-module-header>
         <div class="d-flex my-auto text-center justify-content-center text-truncate p-4">
             <button type="button" class="btn btn-primary text-truncate"
                     (click)="downloadObject(result.value); $event.preventDefault()">
