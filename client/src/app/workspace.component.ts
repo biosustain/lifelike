@@ -105,7 +105,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     }
   }
 
-  closeWorkbench() {
+  clearWorkbench() {
     for (const pane of this.workspaceManager.panes.panes) {
       this.closeAllTabs(pane);
     }

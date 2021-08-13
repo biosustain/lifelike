@@ -401,17 +401,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     const hyperlinks = [];
+    const hyperlink = meta.idHyperlinks || [];
 
-    const hyperlink = meta.idHyperlink || '';
-    if (hyperlink.length) {
+    for (const link of hyperlink) {
+      const {domain, url} = JSON.parse(link);
       let hyperlinkText = 'Annotation URL';
       try {
-        hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
-      } catch (e) {
-      }
+        hyperlinkText = new URL(url).hostname.replace(/^www\./i, '');
+      } catch (e) { }
+
       hyperlinks.push({
         domain: hyperlinkText,
-        url: hyperlink,
+        url,
       });
     }
 

@@ -28,7 +28,7 @@ import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
 const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
-const SANKEY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/sankey';
+const GRAPH_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/graph';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
 const BIOC_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc';
@@ -49,7 +49,7 @@ export const DEFAULT_UNICODE = '\uf15b';
 
 export const DIRECTORY_FA_CLASS = 'fa fa-folder';
 export const MAP_FA_CLASS = 'fa fa-project-diagram';
-export const SANKEY_FA_CLASS = 'fak fa-diagram-sankey-solid';
+export const GRAPH_FA_CLASS = 'fak fa-diagram-sankey-solid';
 export const ENRICHMENT_TABLE_FA_CLASS = 'fa fa-table';
 export const PDF_FA_CLASS = 'fa fa-file-pdf';
 export const BIOC_FA_CLASS = 'fa fa-file-pdf';
@@ -190,7 +190,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case DIRECTORY_MIMETYPE:
       case MAP_MIMETYPE:
       case ENRICHMENT_TABLE_MIMETYPE:
-      case SANKEY_MIMETYPE:
+      case GRAPH_MIMETYPE:
       case BIOC_MIMETYPE:
       case 'application/pdf':
         return true;
@@ -328,8 +328,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return BIOC_FA_CLASS;
       case ENRICHMENT_TABLE_MIMETYPE:
         return ENRICHMENT_TABLE_FA_CLASS;
-      case SANKEY_MIMETYPE:
-        return SANKEY_FA_CLASS;
+      case GRAPH_MIMETYPE:
+        return GRAPH_FA_CLASS;
       case PDF_MIMETYPE:
         return PDF_FA_CLASS;
       default:
@@ -348,7 +348,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return BIOC_UNICODE;
       case ENRICHMENT_TABLE_MIMETYPE:
         return ENRICHMENT_TABLE_UNICODE;
-      case SANKEY_MIMETYPE:
+      case GRAPH_MIMETYPE:
         return SANKEY_UNICODE;
       case PDF_MIMETYPE:
         return PDF_UNICODE;
@@ -505,7 +505,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'bioc', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId];
-      case SANKEY_MIMETYPE:
+      case GRAPH_MIMETYPE:
         return ['/projects', projectName, 'sankey', this.hashId];
       default:
         return ['/files', this.hashId];
