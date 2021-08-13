@@ -410,7 +410,7 @@ def oxygen(graph: Session) -> Node:
 @pytest.fixture(scope='function')
 def pomc(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        pomc = create_gene_node(tx, 'POMC', '5443', None)
+        pomc = create_gene_node(tx, 'POMC', '5443')
     return pomc
 
 

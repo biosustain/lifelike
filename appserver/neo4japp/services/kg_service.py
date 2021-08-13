@@ -298,7 +298,9 @@ class KgService(HybridDBDao):
                             node_color = '#000000'
                             current_app.logger.warning(
                                 f"Node had an unexpected list of labels: {node['labels']}",
-                                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                                extra=EventLog(
+                                    event_type=LogEventType.KNOWLEDGE_GRAPH.value
+                                ).to_dict()
                             )
                         except KeyError:
                             # If label does not exist in styles dict, then use fallbacks
