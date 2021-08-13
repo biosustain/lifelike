@@ -17,10 +17,6 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
 import { cloneDeep } from 'lodash';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
-import {
-  GraphClipboardData,
-  TYPE_STRING,
-} from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../../../file-browser/services/object-type.service';
 import { Observable } from 'rxjs';
 import { mergeMap, shareReplay } from 'rxjs/operators';

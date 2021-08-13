@@ -1,20 +1,16 @@
 <div class="module" appContainerBreakpoints *ngIf="(loadTask?.status$ | async) as status">
-  <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
-                       style="z-index: 2">
-    <div>
-      Downloading annotations...
-    </div>
-  </app-module-progress>
+    <app-module-progress *ngIf="status.running">
+        Downloading annotations...
+    </app-module-progress>
 
-  <app-module-error *ngIf="status.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
-                    [error]="status.error" style="z-index: 2">
-    <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-  </app-module-error>
+    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+
     <ng-template #tabTitle>{{ title }}</ng-template>
     <app-header
             [object]="object"
             [titleTemplate]="tabTitle"
-            (dragStarted)="dragStarted.emit($event)"
     >
         <div class="d-flex align-items-center px-3 mx-auto">
             <div class="custom-control custom-checkbox">
