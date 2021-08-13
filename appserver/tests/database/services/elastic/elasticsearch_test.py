@@ -304,9 +304,6 @@ def test_using_wildcard_in_phrase_does_not_work(
 
     assert len(res) == 0
 
-    expected = [
-
-    ]
 
 @pytest.mark.parametrize(
     'test, expected',
@@ -1951,4 +1948,116 @@ def test_user_query_parser(
     parser = elastic_service._get_query_parser(text_fields, text_field_boosts)
     res = parser.parseString(processed_query)[0].to_dict()
 
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'test, expected',
+    [
+        (
+            '"dog and cat"',
+            '"dog and cat"',
+        ),
+        (
+            '"dog and" cat"',
+            '"dog and" cat',
+        ),
+        (
+            '"dog " and cat"',
+            '"dog " and cat',
+        ),
+    ],
+)
+def test_strip_unmatched_quotations(
+    elastic_service,
+    test,
+    expected
+):
+    res = elastic_service._strip_unmatched_quotations(test)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    'test, expected',
+    [
+        (
+            '()',
+            '()'
+        ),
+        (
+            '(())',
+            '(())'
+        ),
+        (
+            '() ()',
+            '() ()'
+        ),
+        (
+            '(()) ()',
+            '(()) ()'
+        ),
+        (
+            '(',
+            ''
+        ),
+        (
+            '(()',
+            '()'
+        ),
+        (
+            '() (',
+            '() '
+        ),
+        (
+            '(() ()',
+            '() ()'
+        ),
+        (
+            '( ()',
+            ' ()'
+        ),
+        (
+            '(()) (',
+            '(()) '
+        ),
+        (
+            ')(',
+            ''
+        ),
+        (
+            ')',
+            ''
+        ),
+        (
+            '())',
+            '()'
+        ),
+        (
+            '()) ()',
+            '() ()'
+        ),
+        (
+            ')))',
+            ''
+        ),
+        (
+            '(((',
+            ''
+        ),
+        (
+            '())))',
+            '()'
+        ),
+        (
+            '((()',
+            '()'
+        ),
+    ],
+)
+def test_strip_unmatched_parens(
+    elastic_service,
+    test,
+    expected
+):
+    res = elastic_service._strip_unmatched_parens(test)
     assert res == expected
