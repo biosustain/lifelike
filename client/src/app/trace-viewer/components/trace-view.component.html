@@ -3,9 +3,14 @@
         Downloading file...
     </app-module-progress>
 
-    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error" style="z-index: 2">
+    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
+
+      <app-module-error *ngIf="error" [error]="error">
+          <a [appLink]="sourceFileURL">Go to Source <i class="fa fa-fw fa-arrow-right"></i></a>
+      </app-module-error>
+
     <ng-container #tabTitle>{{ title }}</ng-container>
     <app-module-header [titleTemplate]="tabTitle" [showObjectMenu]="false"></app-module-header>
     <div class="module-body">
