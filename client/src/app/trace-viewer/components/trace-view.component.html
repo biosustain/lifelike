@@ -1,6 +1,14 @@
-<app-tab *ngIf="(loadTask?.status$ | async) as status" [status]="status" [titleTemplate]="tabTitle">
+<div class="module" *ngIf="(loadTask?.status$ | async) as status">
+    <app-module-progress *ngIf="status.running">
+        Downloading file...
+    </app-module-progress>
+
+    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error" style="z-index: 2">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
     <ng-container #tabTitle>{{ title }}</ng-container>
-    <div class="w-100 h-100">
+    <app-header [titleTemplate]="tabTitle"></app-header>
+    <div class="module-body">
         <app-trace-details [data]="data"></app-trace-details>
     </div>
-</app-tab>
+</div>

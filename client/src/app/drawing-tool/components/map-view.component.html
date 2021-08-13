@@ -1,14 +1,14 @@
-<app-tab
-        [status]="(loadTask.status$ | async)"
-        (dragStarted)="dragStarted($event)"
-        [progressTemplate]="progress"
-        [errorTemplate]="error"
->
-    <ng-template #progress>Loading map...</ng-template>
-    <ng-template #error>
-      <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-    </ng-template>
-    <ng-container header>
+<div class="module">
+    <ng-container *ngIf="(loadTask.status$ | async) as status">
+        <app-module-progress *ngIf="status.running" style="z-index: 2">
+            Loading map...
+        </app-module-progress>
+
+        <app-module-error *ngIf="status.failedErrorShown" style="z-index: 2" [error]="status.error">
+            <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+        </app-module-error>
+    </ng-container>
+    <app-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
         <div class="btn-group ml-2 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"
@@ -31,8 +31,8 @@
                                 (previous)="previous()" (next)="next()">
             </app-search-control>
         </div>
-    </ng-container>
-    <div class="flex-fill position-relative overflow-hidden h-100 w-100" style="z-index: 0">
+    </app-header>
+    <div class="module-body m-0 w-100 h-100" style="z-index: 0">
         <ng-container *ngIf="(loadTask.status$ | async) as status">
             <div class="detail-overlay">
                 <app-collapsible-window title="Information" class="flex-fill" [sideCollapse]="true">
@@ -95,4 +95,4 @@
             </as-split-area>
         </as-split>
     </div>
-</app-tab>
+</div>
