@@ -18,7 +18,6 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -27,6 +26,9 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
+import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
+import { emptyIfNull } from '../../shared/utils/types';
+import { isNodeMatching, isLinkMatching } from './search-match';
 
 const LINK_VALUE = {
   default: 'Default',
@@ -154,6 +156,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   isArray = Array.isArray;
   private currentFileId: any;
 
+  entitySearchTerm = '';
+  entitySearchList = new Set();
+  entitySearchListIdx = -1;
+  searchFocus = undefined;
+
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -169,7 +176,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
-    this.selection = new BehaviorSubject([]);
+      this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
       map((currentSelection) => {
         const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
@@ -271,6 +278,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.sankey.scaleZoom(.8);
     }
   }
+
   // endregion
 
   selectNetworkTrace(networkTrace) {
@@ -419,7 +427,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
         description: name,
         callback: () => {
-          const { options } = this;
+          const {options} = this;
           const {
             nodeValueAccessors,
             nodeValueGenerators,
@@ -531,7 +539,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             'sankey', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    }));
   }
 
   toggleSelect(entity, type, template: HTMLTemplateElement) {
@@ -584,5 +592,95 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   openLinkDetails(link) {
     this.selectLink(link);
     this.openDetailsPanel();
+  }
+
+  // ========================================
+  // Search stuff
+  // ========================================
+
+  /**
+   * Get all nodes and edges that match some search terms.
+   * @param terms the terms
+   * @param options addiitonal find options
+   */
+  findMatching(terms: string[], options: FindOptions = {}) {
+    const matcher = compileFind(terms, options);
+    const matches = new Set();
+
+    const {nodes, links} = this.filteredSankeyData;
+
+    for (const node of nodes) {
+      if (isNodeMatching(matcher, node)) {
+        matches.add(node);
+      }
+    }
+
+    for (const link of links) {
+      if (isLinkMatching(matcher, link, this.sankeyData)) {
+        matches.add(link);
+      }
+    }
+
+    return matches;
+  }
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      this.entitySearchList = this.findMatching(
+        tokenizeQuery(this.entitySearchTerm, {
+          singleTerm: true,
+        }), {
+          wholeWord: false,
+        });
+    } else {
+      this.entitySearchList = new Set();
+    }
+    this.entitySearchListIdx = -1;
+    this.searchFocus = undefined;
+  }
+
+  clearSearchQuery() {
+    this.entitySearchTerm = '';
+    this.search();
+  }
+
+  panToEntity(entity) {
+    const y = (entity._y0 + entity._y1) / 2;
+    let x = 0;
+    if (entity._x0 !== undefined) {
+      x = (entity._x0 + entity._x1) / 2;
+    } else {
+      x = (entity._source._x1 + entity._target._x0) / 2;
+    }
+    this.sankey.sankeySelection.transition().call(
+      this.sankey.zoom.translateTo,
+      x,
+      y
+    );
+  }
+
+  setSearchFocus() {
+    const searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.searchFocus = searchFocus;
+    if (searchFocus) {
+      this.panToEntity(searchFocus);
+    }
+  }
+
+  next() {
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.size) {
+      this.entitySearchListIdx = 0;
+    }
+    this.setSearchFocus();
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.size - 1;
+    }
+    this.setSearchFocus();
   }
 }
