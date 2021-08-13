@@ -23,6 +23,7 @@ from neo4japp.constants import (
     LogEventType,
 )
 from neo4japp.util import (
+    get_first_known_label_from_list,
     get_first_known_label_from_node,
     snake_to_camel_dict
 )
@@ -281,25 +282,31 @@ class KgService(HybridDBDao):
         for path in paths:
             if path.get('nodes', None) is not None:
                 for node in path['nodes']:
-                    if node.id not in node_ids:
-                        node_as_dict = dict(node)
-
+                    if node['id'] not in node_ids:
                         node_display_name = 'Node Display Name Unknown'
-                        if node_as_dict.get('displayName', None) is not None:
-                            node_display_name = node_as_dict['displayName']
-                        elif node_as_dict.get('name', None) is not None:
-                            node_display_name = node_as_dict['name']
+                        if node.get('display_name', None) is not None:
+                            node_display_name = node['display_name']
+                        elif node.get('name', None) is not None:
+                            node_display_name = node['name']
 
                         try:
-                            node_label = get_first_known_label_from_node(node)
+                            node_label = get_first_known_label_from_list(node['labels'])
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
+                        except ValueError:
+                            # If label is unknown, then use fallbacks
+                            node_label = 'Unknown'
+                            node_color = '#000000'
+                            current_app.logger.warning(
+                                f"Node had an unexpected list of labels: {node['labels']}",
+                                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                            )
                         except KeyError:
-                            # If label does not exist, then use fallbacks
+                            # If label does not exist in styles dict, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
 
                         node_data = {
-                            'id': node.id,
+                            'id': node['id'],
                             'label': node_display_name,
                             'databaseLabel': node_label,
                             'font': {
@@ -320,16 +327,16 @@ class KgService(HybridDBDao):
                         }
 
                         nodes.append(node_data)
-                        node_ids.add(node.id)
+                        node_ids.add(node['id'])
 
             if path.get('edges', None) is not None:
                 for edge in path['edges']:
-                    if edge.id not in edge_ids:
+                    if edge['id'] not in edge_ids:
                         edge_data = {
-                            'id': edge.id,
-                            'label': edge.type,
-                            'from': edge.start_node.id,
-                            'to': edge.end_node.id,
+                            'id': edge['id'],
+                            'label': edge['type'],
+                            'from': edge['start_node'],
+                            'to': edge['end_node'],
                             'color': {
                                 'color': '#0c8caa',
                             },
@@ -337,7 +344,7 @@ class KgService(HybridDBDao):
                         }
 
                         edges.append(edge_data)
-                        edge_ids.add(edge.id)
+                        edge_ids.add(edge['id'])
         return {'nodes': nodes, 'edges': edges}
 
     def get_shortest_path_query_list(self):
@@ -555,10 +562,9 @@ class KgService(HybridDBDao):
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
 
-    # TODO This may need to be checked
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
         return list(tx.run("""
-            MATCH (chem:db_CHEBI:Chemical) WHERE chem.eid IN ['CHEBI:18064']
+            MATCH (chem:db_CHEBI:Chemical) WHERE chem.eid IN ['18064']
             WITH chem
             MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
             WHERE none(r IN relationships(p) WHERE type(r) IN [
@@ -570,10 +576,25 @@ class KgService(HybridDBDao):
                 'HAS_ROLE',
                 'GO_LINK'
             ])
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
             """))
 
-    # TODO This may need to be checked
     def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
@@ -587,39 +608,99 @@ class KgService(HybridDBDao):
                 'HAS_ROLE',
                 'TYPE_OF'
             ])
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
 
-    # TODO This may need to be checked
     def get_icd_to_rhse_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH p=allShortestPaths(
                 (gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'})
             )
             WHERE none(r IN relationships(p) WHERE type(r) IN ['HAS_TAXONOMY'])
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
 
-    # TODO This may need to be checked
     def get_sirt5_to_nfe2l2_literature_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'}),
             (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
             MATCH p=allShortestPaths((g)-[*]-(g2))
             WHERE all(rel IN relationships(p) WHERE type(rel) = 'ASSOCIATED')
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
 
-    # TODO This may need to be checked
     def get_ctnnb1_to_diarrhea_literature_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})
             MATCH p=allShortestPaths((g)-[*]-(d))
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
 
-    # TODO This may need to be checked
     def get_two_pathways_biocyc_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (p1:Pathway {biocyc_id:'PWY-6151'}), (p2:Pathway {biocyc_id: 'PWY-6123'})
@@ -627,10 +708,25 @@ class KgService(HybridDBDao):
             MATCH p=allShortestPaths((p1)-[*]-(p2))
             WHERE NONE (r IN relationships(p) WHERE type(r) IN ['TYPE_OF'])
                 AND NONE (n IN nodes(p) WHERE n.biocyc_id IN ['WATER','PROTON','Pi','ATP', 'ADP'])
-            RETURN nodes(p) AS nodes, relationships(p) AS edges
+            RETURN [
+                node IN nodes(p) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(p) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
 
-    # TODO This may need to be checked
     def get_glycolisis_regulon_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH path=
@@ -644,7 +740,21 @@ class KgService(HybridDBDao):
             WITH path, g, r
             MATCH p1=(left)-[:CONSUMED_BY]->(r)-[:PRODUCES]->(right)
             OPTIONAL MATCH p2=(g)--(:TranscriptionUnit)--(:Promoter)-[:REGULATES]-(rg:Regulon)
-            RETURN
-                nodes(path) + nodes(p1) + nodes(p2) AS nodes,
-                relationships(path) + relationships(p1) + relationships(p2) AS edges
+            RETURN [
+                node IN nodes(path) + nodes(p1) + nodes(p2) |
+                {
+                    id: id(node),
+                    name: node.name,
+                    display_name: node.displayName,
+                    labels: labels(node)
+                }
+            ] as nodes, [
+                rel IN relationships(path) + relationships(p1) + relationships(p2) |
+                {
+                    id: id(rel),
+                    type: type(rel),
+                    start_node: id(startNode(rel)),
+                    end_node: id(endNode(rel))
+                }
+            ] AS edges
         """))
