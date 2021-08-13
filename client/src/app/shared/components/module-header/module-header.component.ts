@@ -8,14 +8,10 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
 })
 export class ModuleHeaderComponent {
   @Input() object!: FilesystemObject;
-  @Input() header: TemplateRef<any>;
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
   @Input() showObjectMenu = true;
   @Output() dragStarted = new EventEmitter();
-  @Output() requestRefresh = new EventEmitter();
-  @Output() objectUpdate = new EventEmitter();
-  @Output() objectRestore = new EventEmitter();
 
   constructor(
     private readonly filesystemObjectActions: FilesystemObjectActions
