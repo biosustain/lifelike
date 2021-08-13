@@ -51,7 +51,7 @@ class VisualizerService(KgService):
         # Can't get the URI of the node if there is no 'eid' property, so return None
         if entity_id is None:
             current_app.logger.warning(
-                f'Node with EID {id} does not have a URI.',
+                f'Node with EID {entity_id} does not have a URI.',
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             return None
