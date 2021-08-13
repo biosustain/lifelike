@@ -2,7 +2,13 @@
         [status]="(loadTask.status$ | async)"
         [object]="map"
         (dragStarted)="dragStarted($event)"
+        [progressTemplate]="progress"
+        [errorTemplate]="error"
 >
+    <ng-template #progress>Loading map...</ng-template>
+    <ng-template #error>
+      <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </ng-template>
     <ng-container header>
         <div *ngIf="unsavedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
@@ -47,7 +53,7 @@
                             (previous)="previous()" (next)="next()">
         </app-search-control>
     </ng-container>
-    <div body class="position-relative overflow-hidden flex-fill">
+    <div class="position-relative overflow-hidden flex-fill h-100 w-100">
         <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
             <ng-container *ngIf="locks.length && lockCheckingActive; else locksReleased">
                 <div class="lock-panel alert alert-danger">

@@ -4,7 +4,7 @@
         [object]="object"
         (dragStarted)="dragStarted($event)"
 >
-    <div body class="module-body overflow-auto">
+    <div class="module-body overflow-auto">
         <div class="document" *ngFor="let doc of biocData">
             <h1 class="title">
                 <app-bioc-annotated-text [text]="doc.passages[0].text"
