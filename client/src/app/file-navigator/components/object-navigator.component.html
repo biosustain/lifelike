@@ -1,10 +1,10 @@
 <div class="module" *ngIf="(loadTask.status$ | async) as status">
-    <app-module-progress *ngIf="status.running" style="z-index: 2">
-        <div>Retrieving file data...</div>
+    <app-module-progress *ngIf="status.running">
+        Retrieving file data...
     </app-module-progress>
 
     <app-module-error *ngIf="status.failedErrorShown"
-                      [error]="status.error" style="z-index: 2">
+                      [error]="status.error">
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
 
