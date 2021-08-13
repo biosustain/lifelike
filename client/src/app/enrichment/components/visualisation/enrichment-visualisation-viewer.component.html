@@ -6,10 +6,12 @@
     </app-module-progress>
     <ng-template #tabTitle>Statistical Enrichment</ng-template>
     <ng-container *ngIf="status.resultsShown">
-        <app-header
-                [object]="object"
-                [titleTemplate]="tabTitle"
-        ></app-header>
+        <app-module-header *ngIf="object"
+                           [object]="object"
+                           [titleTemplate]="tabTitle"
+                           [showObjectMenu]="false"
+        >
+        </app-module-header>
         <div class="module-body space-cards">
             <app-group
                     *ngFor="let d of data | keyvalue: originalOrder; let i = index"

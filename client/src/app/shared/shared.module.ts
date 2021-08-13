@@ -75,7 +75,7 @@ import { ObjectPathComponent } from './components/object-path/object-path.compon
 import { ObjectMenuComponent } from './components/object-menu/object-menu.component';
 import { ProjectIconComponent } from './components/project-icon/project-icon.component';
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
-import { UnifiedHeaderComponent } from './components/unified-header/unified-header.component';
+import { ModuleHeaderComponent } from './components/module-header/module-header.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -154,7 +154,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
-    UnifiedHeaderComponent
+    ModuleHeaderComponent
   ],
   providers: [
     ApiService,
@@ -204,7 +204,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
-    UnifiedHeaderComponent
+    ModuleHeaderComponent
   ],
 })
 export class SharedModule {

@@ -7,7 +7,15 @@
             <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
         </app-module-error>
     </ng-container>
-    <app-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
+    <app-module-header *ngIf="map" [object]="map"
+                       (dragStarted)="dragStarted($event)"
+                       (objectRestore)="restore($event)"
+                       (objectUpdate)="emitModuleProperties()">
+                <app-object-menu [object]="map" [forEditing]="true"
+                                 [showOpen]="false" [showDelete]="false"
+                                 [showRestore]="true" (objectRestore)="restore($event)"
+                                 (objectUpdate)="emitModuleProperties()">
+                </app-object-menu>
         <div *ngIf="unsavedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
@@ -50,7 +58,7 @@
                             [resultCount]="entitySearchList.length"
                             (previous)="previous()" (next)="next()">
         </app-search-control>
-    </app-header>
+    </app-module-header>
     <div class="position-relative overflow-hidden flex-fill">
         <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
             <div *ngIf="locks.length && lockCheckingActive; else locksReleased"
