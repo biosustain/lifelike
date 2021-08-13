@@ -293,7 +293,6 @@ class SearchService(GraphBaseDao):
         )
         return results[0]['count']
 
-    # TODO This may need to be checked
     def visualizer_search_query(
         self,
         tx: Neo4jTx,
