@@ -57,7 +57,9 @@ httpretty = "==1.0.5"
 sendgrid = "==6.7.0"
 werkzeug = "==0.16.0"
 lmdb = "==1.2.1"
+pillow = "==8.3.1"
 pyparsing = "==2.4.7"
+svg-stack = "==0.1.0"
 
 [requires]
 python_version = "3.8.2"

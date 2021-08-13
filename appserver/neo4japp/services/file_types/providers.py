@@ -9,12 +9,17 @@ from typing import Optional, List
 import textwrap
 import graphviz
 import requests
+import svg_stack
 
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc
+from marshmallow import ValidationError
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from PIL import Image
+
 
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -42,7 +47,21 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN
+    LIFELIKE_DOMAIN,
+    DEFAULT_DPI,
+    POINT_TO_PIXEL,
+    HORIZONTAL_TEXT_PADDING,
+    LABEL_OFFSET,
+    MAP_ICON_OFFSET,
+    PDF_MARGIN,
+    MAPS_RE,
+    NAME_NODE_OFFSET,
+    TRANSPARENT_PIXEL,
+    VERTICAL_NODE_PADDING,
+    NAME_LABEL_FONT_AVERAGE_WIDTH,
+    NAME_LABEL_PADDING_MULTIPLIER,
+    FILENAME_LABEL_MARGIN,
+    FILENAME_LABEL_FONT_SIZE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -376,15 +395,15 @@ class MapTypeProvider(BaseFileTypeProvider):
         content.write(' '.join(string_list))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
 
-    def generate_export(self, file: Files, format: str) -> FileExport:
+    def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
         json_graph = json.loads(file.content.raw_file)
-        graph_attr = [('margin', '3'), ('outputorder', 'nodesfirst')]
+        graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
-            graph_attr.append(('dpi', '300'))
+            graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
                 file.filename,
@@ -394,9 +413,12 @@ class MapTypeProvider(BaseFileTypeProvider):
                 format=format)
 
         node_hash_type_dict = {}
+        x_values, y_values = [], []
 
         for node in json_graph['nodes']:
             style = node.get('style', {})
+            x_values.append(node['data']['x'])
+            y_values.append(node['data']['y'])
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             label = node['label']
@@ -528,6 +550,22 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params['href'] = LIFELIKE_DOMAIN + current_link
             graph.node(**params)
 
+        if self_contained_export:
+            name_node = {
+                'name': file.filename,
+                'pos': (
+                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
+                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+                ),
+                'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
+                                                        )['defaultimagecolor'],
+                'fontsize': str(FILENAME_LABEL_FONT_SIZE),
+                'shape': 'box',
+                'style': 'rounded',
+                'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
+            }
+            graph.node(**name_node)
+
         for edge in json_graph['edges']:
             style = edge.get('style', {})
             default_line_style = 'solid'
@@ -565,6 +603,126 @@ class MapTypeProvider(BaseFileTypeProvider):
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
+
+    def merge(self, files: list, requested_format: str, links=None):
+        """ Export, merge and prepare as FileExport the list of files
+        :param files: List of Files objects. The first entry is always the main map,
+        :param requested_format: export format
+        :param links: List of dict objects storing info about links that should be embedded:
+            x: x pos; y: y pos;
+            page_origin: which page contains icon;
+            page_destination: where should it take you
+        :return: an exportable file.
+        :raises: ValidationError if provided format is invalid
+        """
+        if requested_format == 'png':
+            merger = self.merge_pngs_vertically
+        elif requested_format == 'pdf':
+            merger = self.merge_pdfs
+        elif requested_format == 'svg':
+            merger = self.merge_svgs
+        else:
+            raise ValidationError("Unknown or invalid export format for the requested file.",
+                                  requested_format)
+        ext = f'.{requested_format}'
+        if len(files) > 1:
+            content = merger(files, links)
+        else:
+            content = self.get_file_export(files[0], requested_format)
+        return FileExport(
+            content=content,
+            mime_type=extension_mime_types[ext],
+            filename=f"{files[0].filename}{ext}"
+        )
+
+    def get_file_export(self, file, format):
+        """ Get the exported version of the file in requested format
+            wrapper around abstract method to add map specific params and catch exception
+         params
+         :param file: map file to export
+         :param format: wanted format
+         :raises ValidationError: When provided format is invalid
+         :return: Exported map as BytesIO
+         """
+        try:
+            return io.BytesIO(self.generate_export(file, format, self_contained_export=True)
+                              .content.getvalue())
+        except ExportFormatError:
+            raise ValidationError("Unknown or invalid export "
+                                  "format for the requested file.", format)
+
+    def merge_pngs_vertically(self, files, _=None):
+        """ Append pngs vertically.
+        params:
+        :param files: list of files to export
+        :param _: links: omitted in case of png, added to match the merge_pdfs signature
+        :returns: maps concatenated vertically
+        :raises SystemError: when one of the images exceeds PILLOW decompression bomb size limits
+        """
+        final_bytes = io.BytesIO()
+        try:
+            images = [Image.open(self.get_file_export(file, 'png')) for file in files]
+        except Image.DecompressionBombError as e:
+            raise SystemError('One of the files exceeds the maximum size - it cannot be exported'
+                              'as part of the linked export')
+        cropped_images = [image.crop(image.getbbox()) for image in images]
+        widths, heights = zip(*(i.size for i in cropped_images))
+
+        max_width = max(widths)
+        total_height = sum(heights)
+
+        new_im = Image.new('RGBA', (max_width, total_height), TRANSPARENT_PIXEL)
+        y_offset = 0
+
+        for im in cropped_images:
+            x_offset = int((max_width - im.size[0]) / 2)
+            new_im.paste(im, (x_offset, y_offset))
+            y_offset += im.size[1]
+        new_im.save(final_bytes, format='PNG')
+        return final_bytes
+
+    def merge_pdfs(self, files: list, links=None):
+        """ Merge pdfs and add links to map.
+        params:
+        :param files: list of files to export.
+        :param links: list of dicts describing internal map links
+        """
+        links = links or []
+        final_bytes = io.BytesIO()
+        writer = PdfFileWriter()
+        half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
+        for i, out_file in enumerate(files):
+            out_file = self.get_file_export(out_file, 'pdf')
+            reader = PdfFileReader(out_file, strict=False)
+            writer.appendPagesFromReader(reader)
+        for link in links:
+            file_index = link['page_origin']
+            coord_offset, pixel_offset = get_content_offsets(files[file_index])
+            x_base = ((link['x'] - coord_offset[0]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI + pixel_offset[0]
+            y_base = ((-1 * link['y'] - coord_offset[1]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
+                PDF_MARGIN * DEFAULT_DPI - pixel_offset[1]
+            writer.addLink(file_index, link['page_destination'],
+                           [x_base - half_size, y_base - half_size - LABEL_OFFSET,
+                            x_base + half_size, y_base + half_size])
+        writer.write(final_bytes)
+        return final_bytes
+
+    def merge_svgs(self, files: list, _=None):
+        """ Merge svg files together with svg_stack
+        params:
+        :param files: list of files to be merged
+        :param _: links: omitted in case of svg, added to match the merge_pdfs signature
+        """
+        doc = svg_stack.Document()
+        layout2 = svg_stack.VBoxLayout()
+        # String is used, since svg_stack cannot save to IOBytes - raises an error
+        result_string = io.StringIO()
+        for file in files:
+            layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
+        doc.setLayout(layout2)
+        doc.save(result_string)
+        return io.BytesIO(result_string.getvalue().encode('utf-8'))
 
 
 class GraphTypeProvider(BaseFileTypeProvider):
@@ -672,3 +830,24 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def handle_content_update(self, file: Files):
         file.enrichment_annotations = None
+
+
+def get_content_offsets(file):
+    """ Gets offset box of the map, allowing to translate the coordinates to the pixels of the
+        pdf generated by graphviz.
+        *params*
+        file: A Files object of map that is supposed to be analyzed
+        Return: two pairs of coordinates: x & y.
+        First denotes the offset to the pdf origin (in the units used by front-end renderer)
+        Second denotes the offset created by the map name node (from which the margin is
+        calculated) in pixels.
+    """
+    x_values, y_values = [], []
+    json_graph = json.loads(file.content.raw_file)
+    for node in json_graph['nodes']:
+        x_values.append(node['data']['x'])
+        y_values.append(-node['data']['y'])
+    x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
+        MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
+    y_offset = VERTICAL_NODE_PADDING
+    return (min(x_values), min(y_values)), (x_offset, y_offset)

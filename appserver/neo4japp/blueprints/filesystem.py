@@ -1,6 +1,7 @@
 import hashlib
 import io
 import itertools
+import json
 import re
 import typing
 import urllib.request
@@ -18,6 +19,7 @@ from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from sqlalchemy.sql.expression import text
 from webargs.flaskparser import use_args
 
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -61,8 +63,8 @@ from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.service import GenericFileTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -1121,6 +1123,7 @@ class FileContentView(FilesystemBaseView):
 
 class FileExportView(FilesystemBaseView):
     decorators = [auth.login_required]
+    # Move that to constants if accepted
 
     @use_args(FileExportRequestSchema)
     def post(self, params: dict, hash_id: str):
@@ -1133,21 +1136,69 @@ class FileExportView(FilesystemBaseView):
         file_type_service = get_file_type_service()
         file_type = file_type_service.get(file)
 
-        try:
-            export = file_type.generate_export(file, params['format'])
-            export_content = export.content.getvalue()
-            checksum_sha256 = hashlib.sha256(export_content).digest()
+        if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
+            files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
+            export = file_type.merge(files, params['format'], links)
+        else:
+            try:
+                export = file_type.generate_export(file, params['format'])
+            except ExportFormatError:
+                raise ValidationError("Unknown or invalid export format for the requested file.",
+                                      params["format"])
 
-            return make_cacheable_file_response(
-                    request,
-                    export_content,
-                    etag=checksum_sha256.hex(),
-                    filename=export.filename,
-                    mime_type=export.mime_type,
-            )
-        except ExportFormatError:
-            raise ValidationError("Unknown or invalid export format for the requested file.",
-                                  "format")
+        export_content = export.content.getvalue()
+        checksum_sha256 = hashlib.sha256(export_content).digest()
+        return make_cacheable_file_response(
+                request,
+                export_content,
+                etag=checksum_sha256.hex(),
+                filename=export.filename,
+                mime_type=export.mime_type,
+        )
+
+    def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
+        current_user = g.current_user
+        json_graph = json.loads(file.content.raw_file)
+        for node in json_graph['nodes']:
+            data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+            for link in data:
+                url = link.get('url', "").lstrip()
+                if MAPS_RE.match(url):
+                    map_hash = url.split('/')[-1]
+                    link_data = {
+                        'x': node['data']['x'],
+                        'y': node['data']['y'],
+                        'page_origin': next(i for i, f in enumerate(files)
+                                            if file.hash_id == f.hash_id),
+                        'page_destination': len(files)
+                    }
+                    # Fetch linked maps and check permissions, before we start to export them
+                    if map_hash not in map_hash_set:
+                        try:
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True)
+                            self.check_file_permissions([child_file], current_user,
+                                                        ['readable'], permit_recycled=True)
+                            map_hash_set.add(map_hash)
+                            files.append(child_file)
+
+                            files, links = self.get_all_linked_maps(child_file,
+                                                                    map_hash_set, files, links)
+
+                        except RecordNotFound:
+                            current_app.logger.info(
+                                f'Map file: {map_hash} requested for linked '
+                                f'export does not exist.',
+                                extra=UserEventLog(
+                                    username=current_user.username,
+                                    event_type=LogEventType.FILESYSTEM.value).to_dict()
+                            )
+                            link_data['page_destination'] = link_data['page_origin']
+                    else:
+                        link_data['page_destination'] = next(i for i, f in enumerate(files) if
+                                                             f.hash_id == map_hash)
+                    links.append(link_data)
+        return files, links
 
 
 class FileBackupView(FilesystemBaseView):

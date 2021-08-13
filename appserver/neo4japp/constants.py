@@ -1,5 +1,6 @@
 import os
 import codecs
+import re
 import string
 
 from datetime import timezone
@@ -379,6 +380,21 @@ FONT_SIZE_MULTIPLIER = 0.25
 IMAGE_HEIGHT_INCREMENT = 0.23
 SCALING_FACTOR = 55
 ICON_SIZE = '1'
+DEFAULT_DPI = 96.0
+POINT_TO_PIXEL = 72.0
+VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
+HORIZONTAL_TEXT_PADDING = 0.18 * DEFAULT_DPI
+LABEL_OFFSET = 25
+PDF_MARGIN = 3
+MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
+NAME_NODE_OFFSET = 100
+TRANSPARENT_PIXEL = (0, 0, 0, 0)
+FILENAME_LABEL_MARGIN = 0.165
+VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN / 2.0
+NAME_LABEL_FONT_AVERAGE_WIDTH = 18
+NAME_LABEL_PADDING_MULTIPLIER = 7
+FILENAME_LABEL_FONT_SIZE = 40.0
+
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
     'dotted': 'dotted',
@@ -421,3 +437,8 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+
+# Start constants for export of merged maps
+SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
+# links to maps with spaces at the beginning are still valid
+MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
