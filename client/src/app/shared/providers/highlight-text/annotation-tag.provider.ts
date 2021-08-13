@@ -1,4 +1,4 @@
-import { escape } from 'lodash';
+import { escape, uniqueId } from 'lodash';
 import Color from 'color';
 import { Injectable, RendererFactory2 } from '@angular/core';
 import { DropdownController } from '../../utils/dom/dropdown-controller';
@@ -76,7 +76,6 @@ export class AnnotationTagHandler extends TagHandler {
     if (element != null) {
       let search;
       let text = element.textContent;
-      let hyperlink = '';
 
       const sources: Source[] = [];
       const references: Reference[] = [];
@@ -96,22 +95,26 @@ export class AnnotationTagHandler extends TagHandler {
       if (meta.allText != null) {
         text = meta.allText;
       }
-      hyperlink = meta.idHyperlink || '';
+
+      const hyperlink = meta.idHyperlinks || [];
 
       text = meta.type === 'Link' ? 'Link' : text;
 
-      if (hyperlink.length) {
+      for (const link of hyperlink) {
+        const {domain, url} = JSON.parse(link);
         let hyperlinkText = 'Annotation URL';
         try {
-          hyperlinkText = new URL(hyperlink, window.location.href).hostname.replace(/^www\./i, '');
-        } catch (e) {
-        }
+          hyperlinkText = new URL(url).hostname.replace(/^www\./i, '');
+        } catch (e) { }
 
-        hyperlinks.push({domain: hyperlinkText, url: hyperlink});
+        hyperlinks.push({
+          domain: hyperlinkText,
+          url,
+        });
 
         references.push({
           type: 'DATABASE',
-          id: hyperlink,
+          id: url,
         });
       }
 
@@ -199,36 +202,49 @@ export class AnnotationTagHandler extends TagHandler {
     // Copied from pdf-viewer-lib.component.ts :(
     // TODO: Move somewhere else
     let base = [`Type: ${meta.type}`];
-    if (meta.id) {
-      if (meta.idHyperlink) {
-        base.push(`Id: <a href=${escape(meta.idHyperlink)} target="_blank">${escape(meta.id)}</a>`);
-      } else {
-        base.push(`Id: ${escape(meta.id)}`);
-      }
-    }
+    base.push(meta.id && meta.id.indexOf('NULL') === -1 ? `Id: ${escape(meta.id)}` : 'Id: None');
+
     if (meta.idType) {
-      base.push(`Id Type: ${escape(meta.idType)}`);
+      base.push(`Data Source: ${escape(meta.idType)}`);
     }
     if (meta.isCustom) {
       base.push(`User generated annotation`);
     }
+
+    let htmlLinks = '<div>';
+
+    // source links if any
+    if (meta.idHyperlinks && meta.idHyperlinks.length > 0) {
+      const sourceLinkCollapseTargetId = uniqueId('source-links-tooltip-collapse-target');
+      htmlLinks += `
+        <div>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        <div>
+      `;
+
+      for (const link of meta.idHyperlinks) {
+          const {label, url} = JSON.parse(link);
+          htmlLinks += `<a target="_blank" href="${escape(url)}">${escape(label)}</a><br>`;
+      }
+
+      htmlLinks += `</div></div>`;
+    }
+
     // search links
-    let collapseHtml = `
+    const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+    htmlLinks += `
       <div>
-        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
-      </div>
-      <div>
+        <div>Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        <div>
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
     for (const {domain, url} of SEARCH_LINKS) {
       const link = meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(meta.allText));
-      collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
+      htmlLinks += `<a target="_blank" href="${escape(link)}">${escape(domain.replace('_', ' '))}</a><br>`;
     }
-    collapseHtml += `
-      </div>
-    `;
-    base.push(collapseHtml);
-    base = [base.join('<br/>')];
+    htmlLinks += `</div></div>`;
+
+    base.push(htmlLinks);
+    base = [base.join('<br>')];
     return base.join('');
   }
 

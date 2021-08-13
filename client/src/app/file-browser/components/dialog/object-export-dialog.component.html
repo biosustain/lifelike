@@ -10,6 +10,16 @@
         <option *ngFor="let exporter of exporters; let i = index" [value]="i">{{ exporter.name }}</option>
       </select>
     </app-form-row>
+
+     <div class="custom-control custom-checkbox mt-2 border" [hidden]="!isLinkedExportSupported()" >
+      <input type="checkbox" class="custom-control-input" formControlName="exportLinked" id="exportLinked"
+             [appFormInput]="form.get('exportLinked')">
+      <label class="custom-control-label d-flex align-items-center"
+             for="exportLinked" ngbTooltip="Include linked maps in the export">
+        Export linked maps
+      </label>
+    </div>
+
   </app-modal-body>
 
   <app-modal-footer>

@@ -16,6 +16,6 @@ class CreateAnnotationObjParams():
     entity_category: str = attr.ib()
     entity_id: str = attr.ib()
     entity_id_type: str = attr.ib()
-    entity_id_hyperlink: str = attr.ib()
+    entity_id_hyperlinks: List[str] = attr.ib()
     token: PDFWord = attr.ib()
     token_type: str = attr.ib()
