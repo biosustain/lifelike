@@ -42,7 +42,8 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN
+    LIFELIKE_DOMAIN,
+    ICON_DATA
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -332,6 +333,16 @@ class BiocTypeProvider(BaseFileTypeProvider):
         buffer.seek(0)
 
 
+def substitute_svg_images(map_content: io.BytesIO):
+    """ Match every link inside SVG file and replace it with raw PNG data
+    params:
+    :param map_content: bytes of the exported map
+    """
+    p = re.compile("|".join(re.escape(k) for k in ICON_DATA))
+    output = p.sub(lambda match: ICON_DATA[match.group(0)], map_content.read().decode('utf-8'))
+    return io.BytesIO(bytes(output, 'utf-8'))
+
+
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_MAP
     SHORTHAND = 'map'
@@ -560,8 +571,13 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         ext = f".{format}"
 
+        content = io.BytesIO(graph.pipe())
+
+        if format == 'svg':
+            content = substitute_svg_images(content)
+
         return FileExport(
-                content=io.BytesIO(graph.pipe(renderer='cairo')),
+                content=content,
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
