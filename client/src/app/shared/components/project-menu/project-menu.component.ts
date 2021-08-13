@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { FilesystemObject, ProjectImpl } from '../../../file-browser/models/filesystem-object';
+import { ProjectImpl } from '../../../file-browser/models/filesystem-object';
 import { ProjectActions } from '../../../file-browser/services/project-actions';
-import { GraphClipboardData, TYPE_STRING } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 
 @Component({
   selector: 'app-project-menu',

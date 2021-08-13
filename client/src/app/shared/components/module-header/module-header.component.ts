@@ -3,23 +3,23 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './unified-header.component.html',
-  styleUrls: ['./unified-header.component.scss']
+  selector: 'app-module-header',
+  templateUrl: './module-header.component.html'
 })
-export class UnifiedHeaderComponent {
+export class ModuleHeaderComponent {
   @Input() object!: FilesystemObject;
   @Input() header: TemplateRef<any>;
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
-  @Output() dragStarted: EventEmitter<any>;
-  @Output() requestRefresh: EventEmitter<any>;
+  @Input() showObjectMenu = true;
+  @Output() dragStarted = new EventEmitter();
+  @Output() requestRefresh = new EventEmitter();
+  @Output() objectUpdate = new EventEmitter();
+  @Output() objectRestore = new EventEmitter();
 
   constructor(
     private readonly filesystemObjectActions: FilesystemObjectActions
-  ) {
-    this.dragStarted = new EventEmitter();
-  }
+  ) {}
 
   openNewWindow() {
     this.filesystemObjectActions.openNewWindow(this.object);

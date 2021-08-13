@@ -8,8 +8,78 @@
     </app-module-error>
 
     <ng-container *ngIf="object">
-        <app-header [object]="object"
-                (dragStarted)="dragStarted($event)">
+        <app-module-header [object]="object"
+                           (dragStarted)="dragStarted($event)">
+            <app-object-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
+                             [object]="object" [showDelete]="false"
+                             [showOpen]="false">
+            </app-object-menu>
+            <ng-container objectMenuAdditions>
+                <div class="dropdown-divider"></div>
+                <button (click)="open(logModal)" *ngIf="sankeyData?.graph.log" ngbDropdownItem>
+                    Open logs
+                    <ng-template #logModal let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Logs</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <ng-container
+                                    *ngIf="isArray(sankeyData.graph.log); else justText">
+
+                                <ul class="list-group list-group-flush cancel-out-card-padding">
+                                    <li *ngFor="let log of sankeyData.graph.log"
+                                        class="list-group-item"
+                                    >{{ log }}</li>
+                                </ul>
+                            </ng-container>
+                            <ng-template #justText>
+                                {{ sankeyData.graph.log }}
+                            </ng-template>
+                        </div>
+                    </ng-template>
+                </button>
+                <button (click)="open(descriptionModal)" ngbDropdownItem>
+                    Open description
+                    <ng-template #descriptionModal let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Description</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" [style.whiteSpace]="'pre-line'">
+                            {{ sankeyData.graph.description }}
+                        </div>
+                    </ng-template>
+                </button>
+                <button (click)="open(fileStructureOverview)" ngbDropdownItem>
+                    Open structure overview
+                    <ng-template #fileStructureOverview let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Structure Overview</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <pre [style.marginBottom]="0">{{ getJSONDetails(sankeyData) }}</pre>
+                            <small>This view contains reduced object representation. Nested objects has
+                                been mapped to
+                                their ids or indexes (if available); <s>shown arrays contains only top 3
+                                    rows;</s>
+                                numbers
+                                has been
+                                limited to 6 digits after comma.</small>
+                        </div>
+                    </ng-template>
+                </button>
+            </ng-container>
             <div class="btn-group btn-group-toggle mx-auto">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
@@ -53,7 +123,7 @@
                     <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
                 </label>
             </div>
-        </app-header>
+        </app-module-header>
         <as-split [gutterSize]="5"
                   direction="horizontal"
                   unit="pixel"

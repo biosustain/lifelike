@@ -20,7 +20,7 @@
                 File Navigator
             </ng-container>
         </ng-template>
-        <app-header [titleTemplate]="tabTitle" [object]="object"></app-header>
+        <app-module-header [titleTemplate]="tabTitle" [object]="object" [showObjectMenu]="false"></app-module-header>
         <div class="flex-fill overflow-auto">
             <!-- Body -->
             <div class="module-body" *ngIf="object?.isFile" [class.border-bottom]="object.hasWordCloud">

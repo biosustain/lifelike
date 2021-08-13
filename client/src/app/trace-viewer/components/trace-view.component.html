@@ -7,7 +7,7 @@
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
     <ng-container #tabTitle>{{ title }}</ng-container>
-    <app-header [titleTemplate]="tabTitle"></app-header>
+    <app-module-header [titleTemplate]="tabTitle" [showObjectMenu]="false"></app-module-header>
     <div class="module-body">
         <app-trace-details [data]="data"></app-trace-details>
     </div>

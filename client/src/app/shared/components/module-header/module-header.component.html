@@ -14,15 +14,13 @@
                 {{ object.filename }}
             </ng-container>
         </h1>
-        <div ngbDropdown class="d-inline-block mr-4 ml-0" container="body">
+        <div ngbDropdown class="d-inline-block mr-4 ml-0" container="body" *ngIf="showObjectMenu">
             <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
                 <i class="fas fa-chevron-down fa-fw text-icon"></i>
             </a>
             <div ngbDropdownMenu>
-                <app-object-menu *ngIf="object" [object]="object" [forEditing]="true" [showOpen]="false"
-                                 [showDelete]="false" (objectRefresh)="requestRefresh.emit($event)">
-                </app-object-menu>
-                <ng-content select="[objectMenu]"></ng-content>
+                <ng-content select="app-object-menu"></ng-content>
+                <ng-content select="[objectMenuAdditions]"></ng-content>
             </div>
         </div>
         <button class="btn btn-secondary ml-2 mr-0" (click)="openNewWindow()">

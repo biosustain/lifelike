@@ -8,8 +8,12 @@
     </app-module-error>
 
     <ng-container *ngIf="status.resultsShown">
-        <app-header [object]="object"
-                (dragStarted)="dragStarted($event)">
+        <app-module-header [object]="object"
+                           (dragStarted)="dragStarted($event)">
+              <app-object-menu *ngIf="object" [object]="object" [forEditing]="true"
+                               [showOpen]="false" [showDelete]="false"
+                               (objectRefresh)="requestRefresh()">
+              </app-object-menu>
             <div class="btn-group ml-auto mr-2 d-flex align-items-stretch">
                 <div ngbDropdown container="body" class="d-flex align-items-stretch btn-group">
                     <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle>
@@ -114,7 +118,7 @@
                     <i class="fas fa-fw fa-compass"></i>
                 </button>
             </div>
-        </app-header>
+        </app-module-header>
         <div class="flex-fill overflow-hidden position-relative d-flex h-100">
             <div *ngIf="isPendingPostLoadAction()"
                  class="pending-scroll-box-container">

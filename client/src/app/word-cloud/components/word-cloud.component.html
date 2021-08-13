@@ -8,9 +8,10 @@
     </app-module-error>
 
     <ng-template #tabTitle>{{ title }}</ng-template>
-    <app-header
+    <app-module-header
             [object]="object"
             [titleTemplate]="tabTitle"
+            [showObjectMenu]="false"
     >
         <div class="d-flex align-items-center px-3 mx-auto">
             <div class="custom-control custom-checkbox">
@@ -64,7 +65,7 @@
             </div>
         </div>
         <ng-content select="[header]"></ng-content>
-    </app-header>
+    </app-module-header>
     <as-split unit="pixel"
               direction="horizontal"
               [gutterSize]="5">
