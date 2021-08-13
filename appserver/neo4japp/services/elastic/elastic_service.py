@@ -437,7 +437,7 @@ class ElasticService(ElasticConnection, GraphConnection):
 
     def _strip_unmatched_quotations(self, s: str) -> str:
         if (s.count('"') % 2 == 1):
-            odd_quote_idx= s.rfind('"')
+            odd_quote_idx = s.rfind('"')
             return s[:odd_quote_idx] + s[odd_quote_idx + 1:]
         return s
 
