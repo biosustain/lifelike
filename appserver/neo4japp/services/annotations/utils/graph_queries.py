@@ -179,7 +179,7 @@ def get_mesh_global_inclusion_exist_query(entity_type):
     query_label = node_labels[entity_type]
     return f"""
     OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = 'MESH:' + $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         '{query_label}' IN labels(n) AS node_has_entity_label,
         $synonym IN collect(s.name) AS synonym_exist
@@ -189,7 +189,7 @@ def get_mesh_global_inclusion_exist_query(entity_type):
 def get_chemical_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = 'CHEBI:' + $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -262,7 +262,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
 
     query_label = node_labels[entity_type]
     return """
-    MATCH (n:db_MESH) WHERE n.eid = 'MESH:' + $entity_id
+    MATCH (n:db_MESH) WHERE n.eid = $entity_id
     SET n:replace_with_param
     MERGE (s: Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
@@ -279,7 +279,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
 
 def get_create_chemical_global_inclusion_query():
     return """
-    MATCH (n:db_CHEBI:Chemical) WHERE n.eid = 'CHEBI:' + $entity_id
+    MATCH (n:db_CHEBI:Chemical) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -373,7 +373,7 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     return """
     MERGE (n:db_Lifelike {name: $common_name, entity_type: $entity_type})
     ON CREATE
-    SET n.eid = 'Lifelike:' + $entity_id,
+    SET n.eid = $entity_id,
         n:GlobalInclusion:replace_with_param,
         n.data_source = $data_source,
         n.name = $common_name,
