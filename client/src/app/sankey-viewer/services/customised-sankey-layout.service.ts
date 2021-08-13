@@ -40,6 +40,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     value: 10
   };
 
+  fontSizeScale = 1.0;
+
   normalizeLinks = false;
 
   calculateLinkPathParams(link, normalize = true) {
@@ -222,6 +224,11 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         return _color;
       }
     };
+  }
+
+  get fontSize() {
+    const { fontSizeScale } = this;
+    return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
   getYScaleFactor(columns, nodes) {

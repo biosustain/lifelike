@@ -6,12 +6,20 @@
 </label>
 <div class="dropdown-divider"></div>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-  Node Display Name Font Size (px)
-  <input [(ngModel)]="options.fontSize" (ngModelChange)="update()"
-         min="12" max="48"
-         ngbButton
-         type="range">
-  {{options.fontSize}}
+  <div class="d-flex align-items-center mx-0">
+    <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
+      Font Size
+    </label>
+    <app-percent-input [(value)]="options.fontSizeScale"
+                       default="100"
+                       min="20"
+                       max="1000"
+                       step="20"
+                       inputId="font-size"
+                       (change)="update()"
+    ></app-percent-input>
+    %
+  </div>
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
     <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update()"
@@ -54,9 +62,9 @@
      [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()" title="Link size">
     <div class="mb-1">Link Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
-           *ngFor="let valueAccessor of options.linkValueGenerators">
-        <input ngbButton type="radio" [value]="valueAccessor"
-               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+           *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
+        <input ngbButton type="radio" [value]="valueAccessor.value"
+               [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueAccessors">
@@ -69,9 +77,9 @@
      [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()" title="Node fixed size">
     <div class="mb-1">Node Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
-           *ngFor="let valueAccessor of options.nodeValueGenerators">
-        <input ngbButton type="radio" [value]="valueAccessor"
-               [disabled]="valueAccessor.disabled && valueAccessor.disabled()"> {{valueAccessor.description}}
+           *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
+        <input ngbButton type="radio" [value]="valueAccessor.value"
+               [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueAccessors">
