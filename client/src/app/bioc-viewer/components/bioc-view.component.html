@@ -16,20 +16,20 @@
                              [showDelete]="false" (objectRefresh)="requestRefresh()">
             </app-object-menu>
         </app-module-header>
-        <div class="module-body overflow-auto" style="z-index: 0">
+        <div class="module-body overflow-auto">
             <div class="document" *ngFor="let doc of biocData">
-                <h1 class="title">
+                <h1 class="title ordertop">
                     <app-bioc-annotated-text [text]="doc.passages[0].text"
-                                             [annotations]="doc.passages[0].annotations"
-                                             [offset]="doc.passages[0].offset"
-                                             [ngClass]="doc.passages[0].infons.type">
+                        [annotations]="doc.passages[0].annotations" [offset]="doc.passages[0].offset"
+                        [ngClass]="doc.passages[0].infons.type">
                     </app-bioc-annotated-text>
                 </h1>
                 <ng-template ngFor let-passage [ngForOf]="doc.passages.slice(1)">
+
                     <!-- generic component -->
                     <app-bioc-annotated-text *ngIf="isGeneric(passage)" [text]="passage.text"
-                                             [annotations]="passage.annotations" [offset]="passage.offset"
-                                             [ngClass]="passage.infons.type">
+                        [annotations]="passage.annotations" [offset]="passage.offset"
+                        [ngClass]="passage.infons.type">
                     </app-bioc-annotated-text>
 
                     <app-bioc-table-view *ngIf="isTableView(passage)" [passage]="passage"></app-bioc-table-view>
@@ -44,7 +44,7 @@
                         <div class="figure-text col-lg-9 col-md-12 col-sm-12">
                             <b>{{ getFigureCaption(passage) }}: </b>
                             <app-bioc-annotated-text [text]="passage.text" [annotations]="passage.annotations"
-                                                     [offset]="passage.offset" [ngClass]="passage.infons.type">
+                                [offset]="passage.offset" [ngClass]="passage.infons.type">
                             </app-bioc-annotated-text>
                         </div>
                     </div>
@@ -60,6 +60,7 @@
                         </div>
                     </div>
                 </ng-template>
+
                 <div class="date" *ngIf="doc.created">{{doc.created.$date | date}}</div>
                 <div *ngIf="doc.accessions && doc.accessions.length > 0" class="accessions">
                     Accessions:
@@ -72,10 +73,10 @@
                 <div class="meta">
                     <span class="pmid"><a href="{{ pmid(doc)[1] }} ">{{ pmid(doc)[0] }}</a></span>
                     <span class="authors">
-                            <span>
-                                {{ authors(doc) }}
-                            </span>
+                        <span>
+                            {{ authors(doc) }}
                         </span>
+                    </span>
                     <span class="journal">{{ journal(doc) }}</span>
                     <span class="year">{{ year(doc) }}</span>
                 </div>

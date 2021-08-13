@@ -262,7 +262,7 @@ def test_local_inclusion_affect_gene_organism_matching(
             'idType': '',
             'allText': 'hooman',
             'isCustom': True,
-            'idHyperlink': '',
+            'idHyperlinks': [],
             'includeGlobally': False,
         },
         'uuid': 'a66ec5d5-f65b-467d-b16e-b833161e07d1',
@@ -315,7 +315,7 @@ def test_local_exclusion_affect_gene_organism_matching(
         'comment': '',
         'user_id': 1,
         'pageNumber': 1,
-        'idHyperlink': 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=37293',
+        'idHyperlinks': ['https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=37293'],
         'exclusion_date': '2020-11-10 17:39:27.050845+00:00',
         'excludeGlobally': False,
         'isCaseInsensitive': True
@@ -1114,7 +1114,7 @@ def test_delta_gene_deletion_detected(
 #         'meta': {
 #             'idType': 'MESH',
 #             'allText': 'Carbon',
-#             'idHyperlink': 'http://fake',
+#             'idHyperlinks': 'http://fake',
 #             'isCaseInsensitive': True,
 #             'id': 'CHEBI:27594',
 #             'type': EntityType.CHEMICAL.value
@@ -1141,10 +1141,10 @@ def test_delta_gene_deletion_detected(
 #         parsed=parsed
 #     )
 
-#     # if idHyperlink in `mock_global_chemical_inclusion` was empty
+#     # if idHyperlinks in `mock_global_chemical_inclusion` was empty
 #     # then it would've defaulted to
 #     # https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27594
-#     assert annotations[0].meta.id_hyperlink == custom['meta']['idHyperlink']
+#     assert annotations[0].meta.id_hyperlinks == custom['meta']['idHyperlinks']
 #     assert annotations[0].meta.id_type == custom['meta']['idType']
 
 

@@ -372,7 +372,7 @@ class ManualAnnotationService:
                 common_name = annotation['primaryName']
                 synonym = annotation['meta']['allText']
                 inclusion_date = annotation['inclusion_date']
-                hyperlink = annotation['meta']['idHyperlink']
+                hyperlinks = annotation['meta']['idHyperlinks']
                 username = username
             except KeyError:
                 raise AnnotationError(
@@ -382,7 +382,7 @@ class ManualAnnotationService:
                     code=500)
 
             if entity_id == '':
-                entity_id = f'NULL_{str(uuid4())}'
+                entity_id = f'NULL-{str(uuid4())}'
 
             createval = {
                 'entity_type': entity_type,
@@ -390,8 +390,8 @@ class ManualAnnotationService:
                 'synonym': synonym,
                 'inclusion_date': inclusion_date,
                 'user': username,
-                'data_source': data_source if data_source != 'None' else None,
-                'hyperlink': hyperlink,
+                'data_source': data_source if data_source else None,
+                'hyperlinks': hyperlinks,
                 'common_name': common_name,
                 'file_uuid': file_hash_id
             }
