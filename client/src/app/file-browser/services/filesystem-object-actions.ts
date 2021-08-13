@@ -79,7 +79,7 @@ export class FilesystemObjectActions {
             const progressDialogRef = this.createProgressDialog('Generating export...');
 
             try {
-              return value.exporter.export().pipe(
+              return value.exporter.export(value.exportLinked).pipe(
                 take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
                 finalize(() => progressDialogRef.close()),
                 map((file: File) => {
