@@ -148,7 +148,7 @@ def get_global_inclusions_by_type_query(entity_type):
         n.name AS entity_name,
         n.data_source AS data_source,
         s.name AS synonym,
-        r.hyperlink AS hyperlink
+        r.hyperlinks AS hyperlinks
     """
 
 
@@ -168,7 +168,7 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type):
         n.name AS entity_name,
         n.data_source AS data_source,
         s.name AS synonym,
-        r.hyperlink AS hyperlink
+        r.hyperlinks AS hyperlinks
     """
 
 
@@ -273,7 +273,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """.replace('replace_with_param', query_label)
 
 
@@ -289,7 +289,7 @@ def get_create_chemical_global_inclusion_query():
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = 'Chemical',
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """
 
 
@@ -305,7 +305,7 @@ def get_create_compound_global_inclusion_query():
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = 'Compound',
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """
 
 
@@ -321,7 +321,7 @@ def get_create_gene_global_inclusion_query():
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = 'Gene',
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """
 
 
@@ -337,7 +337,7 @@ def get_create_species_global_inclusion_query():
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = 'Species',
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """
 
 
@@ -353,7 +353,7 @@ def get_create_protein_global_inclusion_query():
         r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = 'Protein',
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """
 
 
@@ -378,7 +378,7 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
         n.data_source = $data_source,
         n.name = $common_name,
         n.entity_type = $entity_type,
-        n.hyperlink = $hyperlink,
+        n.hyperlinks = $hyperlinks,
         n.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         n.user = $user
     WITH n
@@ -391,5 +391,5 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
         r.user = n.user,
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
-        r.hyperlink = $hyperlink
+        r.hyperlinks = $hyperlinks
     """.replace('replace_with_param', query_label)

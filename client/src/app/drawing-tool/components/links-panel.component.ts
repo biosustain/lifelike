@@ -35,6 +35,8 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
   @Input() showHeader = true;
   @Input() editable = true;
   @Input() fontAwesomeIcon = 'fa fa-link';
+  @Input() draggable = true;
+  @Input() limit = null;
 
   dropTargeted = false;
   activeLinkIndex = -1;

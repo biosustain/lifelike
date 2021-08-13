@@ -274,6 +274,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
 
 class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
+    export_linked = fields.Boolean()
 
 
 class FileHierarchyRequestSchema(CamelCaseSchema):
