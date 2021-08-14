@@ -63,7 +63,7 @@ You will need two `.jar` files for liquibase to work:
 - Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
     - Update 7/23/2021: Check out the 4.0 branch and build it instead.
     - The reason is because a bug fix (about frozen return queries) was merged but hasn't been released yet.
-    - Run `mvn package -DskipTest` and copy the `target/neo4j-jdbc-driver-4.0.1.jar` file.
+    - Run `mvn package -DskipTest` and copy the `neo4j-jdbc-driver/target/neo4j-jdbc-driver-4.0.1.jar` file.
     - Note: The `mvn` (maven) should have been installed along with the OpenJDK.
 
 Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
@@ -83,6 +83,35 @@ total 27112
 -rw-r--r--  1 ...     2578 Jul  9 09:50 liquibase_autocomplete_mac.bash
 -rw-r--r--  1 ...   402057 Jul  9 09:50 picocli-4.6.1.jar
 -rw-r--r--  1 ...   310104 Jul  9 09:50 snakeyaml-1.27.jar
+```
+
+## Custom Java Classes
+Some of our queries are advance queries that liquibase does not have support for. To workaround this, we created Java classes (located in `migrations/java`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
+
+```bash
+cd migrations/java
+mvn package
+cp target/liquibase-lib-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
+```
+
+To use these class, you need to pass them into the class property:
+```xml
+<!-- the `loopQuery` and `execQuery` are parameters for the LoopHandler class -->
+<changeSet id="..." author="...">
+  <!-- customChange tags allow us to call these Java classes -->
+  <customChange
+    class="edu.ucsd.sbrg.liquibase.neo4j.LoopHandler"
+    loopQuery="..."
+    execQuery="..."/>
+</changeSet>
+```
+
+Loading new data into the graph will also require new Java classes, e.g:
+
+```java
+public interface FileParser { ... }
+public class NcbiFileParser implements FileParser { ... }
+...
 ```
 
 ## How Liquibase Works
@@ -184,7 +213,7 @@ Simply enter `N` and continue.
 # don't need port in ip address
 liquibase --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml updateSQL
 ```
-This command (dry run) will give you a preview of what liquibase will run. You can use this command to **make sure the changelog files are going to execute in order**.
+This command (dry run) will give you a preview of what liquibase will run. You can use this command to **make sure the changelog files are going to execute in order**. **IMPORTANT** If the changeset has a `customChange` that calls a Java class, it **WILL** update the database even with this dry run command. So be careful and use a test database.
 
 ```bash
 # don't need port in ip address
