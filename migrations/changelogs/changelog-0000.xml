@@ -74,114 +74,17 @@
   <!-- ######## -->
 
   <changeSet id="LL-2193-merge-snippets" author="Binh Vu">
-    <comment>Merge snippets</comment>
-    <sql>
-      CALL apoc.periodic.commit(
-        "match (n:Snippet) with n.id as id, collect(n) as nodes
-        where size(nodes) > 1 with nodes limit $limit
-        call apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:true}) yield node
-        RETURN COUNT(*)", {limit:5000}
-      )
-    </sql>
+    <customChange
+      class="edu.ucsd.sbrg.liquibase.neo4j.LoopHandler"
+      loopQuery="MATCH (n:Snippet) WITH n.id AS id, collect(n.id) AS nodes WHERE size(nodes) > 1 RETURN nodes LIMIT 5000"
+      execQuery="
+        UNWIND $nodes AS node_ids
+        MATCH (n:Snippet) WHERE n.id IN node_ids
+        WITH node_ids, collect(n) AS snippets
+        CALL apoc.refactor.mergeNodes(snippets, {properties: 'discard', mergeRels:true}) YIELD node
+        RETURN node_ids, node
+      "/>
   </changeSet>
 
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-remove-in-pub-relationships" author="Binh Vu">
-    <comment>Remove any redundent [IN_PUB] relationships</comment>
-    <sql>
-      CALL apoc.periodic.commit(
-        "match(s:Snippet)-[r:IN_PUB]-(p) with s, p limit $limit set s.pmid = p.pmid return count(*)",
-        {limit:10000}
-      );
-      MATCH (n:Snippet) WITH n MATCH (p:Publication {pmid:n.pmid}) CREATE (n)-[:IN_PUB]->(p);
-    </sql>
-  </changeSet>
-
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-merge-synonym-nodes-1" author="Binh Vu">
-    <comment>Merge synonym nodes (1st changeset)</comment>
-    <sql>
-      CALL apoc.periodic.commit(
-        "match (n:Synonym) with n.name as name, collect(n) as nodes where size(nodes) > 1 with nodes limit $limit
-        call apoc.refactor.mergeNodes(nodes, {properties: {name:'discard',`.*`: 'discard'}}) yield node
-        RETURN COUNT(*)", {limit:10000}
-      )
-    </sql>
-  </changeSet>
-  <changeSet id="LL-2193-merge-synonym-nodes-2" author="Binh Vu">
-    <comment>Merge synonym nodes (2nd changeset)</comment>
-    <sql>DROP INDEX ON :Synonym(name)</sql>
-  </changeSet>
-  <changeSet id="LL-2193-merge-synonym-nodes-3" author="Binh Vu">
-    <comment>Merge synonym nodes (3rd changeset)</comment>
-    <sql>CREATE CONSTRAINT constraint_synonym_name ON (n:Synonym) ASSERT n.name IS UNIQUE</sql>
-  </changeSet>
-
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-add-entry-types-to-association-nodes" author="Binh Vu">
-    <comment>Add entry1_type and entry2_type to association nodes</comment>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:db_Literature:Association)-[:HAS_TYPE]-(t) where not t.name in ['B', 'J'] with n, apoc.text.split(t.direction, '-')  as entryTypes return n, entryTypes[0] as entry1_type, entryTypes[1] as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize: 10000}
-      )
-    </sql>
-  </changeSet>
-
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-association-type-b-rel" author="Binh Vu">
-    <comment>Association type B has relationships for chemical-gene or gene-gene</comment>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(t:AssociationType {name:'B'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids
-        with n, case
-        when ids[0] starts with 'CHEBI' then 'chemical'
-        when ids[0] starts with 'MESH' then 'chemical'
-        else 'gene' end as entry1_type
-        return n, entry1_type, 'gene' as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
-      )
-    </sql>
-  </changeSet>
-
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-association-type-j-rel" author="Binh Vu">
-    <comment>Association type J has relationships for chemical-disease or gene-disease</comment>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(t:AssociationType {name:'J'})-[:HAS_TYPE]-(n) with n, apoc.text.split(n.id, '-') as ids
-        with n, case
-        when ids[0] starts with 'CHEBI' then 'chemical'
-        when ids[0] starts with 'MESH' then 'chemical'
-        else 'disease' end as entry1_type
-        return n, entry1_type, 'gene' as entry2_type",
-        "set n.entry1_type = entry1_type, n.entry2_type = entry2_type", {batchSize:10000}
-      )
-    </sql>
-  </changeSet>
-
-  <!-- ######## -->
-
-  <changeSet id="LL-2193-change-predicts-rel" author="Binh Vu">
-    <comment>Change PREDICTS relationship to INDICATES</comment>
-    <sql>
-      CALL apoc.periodic.iterate(
-        "match(n:Snippet)-[r:PREDICTS]->(n2) return n, n2, r",
-        "create (n)-[r2:INDICATES]->(n2)
-        set r2.entry1_text = r.entry1_text, r2.entry2_text=r.entry2_text,
-        r2.path=r.path, r2.raw_score=r.raw_score, r2.normalized_score=r.normalized_score",
-        {batchSize:5000}
-      );
-      CALL apoc.periodic.iterate(
-        "match(n:Snippet)-[r:PREDICTS]->() return r",
-        "delete r",
-        {batchSize: 5000}
-      );
-    </sql>
-  </changeSet>
+  <!-- TODO: finish up the other queries -->
 </databaseChangeLog>
