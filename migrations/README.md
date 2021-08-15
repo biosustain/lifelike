@@ -114,6 +114,14 @@ public class NcbiFileParser implements FileParser { ... }
 ...
 ```
 
+### Useful Neo4j Java Documentation
+Useful documentations...
+- https://docs.liquibase.com/change-types/community/custom-change.html
+- https://github.com/liquibase/liquibase/tree/master/liquibase-core/src/test/java/liquibase/change/custom
+- https://github.com/neo4j/neo4j-java-driver
+- https://neo4j.com/docs/java-manual/current/session-api/
+- https://neo4j.com/docs/api/java-driver/current/
+
 ## How Liquibase Works
 Liquibase uses `.xml`, `.json` etc files to do its migrations. We will use `.xml` since it's most common.
 
