@@ -1,6 +1,7 @@
 import hashlib
 import io
 import itertools
+import json
 import re
 import typing
 import urllib.request
@@ -15,8 +16,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from sqlalchemy.sql.expression import text
 from webargs.flaskparser import use_args
 
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -60,8 +63,8 @@ from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.network import read_url
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.service import GenericFileTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -123,7 +126,7 @@ class FilesystemBaseView(MethodView):
             filter,
             lazy_load_content=False,
             require_hash_ids: List[str] = None,
-            sort=None,
+            sort: List[str] = [],
             attr_excl: List[str] = None
     ) -> List[Files]:
         """
@@ -135,6 +138,7 @@ class FilesystemBaseView(MethodView):
         :param lazy_load_content: whether to load the file's content into memory
         :param require_hash_ids: a list of file hash IDs that must be in the result
         :param attr_excl: list of file attributes to exclude from the query
+        :param sort: str list of file attributes to order by
         :return: the result, which may be an empty list
         """
         current_user = g.current_user
@@ -163,7 +167,7 @@ class FilesystemBaseView(MethodView):
             .options(raiseload('*'),
                      joinedload(t_file.user),
                      joinedload(t_file.fallback_organism)) \
-            .order_by(*sort or [])
+            .order_by(*[text(f'_file.{col}') for col in sort])
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
         # etc.) for the current user, which then can be read later by FileHierarchy or manually.
@@ -577,22 +581,56 @@ class FileHierarchyView(FilesystemBaseView):
                     'data': file,
                     'level': len(filename_path.split('/')) - 2
                 }
+
+            # Unfortunately, Python doesn't seem to have a built-in for sorting strings the same
+            # way Postgres sorts them with collation. Ideally, we would create our own sorting
+            # function that would do this. This temporary solution of querying the children,
+            # sorting them, and then ordering our data based on that order will work, but it will
+            # also be relatively slow.
+            ordered_children = [
+                (child_id, children[child_id])
+                for child_id, in db.session.query(
+                    Files.id
+                ).filter(
+                    Files.id.in_(c_id for c_id in children)
+                ).order_by(
+                    Files.filename
+                )
+            ]
+
             return {
                 'data': file,
                 'level': len(filename_path.split('/')) - 2,
-                'children': sorted([
-                        generate_node_tree(id, grandchildren)
-                        for id, grandchildren in children.items()
-                    ], key=lambda f: f['data'].filename
-                )
+                'children': [
+                    generate_node_tree(id, grandchildren)
+                    for id, grandchildren in ordered_children
+                ]
             }
 
-        results = sorted([
-                generate_node_tree(project_id, children)
-                for project_id, children in ***ARANGO_USERNAME***.items()
-            ], key=lambda f: f['data'].true_filename
-            # Need `true_filename` here since these top-level files all have the name "/"
-        )
+        ordered_projects = [
+            ***ARANGO_USERNAME***_id
+            for ***ARANGO_USERNAME***_id, in db.session.query(
+                Projects.***ARANGO_USERNAME***_id
+            ).filter(
+                Projects.***ARANGO_USERNAME***_id.in_([project_id for project_id in ***ARANGO_USERNAME***.keys()])
+            ).order_by(
+                Projects.name
+            )
+        ]
+
+        # Unfortunately can't just sort by the filenames of ***ARANGO_USERNAME*** folders, since they all have the
+        # filename '/'. Instead, get the sorted project names, and then sort the list using that
+        # order. Also, it doesn't seem that Python has a builtin method for sorting with string
+        # collation, as is done by the Postgres order by. Otherwise, we would do that.
+        sorted_***ARANGO_USERNAME*** = [
+            (project_id, ***ARANGO_USERNAME***[project_id])
+            for project_id in ordered_projects
+        ]
+
+        results = [
+            generate_node_tree(project_id, children)
+            for project_id, children in sorted_***ARANGO_USERNAME***
+        ]
 
         current_app.logger.info(
             f'Generated file hierarchy!',
@@ -1085,6 +1123,7 @@ class FileContentView(FilesystemBaseView):
 
 class FileExportView(FilesystemBaseView):
     decorators = [auth.login_required]
+    # Move that to constants if accepted
 
     @use_args(FileExportRequestSchema)
     def post(self, params: dict, hash_id: str):
@@ -1097,21 +1136,69 @@ class FileExportView(FilesystemBaseView):
         file_type_service = get_file_type_service()
         file_type = file_type_service.get(file)
 
-        try:
-            export = file_type.generate_export(file, params['format'])
-            export_content = export.content.getvalue()
-            checksum_sha256 = hashlib.sha256(export_content).digest()
+        if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
+            files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
+            export = file_type.merge(files, params['format'], links)
+        else:
+            try:
+                export = file_type.generate_export(file, params['format'])
+            except ExportFormatError:
+                raise ValidationError("Unknown or invalid export format for the requested file.",
+                                      params["format"])
 
-            return make_cacheable_file_response(
-                    request,
-                    export_content,
-                    etag=checksum_sha256.hex(),
-                    filename=export.filename,
-                    mime_type=export.mime_type,
-            )
-        except ExportFormatError:
-            raise ValidationError("Unknown or invalid export format for the requested file.",
-                                  "format")
+        export_content = export.content.getvalue()
+        checksum_sha256 = hashlib.sha256(export_content).digest()
+        return make_cacheable_file_response(
+                request,
+                export_content,
+                etag=checksum_sha256.hex(),
+                filename=export.filename,
+                mime_type=export.mime_type,
+        )
+
+    def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
+        current_user = g.current_user
+        json_graph = json.loads(file.content.raw_file)
+        for node in json_graph['nodes']:
+            data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+            for link in data:
+                url = link.get('url', "").lstrip()
+                if MAPS_RE.match(url):
+                    map_hash = url.split('/')[-1]
+                    link_data = {
+                        'x': node['data']['x'],
+                        'y': node['data']['y'],
+                        'page_origin': next(i for i, f in enumerate(files)
+                                            if file.hash_id == f.hash_id),
+                        'page_destination': len(files)
+                    }
+                    # Fetch linked maps and check permissions, before we start to export them
+                    if map_hash not in map_hash_set:
+                        try:
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True)
+                            self.check_file_permissions([child_file], current_user,
+                                                        ['readable'], permit_recycled=True)
+                            map_hash_set.add(map_hash)
+                            files.append(child_file)
+
+                            files, links = self.get_all_linked_maps(child_file,
+                                                                    map_hash_set, files, links)
+
+                        except RecordNotFound:
+                            current_app.logger.info(
+                                f'Map file: {map_hash} requested for linked '
+                                f'export does not exist.',
+                                extra=UserEventLog(
+                                    username=current_user.username,
+                                    event_type=LogEventType.FILESYSTEM.value).to_dict()
+                            )
+                            link_data['page_destination'] = link_data['page_origin']
+                    else:
+                        link_data['page_destination'] = next(i for i, f in enumerate(files) if
+                                                             f.hash_id == map_hash)
+                    links.append(link_data)
+        return files, links
 
 
 class FileBackupView(FilesystemBaseView):

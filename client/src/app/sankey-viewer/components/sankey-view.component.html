@@ -147,6 +147,13 @@
                             <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
                         </label>
                     </div>
+                    <div class="btn-group btn-group-toggle">
+                      <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
+                                          [resultIndex]="entitySearchListIdx"
+                                          [resultCount]="entitySearchList.size"
+                                          (previous)="previous()" (next)="next()">
+                      </app-search-control>
+                    </div>
                 </div>
             </div>
             <as-split [gutterSize]="5"
@@ -162,6 +169,8 @@
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList"
+                                [focusedNode]="searchFocus"
                     >
                     </app-sankey>
                 </as-split-area>
