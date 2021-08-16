@@ -64,6 +64,7 @@ from neo4japp.constants import (
     FILENAME_LABEL_MARGIN,
     FILENAME_LABEL_FONT_SIZE,
     IMAGES_RE,
+    ASSETS_PATH,
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -372,10 +373,10 @@ def get_icon_strings():
         return ICON_DATA
     else:
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
-            with open(f'/home/n4j/assets/{key}.png', 'rb') as file:
-                ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' \
+            with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
+                ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
                                                            + b64encode(file.read())\
-                                                               .decode(BYTE_ENCODING)
+                                                           .decode(BYTE_ENCODING)
         return ICON_DATA
 
 
@@ -538,7 +539,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 node['link'] = link['url']
 
                     icon_params['image'] = (
-                            f'/home/n4j/assets/{label}.png'
+                            f'{ASSETS_PATH}{label}.png'
                         )
                     icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
                     icon_params['style'] = 'filled'
