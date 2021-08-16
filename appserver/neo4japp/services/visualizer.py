@@ -48,14 +48,10 @@ class VisualizerService(KgService):
             )
         }
 
-        # NOTE: A `Node` object has an `id` property. This is the Neo4j database identifier, which
-        # is DISTINCT from the `id` property a given node might have, which represents the node
-        # entity! I.e. ID(n) = 123456789 vs. (n: {id: 'CHEBI:0000'})}
-
-        # Can't get the URI of the node if there is no 'id' property, so return None
+        # Can't get the URI of the node if there is no 'eid' property, so return None
         if entity_id is None:
             current_app.logger.warning(
-                f'Node with ID {id} does not have a URI.',
+                f'Node with EID {entity_id} does not have a URI.',
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             return None
@@ -443,12 +439,12 @@ class VisualizerService(KgService):
                     apoc.convert.toSet([{
                         id: ID(n),
                         labels: labels(n),
-                        entity_id: n.id,
+                        entity_id: n.eid,
                         name: n.name
                     }] + collect({
                         id: ID(m),
                         labels: labels(m),
-                        entity_id: m.id,
+                        entity_id: m.eid,
                         name: m.name
                     })) AS nodes,
                     apoc.convert.toSet(collect({
@@ -519,7 +515,7 @@ class VisualizerService(KgService):
                     COUNT(s) as snippet_count,
                     collect(distinct {
                         snippet: {
-                            id: s.id,
+                            id: s.eid,
                             data: {
                                 entry1_text: r.entry1_text,
                                 entry2_text: r.entry2_text,
@@ -529,7 +525,7 @@ class VisualizerService(KgService):
                             }
                         },
                         publication: {
-                            id: p.id,
+                            id: p.eid,
                             data: {
                                 journal: p.journal,
                                 title: p.title,
@@ -583,7 +579,7 @@ class VisualizerService(KgService):
                     COUNT(s) as snippet_count,
                     collect({
                         snippet: {
-                            id: s.id,
+                            id: s.eid,
                             data: {
                                 entry1_text: r.entry1_text,
                                 entry2_text: r.entry2_text,
@@ -593,7 +589,7 @@ class VisualizerService(KgService):
                             }
                         },
                         publication: {
-                            id: p.id,
+                            id: p.eid,
                             data: {
                                 journal: p.journal,
                                 title: p.title,
