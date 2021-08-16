@@ -12,13 +12,12 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { map } from 'rxjs/operators';
 import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
-import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue } from './algorithms/linkValues';
+import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue, fixedValue } from './algorithms/linkValues';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
 import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -27,7 +26,19 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
+import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
+import { emptyIfNull } from '../../shared/utils/types';
+import { isNodeMatching, isLinkMatching } from './search-match';
 
+const LINK_VALUE = {
+  default: 'Default',
+  input_count: 'Input count',
+  fraction_of_fixed_node_value: 'Fraction of fixed node value',
+};
+
+const NODE_VALUE = {
+  none: 'None',
+};
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -85,34 +96,48 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     normalizeLinks: false,
     linkValueAccessors: [],
     nodeValueAccessors: [],
-    predefinedValueAccessors: [{
-      description: 'Input count',
-      callback: () => {
-        this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.find(({description}) => description === 'Input count');
-        this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
-        this.onOptionsChange();
-      }
-    }],
-    linkValueGenerators: [
+    predefinedValueAccessors: [
       {
-        description: 'Input count',
+        description: LINK_VALUE.default,
+        callback: () => {
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          this.onOptionsChange();
+        }
+      },
+      {
+        description: LINK_VALUE.input_count,
+        callback: () => {
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          this.onOptionsChange();
+        }
+    }],
+    linkValueGenerators: {
+      default: {
+        description: LINK_VALUE.default,
+        preprocessing: fixedValue,
+        disabled: () => false
+      } as ValueGenerator,
+      input_count: {
+        description: LINK_VALUE.input_count,
         preprocessing: inputCount,
         disabled: () => false
       } as ValueGenerator,
-      {
-        description: 'Fraction of fixed node value',
-        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators[0],
-        requires: ({node: {fixedValue}}) => fixedValue,
+      fraction_of_fixed_node_value: {
+        description: LINK_VALUE.fraction_of_fixed_node_value,
+        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
+        requires: ({node}) => node.fixedValue,
         preprocessing: fractionOfFixedNodeValue
       } as ValueGenerator
-    ],
-    nodeValueGenerators: [
-      {
-        description: 'None',
+    },
+    nodeValueGenerators: {
+      none: {
+        description: NODE_VALUE.none,
         preprocessing: noneNodeValue,
         disabled: () => false
       } as ValueGenerator
-    ],
+    },
     selectedLinkValueAccessor: undefined,
     selectedNodeValueAccessor: undefined,
     selectedPredefinedValueAccessor: undefined,
@@ -124,12 +149,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       enabled: true,
       value: SankeyLayoutService.labelEllipsis
     },
-    fontSize: 12
+    fontSizeScale: 1.0
   };
   parseProperty = parseForRendering;
   @ViewChild('sankey', {static: false}) sankey;
   isArray = Array.isArray;
   private currentFileId: any;
+
+  entitySearchTerm = '';
+  entitySearchList = new Set();
+  entitySearchListIdx = -1;
+  searchFocus = undefined;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -141,12 +171,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators[0];
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators[0];
+    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
+    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
-    this.selection = new BehaviorSubject([]);
+      this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
       map((currentSelection) => {
         const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
@@ -248,6 +278,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.sankey.scaleZoom(.8);
     }
   }
+
   // endregion
 
   selectNetworkTrace(networkTrace) {
@@ -396,7 +427,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
         description: name,
         callback: () => {
-          const { options } = this;
+          const {options} = this;
           const {
             nodeValueAccessors,
             nodeValueGenerators,
@@ -415,7 +446,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
               ({description}) => description === link_sizing
             );
           } else {
-            options.selectedLinkValueAccessor = linkValueGenerators[1];
+            options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
           }
           this.onOptionsChange();
         }
@@ -486,7 +517,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   onOptionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
-    this.sankeyLayout.fontSize = this.options.fontSize;
+    this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
     this.selectNetworkTrace(this.selectedNetworkTrace);
   }
 
@@ -508,7 +539,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
             'sankey', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    }));
   }
 
   toggleSelect(entity, type, template: HTMLTemplateElement) {
@@ -561,5 +592,95 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   openLinkDetails(link) {
     this.selectLink(link);
     this.openDetailsPanel();
+  }
+
+  // ========================================
+  // Search stuff
+  // ========================================
+
+  /**
+   * Get all nodes and edges that match some search terms.
+   * @param terms the terms
+   * @param options addiitonal find options
+   */
+  findMatching(terms: string[], options: FindOptions = {}) {
+    const matcher = compileFind(terms, options);
+    const matches = new Set();
+
+    const {nodes, links} = this.filteredSankeyData;
+
+    for (const node of nodes) {
+      if (isNodeMatching(matcher, node)) {
+        matches.add(node);
+      }
+    }
+
+    for (const link of links) {
+      if (isLinkMatching(matcher, link, this.sankeyData)) {
+        matches.add(link);
+      }
+    }
+
+    return matches;
+  }
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      this.entitySearchList = this.findMatching(
+        tokenizeQuery(this.entitySearchTerm, {
+          singleTerm: true,
+        }), {
+          wholeWord: false,
+        });
+    } else {
+      this.entitySearchList = new Set();
+    }
+    this.entitySearchListIdx = -1;
+    this.searchFocus = undefined;
+  }
+
+  clearSearchQuery() {
+    this.entitySearchTerm = '';
+    this.search();
+  }
+
+  panToEntity(entity) {
+    const y = (entity._y0 + entity._y1) / 2;
+    let x = 0;
+    if (entity._x0 !== undefined) {
+      x = (entity._x0 + entity._x1) / 2;
+    } else {
+      x = (entity._source._x1 + entity._target._x0) / 2;
+    }
+    this.sankey.sankeySelection.transition().call(
+      this.sankey.zoom.translateTo,
+      x,
+      y
+    );
+  }
+
+  setSearchFocus() {
+    const searchFocus = [...this.entitySearchList][this.entitySearchListIdx];
+    this.searchFocus = searchFocus;
+    if (searchFocus) {
+      this.panToEntity(searchFocus);
+    }
+  }
+
+  next() {
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.size) {
+      this.entitySearchListIdx = 0;
+    }
+    this.setSearchFocus();
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.size - 1;
+    }
+    this.setSearchFocus();
   }
 }

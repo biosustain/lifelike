@@ -32,6 +32,7 @@ interface SankeyLink {
   index?: number;
   source?: string | number;
   target?: string | number;
+  description?: string;
 
   // region Used internally to compute layout
   _source?: SankeyNode | string | number;
