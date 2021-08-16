@@ -48,13 +48,22 @@ class KgService(HybridDBDao):
         rel_dict = {}
 
         for node in nodes:
-            label = get_first_known_label_from_node(node)
+            try:
+                label = get_first_known_label_from_node(node)
+            except ValueError:
+                label = 'Unknown'
+                current_app.logger.warning(
+                    f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}",
+                    extra=EventLog(
+                        event_type=LogEventType.KNOWLEDGE_GRAPH.value
+                    ).to_dict()
+                )
             graph_node = GraphNode(
                 id=node.id,
                 label=get_first_known_label_from_node(node),
                 sub_labels=list(node.labels),
                 domain_labels=[],
-                display_name=node.get(DISPLAY_NAME_MAP[label]),
+                display_name=node.get(DISPLAY_NAME_MAP[label], 'Unknown'),
                 data=snake_to_camel_dict(dict(node), {}),
                 url=None
             )
