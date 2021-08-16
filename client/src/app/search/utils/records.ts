@@ -13,13 +13,13 @@ export function getLink(data: FTSQueryRecord) {
   const domain = getDomain(data.node.subLabels);
   const type = getType(data.node.subLabels);
   if (domain === 'NCBI' && type === 'Gene') {
-    return DOMAINS_URL[domain + '_' + type] + data.node.data.id;
+    return DOMAINS_URL[domain + '_' + type] + data.node.data.eid;
   } else if (domain === 'NCBI' && type === 'Taxonomy') {
-    return DOMAINS_URL[domain + '_' + type] + data.node.data.id;
+    return DOMAINS_URL[domain + '_' + type] + data.node.data.eid;
   } else if (domain === 'GO' || domain === 'UniProt') {
-    return DOMAINS_URL[domain] + data.node.data.id;
+    return DOMAINS_URL[domain] + data.node.data.eid;
   } else {
-    return DOMAINS_URL[domain] + data.node.data.id.split(':')[1];
+    return DOMAINS_URL[domain] + data.node.data.eid;
   }
 }
 

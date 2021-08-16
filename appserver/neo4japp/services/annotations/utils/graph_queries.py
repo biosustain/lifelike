@@ -33,10 +33,10 @@ node_labels = {
 
 def get_organisms_from_gene_ids_query():
     return """
-    MATCH (g:Gene) WHERE g.id IN $gene_ids
+    MATCH (g:Gene) WHERE g.eid IN $gene_ids
     WITH g
     MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
-    RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id,
+    RETURN g.eid AS gene_id, g.name as gene_name, t.eid as taxonomy_id,
         t.name as species_name
     """
 
@@ -46,9 +46,9 @@ def get_gene_to_organism_query():
     MATCH (s:Synonym)-[]-(g:Gene)
     WHERE s.name IN $genes
     WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-    WHERE p.id IN $organisms
-    RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id,
-        p.id AS organism_id, g.data_source AS data_source
+    WHERE p.eid IN $organisms
+    RETURN g.name AS gene_name, s.name AS gene_synonym, g.eid AS gene_id,
+        p.eid AS organism_id, g.data_source AS data_source
     """
 
 
@@ -57,8 +57,8 @@ def get_protein_to_organism_query():
     MATCH (s:Synonym)-[]-(g:db_UniProt)
     WHERE s.name IN $proteins
     WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-    WHERE p.id IN $organisms
-    RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
+    WHERE p.eid IN $organisms
+    RETURN s.name AS protein, collect(g.eid) AS protein_ids, p.eid AS organism_id
     """
 
 
@@ -77,7 +77,7 @@ def get_global_inclusions_query():
     RETURN
         id(n) AS node_internal_id,
         id(s) AS syn_node_internal_id,
-        n.id AS entity_id,
+        n.eid AS entity_id,
         s.name AS synonym,
         n.data_source AS data_source,
         r.entity_type AS entity_type,
@@ -95,7 +95,7 @@ def get_global_inclusions_paginated_query():
     RETURN
         id(n) AS node_internal_id,
         id(s) AS syn_node_internal_id,
-        n.id AS entity_id,
+        n.eid AS entity_id,
         s.name AS synonym,
         n.data_source AS data_source,
         r.entity_type AS entity_type,
@@ -117,16 +117,16 @@ def get_nodes_by_ids(entity_type):
         query_label = f'{source_labels[entity_type]}:{query_label}'
 
     return f"""
-    MATCH (n:{query_label}) WHERE n.id IN $ids
-    RETURN n.id AS entity_id, n.name AS entity_name
+    MATCH (n:{query_label}) WHERE n.eid IN $ids
+    RETURN n.eid AS entity_id, n.name AS entity_name
     """
 
 
 # NOTE DEPRECATED: just used in old migration
 def get_mesh_by_ids():
     return """
-    MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $ids
-    RETURN n.id AS mesh_id, n.name AS mesh_name
+    MATCH (n:db_MESH:TopicalDescriptor) WHERE n.eid IN $ids
+    RETURN n.eid AS mesh_id, n.name AS mesh_name
     """
 
 
@@ -144,7 +144,7 @@ def get_global_inclusions_by_type_query(entity_type):
     WHERE r.global_inclusion = true AND exists(r.inclusion_date)
     RETURN
         id(n) AS internal_id,
-        n.id AS entity_id,
+        n.eid AS entity_id,
         n.name AS entity_name,
         n.data_source AS data_source,
         s.name AS synonym,
@@ -164,7 +164,7 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type):
     MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
     RETURN
         id(n) AS internal_id,
-        n.id AS entity_id,
+        n.eid AS entity_id,
         n.name AS entity_name,
         n.data_source AS data_source,
         s.name AS synonym,
@@ -179,7 +179,7 @@ def get_mesh_global_inclusion_exist_query(entity_type):
     query_label = node_labels[entity_type]
     return f"""
     OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = 'MESH:' + $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         '{query_label}' IN labels(n) AS node_has_entity_label,
         $synonym IN collect(s.name) AS synonym_exist
@@ -189,7 +189,7 @@ def get_mesh_global_inclusion_exist_query(entity_type):
 def get_chemical_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = 'CHEBI:' + $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -198,7 +198,7 @@ def get_chemical_global_inclusion_exist_query():
 def get_compound_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_BioCyc:Compound)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -207,7 +207,7 @@ def get_compound_global_inclusion_exist_query():
 def get_gene_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -216,7 +216,7 @@ def get_gene_global_inclusion_exist_query():
 def get_pathway_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:Pathway)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -225,7 +225,7 @@ def get_pathway_global_inclusion_exist_query():
 def get_protein_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -234,7 +234,7 @@ def get_protein_global_inclusion_exist_query():
 def get_species_global_inclusion_exist_query():
     return """
     OPTIONAL MATCH (n:db_NCBI:Taxonomy)-[:HAS_SYNONYM]->(s)
-    WHERE n.id = $entity_id
+    WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
     """
@@ -251,7 +251,7 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) OR
         CASE WHEN
-            n IS NOT NULL THEN NOT 'NULL_' IN n.id
+            n IS NOT NULL THEN NOT 'NULL_' IN n.eid
         ELSE false END AS synonym_exist
     """
 
@@ -262,7 +262,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
 
     query_label = node_labels[entity_type]
     return """
-    MATCH (n:db_MESH) WHERE n.id = 'MESH:' + $entity_id
+    MATCH (n:db_MESH) WHERE n.eid = $entity_id
     SET n:replace_with_param
     MERGE (s: Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
@@ -279,7 +279,7 @@ def get_create_mesh_global_inclusion_query(entity_type):
 
 def get_create_chemical_global_inclusion_query():
     return """
-    MATCH (n:db_CHEBI:Chemical) WHERE n.id = 'CHEBI:' + $entity_id
+    MATCH (n:db_CHEBI:Chemical) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -295,7 +295,7 @@ def get_create_chemical_global_inclusion_query():
 
 def get_create_compound_global_inclusion_query():
     return """
-    MATCH (n:db_BioCyc:Compound) WHERE n.id = $entity_id
+    MATCH (n:db_BioCyc:Compound) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -311,7 +311,7 @@ def get_create_compound_global_inclusion_query():
 
 def get_create_gene_global_inclusion_query():
     return """
-    MATCH (n:db_NCBI:Gene) WHERE n.id = $entity_id
+    MATCH (n:db_NCBI:Gene) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -327,7 +327,7 @@ def get_create_gene_global_inclusion_query():
 
 def get_create_species_global_inclusion_query():
     return """
-    MATCH (n:db_NCBI:Taxonomy) WHERE n.id = $entity_id
+    MATCH (n:db_NCBI:Taxonomy) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -343,7 +343,7 @@ def get_create_species_global_inclusion_query():
 
 def get_create_protein_global_inclusion_query():
     return """
-    MATCH (n:db_UniProt:Protein) WHERE n.id = $entity_id
+    MATCH (n:db_UniProt:Protein) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
@@ -373,7 +373,7 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     return """
     MERGE (n:db_Lifelike {name: $common_name, entity_type: $entity_type})
     ON CREATE
-    SET n.id = 'Lifelike:' + $entity_id,
+    SET n.eid = $entity_id,
         n:GlobalInclusion:replace_with_param,
         n.data_source = $data_source,
         n.name = $common_name,
