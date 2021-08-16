@@ -127,7 +127,7 @@ MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
-ICON_DATA: dict[str, bytes] = {} 
+ICON_DATA: dict = {}
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
