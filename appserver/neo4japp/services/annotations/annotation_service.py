@@ -157,7 +157,9 @@ class AnnotationService:
                 else:
                     hyperlinks = param.entity_id_hyperlinks
 
-            id_type = param.entity_id_type or param.entity['id_type']
+            id_type = param.entity_id_type or ''
+            if not id_type and 'NULL' not in param.entity_id:
+                id_type = param.entity['id_type']
             synonym = param.entity['synonym']
             primary_name = param.entity['name']
             keyword_length = keyword_ending_idx - keyword_starting_idx + 1
