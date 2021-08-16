@@ -45,10 +45,6 @@
         <label for="id" class="col-form-label col-sm-3">
           <i class="fas fa-exclamation-circle" ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"></i>
           Identifier:</label>
-        <div class="col-sm-3">
-          <input type="text" formControlName="id" class="form-control" id="id">
-          <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
-        </div>
         <div class="col-sm-6">
           <select formControlName="source" class="custom-select w-100" id="source">
             <option value="" selected>No Source</option>
@@ -56,6 +52,10 @@
               {{choice}}
             </option>
           </select>
+        </div>
+        <div class="col-sm-3">
+          <input type="text" formControlName="id" class="form-control" id="id">
+          <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
         </div>
       </div>
     </fieldset>
@@ -71,7 +71,7 @@
 
     <div class="custom-control custom-checkbox mt-4">
       <input type="checkbox" class="custom-control-input" id="include-globally"
-             formControlName="includeGlobally" (change)="toggleIdFieldValidity()">
+             formControlName="includeGlobally">
       <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
     </div>
 
