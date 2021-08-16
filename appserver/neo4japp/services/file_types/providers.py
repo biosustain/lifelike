@@ -49,7 +49,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
     LIFELIKE_DOMAIN,
-    # ICON_DATA,
+    BYTE_ENCODING,
     DEFAULT_DPI,
     POINT_TO_PIXEL,
     HORIZONTAL_TEXT_PADDING,
@@ -63,7 +63,7 @@ from neo4japp.constants import (
     NAME_LABEL_PADDING_MULTIPLIER,
     FILENAME_LABEL_MARGIN,
     FILENAME_LABEL_FONT_SIZE,
-    IMAGES_RE
+    IMAGES_RE,
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -120,7 +120,7 @@ protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
 characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
 common_escape_patterns_re = re.compile(rb'\\')
-dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 # Used to match the links in maps during the export
 SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
@@ -134,7 +134,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
     try:
         for match in doi_re.finditer(content):
             label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
-                [s.decode('utf-8', errors='ignore') if s else '' for s in match.groups()]
+                [s.decode(BYTE_ENCODING, errors='ignore') if s else '' for s in match.groups()]
             certainly_doi = label + url
             url = 'https://doi.org/'
             # is whole match a DOI? (finished on \n, trimmed whitespaces)
@@ -308,7 +308,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
     characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
     common_escape_patterns_re = re.compile(rb'\\')
-    dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", 'utf-8'))
+    dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
@@ -360,8 +360,8 @@ def substitute_svg_images(map_content: io.BytesIO):
     """
     icon_data = get_icon_strings()
     output = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], map_content.read()
-                           .decode('utf-8'))
-    return io.BytesIO(bytes(output, 'utf-8'))
+                           .decode(BYTE_ENCODING))
+    return io.BytesIO(bytes(output, BYTE_ENCODING))
 
 
 def get_icon_strings():
@@ -375,7 +375,8 @@ def get_icon_strings():
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
             with open(f'/home/n4j/assets/{key}.png', 'rb') as file:
                 ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' \
-                                                           + b64encode(file.read()).decode('utf-8')
+                                                           + b64encode(file.read())\
+                                                               .decode(BYTE_ENCODING)
         return ICON_DATA
 
 
@@ -421,7 +422,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
@@ -755,7 +756,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
         doc.setLayout(layout2)
         doc.save(result_string)
-        return io.BytesIO(result_string.getvalue().encode('utf-8'))
+        return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
 
 
 class GraphTypeProvider(BaseFileTypeProvider):
@@ -792,7 +793,7 @@ class GraphTypeProvider(BaseFileTypeProvider):
         string_list = set(extract_text(content_json))
 
         content.write(' '.join(list(string_list)))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
         if not file.description:
@@ -856,7 +857,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
                                 content.write(value['text'])
                 content.write('.\r\n\r\n')
 
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def should_highlight_content_text_matches(self) -> bool:
         return True
