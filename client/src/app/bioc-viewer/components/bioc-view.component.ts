@@ -132,7 +132,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         referencesTitleObj.offset = 0;
         referencesTitleObj.annotations = [];
         referencesTitleObj.text = 'References';
-        ((this.biocData[0] as any).passages as any[]).splice(ref, 0 , referencesTitleObj);
+        ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
       }
       this.object = object;
       this.emitModuleProperties();
@@ -262,6 +262,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   scrollInOffset(offset: any) {
+    const startExists = offset.indexOf('start') > -1;
+    const endExists = offset.indexOf('len') > -1;
     const offsetNum = offset.split('=')[1];
     if (!isNaN(Number(offsetNum))) {
       const query = `span[offset='${offsetNum}']`;
@@ -275,6 +277,36 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           borderRightColor: 'white',
           borderBottomColor: 'white',
         }, 1000);
+      }
+    }
+    // if start and end exists then
+    // then it is frictionless drag and drop
+    if (startExists && endExists) {
+      const offsetSplit = offset.split('#');
+      const position = offsetSplit[0].split('=')[1];
+      const start = offsetSplit[1].split('=')[1];
+      const len = offsetSplit[2].split('=')[1];
+      const query = `span[position='${position}']`;
+      const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
+      const range = document.createRange();
+      range.setStart(annotationElem.firstChild, Number(start));
+      range.setEnd(annotationElem.firstChild, Number(start) + Number(len));
+      const newNode = document.createElement('span');
+      newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
+      jQuery(newNode).css('border', '2px solid #D62728');
+      range.surroundContents(newNode);
+      this.createdNode = newNode;
+      if (newNode) {
+        newNode.scrollIntoView({ block: 'center' });
+        jQuery(newNode).animate({
+          borderLeftColor: 'white',
+          borderTopColor: 'white',
+          borderRightColor: 'white',
+          borderBottomColor: 'white',
+        }, 1000);
+        setTimeout(() => {
+          this.removeFrictionlessNode();
+        }, 800);
       }
     }
   }
@@ -419,13 +451,19 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>));
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  selectionChange(event: Event) {
+  removeFrictionlessNode() {
     // I will replace this code
     if (this.createdNode && this.createdNode.parentNode) {
+      const wholeText = this.createdNode.parentNode.textContent;
+      const parent = this.createdNode.parentNode;
       this.createdNode.parentNode.replaceChild(document.createTextNode(this.selectedText), this.createdNode);
       this.createdNode = null;
+      jQuery(parent).text(wholeText);
     }
+  }
+  @HostListener('document:mouseup', ['$event'])
+  selectionChange(event: Event) {
+    this.removeFrictionlessNode();
     const selection = window.getSelection();
     const selectedText = selection.toString();
     if (selectedText && selectedText.length > 0) {
@@ -443,6 +481,14 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       } catch (e) {
         window.getSelection().empty();
       }
+
+      const ann = jQuery(this.createdNode).parent();
+      const offset = jQuery(ann).attr('position');
+      const parentText: string = ann.text();
+      const createdText = jQuery(this.createdNode).text();
+      const innerIndex = parentText.indexOf(createdText);
+      jQuery(this.createdNode).attr('start', innerIndex);
+      jQuery(this.createdNode).attr('len', createdText.length);
       return false;
     }
   }
@@ -451,7 +497,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const typeMap = {
       SNP: 'Mutation',
       DNAMutation: 'Mutation',
-      ProteinMutation: 'Mutation'
+      ProteinMutation: 'Mutation',
+      CellLine: 'Species'
     };
     return typeMap[type] ? typeMap[type] : type;
   }
@@ -464,24 +511,55 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const txt = (event.target as any).innerHTML;
     const clazz = (event.target as any).classList;
     const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
-    if (!clazz) {
+    const pmcidFomDoc = this.pmid(this.biocData[0]);
+    const pmcid = ({
+      domain: pmcidFomDoc[0],
+      url: pmcidFomDoc[1]
+    });
+    if (!clazz || clazz.value === '') {
+      const node = jQuery((event as any).path[1]);
+      const position = jQuery(node).parent().attr('position');
+      const startIndex = jQuery(node).attr('start');
+      const len = jQuery(node).attr('len');
+      let source = ['/projects', encodeURIComponent(this.object.project.name),
+        'bioc', encodeURIComponent(this.object.hashId)].join('/');
+      if (position) {
+        source += '#offset=' + position;
+        source += '#start=' + startIndex;
+        source += '#len=' + len;
+      }
+      const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
       dataTransfer.setData('application/lifelike-node', JSON.stringify({
-        display_name: this.selectedText,
-        label: 'note',
+        display_name: 'Link',
+        label: 'link',
+        data: {
+          sources: [{
+            domain: this.object.filename,
+            url: source
+          }, pmcid],
+          detail: this.selectedText,
+          references: [{
+            type: 'PROJECT_OBJECT',
+            id: this.object.hashId,
+          }, {
+            type: 'DATABASE',
+            url: link,
+          }]
+        },
         style: {
-          showDetail: false,
+          showDetail: true,
         },
       } as Partial<UniversalGraphNode>));
       return;
     }
     const id = ((event.target as any).attributes[`identifier`] || {}).nodeValue;
     const annType = ((event.target as any).attributes[`annType`] || {}).nodeValue;
-    const offset = ((event.target as any).attributes[`offset`] || {}).nodeValue;
     const src = this.getSource({
       identifier: id,
       type: annType
     });
+    const offset = ((event.target as any).attributes[`offset`] || {}).nodeValue;
     const search = [];
     const hyperlinks = [];
     const url = src;
@@ -502,7 +580,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         sources: [{
           domain: this.object.filename,
           url: sourceUrl
-        }],
+        }, pmcid],
         search,
         references: [{
           type: 'PROJECT_OBJECT',
@@ -518,7 +596,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         showDetail: meta.type === 'link',
       },
     } as Partial<UniversalGraphNode>));
-
     event.stopPropagation();
   }
 
