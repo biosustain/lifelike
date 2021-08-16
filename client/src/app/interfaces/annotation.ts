@@ -1,7 +1,7 @@
 export interface InclusionMeta {
     allText: string;
     id: string;
-    idHyperlink: string;
+    idHyperlinks: string[];
     includeGlobally: boolean;
     isCustom: boolean;
     links: object;

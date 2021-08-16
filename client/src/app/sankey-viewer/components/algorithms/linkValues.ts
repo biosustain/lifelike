@@ -34,7 +34,7 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
               sourceLinks,
               targetLinks,
               layer,
-              fixedValue,
+              fixedValue: _,
               x0, x1,
               y0, y1,
               ...node
@@ -59,7 +59,19 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
     }
   };
 };
-
+export const fixedValue = ({links}) => {
+  links.forEach(l => {
+    l._value = 1;
+  });
+  return {
+    links,
+    _sets: {
+      link: {
+        _value: true
+      }
+    }
+  };
+};
 export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
   // region TODO: once layout service supports circular rel it should be used instead
   // this is temporary workaround

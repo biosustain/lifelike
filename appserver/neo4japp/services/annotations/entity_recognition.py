@@ -49,7 +49,7 @@ class EntityRecognitionService:
 
         key_results: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
-        key_id_hyperlink: Dict[str, str] = {}
+        key_id_hyperlinks: Dict[str, List[str]] = {}
 
         with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
@@ -74,7 +74,7 @@ class EntityRecognitionService:
                 match_list += found.entities
                 key_results[key] = match_list
                 key_id_type[key] = found.entity_id_type
-                key_id_hyperlink[key] = found.entity_id_hyperlink
+                key_id_hyperlinks[key] = found.entity_id_hyperlinks
 
         lmdb_matches = []
         for token in tokens:
@@ -87,7 +87,7 @@ class EntityRecognitionService:
                     entities=key_results[token.normalized_keyword],
                     token=token,
                     id_type=key_id_type.get(token.normalized_keyword, ''),
-                    id_hyperlink=key_id_hyperlink.get(token.normalized_keyword, '')
+                    id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
                 )
                 offset_key = (token.lo_location_offset, token.hi_location_offset)
                 # if an entity set in nlp_results is not empty
@@ -111,7 +111,7 @@ class EntityRecognitionService:
         key_results: Dict[str, List[dict]] = {}
         key_results_local: Dict[str, List[dict]] = {}
         key_id_type: Dict[str, str] = {}
-        key_id_hyperlink: Dict[str, str] = {}
+        key_id_hyperlinks: Dict[str, List[str]] = {}
 
         with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
@@ -131,7 +131,7 @@ class EntityRecognitionService:
             if found:
                 key_results[key] = found.entities
                 key_id_type[key] = found.entity_id_type
-                key_id_hyperlink[key] = found.entity_id_hyperlink
+                key_id_hyperlinks[key] = found.entity_id_hyperlinks
 
         unmatched_keys = keys - set(key_results)
 
@@ -140,7 +140,7 @@ class EntityRecognitionService:
             if found:
                 key_results_local[key] = found.entities
                 key_id_type[key] = found.entity_id_type
-                key_id_hyperlink[key] = found.entity_id_hyperlink
+                key_id_hyperlinks[key] = found.entity_id_hyperlinks
 
         lmdb_matches = []
         lmdb_matches_local = []
@@ -152,7 +152,7 @@ class EntityRecognitionService:
                             entities=key_results[token.normalized_keyword],
                             token=token,
                             id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlink=key_id_hyperlink.get(token.normalized_keyword, '')
+                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
                         )
                     )
                 elif token.normalized_keyword in key_results_local:
@@ -161,7 +161,7 @@ class EntityRecognitionService:
                             entities=key_results_local[token.normalized_keyword],
                             token=token,
                             id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlink=key_id_hyperlink.get(token.normalized_keyword, '')
+                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
                         )
                     )
         return lmdb_matches, lmdb_matches_local
@@ -246,7 +246,7 @@ class EntityRecognitionService:
                         entities=global_inclusion[token.normalized_keyword].entities,
                         token=token,
                         id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlink=global_inclusion[token.normalized_keyword].entity_id_hyperlink
+                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
@@ -260,7 +260,7 @@ class EntityRecognitionService:
                         entities=global_inclusion[token.normalized_keyword].entities,
                         token=token,
                         id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlink=global_inclusion[token.normalized_keyword].entity_id_hyperlink
+                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
@@ -268,7 +268,7 @@ class EntityRecognitionService:
             if dbname is not None and global_inclusion is not None and global_exclusion is not None:  # noqa
                 key_results: Dict[str, List[dict]] = {}
                 key_id_type: Dict[str, str] = {}
-                key_id_hyperlink: Dict[str, str] = {}
+                key_id_hyperlinks: Dict[str, List[str]] = {}
 
                 with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
@@ -287,7 +287,7 @@ class EntityRecognitionService:
                     if found:
                         key_results[key] = found.entities
                         key_id_type[key] = found.entity_id_type
-                        key_id_hyperlink[key] = found.entity_id_hyperlink
+                        key_id_hyperlinks[key] = found.entity_id_hyperlinks
 
                 lmdb_matches = []
                 for token in tokens:
@@ -304,7 +304,7 @@ class EntityRecognitionService:
                             entities=key_results[token.normalized_keyword],
                             token=token,
                             id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlink=key_id_hyperlink.get(token.normalized_keyword, '')
+                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
                         )
                         offset_key = (token.lo_location_offset, token.hi_location_offset)
                         # only a few entities currently have NLP
