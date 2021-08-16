@@ -394,9 +394,13 @@ FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
 
-# Bitmaps of icons, used in the creation of SVG files
-# Make a wrapper around this and lazy load the values?
-ICON_DATA = {}
-for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
-    with open(f'/home/n4j/assets/{key}.b', 'r') as file:
-        ICON_DATA[f'/home/n4j/assets/{key}.png'] = file.read()
+ICON_DATA = None
+def get_icon_strings():
+    if ICON_DATA:
+        return ICON_DATA
+    else:
+        ICON_DATA = {}
+        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
+            with open(f'/home/n4j/assets/{key}.png', 'r') as file:
+                ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' + b64encode(file.read())
+       return ICON_DATA
