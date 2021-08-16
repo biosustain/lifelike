@@ -443,7 +443,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           id: this.object.hashId,
         }, {
           type: 'DATABASE',
-          url: hyperlink,
+          // assumes first link will be main database source link
+          // tslint ignore cause other option is destructuring and that
+          // also gets name shadowing error
+          /* tslint:disable-next-line */
+          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])['url'] : '',
         }],
         hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',
