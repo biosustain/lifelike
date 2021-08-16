@@ -129,9 +129,9 @@ DISPLAY_NAME_MAP = {
     TYPE_DISEASE: 'name',
     TYPE_DNA_BINDING_SITE: 'displayName',
     TYPE_ENTITY: 'name',
+    TYPE_FOOD: 'name',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
-    TYPE_FOOD: 'name',
     TYPE_LITERATURE_CHEMICAL: 'name',
     TYPE_LITERATURE_GENE: 'name',
     TYPE_LITERATURE_DISEASE: 'name',
@@ -154,23 +154,6 @@ DISPLAY_NAME_MAP = {
     TYPE_TRANSCRIPTION_FACTOR: 'name',
     TYPE_TRANSCRIPTION_UNIT: 'displayName',
 }
-
-ENTITY_LABELS = [
-    TYPE_ANATOMY,
-    TYPE_CHEMICAL,
-    TYPE_COMPANY,
-    TYPE_COMPOUND,
-    TYPE_DISEASE,
-    TYPE_ENTITY,
-    TYPE_FOOD,
-    TYPE_GENE,
-    TYPE_PATHWAY,
-    TYPE_PHENOMENA,
-    TYPE_PHENOTYPE,
-    TYPE_PROTEIN,
-    TYPE_SPECIES,
-    TYPE_TAXONOMY,
-]
 
 # Start Text Mining Dataset
 
