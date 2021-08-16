@@ -338,7 +338,7 @@ def substitute_svg_images(map_content: io.BytesIO):
     params:
     :param map_content: bytes of the exported map
     """
-    p = re.compile("|".join(re.escape(k) for k in ICON_DATA))
+    p = re.compile("/home/n4j/assets/.*\.png")
     output = p.sub(lambda match: ICON_DATA[match.group(0)], map_content.read().decode('utf-8'))
     return io.BytesIO(bytes(output, 'utf-8'))
 
