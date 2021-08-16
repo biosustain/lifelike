@@ -127,7 +127,7 @@ MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
-ICON_DATA = None
+ICON_DATA: dict[str, bytes] = {} 
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -368,11 +368,9 @@ def substitute_svg_images(map_content: io.BytesIO):
 def get_icon_strings():
     """ Lazy loading of the byte icon data from the PNG files
     """
-    global ICON_DATA
     if ICON_DATA:
         return ICON_DATA
     else:
-        ICON_DATA = {}
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
             with open(f'/home/n4j/assets/{key}.png', 'rb') as file:
                 ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' \
