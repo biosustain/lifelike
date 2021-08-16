@@ -70,6 +70,7 @@ services:
             # Other
             - DOMAIN=http://localhost:4200
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+            - ASSETS_FOLDER=/home/n4j/assets/
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
