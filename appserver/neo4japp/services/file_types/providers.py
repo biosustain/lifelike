@@ -2,6 +2,7 @@ import io
 import json
 import re
 import typing
+from base64 import b64encode
 
 from io import BufferedIOBase
 from typing import Optional, List
@@ -48,21 +49,21 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
     LIFELIKE_DOMAIN,
-    ICON_DATA,
+    # ICON_DATA,
     DEFAULT_DPI,
     POINT_TO_PIXEL,
     HORIZONTAL_TEXT_PADDING,
     LABEL_OFFSET,
     MAP_ICON_OFFSET,
     PDF_MARGIN,
-    MAPS_RE,
     NAME_NODE_OFFSET,
     TRANSPARENT_PIXEL,
     VERTICAL_NODE_PADDING,
     NAME_LABEL_FONT_AVERAGE_WIDTH,
     NAME_LABEL_PADDING_MULTIPLIER,
     FILENAME_LABEL_MARGIN,
-    FILENAME_LABEL_FONT_SIZE
+    FILENAME_LABEL_FONT_SIZE,
+    IMAGES_RE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -126,7 +127,7 @@ MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
-
+ICON_DATA = None
 
 def _search_doi_in(content: bytes) -> Optional[str]:
     doi: Optional[str]
@@ -357,9 +358,25 @@ def substitute_svg_images(map_content: io.BytesIO):
     params:
     :param map_content: bytes of the exported map
     """
-    p = re.compile("/home/n4j/assets/.*\.png")
-    output = p.sub(lambda match: ICON_DATA[match.group(0)], map_content.read().decode('utf-8'))
+    icon_data = get_icon_strings()
+    output = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], map_content.read()
+                           .decode('utf-8'))
     return io.BytesIO(bytes(output, 'utf-8'))
+
+
+def get_icon_strings():
+    """ Lazy loading of the byte icon data from the PNG files
+    """
+    global ICON_DATA
+    if ICON_DATA:
+        return ICON_DATA
+    else:
+        ICON_DATA = {}
+        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
+            with open(f'/home/n4j/assets/{key}.png', 'rb') as file:
+                ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' \
+                                                           + b64encode(file.read()).decode('utf-8')
+        return ICON_DATA
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -867,3 +884,5 @@ def get_content_offsets(file):
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
     return (min(x_values), min(y_values)), (x_offset, y_offset)
+
+
