@@ -445,14 +445,6 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 
 # Start SVG map export data constants
-
+IMAGES_RE = re.compile("/home/n4j/assets/.*.png")
 ICON_DATA = None
-def get_icon_strings():
-    if ICON_DATA:
-        return ICON_DATA
-    else:
-        ICON_DATA = {}
-        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
-            with open(f'/home/n4j/assets/{key}.png', 'r') as file:
-                ICON_DATA[f'/home/n4j/assets/{key}.png'] = 'data:image/png;base64,' + b64encode(file.read())
-       return ICON_DATA
+
