@@ -107,7 +107,7 @@ def precalculateGO():
             """
             MATCH (g:Gene)-[:GO_LINK {tax_id:$id}]-(go:db_GO)
             WITH go, collect(distinct g) as genes
-            RETURN go.id as goId,
+            RETURN go.eid as goId,
                 go.name as goTerm,
                 [lbl in labels(go) where lbl <> 'db_GO'] as goLabel,
                 [g in genes |g.name] as geneNames
@@ -121,7 +121,7 @@ def precalculateGO():
                 MATCH (t:Taxonomy)-[:HAS_TAXONOMY]-(:Gene)-[:GO_LINK]-(go:db_GO)
                 with t, count(go) as c
                 where c > 0
-                RETURN t.id as id, t.name as name
+                RETURN t.eid as id, t.name as name
                 """
             ).data()
     )

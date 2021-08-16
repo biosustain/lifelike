@@ -31,13 +31,13 @@ class EnrichmentVisualisationService():
                         tx.run(
                                 """
                                 UNWIND $gene_names AS geneName
-                                MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) WHERE 
+                                MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) WHERE
                                 g.name=geneName
                                 WITH g MATCH (g)-[:GO_LINK]-(go)
                                 WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
                                 WITH go, collect(DISTINCT g2) AS genes
                                 RETURN
-                                    go.id AS goId,
+                                    go.eid AS goId,
                                     go.name AS goTerm,
                                     [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
                                     [g IN genes |g.name] AS geneNames
@@ -66,7 +66,7 @@ class EnrichmentVisualisationService():
                 lambda tx: list(
                         tx.run(
                                 """
-                                match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId})
+                                match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
                                 with n match (n)-[:GO_LINK]-(go) with distinct go
                                 return count(go) as go_count
                                 """,
