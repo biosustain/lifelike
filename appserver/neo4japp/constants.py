@@ -437,8 +437,13 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+ASSETS_PATH = os.getenv('ASSETS_FOLDER')
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
 MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
+
+# Start SVG map export data constants
+IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+BYTE_ENCODING = 'utf-8'
