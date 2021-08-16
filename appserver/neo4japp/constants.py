@@ -446,5 +446,4 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 
 # Start SVG map export data constants
 IMAGES_RE = re.compile("/home/n4j/assets/.*.png")
-ICON_DATA = None
-
+BYTE_ENCODING = 'utf-8'
