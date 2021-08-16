@@ -432,10 +432,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
     base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
+    base.push(an.meta.idType && an.meta.idType !== '' ? `Data Source: ${escape(an.meta.idType)}` : 'Data Source: None');
 
-    if (an.meta.idType) {
-      base.push(`Data Source: ${escape(an.meta.idType)}`);
-    }
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
@@ -444,17 +442,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     // source links if any
     if (an.meta.idHyperlinks && an.meta.idHyperlinks.length > 0) {
-      const sourceLinkCollapseTargetId = uniqueId('source-links-tooltip-collapse-target');
       htmlLinks += `
-        <a
-          class="pdf-tooltip-collapse-control collapsed"
-          role="button"
-          data-toggle="collapse"
-          data-target="#${sourceLinkCollapseTargetId}"
-          aria-expanded="false"
-          aria-controls="${sourceLinkCollapseTargetId}"
-        >Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
-        <div class="collapse" id="${sourceLinkCollapseTargetId}">
+        <a>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+        <div>
       `;
 
       for (const link of an.meta.idHyperlinks) {

@@ -33,7 +33,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   readonly form: FormGroup = new FormGroup({
     text: new FormControl({value: '', disabled: true}, Validators.required),
     entityType: new FormControl('', Validators.required),
-    id: new FormControl(''),
+    id: new FormControl({value: '', disabled: true}),
     source: new FormControl(DatabaseType.NONE),
     sourceLinks: new FormArray([]),
     includeGlobally: new FormControl(false),
@@ -42,16 +42,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
-  }
-
-  disableGlobalOption() {
-    if (['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(this.form.get('entityType').value)) {
-      this.form.get('includeGlobally').patchValue(false);
-      this.form.get('includeGlobally').disable();
-      this.toggleIdFieldValidity();
-    } else {
-      this.form.get('includeGlobally').enable();
-    }
   }
 
   get databaseTypeChoices(): string[] {
@@ -68,11 +58,11 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
           dropdown.disable();
           choices = [DatabaseType.NONE];
         } else {
-          dropdown.enable();
           choices = ENTITY_TYPE_MAP[value].sources;
         }
       }
     }
+    this._toggleIdField();
     return choices;
   }
 
@@ -82,6 +72,32 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
     return SEARCH_LINKS.map(link => (
       {domain: `${link.domain.replace('_', ' ')}`, link: this.substituteLink(link.url, text)}));
+  }
+
+  disableGlobalOption() {
+    // need to reset value here so id input also gets reset
+    // since the select will always default to "No Source" on entity type change
+    this.form.get('source').patchValue('');
+    if (['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(this.form.get('entityType').value)) {
+      this.form.get('includeGlobally').patchValue(false);
+      this.form.get('includeGlobally').disable();
+      this.form.get('id').updateValueAndValidity();
+    } else {
+      this.form.get('includeGlobally').enable();
+    }
+  }
+
+  private _toggleIdField() {
+    const dropdown = this.form.get('source');
+    if (dropdown.value !== '') {
+      this.form.get('id').enable();
+      this.form.get('id').setValidators([Validators.required]);
+    } else {
+      this.form.get('id').patchValue('');
+      this.form.get('id').setValidators(null);
+      this.form.get('id').disable();
+    }
+    this.form.get('id').updateValueAndValidity();
   }
 
   getValue(): Annotation {
@@ -100,7 +116,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
-        id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
+        id: this.form.value.id || '',
         idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(
           link => JSON.stringify({label: link.domain, url: link.url})) : [],
         idType: this.form.value.source || '',
@@ -116,16 +132,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   substituteLink(s: string, query: string) {
     return s.replace(/%s/, encodeURIComponent(query));
-  }
-
-  toggleIdFieldValidity() {
-    // user should provide id if annotation is flagged for a global inclusion
-    if (this.form.value.includeGlobally) {
-      this.form.controls.id.setValidators([Validators.required]);
-    } else {
-      this.form.controls.id.setValidators(null);
-    }
-    this.form.controls.id.updateValueAndValidity();
   }
 
   enableTextField() {
