@@ -129,6 +129,7 @@ DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 ICON_DATA = None
 
+
 def _search_doi_in(content: bytes) -> Optional[str]:
     doi: Optional[str]
     try:
@@ -885,5 +886,3 @@ def get_content_offsets(file):
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
     return (min(x_values), min(y_values)), (x_offset, y_offset)
-
-
