@@ -582,10 +582,6 @@ class MapTypeProvider(BaseFileTypeProvider):
         if self_contained_export:
             name_node = {
                 'name': file.filename,
-                'pos': (
-                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
-                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-                ),
                 'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
                                                         )['defaultimagecolor'],
                 'fontsize': str(FILENAME_LABEL_FONT_SIZE),
@@ -593,6 +589,13 @@ class MapTypeProvider(BaseFileTypeProvider):
                 'style': 'rounded',
                 'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
             }
+            if x_values:
+                name_node['pos'] = (
+                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
+                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+                )
+            else:
+                name_node['pos'] = '0,0!'
             graph.node(**name_node)
 
         for edge in json_graph['edges']:
