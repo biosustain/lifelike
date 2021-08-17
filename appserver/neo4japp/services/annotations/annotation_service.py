@@ -136,8 +136,8 @@ class AnnotationService:
             link_search_term = param.token.keyword
             hyperlinks = []
 
-            if 'NULL' not in param.entity_id:
-                if not param.entity_id_hyperlinks:
+            if not param.entity_id_hyperlinks:
+                if 'NULL' not in param.entity_id:
                     entity_data_source = param.entity['id_type']
                     try:
                         if entity_data_source == DatabaseType.BIOCYC.value:
@@ -154,8 +154,8 @@ class AnnotationService:
 
                     hyperlinks.append(json.dumps(
                         {'label': param.entity['id_type'], 'url': hyperlink}))
-                else:
-                    hyperlinks = param.entity_id_hyperlinks
+            else:
+                hyperlinks = param.entity_id_hyperlinks
 
             id_type = param.entity_id_type or ''
             if not id_type and 'NULL' not in param.entity_id:
