@@ -121,7 +121,7 @@ def create_ner_type_species(
 def create_ner_type_company(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.COMPANY.value: id_,
-        'id_type': DatabaseType.CUSTOM.value,
+        'id_type': '',
         'name': name,
         'synonym': synonym
     }
@@ -130,7 +130,7 @@ def create_ner_type_company(id_: str, name: str, synonym: str) -> dict:
 def create_ner_type_entity(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.ENTITY.value: id_,
-        'id_type': DatabaseType.CUSTOM.value,
+        'id_type': '',
         'name': name,
         'synonym': synonym
     }
