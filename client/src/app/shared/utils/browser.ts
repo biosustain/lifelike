@@ -37,8 +37,8 @@ export function openLink(url: string, target = '_blank'): boolean {
   return true;
 }
 
-export function openPotentialInternalLink(workspaceManager: WorkspaceManager, url: string,
-                                          defaultExternal = true): boolean {
+export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
+                                          url: string): boolean {
   let urlObject;
   try {
     urlObject = new URL(url);
