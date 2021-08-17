@@ -39,11 +39,12 @@ export function openLink(url: string, target = '_blank'): boolean {
 
 export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
                                           url: string): boolean {
+  url = url.trim();
   let urlObject;
   try {
     urlObject = new URL(url);
   } catch (e) {
-    if (url.trimLeft().charAt(0) === '/') {
+    if (url.charAt(0) === '/') {
       urlObject = new URL(url, window.location.href);
     } else {
       urlObject = new URL('https://' + url);
