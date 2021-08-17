@@ -43,10 +43,10 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   try {
     urlObject = new URL(url);
   } catch (e) {
-    if (defaultExternal) {
-      urlObject = new URL('http://' + url);
-    } else {
+    if (url.trimLeft().charAt(0) === '/') {
       urlObject = new URL(url, window.location.href);
+    } else {
+      urlObject = new URL('https://' + url);
     }
   }
   const openInternally = workspaceManager.isWithinWorkspace()
