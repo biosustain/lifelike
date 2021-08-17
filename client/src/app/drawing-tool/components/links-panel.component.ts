@@ -181,7 +181,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
   linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
-      openPotentialInternalLink(this.workspaceManager, link.url, false);
+      openPotentialInternalLink(this.workspaceManager, link.url);
     } catch (e) {
       this.messageDialog.display({
         title: 'Invalid Link',

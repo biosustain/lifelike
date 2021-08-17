@@ -196,7 +196,7 @@ export class NodeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink, true);
+    openPotentialInternalLink(this.workspaceManager, hyperlink);
   }
 
   /**
