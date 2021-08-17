@@ -11,11 +11,13 @@ export class ModuleHeaderComponent {
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
   @Input() showObjectMenu = true;
-  @Output() dragStarted = new EventEmitter();
+  @Output() dragStarted: EventEmitter<any>;
 
   constructor(
     private readonly filesystemObjectActions: FilesystemObjectActions
-  ) {}
+  ) {
+    this.dragStarted = new EventEmitter()
+  }
 
   openNewWindow() {
     this.filesystemObjectActions.openNewWindow(this.object);
