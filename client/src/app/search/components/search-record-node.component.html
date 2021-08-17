@@ -86,7 +86,7 @@
         </span>
       </div>
       <div *ngSwitchCase="'Protein'">
-        <div *ngIf="node.node.data.uniprotId">
+        <div *ngIf="node.node.data.eid">
           <span>ID:
             <a target="_blank"
                href="https://uniprot.org/uniprot/{{node.node.data.eid}}">{{node.node.data.eid}}</a>
