@@ -69,7 +69,8 @@ class SearchService(GraphBaseDao):
                 entity_label = get_first_known_label_from_list(entity["labels"])
             except ValueError:
                 current_app.logger.warning(
-                    f'Node with ID {entity["id"]} had an unexpected list of labels: {entity["labels"]}',
+                    f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
+                    f'{entity["labels"]}',
                     extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
                 )
                 entity_label = 'Unknown'
