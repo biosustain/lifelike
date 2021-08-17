@@ -399,6 +399,22 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   dragStarted(event: DragEvent) {
+    console.log("drag", event, JSON.stringify({
+      display_name: this.object.filename,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.object.hashId + '',
+        }],
+        sources: [{
+          domain: this.object.filename,
+          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
+            'files', encodeURIComponent(this.object.hashId)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>))
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', this.object.filename);
     dataTransfer.setData('application/lifelike-node', JSON.stringify({
