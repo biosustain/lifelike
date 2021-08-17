@@ -2,6 +2,7 @@ import io
 import json
 import re
 import typing
+import zipfile
 
 from io import BufferedIOBase
 from typing import Optional, List
@@ -51,6 +52,7 @@ from neo4japp.utils.string import extract_text
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
+    '.zip': 'application/zip', # to handle zipped map
     '.llmap': 'vnd.***ARANGO_DB_NAME***.document/map',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
@@ -340,6 +342,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
+            # unzip the buffer here, send the content to JSON stuff
             self.validate_content(buffer)
             return [(0, self.MIME_TYPE)]
         except ValueError:
@@ -351,7 +354,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        graph = json.loads(buffer.read())
+        # graph = json.loads(buffer.read()) # reverse the zip process
+        zipped_map = buffer.read()
+        graph = None
+        with zipfile.ZipFile(zipped_map) as z:
+            graph = z.read('graph.json')
         validate_map(graph)
 
     def to_indexable_content(self, buffer: BufferedIOBase):
