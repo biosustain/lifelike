@@ -21,7 +21,6 @@ export class FilesystemObjectDataProvider implements DataTransferDataProvider {
 
     const data = dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
     if (data !== '') {
-      console.log(data);
       const transferData: FilesystemObjectTransferData = JSON.parse(data);
       results.push({
         token: FILESYSTEM_OBJECT_TRANSFER_TOKEN,

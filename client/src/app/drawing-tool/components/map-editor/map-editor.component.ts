@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
@@ -12,7 +20,11 @@ import { MapViewComponent } from '../map-view.component';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
-import { CompoundAction, GraphAction, GraphActionReceiver, } from '../../../graph-viewer/actions/actions';
+import {
+  CompoundAction,
+  GraphAction,
+  GraphActionReceiver,
+} from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
@@ -76,7 +88,6 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       });
 
       this.canvasChild.nativeElement.addEventListener('drop', e => {
-        console.log('drop', e);
         this.drop(e);
       });
     });
@@ -218,7 +229,6 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   drop(event: DragEvent) {
-    console.log('droped', event);
     event.preventDefault();
 
     this.ngZone.run(() => {
@@ -228,9 +238,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     const hoverPosition = this.graphCanvas.hoverPosition;
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
-      console.log(items);
       const actions = extractGraphEntityActions(items, hoverPosition);
-      console.log(actions);
+
       if (actions.length) {
         this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
         this.graphCanvas.focus();

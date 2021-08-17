@@ -16,7 +16,6 @@ export class DataTransferDataService {
     const data: DataTransferData<any>[] = [];
     const providers = this.injector.get(DATA_TRANSFER_DATA_PROVIDER);
     for (const provider of providers) {
-      console.log("provider", provider, provider.extract(dataTransfer))
       data.push(...provider.extract(dataTransfer));
     }
     return data;
