@@ -411,9 +411,13 @@ def get_first_known_label_from_list(labels: List[str]):
 
 
 def get_known_domain_labels_from_node(node: N4jDriverNode):
+    return get_known_domain_labels_from_list(node.labels)
+
+
+def get_known_domain_labels_from_list(labels: List[str]):
     domain_labels = []
 
-    for label in node.labels:
+    for label in labels:
         if label in DOMAIN_LABELS:
             domain_labels.append(label)
 
