@@ -584,18 +584,15 @@ class MapTypeProvider(BaseFileTypeProvider):
                 'name': file.filename,
                 'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
                                                         )['defaultimagecolor'],
+                'pos': (
+                    f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
+                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+                ) if x_values else '0,0!',
                 'fontsize': str(FILENAME_LABEL_FONT_SIZE),
                 'shape': 'box',
                 'style': 'rounded',
                 'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
             }
-            if x_values:
-                name_node['pos'] = (
-                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
-                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-                )
-            else:
-                name_node['pos'] = '0,0!'
             graph.node(**name_node)
 
         for edge in json_graph['edges']:
