@@ -582,12 +582,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         if self_contained_export:
             name_node = {
                 'name': file.filename,
-                'pos': (
-                    f"{(min(x_values) - NAME_NODE_OFFSET ) / SCALING_FACTOR},"
-                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-                ),
                 'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
                                                         )['defaultimagecolor'],
+                'pos': (
+                    f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
+                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+                ) if x_values else '0,0!',
                 'fontsize': str(FILENAME_LABEL_FONT_SIZE),
                 'shape': 'box',
                 'style': 'rounded',
@@ -601,7 +601,6 @@ class MapTypeProvider(BaseFileTypeProvider):
             default_arrow_head = 'arrow'
             edge_data = edge.get('data', {})
             url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
-            url = next((src['url'] for src in url_data[::-1]), "")
             url = url_data[-1]['url'] if len(url_data) else ''
             if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
                    item in ['link', 'note']):
