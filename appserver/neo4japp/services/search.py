@@ -14,8 +14,7 @@ from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
     get_first_known_label_from_list,
-    get_first_known_label_from_node,
-    get_known_domain_labels_from_node,
+    get_known_domain_labels_from_list,
     normalize_str,
     snake_to_camel_dict
 )
@@ -60,26 +59,34 @@ class SearchService(GraphBaseDao):
     def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for record in result:
-            mapped_entity, literature_node = (
-                record['node_pair']['mapped_entity'],
-                record['node_pair']['literature_entity']
-            )
+            entity = record['entity']
+            literature_id = record['literature_id']
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
 
+            try:
+                entity_label = get_first_known_label_from_list(entity["labels"])
+            except ValueError:
+                current_app.logger.warning(
+                    f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
+                    f'{entity["labels"]}',
+                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                )
+                entity_label = 'Unknown'
+
             graph_node = GraphNode(
                 # When it exists, we use the literature node ID instead so the node can be expanded
                 # in the visualizer
-                id=mapped_entity.id if literature_node is None else literature_node.id,
-                label=get_first_known_label_from_node(mapped_entity),
-                sub_labels=list(mapped_entity.labels),
+                id=literature_id or entity['id'],
+                label=entity_label,
+                sub_labels=entity['labels'],
                 domain_labels=(
-                    get_known_domain_labels_from_node(mapped_entity) +
-                    (['Literature'] if literature_node is not None else [])
+                    get_known_domain_labels_from_list(entity['labels']) +
+                    (['Literature'] if literature_id is not None else [])
                 ),
-                display_name=mapped_entity.get('name'),
-                data=snake_to_camel_dict(dict(mapped_entity), {}),
+                display_name=entity['name'],
+                data=snake_to_camel_dict(entity['data'], {}),
                 url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
@@ -317,12 +324,17 @@ class SearchService(GraphBaseDao):
                 WITH n
                 {organism_match_string}
                 {literature_match_string}
-                WITH collect({{
-                    mapped_entity: n,
-                    literature_entity: m
-                }}) as node_pairs, t, go_class
-                UNWIND node_pairs as node_pair
-                RETURN DISTINCT node_pair AS node_pair, t.eid AS taxonomy_id,
+                WITH
+                {{
+                    id: id(n),
+                    name: n.name,
+                    labels: labels(n),
+                    data: {{
+                        eid: n.eid,
+                        data_source: n.data_source
+                    }}
+                }} as entity, id(m) as literature_id, t, go_class
+                RETURN DISTINCT entity, literature_id, t.eid AS taxonomy_id,
                     t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
