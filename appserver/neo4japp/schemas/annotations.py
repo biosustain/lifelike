@@ -180,6 +180,11 @@ class CustomAnnotationDeleteSchema(CamelCaseSchema):
     remove_all = fields.Boolean(required=False, missing=lambda: False)
 
 
+# this is used in the admin global annotations table
+class GlobalAnnotationTableType(CamelCaseSchema):
+    global_annotation_type = fields.String(required=True)
+
+
 # Responses
 # ----------------------------------------
 
