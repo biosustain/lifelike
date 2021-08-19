@@ -24,7 +24,7 @@ import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { Location, Meta } from 'app/pdf-viewer/annotation-type';
+import { Location, Meta, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 
@@ -146,7 +146,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         const fragment = (this.route.snapshot.fragment || '');
         if (fragment.indexOf('offset') >= 0) {
           setTimeout(() => {
-            this.scrollInOffset(fragment);
+            this.scrollInOffset(this.parseLocationFromUrl(fragment));
           }, 1000);
         }
       }
@@ -261,12 +261,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  scrollInOffset(offset: any) {
-    const startExists = offset.indexOf('start') > -1;
-    const endExists = offset.indexOf('len') > -1;
-    const offsetNum = offset.split('=')[1];
-    if (!isNaN(Number(offsetNum))) {
-      const query = `span[offset='${offsetNum}']`;
+  scrollInOffset(params: BiocAnnotationLocation) {
+    if (!isNaN(Number(params.offset))) {
+      const query = `span[offset='${params.offset}']`;
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       if (annotationElem) {
         annotationElem.scrollIntoView({ block: 'center' });
@@ -281,16 +278,12 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     // if start and end exists then
     // then it is frictionless drag and drop
-    if (startExists && endExists) {
-      const offsetSplit = offset.split('#');
-      const position = offsetSplit[0].split('=')[1];
-      const start = offsetSplit[1].split('=')[1];
-      const len = offsetSplit[2].split('=')[1];
-      const query = `span[position='${position}']`;
+    if (params.start && params.len) {
+      const query = `span[position='${params.offset}']`;
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       const range = document.createRange();
-      range.setStart(annotationElem.firstChild, Number(start));
-      range.setEnd(annotationElem.firstChild, Number(start) + Number(len));
+      range.setStart(annotationElem.firstChild, Number(params.start));
+      range.setEnd(annotationElem.firstChild, Number(params.start) + Number(params.len));
       const newNode = document.createElement('span');
       newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
       jQuery(newNode).css('border', '2px solid #D62728');
@@ -503,6 +496,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     return typeMap[type] ? typeMap[type] : type;
   }
 
+  parseLocationFromUrl(fragment: string): BiocAnnotationLocation | undefined {
+    const params = new URLSearchParams(fragment);
+    return {
+      offset: params.get('offset'),
+      start: params.get('start'),
+      len: params.get('len')
+    };
+  }
+
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
     // I will replace this code
@@ -525,8 +527,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         'bioc', encodeURIComponent(this.object.hashId)].join('/');
       if (position) {
         source += '#offset=' + position;
-        source += '#start=' + startIndex;
-        source += '#len=' + len;
+        source += '&start=' + startIndex;
+        source += '&len=' + len;
       }
       const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
