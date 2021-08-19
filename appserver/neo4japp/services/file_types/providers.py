@@ -436,7 +436,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         graph = graphviz.Digraph(
                 file.filename,
-                comment=file.description,
+                comment=file.description.replace('\n', ' '),
                 engine='neato',
                 graph_attr=graph_attr,
                 format=format)
