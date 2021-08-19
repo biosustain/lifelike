@@ -12,6 +12,15 @@
           <button ngbDropdownItem (click)="exportGlobalInclusions()">Export Inclusions...</button>
         </div>
       </div>
+      <div ngbDropdown class="d-inline-block" style="margin-left: 5px">
+        <button class="btn btn-primary" ngbDropdownToggle ngbTooltip="Select what global annotations to display">
+          <i class="fa fa-fw fa-file-export"></i>
+          Global Annotations To Display
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem *ngFor="let choice of globalAnnotationTypeChoices" (click)="selectGlobalType(choice)">{{ choice }}</button>
+        </div>
+      </div>
       <button [disabled]="results.selection.length === 0"
               class="btn btn-danger ml-2"
               (click)="deleteAnnotation(results.selection)"
