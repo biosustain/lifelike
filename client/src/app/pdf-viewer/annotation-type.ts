@@ -4,6 +4,12 @@ export interface Location {
   jumpText?: string;
 }
 
+export interface BiocAnnotationLocation {
+  offset: string;
+  start?: string;
+  len?: string;
+}
+
 export interface Links {
   ncbi?: string;
   uniprot?: string;
