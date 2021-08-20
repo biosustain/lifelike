@@ -36,8 +36,11 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
-import JSZip from "jszip";
+import JSZip, { JSZipObject } from "jszip";
 import JSZipUtils from 'jszip-utils';
+import { JsonPipe } from '@angular/common';
+import { reject, resolve } from 'bluebird';
+import { unzip } from 'zlib';
 
 @Component({
   selector: 'app-map',
@@ -84,7 +87,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
-    // readonly mapService: MapService,
     readonly mapImageProviderService: MapImageProviderService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
@@ -184,6 +186,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.emitModuleProperties();
 
+    /*
     this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
@@ -201,44 +204,27 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           // Data is corrupt
           // TODO: Prevent the user from editing or something so the user doesnt lose data?
         }));
+    */
 
-    /*
-    JSZip.loadAsync(this.contentValue, { base64: true }).then(function (zip) {
-      console.log(zip.files);
+    const graphRepr = JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
+      const unzipped = zip.files['graph.json'].async('text').then(function (text: string) {
+        // t is the graph representation in JSON format
+        return (text);
+      });
+      return (unzipped);
     });
 
-    JSZipUtils.getBinaryContent(this.contentValue, function (err, data) {
-      if (err) {
-        console.error(err);
-        // abort?
-      }
-      JSZip.loadAsync(data, { base64: true }).then(function (zip) {
-        console.log(zip.files);
-        /*
-        this.emitModuleProperties();
+    console.log(graphRepr);
 
-        this.subscriptions.add(readBlobAsBuffer(data).pipe(
-          mapBufferToJson<UniversalGraph>(),
-          this.errorHandler.create({label: 'Parse map data'}),
-        ).subscribe(
-          graph => {
-            this.graphCanvas.setGraph(graph);
-            this.graphCanvas.zoomToFit(0);
-
-            if (this.highlightTerms != null && this.highlightTerms.length) {
-              this.graphCanvas.highlighting.replace(
-                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-                );
-              }
-            },
-          e => {
-            // Data is corrupt
-            // TODO: Prevent the user from editing or something so the user doesnt lose data?
-          })
-        );
+    /*
+    JSZipUtils.getBinaryContent(this.contentValue).then(function (err, data) {
+      if (err) throw err;
+      JSZip.loadAsync(data).then(function (x) {
+        console.log(x);
       });
     });
     */
+
   }
 
   registerGraphBehaviors() {
