@@ -354,11 +354,18 @@ class MapTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # graph = json.loads(buffer.read()) # reverse the zip process
+        # used to be simple as below
+        # `graph = json.loads(buffer.read())`
+        # But now the frontend sends the graph as a zip file
+        # so the buffer has a zip file
+        # so extract JSON from zip first and then validate
         zipped_map = buffer.read()
         graph = None
-        with zipfile.ZipFile(zipped_map) as z:
-            graph = z.read('graph.json')
+        with zipfile.ZipFile(io.BytesIO(zipped_map)) as z:
+            # `read` returns the file content as a string
+            # need to load it to JSON format before validating it
+            graph = json.loads(z.read('graph.json'))
+        # TODO: not only validate JSON, but also other files in the zip
         validate_map(graph)
 
     def to_indexable_content(self, buffer: BufferedIOBase):

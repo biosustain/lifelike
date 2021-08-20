@@ -83,16 +83,20 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    * zip the map w/ images
                    * unzip the map, populate image from `image_id`
                    */
-    const contentValue = new JSZip();
-    contentValue.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
-    contentValue.generateAsync({ type: "base64" })
+    const zip = new JSZip();
+    const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
+    zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
+    zip.generateAsync({ type: "blob" })
       .then(function (content) {
-        this.filesystemService.save([this.locator], { content })
-          .pipe(this.errorHandler.create({label: 'Update map'}))
+        // location.href = "data:application/zip;base64," + content; // how to download the zip
+        console.log("here's content");
+        console.log(content);
+        filesystemService.save([locator], { contentValue: content })
+          .pipe(errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
-            this.unsavedChanges$.next(false);
-            this.emitModuleProperties();
-            this.snackBar.open('Map saved.', null, {
+            unsavedChanges$.next(false);
+            emitModuleProperties();
+            snackBar.open('Map saved.', null, {
               duration: 2000,
             });
           });
