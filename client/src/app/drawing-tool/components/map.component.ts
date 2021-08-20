@@ -182,7 +182,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    /*
     this.emitModuleProperties();
 
     this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
@@ -198,11 +197,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
             );
           }
         }, e => {
+          console.error(e);
           // Data is corrupt
           // TODO: Prevent the user from editing or something so the user doesnt lose data?
         }));
-    */
 
+    /*
     JSZip.loadAsync(this.contentValue, { base64: true }).then(function (zip) {
       console.log(zip.files);
     });
@@ -236,9 +236,9 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
             // TODO: Prevent the user from editing or something so the user doesnt lose data?
           })
         );
-        */
       });
     });
+    */
   }
 
   registerGraphBehaviors() {
