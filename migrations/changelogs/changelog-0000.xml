@@ -47,6 +47,13 @@
 
   <!-- ######## -->
 
+  <changeSet id="LL-2193-set-snippet-id-3" author="Binh Vu">
+    <comment>Set snippet id (3rd changeset)</comment>
+    <sql>CREATE INDEX index_snippet_id for (n:Snippet) ON (n.id);</sql>
+  </changeSet>
+
+  <!-- ######## -->
+
   <changeSet id="LL-2193-set-predicts-properties" author="Binh Vu">
     <comment>Set properties for PREDICTS relationship</comment>
     <sql>
@@ -71,19 +78,14 @@
     </sql>
   </changeSet>
 
-  <!-- TODO: add query to create index :Snippet(id) -->
-
-  <!-- ######## -->
+  <!-- ########  started at 3:37 -->
 
   <changeSet id="LL-2193-merge-snippets" author="Binh Vu">
     <customChange
       class="edu.ucsd.sbrg.liquibase.neo4j.LoopHandler"
-      loopQuery="MATCH (n:Snippet) WITH n.id AS id, collect(n.id) AS nodes WHERE size(nodes) > 1 RETURN nodes LIMIT 10000"
-      execQuery="
-        MATCH (n:Snippet) WHERE n.id IN $node_ids
-        WITH collect(n) AS snippets
-        CALL apoc.refactor.mergeNodes(snippets, {properties: 'discard', mergeRels:true}) YIELD node
-        RETURN $node_ids, node.id
+      query="
+      MATCH (n:Snippet) WITH n.id AS id, collect(n) AS nodes WHERE size(nodes) > 1 WITH nodes LIMIT 50000
+      CALL apoc.refactor.mergeNodes(nodes, {properties: 'discard', mergeRels:false}) YIELD node RETURN COUNT(*)
       "/>
   </changeSet>
 
