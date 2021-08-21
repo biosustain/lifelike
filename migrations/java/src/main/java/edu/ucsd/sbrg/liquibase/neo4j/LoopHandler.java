@@ -9,41 +9,27 @@ import liquibase.resource.ResourceAccessor;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Record;
+import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
-
-import static org.neo4j.driver.Values.parameters;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Helper class for queries that need to depend on another query.
- *
- * E.g
- *      while (query1.size > 0)
- *      do
- *          query2
+ * Helper class for queries that need to loop.
  */
 public class LoopHandler implements CustomTaskChange {
     private Driver driver;
-    private String execQuery;
-    private String loopQuery;
+    private String query;
     private ResourceAccessor resourceAccessor;
 
     public LoopHandler() { }
 
-    public String getExecQuery() { return this.execQuery; }
+    public String getQuery() { return this.query; }
 
-    public void setExecQuery(String execQuery) {
-        this.execQuery = execQuery;
-    }
-
-    public String getLoopQuery() { return this.loopQuery; }
-
-    public void setLoopQuery(String loopQuery) {
-        this.loopQuery = loopQuery;
+    public void setQuery(String query) {
+        this.query = query;
     }
 
     public void setDatabaseDriver(String uri, String user, String password) {
@@ -58,21 +44,20 @@ public class LoopHandler implements CustomTaskChange {
         final String username = System.getenv("SBRG_NEO4J_USERNAME");
         final String password = System.getenv("SBRG_NEO4J_PASSWORD");
 
-        System.out.println("Loop query: " + this.getLoopQuery());
-        System.out.println("Exec query: " + this.getExecQuery());
+        System.out.println("Executing query: " + this.getQuery());
 
         this.setDatabaseDriver(host, username, password);
 
         try (Session session = driver.session()) {
-            List<List<String>> nodes = this.getNodesToUpdate(session, this.getLoopQuery());
-
             int totalProcessed = 0;
 
-            while (nodes.size() > 0) {
-                totalProcessed += this.executeCypherStatement(session, this.getExecQuery(), nodes);
+            while (true) {
+                final int processed = this.executeCypherStatement(session, this.getQuery());
+                totalProcessed += processed;
                 System.out.format("Processed %d nodes...%n", totalProcessed);
-                System.out.println("Getting next batch of nodes...");
-                nodes = this.getNodesToUpdate(session, this.getLoopQuery());
+                if (processed == 0) {
+                    break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,10 +65,10 @@ public class LoopHandler implements CustomTaskChange {
         }
     }
 
-    public Integer executeCypherStatement(Session session, String cypher, List<List<String>> params) {
+    public Integer executeCypherStatement(Session session, String cypher) {
         return session.writeTransaction(tx -> {
-            List<Record> results = tx.run(cypher, parameters("nodes", params)).list();
-            return results.size();
+            Result results = tx.run(cypher);
+            return results.single().get(0).asInt();
         });
     }
 
