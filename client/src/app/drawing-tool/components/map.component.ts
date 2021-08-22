@@ -41,6 +41,7 @@ import JSZipUtils from 'jszip-utils';
 import { JsonPipe } from '@angular/common';
 import { reject, resolve } from 'bluebird';
 import { unzip } from 'zlib';
+import { MAP_MIMETYPE } from '../providers/map.type-provider';
 
 @Component({
   selector: 'app-map',
@@ -174,7 +175,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return path === 'edit';
   }
 
-  private initializeMap() {
+  private async initializeMap() {
     if (!this.map || !this.contentValue) {
       return;
     }
@@ -206,7 +207,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         }));
     */
 
-    const graphRepr = JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
+    const graphRepr = await JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
       const unzipped = zip.files['graph.json'].async('text').then(function (text: string) {
         // t is the graph representation in JSON format
         return (text);
@@ -215,6 +216,25 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
 
     console.log(graphRepr);
+
+    // TODO: optimize this redundant blob creation, and find out how to render images on here
+    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MAP_MIMETYPE})).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create({label: 'Parse map data'}),
+      ).subscribe(graph => {
+        this.graphCanvas.setGraph(graph);
+        this.graphCanvas.zoomToFit(0);
+        
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+            );
+          }
+        }, e => {
+          console.error(e);
+          // Data is corrupt
+          // TODO: Prevent the user from editing or something so the user doesnt lose data?
+        }));
 
     /*
     JSZipUtils.getBinaryContent(this.contentValue).then(function (err, data) {
