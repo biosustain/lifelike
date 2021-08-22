@@ -88,8 +88,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
     zip.generateAsync({ type: "blob" })
       .then(function (content) {
-        console.log("here's content");
-        console.log(content);
         filesystemService.save([locator], { contentValue: content })
           .pipe(errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
