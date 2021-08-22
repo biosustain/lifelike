@@ -20,20 +20,12 @@
       </div>
       <ng-template #linkText>
         <a style="white-space: pre-line" [href]="toValidUrl(link.url)" target="_blank"
-             (click)="linkClick($event, link)">
+             (click)="linkClick($event, link)" [ngbTooltip]="link.url">
           {{ getText(link.domain) }}
         </a>
       </ng-template>
 
       <div class="d-flex align-items-center">
-<!--        <div class="text-truncate mr-2" placement="top" container="body"-->
-<!--             [ngbTooltip]="link.url">-->
-<!--          <a [href]="toValidUrl(link.url)" target="_blank" class="text-muted"-->
-<!--             (click)="linkClick($event, link)">-->
-<!--            <small><i class="{{ fontAwesomeIcon }} fa-fw"></i> {{ getUrlText(link.url) }}</small>-->
-<!--          </a>-->
-<!--        </div>-->
-
         <div *ngIf="editable" class="mt-1 ml-auto link-item-controls text-nowrap">
           <button type="button" class="btn btn-xs btn-secondary ml-auto"
                   (click)="openEditDialog(link); $event.stopPropagation()">
