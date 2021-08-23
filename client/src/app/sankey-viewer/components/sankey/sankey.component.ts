@@ -410,7 +410,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // use each so we search traces only once
         const selected = accessor(s);
         const element = d3.select(this)
-          .attr('selectedTrace', selected);
+          .attr(attr, selected);
         if (selected) {
           element.raise();
         }
