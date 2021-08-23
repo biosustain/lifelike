@@ -23,7 +23,7 @@ from .constants import (
     MAX_GENE_WORD_LENGTH,
     MAX_FOOD_WORD_LENGTH
 )
-from .data_transfer_objects import PDFWord
+from .data_transfer_objects.dto import PDFWord
 from .utils.common import has_center_point
 from .utils.parsing import parse_content
 from .utils.graph_queries import *
