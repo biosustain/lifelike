@@ -58,10 +58,6 @@ export class NodeFormComponent implements AfterViewInit {
   ngAfterViewInit() {
   }
 
-  isImageNode() {
-    return this.node.label === 'image';
-  }
-
   get nodeSubtypeChoices() {
     const type = annotationTypesMap.get(this.node.label);
     if (type && type.subtypes) {
