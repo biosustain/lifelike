@@ -475,8 +475,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             }
 
             if node['label'] in ['map', 'link', 'note']:
-                link_data = node['data'].get('hyperlinks', []) + node['data'].get('sources', [])
-                node['link'] = link_data[-1].get('url') if link_data else None
+                link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+                node['link'] = link_data[0].get('url') if link_data else None
                 if style.get('showDetail'):
                     params['style'] += ',filled'
                     detail_text = node['data'].get('detail', ' ')
