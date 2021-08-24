@@ -21,6 +21,7 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { first } from 'rxjs/operators';
 import JSZip from 'jszip';
+import { UniversalGraphNodeTemplate } from '../services/interfaces';
 
 @Component({
   selector: 'app-map-view',
@@ -75,7 +76,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   /**
    * Save the current representation of knowledge model
    */
-  save() {
+  async save() {
                   /**
                    * steps to approach:
                    * zip the map w/o images
@@ -84,10 +85,29 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    * unzip the map, populate image from `image_id`
                    */
     const zip = new JSZip();
+    const imgs = zip.folder('images');
     const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
+    for await (let n of this.graphCanvas.getGraph().nodes) {
+      if (n.image_id !== undefined) {
+        let currImg$ = this.mapImageProviderService.get(n.image_id);
+        currImg$.pipe(first()).subscribe({
+          async next(img) {
+            img = img as HTMLImageElement;
+            await fetch(img.src).then(r => r.blob()).then(imgBlob => {
+              // TODO: does not save images due to loop issues with await
+              imgs.file(n.image_id + '.png', imgBlob); // add to `imgs` folder, not ***ARANGO_USERNAME*** directory of zip
+            });
+          },
+          error(msg) {
+            console.error(msg);
+          }
+        });
+      }
+    }
     zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
-    zip.generateAsync({ type: "blob" })
+    zip.generateAsync({ type: "base64" }) // TODO: change this back to blob
       .then(function (content) {
+        location.href = 'data:application/zip;base64,' + content; // TODO: change this back to blob
         filesystemService.save([locator], { contentValue: content })
           .pipe(errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
