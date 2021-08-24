@@ -2,6 +2,20 @@ import * as d3Sankey from 'd3-sankey-circular';
 import { representativePositiveNumber } from '../utils';
 import { DirectedTraversal } from '../../services/directed-traversal';
 
+export const fixedValue = value => ({links}) => {
+  links.forEach(l => {
+    l._value = value;
+  });
+  return {
+    links,
+    _sets: {
+      link: {
+        _value: true
+      }
+    }
+  };
+};
+
 export const fractionOfFixedNodeValue = ({links, nodes}) => {
   links.forEach(l => {
     l.value = 1;
@@ -52,19 +66,6 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
       source: s,
       target: t
     })),
-    _sets: {
-      link: {
-        _value: true
-      }
-    }
-  };
-};
-export const fixedValue = ({links}) => {
-  links.forEach(l => {
-    l._value = 1;
-  });
-  return {
-    links,
     _sets: {
       link: {
         _value: true
@@ -143,7 +144,7 @@ export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
     }
   };
 };
-export const linkSizeByProperty = property => ({links}) => {
+export const byProperty = property => ({links}) => {
   links.forEach(l => {
     l._value = representativePositiveNumber(l[property]);
   });
@@ -160,7 +161,7 @@ export const linkSizeByProperty = property => ({links}) => {
     }
   };
 };
-export const linkSizeByArrayProperty = property => ({links}) => {
+export const byArrayProperty = property => ({links}) => {
   links.forEach(l => {
     const [v1, v2] = l[property];
     l._multiple_values = [v1, v2].map(d => representativePositiveNumber(d));
