@@ -278,6 +278,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   attachNodeEvents(d3Nodes) {
     const {dragmove, nodeClick, nodeMouseOver, nodeMouseOut} = this;
+    let dx = 0;
+    let dy = 0;
     d3Nodes
       .on('mouseover', function(data) {
         return nodeMouseOver(this, data);
@@ -288,13 +290,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .call(
         d3.drag()
           .on('start', function() {
+            dx = 0;
+            dy = 0;
             d3.select(this).raise();
           })
           .on('drag', function(d) {
+            dx += d3.event.dx;
+            dy += d3.event.dy;
             dragmove(this, d);
           })
           .on('end', function(d) {
-            const {dx, dy} = d3.event;
             // d3v5 does not include implementation for this
             if (Math.hypot(dx, dy) < 10) {
               return nodeClick(this, d);
