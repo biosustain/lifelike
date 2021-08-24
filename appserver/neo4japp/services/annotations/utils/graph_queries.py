@@ -206,7 +206,7 @@ def get_compound_global_inclusion_exist_query():
 
 def get_gene_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
+    OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
     WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
@@ -311,7 +311,7 @@ def get_create_compound_global_inclusion_query():
 
 def get_create_gene_global_inclusion_query():
     return """
-    MATCH (n:db_NCBI:Gene) WHERE n.eid = $entity_id
+    MATCH (n:Gene) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
