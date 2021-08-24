@@ -11,8 +11,8 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { map } from 'rxjs/operators';
-import { nodeValueByProperty, noneNodeValue } from './algorithms/nodeValues';
-import { linkSizeByArrayProperty, linkSizeByProperty, inputCount, fractionOfFixedNodeValue, fixedValue } from './algorithms/linkValues';
+import * as nodeValues from './algorithms/nodeValues';
+import * as linkValues from './algorithms/linkValues';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
@@ -27,17 +27,23 @@ import { CustomisedSankeyLayoutService } from '../services/customised-sankey-lay
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from './color-palette';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
-import { emptyIfNull } from '../../shared/utils/types';
 import { isNodeMatching, isLinkMatching } from './search-match';
 
 const LINK_VALUE = {
-  default: 'Default',
+  fixedValue0: 'Fixed Value = 0',
+  fixedValue1: 'Fixed Value = 1',
   input_count: 'Input count',
   fraction_of_fixed_node_value: 'Fraction of fixed node value',
 };
 
 const NODE_VALUE = {
   none: 'None',
+  fixedValue1: 'Fixed Value = 1'
+};
+
+const PREDEFINED_VALUE = {
+  default: 'Default',
+  input_count: LINK_VALUE.input_count
 };
 
 @Component({
@@ -98,43 +104,53 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     nodeValueAccessors: [],
     predefinedValueAccessors: [
       {
-        description: LINK_VALUE.default,
+        description: PREDEFINED_VALUE.default,
         callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
           this.onOptionsChange();
         }
       },
       {
-        description: LINK_VALUE.input_count,
+        description: PREDEFINED_VALUE.input_count,
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
           this.onOptionsChange();
         }
-    }],
+      }],
     linkValueGenerators: {
-      default: {
-        description: LINK_VALUE.default,
-        preprocessing: fixedValue,
-        disabled: () => false
-      } as ValueGenerator,
       input_count: {
         description: LINK_VALUE.input_count,
-        preprocessing: inputCount,
+        preprocessing: linkValues.inputCount,
+        disabled: () => false
+      } as ValueGenerator,
+      fixedValue0: {
+        description: LINK_VALUE.fixedValue0,
+        preprocessing: linkValues.fixedValue(0),
+        disabled: () => false
+      } as ValueGenerator,
+      fixedValue1: {
+        description: LINK_VALUE.fixedValue1,
+        preprocessing: linkValues.fixedValue(1),
         disabled: () => false
       } as ValueGenerator,
       fraction_of_fixed_node_value: {
         description: LINK_VALUE.fraction_of_fixed_node_value,
         disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
         requires: ({node}) => node.fixedValue,
-        preprocessing: fractionOfFixedNodeValue
+        preprocessing: linkValues.fractionOfFixedNodeValue
       } as ValueGenerator
     },
     nodeValueGenerators: {
       none: {
         description: NODE_VALUE.none,
-        preprocessing: noneNodeValue,
+        preprocessing: nodeValues.noneNodeValue,
+        disabled: () => false
+      } as ValueGenerator,
+      fixedValue1: {
+        description: NODE_VALUE.fixedValue1,
+        preprocessing: nodeValues.fixedValue(1),
         disabled: () => false
       } as ValueGenerator
     },
@@ -171,8 +187,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.default;
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
+    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
@@ -283,6 +299,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
+    const {default_sizing} = networkTrace;
+    const selectedPredefinedValueAccessor =
+      this.options.predefinedValueAccessors
+        .find(({description}) => description === default_sizing);
+    if (selectedPredefinedValueAccessor) {
+      this.options.selectedPredefinedValueAccessor = selectedPredefinedValueAccessor;
+    }
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
@@ -382,7 +405,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (isPositiveNumber(v)) {
         o.push({
           description: k,
-          preprocessing: linkSizeByProperty(k),
+          preprocessing: linkValues.byProperty(k),
           postprocessing: ({links}) => {
             links.forEach(l => {
               l._value /= (l._adjacent_divider || 1);
@@ -393,7 +416,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
         o.push({
           description: k,
-          preprocessing: linkSizeByArrayProperty(k),
+          preprocessing: linkValues.byArrayProperty(k),
           postprocessing: ({links}) => {
             links.forEach(l => {
               l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1));
@@ -415,7 +438,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (isPositiveNumber(v)) {
         o.push({
           description: k,
-          preprocessing: nodeValueByProperty(k)
+          preprocessing: nodeValues.byProperty(k)
         });
       }
       return o;
