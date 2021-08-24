@@ -29,7 +29,7 @@ export const ENTITY_TYPES = [
   new EntityType('Disease', annotationTypesMap.get('disease').color, [DatabaseType.MESH]),
   new EntityType('Entity', annotationTypesMap.get('entity').color, [DatabaseType.NONE]),
   new EntityType('Food', annotationTypesMap.get('food').color, [DatabaseType.MESH]),
-  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI_GENE]),
+  new EntityType('Gene', annotationTypesMap.get('gene').color, [DatabaseType.NCBI_GENE, DatabaseType.BIOCYC]),
   new EntityType('Lab Sample', annotationTypesMap.get('lab sample').color, [DatabaseType.NONE]),
   new EntityType('Lab Strain', annotationTypesMap.get('lab strain').color, [DatabaseType.NONE]),
   new EntityType('Mutation', annotationTypesMap.get('mutation').color, [DatabaseType.NONE]),
