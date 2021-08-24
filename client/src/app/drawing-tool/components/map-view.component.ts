@@ -92,7 +92,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
           .pipe(errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
             unsavedChanges$.next(false);
-            emitModuleProperties();
+            // emitModuleProperties(); // TODO: what does this do?
             snackBar.open('Map saved.', null, {
               duration: 2000,
             });

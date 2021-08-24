@@ -185,28 +185,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    this.emitModuleProperties();
-
-    /*
-    this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
-      mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create({label: 'Parse map data'}),
-      ).subscribe(graph => {
-        this.graphCanvas.setGraph(graph);
-        this.graphCanvas.zoomToFit(0);
-        
-        if (this.highlightTerms != null && this.highlightTerms.length) {
-          this.graphCanvas.highlighting.replace(
-            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-            );
-          }
-        }, e => {
-          console.error(e);
-          // Data is corrupt
-          // TODO: Prevent the user from editing or something so the user doesnt lose data?
-        }));
-    */
-
+    // this.emitModuleProperties(); // TODO: what does this do?
     const graphRepr = await JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
       const unzipped = zip.files['graph.json'].async('text').then(function (text: string) {
         // t is the graph representation in JSON format
@@ -214,41 +193,29 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       });
       return (unzipped);
     });
-
-    console.log(graphRepr);
+    // at this point `graphRepr` has the JSON version of the map as a string
 
     // TODO: optimize this redundant blob creation, and find out how to render images on here
     this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MAP_MIMETYPE})).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
-      ).subscribe(graph => {
-        this.graphCanvas.setGraph(graph);
-        this.graphCanvas.zoomToFit(0);
-        
-        if (this.highlightTerms != null && this.highlightTerms.length) {
-          this.graphCanvas.highlighting.replace(
-            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-            );
-          }
-        }, e => {
-          console.error(e);
-          // Data is corrupt
-          // TODO: Prevent the user from editing or something so the user doesnt lose data?
-        }));
+    ).subscribe(graph => {
+      this.graphCanvas.setGraph(graph);
+      this.graphCanvas.zoomToFit(0);
 
-    /*
-    JSZipUtils.getBinaryContent(this.contentValue).then(function (err, data) {
-      if (err) throw err;
-      JSZip.loadAsync(data).then(function (x) {
-        console.log(x);
-      });
-    });
-    */
-
+      if (this.highlightTerms != null && this.highlightTerms.length) {
+        this.graphCanvas.highlighting.replace(
+          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+          );
+        }
+      }, e => {
+        console.error(e);
+        // Data is corrupt
+        // TODO: Prevent the user from editing or something so the user doesnt lose data?
+      }));
   }
 
   registerGraphBehaviors() {
-    // this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
   }
