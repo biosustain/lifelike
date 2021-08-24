@@ -33,7 +33,6 @@
           class="custom-select w-100"
           id="entity-type"
           (change)="disableGlobalOption()"
-          appAutoFocus
         >
           <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
             {{choice.name | titlecase}}
