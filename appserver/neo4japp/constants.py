@@ -1,5 +1,6 @@
 import os
 import codecs
+import re
 import string
 
 from datetime import timezone
@@ -12,18 +13,17 @@ from sendgrid import SendGridAPIClient
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset
-TYPE_GENE = 'Gene'
-TYPE_PATHWAY = 'Pathway'
-TYPE_PROTEIN = 'Protein'
+TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
+TYPE_CELLULAR_COMPONENT = 'CellularComponent'
+TYPE_COMPOUND = 'Compound'
 TYPE_ENZREACTION = 'EnzReaction'
+TYPE_MOLECULAR_FUNCTION = 'MolecularFunction'
+TYPE_PATHWAY = 'Pathway'
+TYPE_PHENOMENA = 'Phenomena'
+TYPE_PHENOTYPE = 'Phenotype'
 TYPE_REACTION = 'Reaction'
 TYPE_REGULATION = 'Regulation'
 TYPE_RNA = 'RNA'
-TYPE_CHEMICAL = 'Chemical'
-TYPE_COMPOUND = 'Compound'
-TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
-TYPE_CELLULAR_COMPONENT = 'CellularComponent'
-TYPE_MOLECULAR_FUNCTION = 'MolecularFunction'
 
 PROP_CHEBI_ID = 'chebi_id'
 PROP_BIOCYC_ID = 'biocyc_id'
@@ -43,7 +43,7 @@ FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
 FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
 FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
-FILE_MIME_TYPE_SANKEY = 'vnd.lifelike.document/sankey'
+FILE_MIME_TYPE_GRAPH = 'vnd.lifelike.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
 
 
@@ -90,12 +90,16 @@ BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
 # Start Text Mining Dataset
 
+TYPE_ANATOMY = 'Anatomy'
 TYPE_ASSOCIATION = 'Association'
 TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_CLASS = 'Class'
+TYPE_COMPANY = 'Company'
 TYPE_DISEASE = 'Disease'
 TYPE_DNA_BINDING_SITE = 'DNABindingSite'
+TYPE_ENTITY = 'Entity'
+TYPE_FOOD = 'Food'
 TYPE_GENE = 'Gene'
 TYPE_GENE_PRODUCT = 'GeneProduct'
 TYPE_LITERATURE_CHEMICAL = 'LiteratureChemical'
@@ -107,20 +111,25 @@ TYPE_TAXONOMY = 'Taxonomy'
 TYPE_OPERON = 'Operon'
 TYPE_PROMOTER = 'Promoter'
 TYPE_PROTEIN = 'Protein'
+TYPE_SPECIES = 'Species'
 TYPE_TERMINATOR = 'Terminator'
 TYPE_TRANSCRIPTION_FACTOR = 'TranscriptionFactor'
 TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 
 DISPLAY_NAME_MAP = {
+    TYPE_ANATOMY: 'name',
     TYPE_ASSOCIATION: 'description',
     TYPE_ASSOCIATION_TYPE: 'name',
     TYPE_BIOLOGICAL_PROCESS: 'name',
     TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
     TYPE_CLASS: 'biocyc_id',
+    TYPE_COMPANY: 'name',
     TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
     TYPE_DNA_BINDING_SITE: 'displayName',
+    TYPE_ENTITY: 'name',
+    TYPE_FOOD: 'name',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
     TYPE_LITERATURE_CHEMICAL: 'name',
@@ -129,6 +138,8 @@ DISPLAY_NAME_MAP = {
     TYPE_MOLECULAR_FUNCTION: 'name',
     TYPE_OPERON: 'name',
     TYPE_PATHWAY: 'name',
+    TYPE_PHENOMENA: 'name',
+    TYPE_PHENOTYPE: 'name',
     TYPE_PROMOTER: 'name',
     TYPE_PROTEIN: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
@@ -137,6 +148,7 @@ DISPLAY_NAME_MAP = {
     TYPE_REGULATION: 'displayName',
     TYPE_RNA: 'displayName',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
+    TYPE_SPECIES: 'name',
     TYPE_TAXONOMY: 'name',
     TYPE_TERMINATOR: 'biocyc_id',
     TYPE_TRANSCRIPTION_FACTOR: 'name',
@@ -351,6 +363,21 @@ FONT_SIZE_MULTIPLIER = 0.25
 IMAGE_HEIGHT_INCREMENT = 0.23
 SCALING_FACTOR = 55
 ICON_SIZE = '1'
+DEFAULT_DPI = 96.0
+POINT_TO_PIXEL = 72.0
+VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
+HORIZONTAL_TEXT_PADDING = 0.18 * DEFAULT_DPI
+LABEL_OFFSET = 25
+PDF_MARGIN = 3
+MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
+NAME_NODE_OFFSET = 100
+TRANSPARENT_PIXEL = (0, 0, 0, 0)
+FILENAME_LABEL_MARGIN = 0.165
+VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN / 2.0
+NAME_LABEL_FONT_AVERAGE_WIDTH = 18
+NAME_LABEL_PADDING_MULTIPLIER = 7
+FILENAME_LABEL_FONT_SIZE = 40.0
+
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
     'dotted': 'dotted',
@@ -393,3 +420,13 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+ASSETS_PATH = os.getenv('ASSETS_FOLDER')
+
+# Start constants for export of merged maps
+SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
+# links to maps with spaces at the beginning are still valid
+MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
+
+# Start SVG map export data constants
+IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+BYTE_ENCODING = 'utf-8'

@@ -13,9 +13,11 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input() title = 'Export';
 
   private _exporters: Exporter[];
+  private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
 
   readonly form: FormGroup = new FormGroup({
     exporter: new FormControl(null, Validators.required),
+    exportLinked: new FormControl(false)
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
@@ -44,10 +46,15 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   getValue(): ObjectExportDialogValue {
     return {
       exporter: this.exporters[this.form.get('exporter').value],
+      exportLinked: this.isLinkedExportSupported() && this.form.get('exportLinked').value
     };
+  }
+  isLinkedExportSupported(): boolean {
+    return this._linkedExporters.includes(this.exporters[this.form.get('exporter').value].name);
   }
 }
 
 export interface ObjectExportDialogValue {
   exporter: Exporter;
+  exportLinked: boolean;
 }

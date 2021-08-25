@@ -19,41 +19,58 @@
       </div>
     </div>
 
-    <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
-      <select
-        formControlName="entityType"
-        class="custom-select w-100"
-        id="entity-type"
-        (change)="disableGlobalOption()"
-        appAutoFocus
-      >
-        <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
-          {{choice.name | titlecase}}
-        </option>
-      </select>
+    <app-form-row for="search-links" label="Search">
+      <ng-container *ngFor="let searchLink of getSearchLinks; let i = index" id="search-links">
+        <a href="{{searchLink.link}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="i < getSearchLinks.length - 1">, </span>
+      </ng-container>
     </app-form-row>
 
-    <app-form-row for="id" label="Id" [control]="form.get('id')">
-      <input type="text" formControlName="id" class="form-control" id="id">
-    </app-form-row>
-
-    <ng-container *ngIf="entityTypeChosen">
-      <app-form-row for="source" label="Data Source" [control]="form.get('source')">
-        <select formControlName="source" class="custom-select w-100" id="source">
-          <option *ngFor="let choice of databaseTypeChoices" [value]="choice">
-            {{choice}}
+    <fieldset class="fieldset-properties mt-4">
+      <legend>Annotation</legend>
+      <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
+        <select
+          formControlName="entityType"
+          class="custom-select w-100"
+          id="entity-type"
+          (change)="disableGlobalOption()"
+        >
+          <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
+            {{choice.name | titlecase}}
           </option>
         </select>
       </app-form-row>
 
-      <app-form-row for="sourceLink" label="Source Link" [control]="form.get('sourceLink')">
-        <input type="text" formControlName="sourceLink" class="form-control" id="sourceLink">
-      </app-form-row>
-    </ng-container>
+      <div class="form-group row row-cols-2">
+        <label for="id" class="col-form-label col-sm-3">
+          <i class="fas fa-exclamation-circle" ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"></i>
+          Identifier:</label>
+        <div class="col-sm-6">
+          <select formControlName="source" class="custom-select w-100" id="source">
+            <option value="" selected>No Source</option>
+            <option *ngFor="let choice of databaseTypeChoices" [value]="choice">
+              {{choice}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <input type="text" formControlName="id" class="form-control" id="id">
+          <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset-properties mt-4">
+      <legend>Additional Links</legend>
+      <app-links-panel title="Links" singularTitle="Link"
+                       [(ngModel)]="sourceLinks"
+                       [ngModelOptions]="{standalone: true}"
+                       [draggable]="false"
+                       [limit]="3"></app-links-panel>
+    </fieldset>
 
     <div class="custom-control custom-checkbox mt-4">
       <input type="checkbox" class="custom-control-input" id="include-globally"
-             formControlName="includeGlobally" (change)="toggleIdFieldValidity()">
+             formControlName="includeGlobally">
       <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
     </div>
 
