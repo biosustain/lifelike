@@ -462,6 +462,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params = self.create_detail_node(node, params)
                 else:
                     params, icon_params = self.create_icon_node(node, params)
+                    # Create separate node with the icon
                     graph.node(**icon_params)
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
@@ -475,66 +476,24 @@ class MapTypeProvider(BaseFileTypeProvider):
                 params['fontcolor'] = style.get('fillColor') or 'black'
                 params['style'] += ',filled'
 
-            if node.get('link'):
-                params['href'] = node['link']
-            elif node['data'].get('hyperlinks'):
-                params['href'] = node['data']['hyperlinks'][0].get('url')
-            elif node['data'].get('sources'):
-                params['href'] = node['data']['sources'][0].get('url')
-            current_link = params.get('href', "").strip()
-            # If url points to internal file, append it with the domain address
-            if current_link.startswith('/'):
-                # Remove Lifelike links to files that we do not create
-                if ANY_FILE_RE.match(current_link):
-                    params['href'] = ''
-                else:
-                    params['href'] = LIFELIKE_DOMAIN + current_link
+            params['href'] = self.set_node_href(node)
             graph.node(**params)
 
         if self_contained_export:
-            name_node = {
-                'name': file.filename,
-                'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
-                                                        )['defaultimagecolor'],
-                'pos': (
-                    f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
-                    f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-                ) if x_values else '0,0!',
-                'fontsize': str(FILENAME_LABEL_FONT_SIZE),
-                'shape': 'box',
-                'style': 'rounded',
-                'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
-            }
-            graph.node(**name_node)
+            # We add name of the map in left top corner to ease map recognition in linked export
+            name_node_params = self.create_map_name_node()
+            # Set outside of the function to avoid unnecessary copying of potentially big variables
+            name_node_params['name'] = file.filename
+            name_node_params['pos'] = (
+                f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
+                f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+            ) if x_values else '0,0!'  # Failsafe to prevent errors on empty maps.
+
+            graph.node(**name_node_params)
 
         for edge in json_graph['edges']:
-            style = edge.get('style', {})
-            default_line_style = 'solid'
-            default_arrow_head = 'arrow'
-            edge_data = edge.get('data', {})
-            url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
-            url = url_data[-1]['url'] if len(url_data) else ''
-            if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-                   item in ['link', 'note']):
-                default_line_style = 'dashed'
-                default_arrow_head = 'none'
-            graph.edge(
-                    edge['from'],
-                    edge['to'],
-                    edge['label'],
-                    dir='both',
-                    color=style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-                    arrowtail=ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
-                    arrowhead=ARROW_STYLE_DICT.get(
-                            style.get('targetHeadType') or default_arrow_head),
-                    penwidth=str(style.get('lineWidthScale', 1.0)) if style.get(
-                            'lineType') != 'none'
-                    else '0.0',
-                    fontsize=str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-                    style=BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
-                    URL=url
-
-            )
+            edge_params = self.create_edge(edge, node_hash_type_dict)
+            graph.edge(**edge_params)
 
         ext = f".{format}"
 
@@ -643,10 +602,13 @@ class MapTypeProvider(BaseFileTypeProvider):
                                                         )['defaultimagecolor']
         if label == 'link':
             label, link = self.get_link_icon_type(node)
+            # Save the link for later usage
+            node['link'] = link
 
         icon_params['image'] = (
             f'{ASSETS_PATH}{label}.png'
         )
+        # We are setting the icon color by using 'inverse' icon images and colorful background
         icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
         icon_params['style'] = 'filled'
         icon_params['shape'] = 'box'
@@ -694,6 +656,83 @@ class MapTypeProvider(BaseFileTypeProvider):
                 label = 'email'
                 url = link['url']
         return label, url
+
+    def set_node_href(self, node):
+        """
+        Evaluates and sets the href for the node. If link parameter was not set previously, we are
+        dealing with entity node (or icon node without any sources) - so we prioritize the
+        hyperlinks here
+        :params:
+        :param node: dict containing the node data
+        :returns: string with URL to which node should point - or empty string
+        """
+        href = ''
+        if node.get('link'):
+            href = node['link']
+        elif node['data'].get('hyperlinks'):
+            href = node['data']['hyperlinks'][0].get('url')
+        elif node['data'].get('sources'):
+            href = node['data']['sources'][0].get('url')
+        # Whitespaces will break the link if we prepend the domain
+        current_link = href.strip()
+        # If url points to internal file, prepend it with the domain address
+        if current_link.startswith('/'):
+            # Remove Lifelike links to files that we do not create - due to the possible copyrights
+            if ANY_FILE_RE.match(current_link):
+                href = ''
+            else:
+                href = LIFELIKE_DOMAIN + current_link
+        return href
+
+    def create_map_name_node(self):
+        """
+        Creates the baseline dict for map name node
+        :retuns: dict describing the name node with Graphviz parameters
+        """
+        return {
+            'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
+                                                    )['defaultimagecolor'],
+            'fontsize': str(FILENAME_LABEL_FONT_SIZE),
+            'shape': 'box',
+            'style': 'rounded',
+            'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
+        }
+
+    def create_edge(self, edge, node_hash_type_dict):
+        """
+        Creates a dict with parameters required to render an edge
+        :params:
+        :param edge: dict containing the edge information
+        :param node_hash_type_dict: lookup dict allowing to quickly check whether either head or
+        tail is pointing to link or note (as this changes the default edge style)
+        :returns: dict describing the edge with Graphviz parameters
+        """
+        style = edge.get('style', {})
+        default_line_style = 'solid'
+        default_arrow_head = 'arrow'
+        edge_data = edge.get('data', {})
+        url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
+        url = url_data[-1]['url'] if len(url_data) else ''
+        if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
+               item in ['link', 'note']):
+            default_line_style = 'dashed'
+            default_arrow_head = 'none'
+        return {
+            'tail_name': edge['from'],
+            'head_name': edge['to'],
+            'label': edge['label'],
+            'dir': 'both',
+            'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+            'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+            'arrowhead': ARROW_STYLE_DICT.get(
+                style.get('targetHeadType') or default_arrow_head),
+            'penwidth': str(style.get('lineWidthScale', 1.0)) if style.get(
+                'lineType') != 'none'
+            else '0.0',
+            'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+            'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
+            'URL': url
+        }
 
     def merge(self, files: list, requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
