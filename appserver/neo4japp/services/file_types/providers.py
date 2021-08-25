@@ -65,6 +65,8 @@ from neo4japp.constants import (
     FILENAME_LABEL_FONT_SIZE,
     IMAGES_RE,
     ASSETS_PATH,
+    ICON_NODES,
+    RELATION_NODES
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -454,7 +456,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             style = node.get('style', {})
             params = self.create_default_node(node)
 
-            if node['label'] in ['map', 'link', 'note']:
+            if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
                 link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
                 node['link'] = link_data[0].get('url') if link_data else None
@@ -465,16 +467,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                     # Create separate node with the icon
                     graph.node(**icon_params)
 
-            if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
-                default_color = ANNOTATION_STYLES_DICT.get(
-                        node['label'],
-                        {'color': 'black'})['color']
-                params['color'] = style.get('strokeColor') or default_color
-                if style.get('fillColor'):
-                    params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
-                params['fillcolor'] = 'white' if style.get('fillColor') else default_color
-                params['fontcolor'] = style.get('fillColor') or 'black'
-                params['style'] += ',filled'
+            if node['label'] in RELATION_NODES:
+                params = self.create_relation_node(node, params)
 
             params['href'] = self.set_node_href(node)
             graph.node(**params)
@@ -657,6 +651,27 @@ class MapTypeProvider(BaseFileTypeProvider):
                 url = link['url']
         return label, url
 
+    def create_relation_node(self, node, params):
+        """
+        Adjusts the node into the relation node (purple ones)
+        :params:
+        :param node: dict containing the node data
+        :param params: dict containing Graphviz parameters that will be altered
+        :returns: altered params dict
+        """
+        style = node.get('style', {})
+        default_color = ANNOTATION_STYLES_DICT.get(
+            node['label'],
+            {'color': 'black'})['color']
+        params['color'] = style.get('strokeColor') or default_color
+        if style.get('fillColor'):
+            params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
+        # Changing font color changes background to white
+        params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+        params['fontcolor'] = style.get('fillColor') or 'black'
+        params['style'] += ',filled'
+        return params
+
     def set_node_href(self, node):
         """
         Evaluates and sets the href for the node. If link parameter was not set previously, we are
@@ -673,13 +688,22 @@ class MapTypeProvider(BaseFileTypeProvider):
             href = node['data']['hyperlinks'][0].get('url')
         elif node['data'].get('sources'):
             href = node['data']['sources'][0].get('url')
+
         # Whitespaces will break the link if we prepend the domain
         current_link = href.strip()
         # If url points to internal file, prepend it with the domain address
         if current_link.startswith('/'):
             # Remove Lifelike links to files that we do not create - due to the possible copyrights
             if ANY_FILE_RE.match(current_link):
-                href = ''
+                # Remove the link from the dictionary
+                if node.get('link'):
+                    del node['link']
+                elif node['data'].get('hyperlinks'):
+                    del node['data']['hyperlinks'][0]
+                else:
+                    del node['data']['sources'][0]
+                # And search again
+                href = self.set_node_href(node)
             else:
                 href = LIFELIKE_DOMAIN + current_link
         return href
