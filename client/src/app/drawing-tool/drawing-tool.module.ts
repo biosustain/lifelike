@@ -15,7 +15,6 @@ import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { MapTypeProvider } from './providers/map.type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
-import { LinksPanelComponent } from './components/links-panel.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { GraphEntityDataProvider } from './providers/data-transfer-data/graph-entity-data.provider';
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
@@ -32,7 +31,6 @@ import { MapImageProviderService } from './services/map-image-provider.service';
     EdgeFormComponent,
     MapRestoreDialogComponent,
     InfoViewPanelComponent,
-    LinksPanelComponent,
     LinkEditDialogComponent,
   ],
   entryComponents: [
@@ -40,7 +38,6 @@ import { MapImageProviderService } from './services/map-image-provider.service';
     MapRestoreDialogComponent,
     MapComponent,
     InfoViewPanelComponent,
-    LinksPanelComponent,
     LinkEditDialogComponent,
   ],
   imports: [

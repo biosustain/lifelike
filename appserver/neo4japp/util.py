@@ -405,15 +405,19 @@ def get_first_known_label_from_node(node: N4jDriverNode):
 
 def get_first_known_label_from_list(labels: List[str]):
     for label in labels:
-        if label in DISPLAY_NAME_MAP:
+        if label in DISPLAY_NAME_MAP.keys():
             return label
     raise ValueError('Detected node label of an unknown type!')
 
 
 def get_known_domain_labels_from_node(node: N4jDriverNode):
+    return get_known_domain_labels_from_list(node.labels)
+
+
+def get_known_domain_labels_from_list(labels: List[str]):
     domain_labels = []
 
-    for label in node.labels:
+    for label in labels:
         if label in DOMAIN_LABELS:
             domain_labels.append(label)
 

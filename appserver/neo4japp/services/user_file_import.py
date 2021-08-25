@@ -545,7 +545,7 @@ class UserFileImportService(HybridDBDao):
             MERGE (n)-[:IMPORTED_FROM]->(w)
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
-            WHERE g.id=n.cell_value AND ID(t)=$tax_id
+            WHERE g.eid=n.cell_value AND ID(t)=$tax_id
             {merge_rel_string}
             """
 

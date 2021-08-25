@@ -9,7 +9,7 @@ from neo4japp.util import CamelDictMixin
 class Inclusion():
     entities: List[dict] = attr.ib()
     entity_id_type: str = attr.ib()
-    entity_id_hyperlink: str = attr.ib()
+    entity_id_hyperlinks: List[str] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -60,7 +60,7 @@ class Annotation(CamelDictMixin):
         links: Links = attr.ib()
         id: str = attr.ib()
         id_type: str = attr.ib()
-        id_hyperlink: str = attr.ib()
+        id_hyperlinks: List[str] = attr.ib()
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
@@ -108,7 +108,7 @@ class LMDBMatch():
     entities: List[dict] = attr.ib()
     token: PDFWord = attr.ib()
     id_type: str = attr.ib(default='')
-    id_hyperlink: str = attr.ib(default='')
+    id_hyperlinks: List[str] = attr.ib(default='')
 
 
 @attr.s(frozen=False)

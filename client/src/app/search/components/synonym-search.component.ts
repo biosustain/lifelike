@@ -24,7 +24,7 @@ export class SynonymSearchComponent {
   synonymData: SynonymData[];
   entityChecklistSelection = new SelectionModel<SynonymData>(true /* multiple */);
 
-  typeFilters = ENTITY_TYPES.map(entity => entity.name);
+  typeFilters = ENTITY_TYPES.sort((a, b) => a.name.localeCompare(b.name)).map(entity => entity.name);
   selectedTypeFilters: string[] = [];
   organismFilters = Array.from(ORGANISM_SHORTLIST.keys());
   selectedOrganismFilters: string[] = [];
@@ -67,9 +67,9 @@ export class SynonymSearchComponent {
     this.synonymData = [];
     this.mostRecentSearchTerm = this.form.value.q;
     this.contentSearchService.getSynoynms(
-      this.form.value.q,
+      (this.form.value.q as string).split(/\s/).filter((s: string) => s !== '').join(' '),
       this.selectedOrganismFilters.map((organism) => ORGANISM_SHORTLIST.get(organism)),
-      this.selectedTypeFilters.map((type: string) => ENTITY_TYPE_MAP[type].name.split(' ').join('')),
+      this.selectedTypeFilters.map((type: string) => type.split(' ').join('')),
       this.page,
       this.SYNONYM_SEARCH_LIMIT
     ).subscribe(
@@ -90,18 +90,18 @@ export class SynonymSearchComponent {
   }
 
   submit() {
-    const expressionsToAdd = this.synonymData.map(entity => {
-      if (this.entityChecklistSelection.isSelected(entity)) {
+    const expressionsToAdd = this.synonymData
+      .filter(entity => this.entityChecklistSelection.isSelected(entity))
+      .map(entity => {
         const regex = /\W+/g;
         const synonyms = entity.synonyms
           .map((synonym: string) => {
             const synonymHasNonWordChars = synonym.match(regex);
-            return synonymHasNonWordChars ? `"${synonym.toLowerCase()}"` : synonym.toLowerCase();
+            return synonymHasNonWordChars ? `"${synonym}"` : synonym;
           })
           .join(' or ');
-        return isNullOrUndefined(entity.organism) ? `(${synonyms})` : `((${synonyms}) and "${entity.organism}")`;
-      }
-    });
+        return `(${synonyms})`;
+      });
     this.modal.close(expressionsToAdd);
   }
 
