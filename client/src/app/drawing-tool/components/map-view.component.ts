@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Observable, Subscription } from 'rxjs';
+import { observable, Observable, Subscription } from 'rxjs';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -87,6 +87,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     const zip = new JSZip();
     const imgs = zip.folder('images');
     const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
+    /*
     for await (let n of this.graphCanvas.getGraph().nodes) {
       if (n.image_id !== undefined) {
         let currImg$ = this.mapImageProviderService.get(n.image_id);
@@ -100,6 +101,23 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
           },
           error(msg) {
             console.error(msg);
+          }
+        });
+      }
+    }
+    */
+    // const imageNodeObservables = []
+    for (const node of this.graphCanvas.getGraph().nodes) {
+      if (node.image_id !== undefined) { // is image
+        const imgOb$ = this.mapImageProviderService.get(node.image_id); // observable
+        imgOb$.pipe(first()).subscribe({
+          next(img) {
+            console.log('BLAM');
+            img = img as HTMLImageElement;
+            fetch(img.src).then(r => r.blob()).then(blob => imgs.file(node.image_id + '.png', blob));
+          },
+          error(e) {
+            console.error(e);
           }
         });
       }
@@ -118,6 +136,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
             });
           });
       });
+    Promise.resolve(); // resolve async
   }
 
   openCloneDialog() {
