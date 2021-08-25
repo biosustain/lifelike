@@ -1,5 +1,19 @@
 import { representativePositiveNumber } from '../utils';
 
+export const fixedValue = value => ({nodes}) => {
+  nodes.forEach(n => {
+    n._fixedValue = value;
+  });
+  return {
+    nodes,
+    _sets: {
+      node: {
+        _fixedValue: true
+      }
+    }
+  };
+};
+
 export const noneNodeValue = ({nodes}) => {
   nodes.forEach(n => {
     delete n._fixedValue;
@@ -14,7 +28,7 @@ export const noneNodeValue = ({nodes}) => {
     }
   };
 };
-export const nodeValueByProperty = property => ({nodes}) => {
+export const byProperty = property => ({nodes}) => {
   nodes.forEach(n => {
     n._fixedValue = representativePositiveNumber(n[property]);
   });
