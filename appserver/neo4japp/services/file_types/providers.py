@@ -445,34 +445,15 @@ class MapTypeProvider(BaseFileTypeProvider):
         x_values, y_values = [], []
 
         for node in json_graph['nodes']:
-            style = node.get('style', {})
-            x_values.append(node['data']['x'])
-            y_values.append(node['data']['y'])
+            if self_contained_export:
+                # Store the coordinates of each node as map name node is based on them
+                x_values.append(node['data']['x'])
+                y_values.append(node['data']['y'])
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
+            style = node.get('style', {})
             label = node['label']
-            params = {
-                'name': node['hash'],
-                'label': '\n'.join(textwrap.TextWrapper(
-                        width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-                        replace_whitespace=False).wrap(node['display_name'])),
-                'pos': (
-                    f"{node['data']['x'] / SCALING_FACTOR},"
-                    f"{-node['data']['y'] / SCALING_FACTOR}!"
-                ),
-                'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
-                'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
-                'shape': 'box',
-                'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
-                'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-                'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
-                        node['label'], {'color': 'black'}).get('color'),
-                'fontname': 'sans-serif',
-                'margin': "0.2,0.0",
-                'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
-                'penwidth': f"{style.get('lineWidthScale', 1.0)}"
-                if style.get('lineType') != 'none' else '0.0'
-            }
+            params = self.create_default_node(node)
 
             if node['label'] in ['map', 'link', 'note']:
                 link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
@@ -636,6 +617,43 @@ class MapTypeProvider(BaseFileTypeProvider):
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
+
+    def create_default_node(self, node):
+        """
+        Creates a param dict with all the parameters required to create a simple text node or
+        saving a baseline for more complex node - like map/note/link nodes
+        :params:
+        :param node: a dictionary containing the information about currently rendered node
+        :return: baseline dict with Graphviz paramaters
+        """
+        style = node.get('style', {})
+        return {
+            'name': node['hash'],
+            # Graphviz offer no text break utility - it has to be done outside of it
+            'label': '\n'.join(textwrap.TextWrapper(
+                width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+                replace_whitespace=False).wrap(node['display_name'])),
+            # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
+            'pos': (
+                f"{node['data']['x'] / SCALING_FACTOR},"
+                f"{-node['data']['y'] / SCALING_FACTOR}!"
+            ),
+            # Resize the node base on font size, as otherwise the margin would be smaller than
+            # in the Lifelike map editor
+            'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+            'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
+            'shape': 'box',
+            'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+            'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+            'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
+                node['label'], {'color': 'black'}).get('color'),
+            'fontname': 'sans-serif',
+            'margin': "0.2,0.0",
+            'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+            # Setting penwidth to 0 removes the border
+            'penwidth': f"{style.get('lineWidthScale', 1.0)}"
+            if style.get('lineType') != 'none' else '0.0'
+        }
 
     def merge(self, files: list, requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
