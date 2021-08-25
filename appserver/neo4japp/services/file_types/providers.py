@@ -1,5 +1,6 @@
 import io
 import json
+import math
 import re
 import typing
 from base64 import b64encode
@@ -502,12 +503,19 @@ def create_icon_node(node, params):
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
         * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
         (style.get('fontSizeScale', 1.0) - 1.0)
+
+    # Move the label below to make space for the icon node
+    params['pos'] = (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
+        )
+
     # Create a separate node which will hold the image
     icon_params = {
         'name': "icon_" + node['hash'],
         'pos': (
             f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
+            f"{-node['data']['y'] / SCALING_FACTOR}!"
         ),
         'label': ""
     }
@@ -1009,6 +1017,13 @@ def get_content_offsets(file):
     for node in json_graph['nodes']:
         x_values.append(node['data']['x'])
         y_values.append(-node['data']['y'])
+        if node['label'] in ICON_NODES:
+            # If the node is icon node, we have to consider that the label is lower that pos
+            # indicates due to the addition of the icon node
+            y_values[-1] -= BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
+                node['display_name']) // 3, MAX_LINE_WIDTH)) \
+                * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+                (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
     x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
