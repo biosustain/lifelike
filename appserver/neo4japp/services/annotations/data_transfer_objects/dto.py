@@ -127,6 +127,8 @@ class RecognizedEntities():
     # non LMDB entity types
     recognized_companies: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     recognized_entities: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_lab_samples: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
+    recognized_lab_strains: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
@@ -146,6 +148,8 @@ class GlobalExclusions():
     # non LMDB entity types
     excluded_companies: Set[str] = attr.ib(default=attr.Factory(set))
     excluded_entities: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_lab_samples: Set[str] = attr.ib(default=attr.Factory(set))
+    excluded_lab_strains: Set[str] = attr.ib(default=attr.Factory(set))
 
 
 @attr.s(frozen=True)
@@ -164,6 +168,8 @@ class GlobalInclusions():
     # non LMDB entity types
     included_companies: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
     included_entities: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_lab_samples: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_lab_strains: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
