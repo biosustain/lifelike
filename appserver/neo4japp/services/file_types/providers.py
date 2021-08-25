@@ -382,6 +382,270 @@ def get_icon_strings():
         return ICON_DATA
 
 
+def create_default_node(node):
+    """
+    Creates a param dict with all the parameters required to create a simple text node or
+    saving a baseline for more complex node - like map/note/link nodes
+    :params:
+    :param node: a dictionary containing the information about currently rendered node
+    :return: baseline dict with Graphviz paramaters
+    """
+    style = node.get('style', {})
+    return {
+        'name': node['hash'],
+        # Graphviz offer no text break utility - it has to be done outside of it
+        'label': '\n'.join(textwrap.TextWrapper(
+            width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
+            replace_whitespace=False).wrap(node['display_name'])),
+        # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
+        'pos': (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{-node['data']['y'] / SCALING_FACTOR}!"
+        ),
+        # Resize the node base on font size, as otherwise the margin would be smaller than
+        # in the Lifelike map editor
+        'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+        'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
+        'shape': 'box',
+        'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+        'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+        'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
+            node['label'], {'color': 'black'}).get('color'),
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+        # Setting penwidth to 0 removes the border
+        'penwidth': f"{style.get('lineWidthScale', 1.0)}"
+        if style.get('lineType') != 'none' else '0.0'
+    }
+
+
+def create_detail_node(node, params):
+    """
+    Add parameters specific to the nodes which has a 'show detail text instead of a label'
+    property.
+    :params:
+    :param node: dict containing the node data
+    :param params: dict containing baseline parameters that have to be altered
+    :returns: modified params dict
+    """
+    params['style'] += ',filled'
+    detail_text = node['data'].get('detail', ' ')
+    params['label'] = '\n'.join(
+        textwrap.TextWrapper(
+            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+            replace_whitespace=False).wrap(detail_text)) + '\n'
+    # Align the text to the left with Graphviz custom escape sequence '\l'
+    params['label'] = params['label'].replace('\n', r'\l')
+    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                     {'bgcolor': 'black'}
+                                                     ).get('bgcolor')
+    if not node.get('style', {}).get('strokeColor'):
+        # No border by default
+        params['penwidth'] = '0.0'
+    return params
+
+
+def get_link_icon_type(node):
+    """
+    Evaluate the icon that link node should have (document, sankey, ET, mail or link)
+    If the link is valid, save it and use it later when setting the node href
+    Otherwise return None.
+    :params:
+    :param node: dict containing the node data
+    :returns: the correct label for the icon and a corresponding URL - if valid
+    """
+    data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+    label = 'link'
+    url = None
+    for link in data:
+        if ENRICHMENT_TABLE_RE.match(link['url']):
+            return 'enrichment_table', link['url']
+        elif SANKEY_RE.match(link['url']):
+            return 'sankey', link['url']
+        elif DOCUMENT_RE.match(link['url']):
+            doi_src = next(
+                (src for src in node['data'].get('sources') if src.get(
+                    'domain') == "DOI"), None)
+            # If there is a valid doi, link to DOI
+            if doi_src and is_valid_doi(doi_src['url']):
+                return 'document', doi_src['url']
+            # If the links point to internal document, remove it from the node data so it would
+            # not became exported as node url - as that might violate copyrights
+            if link in node['data'].get('sources', []):
+                node['data']['sources'].remove(link)
+            else:
+                node['data']['hyperlinks'].remove(link)
+            return 'document', None
+        # We do not return on email, as email icon has lower precedence.
+        elif MAIL_RE.match(link['url']):
+            label = 'email'
+            url = link['url']
+    return label, url
+
+
+def create_icon_node(node, params):
+    """
+    Alters the params dict with the values suitable for creation of the nodes with icons and
+    creates additional parameters dict storing the information about the icon node
+    :params:
+    :param node: dict containing the node data
+    :param params: dict containing baseline parameters that have to be altered
+    :returns: modified params dict descriping icon label and a new dict describing the icon
+              itself
+    """
+    style = node.get('style', {})
+    label = node['label']
+    # remove border around icon label
+    params['penwidth'] = '0.0'
+    # Calculate the distance between icon and the label center
+    distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
+        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+        (style.get('fontSizeScale', 1.0) - 1.0)
+    # Create a separate node which will hold the image
+    icon_params = {
+        'name': "icon_" + node['hash'],
+        'pos': (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
+        ),
+        'label': ""
+    }
+    default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                    {'defaultimagecolor': 'black'}
+                                                    )['defaultimagecolor']
+    if label == 'link':
+        label, link = get_link_icon_type(node)
+        # Save the link for later usage
+        node['link'] = link
+
+    icon_params['image'] = (
+        f'{ASSETS_PATH}{label}.png'
+    )
+    # We are setting the icon color by using 'inverse' icon images and colorful background
+    icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
+    icon_params['style'] = 'filled'
+    icon_params['shape'] = 'box'
+    icon_params['height'] = ICON_SIZE
+    icon_params['width'] = ICON_SIZE
+    icon_params['fixedsize'] = 'true'
+    icon_params['imagescale'] = 'true'
+    icon_params['penwidth'] = '0.0'
+    params['fontcolor'] = style.get("fillColor") or default_icon_color
+    return params, icon_params
+
+
+def create_relation_node(node, params):
+    """
+    Adjusts the node into the relation node (purple ones)
+    :params:
+    :param node: dict containing the node data
+    :param params: dict containing Graphviz parameters that will be altered
+    :returns: altered params dict
+    """
+    style = node.get('style', {})
+    default_color = ANNOTATION_STYLES_DICT.get(
+        node['label'],
+        {'color': 'black'})['color']
+    params['color'] = style.get('strokeColor') or default_color
+    if style.get('fillColor'):
+        params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
+    # Changing font color changes background to white
+    params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+    params['fontcolor'] = style.get('fillColor') or 'black'
+    params['style'] += ',filled'
+    return params
+
+
+def set_node_href(node):
+    """
+    Evaluates and sets the href for the node. If link parameter was not set previously, we are
+    dealing with entity node (or icon node without any sources) - so we prioritize the
+    hyperlinks here
+    :params:
+    :param node: dict containing the node data
+    :returns: string with URL to which node should point - or empty string
+    """
+    href = ''
+    if node.get('link'):
+        href = node['link']
+    elif node['data'].get('hyperlinks'):
+        href = node['data']['hyperlinks'][0].get('url')
+    elif node['data'].get('sources'):
+        href = node['data']['sources'][0].get('url')
+
+    # Whitespaces will break the link if we prepend the domain
+    current_link = href.strip()
+    # If url points to internal file, prepend it with the domain address
+    if current_link.startswith('/'):
+        # Remove Lifelike links to files that we do not create - due to the possible copyrights
+        if ANY_FILE_RE.match(current_link):
+            # Remove the link from the dictionary
+            if node.get('link'):
+                del node['link']
+            elif node['data'].get('hyperlinks'):
+                del node['data']['hyperlinks'][0]
+            else:
+                del node['data']['sources'][0]
+            # And search again
+            href = set_node_href(node)
+        else:
+            href = LIFELIKE_DOMAIN + current_link
+    return href
+
+
+def create_map_name_node():
+    """
+    Creates the baseline dict for map name node
+    :retuns: dict describing the name node with Graphviz parameters
+    """
+    return {
+        'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
+                                                )['defaultimagecolor'],
+        'fontsize': str(FILENAME_LABEL_FONT_SIZE),
+        'shape': 'box',
+        'style': 'rounded',
+        'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
+    }
+
+
+def create_edge(edge, node_hash_type_dict):
+    """
+    Creates a dict with parameters required to render an edge
+    :params:
+    :param edge: dict containing the edge information
+    :param node_hash_type_dict: lookup dict allowing to quickly check whether either head or
+    tail is pointing to link or note (as this changes the default edge style)
+    :returns: dict describing the edge with Graphviz parameters
+    """
+    style = edge.get('style', {})
+    default_line_style = 'solid'
+    default_arrow_head = 'arrow'
+    edge_data = edge.get('data', {})
+    url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
+    url = url_data[-1]['url'] if len(url_data) else ''
+    if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
+           item in ['link', 'note']):
+        default_line_style = 'dashed'
+        default_arrow_head = 'none'
+    return {
+        'tail_name': edge['from'],
+        'head_name': edge['to'],
+        'label': edge['label'],
+        'dir': 'both',
+        'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
+        'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
+        'arrowhead': ARROW_STYLE_DICT.get(
+            style.get('targetHeadType') or default_arrow_head),
+        'penwidth': str(style.get('lineWidthScale', 1.0)) if style.get(
+            'lineType') != 'none'
+        else '0.0',
+        'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
+        'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
+        'URL': url
+    }
+
+
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_MAP
     SHORTHAND = 'map'
@@ -454,28 +718,28 @@ class MapTypeProvider(BaseFileTypeProvider):
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
-            params = self.create_default_node(node)
+            params = create_default_node(node)
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
                 link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
                 node['link'] = link_data[0].get('url') if link_data else None
                 if style.get('showDetail'):
-                    params = self.create_detail_node(node, params)
+                    params = create_detail_node(node, params)
                 else:
-                    params, icon_params = self.create_icon_node(node, params)
+                    params, icon_params = create_icon_node(node, params)
                     # Create separate node with the icon
                     graph.node(**icon_params)
 
             if node['label'] in RELATION_NODES:
-                params = self.create_relation_node(node, params)
+                params = create_relation_node(node, params)
 
-            params['href'] = self.set_node_href(node)
+            params['href'] = set_node_href(node)
             graph.node(**params)
 
         if self_contained_export:
             # We add name of the map in left top corner to ease map recognition in linked export
-            name_node_params = self.create_map_name_node()
+            name_node_params = create_map_name_node()
             # Set outside of the function to avoid unnecessary copying of potentially big variables
             name_node_params['name'] = file.filename
             name_node_params['pos'] = (
@@ -486,7 +750,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph.node(**name_node_params)
 
         for edge in json_graph['edges']:
-            edge_params = self.create_edge(edge, node_hash_type_dict)
+            edge_params = create_edge(edge, node_hash_type_dict)
             graph.edge(**edge_params)
 
         ext = f".{format}"
@@ -501,262 +765,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                 mime_type=extension_mime_types[ext],
                 filename=f"{file.filename}{ext}"
         )
-
-    def create_default_node(self, node):
-        """
-        Creates a param dict with all the parameters required to create a simple text node or
-        saving a baseline for more complex node - like map/note/link nodes
-        :params:
-        :param node: a dictionary containing the information about currently rendered node
-        :return: baseline dict with Graphviz paramaters
-        """
-        style = node.get('style', {})
-        return {
-            'name': node['hash'],
-            # Graphviz offer no text break utility - it has to be done outside of it
-            'label': '\n'.join(textwrap.TextWrapper(
-                width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-                replace_whitespace=False).wrap(node['display_name'])),
-            # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
-            'pos': (
-                f"{node['data']['x'] / SCALING_FACTOR},"
-                f"{-node['data']['y'] / SCALING_FACTOR}!"
-            ),
-            # Resize the node base on font size, as otherwise the margin would be smaller than
-            # in the Lifelike map editor
-            'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
-            'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
-            'shape': 'box',
-            'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
-            'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-            'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
-                node['label'], {'color': 'black'}).get('color'),
-            'fontname': 'sans-serif',
-            'margin': "0.2,0.0",
-            'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
-            # Setting penwidth to 0 removes the border
-            'penwidth': f"{style.get('lineWidthScale', 1.0)}"
-            if style.get('lineType') != 'none' else '0.0'
-        }
-
-    def create_detail_node(self, node, params):
-        """
-        Add parameters specific to the nodes which has a 'show detail text instead of a label'
-        property.
-        :params:
-        :param node: dict containing the node data
-        :param params: dict containing baseline parameters that have to be altered
-        :returns: modified params dict
-        """
-        params['style'] += ',filled'
-        detail_text = node['data'].get('detail', ' ')
-        params['label'] = '\n'.join(
-            textwrap.TextWrapper(
-                width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                replace_whitespace=False).wrap(detail_text)) + '\n'
-        # Align the text to the left with Graphviz custom escape sequence '\l'
-        params['label'] = params['label'].replace('\n', r'\l')
-        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                         {'bgcolor': 'black'}
-                                                         ).get('bgcolor')
-        if not node.get('style', {}).get('strokeColor'):
-            # No border by default
-            params['penwidth'] = '0.0'
-        return params
-
-    def create_icon_node(self, node, params):
-        """
-        Alters the params dict with the values suitable for creation of the nodes with icons and
-        creates additional parameters dict storing the information about the icon node
-        :params:
-        :param node: dict containing the node data
-        :param params: dict containing baseline parameters that have to be altered
-        :returns: modified params dict descriping icon label and a new dict describing the icon
-                  itself
-        """
-        style = node.get('style', {})
-        label = node['label']
-        # remove border around icon label
-        params['penwidth'] = '0.0'
-        # Calculate the distance between icon and the label center
-        distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
-            * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-            (style.get('fontSizeScale', 1.0) - 1.0)
-        # Create a separate node which will hold the image
-        icon_params = {
-            'name': "icon_" + node['hash'],
-            'pos': (
-                f"{node['data']['x'] / SCALING_FACTOR},"
-                f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
-            ),
-            'label': ""
-        }
-        default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                        {'defaultimagecolor': 'black'}
-                                                        )['defaultimagecolor']
-        if label == 'link':
-            label, link = self.get_link_icon_type(node)
-            # Save the link for later usage
-            node['link'] = link
-
-        icon_params['image'] = (
-            f'{ASSETS_PATH}{label}.png'
-        )
-        # We are setting the icon color by using 'inverse' icon images and colorful background
-        icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
-        icon_params['style'] = 'filled'
-        icon_params['shape'] = 'box'
-        icon_params['height'] = ICON_SIZE
-        icon_params['width'] = ICON_SIZE
-        icon_params['fixedsize'] = 'true'
-        icon_params['imagescale'] = 'true'
-        icon_params['penwidth'] = '0.0'
-        params['fontcolor'] = style.get("fillColor") or default_icon_color
-        return params, icon_params
-
-    def get_link_icon_type(self, node):
-        """
-        Evaluate the icon that link node should have (document, sankey, ET, mail or link)
-        If the link is valid, save it and use it later when setting the node href
-        Otherwise return None.
-        :params:
-        :param node: dict containing the node data
-        :returns: the correct label for the icon and a corresponding URL - if valid
-        """
-        data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-        label = 'link'
-        url = None
-        for link in data:
-            if ENRICHMENT_TABLE_RE.match(link['url']):
-                return 'enrichment_table', link['url']
-            elif SANKEY_RE.match(link['url']):
-                return 'sankey', link['url']
-            elif DOCUMENT_RE.match(link['url']):
-                doi_src = next(
-                    (src for src in node['data'].get('sources') if src.get(
-                        'domain') == "DOI"), None)
-                # If there is a valid doi, link to DOI
-                if doi_src and is_valid_doi(doi_src['url']):
-                    return 'document', doi_src['url']
-                # If the links point to internal document, remove it from the node data so it would
-                # not became exported as node url - as that might violate copyrights
-                if link in node['data'].get('sources', []):
-                    node['data']['sources'].remove(link)
-                else:
-                    node['data']['hyperlinks'].remove(link)
-                return 'document', None
-            # We do not return on email, as email icon has lower precedence.
-            elif MAIL_RE.match(link['url']):
-                label = 'email'
-                url = link['url']
-        return label, url
-
-    def create_relation_node(self, node, params):
-        """
-        Adjusts the node into the relation node (purple ones)
-        :params:
-        :param node: dict containing the node data
-        :param params: dict containing Graphviz parameters that will be altered
-        :returns: altered params dict
-        """
-        style = node.get('style', {})
-        default_color = ANNOTATION_STYLES_DICT.get(
-            node['label'],
-            {'color': 'black'})['color']
-        params['color'] = style.get('strokeColor') or default_color
-        if style.get('fillColor'):
-            params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
-        # Changing font color changes background to white
-        params['fillcolor'] = 'white' if style.get('fillColor') else default_color
-        params['fontcolor'] = style.get('fillColor') or 'black'
-        params['style'] += ',filled'
-        return params
-
-    def set_node_href(self, node):
-        """
-        Evaluates and sets the href for the node. If link parameter was not set previously, we are
-        dealing with entity node (or icon node without any sources) - so we prioritize the
-        hyperlinks here
-        :params:
-        :param node: dict containing the node data
-        :returns: string with URL to which node should point - or empty string
-        """
-        href = ''
-        if node.get('link'):
-            href = node['link']
-        elif node['data'].get('hyperlinks'):
-            href = node['data']['hyperlinks'][0].get('url')
-        elif node['data'].get('sources'):
-            href = node['data']['sources'][0].get('url')
-
-        # Whitespaces will break the link if we prepend the domain
-        current_link = href.strip()
-        # If url points to internal file, prepend it with the domain address
-        if current_link.startswith('/'):
-            # Remove Lifelike links to files that we do not create - due to the possible copyrights
-            if ANY_FILE_RE.match(current_link):
-                # Remove the link from the dictionary
-                if node.get('link'):
-                    del node['link']
-                elif node['data'].get('hyperlinks'):
-                    del node['data']['hyperlinks'][0]
-                else:
-                    del node['data']['sources'][0]
-                # And search again
-                href = self.set_node_href(node)
-            else:
-                href = LIFELIKE_DOMAIN + current_link
-        return href
-
-    def create_map_name_node(self):
-        """
-        Creates the baseline dict for map name node
-        :retuns: dict describing the name node with Graphviz parameters
-        """
-        return {
-            'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
-                                                    )['defaultimagecolor'],
-            'fontsize': str(FILENAME_LABEL_FONT_SIZE),
-            'shape': 'box',
-            'style': 'rounded',
-            'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
-        }
-
-    def create_edge(self, edge, node_hash_type_dict):
-        """
-        Creates a dict with parameters required to render an edge
-        :params:
-        :param edge: dict containing the edge information
-        :param node_hash_type_dict: lookup dict allowing to quickly check whether either head or
-        tail is pointing to link or note (as this changes the default edge style)
-        :returns: dict describing the edge with Graphviz parameters
-        """
-        style = edge.get('style', {})
-        default_line_style = 'solid'
-        default_arrow_head = 'arrow'
-        edge_data = edge.get('data', {})
-        url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
-        url = url_data[-1]['url'] if len(url_data) else ''
-        if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-               item in ['link', 'note']):
-            default_line_style = 'dashed'
-            default_arrow_head = 'none'
-        return {
-            'tail_name': edge['from'],
-            'head_name': edge['to'],
-            'label': edge['label'],
-            'dir': 'both',
-            'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-            'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
-            'arrowhead': ARROW_STYLE_DICT.get(
-                style.get('targetHeadType') or default_arrow_head),
-            'penwidth': str(style.get('lineWidthScale', 1.0)) if style.get(
-                'lineType') != 'none'
-            else '0.0',
-            'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
-            'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
-            'URL': url
-        }
 
     def merge(self, files: list, requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
