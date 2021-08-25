@@ -71,6 +71,27 @@ $non-active-node-opacity: .50;
             }
           }
 
+          &[searched=true] .text-shadow {
+            fill: rgba(187, 187, 187, 0.5);
+            stroke: red;
+            transform-origin: 15px 0;
+            transform: scaleY(1.5) scaleX(1.1);
+            filter: none;
+            display: initial;
+            mix-blend-mode: normal;
+          }
+
+          &[focused=true] {
+            .text-shadow {
+              fill: rgba(187, 187, 187, 0.85);
+            }
+
+            text {
+              font-size: 1em;
+              fill: black;
+            }
+          }
+
           .text-shadow {
             mix-blend-mode: lighten;
             stroke: none;
@@ -129,6 +150,15 @@ $non-active-node-opacity: .50;
           &[selected=true], &:hover {
             opacity: $link-opacity;
             stroke-opacity: $link-active-stroke-opacity;
+          }
+
+          &[searched=true] {
+            stroke-opacity: $link-active-stroke-opacity;
+            stroke: red;
+          }
+
+          &[focused=true] {
+            fill: red;
           }
         }
       }

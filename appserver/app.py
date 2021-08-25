@@ -268,7 +268,9 @@ def seed_globals_into_graph(filename):
     import csv
     import datetime
     import os
+    import json
     from enum import Enum
+    from urllib.parse import urlparse
 
     directory = os.path.realpath(os.path.dirname(__file__))
 
@@ -328,7 +330,9 @@ def seed_globals_into_graph(filename):
                     'id': entity_id,
                     'idType': data_source,
                     'allText': text,
-                    'idHyperlink': hyperlink
+                    'idHyperlinks': [json.dumps({
+                        'label': urlparse(hyperlink).netloc.replace('www.', ''),
+                        'url': hyperlink})] if hyperlink else []
                 }
             }
 

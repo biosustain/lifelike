@@ -90,9 +90,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
       this.workspaceManager.navigate(
         ['/search', 'content'], {
           queryParams: {
-            q: '',
-            phrase: useKeyword ? annotation.text : annotation.primaryName,
-            projects: this.object.project.name,
+            q: `"${useKeyword ? annotation.text : annotation.primaryName}"`,
           },
           newTab: true,
           sideBySide: true,

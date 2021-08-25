@@ -128,7 +128,7 @@
                             </button>
                             <div ngbDropdownMenu>
                                 <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
-                                        ngbDropdownItem>{{trace.description}}</button>
+                                        ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
                             </div>
                         </div>
                         <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
@@ -147,6 +147,13 @@
                             <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
                         </label>
                     </div>
+                    <div class="btn-group btn-group-toggle">
+                      <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
+                                          [resultIndex]="entitySearchListIdx"
+                                          [resultCount]="entitySearchList.size"
+                                          (previous)="previous()" (next)="next()">
+                      </app-search-control>
+                    </div>
                 </div>
             </div>
             <as-split [gutterSize]="5"
@@ -162,6 +169,8 @@
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList"
+                                [focusedNode]="searchFocus"
                     >
                     </app-sankey>
                 </as-split-area>
@@ -231,7 +240,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Value</b>
-                            {{ parseProperty(graphLink.value) }}
+                            {{ parseProperty(graphLink._value) }}
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -329,7 +338,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Value</b>
-                            {{ parseProperty(node.value) }}
+                            {{ parseProperty(node._value) }}
                         </button>
                     </ng-template>
                 </ngb-panel>

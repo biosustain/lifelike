@@ -13,8 +13,8 @@ from neo4japp.data_transfer_objects import (
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
-    get_first_known_label_from_node,
-    get_known_domain_labels_from_node,
+    get_first_known_label_from_list,
+    get_known_domain_labels_from_list,
     normalize_str,
     snake_to_camel_dict
 )
@@ -59,26 +59,34 @@ class SearchService(GraphBaseDao):
     def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for record in result:
-            mapped_entity, literature_node = (
-                record['node_pair']['mapped_entity'],
-                record['node_pair']['literature_entity']
-            )
+            entity = record['entity']
+            literature_id = record['literature_id']
             taxonomy_id = record.get('taxonomy_id', '')
             taxonomy_name = record.get('taxonomy_name', '')
             go_class = record.get('go_class', '')
 
+            try:
+                entity_label = get_first_known_label_from_list(entity["labels"])
+            except ValueError:
+                current_app.logger.warning(
+                    f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
+                    f'{entity["labels"]}',
+                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                )
+                entity_label = 'Unknown'
+
             graph_node = GraphNode(
                 # When it exists, we use the literature node ID instead so the node can be expanded
                 # in the visualizer
-                id=mapped_entity.id if literature_node is None else literature_node.id,
-                label=get_first_known_label_from_node(mapped_entity),
-                sub_labels=list(mapped_entity.labels),
+                id=literature_id or entity['id'],
+                label=entity_label,
+                sub_labels=entity['labels'],
                 domain_labels=(
-                    get_known_domain_labels_from_node(mapped_entity) +
-                    (['Literature'] if literature_node is not None else [])
+                    get_known_domain_labels_from_list(entity['labels']) +
+                    (['Literature'] if literature_id is not None else [])
                 ),
-                display_name=mapped_entity.get('name'),
-                data=snake_to_camel_dict(dict(mapped_entity), {}),
+                display_name=entity['name'],
+                data=snake_to_camel_dict(entity['data'], {}),
                 url=None,
             )
             formatted_results.append(FTSTaxonomyRecord(
@@ -161,7 +169,7 @@ class SearchService(GraphBaseDao):
             return FTSResult(term, [], 0, page, limit)
 
         if organism:
-            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {id: $organism})'
+            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {eid: $organism})'
         else:
             organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
 
@@ -261,22 +269,20 @@ class SearchService(GraphBaseDao):
         synonym_data = []
 
         for row in results:
-            type = get_first_known_label_from_node(row['entity'])
-            synonyms = row['synonyms']
-            name = ''
-            organism = None
-
-            if row['t'] is not None:
-                organism = row['t'].get('name', None)
-
-            if row['entity'].get('name', None) is not None:
-                name = row['entity']['name']
+            try:
+                type = get_first_known_label_from_list(row['entity_labels'])
+            except ValueError:
+                type = 'Unknown'
+                current_app.logger.warning(
+                    f"Node had an unexpected list of labels: {row['entity_labels']}",
+                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                )
 
             synonym_data.append({
                 'type': type,
-                'name': name,
-                'organism': organism,
-                'synonyms': synonyms,
+                'name': row['entity_name'],
+                'organism': row['taxonomy_name'],
+                'synonyms': row['synonyms'],
             })
         return synonym_data
 
@@ -318,12 +324,17 @@ class SearchService(GraphBaseDao):
                 WITH n
                 {organism_match_string}
                 {literature_match_string}
-                WITH collect({{
-                    mapped_entity: n,
-                    literature_entity: m
-                }}) as node_pairs, t, go_class
-                UNWIND node_pairs as node_pair
-                RETURN DISTINCT node_pair AS node_pair, t.id AS taxonomy_id,
+                WITH
+                {{
+                    id: id(n),
+                    name: n.name,
+                    labels: labels(n),
+                    data: {{
+                        eid: n.eid,
+                        data_source: n.data_source
+                    }}
+                }} as entity, id(m) as literature_id, t, go_class
+                RETURN DISTINCT entity, literature_id, t.eid AS taxonomy_id,
                     t.name AS taxonomy_name, go_class AS go_class
                 SKIP $amount
                 LIMIT $limit
@@ -340,8 +351,8 @@ class SearchService(GraphBaseDao):
         return [
             record for record in tx.run(
                 """
-                MATCH (t:Taxonomy {id: $tax_id})
-                RETURN t.id AS tax_id, t.name AS organism_name
+                MATCH (t:Taxonomy {eid: $tax_id})
+                RETURN t.eid AS tax_id, t.name AS organism_name
                 """,
                 tax_id=tax_id
             ).data()
@@ -355,7 +366,7 @@ class SearchService(GraphBaseDao):
                 YIELD node, score
                 MATCH (node)-[]-(t:Taxonomy)
                 with t, collect(node.name) as synonyms LIMIT $limit
-                RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
+                RETURN t.eid AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
                 """,
                 term=term, limit=limit
             ).data()
@@ -376,11 +387,11 @@ class SearchService(GraphBaseDao):
         """
         type_match_str = ''
         if len(types):
-            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
+            type_match_str = ' AND any(x IN $types WHERE x IN labels(entity))'
 
         tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
         if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
 
         return list(
             tx.run(
@@ -399,8 +410,9 @@ class SearchService(GraphBaseDao):
                 ORDER BY size(synonyms) DESC
                 {tax_match_str}
                 RETURN
-                    entity,
-                    t,
+                    entity.name as entity_name,
+                    t.name as taxonomy_name,
+                    labels(entity) as entity_labels,
                     collect(DISTINCT synonyms) AS synonyms,
                     COUNT(DISTINCT synonyms) AS synonym_count,
                     matches_term
@@ -432,7 +444,7 @@ class SearchService(GraphBaseDao):
 
         tax_match_str = ''
         if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.id IN $organisms'
+            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
 
         return tx.run(
             f"""

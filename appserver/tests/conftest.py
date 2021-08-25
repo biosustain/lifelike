@@ -155,7 +155,7 @@ def elastic_service(app, session):
 def create_chemical_node(tx: Transaction, chem_name: str, chem_id: str) -> Node:
     """Creates a chemical node and adds it to the graph."""
     query = """
-        CREATE (c:Chemical {name: $chem_name, id: $chem_id}) RETURN c
+        CREATE (c:Chemical {name: $chem_name, eid: $chem_id}) RETURN c
     """
     return tx.run(
         query, chem_name=chem_name, chem_id=chem_id
@@ -165,7 +165,7 @@ def create_chemical_node(tx: Transaction, chem_name: str, chem_id: str) -> Node:
 def create_disease_node(tx: Transaction, disease_name: str, disease_id: str) -> Node:
     """Creates a disease node and adds it to the graph."""
     query = """
-        CREATE (d:Disease {name: $disease_name, id: $disease_id}) RETURN d
+        CREATE (d:Disease {name: $disease_name, eid: $disease_id}) RETURN d
     """
     return tx.run(
         query, disease_name=disease_name, disease_id=disease_id
@@ -176,11 +176,10 @@ def create_gene_node(
     tx: Transaction,
     gene_name: str,
     gene_id: str,
-    locus_tag: Optional[str] = None
 ) -> Node:
     """Creates a gene node and adds it to the graph."""
     query = """
-        CREATE (g:Gene {name: $gene_name, id: $gene_id}) RETURN g
+        CREATE (g:Gene {name: $gene_name, eid: $gene_id}) RETURN g
     """
     return tx.run(
         query, gene_name=gene_name, gene_id=gene_id
@@ -213,7 +212,7 @@ def create_association_node(
 ) -> Node:
     """Creates an association node and adds it to the graph."""
     query = """
-        CREATE (a:Association {assoc_type: $assoc_type, description: $description, id: $assoc_id})
+        CREATE (a:Association {assoc_type: $assoc_type, description: $description, eid: $assoc_id})
         RETURN a
     """
     return tx.run(
@@ -229,7 +228,7 @@ def create_snippet_node(
     """Creates a snippet node and adds it to the graph."""
     query = """
         CREATE (s:Snippet {
-            id: $snippet_id,
+            eid: $snippet_id,
             sentence: $sentence
         }) RETURN s
     """
@@ -247,7 +246,7 @@ def create_publication_node(
 ) -> Node:
     """Creates a publication node and adds it to the graph."""
     query = """
-        CREATE (p:Publication {id: $pub_id, pub_year: $pub_year}) RETURN p
+        CREATE (p:Publication {eid: $pub_id, pub_year: $pub_year}) RETURN p
     """
     return tx.run(
         query, pub_id=pub_id, pub_year=pub_year
@@ -411,7 +410,7 @@ def oxygen(graph: Session) -> Node:
 @pytest.fixture(scope='function')
 def pomc(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        pomc = create_gene_node(tx, 'POMC', '5443', None)
+        pomc = create_gene_node(tx, 'POMC', '5443')
     return pomc
 
 
@@ -652,28 +651,24 @@ def example4_pdf_gene_and_organism_network(
             tx=tx,
             gene_name='cysB',
             gene_id='945771',
-            locus_tag='b1275'
         )
 
         mcrB = create_gene_node(
             tx=tx,
             gene_name='mcrB',
             gene_id='949122',
-            locus_tag='b4346'
         )
 
         oxyR_e_coli = create_gene_node(
             tx=tx,
             gene_name='oxyR',
             gene_id='948462',
-            locus_tag='b3961'
         )
 
         oxyR_salmonella = create_gene_node(
             tx=tx,
             gene_name='cysB',
             gene_id='1255651',
-            locus_tag='STM4125'
         )
 
         e_coli = create_taxonomy_node(
