@@ -452,85 +452,16 @@ class MapTypeProvider(BaseFileTypeProvider):
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
-            label = node['label']
             params = self.create_default_node(node)
 
             if node['label'] in ['map', 'link', 'note']:
+                # map and note should point to the first source or hyperlink, if the are no sources
                 link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
                 node['link'] = link_data[0].get('url') if link_data else None
                 if style.get('showDetail'):
-                    params['style'] += ',filled'
-                    detail_text = node['data'].get('detail', ' ')
-                    params['label'] = '\n'.join(
-                            textwrap.TextWrapper(
-                                    width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-                                    replace_whitespace=False).wrap(detail_text)) + '\n'
-                    # Align the text to the left with Graphviz custom escape sequence '\l'
-                    params['label'] = params['label'].replace('\n', r'\l')
-                    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                                     {'bgcolor': 'black'}
-                                                                     ).get('bgcolor')
-                    if not style.get('strokeColor'):
-                        params['penwidth'] = '0.0'
+                    params = self.create_detail_node(node, params)
                 else:
-                    params['penwidth'] = '0.0'
-                    # Calculate the distance between icon and the label center
-                    distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
-                        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-                        (style.get('fontSizeScale', 1.0) - 1.0)
-                    # Create a separate node which will hold the image
-                    icon_params = {
-                        'name': "icon_" + node['hash'],
-                        'pos': (
-                            f"{node['data']['x'] / SCALING_FACTOR},"
-                            f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
-                        ),
-                        'label': ""
-                    }
-                    default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                                    {'defaultimagecolor': 'black'}
-                                                                    )['defaultimagecolor']
-                    if label == 'link':
-                        data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-                        for link in data:
-                            if ENRICHMENT_TABLE_RE.match(link['url']):
-                                label = 'enrichment_table'
-                                node['link'] = link['url']
-                                break
-                            elif SANKEY_RE.match(link['url']):
-                                label = 'sankey'
-                                node['link'] = link['url']
-                                break
-                            elif DOCUMENT_RE.match(link['url']):
-                                label = 'document'
-                                doi_src = next(
-                                    (src for src in node['data'].get('sources') if src.get(
-                                        'domain') == "DOI"), None)
-                                # If there is a valid doi, link to DOI
-                                if doi_src and is_valid_doi(doi_src['url']):
-                                    node['link'] = doi_src['url']
-                                elif link in node['data'].get('sources', []):
-                                    node['data']['sources'].remove(link)
-                                else:
-                                    node['data']['hyperlinks'].remove(link)
-                                break
-                            # We do not break on email, as email icon has lower precedence.
-                            elif MAIL_RE.match(link['url']):
-                                label = 'email'
-                                node['link'] = link['url']
-
-                    icon_params['image'] = (
-                            f'{ASSETS_PATH}{label}.png'
-                        )
-                    icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
-                    icon_params['style'] = 'filled'
-                    icon_params['shape'] = 'box'
-                    icon_params['height'] = ICON_SIZE
-                    icon_params['width'] = ICON_SIZE
-                    icon_params['fixedsize'] = 'true'
-                    icon_params['imagescale'] = 'true'
-                    icon_params['penwidth'] = '0.0'
-                    params['fontcolor'] = style.get("fillColor") or default_icon_color
+                    params, icon_params = self.create_icon_node(node, params)
                     graph.node(**icon_params)
 
             if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
@@ -654,6 +585,115 @@ class MapTypeProvider(BaseFileTypeProvider):
             'penwidth': f"{style.get('lineWidthScale', 1.0)}"
             if style.get('lineType') != 'none' else '0.0'
         }
+
+    def create_detail_node(self, node, params):
+        """
+        Add parameters specific to the nodes which has a 'show detail text instead of a label'
+        property.
+        :params:
+        :param node: dict containing the node data
+        :param params: dict containing baseline parameters that have to be altered
+        :returns: modified params dict
+        """
+        params['style'] += ',filled'
+        detail_text = node['data'].get('detail', ' ')
+        params['label'] = '\n'.join(
+            textwrap.TextWrapper(
+                width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+                replace_whitespace=False).wrap(detail_text)) + '\n'
+        # Align the text to the left with Graphviz custom escape sequence '\l'
+        params['label'] = params['label'].replace('\n', r'\l')
+        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                         {'bgcolor': 'black'}
+                                                         ).get('bgcolor')
+        if not node.get('style', {}).get('strokeColor'):
+            # No border by default
+            params['penwidth'] = '0.0'
+        return params
+
+    def create_icon_node(self, node, params):
+        """
+        Alters the params dict with the values suitable for creation of the nodes with icons and
+        creates additional parameters dict storing the information about the icon node
+        :params:
+        :param node: dict containing the node data
+        :param params: dict containing baseline parameters that have to be altered
+        :returns: modified params dict descriping icon label and a new dict describing the icon
+                  itself
+        """
+        style = node.get('style', {})
+        label = node['label']
+        # remove border around icon label
+        params['penwidth'] = '0.0'
+        # Calculate the distance between icon and the label center
+        distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
+            * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+            (style.get('fontSizeScale', 1.0) - 1.0)
+        # Create a separate node which will hold the image
+        icon_params = {
+            'name': "icon_" + node['hash'],
+            'pos': (
+                f"{node['data']['x'] / SCALING_FACTOR},"
+                f"{-node['data']['y'] / SCALING_FACTOR + distance_from_the_label}!"
+            ),
+            'label': ""
+        }
+        default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                        {'defaultimagecolor': 'black'}
+                                                        )['defaultimagecolor']
+        if label == 'link':
+            label, link = self.get_link_icon_type(node)
+
+        icon_params['image'] = (
+            f'{ASSETS_PATH}{label}.png'
+        )
+        icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
+        icon_params['style'] = 'filled'
+        icon_params['shape'] = 'box'
+        icon_params['height'] = ICON_SIZE
+        icon_params['width'] = ICON_SIZE
+        icon_params['fixedsize'] = 'true'
+        icon_params['imagescale'] = 'true'
+        icon_params['penwidth'] = '0.0'
+        params['fontcolor'] = style.get("fillColor") or default_icon_color
+        return params, icon_params
+
+    def get_link_icon_type(self, node):
+        """
+        Evaluate the icon that link node should have (document, sankey, ET, mail or link)
+        If the link is valid, save it and use it later when setting the node href
+        Otherwise return None.
+        :params:
+        :param node: dict containing the node data
+        :returns: the correct label for the icon and a corresponding URL - if valid
+        """
+        data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+        label = 'link'
+        url = None
+        for link in data:
+            if ENRICHMENT_TABLE_RE.match(link['url']):
+                return 'enrichment_table', link['url']
+            elif SANKEY_RE.match(link['url']):
+                return 'sankey', link['url']
+            elif DOCUMENT_RE.match(link['url']):
+                doi_src = next(
+                    (src for src in node['data'].get('sources') if src.get(
+                        'domain') == "DOI"), None)
+                # If there is a valid doi, link to DOI
+                if doi_src and is_valid_doi(doi_src['url']):
+                    return 'document', doi_src['url']
+                # If the links point to internal document, remove it from the node data so it would
+                # not became exported as node url - as that might violate copyrights
+                if link in node['data'].get('sources', []):
+                    node['data']['sources'].remove(link)
+                else:
+                    node['data']['hyperlinks'].remove(link)
+                return 'document', None
+            # We do not return on email, as email icon has lower precedence.
+            elif MAIL_RE.match(link['url']):
+                label = 'email'
+                url = link['url']
+        return label, url
 
     def merge(self, files: list, requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
