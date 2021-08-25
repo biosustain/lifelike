@@ -104,22 +104,26 @@ class EntityType(Enum):
     # non LMDB entity types
     COMPANY = 'Company'
     ENTITY = 'Entity'
+    LAB_SAMPLE = 'Lab Sample'
+    LAB_STRAIN = 'Lab Strain'
 
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.SPECIES.value: 12,
-    EntityType.GENE.value: 11,
-    EntityType.PROTEIN.value: 10,
-    EntityType.PHENOTYPE.value: 9,
-    EntityType.PHENOMENA.value: 8,
-    EntityType.CHEMICAL.value: 7,
-    EntityType.COMPOUND.value: 6,
-    EntityType.DISEASE.value: 5,
-    EntityType.ANATOMY.value: 4,
-    EntityType.FOOD.value: 3,
-    EntityType.COMPANY.value: 2,
-    EntityType.ENTITY.value: 1
+    EntityType.SPECIES.value: 14,
+    EntityType.GENE.value: 13,
+    EntityType.PROTEIN.value: 12,
+    EntityType.PHENOTYPE.value: 11,
+    EntityType.PHENOMENA.value: 10,
+    EntityType.CHEMICAL.value: 9,
+    EntityType.COMPOUND.value: 8,
+    EntityType.DISEASE.value: 7,
+    EntityType.ANATOMY.value: 6,
+    EntityType.FOOD.value: 5,
+    EntityType.COMPANY.value: 4,
+    EntityType.ENTITY.value: 3,
+    EntityType.LAB_SAMPLE.value: 2,
+    EntityType.LAB_STRAIN.value: 1,
 }
 
 
@@ -146,6 +150,8 @@ class EntityIdStr(Enum):
     # non LMDB entity types
     COMPANY = 'company_id'
     ENTITY = 'entity_id'
+    LAB_SAMPLE = 'labsample_id'
+    LAB_STRAIN = 'labstrain_id'
 
 
 class DatabaseType(Enum):
