@@ -70,13 +70,6 @@ export class AbstractLinkDirective {
       return true;
     }
 
-    const parentAdd = this.router.createUrlTree(this.parentCommands, {
-      relativeTo: this.route,
-      queryParams: this.queryParams,
-      fragment: this.fragment,
-      queryParamsHandling: this.queryParamsHandling,
-      preserveFragment: attrBoolValue(this.preserveFragment),
-    });
     const extras = {
       skipLocationChange: attrBoolValue(this.skipLocationChange),
       replaceUrl: attrBoolValue(this.replaceUrl),
@@ -89,7 +82,7 @@ export class AbstractLinkDirective {
       preferStartupPane: this.preferStartupPane,
       shouldReplaceTab: this.shouldReplaceTab,
       openParentFirst: attrBoolValue(this.openParentFirst),
-      parentAddress: parentAdd
+      parentAddress: this.getUrlTree(this.parentCommands);
     };
 
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
@@ -97,14 +90,18 @@ export class AbstractLinkDirective {
     return false;
   }
 
-  get urlTree(): UrlTree {
-    return this.router.createUrlTree(this.commands, {
+  getUrlTree(commands: any[]): UrlTree {
+        return this.router.createUrlTree(commands, {
       relativeTo: this.route,
       queryParams: this.queryParams,
       fragment: this.fragment,
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
     });
+  }
+
+  get urlTree(): UrlTree {
+    return this.getUrlTree(this.commands);
   }
 
 }
