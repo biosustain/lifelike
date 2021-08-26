@@ -644,21 +644,42 @@ export class WorkspaceManager {
     }
 
     if (!withinWorkspace && extras.forceWorkbench) {
-      return this.router.navigateByUrl(this.workspaceUrl).then(() => {
-        return new Promise((accept, reject) => {
-          // We need a delay because things break if we do it too quickly
-          setTimeout(() => {
-            this.navigateByUrl(url, {
-              ...extras,
-              preferPane: extras.preferPane || extras.preferStartupPane,
-            }).then(accept, reject);
-          }, 10);
+        return this.router.navigateByUrl(this.workspaceUrl).then(() => {
+          return new Promise((accept, reject) => {
+            // If the works only together with parent (like statistical enrichment and enrichment table)
+            // then force the workbench, open the parent on the left and 'child' on the right
+            if (extras.openParentFirst && extras.parentAddress) {
+              // If opening parent on the left, make sure that child will open on the right
+              extras = {
+                ...extras,
+                openParentFirst: false,
+                preferPane: 'right',
+              };
+              setTimeout(() => {
+                this.navigateByUrl(extras.parentAddress, {
+                  ...extras,
+                  openParentFirst: false,
+                  preferPane: 'left'
+                }).then(accept, reject);
+              }, 10);
+            }
+            setTimeout(() => {
+              this.navigateByUrl(url, {
+                ...extras,
+                preferPane: extras.preferPane || extras.preferStartupPane
+              }).then(accept, reject);
+            }, 10);
+          });
         });
-      });
     } else {
       return this.router.navigateByUrl(url, extras);
     }
   }
+
+  navigateWithForcedWorkbench(url, extras) {
+
+  }
+
 
   navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
@@ -761,6 +782,8 @@ export interface WorkspaceNavigationExtras {
   matchExistingTab?: string | RegExp;
   shouldReplaceTab?: (component: any) => boolean;
   forceWorkbench?: boolean;
+  openParentFirst?: boolean;
+  parentAddress?: UrlTree;
 }
 
 function getQueryString(params: { [key: string]: string }) {

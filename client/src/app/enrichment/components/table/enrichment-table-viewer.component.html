@@ -93,7 +93,13 @@
                             result.object.value.project.name,
                             result.object.value.hashId
                         ]"
-                      [newTab]="true" [sideBySide]="true">
+                      [parentAddress]="[
+                            '/projects',
+                            result.object.value.project.name,
+                            'enrichment-table',
+                            result.object.value.hashId
+                      ]"
+                      [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
                 <i class="fas fa-fw fa-chart-bar"></i> Statistical Enrichment
               </button>
               <button class="btn btn-secondary"
