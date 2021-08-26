@@ -676,11 +676,6 @@ export class WorkspaceManager {
     }
   }
 
-  navigateWithForcedWorkbench(url, extras) {
-
-  }
-
-
   navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
   }
