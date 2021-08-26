@@ -25,7 +25,9 @@ export class AbstractLinkDirective {
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
   @Input() preferStartupPane: string;
+  @Input() openParentFirst: boolean;
   commands: any[] = [];
+  parentCommands: any[] = [];
 
   constructor(readonly workspaceManager: WorkspaceManager,
               readonly router: Router,
@@ -38,6 +40,15 @@ export class AbstractLinkDirective {
       this.commands = Array.isArray(commands) ? commands : [commands];
     } else {
       this.commands = [];
+    }
+  }
+
+  @Input()
+  set parentAddress(commands: any[] | string | null | undefined) {
+    if (commands != null) {
+      this.parentCommands = Array.isArray(commands) ? commands : [commands];
+    } else {
+      this.parentCommands = [];
     }
   }
 
@@ -59,6 +70,13 @@ export class AbstractLinkDirective {
       return true;
     }
 
+    const parentAdd = this.router.createUrlTree(this.parentCommands, {
+      relativeTo: this.route,
+      queryParams: this.queryParams,
+      fragment: this.fragment,
+      queryParamsHandling: this.queryParamsHandling,
+      preserveFragment: attrBoolValue(this.preserveFragment),
+    });
     const extras = {
       skipLocationChange: attrBoolValue(this.skipLocationChange),
       replaceUrl: attrBoolValue(this.replaceUrl),
@@ -69,8 +87,11 @@ export class AbstractLinkDirective {
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,
       preferStartupPane: this.preferStartupPane,
-      shouldReplaceTab: this.shouldReplaceTab
+      shouldReplaceTab: this.shouldReplaceTab,
+      openParentFirst: attrBoolValue(this.openParentFirst),
+      parentAddress: parentAdd
     };
+
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
 
     return false;
