@@ -143,7 +143,19 @@
             </div>
 
             <button type="button" class="btn btn-secondary"
-                    [disabled]="!ready" (click)="openFileNavigatorPane()"
+                    [disabled]="!ready"
+                     [appLink]="[
+                            '/file-navigator',
+                            this.object.project.name,
+                            this.object.hashId
+                        ]"
+                      [parentAddress]="[
+                            '/projects',
+                            this.object.project.name,
+                            'files',
+                            this.object.hashId
+                      ]"
+                      [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
                     ngbTooltip="File Navigator" placement="bottom">
               <i class="fas fa-fw fa-compass"></i>
             </button>
