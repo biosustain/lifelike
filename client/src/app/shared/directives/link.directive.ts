@@ -82,7 +82,7 @@ export class AbstractLinkDirective {
       preferStartupPane: this.preferStartupPane,
       shouldReplaceTab: this.shouldReplaceTab,
       openParentFirst: attrBoolValue(this.openParentFirst),
-      parentAddress: this.getUrlTree(this.parentCommands);
+      parentAddress: this.getUrlTree(this.parentCommands)
     };
 
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
