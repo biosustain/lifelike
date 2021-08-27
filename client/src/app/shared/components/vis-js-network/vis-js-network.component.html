@@ -12,7 +12,7 @@
           [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
           (enterPress)="findNext()"
           [resultIndex]="currentSearchIndex"
-          [resultCount]="searchResults.length"
+          [resultCount]="searchResults.size"
           (previous)="findPrevious()" (next)="findNext()">
         </app-search-control>
       </div>
