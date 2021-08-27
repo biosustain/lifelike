@@ -11,21 +11,25 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 
+from os import path
 from sqlalchemy.sql import table, column, and_
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
+
+import fastjsonschema
 
 from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from neo4japp.models import FileContent
-
-from neo4japp.schemas.formats.drawing_tool import validate_map
 
 # revision identifiers, used by Alembic.
 revision = 'd509d9c60fdb'
 down_revision = 'fd1627b3a32e'
 branch_labels = None
 depends_on = None
+
+
+directory = path.realpath(path.dirname(__file__))
+schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/map_v2.json')
 
 
 def upgrade():
@@ -72,31 +76,34 @@ def data_upgrades():
         )
     ))
 
-    for chunk in window_chunk(files, 25):
-        need_to_update = []
-        for fcid, raw in chunk:
+    with open(schema_file, 'rb') as f:
+        validate_map = fastjsonschema.compile(json.load(f))
+
+        for chunk in window_chunk(files, 25):
+            need_to_update = []
+            for fcid, raw in chunk:
+                try:
+                    graph = json.loads(raw)
+                    validate_map(graph)
+                except Exception as e:
+                    if 'isDatabase' in str(e):
+                        for node in graph['nodes']:
+                            for link in node.get('data', {}).get('hyperlinks', []):
+                                link.pop('isDatabase', None)
+
+                        for edge in graph['edges']:
+                            for link in edge.get('data', {}).get('hyperlinks', []):
+                                link.pop('isDatabase', None)
+
+                        byte_graph = json.dumps(graph, separators=(',', ':')).encode('utf-8')
+                        new_hash = hashlib.sha256(byte_graph).digest()
+                        validate_map(json.loads(byte_graph))
+                        need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
             try:
-                graph = json.loads(raw)
-                validate_map(graph)
-            except Exception as e:
-                if 'isDatabase' in str(e):
-                    for node in graph['nodes']:
-                        for link in node.get('data', {}).get('hyperlinks', []):
-                            link.pop('isDatabase', None)
-
-                    for edge in graph['edges']:
-                        for link in edge.get('data', {}).get('hyperlinks', []):
-                            link.pop('isDatabase', None)
-
-                    byte_graph = json.dumps(graph, separators=(',', ':')).encode('utf-8')
-                    new_hash = hashlib.sha256(byte_graph).digest()
-                    validate_map(json.loads(byte_graph))
-                    need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
-        try:
-            session.bulk_update_mappings(FileContent, need_to_update)
-            session.commit()
-        except Exception:
-            raise
+                session.bulk_update_mappings(FileContent, need_to_update)
+                session.commit()
+            except Exception:
+                raise
 
 
 def data_downgrades():

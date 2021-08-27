@@ -27,7 +27,6 @@ class DomainInfo(CamelCaseSchema):
 
 
 class EnrichmentResult(CamelCaseSchema):
-    version = fields.String(required=True)
     domainInfo = fields.Dict(
         keys=fields.String(), values=fields.Nested(DomainInfo), required=True)
     genes = fields.List(fields.Nested(EnrichedGene), required=True)
