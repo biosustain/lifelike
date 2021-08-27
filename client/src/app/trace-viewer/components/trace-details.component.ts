@@ -29,23 +29,43 @@ export class TraceDetailsComponent implements OnChanges {
     edges: {
       smooth: {
         type: networkEdgeSmoothers.DYNAMIC, enabled: true, roundness: 0
+      },
+      font: {
+        size: 30
+      },
+      // @ts-ignore
+      chosen: {
+        label: (values, id, selected, hovering) => {
+          values.size = 35;
+        }
       }
     },
     nodes: {
       shape: 'dot',
-      widthConstraint: {
-        maximum: 60
-      },
-      chosen: true
+      font: {
+        size: 40
+      }
     },
     interaction: {
-      // hover: true
+      hover: true
     }
   };
 
   legend: Map<string, string[]>;
 
   @Input() data;
+
+  nodeHover(node) {
+    Object.assign(node, {
+      label: node.fullLabel
+    });
+  }
+
+  nodeBlur(node) {
+    Object.assign(node, {
+      label: node.labelShort
+    });
+  }
 
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
