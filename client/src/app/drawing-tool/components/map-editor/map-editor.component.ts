@@ -174,11 +174,10 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
   }
 
-  async save() {
+  save() {
     super.save();
     this.filesystemService.deleteBackup(this.locator)
       .subscribe(); // Need to subscribe so it actually runs
-    Promise.resolve(); // resolve async
   }
 
   saveBackup(): Observable<any> {
