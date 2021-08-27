@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { observable, Observable, Subscription } from 'rxjs';
+import { observable, Observable, Subscription, combineLatest } from 'rxjs';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -19,9 +19,8 @@ import { cloneDeep } from 'lodash';
 import { MAP_MIMETYPE, MAP_SHORTHAND } from '../providers/map.type-provider';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-import { first } from 'rxjs/operators';
 import JSZip from 'jszip';
-import { UniversalGraphNodeTemplate } from '../services/interfaces';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-map-view',
@@ -76,7 +75,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   /**
    * Save the current representation of knowledge model
    */
-  async save() {
+  save() {
                   /**
                    * steps to approach:
                    * zip the map w/o images
@@ -84,59 +83,48 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    * zip the map w/ images
                    * unzip the map, populate image from `image_id`
                    */
-    const zip = new JSZip();
-    const imgs = zip.folder('images');
+    let zip = new JSZip();
+    let imgs = zip.folder('images');
     const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
-    /*
-    for await (let n of this.graphCanvas.getGraph().nodes) {
-      if (n.image_id !== undefined) {
-        let currImg$ = this.mapImageProviderService.get(n.image_id);
-        currImg$.pipe(first()).subscribe({
-          async next(img) {
-            img = img as HTMLImageElement;
-            await fetch(img.src).then(r => r.blob()).then(imgBlob => {
-              // TODO: does not save images due to loop issues with await
-              imgs.file(n.image_id + '.png', imgBlob); // add to `imgs` folder, not ***ARANGO_USERNAME*** directory of zip
-            });
-          },
-          error(msg) {
-            console.error(msg);
-          }
-        });
-      }
-    }
-    */
-    // const imageNodeObservables = []
+    const imageIds: string[] = []
+    const imageNodeObservables: Observable<Blob>[] = []
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image
-        const imgOb$ = this.mapImageProviderService.get(node.image_id); // observable
-        imgOb$.pipe(first()).subscribe({
-          next(img) {
-            console.log('BLAM');
-            img = img as HTMLImageElement;
-            fetch(img.src).then(r => r.blob()).then(blob => imgs.file(node.image_id + '.png', blob));
-          },
-          error(e) {
-            console.error(e);
-          }
-        });
+        imageIds.push(node.image_id);
+        imageNodeObservables.push(this.mapImageProviderService.getBlob(node.image_id));
       }
     }
-    zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
-    zip.generateAsync({ type: "base64" }) // TODO: change this back to blob
-      .then(function (content) {
-        location.href = 'data:application/zip;base64,' + content; // TODO: change this back to blob
-        filesystemService.save([locator], { contentValue: content })
-          .pipe(errorHandler.create({label: 'Update map'}))
-          .subscribe(() => {
-            unsavedChanges$.next(false);
-            // emitModuleProperties(); // TODO: what does this do?
-            snackBar.open('Map saved.', null, {
-              duration: 2000,
+    /**
+     * here we have an array of observables, they might emit value at any time
+     * so we use `combineLatest` to grab all of the values emitted by these observables
+     * in the callback function, `imageBlobs` is an array of blobs emitted
+     *     by these observables
+     * and they are in the SAME order as the imageNodeObservables, which is why iterating
+     *     through 2 arrays could work
+     * a better way might be to use HashMap (`Map` in typescript) but maps don't have
+     * functions like `combineLatest`
+     */
+    combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
+        console.log(imageIds[i]);
+        console.log(imageBlobs[i]);
+        imgs.file(imageIds[i] + '.png', imageBlobs[i]);
+      }
+      zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
+      zip.generateAsync({ type: "blob" })
+        .then(function (content) {
+          // saveAs(content, 'map.zip'); // uncomment this line to verify that the generated zip file is correct
+          filesystemService.save([locator], { contentValue: content })
+            .pipe(errorHandler.create({label: 'Update map'}))
+            .subscribe(() => {
+              unsavedChanges$.next(false);
+              // emitModuleProperties(); // TODO: what does this do?
+              snackBar.open('Map saved.', null, {
+                duration: 2000,
+              });
             });
-          });
+        });
       });
-    Promise.resolve(); // resolve async
   }
 
   openCloneDialog() {
