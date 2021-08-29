@@ -38,7 +38,7 @@
                   </div>
                   <div appContextMenuBody>
                     <a class="dropdown-item" href="#" (click)="duplicateTab(pane, tab); $event.preventDefault()">Duplicate</a>
-                    <a class="dropdown-item" href="#" (click)="shareTab(pane, tab); $event.preventDefault()">Share...</a>
+                    <a class="dropdown-item" href="#" (click)="copyLinkToTab(pane, tab); $event.preventDefault()">Copy link...</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#" (click)="closeTab(pane, tab); $event.preventDefault()">Close</a>
                     <a class="dropdown-item" [class.disabled]="pane.tabs.length <= 1" href="#"
