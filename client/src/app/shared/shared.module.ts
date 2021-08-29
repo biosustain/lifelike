@@ -46,7 +46,7 @@ import { CollapsibleWindowComponent } from './components/collapsible-window.comp
 import { GenericFileUploadComponent } from './components/generic-file-upload/generic-file-upload.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
-import { ShareDialogComponent } from './components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from './components/dialog/copy-link-dialog.component';
 import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
 import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
 import { GenericTableComponent } from './components/table/generic-table.component';
@@ -111,7 +111,7 @@ const components = [
   GenericFileUploadComponent,
   ModuleErrorComponent,
   ModuleProgressComponent,
-  ShareDialogComponent,
+  CopyLinkDialogComponent,
   GenericTableComponent,
   AnnotationConfigurationTableComponent,
   HighlightTextComponent,
@@ -130,7 +130,7 @@ const components = [
   entryComponents: [
     MessageDialogComponent,
     ProgressDialogComponent,
-    ShareDialogComponent,
+    CopyLinkDialogComponent,
     LinksPanelComponent,
   ],
   imports: [
