@@ -22,16 +22,20 @@ export class TreeViewComponent {
         return node.children;
       }
       return Object.entries(node)
+        // filter out internally used properties (not allowed in file)
         .filter(([label]) => label[0] !== '_')
         .map(([label, value], index) => {
         const n = {
           label: label
+            // camel case to normal text
             .replace(/([a-z])([A-Z])/g, (match, p1, p2) => `${p1} ${p2.toLowerCase()}`)
+            // snake case to normal text
             .replace(/([a-z])_([a-z])/g, (match, p1, p2) => `${p1} ${p2}`)
         } as TreeNode;
         if (Array.isArray(value)) {
           n.children = value;
         } else {
+          // if text is longer than 20 character show it as collapsible node
           if (value.length > 20 || (typeof value === 'object')) {
             n.children = [
               value
