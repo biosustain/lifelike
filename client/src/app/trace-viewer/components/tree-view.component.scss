@@ -1,17 +1,7 @@
-.example-tree-invisible {
-  display: none;
-}
-
-.example-tree ul,
-.example-tree li {
-  margin-top: 0;
-  margin-bottom: 0;
-  list-style-type: none;
-}
-.example-tree-node {
+.tree-node {
   display: block;
 }
 
-.example-tree-node .example-tree-node {
+.tree-node .tree-node {
   padding-left: 20px;
 }

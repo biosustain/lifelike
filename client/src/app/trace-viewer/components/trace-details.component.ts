@@ -69,8 +69,4 @@ export class TraceDetailsComponent implements OnChanges {
       }, new Map([['source / target', ['transparent', 'black']]]));
     }
   }
-
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => parseForRendering(p, k), 1);
-  }
 }
