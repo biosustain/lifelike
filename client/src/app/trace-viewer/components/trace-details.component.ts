@@ -47,18 +47,6 @@ export class TraceDetailsComponent implements OnChanges {
 
   @Input() data;
 
-  nodeHover(node) {
-    Object.assign(node, {
-      label: node.fullLabel
-    });
-  }
-
-  nodeBlur(node) {
-    Object.assign(node, {
-      label: node.labelShort
-    });
-  }
-
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
       this.legend = data.currentValue.nodes.reduce((o, n) => {
