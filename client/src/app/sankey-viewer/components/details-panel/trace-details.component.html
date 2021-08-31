@@ -1,0 +1,64 @@
+<form class="d-flex flex-column justify-content-between">
+    <fieldset class="fieldset-properties mt-2">
+        <legend container="body"
+                ngbTooltip="Click a checkbox to filter annotations of that type"
+                placement="top left right">Trace
+            Details:
+        </legend>
+        <ngb-accordion ngbAccordion activeIds="source target">
+            <ngb-panel id="source">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                            ngbPanelToggle>
+                        <b>Source</b>
+                        {{ getNodeById(entity.source).id }}
+                    </button>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                    {{ getNodeById(entity.source).description }}
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel id="target">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                            ngbPanelToggle>
+                        <b>Target</b>
+                        {{ getNodeById(entity.target).id }}
+                    </button>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                    {{ getNodeById(entity.target).description }}
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel [disabled]="true">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                            ngbPanelToggle>
+                        <b>Group</b>
+                        {{ parseProperty(entity.group) }}
+                    </button>
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel *ngIf="entity.detail_edges">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <button (click)="gotoDynamic(entity)" class="btn btn-link">Show detailed
+                        network
+                    </button>
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel title="RAW entity content">
+                <ng-template ngbPanelContent>
+                    <pre [style.marginBottom]="0">{{ getJSONDetails(entity) }}</pre>
+                    <small>This view contains reduced object representation. Nested objects has been mapped to
+                        their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
+                        numbers
+                        has been
+                        limited to 6 digits after comma.</small>
+                </ng-template>
+            </ngb-panel>
+        </ngb-accordion>
+    </fieldset>
+</form>
+
+
+
