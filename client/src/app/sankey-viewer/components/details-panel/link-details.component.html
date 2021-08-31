@@ -52,7 +52,7 @@
                             {{ entity._trace.group }}
                         </li>
                         <li class="list-group-item" *ngIf="entity._trace.detail_edges">
-                            <button (click)="gotoDynamic(entity._trace)" class="btn btn-outline-primary">
+                            <button (click)="openTraceView(entity._trace)" class="btn btn-outline-primary">
                                 Show detailed network
                             </button>
                         </li>
@@ -81,14 +81,9 @@
                     </ul>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel title="RAW link content">
+            <ngb-panel title="Details">
                 <ng-template ngbPanelContent>
-                    <pre [style.marginBottom]="0">{{ getJSONDetails(entity) }}</pre>
-                    <small>This view contains reduced object representation. Nested objects has been mapped to
-                        their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
-                        numbers
-                        has been
-                        limited to 6 digits after comma.</small>
+                    <app-tree-view [dataSource]="entity"></app-tree-view>
                 </ng-template>
             </ngb-panel>
         </ngb-accordion>

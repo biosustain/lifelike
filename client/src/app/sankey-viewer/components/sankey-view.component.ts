@@ -21,7 +21,6 @@ import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
 import { SankeyControllerService } from '../services/sankey-controller.service';
-import { parseForRendering } from './utils';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
 
@@ -99,7 +98,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.loadFromUrl();
   }
 
-  get sankeyData() {
+  get allData() {
     return this.sankeyController.allData;
   }
 
@@ -107,7 +106,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return this.sankeyController.options;
   }
 
-  get filteredSankeyData() {
+  get dataToRender() {
     return this.sankeyController.dataToRender;
   }
 
@@ -151,14 +150,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   entitySearchListIdx = -1;
   searchFocus = undefined;
 
-  parseProperty = parseForRendering;
-
   selectNetworkTrace(trace) {
     return this.sankeyController.selectNetworkTrace(trace);
-  }
-
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
   }
 
   open(content) {
@@ -300,11 +293,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   resetSelection() {
+    const data = this.sankeyController.dataToRender.value;
     this.selection.next([]);
-    this.sankeyController.dataToRender.nodes.forEach(n => {
+    data.nodes.forEach(n => {
       delete n._selected;
     });
-    this.sankeyController.dataToRender.links.forEach(l => {
+    data.links.forEach(l => {
       delete l._selected;
     });
   }
@@ -325,7 +319,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const matcher = compileFind(terms, options);
     const matches = new Set();
 
-    const {nodes, links} = this.sankeyController.dataToRender;
+    const {nodes, links} = this.sankeyController.dataToRender.value;
 
     for (const node of nodes) {
       if (isNodeMatching(matcher, node)) {

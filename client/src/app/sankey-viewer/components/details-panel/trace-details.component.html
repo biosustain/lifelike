@@ -41,19 +41,14 @@
             </ngb-panel>
             <ngb-panel *ngIf="entity.detail_edges">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button (click)="gotoDynamic(entity)" class="btn btn-link">Show detailed
+                    <button (click)="openTraceView(entity)" class="btn btn-link">Show detailed
                         network
                     </button>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel title="RAW entity content">
+            <ngb-panel title="Details">
                 <ng-template ngbPanelContent>
-                    <pre [style.marginBottom]="0">{{ getJSONDetails(entity) }}</pre>
-                    <small>This view contains reduced object representation. Nested objects has been mapped to
-                        their ids or indexes (if available); <s>shown arrays contains only top 3 rows;</s>
-                        numbers
-                        has been
-                        limited to 6 digits after comma.</small>
+                    <app-tree-view [dataSource]="entity"></app-tree-view>
                 </ng-template>
             </ngb-panel>
         </ngb-accordion>

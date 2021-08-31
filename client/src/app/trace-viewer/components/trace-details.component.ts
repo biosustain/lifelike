@@ -3,7 +3,6 @@ import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '
 import { Options } from 'vis-network';
 
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
-import { parseForRendering } from '../../sankey-viewer/components/utils';
 
 @Component({
   selector: 'app-trace-details',
