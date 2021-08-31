@@ -20,7 +20,7 @@
       </div>
       <ng-template #linkText>
         <a style="white-space: pre-line" [href]="toValidUrl(link.url)" target="_blank"
-             (click)="linkClick($event, link)" [ngbTooltip]="link.url">
+             (click)="linkClick($event, link)" [ngbTooltip]="link.url" [placement]="right">
           {{ getText(link.domain) }}
         </a>
       </ng-template>
