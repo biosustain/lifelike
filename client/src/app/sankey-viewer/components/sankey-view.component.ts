@@ -100,7 +100,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get sankeyData() {
-    return this.sankeyController.sankeyData;
+    return this.sankeyController.allData;
   }
 
   get options() {
@@ -108,7 +108,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get filteredSankeyData() {
-    return this.sankeyController.filteredSankeyData;
+    return this.sankeyController.dataToRender;
   }
 
   get nodeAlign() {
@@ -301,10 +301,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   resetSelection() {
     this.selection.next([]);
-    this.sankeyController.filteredSankeyData.nodes.forEach(n => {
+    this.sankeyController.dataToRender.nodes.forEach(n => {
       delete n._selected;
     });
-    this.sankeyController.filteredSankeyData.links.forEach(l => {
+    this.sankeyController.dataToRender.links.forEach(l => {
       delete l._selected;
     });
   }
@@ -325,7 +325,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const matcher = compileFind(terms, options);
     const matches = new Set();
 
-    const {nodes, links} = this.sankeyController.filteredSankeyData;
+    const {nodes, links} = this.sankeyController.dataToRender;
 
     for (const node of nodes) {
       if (isNodeMatching(matcher, node)) {
@@ -334,7 +334,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     for (const link of links) {
-      if (isLinkMatching(matcher, link, this.sankeyController.sankeyData)) {
+      if (isLinkMatching(matcher, link, this.sankeyController.allData)) {
         matches.add(link);
       }
     }

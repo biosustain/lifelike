@@ -10,7 +10,6 @@ import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
 
-
 const LINK_VALUE = {
   fixedValue0: 'Fixed Value = 0',
   fixedValue1: 'Fixed Value = 1',
@@ -48,8 +47,8 @@ export class SankeyControllerService {
     return this.sankeyLayout.getRelatedTraces;
   }
 
-  sankeyData: SankeyData;
-  filteredSankeyData;
+  allData: SankeyData;
+  dataToRender;
   networkTraces;
 
   options: SankeyAdvancedOptions = {
@@ -147,7 +146,7 @@ export class SankeyControllerService {
     if (selectedPredefinedValueAccessor) {
       this.options.selectedPredefinedValueAccessor = selectedPredefinedValueAccessor;
     }
-    const {links, nodes, graph: {node_sets}} = this.sankeyData;
+    const {links, nodes, graph: {node_sets}} = this.allData;
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
       networkTrace.traces.map(({group}) => group),
@@ -160,13 +159,14 @@ export class SankeyControllerService {
     const _inNodes = node_sets[networkTrace.sources];
     const _outNodes = node_sets[networkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
-    this.filteredSankeyData = this.linkGraph({
+    this.dataToRender = this.linkGraph({
       nodes: networkTraceNodes,
       links: networkTraceLinks,
       _inNodes, _outNodes
     });
   }
 
+  // region Extract options
   private extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
     this.options.linkValueAccessors = Object.entries(link).reduce((o, [k, v]) => {
@@ -247,19 +247,15 @@ export class SankeyControllerService {
       })));
   }
 
-  private parseData({links, graph, nodes, ...data}) {
+  private extractOptionsFromGraph({links, graph, nodes, ...data}) {
     this.networkTraces = graph.trace_networks;
     this.selectedNetworkTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     this.extractPredefinedValueProperties(graph);
-    return {
-      ...data,
-      graph,
-      links,
-      nodes
-    } as SankeyData;
   }
+
+  // endregion
 
   optionsChange() {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
@@ -269,7 +265,8 @@ export class SankeyControllerService {
   }
 
   load(content) {
-    this.sankeyData = this.parseData(content);
+    this.extractOptionsFromGraph(content);
+    this.allData = content as SankeyData;
     this.applyFilter();
   }
 
@@ -277,7 +274,7 @@ export class SankeyControllerService {
     if (this.selectedNetworkTrace) {
       this.selectNetworkTrace(this.selectedNetworkTrace);
     } else {
-      this.filteredSankeyData = this.sankeyData;
+      this.dataToRender = this.allData;
     }
   }
 
