@@ -66,19 +66,13 @@ import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
 import { LinksPanelComponent } from '../drawing-tool/components/links-panel.component';
-import {
-  DATA_TRANSFER_DATA_PROVIDER,
-  DataTransferDataService,
-} from './services/data-transfer-data.service';
+import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-
-} from './services/highlight-text.service';
+import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
+import { TreeViewComponent } from './components/tree-view/tree-view.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -124,6 +118,7 @@ const components = [
   ResultControlComponent,
   PaginationComponent,
   LinksPanelComponent,
+  TreeViewComponent
 ];
 
 @NgModule({

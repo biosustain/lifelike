@@ -20,7 +20,7 @@ export class SankeyDetailsComponent {
 
   parseProperty = parseForRendering;
 
-  gotoDynamic(trace) {
+  openTraceView(trace) {
     const {project_name, file_id} = this.route.snapshot.params;
     const hash = CryptoJS.MD5(JSON.stringify({
       ...this.sankeyController.selectedNetworkTrace,

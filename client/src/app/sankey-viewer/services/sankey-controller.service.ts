@@ -9,6 +9,7 @@ import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } fro
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
+import { ReplaySubject, BehaviorSubject } from 'rxjs';
 
 const LINK_VALUE = {
   fixedValue0: 'Fixed Value = 0',
@@ -48,7 +49,7 @@ export class SankeyControllerService {
   }
 
   allData: SankeyData;
-  dataToRender;
+  dataToRender = new BehaviorSubject(undefined);
   networkTraces;
 
   options: SankeyAdvancedOptions = {
@@ -159,11 +160,13 @@ export class SankeyControllerService {
     const _inNodes = node_sets[networkTrace.sources];
     const _outNodes = node_sets[networkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
-    this.dataToRender = this.linkGraph({
-      nodes: networkTraceNodes,
-      links: networkTraceLinks,
-      _inNodes, _outNodes
-    });
+    this.dataToRender.next(
+      this.linkGraph({
+        nodes: networkTraceNodes,
+        links: networkTraceLinks,
+        _inNodes, _outNodes
+      })
+    );
   }
 
   // region Extract options
@@ -274,7 +277,7 @@ export class SankeyControllerService {
     if (this.selectedNetworkTrace) {
       this.selectNetworkTrace(this.selectedNetworkTrace);
     } else {
-      this.dataToRender = this.allData;
+      this.dataToRender.next(this.allData);
     }
   }
 

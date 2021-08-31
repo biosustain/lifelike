@@ -1,4 +1,4 @@
-<cdk-tree [dataSource]="dataSource" [treeControl]="treeControl" class="ml-3">
+<cdk-tree [dataSource]="dataSource" [treeControl]="treeControl">
     <!-- This is the tree node template for leaf nodes -->
     <cdk-nested-tree-node *cdkTreeNodeDef="let node" class="tree-node py-1">
         <ng-container *ngIf="node.label !== undefined; else rawNodeContent">
@@ -10,7 +10,7 @@
             {{ node.label }}
             <!-- values can be falsy -->
             <ng-container *ngIf="node.value !== undefined">
-                 : {{node.value}}
+                : {{node.value}}
             </ng-container>
         </ng-container>
         <ng-template #rawNodeContent>
@@ -26,7 +26,13 @@
                         treeControl.isExpanded(node) ? 'fa-angle-down' : 'fa-angle-right'
                         ]"
                [style.verticalAlign]="'middle'"></i>
-            {{node.label}}
+            <ng-container *ngIf="node.label; else counter">
+                {{ node.label }}
+            </ng-container>
+            <ng-template #counter>
+                <!-- Show counter using css node counting -->
+                <span class="counter"></span>
+            </ng-template>
         </button>
         <!-- Important to postpone render so we can have circular objects -->
         <div *ngIf="treeControl.isExpanded(node)">
