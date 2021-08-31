@@ -6,12 +6,17 @@ import { AuthenticationService } from 'app/auth/services/authentication.service'
 import { AbstractService } from './abstract-service';
 import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { PaginatedRequestOptions, ResultList } from '../schemas/common';
+import { ApiService } from './api.service';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class GlobalAnnotationService extends AbstractService {
     readonly baseUrl = '/api/annotations';
 
-    constructor(auth: AuthenticationService, http: HttpClient) {
+    constructor(
+        auth: AuthenticationService,
+        http: HttpClient,
+        protected readonly apiService: ApiService
+    ) {
         super(auth, http);
     }
 
@@ -25,10 +30,17 @@ export class GlobalAnnotationService extends AbstractService {
     }
 
     deleteAnnotations(pids: number[][]): Observable<string> {
-        return this.http.post<{result: string}>(
+        return this.http.request<{result: string}>(
+            'DELETE',
             `${this.baseUrl}/global-list`,
-            {pids},
-            {...this.getHttpOptions(true)}
+            {...this.apiService.getHttpOptions(true, {
+                contentType: 'application/json',
+              }),
+              body: {
+                pids,
+              },
+              responseType: 'json',
+            }
         ).pipe(map(res => res.result));
     }
 

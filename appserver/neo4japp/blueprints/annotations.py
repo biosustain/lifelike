@@ -86,7 +86,8 @@ from ..services.annotations.sorted_annotation_service import (
 from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
     get_global_inclusions_query,
-    get_global_inclusions_count_query
+    get_global_inclusions_count_query,
+    get_delete_global_inclusion_query
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
@@ -1007,39 +1008,60 @@ class GlobalAnnotationListView(MethodView):
         }
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
+    @use_args(GlobalAnnotationsDeleteSchema())
+    def delete(self, params):
+        yield g.current_user
 
-@bp.route('/global-list', methods=['POST', 'DELETE'])
-@auth.login_required
-@use_kwargs(GlobalAnnotationsDeleteSchema)
-@requires_role('admin')
-def delete_global_annotations(pids):
-    yield g.current_user
+        # exclusions in postgres will not have synonym_id
+        # those are for the graph nodes, and -1 represents not having one
+        exclusion_pids = [gid for gid, sid in params['pids'] if sid == -1]
+        inclusion_pids = [(gid, sid) for gid, sid in params['pids'] if sid != -1]
 
-    # exclusions in postgres will not have synonym_id
-    # those are for the graph nodes, and -1 represents not having one
-    query = GlobalList.__table__.delete().where(
-        GlobalList.id.in_([gid for gid, sid in pids if sid == -1])
-    )
-    try:
-        db.session.execute(query)
-        db.session.commit()
+        if exclusion_pids:
+            query = GlobalList.__table__.delete().where(
+                GlobalList.id.in_(exclusion_pids)
+            )
+            try:
+                db.session.execute(query)
+                db.session.commit()
 
-        current_app.logger.info(
-            f'Deleted {len(pids)} global annotations',
-            extra=UserEventLog(
-                username=g.current_user.username,
-                event_type=LogEventType.ANNOTATION.value).to_dict()
-        )
-    except SQLAlchemyError:
-        db.session.rollback()
-        raise ServerException(
-            title='Could not delete exclusion',
-            message='A database error occurred when deleting the global exclusion.')
+                current_app.logger.info(
+                    f'Deleted {len(exclusion_pids)} global exclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise ServerException(
+                    title='Could not delete exclusion',
+                    message='A database error occurred when deleting the global exclusion(s).')
 
-    # now delete from the KG
-    graph = get_annotation_graph_service()
+        if inclusion_pids:
+            graph = get_annotation_graph_service()
+            try:
+                graph.exec_write_query_with_params(
+                    get_delete_global_inclusion_query(),
+                    {'node_ids': [[gid, sid] for gid, sid in inclusion_pids]})
 
-    yield jsonify(dict(result='success'))
+                current_app.logger.info(
+                    f'Deleted {len(inclusion_pids)} global inclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'{str(e)}',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+                raise ServerException(
+                    title='Could not delete inclusion',
+                    message='A database error occurred when deleting the global inclusion(s).')
+
+        yield jsonify(dict(result='success'))
 
 
 @bp.route('/files/<int:file_id>', methods=['GET'])

@@ -130,6 +130,25 @@ def get_mesh_by_ids():
     """
 
 
+def get_delete_global_inclusion_query():
+    return """
+    UNWIND $node_ids AS node_ids
+    MATCH (s)-[r:HAS_SYNONYM]-(n)
+    WHERE id(n) = node_ids[0] AND id(s) = node_ids[1]
+    DELETE r
+    WITH s
+    MATCH (s)-[r:HAS_SYNONYM]-()
+    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
+    WITH s, collect(r) AS synonym_rel
+    CALL apoc.do.when(
+        size(synonym_rel) = 0,
+        'REMOVE s:GlobalInclusion', '', {synonym_rel: synonym_rel, s:s}
+    )
+    YIELD value
+    RETURN COUNT(*)
+    """
+
+
 def get_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
         return ''
@@ -206,7 +225,7 @@ def get_compound_global_inclusion_exist_query():
 
 def get_gene_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_NCBI:Gene)-[:HAS_SYNONYM]->(s)
+    OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
     WHERE n.eid = $entity_id
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) AS synonym_exist
@@ -311,7 +330,7 @@ def get_create_compound_global_inclusion_query():
 
 def get_create_gene_global_inclusion_query():
     return """
-    MATCH (n:db_NCBI:Gene) WHERE n.eid = $entity_id
+    MATCH (n:Gene) WHERE n.eid = $entity_id
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
