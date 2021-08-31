@@ -4,6 +4,7 @@ interface SankeyNode {
   stId?: string;
   name?: string | Array<string>;
   label?: string;
+  labels?: Array<string>;
   type?: string;
 
   // Temp definitions to fix LL-3499
