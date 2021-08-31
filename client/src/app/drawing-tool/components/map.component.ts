@@ -188,10 +188,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     // this.emitModuleProperties(); // TODO: what does this do?
     const graphRepr = await JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
       const unzipped = zip.files['graph.json'].async('text').then(function (text: string) {
-        // t is the graph representation in JSON format
+        // text is whatever content `graph.json` has
         return (text);
       });
-      return (unzipped);
+      const imgFolder = zip.folder('images');
+      console.log(imgFolder);
+      return unzipped;
     });
     // at this point `graphRepr` has the JSON version of the map as a string
 
@@ -200,7 +202,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
     ).subscribe(graph => {
-      this.graphCanvas.setGraph(graph);
+      this.graphCanvas.setGraph(graph); // TODO: look at frontend image render from copy-paste
       this.graphCanvas.zoomToFit(0);
 
       if (this.highlightTerms != null && this.highlightTerms.length) {
