@@ -786,7 +786,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
         const el = document.createElement('div');
         const meta: Meta = {
-          allText: that.allText.substring(0, 250),
+          allText: that.allText,
           type: 'link',
         };
         const location: Location = {
