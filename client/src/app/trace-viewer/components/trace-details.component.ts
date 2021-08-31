@@ -1,6 +1,9 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '@angular/core';
 
+import { isNullOrUndefined } from 'util';
 import { Options } from 'vis-network';
+
+import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
 import { parseForRendering } from '../../sankey-viewer/components/utils';
@@ -43,18 +46,18 @@ export class TraceDetailsComponent implements OnChanges {
     }
   };
 
-  legend: Map<string, string[]>;
+  legend = new Map<string, string[]>();
 
   @Input() data;
 
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
-      this.legend = data.currentValue.nodes.reduce((o, n) => {
-        if (!o.has(n.databaseLabel) && typeof n.color === 'string') {
-          o.set(n.databaseLabel, [n.color, n.color]);
+      data.currentValue.nodes.forEach((node) => {
+        if (!isNullOrUndefined(node.databaseLabel)) {
+          const style = annotationTypesMap.get(node.databaseLabel.toLowerCase());
+          this.legend.set(node.databaseLabel, isNullOrUndefined(style) ? ['#000', '#000'] : [style.color, style.color]);
         }
-        return o;
-      }, new Map([['source / target', ['transparent', 'black']]]));
+      });
     }
   }
 
