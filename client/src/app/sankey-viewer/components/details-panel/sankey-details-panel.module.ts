@@ -11,19 +11,19 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
-import { RouterModule } from '@angular/router';
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyTypeProvider } from './providers/sankey-type-provider';
-import { SankeyModule } from './components/sankey/sankey.module';
-import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
+import { SankeyNodeDetailsComponent } from './node-details.component';
+import { SankeyLinkDetailsComponent } from './link-details.component';
+import { SankeyTraceDetailsComponent } from './trace-details.component';
+import { SankeyDetailsPanelComponent } from './details-panel.component';
+import { SankeyDetailsComponent } from './details.component';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent
+    SankeyDetailsPanelComponent,
+    SankeyNodeDetailsComponent,
+    SankeyLinkDetailsComponent,
+    SankeyTraceDetailsComponent,
+    SankeyDetailsComponent
   ],
   imports: [
     CommonModule,
@@ -40,21 +40,10 @@ import { SankeyDetailsPanelModule } from './components/details-panel/sankey-deta
     MatButtonModule,
     MatRadioModule,
     SharedModule,
-    FileBrowserModule,
-    RouterModule.forRoot([]),
-    SankeyModule,
-    SankeyDetailsPanelModule
   ],
-  entryComponents: [],
-  providers: [{
-    provide: TYPE_PROVIDER,
-    useClass: SankeyTypeProvider,
-    multi: true,
-  }],
   exports: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent
+    SankeyDetailsPanelComponent
   ],
 })
-export class SankeyViewerLibModule {
+export class SankeyDetailsPanelModule {
 }
