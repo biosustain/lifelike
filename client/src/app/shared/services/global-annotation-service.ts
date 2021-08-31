@@ -20,11 +20,11 @@ export class GlobalAnnotationService extends AbstractService {
         super(auth, http);
     }
 
-    getAnnotations(options: PaginatedRequestOptions = {}): Observable<ResultList<GlobalAnnotationListItem>> {
+    getAnnotations(options: PaginatedRequestOptions = {}, globalAnnotationType: string): Observable<ResultList<GlobalAnnotationListItem>> {
         return this.http.get<ResultList<GlobalAnnotationListItem>>(
             `${this.baseUrl}/global-list`, {
             ...this.getHttpOptions(true),
-            params: options as any,
+            params: {...options as any, globalAnnotationType},
             }
         );
     }
