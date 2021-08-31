@@ -132,6 +132,25 @@ def get_mesh_by_ids():
     """
 
 
+def get_delete_global_inclusion_query():
+    return """
+    UNWIND $node_ids AS node_ids
+    MATCH (s)-[r:HAS_SYNONYM]-(n)
+    WHERE id(n) = node_ids[0] AND id(s) = node_ids[1]
+    DELETE r
+    WITH s
+    MATCH (s)-[r:HAS_SYNONYM]-()
+    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
+    WITH s, collect(r) AS synonym_rel
+    CALL apoc.do.when(
+        size(synonym_rel) = 0,
+        'REMOVE s:GlobalInclusion', '', {synonym_rel: synonym_rel, s:s}
+    )
+    YIELD value
+    RETURN COUNT(*)
+    """
+
+
 def get_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
         return ''
