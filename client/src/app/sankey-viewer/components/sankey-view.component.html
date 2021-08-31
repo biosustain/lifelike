@@ -34,7 +34,7 @@
                                                  [showOpen]="false">
                                 </app-object-menu>
                                 <div class="dropdown-divider"></div>
-                                <button (click)="open(logModal)" *ngIf="sankeyData?.graph.log" ngbDropdownItem>
+                                <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
                                     Open logs
                                     <ng-template #logModal let-modal>
                                         <div class="modal-header">
@@ -46,16 +46,16 @@
                                         </div>
                                         <div class="modal-body">
                                             <ng-container
-                                                    *ngIf="isArray(sankeyData.graph.log); else justText">
+                                                    *ngIf="isArray(allData.graph.log); else justText">
 
                                                 <ul class="list-group list-group-flush cancel-out-card-padding">
-                                                    <li *ngFor="let log of sankeyData.graph.log"
+                                                    <li *ngFor="let log of allData.graph.log"
                                                         class="list-group-item"
                                                     >{{ log }}</li>
                                                 </ul>
                                             </ng-container>
                                             <ng-template #justText>
-                                                {{ sankeyData.graph.log }}
+                                                {{ allData.graph.log }}
                                             </ng-template>
                                         </div>
                                     </ng-template>
@@ -71,7 +71,7 @@
                                             </button>
                                         </div>
                                         <div class="modal-body" [style.whiteSpace]="'pre-line'">
-                                            {{ sankeyData.graph.description }}
+                                            {{ allData.graph.description }}
                                         </div>
                                     </ng-template>
                                 </button>
@@ -86,14 +86,7 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <pre [style.marginBottom]="0">{{ getJSONDetails(sankeyData) }}</pre>
-                                            <small>This view contains reduced object representation. Nested objects has
-                                                been mapped to
-                                                their ids or indexes (if available); <s>shown arrays contains only top 3
-                                                    rows;</s>
-                                                numbers
-                                                has been
-                                                limited to 6 digits after comma.</small>
+                                            <app-tree-view [dataSource]="allData"></app-tree-view>
                                         </div>
                                     </ng-template>
                                 </button>
@@ -163,11 +156,11 @@
                       unit="pixel">
                 <as-split-area [order]="0">
                     <app-sankey #sankey
-                                *ngIf="filteredSankeyData"
+                                *ngIf="dataToRender | async"
                                 (linkClicked)="selectLink($event)"
                                 (nodeClicked)="selectNode($event)"
                                 [nodeAlign]="nodeAlign"
-                                [data]="filteredSankeyData"
+                                [data]="dataToRender | async"
                                 [normalizeLinks]="options.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
