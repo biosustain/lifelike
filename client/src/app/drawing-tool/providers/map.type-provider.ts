@@ -30,6 +30,8 @@ import { AnnotationsService } from '../../file-browser/services/annotations.serv
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
+import JSZip from 'jszip';
+
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 export const MAP_SHORTHAND = 'map';
 
@@ -75,15 +77,17 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.filename = '';
           object.mimeType = MAP_MIMETYPE;
           object.parent = options.parent;
-          return this.objectCreationService.openCreateDialog(object, {
-            title: 'New Map',
-            request: {
-              contentValue: new Blob([JSON.stringify({
-                edges: [],
-                nodes: [],
-              } as UniversalGraph)]),
-            },
-            ...(options.createDialog || {}),
+          let zip = new JSZip();
+          zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
+          return zip.generateAsync({ type: 'blob' }).then((content) => {
+            console.log('debug here');
+            return this.objectCreationService.openCreateDialog(object, {
+              title: 'New Map',
+              request: {
+                contentValue: content
+              },
+              ...(options.createDialog || {}),
+            });
           });
         },
       },

@@ -85,7 +85,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
                    */
     let zip = new JSZip();
     let imgs = zip.folder('images');
-    const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
+    // const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
     const imageIds: string[] = []
     const imageNodeObservables: Observable<Blob>[] = []
     for (const node of this.graphCanvas.getGraph().nodes) {
@@ -112,14 +112,14 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
       }
       zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
       zip.generateAsync({ type: "blob" })
-        .then(function (content) {
+        .then((content) => {
           // saveAs(content, 'map.zip'); // uncomment this line to verify that the generated zip file is correct
-          filesystemService.save([locator], { contentValue: content })
-            .pipe(errorHandler.create({label: 'Update map'}))
+          this.filesystemService.save([this.locator], { contentValue: content })
+            .pipe(this.errorHandler.create({label: 'Update map'}))
             .subscribe(() => {
-              unsavedChanges$.next(false);
+              this.unsavedChanges$.next(false);
               // emitModuleProperties(); // TODO: what does this do?
-              snackBar.open('Map saved.', null, {
+              this.snackBar.open('Map saved.', null, {
                 duration: 2000,
               });
             });
