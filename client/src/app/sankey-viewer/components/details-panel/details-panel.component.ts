@@ -1,4 +1,5 @@
-import { Component, Input, } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { SelectionEntity } from '../interfaces';
 
 @Component({
   selector: 'app-sankey-details-panel',
@@ -6,5 +7,5 @@ import { Component, Input, } from '@angular/core';
   styleUrls: ['./details-panel.component.scss'],
 })
 export class SankeyDetailsPanelComponent {
-  @Input() details;
+  @Input() details: Array<SelectionEntity>;
 }
