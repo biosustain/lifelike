@@ -33,8 +33,8 @@ export class SankeyDetailsComponent {
     window.open(url);
   }
 
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => this.parseProperty(p, k), 1);
+  get options() {
+    return this.sankeyController.options;
   }
 
   getNodeById(nodeId) {
