@@ -101,14 +101,9 @@ export class AnnotationTagHandler extends TagHandler {
       text = meta.type === 'Link' ? 'Link' : text;
 
       for (const link of hyperlink) {
-        const {domain, url} = JSON.parse(link);
-        let hyperlinkText = 'Annotation URL';
-        try {
-          hyperlinkText = new URL(url).hostname.replace(/^www\./i, '');
-        } catch (e) { }
-
+        const {label, url} = JSON.parse(link);
         hyperlinks.push({
-          domain: hyperlinkText,
+          domain: label,
           url,
         });
 
