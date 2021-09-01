@@ -373,7 +373,7 @@ MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
 NAME_NODE_OFFSET = 100
 TRANSPARENT_PIXEL = (0, 0, 0, 0)
 FILENAME_LABEL_MARGIN = 0.165
-VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN / 2.0
+VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN
 NAME_LABEL_FONT_AVERAGE_WIDTH = 18
 NAME_LABEL_PADDING_MULTIPLIER = 7
 FILENAME_LABEL_FONT_SIZE = 40.0
@@ -400,6 +400,9 @@ ARROW_STYLE_DICT = {
     'square-arrow': 'normalnonebox',
     'circle-arrow': 'normalnonedot'
 }
+
+RELATION_NODES = ['association', 'correlation', 'cause', 'effect', 'observation']
+ICON_NODES = ['map', 'link', 'note']
 
 # Start shared security constants
 MAX_ALLOWED_LOGIN_FAILURES = 5
