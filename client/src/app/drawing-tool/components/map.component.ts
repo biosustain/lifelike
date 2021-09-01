@@ -189,6 +189,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         // text is whatever content in `graph.json`
         return text;
       });
+      // while we are still in the unzipped callback, retrieve images
       const imageFolder = zip.folder('images');
       imageFolder.forEach(async (f) => {
         imageIds.push(f.substring(0, f.indexOf('.')));
@@ -211,17 +212,25 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
      * TODO: stash blobs into image-nodes and force re-render
      */
 
-    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MAP_MIMETYPE})).pipe(
+    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MAP_MIMETYPE })).pipe(
       mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create({label: 'Parse map data'}),
+      this.errorHandler.create({ label: 'Parse map data' }),
     ).subscribe(
       graph => {
         this.graphCanvas.setGraph(graph);
+        for (const node of this.graphCanvas.getGraph().nodes) {
+          if (node.image_id !== undefined) {
+            // TODO: I think the image blob should exist in the renderTree w/o setting it
+            this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
+            console.log('image node in render tree is');
+            console.log(this.graphCanvas.renderTree.get(node));
+          }
+        }
         this.graphCanvas.zoomToFit(0);
 
         if (this.highlightTerms != null && this.highlightTerms.length) {
           this.graphCanvas.highlighting.replace(
-            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+            this.graphCanvas.findMatching(this.highlightTerms, { keepSearchSpecialChars: true, wholeWord: true }),
           );
         }
       },
