@@ -68,7 +68,9 @@ class AnnotationService:
         protein: bool = True,
         species: bool = True,
         company: bool = True,
-        entity: bool = True
+        entity: bool = True,
+        lab_sample: bool = True,
+        lab_strain: bool = True
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
 
@@ -121,6 +123,14 @@ class AnnotationService:
         if entity:
             entity_type_and_id_pairs.append(
                 (EntityType.ENTITY.value, EntityIdStr.ENTITY.value))
+
+        if lab_sample:
+            entity_type_and_id_pairs.append(
+                (EntityType.LAB_SAMPLE.value, EntityIdStr.LAB_SAMPLE.value))
+
+        if lab_strain:
+            entity_type_and_id_pairs.append(
+                (EntityType.LAB_STRAIN.value, EntityIdStr.LAB_STRAIN.value))
 
         return entity_type_and_id_pairs
 
@@ -930,7 +940,9 @@ class AnnotationService:
             EntityType.PHENOMENA.value: recognized_entities.recognized_phenomenas,
             EntityType.PHENOTYPE.value: recognized_entities.recognized_phenotypes,
             EntityType.COMPANY.value: recognized_entities.recognized_companies,
-            EntityType.ENTITY.value: recognized_entities.recognized_entities
+            EntityType.ENTITY.value: recognized_entities.recognized_entities,
+            EntityType.LAB_SAMPLE.value: recognized_entities.recognized_lab_samples,
+            EntityType.LAB_STRAIN.value: recognized_entities.recognized_lab_strains
         }
 
         for entity_type, entity_id_str in types_to_annotate:

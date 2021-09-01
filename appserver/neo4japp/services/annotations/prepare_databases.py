@@ -115,7 +115,7 @@ def prepare_lmdb_chemicals_database(filename: str):
                 synonym = line[2]
 
                 chemical = create_ner_type_chemical(
-                    id_=chemical_id,
+                    id=chemical_id,
                     name=chemical_name,
                     synonym=synonym,
                 )
@@ -150,7 +150,7 @@ def prepare_lmdb_compounds_database(filename: str):
 
                 if compound_name != 'null':
                     compound = create_ner_type_compound(
-                        id_=compound_id,
+                        id=compound_id,
                         name=compound_name,
                         synonym=compound_name,
                     )
@@ -167,7 +167,7 @@ def prepare_lmdb_compounds_database(filename: str):
                                     normalized_key = normalize_str(synonym_term)
 
                                     synonym = create_ner_type_compound(
-                                        id_=compound_id,
+                                        id=compound_id,
                                         name=compound_name,
                                         synonym=synonym_term,
                                     )
@@ -235,7 +235,7 @@ def prepare_lmdb_species_database(filename: str):
                 species_name = line[3]
 
                 species = create_ner_type_species(
-                    id_=species_id,
+                    id=species_id,
                     category=species_category if species_category else 'Uncategorized',
                     name=species_name,
                     synonym=species_name,
@@ -269,7 +269,7 @@ def prepare_lmdb_diseases_database(filename: str):
                 synonym = line[2]
 
                 disease = create_ner_type_disease(
-                    id_=disease_id, name=disease_name, synonym=synonym)
+                    id=disease_id, name=disease_name, synonym=synonym)
 
                 try:
                     transaction.put(
@@ -299,7 +299,7 @@ def prepare_lmdb_phenomenas_database(filename: str):
                 synonym = line[2]
 
                 phenomena = create_ner_type_phenomena(
-                    id_=phenomena_id,
+                    id=phenomena_id,
                     name=phenomena_name,
                     synonym=synonym
                 )
@@ -333,7 +333,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
                 synonym = line[2]
 
                 phenotype = create_ner_type_phenotype(
-                    id_=phenotype_id,
+                    id=phenotype_id,
                     name=phenotype_name,
                     synonym=synonym
                 )
@@ -367,7 +367,7 @@ def prepare_lmdb_foods_database(filename: str):
                 foods_synonym = line[2]
 
                 foods = create_ner_type_food(
-                    id_=foods_id,
+                    id=foods_id,
                     name=foods_name,
                     synonym=foods_synonym,
                 )
@@ -400,7 +400,7 @@ def prepare_lmdb_anatomy_database(filename: str):
                 anatomy_synonym = line[2]
 
                 anatomy = create_ner_type_anatomy(
-                    id_=anatomy_id,
+                    id=anatomy_id,
                     name=anatomy_name,
                     synonym=anatomy_synonym,
                 )
