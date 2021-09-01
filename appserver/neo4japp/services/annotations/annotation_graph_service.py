@@ -41,7 +41,9 @@ class AnnotationGraphService(GraphConnection):
             EntityType.PROTEIN.value: create_ner_type_protein,
             EntityType.SPECIES.value: create_ner_type_species,
             EntityType.COMPANY.value: create_ner_type_company,
-            EntityType.ENTITY.value: create_ner_type_entity
+            EntityType.ENTITY.value: create_ner_type_entity,
+            EntityType.LAB_SAMPLE.value: create_ner_type_lab_sample,
+            EntityType.LAB_STRAIN.value: create_ner_type_lab_strain
         }
 
         # TODO: can we just do get_global_inclusions_by_type_query once?
@@ -58,7 +60,7 @@ class AnnotationGraphService(GraphConnection):
             normalized_synonym = normalize_str(inclusion['synonym'])
             if entity_type != EntityType.GENE.value and entity_type != EntityType.PROTEIN.value:
                 entity = createfuncs[entity_type](
-                    id_=inclusion['entity_id'],
+                    id=inclusion['entity_id'],
                     name=inclusion['entity_name'],
                     synonym=inclusion['synonym']
                 )  # type: ignore
@@ -94,7 +96,9 @@ class AnnotationGraphService(GraphConnection):
             EntityType.PROTEIN.value: {},
             EntityType.SPECIES.value: {},
             EntityType.COMPANY.value: {},
-            EntityType.ENTITY.value: {}
+            EntityType.ENTITY.value: {},
+            EntityType.LAB_SAMPLE.value: {},
+            EntityType.LAB_STRAIN.value: {}
         }
 
         local_inclusion_dicts: Dict[str, dict] = {
@@ -135,7 +139,7 @@ class AnnotationGraphService(GraphConnection):
                         entity_id = synonym
 
                     entity = create_ner_type_species(
-                        id_=entity_id,
+                        id=entity_id,
                         name=synonym,
                         synonym=synonym
                     )
@@ -162,6 +166,8 @@ class AnnotationGraphService(GraphConnection):
             included_local_species=local_inclusion_dicts[EntityType.SPECIES.value],
             included_companies=inclusion_dicts[EntityType.COMPANY.value],
             included_entities=inclusion_dicts[EntityType.ENTITY.value],
+            included_lab_samples=inclusion_dicts[EntityType.LAB_SAMPLE.value],
+            included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value]
         )
 
     def get_genes_to_organisms(
