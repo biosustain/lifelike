@@ -71,7 +71,7 @@ def data_upgrades():
         )
     ))
 
-    for chunk in window_chunk(files, 25):
+    for chunk in window_chunk(files, 15):
         files_to_update = []
         for fid, annotations_json in chunk:
             try:
@@ -111,7 +111,7 @@ def data_upgrades():
         )
     ))
 
-    for chunk in window_chunk(files, 25):
+    for chunk in window_chunk(files, 15):
         files_to_update = []
         for fid, custom_annotations in chunk:
             for custom in custom_annotations:
@@ -146,7 +146,7 @@ def data_upgrades():
         )
     ))
 
-    for chunk in window_chunk(files, 25):
+    for chunk in window_chunk(files, 15):
         files_to_update = []
         for fid, excluded_annotations in chunk:
             for excluded in excluded_annotations:
