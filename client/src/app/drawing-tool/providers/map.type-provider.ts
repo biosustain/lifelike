@@ -80,7 +80,6 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           let zip = new JSZip();
           zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
           return zip.generateAsync({ type: 'blob' }).then((content) => {
-            console.log('debug here');
             return this.objectCreationService.openCreateDialog(object, {
               title: 'New Map',
               request: {
