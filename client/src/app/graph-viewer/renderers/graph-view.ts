@@ -827,10 +827,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     const length = actions.length;
     try {
       for (const action of actions) {
-        // We have unsaved changes
-        // this.saveState = false;  // TODO: remove this
-
-        // Drop all changes after this one
+        // We have unsaved changes, drop all changes after this one
         this.history = this.history.slice(0, this.nextHistoryIndex);
         this.history.push(action);
         this.nextHistoryIndex++;
