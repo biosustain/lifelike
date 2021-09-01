@@ -16,15 +16,6 @@
             <label for="detail">Detail:</label>
             <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="10"
                       maxlength="5000"></textarea>
-            <!-- Bob: only put below input and textarea differentiation back
-              when we know how to render images on canvas with this `onchange` event
-              see comments in annotation-styles.ts as well
-            -->
-            <!-- <textarea *ngIf="!isImageNode()" [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="10"
-                      maxlength="5000"></textarea>
-            <input *ngIf="isImageNode()" type="file"
-              accept="image/png, image/jpeg, image/jpg, image/gif" class="file-upload" onchange="console.log(event.target.files[0])"
-            > -->
           </div>
 
           <div class="form-group" *ngIf="mayShowDetailText()">
