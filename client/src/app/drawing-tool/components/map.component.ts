@@ -36,11 +36,7 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
-import JSZip, { JSZipObject } from "jszip";
-import JSZipUtils from 'jszip-utils';
-import { JsonPipe } from '@angular/common';
-import { reject, resolve } from 'bluebird';
-import { unzip } from 'zlib';
+import JSZip from 'jszip';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
 
 @Component({
@@ -76,7 +72,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchTerm = '';
   entitySearchList: GraphEntity[] = [];
   entitySearchListIdx = -1;
-
+  
   constructor(
     readonly filesystemService: FilesystemService,
     readonly snackBar: MatSnackBar,
@@ -185,36 +181,56 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    // this.emitModuleProperties(); // TODO: what does this do?
-    const graphRepr = await JSZip.loadAsync(this.contentValue).then(function (zip: JSZip) {
-      const unzipped = zip.files['graph.json'].async('text').then(function (text: string) {
-        // text is whatever content `graph.json` has
-        return (text);
+    this.emitModuleProperties();
+    const imageIds: string[] = [];
+    const imageProms: Promise<Blob>[] = [];
+    const graphRepr: string = await JSZip.loadAsync(this.contentValue).then((zip: JSZip) => {
+      const unzipped = zip.files['graph.json'].async('text').then((text: string) => {
+        // text is whatever content in `graph.json`
+        return text;
       });
-      const imgFolder = zip.folder('images');
-      console.log(imgFolder);
+      const imageFolder = zip.folder('images');
+      imageFolder.forEach(async (f) => {
+        imageIds.push(f.substring(0, f.indexOf('.')));
+        imageProms.push(imageFolder.file(f).async('blob')); // pushes Promise<Blob>
+      })
       return unzipped;
     });
-    // at this point `graphRepr` has the JSON version of the map as a string
 
-    // TODO: optimize this redundant blob creation, and find out how to render images on here
+    // wait for all Promises to resolve to Blobs containing images on the graph
+    Promise.all(imageProms).then((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
+        this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
+      }
+    });
+
+    /**
+     * at this point `graphRepr` has the JSON version of the map as a string,
+     * `imageBlobs` has all images in the map as blobs, and `imageIds` has all images' Ids
+     * for all index `i`, `imageBlobs[i]` should correspond to `imageIds[i]` (just like in save)
+     * TODO: stash blobs into image-nodes and force re-render
+     */
+
     this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MAP_MIMETYPE})).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
-    ).subscribe(graph => {
-      this.graphCanvas.setGraph(graph); // TODO: look at frontend image render from copy-paste
-      this.graphCanvas.zoomToFit(0);
+    ).subscribe(
+      graph => {
+        this.graphCanvas.setGraph(graph);
+        this.graphCanvas.zoomToFit(0);
 
-      if (this.highlightTerms != null && this.highlightTerms.length) {
-        this.graphCanvas.highlighting.replace(
-          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
           );
         }
-      }, e => {
+      },
+      e => {
         console.error(e);
         // Data is corrupt
         // TODO: Prevent the user from editing or something so the user doesnt lose data?
-      }));
+      }
+    ));
   }
 
   registerGraphBehaviors() {

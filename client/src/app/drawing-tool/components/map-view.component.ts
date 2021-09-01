@@ -76,13 +76,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
-                  /**
-                   * steps to approach:
-                   * zip the map w/o images
-                   * get the raw image from ???
-                   * zip the map w/ images
-                   * unzip the map, populate image from `image_id`
-                   */
     let zip = new JSZip();
     let imgs = zip.folder('images');
     // const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
@@ -102,23 +95,38 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      * and they are in the SAME order as the imageNodeObservables, which is why iterating
      *     through 2 arrays could work
      * a better way might be to use HashMap (`Map` in typescript) but maps don't have
-     * functions like `combineLatest`
+     *     functions like `combineLatest`
      */
+    zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
+    // graph has no images
+    if (imageNodeObservables.length === 0) {
+      console.log('no images if');
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        this.filesystemService.save([this.locator], { contentValue: content })
+          .pipe(this.errorHandler.create({label: 'Update map'}))
+          .subscribe(() => {
+            this.unsavedChanges$.next(false);
+            this.emitModuleProperties(); // TODO: what does this do?
+            this.snackBar.open('Map saved.', null, {
+              duration: 2000,
+            });
+          });
+      });
+      return; // terminate function so we don't move on to "with image" part
+    }
+    // has images, wait for all image observables to emit value, then save blobs
     combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
       for (let i = 0; i < imageIds.length; i++) {
-        console.log(imageIds[i]);
-        console.log(imageBlobs[i]);
         imgs.file(imageIds[i] + '.png', imageBlobs[i]);
       }
-      zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
       zip.generateAsync({ type: "blob" })
         .then((content) => {
-          // saveAs(content, 'map.zip'); // uncomment this line to verify that the generated zip file is correct
+          // saveAs(content, 'map.zip'); // uncomment this line to download and verify that the generated zip file is correct
           this.filesystemService.save([this.locator], { contentValue: content })
             .pipe(this.errorHandler.create({label: 'Update map'}))
             .subscribe(() => {
               this.unsavedChanges$.next(false);
-              // emitModuleProperties(); // TODO: what does this do?
+              this.emitModuleProperties();
               this.snackBar.open('Map saved.', null, {
                 duration: 2000,
               });
