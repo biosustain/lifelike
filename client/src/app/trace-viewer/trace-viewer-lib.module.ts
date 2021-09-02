@@ -11,16 +11,17 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
 import { TraceViewComponent } from './components/trace-view.component';
 import { TraceDetailsComponent } from './components/trace-details.component';
+import { TreeViewComponent } from './components/tree-view.component';
 
 @NgModule({
   declarations: [
     TraceViewComponent,
-    TraceDetailsComponent
+    TraceDetailsComponent,
+    TreeViewComponent
   ],
   imports: [
     CommonModule,

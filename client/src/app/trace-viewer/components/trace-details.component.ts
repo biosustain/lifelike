@@ -60,8 +60,4 @@ export class TraceDetailsComponent implements OnChanges {
       });
     }
   }
-
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => parseForRendering(p, k), 1);
-  }
 }
