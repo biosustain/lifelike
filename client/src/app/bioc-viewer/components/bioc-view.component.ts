@@ -455,7 +455,11 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
   @HostListener('document:mouseup', ['$event'])
-  selectionChange(event: Event) {
+  selectionChange(event: (MouseEvent & { target: Element })) {
+    const isItComingFromBiocViewer = (event.target).closest('app-bioc-viewer');
+    if (!isItComingFromBiocViewer) {
+      return;
+    }
     this.removeFrictionlessNode();
     const selection = window.getSelection();
     const selectedText = selection.toString();
