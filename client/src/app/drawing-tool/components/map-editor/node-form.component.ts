@@ -1,19 +1,6 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, HostListener, } from '@angular/core';
 import { cloneDeep, startCase } from 'lodash';
-import {
-  DETAIL_NODE_LABELS,
-  isCommonNodeDisplayName,
-  Source,
-  UniversalGraphNode,
-} from '../../services/interfaces';
+import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
 import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
@@ -25,10 +12,13 @@ import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-node-form',
+  styleUrls: ['./node-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
+  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+  @ViewChild('scrollContainer', {static: false}) scrollContainer: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -52,10 +42,25 @@ export class NodeFormComponent implements AfterViewInit {
 
   previousLabel: string;
 
-  constructor(protected readonly workspaceManager: WorkspaceManager) {
+  overflow = false;
+
+  constructor(
+    protected readonly workspaceManager: WorkspaceManager
+  ) {
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    const difference = this.scrollContainer.nativeElement.offsetHeight - this.scrollWrapper.nativeElement.offsetHeight;
+    if (this.overflow) {
+      this.overflow = difference + 500 > 0;
+    } else {
+      this.overflow = difference > 0;
+    }
   }
 
   ngAfterViewInit() {
+    setTimeout(() => this.onResize(), 0);
   }
 
   get nodeSubtypeChoices() {
@@ -97,8 +102,8 @@ export class NodeFormComponent implements AfterViewInit {
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
       if (nullIfEmpty(this.node.data.detail) === null
-          && this.node.display_name != null
-          && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
+        && this.node.display_name != null
+        && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
         this.node.style.showDetail = true;
         this.node.data.detail = this.node.display_name;
         this.node.display_name = startCase(this.node.label);
@@ -110,9 +115,9 @@ export class NodeFormComponent implements AfterViewInit {
     } else if (fromDetailNode && !toDetailNode) {
       // If we are moving away from a detail node, restore the display name (sometimes)
       if ((nullIfEmpty(this.node.display_name) === null
-          || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
-          && nullIfEmpty(this.node.data.detail) !== null
-          && this.node.data.detail.length <= 50) {
+        || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
+        && nullIfEmpty(this.node.data.detail) !== null
+        && this.node.data.detail.length <= 50) {
         this.node.display_name = this.node.data.detail;
         this.node.data.detail = '';
       }
@@ -249,7 +254,8 @@ export class NodeFormComponent implements AfterViewInit {
       entityType = 'chemical';
     } else if (entityType === 'species') {
       entityType = 'taxonomy';
-    // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node metadata.
+      // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node
+      // metadata.
     } else if (entityType === 'gene') {
       organism = '9606';
     }
