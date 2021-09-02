@@ -1,5 +1,5 @@
 /**
- * Commonly-used imports are grouped here for simplier use by feature modules.
+ * Commonly-used imports are grouped here for simpler use by feature modules.
  */
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -71,14 +71,15 @@ import {
   DataTransferDataService,
 } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-
-} from './services/highlight-text.service';
+import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
 import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
+import { ObjectPathComponent } from './components/object-path/object-path.component';
+import { ObjectMenuComponent } from './components/object-menu/object-menu.component';
+import { ProjectIconComponent } from './components/project-icon/project-icon.component';
+import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
+import { ModuleHeaderComponent } from './components/module-header/module-header.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -124,6 +125,10 @@ const components = [
   ResultControlComponent,
   PaginationComponent,
   LinksPanelComponent,
+  ObjectPathComponent,
+  ObjectMenuComponent,
+  ProjectIconComponent,
+  ProjectMenuComponent,
 ];
 
 @NgModule({
@@ -155,6 +160,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
+    ModuleHeaderComponent,
   ],
   providers: [
     ApiService,
@@ -204,6 +210,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
+    ModuleHeaderComponent,
   ],
 })
 export class SharedModule {
