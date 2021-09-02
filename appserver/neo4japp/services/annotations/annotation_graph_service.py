@@ -1,8 +1,8 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from flask import current_app
 
-from .constants import DatabaseType, EntityType
+from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
@@ -177,7 +177,6 @@ class AnnotationGraphService(GraphConnection):
     ) -> GeneOrProteinToOrganism:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
         data_sources: Dict[str, str] = {}
-        temp_gene_to_organism: Dict[str, Tuple[str, Dict[str, dict]]] = {}
 
         result = self.exec_read_query_with_params(
             get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
@@ -190,34 +189,15 @@ class AnnotationGraphService(GraphConnection):
             data_source = row['data_source']
             data_source_key = f'{gene_synonym}{organism_id}'
 
-            # using gene_synonym and organism id as the key
-            # we are guaranteed to have exactly one copy (first one or NCBI)
-            # and be able to choose NCBI over BioCyc
-            if data_source_key not in data_sources:
-                # not in data_sources means not in temp_gene_to_organism
-                temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
-                data_sources[data_source_key] = data_source
-            else:
-                # data_source_key in data_sources
-                if data_source == DatabaseType.NCBI_GENE.value and data_sources[data_source_key] != data_source:  # noqa
-                    temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
-                    data_sources[data_source_key] = data_source
+            data_sources[data_source_key] = data_source
 
-        # this will still not work if a gene has both BioCyc and NCBI
-        # e.g CRP
-        # if BioCyc shows up in the result first, it will get used
-        # but with the new model in the graph, there will only be a NCBI row
-        # if the BioCyc gene comes back, in the if statement
-        # we add another if to check the data_sources[key] == NCBI or BioCyc
-        for _, v in temp_gene_to_organism.items():
-            syn_key, data_dict = v
-            if syn_key in gene_to_organism_map:
-                curr_gene_name = next(iter(data_dict))
-                # keep the first gene/organism since can't infer which to use
-                if curr_gene_name not in gene_to_organism_map[syn_key]:
-                    gene_to_organism_map[syn_key] = {**gene_to_organism_map[syn_key], **data_dict}
+            if gene_to_organism_map.get(gene_synonym, None) is not None:
+                if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
+                else:
+                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[syn_key] = data_dict
+                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
         return GeneOrProteinToOrganism(matches=gene_to_organism_map, data_sources=data_sources)
 
