@@ -142,7 +142,7 @@
               <canvas #canvas class="graph-view" [class.drop-target]="dropTargeted"></canvas>
             </div>
           </as-split-area>
-          <as-split-area size="250"
+          <as-split-area size="256"
                          [order]="1" #infoPanelSidebar>
             <ng-container
               *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else graphInfo">
