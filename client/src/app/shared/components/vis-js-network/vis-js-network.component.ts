@@ -11,7 +11,7 @@ import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { FindOptions, compileFind, tokenizeQuery } from '../../utils/find';
-import { isNodeMatching, isLinkMatching } from '../../../sankey-viewer/components/search-match';
+import { isNodeMatching } from '../../../sankey-viewer/components/search-match';
 
 
 @Component({
@@ -80,7 +80,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   currentCentralGravity: number;
 
   currentSearchIndex: number;
-  searchResults: Set<Node>;
+  searchResults: Array<Node>;
   searchQuery: string;
 
   cursorStyle: string;
@@ -119,7 +119,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.currentSmooth = networkEdgeSmoothers.DYNAMIC;
 
     this.currentSearchIndex = 0;
-    this.searchResults = new Set();
+    this.searchResults = [];
     this.searchQuery = '';
 
     this.cursorStyle = 'default';
@@ -298,13 +298,13 @@ export class VisJsNetworkComponent implements AfterViewInit {
    */
   findMatching(terms: string[], options: FindOptions = {}) {
     const matcher = compileFind(terms, options);
-    const matches = new Set();
+    const matches = [];
 
     const nodes = this.networkData.nodes.get();
 
     for (const node of nodes) {
       if (isNodeMatching(matcher, node)) {
-        matches.add(node);
+        matches.push(node);
       }
     }
 
@@ -313,13 +313,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   searchQueryChanged() {
     // Need to revert the previous search results back to their original values
-    if (this.searchResults.size > 0) {
-      [...this.searchResults].forEach(node => {
-        this.networkData.nodes.update({
-          ...node,
-          borderWidth: 1,
-        });
-      });
+    if (this.searchResults.length > 0) {
+      this.networkData.nodes.update(this.searchResults.map(({id}) => this.unhighlightNode(id)));
     }
 
     if (this.searchQuery !== '') {
@@ -332,14 +327,16 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
       // Set the index to -1, since we call `findNext` immediately after this function is called and want the index to be 0
       this.currentSearchIndex = -1;
-      [...this.searchResults].forEach(node => this.highlightNode(node.id));
+      this.networkData.nodes.update(this.searchResults.map(({id}) => this.highlightNode(id)));
+    } else {
+      this.searchResults = [];
     }
   }
 
   findNext() {
-    if (this.searchResults.size > 0) {
+    if (this.searchResults.length > 0) {
       // If we're about to go beyond the search result total, wrap back to the beginning
-      if (this.currentSearchIndex + 1 === this.searchResults.size) {
+      if (this.currentSearchIndex + 1 === this.searchResults.length) {
         this.currentSearchIndex = 0;
       } else {
         this.currentSearchIndex += 1;
@@ -349,10 +346,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   findPrevious() {
-    if (this.searchResults.size > 0) {
+    if (this.searchResults.length > 0) {
       // If we're about to reach negative indeces, then wrap to the end
       if (this.currentSearchIndex - 1 === -1) {
-        this.currentSearchIndex = this.searchResults.size - 1;
+        this.currentSearchIndex = this.searchResults.length - 1;
       } else {
         this.currentSearchIndex -= 1;
       }
@@ -369,22 +366,36 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   highlightNode(nodeId: number | string) {
-    const nodeToHighlight = this.networkData.nodes.get(nodeId);
+    // do not update to initial position
+    const {x, y, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
     const nodeColor = (nodeToHighlight.color as Color);
+    // @ts-ignore
+    nodeToHighlight._initialBorderWidth = nodeToHighlight.borderWidth;
+    // @ts-ignore
+    nodeToHighlight._initialColor = nodeColor;
     nodeToHighlight.borderWidth = 2;
     nodeToHighlight.color = {
       ...nodeColor,
       border: 'red'
     } as Color;
-    this.networkData.nodes.update(nodeToHighlight);
+    return nodeToHighlight;
+  }
+
+  unhighlightNode(nodeId: number | string) {
+    // do not update to initial position
+    // @ts-ignore
+    const {x, y, _initialBorderWidth = 1, _initialColor, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
+    nodeToHighlight.borderWidth = _initialBorderWidth;
+    nodeToHighlight.color = _initialColor;
+    return nodeToHighlight;
   }
 
   /**
    * Contains all of the event handling features for the network graph.
    */
   setupEventBinds() {
-    const {selected} = this;
-    this.networkGraph.on('stabilizationIterationsDone', (params) => {
+    const {selected, nodeHover, nodeBlur} = this;
+    this.networkGraph.on('stabilizationIterationsDone', _ => {
       this.stabilized = true;
       this.networkGraph.fit();
     });
@@ -398,7 +409,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.networkGraph.on('select', ({nodes, edges}) => selected.next({nodes, edges}));
     this.networkGraph.on('deselectNode', ({nodes, edges}) => selected.next({nodes, edges}));
     this.networkGraph.on('deselectEdge', ({nodes, edges}) => selected.next({nodes, edges}));
-    const {nodeHover, nodeBlur} = this;
     this.networkGraph.on('hoverNode', function({node: nodeId}) {
       const node = this.body.nodes[nodeId];
       nodeHover.emit(node.options);
