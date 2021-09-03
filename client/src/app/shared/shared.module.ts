@@ -1,5 +1,5 @@
 /**
- * Commonly-used imports are grouped here for simplier use by feature modules.
+ * Commonly-used imports are grouped here for simpler use by feature modules.
  */
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -46,7 +46,7 @@ import { CollapsibleWindowComponent } from './components/collapsible-window.comp
 import { GenericFileUploadComponent } from './components/generic-file-upload/generic-file-upload.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
-import { ShareDialogComponent } from './components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from './components/dialog/copy-link-dialog.component';
 import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
 import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
 import { GenericTableComponent } from './components/table/generic-table.component';
@@ -74,6 +74,11 @@ import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.pr
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
 import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
+import { ObjectPathComponent } from './components/object-path/object-path.component';
+import { ObjectMenuComponent } from './components/object-menu/object-menu.component';
+import { ProjectIconComponent } from './components/project-icon/project-icon.component';
+import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
+import { ModuleHeaderComponent } from './components/module-header/module-header.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -106,7 +111,7 @@ const components = [
   GenericFileUploadComponent,
   ModuleErrorComponent,
   ModuleProgressComponent,
-  ShareDialogComponent,
+  CopyLinkDialogComponent,
   GenericTableComponent,
   AnnotationConfigurationTableComponent,
   HighlightTextComponent,
@@ -120,14 +125,18 @@ const components = [
   PaginationComponent,
   LinksPanelComponent,
   TreeViewComponent,
-  ObjectExplorerComponent
+  ObjectExplorerComponent,
+  ObjectPathComponent,
+  ObjectMenuComponent,
+  ProjectIconComponent,
+  ProjectMenuComponent,
 ];
 
 @NgModule({
   entryComponents: [
     MessageDialogComponent,
     ProgressDialogComponent,
-    ShareDialogComponent,
+    CopyLinkDialogComponent,
     LinksPanelComponent,
   ],
   imports: [
@@ -152,6 +161,7 @@ const components = [
     NodeTextStylePipe,
     ScrubHtmlPipe,
     AddStatusPipe,
+    ModuleHeaderComponent,
   ],
   providers: [
     ApiService,
@@ -201,6 +211,7 @@ const components = [
     NodeTextStylePipe,
     NgbModule,
     AddStatusPipe,
+    ModuleHeaderComponent,
   ],
 })
 export class SharedModule {
