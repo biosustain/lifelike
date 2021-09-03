@@ -1,7 +1,7 @@
 """migrate .sankey to .graph
 
 Revision ID: ba94cdb023f4
-Revises: 0b082b5d8f1f
+Revises: 0e90858dd367
 Create Date: 2021-08-09 11:34:14.879612
 
 """
