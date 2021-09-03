@@ -7,21 +7,17 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { getObjectLabel } from '../utils/objects';
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { getObjectLabel } from '../../../file-browser/utils/objects';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
 import { cloneDeep } from 'lodash';
-import { ObjectVersion } from '../models/object-version';
-import {
-  GraphClipboardData,
-  TYPE_STRING,
-} from '../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
-import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../services/object-type.service';
+import { ObjectVersion } from '../../../file-browser/models/object-version';
+import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../../../file-browser/services/object-type.service';
 import { Observable } from 'rxjs';
 import { mergeMap, shareReplay } from 'rxjs/operators';
 

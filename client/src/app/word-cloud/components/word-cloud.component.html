@@ -1,63 +1,60 @@
-<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask?.status$ | async) as status">
-  <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
-                       style="z-index: 2">
-    <div>
-      Downloading annotations...
-    </div>
-  </app-module-progress>
+<div class="module" appContainerBreakpoints *ngIf="(loadTask?.status$ | async) as status">
+    <app-module-progress *ngIf="status.running">
+        Downloading annotations...
+    </app-module-progress>
 
-  <app-module-error *ngIf="status.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
-                    [error]="status.error" style="z-index: 2">
-    <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-  </app-module-error>
+    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
 
-  <div class="position-absolute w-100 h-100 d-flex flex-column" [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}">
-    <div class="module">
-      <div class="module-header">
-        <div class="module-title-bar d-flex justify-content-between">
-          <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">{{ title }}</h1>
-          <div class="d-flex">
-            <div class="d-flex align-items-center mr-3">
-              <div class="custom-control custom-checkbox">
+    <ng-template #tabTitle>{{ title }}</ng-template>
+    <app-module-header
+            [object]="object"
+            [titleTemplate]="tabTitle"
+            [showObjectMenu]="false"
+    >
+        <div class="d-flex align-items-center px-3 mx-auto">
+            <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" [id]="id + '-toggle-shown-text-checkbox'"
-                      [checked]="false"
-                      (change)="toggleShownText()">
-                <label class="custom-control-label" [for]="id + '-toggle-shown-text-checkbox'">Show Primary Names</label>
-              </div>
+                       [checked]="false"
+                       (change)="toggleShownText()">
+                <label class="custom-control-label" [for]="id + '-toggle-shown-text-checkbox'">Show Primary
+                    Names</label>
             </div>
-            <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
-              <button class="btn btn-secondary text-nowrap"
-                      ngbTooltip="Copy Cloud to Clipboard"
-                      placement="bottom top left right"
-                      (click)="copyWordCloudToClipboard()">
+        </div>
+        <div class="btn-group ml-auto d-flex align-items-stretch ml-auto" role="group">
+            <button class="btn btn-secondary text-nowrap"
+                    ngbTooltip="Copy Cloud to Clipboard"
+                    placement="bottom top left right"
+                    (click)="copyWordCloudToClipboard()">
                 <i class="fas fa-fw fa-copy"></i>
-              </button>
-              <button class="btn btn-secondary text-nowrap"
-                      ngbTooltip="Fit Cloud to Window"
-                      placement="bottom top bottom-left top-left"
-                      (click)="fitCloudToWindow()">
+            </button>
+            <button class="btn btn-secondary text-nowrap"
+                    ngbTooltip="Fit Cloud to Window"
+                    placement="bottom top bottom-left top-left"
+                    (click)="fitCloudToWindow()">
                 <i class="fas fa-fw fa-expand-arrows-alt"></i>
-              </button>
-              <button class="btn btn-secondary"
-                      ngbTooltip="Reload Annotations"
-                      container="body"
-                      placement="bottom top bottom-right bottom-left top-right top-left"
-                      (click)="getAnnotations()">
+            </button>
+            <button class="btn btn-secondary"
+                    ngbTooltip="Reload Annotations"
+                    container="body"
+                    placement="bottom top bottom-right bottom-left top-right top-left"
+                    (click)="getAnnotations()">
                 <i class="fa fa-fw fa-sync"></i>
-              </button>
-              <button class="btn btn-secondary"
-                      (click)="toggleFiltersPanel()"
-                      ngbTooltip="Show Annotation Filters"
-                      container="body"
-                      placement="bottom top bottom-right top-right">
+            </button>
+            <button class="btn btn-secondary"
+                    (click)="toggleFiltersPanel()"
+                    ngbTooltip="Show Annotation Filters"
+                    container="body"
+                    placement="bottom top bottom-right top-right">
                 <i class="fa fa-fw fa-filter"></i>
-              </button>
-              <div *ngIf="sortingAlgorithms.length>1"
-                   ngbDropdown container="body" class="btn-group" role="group"
-                   ngbTooltip="Method for word size calculation"
-                   placement="bottom-right top-right">
+            </button>
+            <div *ngIf="sortingAlgorithms.length>1"
+                 ngbDropdown container="body" class="btn-group" role="group"
+                 ngbTooltip="Method for word size calculation"
+                 placement="bottom-right top-right">
                 <button class="btn btn-secondary" ngbDropdownToggle>
-                  <i class="fas fa-sort-size-down"></i>
+                    <i class="fas fa-sort-size-down"></i>
                     <span class="mx-2">{{sorting.name}}</span>
                 </button>
                 <app-sorting-algorithms [algorithms]="sortingAlgorithms"
@@ -65,50 +62,48 @@
                                         [selected]="sorting"
                                         ngbDropdownMenu>
                 </app-sorting-algorithms>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-      <as-split unit="pixel"
-                direction="horizontal"
-                [gutterSize]="5">
+        <ng-content select="[header]"></ng-content>
+    </app-module-header>
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="5">
         <as-split-area [order]="0">
-          <ng-container *ngIf="annotationData.length === 0">
-            <ngb-alert [dismissible]="false">
-              No entities (annotations) found.
-            </ngb-alert>
-          </ng-container>
-          <div #wordCloudWrapper class="h-100 w-100 overflow-hidden">
-            <svg #wordCloudSvg>
-              <g #wordCloudGroup></g>
-            </svg>
-            <div #wordCloudTooltip class="tooltip bg-white rounded p-2" style="border: 2px solid; opacity: 1;"></div>
-          </div>
+            <ng-container *ngIf="annotationData.length === 0">
+                <ngb-alert [dismissible]="false">
+                    No entities (annotations) found.
+                </ngb-alert>
+            </ng-container>
+            <div #wordCloudWrapper class="h-100 w-100 overflow-hidden">
+                <svg #wordCloudSvg>
+                    <g #wordCloudGroup></g>
+                </svg>
+                <div #wordCloudTooltip class="tooltip bg-white rounded p-2"
+                     style="border: 2px solid; opacity: 1;"></div>
+            </div>
         </as-split-area>
         <as-split-area [visible]="filtersPanelOpened"
                        size="340"
                        [order]="1"
                        [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
-          <div class="w-100 h-100 p-3">
-            <div class="annotation-filter-btns-container">
-              <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
-                      type="button"
-                      (click)="toggleFiltersPanel()">
-                <i class="fa fa-close"></i>
-              </button>
+            <div class="w-100 h-100 p-3">
+                <div class="annotation-filter-btns-container">
+                    <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
+                            type="button"
+                            (click)="toggleFiltersPanel()">
+                        <i class="fa fa-close"></i>
+                    </button>
+                </div>
+                <app-word-cloud-annotation-filter
+                        [clickableWords]="true"
+                        (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
+                        [sortingAlgorithm]="sorting"
+                        [annotationData]="annotationData"
+                        (wordVisibilityOutput)="updateWordVisibilityMap($event)"
+                ></app-word-cloud-annotation-filter>
             </div>
-            <app-word-cloud-annotation-filter
-              [clickableWords]="true"
-              (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
-              [sortingAlgorithm]="sorting"
-              [annotationData]="annotationData"
-              (wordVisibilityOutput)="updateWordVisibilityMap($event)"
-            ></app-word-cloud-annotation-filter>
-          </div>
         </as-split-area>
-      </as-split>
-    </div>
-  </div>
+    </as-split>
+    <div #hiddenTextAreaWrapper style="display: none;"></div>
 </div>
-<div #hiddenTextAreaWrapper style="display: none;"></div>

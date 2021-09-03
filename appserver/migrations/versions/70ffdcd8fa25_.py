@@ -68,7 +68,11 @@ def data_upgrades():
         tableclause1.c.custom_annotations
     ]).where(tableclause1.c.custom_annotations != '[]'))
 
-    for chunk in window_chunk(files, 25):
+    """Setting window chunk to 1 because we were having OOM issues
+    since the JSONs can be very big (on PROD)
+    """
+
+    for chunk in window_chunk(files, 1):
         need_to_update = []
         for fid, custom in chunk:
             new_customs = []
@@ -100,7 +104,7 @@ def data_upgrades():
         tableclause1.c.annotations
     ]).where(tableclause1.c.annotations != '[]'))
 
-    for chunk in window_chunk(files, 25):
+    for chunk in window_chunk(files, 1):
         need_to_update = []
         for fid, annotations_json in chunk:
             new_annotations = []
@@ -136,7 +140,7 @@ def data_upgrades():
 
             if type(annotations_json) is list:
                 # stage has bad data from previous bad implementation
-                annotations = annotations_json[0]['documents'][0]['passages'][0]['annotations'] = new_annotations  # noqa
+                annotations_json[0]['documents'][0]['passages'][0]['annotations'] = new_annotations  # noqa
             else:
                 annotations_json['documents'][0]['passages'][0]['annotations'] = new_annotations
             need_to_update.append({'id': fid, 'annotations': annotations_json})
@@ -162,7 +166,7 @@ def data_upgrades():
         tableclause2.c.annotation
     ]).where(tableclause2.c.type == 'inclusion'))
 
-    for chunk in window_chunk(globals, 25):
+    for chunk in window_chunk(globals, 1):
         need_to_update = []
         for gid, inclusion in chunk:
             if inclusion['meta']['idType']:

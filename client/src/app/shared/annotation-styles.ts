@@ -1,5 +1,3 @@
-import { isNullOrUndefined } from 'util';
-
 // TODO - Create sub-types for mutation
 // - snp
 // - sub

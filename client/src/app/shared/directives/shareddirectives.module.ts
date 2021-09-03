@@ -10,6 +10,7 @@ import { TabSelectableDirective } from './tab-selectable.directive';
 import { ContextMenuBodyDirective, ContextMenuDirective } from './context-menu.directive';
 import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
 import { DataTransferDataDirective } from './data-transfer-data.directive';
+import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
 
 const directives = [
   DebounceClickDirective,
@@ -26,6 +27,7 @@ const directives = [
   MouseNavigableDirective,
   MouseNavigableItemDirective,
   DataTransferDataDirective,
+  FilesystemObjectTargetDirective,
 ];
 
 @NgModule({
