@@ -20,6 +20,7 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TruncatePipe } from '../../shared/pipes';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -42,6 +43,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   data;
   title: string;
   error: any;
+  object: FilesystemObject;
 
   sankeyData: SankeyData;
   networkTraces;
@@ -62,6 +64,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask((id) => {
       return combineLatest(
+        this.filesystemService.get(id),
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
@@ -69,8 +72,9 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       );
     });
 
-    this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [fileContent]}) => {
+    this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [object, fileContent]}) => {
       const {links, graph, nodes, ...data} = fileContent;
+      this.object = object;
       this.networkTraces = graph.trace_networks;
       this.sankeyData = {
         ...data,
