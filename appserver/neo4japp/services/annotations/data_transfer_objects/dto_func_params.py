@@ -1,8 +1,8 @@
 import attr
 
-from typing import Dict, List
+from typing import List
 
-from neo4japp.services.annotations.data_transfer_objects import PDFWord
+from .dto import PDFWord
 
 
 """Data Transfer Objects related to consolidating multiple

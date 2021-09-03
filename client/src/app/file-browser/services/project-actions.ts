@@ -4,7 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProjectImpl } from '../models/filesystem-object';
-import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { ProjectEditDialogComponent, ProjectEditDialogValue } from '../components/dialog/project-edit-dialog.component';
 import { ProjectCreateRequest } from '../schema';
 import { BehaviorSubject } from 'rxjs';
@@ -86,7 +86,7 @@ export class ProjectActions {
   }
 
   openShareDialog(project: ProjectImpl): Promise<any> {
-    const modalRef = this.modalService.open(ShareDialogComponent);
+    const modalRef = this.modalService.open(CopyLinkDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}/${project.getURL()}`;
     return modalRef.result;
   }
