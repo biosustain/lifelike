@@ -146,11 +146,12 @@ $non-active-node-opacity: .50;
           &[highlighted=true], &[selectedTrace=true] {
             opacity: $link-opacity;
 
-            stroke: red;
-            opacity: 100%;
-            stroke-opacity: 100% !important;
-            stroke-width: 3px;
-
+            &[thickness='0'] {
+              stroke: red;
+              opacity: 100%;
+              stroke-opacity: 100% !important;
+              stroke-width: 3px;
+            }
           }
 
 
