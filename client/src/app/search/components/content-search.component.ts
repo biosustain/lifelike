@@ -149,7 +149,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       q.push(params.q);
     }
     if (params.hasOwnProperty('types')) {
-      params.types.forEach(type => q.push(`type:${type.shorthand}`));
+      if (params.types.length) {
+        q.push(`(${params.types.map(type => `type:${type.shorthand}`).join(' OR ')})`);
+      }
     }
     return q.join(' ');
   }
@@ -299,6 +301,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * Attempts to extract advanced search options from the query string paramter 'q'. If any advanced options are found, they are removed
    * from 'q' and added to the params object.
    * @param params object representing the content search options
+   * @deprecated This method probably won't behave as expected with the introduction of the more complicated search expressions. E.g.,
+   * "(type:A OR type:B) human" will result in a query string "( OR human", and will only identify type:A. Rather than implement a
+   * complicated parser, the current implementation simply opts to not extract the options from the query string, in favor of the user
+   * re-selecting them by hand.
    */
    extractAdvancedParamsFromString(q: string) {
     const advancedParams: ContentSearchOptions = {};
@@ -337,7 +343,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       size: 'md',
     });
     // Get the starting options from the content search form query
-    modalRef.componentInstance.params = this.extractAdvancedParamsFromString(this.queryString);
+    modalRef.componentInstance.params = { q: this.queryString } as ContentSearchOptions;
     modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
       // Advanced search was triggered

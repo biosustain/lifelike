@@ -824,8 +824,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         (jQuery(el) as any).qtip(
           {
 
-            content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
-                <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
+            content: `
+              <button
+                style="background: none; border: none;"
+                onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()"
+              >Create Annotation</button> | 
+              <button
+                style="background: none; border: none;"
+                onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()"
+              >Copy Text</button>`,
             position: {
               my: 'bottom center',
               target: 'mouse',
