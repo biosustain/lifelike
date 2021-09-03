@@ -29,8 +29,10 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     collectionSize = 0;
     currentPage = 1;
-    pageSize = 100;
+    readonly pageSize = 100;
     selection = new SelectionModel(true, []);
+    globalAnnotationTypeChoices = ['Inclusion', 'Exclusion'];
+    globalAnnotationType = 'inclusion';
 
     private readonly defaultLocator: StandardRequestOptions = {
         limit: 100,
@@ -44,7 +46,8 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     });
 
     readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
-        (locator: PaginatedRequestOptions) => this.globalAnnotationService.getAnnotations(locator),
+        (locator: PaginatedRequestOptions) => this.globalAnnotationService.getAnnotations(
+            locator, this.globalAnnotationType),
     );
 
     locator: StandardRequestOptions = {
@@ -104,10 +107,16 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.subscriptions.unsubscribe();
     }
 
+    selectGlobalType(selection: string) {
+        this.globalAnnotationType = selection.toLowerCase();
+        this.goToPage(1);
+    }
+
     goToPage(page: number) {
         this.currentPage = page;
         this.locator = {...this.locator, page};
-        this.subscriptions.add(this.globalAnnotationService.getAnnotations(this.locator).pipe().subscribe(
+        this.subscriptions.add(this.globalAnnotationService.getAnnotations(
+            this.locator, this.globalAnnotationType).pipe().subscribe(
             (({results: annotations}) => {
                 this.results.replace(annotations);
             })
