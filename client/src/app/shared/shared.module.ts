@@ -73,6 +73,7 @@ import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.
 import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
+import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -118,7 +119,8 @@ const components = [
   ResultControlComponent,
   PaginationComponent,
   LinksPanelComponent,
-  TreeViewComponent
+  TreeViewComponent,
+  ObjectExplorerComponent
 ];
 
 @NgModule({

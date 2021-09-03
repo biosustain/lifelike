@@ -160,10 +160,14 @@ export class SankeyControllerService {
     const _inNodes = node_sets[networkTrace.sources];
     const _outNodes = node_sets[networkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
+    const qn = new Map();
+    networkTraceLinks.forEach(l => {
+      qn.set(l.source + ' ' + l.target, l);
+    });
     this.dataToRender.next(
       this.linkGraph({
         nodes: networkTraceNodes,
-        links: networkTraceLinks,
+        links: [...qn.values()],
         _inNodes, _outNodes
       })
     );

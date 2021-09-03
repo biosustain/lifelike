@@ -363,10 +363,42 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async nodeMouseOver(element, data) {
     this.highlightNode(element);
-    const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
-    this.highlightNodeGroup(nodeGroup);
-    const traces = new Set([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
-    this.highlightTraces(traces);
+    const links = new Set();
+
+    function highlightLinks(data) {
+      highlightTLinks(data);
+      highlightSLinks(data);
+    }
+
+    function highlightTLinks(data) {
+      [...data._targetLinks].forEach(l => {
+        links.add(l.id);
+        if (!l._circular) {
+          highlightTLinks(l._source);
+        }
+      });
+    }
+
+    function highlightSLinks(data) {
+      [...data._sourceLinks].forEach(l => {
+        links.add(l.id);
+        if (!l._circular) {
+          highlightSLinks(l._target);
+        }
+      });
+    }
+
+    highlightLinks(data);
+    // this.linkSelection
+    //   .style('stroke', l => links.has(l.id) && 'blue')
+    //   .style('stroke-width', l => links.has(l.id) && 3);
+    this.assignAttrAndRaise(this.linkSelection, 'highlighted', (l) => links.has(l.id));
+    // this.linkSelection
+    //   .style('stroke', l => links.has(l.id) && 'pink');
+    // const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
+    // this.highlightNodeGroup(nodeGroup);
+    // const traces = new Set([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
+    // this.highlightTraces(traces);
   }
 
   async nodeMouseOut(element, _data) {
@@ -438,15 +470,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // Assign attr based on accessor and raise trueish results
   assignAttrAndRaise(selection, attr, accessor) {
     selection
-      .each(function(s) {
-        // use each so we search traces only once
-        const selected = accessor(s);
-        const element = d3.select(this)
-          .attr(attr, selected);
-        if (selected) {
-          element.raise();
-        }
-      });
+      .attr(attr, accessor)
+      .filter(accessor)
+      .call(e => e.raise());
   }
 
   // region Select
@@ -502,6 +528,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.linkSelection
       .attr('searched', undefined);
   }
+
   // endregion
 
   // region Focus
@@ -680,7 +707,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0)
+    .attr('width', ({_x1, _x0}) => _x1 - _x0);
 
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
