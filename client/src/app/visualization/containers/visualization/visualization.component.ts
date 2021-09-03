@@ -208,7 +208,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * @param query string to search for
    */
   search(query: string) {
-    this.workspaceManager.navigateByUrl(`/search?q=${query}`);
+    this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
   }
 
   openNoResultsFromExpandDialog() {
