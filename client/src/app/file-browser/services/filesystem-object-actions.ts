@@ -1,13 +1,13 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { BehaviorSubject, forkJoin, from, merge, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
+import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -15,10 +15,6 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from '../utils/objects';
 import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
@@ -68,43 +64,36 @@ export class FilesystemObjectActions {
    * @param target the object to export
    */
   openExportDialog(target: FilesystemObject): Promise<boolean> {
-    return this.objectTypeService.get(target).pipe(
-      mergeMap(typeProvider => typeProvider.getExporters(target)),
-      mergeMap(exporters => {
-        if (exporters.length) {
-          const dialogRef = this.modalService.open(ObjectExportDialogComponent);
-          dialogRef.componentInstance.title = `Export ${getObjectLabel(target)}`;
-          dialogRef.componentInstance.exporters = exporters;
-          dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
-            const progressDialogRef = this.createProgressDialog('Generating export...');
-
-            try {
-              return value.exporter.export(value.exportLinked).pipe(
-                take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
-                finalize(() => progressDialogRef.close()),
-                map((file: File) => {
-                  openDownloadForBlob(file, file.name);
-                  return true;
-                }),
-                this.errorHandler.create({label: 'Export object'}),
-              ).toPromise();
-            } catch (e) {
-              progressDialogRef.close();
-              throw e;
-            }
-          };
-
-          return from(dialogRef.result.catch(() => false));
-        } else {
-          this.messageDialog.display({
+    const dialogRef = this.modalService.open(ObjectExportDialogComponent);
+    dialogRef.componentInstance.target = target;
+    dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
+      const progressDialogRef = this.createProgressDialog('Generating export...');
+      try {
+        return value.exporter.export(value.exportLinked).pipe(
+          take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
+          finalize(() => progressDialogRef.close()),
+          map((file: File) => {
+            openDownloadForBlob(file, file.name);
+            return true;
+          }),
+          this.errorHandler.create({label: 'Export object'}),
+        ).toPromise();
+      } catch (e) {
+        progressDialogRef.close();
+        throw e;
+      }
+    };
+    dialogRef.componentInstance.dismiss =  (error) => {
+      if (error) {
+        this.messageDialog.display({
             title: 'No Export Formats',
             message: `No export formats are supported for ${getObjectLabel(target)}.`,
             type: MessageType.Warning,
-          } as MessageArguments);
-          return of(false);
-        }
-      }),
-    ).toPromise();
+        } as MessageArguments);
+      }
+      return of(false);
+    };
+    return from(dialogRef.result.catch(() => false)).toPromise();
   }
 
   /**
