@@ -27,7 +27,9 @@ node_labels = {
     EntityType.PROTEIN.value: 'Protein',
     EntityType.PHENOTYPE.value: 'Phenotype',
     EntityType.ENTITY.value: 'Entity',
-    EntityType.COMPANY.value: 'Company'
+    EntityType.COMPANY.value: 'Company',
+    EntityType.LAB_SAMPLE.value: 'LabSample',
+    EntityType.LAB_STRAIN.value: 'LabStrain'
 }
 
 
@@ -127,6 +129,25 @@ def get_mesh_by_ids():
     return """
     MATCH (n:db_MESH:TopicalDescriptor) WHERE n.eid IN $ids
     RETURN n.eid AS mesh_id, n.name AS mesh_name
+    """
+
+
+def get_delete_global_inclusion_query():
+    return """
+    UNWIND $node_ids AS node_ids
+    MATCH (s)-[r:HAS_SYNONYM]-(n)
+    WHERE id(n) = node_ids[0] AND id(s) = node_ids[1]
+    DELETE r
+    WITH s
+    MATCH (s)-[r:HAS_SYNONYM]-()
+    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
+    WITH s, collect(r) AS synonym_rel
+    CALL apoc.do.when(
+        size(synonym_rel) = 0,
+        'REMOVE s:GlobalInclusion', '', {synonym_rel: synonym_rel, s:s}
+    )
+    YIELD value
+    RETURN COUNT(*)
     """
 
 

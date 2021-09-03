@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, HostBinding } from '@angular/core';
 import { UserError } from '../exceptions';
 import { ErrorHandler } from '../services/error-handler.service';
 import { Observable, of } from 'rxjs';
@@ -12,6 +12,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
   ],
 })
 export class ModuleErrorComponent {
+  @HostBinding('class') @Input() class = 'position-absolute w-100 h-100 bg-white p-4';
   userError$: Observable<UserError>;
   messageType = MessageType;
   type: MessageType;

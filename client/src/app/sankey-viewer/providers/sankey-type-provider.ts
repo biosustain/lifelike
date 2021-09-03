@@ -31,7 +31,7 @@ export class SankeyTypeProvider extends AbstractObjectTypeProvider {
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
-      name: 'Sankey',
+      name: 'Graph',
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
