@@ -2,6 +2,8 @@
         [config]="config"
         [data]="data"
         [legend]="legend"
+        (nodeHover)="nodeHover($event)"
+        (nodeBlur)="nodeBlur($event)"
 >
     <ng-template #selection let-nodes="nodes" let-edges="edges">
         <ng-container *ngIf="nodes?.length">

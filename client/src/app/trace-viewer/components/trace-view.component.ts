@@ -19,6 +19,7 @@ import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 
 import { getTraceDetailsGraph } from './traceDetails';
+import { TruncatePipe } from '../../shared/pipes';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -28,7 +29,8 @@ import { getTraceDetailsGraph } from './traceDetails';
     CustomisedSankeyLayoutService, {
       provide: SankeyLayoutService,
       useExisting: CustomisedSankeyLayoutService
-    }
+    },
+    TruncatePipe
   ]
 })
 export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
@@ -49,7 +51,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private sankeyLayout: CustomisedSankeyLayoutService
+    private sankeyLayout: CustomisedSankeyLayoutService,
+    protected readonly truncatePipe: TruncatePipe
   ) {
     const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;
@@ -106,8 +109,10 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         nodes: mainNodes
       },
       sankeyLayout: {
-        nodeLabel,
-        nodeLabelShort
+        nodeLabel
+      },
+      truncatePipe: {
+        transform: truncate
       }
     } = this;
 
@@ -130,6 +135,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         const color = cubehelix(node._color);
         color.s = 0;
         const label = nodeLabel(node);
+        const labelShort = truncate(label, 20);
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
@@ -138,7 +144,9 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
           ...otherProperties,
           color: '' + color,
           databaseLabel: node.type,
-          label: nodeLabelShort(node),
+          label: labelShort,
+          fullLabel: label,
+          labelShort,
           title: label
         };
       } else {
