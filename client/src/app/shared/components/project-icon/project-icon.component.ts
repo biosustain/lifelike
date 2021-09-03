@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ProjectImpl } from '../models/filesystem-object';
+import { ProjectImpl } from '../../../file-browser/models/filesystem-object';
 import { hslToRgb } from 'app/shared/utils/colors';
 
 @Component({

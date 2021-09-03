@@ -11,8 +11,11 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+from os import path
 from sqlalchemy.sql import table, column, and_
 from sqlalchemy.orm.session import Session
+
+import fastjsonschema
 
 from marshmallow import fields
 
@@ -21,13 +24,16 @@ from neo4japp.schemas.base import CamelCaseSchema
 from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
 from neo4japp.models import Files
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table, current_version
 
 # revision identifiers, used by Alembic.
 revision = '0b082b5d8f1f'
 down_revision = '92135aa31f3c'
 branch_labels = None
 depends_on = None
+
+
+directory = path.realpath(path.dirname(__file__))
+schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v4.json')
 
 
 # copied from neo4japp.schemas.enrichment
@@ -122,118 +128,64 @@ def data_upgrades():
         )
     ))
 
-    for chunk in window_chunk(files, 25):
-        files_to_update = []
-        for fid, annos, fcid, raw in chunk:
-            current = raw
-            found_err = False
+    with open(schema_file, 'rb') as f:
+        validate_enrichment_table = fastjsonschema.compile(json.load(f))
+        current_version = '4'
 
+        for chunk in window_chunk(files, 25):
+            files_to_update = []
+            for fid, annos, fcid, raw in chunk:
+                current = raw
+                found_err = False
+
+                try:
+                    json.loads(current)
+                except Exception:
+                    # TODO: what to do with these?
+                    # they're literal strings, e.g 'AK3,AK4/9606/Homo sapiens/...'
+                    # only in STAGE db
+                    continue
+                else:
+                    if annos:
+                        file_obj = {'id': fid}
+                        enriched_table = json.loads(current)
+
+                        if 'result' not in annos and 'version' in annos:
+                            annos = {'result': annos}
+                        annos['result']['version'] = current_version
+                        annos['data'] = enriched_table['data']
+
+                        if 'domainInfo' not in annos['result']:
+                            # in EnrichmentAnnotationsView, the enrichment annotations
+                            # is being returned to the client using EnrichmentTableSchema
+                            # since what is in the db validates against that schema
+                            # it should be the same here
+                            annos = EnrichmentTableSchema().dump(annos)
+                            if not annos:
+                                # if empty then annos is completely incorrect
+                                continue
+
+                        while True:
+                            try:
+                                validate_enrichment_table(annos)
+
+                                if found_err:
+                                    file_obj['enrichment_annotations'] = annos
+
+                                if len(file_obj) > 1:
+                                    files_to_update.append(file_obj)
+                                break
+                            except Exception as e:
+                                found_err = True
+                                err = str(e)
+
+                                if 'data.result.version' in err:
+                                    annos['result']['version'] = current_version
             try:
-                json.loads(current)
+                session.bulk_update_mappings(Files, files_to_update)
+                session.commit()
             except Exception:
-                # TODO: what to do with these?
-                # they're literal strings, e.g 'AK3,AK4/9606/Homo sapiens/...'
-                # only in STAGE db
-                continue
-            else:
-                if annos:
-                    file_obj = {'id': fid}
-                    enriched_table = json.loads(current)
-
-                    if 'result' not in annos and 'version' in annos:
-                        annos = {'result': annos}
-                    annos['result']['version'] = current_version
-                    annos['data'] = enriched_table['data']
-
-                    if 'domainInfo' not in annos['result']:
-                        # in EnrichmentAnnotationsView, the enrichment annotations
-                        # is being returned to the client using EnrichmentTableSchema
-                        # since what is in the db validates against that schema
-                        # it should be the same here
-                        annos = EnrichmentTableSchema().dump(annos)
-                        if not annos:
-                            # if empty then annos is completely incorrect
-                            continue
-
-                    while True:
-                        try:
-                            validate_enrichment_table(annos)
-
-                            if found_err:
-                                file_obj['enrichment_annotations'] = annos
-
-                            if len(file_obj) > 1:
-                                files_to_update.append(file_obj)
-                            break
-                        except Exception as e:
-                            found_err = True
-                            err = str(e)
-
-                            if 'data.result.version' in err:
-                                annos['result']['version'] = current_version
-
-                            if err == 'data.data must be object':
-                                data_split = annos['data'].split('/')
-                                annos['data'] = {
-                                    'genes': data_split[0],
-                                    'taxId': data_split[1],
-                                    'organism': data_split[2],
-                                    'sources': [d for d in data_split[-1].split(',')] if data_split[-1] else []  # noqa
-                                }
-
-                            if 'data.data.sources' in err and 'must be one of' in err:
-                                curr_sources = annos['data']['sources']
-                                new_sources = []
-                                for s in curr_sources:
-                                    if s.lower() == 'biocyc':
-                                        new_sources.append('BioCyc')
-                                    elif s.lower() == 'go':
-                                        new_sources.append('GO')
-                                    elif s.lower() == 'kegg':
-                                        new_sources.append('KEGG')
-                                    elif s.lower() == 'regulon':
-                                        new_sources.append('Regulon')
-                                    elif s.lower() == 'string':
-                                        new_sources.append('String')
-                                    elif s.lower() == 'uniprot':
-                                        new_sources.append('UniProt')
-                                annos['data']['sources'] = new_sources
-
-                            if 'domains must not contain' in err:
-                                acceptable_domains = {'GO', 'BioCyc', 'String', 'Regulon', 'UniProt', 'KEGG'}  # noqa
-                                for gene in annos['result']['genes']:
-                                    if 'domains' not in gene:
-                                        # valid not an error
-                                        continue
-                                    domain_keys = [d for d in gene['domains']]
-                                    for domain in domain_keys:
-                                        if domain not in acceptable_domains:
-                                            data = gene['domains'][domain]
-                                            domain_lowered = domain.lower()
-
-                                            if domain_lowered == 'biocyc':
-                                                gene['domains']['BioCyc'] = data
-                                                gene['domains'].pop(domain)
-                                            elif domain_lowered == 'go':
-                                                gene['domains']['GO'] = data
-                                                gene['domains'].pop(domain)
-                                            elif domain_lowered == 'kegg':
-                                                gene['domains']['KEGG'] = data
-                                                gene['domains'].pop(domain)
-                                            elif domain_lowered == 'regulon':
-                                                gene['domains']['Regulon'] = data
-                                                gene['domains'].pop(domain)
-                                            elif domain_lowered == 'string':
-                                                gene['domains']['String'] = data
-                                                gene['domains'].pop(domain)
-                                            elif domain_lowered == 'uniprot':
-                                                gene['domains']['UniProt'] = data
-                                                gene['domains'].pop(domain)
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+                raise
 
 
 def data_downgrades():

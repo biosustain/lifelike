@@ -752,6 +752,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         exit => exit.remove()
       )
       .attr('fill', linkColor)
+      .attr('thickness', d => d._width)
       .call(join =>
         join.select('title')
           .text(linkTitle)
