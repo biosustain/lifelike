@@ -6,7 +6,7 @@
     <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
-  
+
     <ng-container *ngIf="object">
         <app-module-header [object]="object"
                            (dragStarted)="dragStarted($event)">
@@ -53,7 +53,7 @@
                             </button>
                         </div>
                         <div class="modal-body" [style.whiteSpace]="'pre-line'">
-                            {{ sankeyData.graph.description }}
+                            {{ allData.graph.description }}
                         </div>
                     </ng-template>
                 </button>
@@ -68,7 +68,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <app-object-explorer [dataSource]="allData"></app-object-explorer>                  
+                            <app-object-explorer [dataSource]="allData"></app-object-explorer>
                         </div>
                     </ng-template>
                 </button>
@@ -129,11 +129,11 @@
                   unit="pixel">
             <as-split-area [order]="0">
                 <app-sankey #sankey
-                            *ngIf="filteredSankeyData"
-                            (linkClicked)="openLinkDetails($event)"
-                            (nodeClicked)="openNodeDetails($event)"
+                            *ngIf="dataToRender | async"
+                            (linkClicked)="selectLink($event)"
+                            (nodeClicked)="selectNode($event)"
                             [nodeAlign]="nodeAlign"
-                            [data]="filteredSankeyData"
+                            [data]="dataToRender | async"
                             [normalizeLinks]="options.normalizeLinks"
                             [selectedLinks]="selectedLinks | async"
                             [selectedNodes]="selectedNodes | async"
@@ -179,7 +179,8 @@
                     </div>
                     <div class="dropdown-divider"></div>
                     <div class="border-bottom border-secondary pb-3 mb-3">
-                        <app-sankey-advanced-panel [(options)]="options" (optionsChange)="onOptionsChange()">
+                        <app-sankey-advanced-panel>
+                            <!-- Interacts with view through Sankey Controller service -->
                         </app-sankey-advanced-panel>
                     </div>
                 </div>
