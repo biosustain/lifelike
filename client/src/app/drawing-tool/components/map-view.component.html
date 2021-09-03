@@ -35,7 +35,7 @@
             </app-search-control>
         </div>
     </app-module-header>
-    <div class="module-body m-0 w-100 h-100" style="z-index: 0">
+    <div class="position-relative overflow-hidden flex-fill">
         <ng-container *ngIf="(loadTask.status$ | async) as status">
             <div class="detail-overlay">
                 <app-collapsible-window title="Information" class="flex-fill" [sideCollapse]="true">
