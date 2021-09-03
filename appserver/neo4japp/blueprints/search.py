@@ -100,7 +100,7 @@ def get_types_from_params(q, advanced_args):
     try:
         if advanced_args['types'] != '':
             types = advanced_args['types'].split(';')
-        return f'{q} {" ".join([f"type:{t}" for t in types])}' if len(types) else q
+        return f'{q} ({" OR ".join([f"type:{t}" for t in types])})' if len(types) else q
     except KeyError:
         return q
 

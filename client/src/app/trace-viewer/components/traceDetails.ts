@@ -1,4 +1,8 @@
+import { isNullOrUndefined } from 'util';
+
 import { GraphData } from 'app/interfaces/vis-js.interface';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+
 import { IntermediateNodeType } from '../../sankey-viewer/components/interfaces';
 
 function find(nodeById, id) {
@@ -62,10 +66,6 @@ export const getTraceDetailsGraph = (trace) => {
 
   [startNode, endNode].map(node => {
     node.borderWidth = 5;
-    node.color = {
-      border: 'black',
-      background: '' + node.color
-    };
   });
 
   const segmentSize = Math.ceil(nodes.length / 8);
@@ -100,8 +100,13 @@ export const getTraceDetailsGraph = (trace) => {
     startNode,
     endNode,
     edges,
-    nodes: nodes.map(n => ({
-      ...n
-    }))
+    nodes: nodes.map(n => {
+      const label = n.databaseLabel || 'unknown';
+      const style = annotationTypesMap.get(label.toLowerCase());
+      return {
+        ...n,
+        color: isNullOrUndefined(style) ? '#000' : style.color
+      };
+    })
   } as GraphData;
 };
