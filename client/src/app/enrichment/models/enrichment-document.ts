@@ -281,7 +281,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '5',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -444,7 +443,6 @@ export interface EnrichedGene {
 }
 
 export interface EnrichmentResult {
-  version: '5';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }

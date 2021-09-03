@@ -1,0 +1,36 @@
+<cdk-tree [dataSource]="dataSource" [treeControl]="treeControl" class="ml-3">
+    <!-- This is the tree node template for leaf nodes -->
+    <cdk-nested-tree-node *cdkTreeNodeDef="let node" class="tree-node py-1">
+        <ng-container *ngIf="node.label !== undefined; else rawNodeContent">
+            <!-- Adjust font to match other used icons size -->
+            <i class="fas fa-circle o-80 f-5" [ngStyle]="{
+                        fontSize: '0.5em',
+                        verticalAlign: 'middle'
+                        }"></i>
+            {{ node.label }}
+            <!-- values can be falsy -->
+            <ng-container *ngIf="node.value !== undefined">
+                 : {{node.value}}
+            </ng-container>
+        </ng-container>
+        <ng-template #rawNodeContent>
+            <!-- Allow breaking of long text but maintain whitespaces -->
+            <pre [style.whiteSpace]="'pre-wrap'" class="m-0">{{ node }}</pre>
+        </ng-template>
+    </cdk-nested-tree-node>
+    <!-- This is the tree node template for expandable nodes -->
+    <cdk-nested-tree-node *cdkTreeNodeDef="let node; when: hasChild" class="tree-node py-1">
+        <button class="btn p-0" [attr.aria-label]="'Toggle ' + node.label" cdkTreeNodeToggle>
+            <i [ngClass]="[
+                        'fas',
+                        treeControl.isExpanded(node) ? 'fa-angle-down' : 'fa-angle-right'
+                        ]"
+               [style.verticalAlign]="'middle'"></i>
+            {{node.label}}
+        </button>
+        <!-- Important to postpone render so we can have circular objects -->
+        <div *ngIf="treeControl.isExpanded(node)">
+            <ng-container cdkTreeNodeOutlet></ng-container>
+        </div>
+    </cdk-nested-tree-node>
+</cdk-tree>
