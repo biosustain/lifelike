@@ -28,6 +28,7 @@ export class NodeFormComponent implements AfterViewInit {
     ...LINE_TYPES.entries(),
   ];
   paletteChoices = [...PALETTE_COLORS];
+  private ASSUMED_PANEL_HEIGHT = 450;
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
@@ -49,14 +50,27 @@ export class NodeFormComponent implements AfterViewInit {
   ) {
   }
 
+  changeOverflow(newValue) {
+    if (this.overflow !== newValue) {
+      // stops overflowing
+      if (!newValue && this.infoPanel.activeTab === 'search') {
+        this.infoPanel.activeTab = 'properties';
+      }
+      this.overflow = newValue;
+    }
+  }
+
   @HostListener('window:resize')
   onResize() {
-    const difference = this.scrollContainer.nativeElement.offsetHeight - this.scrollWrapper.nativeElement.offsetHeight;
-    if (this.overflow) {
-      this.overflow = difference + 500 > 0;
-    } else {
-      this.overflow = difference > 0;
-    }
+    const {
+      scrollWrapper: {
+        nativeElement: {
+          offsetHeight
+        }
+      },
+      ASSUMED_PANEL_HEIGHT
+    } = this;
+    this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
   }
 
   ngAfterViewInit() {
