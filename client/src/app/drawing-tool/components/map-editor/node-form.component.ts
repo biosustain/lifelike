@@ -1,6 +1,19 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, HostListener, } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  HostListener,
+} from '@angular/core';
 import { cloneDeep, startCase } from 'lodash';
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from '../../services/interfaces';
+import {
+  DETAIL_NODE_LABELS,
+  isCommonNodeDisplayName,
+  UniversalGraphNode,
+} from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
 import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
@@ -18,7 +31,6 @@ import { InfoPanel } from '../../models/info-panel';
 export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
-  @ViewChild('scrollContainer', {static: false}) scrollContainer: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -45,9 +57,7 @@ export class NodeFormComponent implements AfterViewInit {
 
   overflow = false;
 
-  constructor(
-    protected readonly workspaceManager: WorkspaceManager
-  ) {
+  constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
 
   changeOverflow(newValue) {
@@ -268,8 +278,7 @@ export class NodeFormComponent implements AfterViewInit {
       entityType = 'chemical';
     } else if (entityType === 'species') {
       entityType = 'taxonomy';
-      // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node
-      // metadata.
+    // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node metadata.
     } else if (entityType === 'gene') {
       organism = '9606';
     }
