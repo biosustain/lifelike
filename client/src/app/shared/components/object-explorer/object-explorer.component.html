@@ -3,6 +3,7 @@
                [hasChild]="hasChild"
                [treeNode]="treeNode"
                [nestedTreeNode]="nestTreeNode"
+               [nodeClass]="'treeNode'"
 >
     <!-- This is the tree node template for leaf nodes -->
     <ng-template #treeNode let-node>
@@ -30,7 +31,7 @@
         </ng-container>
         <ng-template #counter>
             <!-- Show counter using css node counting -->
-            <span class="counter"></span>
+            <span [attr.data-counter]="true"></span>
         </ng-template>
     </ng-template>
 </app-tree-view>

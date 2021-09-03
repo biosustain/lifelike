@@ -4,14 +4,13 @@ import { Observable } from 'rxjs';
 
 interface TreeNode {
   label?: string;
-  value?: string | number | boolean;
+  value?: string | number | boolean | any;
   children?: Array<any>;
 }
 
 @Component({
   selector: 'app-object-explorer',
-  templateUrl: './object-explorer.component.html',
-  styleUrls: ['./object-explorer.component.scss']
+  templateUrl: './object-explorer.component.html'
 })
 export class ObjectExplorerComponent {
   _dataSource;
@@ -50,6 +49,7 @@ export class ObjectExplorerComponent {
             n.children = value;
           } else {
             // if text is longer than 20 character show it as collapsible node
+            // @ts-ignore
             if (value.length > 20 || (typeof value === 'object')) {
               n.children = [
                 value
@@ -62,9 +62,9 @@ export class ObjectExplorerComponent {
           return n;
         });
     }
-  };
+  }
 
-  hasChild(node: TreeNode) {
+  hasChild(_, node: TreeNode) {
     return (
       typeof node === 'object'
     ) && (
