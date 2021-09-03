@@ -1,4 +1,4 @@
-.vertical-nav {
+.vertical-nav, .vertical-nav-non-prod {
   background-color: $primary;
 
   a {
@@ -19,4 +19,8 @@
       background: rgba(0, 0, 0, 0.16);
     }
   }
+}
+
+.vertical-nav-non-prod {
+  background-color: $warning;
 }
