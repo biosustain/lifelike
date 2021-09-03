@@ -17,7 +17,8 @@
         </ng-container>
         <ng-template #titleFromTemplate>
             <h1 class="toolbar-title text-truncate mr-1 ml-0" [draggable]="dragStarted.observers.length"
-                (dragstart)="dragStarted.next($event)" [ngTemplateOutlet]="titleTemplate">
+                (dragstart)="dragStarted.next($event)">
+                <ng-container [ngTemplateOutlet]="titleTemplate"></ng-container>
             </h1>
         </ng-template>
         <div ngbDropdown class="d-inline-block mr-4 ml-0" container="body" *ngIf="showObjectMenu">
