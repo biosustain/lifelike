@@ -1,15 +1,17 @@
-import { AfterViewInit, Component, Input, ContentChild } from '@angular/core';
+import { AfterViewInit, Component, Input, ContentChild, Output, EventEmitter } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
-import { DataSet } from 'vis-data';
-import { Color, Edge, Network, Node, Options } from 'vis-network';
+import { DataSet } from 'vis-data/dist/umd';
+import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
 import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
+import { FindOptions, compileFind, tokenizeQuery } from '../../utils/find';
+import { isNodeMatching } from '../../../sankey-viewer/components/search-match';
 
 
 @Component({
@@ -78,19 +80,24 @@ export class VisJsNetworkComponent implements AfterViewInit {
   currentCentralGravity: number;
 
   currentSearchIndex: number;
-  searchResults: Node[];
+  searchResults: Array<Node>;
   searchQuery: string;
 
   cursorStyle: string;
 
   selected;
 
+  @Output() selectionChange = new EventEmitter();
+  @Output() nodeHover = new EventEmitter();
+  @Output() nodeBlur = new EventEmitter();
+
   constructor() {
     this.selected = new BehaviorSubject({nodes: [], edges: []}).pipe(
       map(({nodes, edges}) => ({
         nodes: this.networkData.nodes.get(nodes),
         edges: this.networkData.edges.get(edges)
-      }))
+      })),
+      tap(d => this.selectionChange.emit(d))
     );
 
     this.legend = new Map<string, string[]>();
@@ -286,37 +293,43 @@ export class VisJsNetworkComponent implements AfterViewInit {
   /**
    * Finds all nodes which contain the given substring in their label and returns copies of these nodes. Returning copies ensures we do not
    * accidentally mutate the data.
-   * @param query string to search for in all nodes
+   * @param terms the terms
+   * @param options addiitonal find options
    */
-  searchNodesWithQuery(query: string): Node[] {
-    const lowerCasedQuery = query.toLowerCase();
-    return this.networkData.nodes.get()
-      .filter(
-        node => (node.label as string).toLowerCase().includes(lowerCasedQuery)
-      ).map(node => {
-        return {...node};
-      });
+  findMatching(terms: string[], options: FindOptions = {}) {
+    const matcher = compileFind(terms, options);
+    const matches = [];
+
+    const nodes = this.networkData.nodes.get();
+
+    for (const node of nodes) {
+      if (isNodeMatching(matcher, node)) {
+        matches.push(node);
+      }
+    }
+
+    return matches;
   }
 
   searchQueryChanged() {
     // Need to revert the previous search results back to their original values
     if (this.searchResults.length > 0) {
-      this.searchResults.forEach(node => {
-        this.networkData.nodes.update({
-          ...node,
-          borderWidth: 1,
-        });
-      });
+      this.networkData.nodes.update(this.searchResults.map(({id}) => this.unhighlightNode(id)));
     }
 
-    this.searchResults = [];
-
     if (this.searchQuery !== '') {
-      this.searchResults = this.searchNodesWithQuery(this.searchQuery);
+      this.searchResults = this.findMatching(
+        tokenizeQuery(this.searchQuery, {
+          singleTerm: true,
+        }), {
+          wholeWord: false,
+        });
 
       // Set the index to -1, since we call `findNext` immediately after this function is called and want the index to be 0
       this.currentSearchIndex = -1;
-      this.searchResults.forEach(node => this.highlightNode(node.id));
+      this.networkData.nodes.update(this.searchResults.map(({id}) => this.highlightNode(id)));
+    } else {
+      this.searchResults = [];
     }
   }
 
@@ -353,35 +366,58 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   highlightNode(nodeId: number | string) {
-    const nodeToHighlight = this.networkData.nodes.get(nodeId);
+    // do not update to initial position
+    const {x, y, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
     const nodeColor = (nodeToHighlight.color as Color);
+    // @ts-ignore
+    nodeToHighlight._initialBorderWidth = nodeToHighlight.borderWidth;
+    // @ts-ignore
+    nodeToHighlight._initialColor = nodeColor;
     nodeToHighlight.borderWidth = 2;
     nodeToHighlight.color = {
       ...nodeColor,
       border: 'red'
     } as Color;
-    this.networkData.nodes.update(nodeToHighlight);
+    return nodeToHighlight;
+  }
+
+  unhighlightNode(nodeId: number | string) {
+    // do not update to initial position
+    // @ts-ignore
+    const {x, y, _initialBorderWidth = 1, _initialColor, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
+    nodeToHighlight.borderWidth = _initialBorderWidth;
+    nodeToHighlight.color = _initialColor;
+    return nodeToHighlight;
   }
 
   /**
    * Contains all of the event handling features for the network graph.
    */
   setupEventBinds() {
-    const {selected} = this;
-    this.networkGraph.on('stabilizationIterationsDone', (params) => {
+    const {selected, nodeHover, nodeBlur} = this;
+    this.networkGraph.on('stabilizationIterationsDone', _ => {
       this.stabilized = true;
       this.networkGraph.fit();
     });
-
-    this.networkGraph.on('dragStart', (params) => {
-      this.cursorStyle = params.nodes.length > 0 ? 'grabbing' : 'move';
+    this.networkGraph.on('dragStart', ({nodes}) => {
+      this.cursorStyle = nodes.length > 0 ? 'grabbing' : 'move';
     });
-    this.networkGraph.on('dragEnd', (params) => {
+    this.networkGraph.on('dragEnd', () => {
       this.cursorStyle = 'default';
     });
 
     this.networkGraph.on('select', ({nodes, edges}) => selected.next({nodes, edges}));
     this.networkGraph.on('deselectNode', ({nodes, edges}) => selected.next({nodes, edges}));
     this.networkGraph.on('deselectEdge', ({nodes, edges}) => selected.next({nodes, edges}));
+    this.networkGraph.on('hoverNode', function({node: nodeId}) {
+      const node = this.body.nodes[nodeId];
+      nodeHover.emit(node.options);
+      node.needsRefresh();
+    });
+    this.networkGraph.on('blurNode', function({node: nodeId}) {
+      const node = this.body.nodes[nodeId];
+      nodeBlur.emit(node.options);
+      node.needsRefresh();
+    });
   }
 }
