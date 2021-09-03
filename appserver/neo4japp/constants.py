@@ -403,6 +403,7 @@ ARROW_STYLE_DICT = {
 
 RELATION_NODES = ['association', 'correlation', 'cause', 'effect', 'observation']
 ICON_NODES = ['map', 'link', 'note']
+DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
 MAX_ALLOWED_LOGIN_FAILURES = 5
