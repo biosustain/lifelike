@@ -1160,6 +1160,12 @@ class AnnotationService:
         elif key2 > key1:
             return anno2
         else:
+            # prioritize if primary name is same as synonym
+            if anno1.keyword == anno1.primary_name:
+                return anno1
+            if anno2.keyword == anno2.primary_name:
+                return anno2
+
             if anno1.keyword_length > anno2.keyword_length:
                 return anno1
             else:
