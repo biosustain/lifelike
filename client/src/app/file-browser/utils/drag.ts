@@ -1,7 +1,9 @@
-import { FilesystemObject, ProjectImpl, SANKEY_UNICODE } from '../models/filesystem-object';
+import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
 import { DragImage } from 'app/shared/utils/drag';
+
+export const SANKEY_UNICODE = '\ue000';
 
 function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
   const canvas = document.createElement('canvas');
