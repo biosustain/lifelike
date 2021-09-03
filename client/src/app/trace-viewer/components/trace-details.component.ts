@@ -6,7 +6,6 @@ import { Options } from 'vis-network';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
-import { parseForRendering } from '../../sankey-viewer/components/utils';
 
 @Component({
   selector: 'app-trace-details',

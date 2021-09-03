@@ -7,13 +7,18 @@
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
 
-      <app-module-error *ngIf="error" [error]="error">
-          <a [appLink]="sourceFileURL">Go to Source <i class="fa fa-fw fa-arrow-right"></i></a>
-      </app-module-error>
+    <app-module-error *ngIf="error" [error]="error">
+        <a [appLink]="sourceFileURL">Go to Source <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
 
-    <ng-container #tabTitle>{{ title }}</ng-container>
-    <app-module-header [titleTemplate]="tabTitle" [showObjectMenu]="false"></app-module-header>
-    <div class="module-body">
-        <app-trace-details [data]="data"></app-trace-details>
+    <ng-template #tabTitle>{{ title }}</ng-template>
+    <app-module-header *ngIf="object"
+                       [object]="object"
+                       [titleTemplate]="tabTitle"
+                       [showObjectMenu]="false"
+    >
+    </app-module-header>
+    <div class="position-relative overflow-hidden flex-fill">
+        <app-trace-details *ngIf="status.resultsShown" [data]="data" class="flex-fill h-100"></app-trace-details>
     </div>
 </div>
