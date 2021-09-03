@@ -54,8 +54,9 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   duplicateTab(pane: Pane, tab: Tab) {
-    this.workspaceManager.navigateByUrl(tab.url, {
-      newTab: true,
+    this.workspaceManager.navigateByUrl({
+      url: tab.url,
+      extras: {newTab: true}
     });
   }
 

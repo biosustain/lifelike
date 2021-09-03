@@ -85,7 +85,7 @@ export class AbstractLinkDirective {
       parentAddress: this.getUrlTree(this.parentCommands)
     };
 
-    this.workspaceManager.navigateByUrl(this.urlTree, extras);
+    this.workspaceManager.navigateByUrl({url: this.urlTree, extras});
 
     return false;
   }
