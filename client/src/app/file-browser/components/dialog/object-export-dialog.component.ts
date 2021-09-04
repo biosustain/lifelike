@@ -6,20 +6,19 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import {Exporter, ObjectTypeService} from '../../services/object-type.service';
 import {FilesystemObject} from '../../models/filesystem-object';
 import {mergeMap} from 'rxjs/operators';
-import {getObjectLabel} from '../../utils/objects';
+import {MAP_MIMETYPE} from '../../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-object-export-dialog',
   templateUrl: './object-export-dialog.component.html',
 })
 export class ObjectExportDialogComponent extends CommonFormDialogComponent {
-  title = 'Export';
+  @Input() title = 'Export';
 
-  MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
   private _exporters: Exporter[];
   private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
   private _target: FilesystemObject;
-  private _isMapExport = false;
+  private isMapExport = false;
 
   readonly form: FormGroup = new FormGroup({
     exporter: new FormControl(null, Validators.required),
@@ -31,19 +30,14 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
     super(modal, messageDialog);
   }
 
-  @Input()
   set exporters(exporters: Exporter[] | undefined) {
     this._exporters = exporters;
-
     if (exporters) {
       this.form.patchValue({
         exporter: 0,
       });
     } else {
       this.modal.dismiss(true);
-      this.form.patchValue({
-        exporter: null,
-      });
     }
   }
 
@@ -52,22 +46,12 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   }
 
   @Input()
-  set isMapExport(value: boolean) {
-    this._isMapExport = value;
-  }
-
-  get isMapExport(): boolean {
-    return this._isMapExport;
-  }
-
-  @Input()
   set target(target: FilesystemObject) {
     this._target = target;
-    this.title = `Export ${getObjectLabel(target)}`;
-    this.isMapExport = target.mimeType === this.MAP_MIMETYPE;
+    this.isMapExport = target.mimeType === MAP_MIMETYPE;
     this.objectTypeService.get(target).pipe(
-      mergeMap((typeProvider) => typeProvider.getExporters(target)),
-      mergeMap((exporters) => this.exporters = exporters)
+      mergeMap(typeProvider => typeProvider.getExporters(target)),
+      mergeMap(exporters => this.exporters = exporters)
     ).subscribe();
   }
 
