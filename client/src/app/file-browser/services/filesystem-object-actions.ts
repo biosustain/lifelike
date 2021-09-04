@@ -65,6 +65,7 @@ export class FilesystemObjectActions {
    */
   openExportDialog(target: FilesystemObject): Promise<boolean> {
     const dialogRef = this.modalService.open(ObjectExportDialogComponent);
+    dialogRef.componentInstance.title = `Export ${getObjectLabel(target)}`;
     dialogRef.componentInstance.target = target;
     dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
       const progressDialogRef = this.createProgressDialog('Generating export...');
