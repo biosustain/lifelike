@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { Exporter } from '../../services/object-type.service';
+import {environment} from '../../../../environments/environment.prod';
 
 @Component({
   selector: 'app-object-export-dialog',
@@ -22,6 +23,8 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
+    console.log('prod?');
+    console.log(environment.production);
   }
 
   @Input()
