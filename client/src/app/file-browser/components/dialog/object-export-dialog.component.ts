@@ -15,7 +15,7 @@ import {MAP_MIMETYPE} from '../../../drawing-tool/providers/map.type-provider';
 export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input() title = 'Export';
 
-  private _exporters: Exporter[];
+  exporters: Exporter[];
   private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
   private _target: FilesystemObject;
   private isMapExport = false;
@@ -30,21 +30,6 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
     super(modal, messageDialog);
   }
 
-  set exporters(exporters: Exporter[] | undefined) {
-    this._exporters = exporters;
-    if (exporters) {
-      this.form.patchValue({
-        exporter: 0,
-      });
-    } else {
-      this.modal.dismiss(true);
-    }
-  }
-
-  get exporters() {
-    return this._exporters;
-  }
-
   @Input()
   set target(target: FilesystemObject) {
     this._target = target;
@@ -52,7 +37,15 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
     this.objectTypeService.get(target).pipe(
       mergeMap(typeProvider => typeProvider.getExporters(target)),
       mergeMap(exporters => this.exporters = exporters)
-    ).subscribe();
+    ).subscribe(() => {
+      if (this.exporters) {
+        this.form.patchValue({
+          exporter: 0,
+        });
+      } else {
+        this.modal.dismiss(true);
+      }
+    });
   }
 
   get target(): FilesystemObject {
