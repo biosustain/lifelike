@@ -11,7 +11,7 @@
       </select>
     </app-form-row>
 
-     <div class="custom-control custom-checkbox mt-2 border" [hidden]="!isLinkedExportSupported()" >
+     <div class="custom-control custom-checkbox mt-2" [hidden]="!isLinkedExportSupported()" >
       <input type="checkbox" class="custom-control-input" formControlName="exportLinked" id="exportLinked"
              [appFormInput]="form.get('exportLinked')">
       <label class="custom-control-label d-flex align-items-center"
