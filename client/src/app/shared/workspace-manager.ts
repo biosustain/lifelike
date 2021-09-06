@@ -676,6 +676,7 @@ export class WorkspaceManager {
     return new Promise((accept, reject) => {
       navigationData.forEach((navData) => {
         const extras = navData.extras || {};
+        // We need a delay because things break if we do it too quickly
         setTimeout(() => {
           this.navigateByUrl({url: navData.url, extras}).then(accept, reject);
         }, 10);
