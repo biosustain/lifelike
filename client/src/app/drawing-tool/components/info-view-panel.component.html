@@ -23,11 +23,9 @@
                         || (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
       <fieldset class="fieldset-properties mt-4">
         <legend>Links</legend>
-        <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
-                         [ngModel]="selected.entity.data.sources"
+        <app-links-panel [ngModel]="selected.entity.data.sources"
                          [showHeader]="false" [editable]="false"></app-links-panel>
-        <app-links-panel title="Hyperlinks" singularTitle="Hyperlink"
-                         [ngModel]="selected.entity.data.hyperlinks"
+        <app-links-panel [ngModel]="selected.entity.data.hyperlinks"
                          [showHeader]="false" [editable]="false"></app-links-panel>
       </fieldset>
     </ng-container>
