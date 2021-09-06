@@ -1,25 +1,42 @@
-<label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
+<label class="d-flex justify-content-between align-items-center pl-3 w-100 text-left m-0 checkpoint" ngbButtonLabel>
     <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
-    Normalize links
+    <div class="flex-grow-1 text-left">Normalize links</div>
+    <i class="fa fa-info-circle ml-3"
+       placement="top"
+       triggers="mouseenter:mouseleave"
+       [openDelay]="300"
+       [ngbPopover]="normalizeHelp"></i>
+    <ng-template #normalizeHelp>
+        Normalize links on node input/output so their sum is always equal to node value.
+    </ng-template>
 </label>
 <div class="dropdown-divider"></div>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-  <div class="d-flex align-items-center mx-0">
-    <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
-      Font Size
-    </label>
-    <app-percent-input [(value)]="options.fontSizeScale"
-                       default="100"
-                       min="20"
-                       max="1000"
-                       step="20"
-                       inputId="font-size"
-                       (change)="update()"
-    ></app-percent-input>
-    %
-  </div>
+    <div class="d-flex align-items-center mx-0">
+        <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
+            Font Size
+        </label>
+        <app-percent-input [(value)]="options.fontSizeScale"
+                           class="flex-grow-1"
+                           default="100"
+                           min="20"
+                           max="1000"
+                           step="20"
+                           inputId="font-size"
+                           (change)="update()"
+        ></app-percent-input>
+        %
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           [ngbPopover]="fontSizeHelp"></i>
+        <ng-template #fontSizeHelp>
+            Adjust font-size used to render the node labels.
+        </ng-template>
+    </div>
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
     <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update()"
@@ -32,6 +49,15 @@
            ngbButton
            type="range">
     {{options.nodeHeight.min.value}}
+    <i class="fa fa-info-circle ml-3"
+       placement="top"
+       triggers="mouseenter:mouseleave"
+       [openDelay]="300"
+       [ngbPopover]="minNodeHeightHelp"></i>
+    <ng-template #minNodeHeightHelp>
+        Minimal node height expressed in px. Nodes will have minimal height declared in here even if it will make
+        them disproportionally big in relation to represented value.
+    </ng-template>
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
     <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update()"
@@ -44,6 +70,16 @@
            ngbButton
            type="range">
     {{options.nodeHeight.max.ratio}}
+    <i class="fa fa-info-circle ml-3"
+       placement="top"
+       triggers="mouseenter:mouseleave"
+       [openDelay]="300"
+       [ngbPopover]="maxNodeRatioHelp"></i>
+    <ng-template #maxNodeRatioHelp>
+        Scale graph down on Y axis so the max node ratio of height/width is equal to value declared in here.
+        This option will not affect graphs containing proportionally small nodes and it does not affect size
+        proportion between the nodes.
+    </ng-template>
 </label>
 <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
     <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update()"
@@ -56,15 +92,41 @@
            ngbButton
            type="range">
     {{options.labelEllipsis.value}}
+    <i class="fa fa-info-circle ml-3"
+       placement="top"
+       triggers="mouseenter:mouseleave"
+       [openDelay]="300"
+       [ngbPopover]="labelEllipsisHelp"></i>
+    <ng-template #labelEllipsisHelp>
+        For clarity node labels are rendered with limited number of characters, this number can be adjusted by this
+        option.
+        Please notice that this limit can be fully disabled by checkbox to the left.
+    </ng-template>
 </label>
 <div class="dropdown-divider"></div>
 <div class="w-100 text-left m-0" ngbButtonLabel ngbRadioGroup [name]="'link' + uuid"
      [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()" title="Link size">
-    <div class="mb-1">Link Value Accessor:</div>
+    <div class="mb-1">Link Value Accessor:
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           [ngbPopover]="linkValueHelp"></i>
+        <ng-template #linkValueHelp>
+            Link sizing can be adjusted by selecting one of predefined value generators or based on its properties
+            with numerical values.
+        </ng-template>
+    </div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
         <input ngbButton type="radio" [value]="valueAccessor.value"
                [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           *ngIf="valueAccessor.value.help"
+           [ngbPopover]="valueAccessor.value.help"></i>
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueAccessors">
@@ -75,11 +137,27 @@
 <div class="dropdown-divider"></div>
 <div class="form-check" ngbRadioGroup [name]="'node' + uuid"
      [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()" title="Node fixed size">
-    <div class="mb-1">Node Value Accessor:</div>
+    <div class="mb-1">Node Value Accessor:
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           [ngbPopover]="nodeValueHelp"></i>
+        <ng-template #nodeValueHelp>
+            Node sizing can be adjusted by selecting one of predefined value generators or based on its properties
+            with numerical values.
+        </ng-template>
+    </div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
         <input ngbButton type="radio" [value]="valueAccessor.value"
                [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           *ngIf="valueAccessor.value.help"
+           [ngbPopover]="valueAccessor.value.help"></i>
     </label>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.nodeValueAccessors">
@@ -90,7 +168,16 @@
 <div class="dropdown-divider"></div>
 <div class="form-check" ngbRadioGroup [name]="'prescaler' + uuid"
      [(ngModel)]="options.selectedPrescaler" (ngModelChange)="update()" title="Prescaler">
-    <div class="mb-1">Prescaler:</div>
+    <div class="mb-1">Prescaler:
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           [ngbPopover]="prescalerHelp"></i>
+        <ng-template #prescalerHelp>
+            Scale all values used in by one of non-linear functions.
+        </ng-template>
+    </div>
     <label ngbButtonLabel *ngFor="let prescaler of options.prescalers" [title]="prescaler.description" class="mb-0">
         <input ngbButton type="radio" [value]="prescaler"> {{prescaler.name}}
     </label>
@@ -98,7 +185,16 @@
 <div class="dropdown-divider"></div>
 <div class="form-check" ngbRadioGroup [name]="'linkPalette' + uuid"
      [(ngModel)]="options.selectedLinkPalette" (ngModelChange)="update()" title="Link palette">
-    <div class="mb-1">Link palette:</div>
+    <div class="mb-1">Link palette:
+        <i class="fa fa-info-circle ml-3"
+           placement="top"
+           triggers="mouseenter:mouseleave"
+           [openDelay]="300"
+           [ngbPopover]="paletteHelp"></i>
+        <ng-template #paletteHelp>
+            Choose one of predefined color palettes used in the graph.
+        </ng-template>
+    </div>
     <label ngbButtonLabel *ngFor="let palette of options.linkPalettes" class="mb-0" [style.textAlign]="'left'">
         <input ngbButton type="radio" [value]="palette"> {{palette.name}}
     </label>
