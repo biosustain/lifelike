@@ -39,9 +39,10 @@ export class SearchRecordNodeComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     let url: URL | string;
     let domain = '';
+
     try {
       url = new URL(getLink(this.node));
-      domain = this.getNodeDomain(url.hostname);
+      domain = this.getNodeDomain(url);
     } catch {
       // Expect a TypeError here if the url was invalid
       url = getLink(this.node);
@@ -66,11 +67,20 @@ export class SearchRecordNodeComponent {
     } as Partial<UniversalGraphNode>));
   }
 
-  getNodeDomain(hostname: string): string {
-    switch (hostname) {
+  getNodeDomain(url: URL): string {
+    switch (url.hostname) {
       case DBHostname.UniProt:
         return 'UniProt';
       case DBHostname.NCBI:
+        if (url.href.includes('mesh')) {
+          return 'MeSH';
+        }
+        if (url.href.includes('Taxonomy')) {
+          return 'NCBI Taxonomy';
+        }
+        if (url.href.includes('gene')) {
+          return 'NCBI Gene';
+        }
         return 'NCBI';
       case DBHostname.ChEBI:
         return 'ChEBI';
