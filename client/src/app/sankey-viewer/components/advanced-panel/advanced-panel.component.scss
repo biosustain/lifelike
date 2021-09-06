@@ -42,6 +42,14 @@
   :last-child {
     margin-left: .5em;
     margin-right: .5em;
-    flex-grow: 1;
   }
+}
+
+label {
+  display: flex;
+  align-items: center;
+}
+
+input[type='radio'] {
+  margin-right: .5em;
 }
