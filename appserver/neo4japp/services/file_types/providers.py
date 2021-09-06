@@ -716,7 +716,9 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         graph = graphviz.Digraph(
                 file.filename,
-                comment=file.description.replace('\n', ' '),
+                # New lines are not permitted in the comment - they will crash the export.
+                # Replace them with spaces until we find different solution
+                comment=file.description.replace('\n', ' ') if file.description else None,
                 engine='neato',
                 graph_attr=graph_attr,
                 format=format)
