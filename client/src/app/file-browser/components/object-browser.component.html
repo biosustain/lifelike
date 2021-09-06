@@ -244,13 +244,14 @@
                                 <div ngbDropdownMenu>
                                     <button ngbDropdownItem
                                             [appLink]="['/file-navigator', result.value.project.name, result.value.***ARANGO_USERNAME***.hashId]"
-                                            [newTab]="true" [sideBySide]="true">For entire project...
+                                            [parentAddress]="['/projects', result.value.project.name]"
+                                            [newTab]="true" [forceWorkbench]="true" [openParentFirst]="true" >For entire project...
                                     </button>
                                     <button ngbDropdownItem
                                             [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
-                                            [newTab]="true" [sideBySide]="true"
-                                            *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this
-                                        folder
+                                            [parentAddress]="['/folders', result.value.hashId]"
+                                            [newTab]="true" [forceWorkbench]="true" [openParentFirst]="true"
+                                            *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this folder
                                     </button>
                                 </div>
                             </div>
