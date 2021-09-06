@@ -14,7 +14,8 @@
   <ng-container *ngIf="project.root">
     <div class="dropdown-divider"></div>
     <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.root.hashId]"
-            [newTab]="true" [sideBySide]="true">
+            [parentAddress]="['/projects', project.name]"
+            [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
       Open file navigator
     </button>
   </ng-container>

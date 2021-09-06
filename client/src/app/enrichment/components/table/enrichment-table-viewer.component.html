@@ -73,7 +73,13 @@
                             result.object.value.project.name,
                             result.object.value.hashId
                         ]"
-                        [newTab]="true" [sideBySide]="true"
+                      [parentAddress]="[
+                            '/projects',
+                            result.object.value.project.name,
+                            'enrichment-table',
+                            result.object.value.hashId
+                      ]"
+                        [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
                         ngbTooltip="File Navigator" placement="bottom">
                     <i class="fas fa-fw fa-compass"></i>
                 </button>
