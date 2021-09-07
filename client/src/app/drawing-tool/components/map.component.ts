@@ -258,8 +258,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    this.historyChangesSubscription.unsubscribe();
-    this.unsavedChangesSubscription.unsubscribe();
+    // Unlikely but it can be destroyed before first render, for instance in case of error
+    // (before ngAfterViewInit)
+    const { historyChangesSubscription, unsavedChangesSubscription } = this;
+    if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
+    if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
     this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
   }

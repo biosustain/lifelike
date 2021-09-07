@@ -34,7 +34,9 @@ class AnnotationDBService(DBConnection):
             EntityType.PROTEIN.value: set(),
             EntityType.SPECIES.value: set(),
             EntityType.COMPANY.value: set(),
-            EntityType.ENTITY.value: set()
+            EntityType.ENTITY.value: set(),
+            EntityType.LAB_SAMPLE.value: set(),
+            EntityType.LAB_STRAIN.value: set()
         }
 
         exclusion_sets_case_insensitive: Dict[str, set] = {
@@ -77,5 +79,7 @@ class AnnotationDBService(DBConnection):
             excluded_genes_case_insensitive=exclusion_sets_case_insensitive[EntityType.GENE.value],  # noqa
             excluded_proteins_case_insensitive=exclusion_sets_case_insensitive[EntityType.PROTEIN.value],  # noqa
             excluded_companies=exclusion_sets[EntityType.COMPANY.value],
-            excluded_entities=exclusion_sets[EntityType.ENTITY.value]
+            excluded_entities=exclusion_sets[EntityType.ENTITY.value],
+            excluded_lab_strains=exclusion_sets[EntityType.LAB_STRAIN.value],
+            excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE.value]
         )
