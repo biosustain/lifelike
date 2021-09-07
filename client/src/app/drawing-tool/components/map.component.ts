@@ -209,7 +209,18 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
      * at this point `graphRepr` has the JSON version of the map as a string,
      * `imageBlobs` has all images in the map as blobs, and `imageIds` has all images' Ids
      * for all index `i`, `imageBlobs[i]` should correspond to `imageIds[i]` (just like in save)
-     * TODO: stash blobs into image-nodes and force re-render
+     */
+
+    /**
+     * working stuff
+     *    open the map in new link, click edit
+     *    open map from workbench
+     *    in a new window, try to open map thumbnail, close it and open thumbnail again
+     * not working
+     *    refresh the map anytime after it's opened
+     *    open the map in a new tab (share -> link -> put link in new tab)
+     *    in a new window, try to open map thumbnail
+     * The idea is to request re-render after all images are completely loaded in
      */
 
     this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MAP_MIMETYPE })).pipe(
@@ -220,7 +231,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.graphCanvas.setGraph(graph);
         for (const node of this.graphCanvas.getGraph().nodes) {
           if (node.image_id !== undefined) {
-            // TODO: I think the image blob should exist in the renderTree w/o setting it
             this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
             console.log('image node in render tree is');
             console.log(this.graphCanvas.renderTree.get(node));
