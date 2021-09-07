@@ -11,6 +11,8 @@ export class ModuleHeaderComponent {
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
   @Input() showObjectMenu = true;
+  @Input() showBreadCrumbs = true;
+  @Input() showNewWindowButton = true;
   @Output() dragStarted = new EventEmitter();
 
   constructor(
@@ -18,7 +20,7 @@ export class ModuleHeaderComponent {
   ) {}
 
   openNewWindow() {
-    const url = '/' + this.route.url.value.join('/');
+    const url = '/' + this.route.snapshot.url.join('/');
     window.open(url);
   }
 }
