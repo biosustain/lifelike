@@ -19,7 +19,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
-import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { ValueGenerator, SankeyAdvancedOptions, MultiValueAccessor } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
@@ -108,50 +108,59 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-          this.onOptionsChange();
-        }
+        },
+        help: 'Assign node values to 1 and link values to 0 which results in a view revealing network overview.'
       },
       {
         description: PREDEFINED_VALUE.input_count,
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-          this.onOptionsChange();
-        }
+        },
+        help: 'Calculate values based on number of incoming input nodes. If node outgoing connections split into multiple nodes' +
+          ' the forwarded value is divided by the number of the nodes.'
       }],
     linkValueGenerators: {
       input_count: {
         description: LINK_VALUE.input_count,
         preprocessing: linkValues.inputCount,
-        disabled: () => false
+        disabled: () => false,
+        help: 'Calculate link value based on number of connecting input nodes. If node outgoing connections split into multiple nodes' +
+          ' the forwarded value is divided by the number of the nodes.'
       } as ValueGenerator,
       fixedValue0: {
         description: LINK_VALUE.fixedValue0,
         preprocessing: linkValues.fixedValue(0),
-        disabled: () => false
+        disabled: () => false,
+        help: 'Assign all links values equal zero. Useful to emphasise connection between the nodes neglecting number of links going' +
+          ' through the nodes.'
       } as ValueGenerator,
       fixedValue1: {
         description: LINK_VALUE.fixedValue1,
         preprocessing: linkValues.fixedValue(1),
-        disabled: () => false
+        disabled: () => false,
+        help: 'Assign all links values equal one. Useful to emphasise number of links going through the graph.'
       } as ValueGenerator,
       fraction_of_fixed_node_value: {
         description: LINK_VALUE.fraction_of_fixed_node_value,
         disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
         requires: ({node}) => node.fixedValue,
-        preprocessing: linkValues.fractionOfFixedNodeValue
+        preprocessing: linkValues.fractionOfFixedNodeValue,
+        help: 'Assign link value equal to node value divided by number of links connecting to this node.'
       } as ValueGenerator
     },
     nodeValueGenerators: {
       none: {
         description: NODE_VALUE.none,
         preprocessing: nodeValues.noneNodeValue,
-        disabled: () => false
+        disabled: () => false,
+        help: 'Make node height calculated as a max of sum of input and output values.'
       } as ValueGenerator,
       fixedValue1: {
         description: NODE_VALUE.fixedValue1,
         preprocessing: nodeValues.fixedValue(1),
-        disabled: () => false
+        disabled: () => false,
+        help: 'Assign all node values equal one. Useful to emphasise connection in between nodes, neglecting their associated values.'
       } as ValueGenerator
     },
     selectedLinkValueAccessor: undefined,
@@ -300,24 +309,29 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
     const {default_sizing} = networkTrace;
-    const selectedPredefinedValueAccessor =
+    const predefinedValueAccessor =
       this.options.predefinedValueAccessors
         .find(({description}) => description === default_sizing);
-    if (selectedPredefinedValueAccessor) {
-      this.options.selectedPredefinedValueAccessor = selectedPredefinedValueAccessor;
+    if (predefinedValueAccessor) {
+      this.options.selectedPredefinedValueAccessor = predefinedValueAccessor;
+      predefinedValueAccessor.callback();
     }
+  }
+
+  applyOptions() {
+    const {selectedNetworkTrace} = this;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
-      networkTrace.traces.map(({group}) => group),
+      selectedNetworkTrace.traces.map(({group}) => group),
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
-    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
+    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
     this.sankeyLayout.colorNodes(nodes);
-    const _inNodes = node_sets[networkTrace.sources];
-    const _outNodes = node_sets[networkTrace.targets];
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
@@ -341,7 +355,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   applyFilter() {
     if (this.selectedNetworkTrace) {
-      this.selectNetworkTrace(this.selectedNetworkTrace);
+      this.applyOptions();
     } else {
       this.filteredSankeyData = this.sankeyData;
     }
@@ -411,7 +425,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
               l._value /= (l._adjacent_divider || 1);
               // take max for layer calculation
             });
-          }
+          },
+          help: `Assign link value based on property named ${k}`
         });
       } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
         o.push({
@@ -422,7 +437,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
               l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1));
               // take max for layer calculation
             });
-          }
+          },
+          help: `Assign link value based on property named ${k}`
         });
       }
       return o;
@@ -438,7 +454,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       if (isPositiveNumber(v)) {
         o.push({
           description: k,
-          preprocessing: nodeValues.byProperty(k)
+          preprocessing: nodeValues.byProperty(k),
+          help: `Assign node value based on property named ${k}`
         });
       }
       return o;
@@ -471,17 +488,18 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           } else {
             options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
           }
-          this.onOptionsChange();
-        }
-      })));
+        },
+        help: `Scale nodes and links values by sizing option '${name}' predefined in file.\n\n` +
+          `Link values will be sized based on '${link_sizing}' and node sizes based on '${node_sizing}'.`
+      } as MultiValueAccessor)));
   }
 
   parseData({links, graph, nodes, ...data}) {
     this.networkTraces = graph.trace_networks;
-    this.selectedNetworkTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     this.extractPredefinedValueProperties(graph);
+    this.selectNetworkTrace(this.networkTraces[0]);
     return {
       ...data,
       graph,
@@ -541,7 +559,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
     this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
-    this.selectNetworkTrace(this.selectedNetworkTrace);
+    this.sankeyLayout.normalizeLinks = this.options.normalizeLinks;
+    this.applyOptions();
   }
 
   dragStarted(event: DragEvent) {
@@ -669,7 +688,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   panToEntity(entity) {
     const y = (entity._y0 + entity._y1) / 2;
-    let x = 0;
+    let x;
     if (entity._x0 !== undefined) {
       x = (entity._x0 + entity._x1) / 2;
     } else {
