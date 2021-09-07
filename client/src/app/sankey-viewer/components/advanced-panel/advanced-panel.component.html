@@ -1,7 +1,9 @@
 <app-sankey-advanced-panel-option ngbButtonLabel
                                   [title]="'Normalize links'"
                                   [moreInfo]="'Normalize links on node input/output so their sum is always equal to node value.'">
-    <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update()"
+    <input [(ngModel)]="options.normalizeLinks"
+           (ngModelChange)="update()"
+           [title]="'Turn ' + (options.normalizeLinks ? 'off' : 'on') + ' link normalization'"
            ngbButton
            type="checkbox">
 </app-sankey-advanced-panel-option>
@@ -28,14 +30,16 @@
 
 <app-sankey-advanced-panel-option ngbButtonLabel
                                   [title]="'Min node height'"
-                                  [moreInfo]="'Minimal node height expressed in px. Nodes will have minimal height declared in here even if it will make\n'+
-'        them disproportionally big in relation to represented value.'">
-    <input [(ngModel)]="options.nodeHeight.min.enabled" (ngModelChange)="update()"
+                                  [moreInfo]="'Minimal node height expressed in px. Graph height will scaled so the smallest node have at least this height.'">
+    <input [(ngModel)]="options.nodeHeight.min.enabled"
+           (ngModelChange)="update()"
+           [title]="'Switch limit ' + (options.nodeHeight.min.enabled ? 'off' : 'on')"
            ngbButton
            type="checkbox">
 
     <ng-container afterTitle>
-        <input [(ngModel)]="options.nodeHeight.min.value" (ngModelChange)="update()"
+        <input [(ngModel)]="options.nodeHeight.min.value"
+               (ngModelChange)="update()"
                [disabled]="!options.nodeHeight.min.enabled"
                max="20" min="0"
                class="flex-grow-1 mx-1"
@@ -51,12 +55,15 @@
 '        This option will not affect graphs containing proportionally small nodes and it does not affect size\n'+
 '        proportion between the nodes.'">
 
-    <input [(ngModel)]="options.nodeHeight.max.enabled" (ngModelChange)="update()"
+    <input [(ngModel)]="options.nodeHeight.max.enabled"
+           (ngModelChange)="update()"
+           [title]="'Switch limit ' + (options.nodeHeight.max.enabled ? 'off' : 'on')"
            ngbButton
            type="checkbox">
 
     <ng-container afterTitle>
-        <input [(ngModel)]="options.nodeHeight.max.ratio" (ngModelChange)="update()"
+        <input [(ngModel)]="options.nodeHeight.max.ratio"
+               (ngModelChange)="update()"
                [disabled]="!options.nodeHeight.max.enabled"
                max="60" min="1"
                class="flex-grow-1 mx-1 mw6"
@@ -71,15 +78,18 @@
                                   [moreInfo]="'For clarity node labels are rendered with limited number of characters, this number can be adjusted by this\n'+
 '        option.\n'+
 '        Please notice that this limit can be fully disabled by checkbox to the left.'">
-    <input [(ngModel)]="options.labelEllipsis.enabled" (ngModelChange)="update()"
+    <input [(ngModel)]="options.labelEllipsis.enabled"
+           (ngModelChange)="update()"
+           [title]="'Switch limit ' + (options.labelEllipsis.enabled ? 'off' : 'on')"
            ngbButton
            type="checkbox">
     <ng-container afterTitle>
-        <input [(ngModel)]="options.labelEllipsis.value" (ngModelChange)="update()"
+        <input ngbButton
+               [(ngModel)]="options.labelEllipsis.value"
+               (ngModelChange)="update()"
                [disabled]="!options.labelEllipsis.enabled"
                max="50" min="0"
                class="flex-grow-1"
-               ngbButton
                type="range">
         {{options.labelEllipsis.value}}
     </ng-container>
@@ -87,58 +97,55 @@
 
 <div class="dropdown-divider"></div>
 
-<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup [name]="'link' + uuid"
-                                  [(ngModel)]="options.selectedLinkValueAccessor" (ngModelChange)="customSizingUpdate()"
+<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup
+                                  [name]="'link' + uuid"
+                                  [(ngModel)]="options.selectedLinkValueAccessor"
+                                  (ngModelChange)="customSizingUpdate()"
                                   title="Link size"
                                   [title]="'Link Value Accessor:'"
                                   [moreInfo]="'Link sizing can be adjusted by selecting one of predefined value generators or based on its properties ' +
                                    'with numerical values.'">
-    <ng-container afterTitle>
+    <div afterTitle class="flex flex-wrap justify-between w-100">
         <label ngbButtonLabel class="mb-0 w5"
-               *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
+               *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue"
+               [title]="valueAccessor.value.help">
             <input ngbButton type="radio" [value]="valueAccessor.value"
-                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-            <i class="fa fa-info-circle ml-3"
-               placement="top"
-               triggers="mouseenter:mouseleave"
-               [openDelay]="300"
-               *ngIf="valueAccessor.value.help"
-               [ngbPopover]="valueAccessor.value.help"></i>
+                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()">
+            {{valueAccessor.value.description}}
         </label>
         <label ngbButtonLabel class="mb-0 w5"
-               *ngFor="let valueAccessor of options.linkValueAccessors">
+               *ngFor="let valueAccessor of options.linkValueAccessors"
+               [title]="valueAccessor.help">
             <input ngbButton type="radio"
                    [value]="valueAccessor"> {{valueAccessor.description}}
         </label>
-    </ng-container>
+    </div>
 </app-sankey-advanced-panel-option>
 
 <div class="dropdown-divider"></div>
 
-<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup [name]="'node' + uuid"
-                                  [(ngModel)]="options.selectedNodeValueAccessor" (ngModelChange)="customSizingUpdate()"
+<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup
+                                  [name]="'node' + uuid"
+                                  [(ngModel)]="options.selectedNodeValueAccessor"
+                                  (ngModelChange)="customSizingUpdate()"
                                   title="Node fixed size"
                                   [title]="'Node Value Accessor:'"
                                   [moreInfo]="'Node sizing can be adjusted by selecting one of predefined value generators or based on its properties ' +
                                    'with numerical values.'">
-    <ng-container afterTitle>
+    <div afterTitle class="flex flex-wrap justify-between w-100">
         <label ngbButtonLabel class="mb-0 w5"
-               *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
+               *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue"
+               [title]="valueAccessor.value.help">
             <input ngbButton type="radio" [value]="valueAccessor.value"
                    [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-            <i class="fa fa-info-circle ml-3"
-               placement="top"
-               triggers="mouseenter:mouseleave"
-               [openDelay]="300"
-               *ngIf="valueAccessor.value.help"
-               [ngbPopover]="valueAccessor.value.help"></i>
         </label>
         <label ngbButtonLabel class="mb-0 w5"
-               *ngFor="let valueAccessor of options.nodeValueAccessors">
+               *ngFor="let valueAccessor of options.nodeValueAccessors"
+               [title]="valueAccessor.help">
             <input ngbButton type="radio"
                    [value]="valueAccessor"> {{valueAccessor.description}}
         </label>
-    </ng-container>
+    </div>
 </app-sankey-advanced-panel-option>
 
 <div class="dropdown-divider"></div>
@@ -147,23 +154,29 @@
                                   [(ngModel)]="options.selectedPrescaler" (ngModelChange)="update()" title="Prescaler"
                                   [title]="'Prescaler:'"
                                   [moreInfo]="'Scale all values used in by one of non-linear functions.'">
-    <ng-container afterTitle>
-        <label ngbButtonLabel *ngFor="let prescaler of options.prescalers" [title]="prescaler.description" class="mb-0 w5">
+    <div afterTitle class="flex flex-wrap justify-between w-100">
+        <label ngbButtonLabel *ngFor="let prescaler of options.prescalers" [title]="prescaler.description"
+               class="mb-0 w5">
             <input ngbButton type="radio" [value]="prescaler"> {{prescaler.name}}
         </label>
-    </ng-container>
+    </div>
 </app-sankey-advanced-panel-option>
 
 <div class="dropdown-divider"></div>
 
-<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup [name]="'linkPalette' + uuid"
+<app-sankey-advanced-panel-option ngbButtonLabel ngbRadioGroup
+                                  [name]="'linkPalette' + uuid"
                                   [(ngModel)]="options.selectedLinkPalette" (ngModelChange)="update()"
                                   title="Link palette"
                                   [title]="'Link palette:'"
                                   [moreInfo]="'Choose one of predefined color palettes used in the graph.'">
-    <ng-container afterTitle>
-        <label ngbButtonLabel *ngFor="let palette of options.linkPalettes" class="mb-0 w5" [style.textAlign]="'left'">
+    <div afterTitle class="flex flex-wrap justify-between w-100">
+        <label ngbButtonLabel
+               *ngFor="let palette of options.linkPalettes"
+               [title]="palette.help"
+               class="mb-0 w5 text-left"
+        >
             <input ngbButton type="radio" [value]="palette"> {{palette.name}}
         </label>
-    </ng-container>
+    </div>
 </app-sankey-advanced-panel-option>
