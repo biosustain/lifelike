@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { observable, Observable, Subscription, combineLatest } from 'rxjs';
+import { Observable, Subscription, combineLatest } from 'rxjs';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -78,7 +78,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   save() {
     let zip = new JSZip();
     let imgs = zip.folder('images');
-    // const { filesystemService, locator, unsavedChanges$, emitModuleProperties, snackBar, errorHandler } = this;
     const imageIds: string[] = []
     const imageNodeObservables: Observable<Blob>[] = []
     for (const node of this.graphCanvas.getGraph().nodes) {
