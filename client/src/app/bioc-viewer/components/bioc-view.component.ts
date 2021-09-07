@@ -23,8 +23,7 @@ import { map } from 'rxjs/operators';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { Location, Meta } from 'app/pdf-viewer/annotation-type';
+import { Location } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 
