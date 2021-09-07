@@ -42,16 +42,13 @@ class EntityRecognitionService:
     def _check_lmdb_genes(self, nlp_results: NLPResults, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        dbname = GENES_LMDB
         global_inclusion = self.entity_inclusions.included_genes
         global_exclusion = self.entity_exclusions.excluded_genes
         global_exclusion_case_insensitive = self.entity_exclusions.excluded_genes_case_insensitive
 
         key_results: Dict[str, List[dict]] = {}
-        key_id_type: Dict[str, str] = {}
-        key_id_hyperlinks: Dict[str, List[str]] = {}
 
-        with self.lmdb.begin(dbname=dbname) as txn:
+        with self.lmdb.begin(dbname=GENES_LMDB) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -71,10 +68,8 @@ class EntityRecognitionService:
             found = global_inclusion.get(key, None)
             if found:
                 match_list = key_results.get(key, [])
-                match_list += found.entities
+                match_list += found
                 key_results[key] = match_list
-                key_id_type[key] = found.entity_id_type
-                key_id_hyperlinks[key] = found.entity_id_hyperlinks
 
         lmdb_matches = []
         for token in tokens:
@@ -83,11 +78,13 @@ class EntityRecognitionService:
                 if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:  # noqa
                     continue
 
+                exact = [data for data in key_results[token.normalized_keyword] if data['synonym'] == token.keyword]  # noqa
+                if not exact:
+                    continue
+
                 match = LMDBMatch(
-                    entities=key_results[token.normalized_keyword],
-                    token=token,
-                    id_type=key_id_type.get(token.normalized_keyword, ''),
-                    id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
+                    entities=[data for data in exact if data['synonym'] == data['name']] or exact,
+                    token=token
                 )
                 offset_key = (token.lo_location_offset, token.hi_location_offset)
                 # if an entity set in nlp_results is not empty
@@ -103,17 +100,14 @@ class EntityRecognitionService:
     def _check_lmdb_species(self, tokens: List[PDFWord]):
         keys = {token.normalized_keyword for token in tokens}
 
-        dbname = SPECIES_LMDB
         global_inclusion = self.entity_inclusions.included_species
         local_inclusion = self.entity_inclusions.included_local_species
         global_exclusion = self.entity_exclusions.excluded_species
 
         key_results: Dict[str, List[dict]] = {}
         key_results_local: Dict[str, List[dict]] = {}
-        key_id_type: Dict[str, str] = {}
-        key_id_hyperlinks: Dict[str, List[str]] = {}
 
-        with self.lmdb.begin(dbname=dbname) as txn:
+        with self.lmdb.begin(dbname=SPECIES_LMDB) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
 
@@ -129,18 +123,14 @@ class EntityRecognitionService:
         for key in unmatched_keys:
             found = global_inclusion.get(key, None)
             if found:
-                key_results[key] = found.entities
-                key_id_type[key] = found.entity_id_type
-                key_id_hyperlinks[key] = found.entity_id_hyperlinks
+                key_results[key] = found
 
         unmatched_keys = keys - set(key_results)
 
         for key in unmatched_keys:
             found = local_inclusion.get(key, None)
             if found:
-                key_results_local[key] = found.entities
-                key_id_type[key] = found.entity_id_type
-                key_id_hyperlinks[key] = found.entity_id_hyperlinks
+                key_results_local[key] = found
 
         lmdb_matches = []
         lmdb_matches_local = []
@@ -149,19 +139,19 @@ class EntityRecognitionService:
                 if token.normalized_keyword in key_results:
                     lmdb_matches.append(
                         LMDBMatch(
-                            entities=key_results[token.normalized_keyword],
-                            token=token,
-                            id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
+                            entities=[
+                                data for data in key_results[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
+                            ] or key_results[token.normalized_keyword],
+                            token=token
                         )
                     )
                 elif token.normalized_keyword in key_results_local:
                     lmdb_matches_local.append(
                         LMDBMatch(
-                            entities=key_results_local[token.normalized_keyword],
-                            token=token,
-                            id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
+                            entities=[
+                                data for data in key_results_local[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
+                            ] or key_results_local[token.normalized_keyword],
+                            token=token
                         )
                     )
         return lmdb_matches, lmdb_matches_local
@@ -243,10 +233,8 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_companies
                 results.recognized_companies = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword].entities,
-                        token=token,
-                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                        entities=global_inclusion[token.normalized_keyword],
+                        token=token
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
@@ -257,10 +245,8 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_entities
                 results.recognized_entities = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword].entities,
-                        token=token,
-                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                        entities=global_inclusion[token.normalized_keyword],
+                        token=token
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
@@ -271,10 +257,8 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_lab_samples
                 results.recognized_lab_samples = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword].entities,
-                        token=token,
-                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                        entities=global_inclusion[token.normalized_keyword],
+                        token=token
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
@@ -285,18 +269,14 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_lab_strains
                 results.recognized_lab_strains = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword].entities,
-                        token=token,
-                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
-                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                        entities=global_inclusion[token.normalized_keyword],
+                        token=token
                     ) for token in tokens if global_inclusion.get(
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
             if dbname is not None and global_inclusion is not None and global_exclusion is not None:  # noqa
                 key_results: Dict[str, List[dict]] = {}
-                key_id_type: Dict[str, str] = {}
-                key_id_hyperlinks: Dict[str, List[str]] = {}
 
                 with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
@@ -313,9 +293,7 @@ class EntityRecognitionService:
                 for key in unmatched_keys:
                     found = global_inclusion.get(key, None)
                     if found:
-                        key_results[key] = found.entities
-                        key_id_type[key] = found.entity_id_type
-                        key_id_hyperlinks[key] = found.entity_id_hyperlinks
+                        key_results[key] = found
 
                 lmdb_matches = []
                 for token in tokens:
@@ -329,10 +307,10 @@ class EntityRecognitionService:
                                 continue
 
                         match = LMDBMatch(
-                            entities=key_results[token.normalized_keyword],
-                            token=token,
-                            id_type=key_id_type.get(token.normalized_keyword, ''),
-                            id_hyperlinks=key_id_hyperlinks.get(token.normalized_keyword, [])
+                            entities=[
+                                data for data in key_results[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
+                            ] or key_results[token.normalized_keyword],
+                            token=token
                         )
                         offset_key = (token.lo_location_offset, token.hi_location_offset)
                         # only a few entities currently have NLP
