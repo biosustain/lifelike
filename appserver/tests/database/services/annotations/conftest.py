@@ -784,6 +784,47 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
 
+@pytest.fixture(scope='function')
+def lmdb_setup_test_prioritize_primary_name_that_equals_synonym(app):
+    halite_sodium = create_ner_type_chemical(
+        id='CHEBI:26710',
+        name='sodium chloride',
+        synonym='halite',
+    )
+
+    halite = create_ner_type_chemical(
+        id='CHEBI:46715',
+        name='halite',
+        synonym='halite',
+    )
+
+    atomoxetine = create_ner_type_chemical(
+        id='CHEBI:127342',
+        name='atomoxetine',
+        synonym='atomoxetine',
+    )
+
+    atomoxetine_hydro = create_ner_type_chemical(
+        id='CHEBI:26710',
+        name='atomoxetine hydrochloride',
+        synonym='atomoxetine',
+    )
+
+    entities = [
+        (ANATOMY_LMDB, 'anatomy', []),
+        (CHEMICALS_LMDB, 'chemicals', [halite_sodium, halite, atomoxetine, atomoxetine_hydro]),
+        (COMPOUNDS_LMDB, 'compounds', []),
+        (DISEASES_LMDB, 'diseases', []),
+        (FOODS_LMDB, 'foods', []),
+        (GENES_LMDB, 'genes', []),
+        (PHENOTYPES_LMDB, 'phenotypes', []),
+        (PROTEINS_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
 # ################################################################################
 # # Start monkeypatch mocks here
 # # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
