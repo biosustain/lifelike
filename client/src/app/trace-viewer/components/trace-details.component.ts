@@ -6,7 +6,6 @@ import { Options } from 'vis-network';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
-import { parseForRendering } from '../../sankey-viewer/components/utils';
 
 @Component({
   selector: 'app-trace-details',
@@ -32,23 +31,43 @@ export class TraceDetailsComponent implements OnChanges {
     edges: {
       smooth: {
         type: networkEdgeSmoothers.DYNAMIC, enabled: true, roundness: 0
+      },
+      font: {
+        size: 30
+      },
+      // @ts-ignore
+      chosen: {
+        label: (values, id, selected, hovering) => {
+          values.size = 35;
+        }
       }
     },
     nodes: {
       shape: 'dot',
-      widthConstraint: {
-        maximum: 60
-      },
-      chosen: true
+      font: {
+        size: 40
+      }
     },
     interaction: {
-      // hover: true
+      hover: true
     }
   };
 
   legend = new Map<string, string[]>();
 
   @Input() data;
+
+  nodeHover(node) {
+    Object.assign(node, {
+      label: node.fullLabel
+    });
+  }
+
+  nodeBlur(node) {
+    Object.assign(node, {
+      label: node.labelShort
+    });
+  }
 
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
@@ -59,9 +78,5 @@ export class TraceDetailsComponent implements OnChanges {
         }
       });
     }
-  }
-
-  getJSONDetails(details) {
-    return JSON.stringify(details, (k, p) => parseForRendering(p, k), 1);
   }
 }

@@ -27,7 +27,9 @@ node_labels = {
     EntityType.PROTEIN.value: 'Protein',
     EntityType.PHENOTYPE.value: 'Phenotype',
     EntityType.ENTITY.value: 'Entity',
-    EntityType.COMPANY.value: 'Company'
+    EntityType.COMPANY.value: 'Company',
+    EntityType.LAB_SAMPLE.value: 'LabSample',
+    EntityType.LAB_STRAIN.value: 'LabStrain'
 }
 
 

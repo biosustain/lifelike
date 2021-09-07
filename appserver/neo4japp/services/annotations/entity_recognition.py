@@ -265,6 +265,34 @@ class EntityRecognitionService:
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
+            # non lmdb lookups
+            elif entity_type == EntityType.LAB_SAMPLE.value:
+                global_inclusion = self.entity_inclusions.included_lab_samples
+                global_exclusion = self.entity_exclusions.excluded_lab_samples
+                results.recognized_lab_samples = [
+                    LMDBMatch(
+                        entities=global_inclusion[token.normalized_keyword].entities,
+                        token=token,
+                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
+                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                    ) for token in tokens if global_inclusion.get(
+                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                continue
+
+            # non lmdb lookups
+            elif entity_type == EntityType.LAB_STRAIN.value:
+                global_inclusion = self.entity_inclusions.included_lab_strains
+                global_exclusion = self.entity_exclusions.excluded_lab_strains
+                results.recognized_lab_strains = [
+                    LMDBMatch(
+                        entities=global_inclusion[token.normalized_keyword].entities,
+                        token=token,
+                        id_type=global_inclusion[token.normalized_keyword].entity_id_type,
+                        id_hyperlinks=global_inclusion[token.normalized_keyword].entity_id_hyperlinks  # noqa
+                    ) for token in tokens if global_inclusion.get(
+                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                continue
+
             if dbname is not None and global_inclusion is not None and global_exclusion is not None:  # noqa
                 key_results: Dict[str, List[dict]] = {}
                 key_id_type: Dict[str, str] = {}

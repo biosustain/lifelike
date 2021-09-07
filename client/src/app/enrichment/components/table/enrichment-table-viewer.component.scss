@@ -28,6 +28,6 @@
 
 .table-container {
   display: inline-block;
-  min-width: 100%;
+  min-width: calc(100% - 2 * #{module-body-padding-x});
   margin: $module-body-padding-x;
 }

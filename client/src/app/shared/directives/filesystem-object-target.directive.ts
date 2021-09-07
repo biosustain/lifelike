@@ -11,17 +11,17 @@ import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, tap } from 'rxjs/operators';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { FilesystemService } from '../services/filesystem.service';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ObjectCreationService } from '../services/object-creation.service';
-import { FilesystemObject } from '../models/filesystem-object';
+import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
-  FilesystemObjectTransferData,
-} from '../providers/data-transfer-data/filesystem-object-data.provider';
+  FilesystemObjectTransferData
+} from '../../file-browser/providers/data-transfer-data/filesystem-object-data.provider';
 
 @Directive({
   selector: '[appFSObjectTarget]',

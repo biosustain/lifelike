@@ -1,8 +1,8 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from flask import current_app
 
-from .constants import DatabaseType, EntityType
+from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
@@ -41,7 +41,9 @@ class AnnotationGraphService(GraphConnection):
             EntityType.PROTEIN.value: create_ner_type_protein,
             EntityType.SPECIES.value: create_ner_type_species,
             EntityType.COMPANY.value: create_ner_type_company,
-            EntityType.ENTITY.value: create_ner_type_entity
+            EntityType.ENTITY.value: create_ner_type_entity,
+            EntityType.LAB_SAMPLE.value: create_ner_type_lab_sample,
+            EntityType.LAB_STRAIN.value: create_ner_type_lab_strain
         }
 
         # TODO: can we just do get_global_inclusions_by_type_query once?
@@ -58,7 +60,7 @@ class AnnotationGraphService(GraphConnection):
             normalized_synonym = normalize_str(inclusion['synonym'])
             if entity_type != EntityType.GENE.value and entity_type != EntityType.PROTEIN.value:
                 entity = createfuncs[entity_type](
-                    id_=inclusion['entity_id'],
+                    id=inclusion['entity_id'],
                     name=inclusion['entity_name'],
                     synonym=inclusion['synonym']
                 )  # type: ignore
@@ -94,7 +96,9 @@ class AnnotationGraphService(GraphConnection):
             EntityType.PROTEIN.value: {},
             EntityType.SPECIES.value: {},
             EntityType.COMPANY.value: {},
-            EntityType.ENTITY.value: {}
+            EntityType.ENTITY.value: {},
+            EntityType.LAB_SAMPLE.value: {},
+            EntityType.LAB_STRAIN.value: {}
         }
 
         local_inclusion_dicts: Dict[str, dict] = {
@@ -135,7 +139,7 @@ class AnnotationGraphService(GraphConnection):
                         entity_id = synonym
 
                     entity = create_ner_type_species(
-                        id_=entity_id,
+                        id=entity_id,
                         name=synonym,
                         synonym=synonym
                     )
@@ -162,6 +166,8 @@ class AnnotationGraphService(GraphConnection):
             included_local_species=local_inclusion_dicts[EntityType.SPECIES.value],
             included_companies=inclusion_dicts[EntityType.COMPANY.value],
             included_entities=inclusion_dicts[EntityType.ENTITY.value],
+            included_lab_samples=inclusion_dicts[EntityType.LAB_SAMPLE.value],
+            included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value]
         )
 
     def get_genes_to_organisms(
@@ -171,7 +177,6 @@ class AnnotationGraphService(GraphConnection):
     ) -> GeneOrProteinToOrganism:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
         data_sources: Dict[str, str] = {}
-        temp_gene_to_organism: Dict[str, Tuple[str, Dict[str, dict]]] = {}
 
         result = self.exec_read_query_with_params(
             get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
@@ -184,34 +189,15 @@ class AnnotationGraphService(GraphConnection):
             data_source = row['data_source']
             data_source_key = f'{gene_synonym}{organism_id}'
 
-            # using gene_synonym and organism id as the key
-            # we are guaranteed to have exactly one copy (first one or NCBI)
-            # and be able to choose NCBI over BioCyc
-            if data_source_key not in data_sources:
-                # not in data_sources means not in temp_gene_to_organism
-                temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
-                data_sources[data_source_key] = data_source
-            else:
-                # data_source_key in data_sources
-                if data_source == DatabaseType.NCBI_GENE.value and data_sources[data_source_key] != data_source:  # noqa
-                    temp_gene_to_organism[data_source_key] = (gene_synonym, {gene_name: {organism_id: gene_id}})  # noqa
-                    data_sources[data_source_key] = data_source
+            data_sources[data_source_key] = data_source
 
-        # this will still not work if a gene has both BioCyc and NCBI
-        # e.g CRP
-        # if BioCyc shows up in the result first, it will get used
-        # but with the new model in the graph, there will only be a NCBI row
-        # if the BioCyc gene comes back, in the if statement
-        # we add another if to check the data_sources[key] == NCBI or BioCyc
-        for _, v in temp_gene_to_organism.items():
-            syn_key, data_dict = v
-            if syn_key in gene_to_organism_map:
-                curr_gene_name = next(iter(data_dict))
-                # keep the first gene/organism since can't infer which to use
-                if curr_gene_name not in gene_to_organism_map[syn_key]:
-                    gene_to_organism_map[syn_key] = {**gene_to_organism_map[syn_key], **data_dict}
+            if gene_to_organism_map.get(gene_synonym, None) is not None:
+                if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
+                else:
+                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[syn_key] = data_dict
+                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
         return GeneOrProteinToOrganism(matches=gene_to_organism_map, data_sources=data_sources)
 
