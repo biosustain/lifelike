@@ -2,6 +2,10 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
+:host {
+  width: 100% !important;
+}
+
 // The little dot next to each entity type indicating the color
 .entity-type-legend {
   display: inline-block;
@@ -48,13 +52,35 @@
 label {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
 }
 
-input[type='radio'], input[type='checkbox'] {
+input[type='radio'] {
   margin-right: .5em;
 }
 
-input[type='range'] {
-  width: 100px;
+.info {
+  align-self: start;
+  vertical-align: baseline;
+  line-height: 1.5;
+}
+
+
+.popover {
+  left: auto !important;
+  right: 0;
+  transform: translateY(-100%) !important;
+  width: max-content;
+
+  .arrow {
+    left: auto !important;
+    right: calc(1.5rem - 0.5em);
+  }
+
+  .popover-header {
+    color: black;
+  }
+
+  .popover-body {
+    text-align: justify;
+  }
 }

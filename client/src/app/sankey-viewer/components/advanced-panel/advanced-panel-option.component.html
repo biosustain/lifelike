@@ -1,7 +1,10 @@
-<label class="d-flex justify-content-between align-items-center pl-3 w-100 text-left m-0 checkpoint" ngbButtonLabel>
-    <ng-content></ng-content>
-    <div class="flex-grow-1 text-left">{{title}}</div>
-    <i class="fa fa-info-circle ml-3"
+<label>
+    <div class="d-flex justify-content-between align-items-center w-100 text-left m-0 checkpoint flex-wrap">
+        <ng-content></ng-content>
+        <div class="flex-grow-1 text-left" [style.width]="'max-content'">{{title}}</div>
+        <ng-content select="[afterTitle]"></ng-content>
+    </div>
+    <i class="fa fa-info-circle ml-3 info"
        placement="top"
        triggers="mouseenter:mouseleave"
        [openDelay]="300"
