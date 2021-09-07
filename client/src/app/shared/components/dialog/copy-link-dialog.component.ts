@@ -6,9 +6,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-share-dialog',
-  templateUrl: './share-dialog.component.html',
+  templateUrl: './copy-link-dialog.component.html',
 })
-export class ShareDialogComponent {
+export class CopyLinkDialogComponent {
 
   @ViewChild('input', {static: false}) input: ElementRef;
   @Input() url: string;

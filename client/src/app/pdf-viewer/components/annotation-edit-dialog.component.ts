@@ -78,7 +78,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     // need to reset value here so id input also gets reset
     // since the select will always default to "No Source" on entity type change
     this.form.get('source').patchValue('');
-    if (['Mutation', 'Pathway', 'Lab Strain', 'Lab Sample'].includes(this.form.get('entityType').value)) {
+    if (['Mutation', 'Pathway'].includes(this.form.get('entityType').value)) {
       this.form.get('includeGlobally').patchValue(false);
       this.form.get('includeGlobally').disable();
       this.form.get('id').updateValueAndValidity();
