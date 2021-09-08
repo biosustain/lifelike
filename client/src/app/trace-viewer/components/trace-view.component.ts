@@ -19,6 +19,8 @@ import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 
 import { getTraceDetailsGraph } from './traceDetails';
+import { TruncatePipe } from '../../shared/pipes';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -28,7 +30,8 @@ import { getTraceDetailsGraph } from './traceDetails';
     CustomisedSankeyLayoutService, {
       provide: SankeyLayoutService,
       useExisting: CustomisedSankeyLayoutService
-    }
+    },
+    TruncatePipe
   ]
 })
 export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
@@ -40,6 +43,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   data;
   title: string;
   error: any;
+  object: FilesystemObject;
 
   sankeyData: SankeyData;
   networkTraces;
@@ -49,7 +53,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private sankeyLayout: CustomisedSankeyLayoutService
+    private sankeyLayout: CustomisedSankeyLayoutService,
+    protected readonly truncatePipe: TruncatePipe
   ) {
     const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;
@@ -59,6 +64,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask((id) => {
       return combineLatest(
+        this.filesystemService.get(id),
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
@@ -66,8 +72,9 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       );
     });
 
-    this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [fileContent]}) => {
+    this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [object, fileContent]}) => {
       const {links, graph, nodes, ...data} = fileContent;
+      this.object = object;
       this.networkTraces = graph.trace_networks;
       this.sankeyData = {
         ...data,
@@ -106,8 +113,10 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         nodes: mainNodes
       },
       sankeyLayout: {
-        nodeLabel,
-        nodeLabelShort
+        nodeLabel
+      },
+      truncatePipe: {
+        transform: truncate
       }
     } = this;
 
@@ -130,6 +139,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         const color = cubehelix(node._color);
         color.s = 0;
         const label = nodeLabel(node);
+        const labelShort = truncate(label, 20);
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
@@ -138,7 +148,9 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
           ...otherProperties,
           color: '' + color,
           databaseLabel: node.type,
-          label: nodeLabelShort(node),
+          label: labelShort,
+          fullLabel: label,
+          labelShort,
           title: label
         };
       } else {

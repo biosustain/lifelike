@@ -1,8 +1,18 @@
-export interface ValueGenerator {
-  disabled?: () => boolean;
+import visNetwork from 'vis-network';
+
+export interface ValueAccessor {
   description: string;
+  help?: string;
+}
+
+export interface ValueGenerator extends ValueAccessor {
+  disabled?: () => boolean;
   preprocessing: (v: SankeyData) => Partial<SankeyData> | undefined;
   postprocessing?: (v: SankeyData) => Partial<SankeyData> | undefined;
+}
+
+export interface MultiValueAccessor extends ValueAccessor {
+  callback: () => void;
 }
 
 export interface ArrayWithDefault<T> extends Array<T> {
@@ -18,6 +28,7 @@ export interface Prescaler {
 export interface Palette {
   name: string;
   palette: (size: number, params: object) => (i: number) => string | object;
+  help?: string;
 }
 
 interface SankeyNodeHeight {
@@ -35,12 +46,12 @@ export interface SankeyAdvancedOptions {
   nodeHeight: SankeyNodeHeight;
   prescalers: ArrayWithDefault<Prescaler>;
   selectedPrescaler: Prescaler;
-  selectedNodeValueAccessor: any;
-  selectedLinkValueAccessor: any;
-  selectedPredefinedValueAccessor: any;
-  nodeValueAccessors: Array<any>;
-  linkValueAccessors: Array<any>;
-  predefinedValueAccessors: Array<any>;
+  selectedNodeValueAccessor: ValueGenerator;
+  selectedLinkValueAccessor: ValueGenerator;
+  selectedPredefinedValueAccessor: MultiValueAccessor;
+  nodeValueAccessors: Array<ValueGenerator>;
+  linkValueAccessors: Array<ValueGenerator>;
+  predefinedValueAccessors: Array<MultiValueAccessor>;
   nodeValueGenerators: {
     [key: string]: ValueGenerator
   };
@@ -50,11 +61,12 @@ export interface SankeyAdvancedOptions {
   normalizeLinks: boolean;
   linkPalettes: ArrayWithDefault<Palette>;
   selectedLinkPalette: Palette;
-  labelEllipsis: any;
+  labelEllipsis: {
+    enabled: boolean,
+    value: number
+  } | undefined;
   fontSizeScale: number;
 }
-
-import visNetwork from 'vis-network';
 
 interface LinkedNode {
   fromEdges: Array<any>;
