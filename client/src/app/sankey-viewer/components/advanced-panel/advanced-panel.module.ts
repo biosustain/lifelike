@@ -11,19 +11,18 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyTypeProvider } from './providers/sankey-type-provider';
-import { SankeyModule } from './components/sankey/sankey.module';
-import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
-import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-panel.module';
+import { SankeyAdvancedPanelOptionComponent } from './advanced-panel-option.component';
+import { SankeyAdvancedPanelComponent } from './advanced-panel.component';
+import { FileBrowserModule } from '../../../file-browser/file-browser.module';
+import { TYPE_PROVIDER } from '../../../file-browser/services/object-type.service';
+import { SankeyTypeProvider } from '../../providers/sankey-type-provider';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyDetailsPanelComponent
+    SankeyAdvancedPanelComponent,
+    SankeyAdvancedPanelOptionComponent
   ],
   imports: [
     CommonModule,
@@ -42,8 +41,7 @@ import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeyModule,
-    SankeyAdvancedPanelModule,
+    NgbModule
   ],
   entryComponents: [],
   providers: [{
@@ -52,9 +50,8 @@ import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-
     multi: true,
   }],
   exports: [
-    SankeyViewComponent,
-    SankeyDetailsPanelComponent
+    SankeyAdvancedPanelComponent
   ],
 })
-export class SankeyViewerLibModule {
+export class SankeyAdvancedPanelModule {
 }
