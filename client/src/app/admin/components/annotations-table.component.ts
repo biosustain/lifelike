@@ -117,8 +117,9 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.locator = {...this.locator, page};
         this.subscriptions.add(this.globalAnnotationService.getAnnotations(
             this.locator, this.globalAnnotationType).pipe().subscribe(
-            (({results: annotations}) => {
-                this.results.replace(annotations);
+            (annotations => {
+                this.collectionSize = annotations.total;
+                this.results.replace(annotations.results);
             })
         ));
     }
