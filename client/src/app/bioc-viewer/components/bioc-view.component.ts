@@ -530,9 +530,12 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       let source = ['/projects', encodeURIComponent(this.object.project.name),
         'bioc', encodeURIComponent(this.object.hashId)].join('/');
       if (position) {
-        source += '#offset=' + position;
-        source += '&start=' + startIndex;
-        source += '&len=' + len;
+        source += new URLSearchParams({
+                offset: position,
+                start: startIndex,
+                len: len
+        } as BiocAnnotationLocation)
+        source = '#' + source;
       }
       const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
