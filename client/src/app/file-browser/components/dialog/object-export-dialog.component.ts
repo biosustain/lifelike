@@ -6,6 +6,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import {Exporter, ObjectTypeService} from '../../services/object-type.service';
 import {FilesystemObject} from '../../models/filesystem-object';
 import {mergeMap} from 'rxjs/operators';
+import {MimeTypes} from '../../../shared/constants';
 
 @Component({
   selector: 'app-object-export-dialog',
@@ -14,7 +15,6 @@ import {mergeMap} from 'rxjs/operators';
 export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input() title = 'Export';
 
-  private readonly MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
   exporters: Exporter[];
   private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
   private _target: FilesystemObject;
@@ -33,7 +33,7 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input()
   set target(target: FilesystemObject) {
     this._target = target;
-    this.isMapExport = target.mimeType === this.MAP_MIMETYPE;
+    this.isMapExport = target.mimeType === MimeTypes.Map;
     this.objectTypeService.get(target).pipe(
       mergeMap(typeProvider => typeProvider.getExporters(target)),
       mergeMap(exporters => this.exporters = exporters)
