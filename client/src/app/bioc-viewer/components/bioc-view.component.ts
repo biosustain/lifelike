@@ -443,6 +443,19 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>));
   }
 
+  @HostListener('dragend', ['$event'])
+  dragEnd(event: (DragEvent & { path: Element[] } )) {
+    const paths = event.path;
+    const biocViewer = paths.filter((el) => el.tagName && el.tagName.toLowerCase() === 'app-bioc-viewer');
+    if (biocViewer.length > 0) {
+      const firstPath = paths[0];
+      if (!firstPath.tagName) {
+        // then this is frictionless drag and drop
+        this.removeFrictionlessNode();
+      }
+    }
+  }
+
   removeFrictionlessNode() {
     // I will replace this code
     if (this.createdNode && this.createdNode.parentNode) {
@@ -453,6 +466,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       jQuery(parent).text(wholeText);
     }
   }
+
   @HostListener('document:mouseup', ['$event'])
   selectionChange(event: (MouseEvent & { target: Element })) {
     const isItComingFromBiocViewer = (event.target).closest('app-bioc-viewer');
@@ -529,12 +543,12 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       let source = ['/projects', encodeURIComponent(this.object.project.name),
         'bioc', encodeURIComponent(this.object.hashId)].join('/');
       if (position) {
+        source += '#';
         source += new URLSearchParams({
-                offset: position,
-                start: startIndex,
-                len: len
+          offset: position,
+          start: startIndex,
+          len
         });
-        source = '#' + source;
       }
       const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
