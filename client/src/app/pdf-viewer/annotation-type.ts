@@ -21,7 +21,7 @@ export interface Meta {
   type: string;
   id?: string;
   idType?: string;
-  idHyperlink?: string;
+  idHyperlinks?: string[];
   isCustom?: boolean;
   allText?: string;
   links?: Links;
@@ -52,7 +52,7 @@ export interface AddedAnnotationExclusion {
   type: string;
   text: string;
   id: string;
-  idHyperlink: string;
+  idHyperlinks: string[];
   reason: string;
   comment: string;
   rects: Rect[];
@@ -62,5 +62,5 @@ export interface AddedAnnotationExclusion {
 }
 
 export type AnnotationChangeExclusionMeta = Pick<AddedAnnotationExclusion,
-  'id' | 'idHyperlink' | 'text' | 'type' | 'reason' | 'comment' |
+  'id' | 'idHyperlinks' | 'text' | 'type' | 'reason' | 'comment' |
   'excludeGlobally' | 'isCaseInsensitive'>;

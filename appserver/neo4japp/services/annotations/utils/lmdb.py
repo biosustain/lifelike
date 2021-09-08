@@ -2,39 +2,39 @@ from ..constants import DatabaseType, EntityIdStr
 
 
 def create_ner_type_anatomy(
-    id_: str,
+    id: str,
     name: str,
     synonym: str
 ) -> dict:
     return {
-        EntityIdStr.ANATOMY.value: id_,
+        EntityIdStr.ANATOMY.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
         'synonym': synonym
     }
 
 
-def create_ner_type_chemical(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_chemical(id: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.CHEMICAL.value: id_,
+        EntityIdStr.CHEMICAL.value: id,
         'id_type': DatabaseType.CHEBI.value,
         'name': name,
         'synonym': synonym,
     }
 
 
-def create_ner_type_compound(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_compound(id: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.COMPOUND.value: id_,
+        EntityIdStr.COMPOUND.value: id,
         'id_type': DatabaseType.BIOCYC.value,
         'name': name,
         'synonym': synonym,
     }
 
 
-def create_ner_type_disease(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_disease(id: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.DISEASE.value: id_,
+        EntityIdStr.DISEASE.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
         'synonym': synonym,
@@ -42,12 +42,12 @@ def create_ner_type_disease(id_: str, name: str, synonym: str) -> dict:
 
 
 def create_ner_type_food(
-    id_: str,
+    id: str,
     name: str,
     synonym: str
 ) -> dict:
     return {
-        EntityIdStr.FOOD.value: id_,
+        EntityIdStr.FOOD.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
         'synonym': synonym
@@ -67,12 +67,12 @@ def create_ner_type_gene(
 
 
 def create_ner_type_phenomena(
-    id_: str,
+    id: str,
     name: str,
     synonym: str
 ) -> dict:
     return {
-        EntityIdStr.PHENOMENA.value: id_,
+        EntityIdStr.PHENOMENA.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
         'synonym': synonym,
@@ -80,12 +80,12 @@ def create_ner_type_phenomena(
 
 
 def create_ner_type_phenotype(
-    id_: str,
+    id: str,
     name: str,
     synonym: str
 ) -> dict:
     return {
-        EntityIdStr.PHENOTYPE.value: id_,
+        EntityIdStr.PHENOTYPE.value: id,
         'id_type': DatabaseType.CUSTOM.value,
         'name': name,
         'synonym': synonym,
@@ -104,13 +104,13 @@ def create_ner_type_protein(name: str, synonym: str) -> dict:
 
 
 def create_ner_type_species(
-    id_: str,
+    id: str,
     name: str,
     synonym: str,
     category: str = 'Uncategorized',
 ) -> dict:
     return {
-        EntityIdStr.SPECIES.value: id_,
+        EntityIdStr.SPECIES.value: id,
         'id_type': DatabaseType.NCBI_TAXONOMY.value,
         'category': category,
         'name': name,
@@ -118,19 +118,42 @@ def create_ner_type_species(
     }
 
 
-def create_ner_type_company(id_: str, name: str, synonym: str) -> dict:
+"""
+None LMDB related entities
+"""
+
+
+def create_ner_type_company(id: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.COMPANY.value: id_,
-        'id_type': DatabaseType.CUSTOM.value,
+        EntityIdStr.COMPANY.value: id,
+        'id_type': '',
         'name': name,
         'synonym': synonym
     }
 
 
-def create_ner_type_entity(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_entity(id: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.ENTITY.value: id_,
-        'id_type': DatabaseType.CUSTOM.value,
+        EntityIdStr.ENTITY.value: id,
+        'id_type': '',
+        'name': name,
+        'synonym': synonym
+    }
+
+
+def create_ner_type_lab_sample(id: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.LAB_SAMPLE.value: id,
+        'id_type': '',
+        'name': name,
+        'synonym': synonym
+    }
+
+
+def create_ner_type_lab_strain(id: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.LAB_STRAIN.value: id,
+        'id_type': '',
         'name': name,
         'synonym': synonym
     }

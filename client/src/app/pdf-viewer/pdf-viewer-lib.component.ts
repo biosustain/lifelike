@@ -431,37 +431,53 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
-    if (an.meta.id) {
-      if (an.meta.idHyperlink) {
-        base.push(`Id: <a href=${escape(an.meta.idHyperlink)} target="_blank">${escape(an.meta.id)}</a>`);
-      } else {
-        base.push(`Id: ${escape(an.meta.id)}`);
-      }
-    }
-    if (an.meta.idType) {
-      base.push(`Id Type: ${escape(an.meta.idType)}`);
-    }
+    base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
+    base.push(an.meta.idType && an.meta.idType !== '' ? `Data Source: ${escape(an.meta.idType)}` : 'Data Source: None');
+
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
+
+    let htmlLinks = '<div>';
+
+    // source links if any
+    if (an.meta.idHyperlinks && an.meta.idHyperlinks.length > 0) {
+      htmlLinks += `
+        <a>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+        <div>
+      `;
+
+      for (const link of an.meta.idHyperlinks) {
+          const {label, url} = JSON.parse(link);
+          htmlLinks += `<a target="_blank" href="${escape(url)}">${escape(label)}</a><br>`;
+      }
+
+      htmlLinks += `</div></div>`;
+    }
+
     // search links
-    const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
-    let collapseHtml = `
-      <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
-        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
-      </a>
-      <div class="collapse" id="${collapseTargetId}">
+    const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+    htmlLinks += `
+      <div>
+        <a
+          class="pdf-tooltip-collapse-control collapsed"
+          role="button"
+          data-toggle="collapse"
+          data-target="#${searchLinkCollapseTargetId}"
+          aria-expanded="false"
+          aria-controls="${searchLinkCollapseTargetId}"
+        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+        <div class="collapse" id="${searchLinkCollapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
     for (const {domain, url} of SEARCH_LINKS) {
       const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
-      collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
+      htmlLinks += `<a target="_blank" href="${escape(link)}">${escape(domain.replace('_', ' '))}</a><br>`;
     }
-    collapseHtml += `
-      </div>
-    `;
-    base.push(collapseHtml);
-    base = [base.join('<br/>')];
+    htmlLinks += `</div></div>`;
+
+    base.push(htmlLinks);
+    base = [base.join('<br>')];
 
     if (an.meta.isCustom) {
       base.push(`
@@ -484,7 +500,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (!an.meta.isCustom && !an.meta.isExcluded) {
       const annExclusion = {
         id: an.meta.id,
-        idHyperlink: an.meta.idHyperlink,
+        idHyperlinks: an.meta.idHyperlinks,
         text: an.textInDocument,
         type: an.meta.type,
         rects: an.rects,
@@ -808,8 +824,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         (jQuery(el) as any).qtip(
           {
 
-            content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
-                <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
+            content: `
+              <button
+                style="background: none; border: none;"
+                onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()"
+              >Create Annotation</button> | 
+              <button
+                style="background: none; border: none;"
+                onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()"
+              >Copy Text</button>`,
             position: {
               my: 'bottom center',
               target: 'mouse',

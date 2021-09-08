@@ -37,16 +37,17 @@ export function openLink(url: string, target = '_blank'): boolean {
   return true;
 }
 
-export function openPotentialInternalLink(workspaceManager: WorkspaceManager, url: string,
-                                          defaultExternal = true): boolean {
+export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
+                                          url: string): boolean {
+  url = url.trim();
   let urlObject;
   try {
     urlObject = new URL(url);
   } catch (e) {
-    if (defaultExternal) {
-      urlObject = new URL('http://' + url);
-    } else {
+    if (url.charAt(0) === '/') {
       urlObject = new URL(url, window.location.href);
+    } else {
+      urlObject = new URL('https://' + url);
     }
   }
   const openInternally = workspaceManager.isWithinWorkspace()

@@ -27,10 +27,6 @@ export class HighlightSnippetComponent implements OnChanges {
     ngOnChanges() {
         const spaceRegex = / /gi;
 
-        console.log(this.legend);
-        console.log(this.entry1Type);
-        console.log(this.entry2Type);
-
         // Because the `entryType` properties of snippet nodes DOES NOT match the label of the entity nodes, we do an extra check here.
         // E.g., a snippet associated with a `LiteratureGene` node will have the "gene" as its entry type, not "literaturegene."
         const entry1Colors = this.legend.get(this.entry1Type) || this.legend.get(`Literature${this.entry1Type}`) || ['#000', '#000'];

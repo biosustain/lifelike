@@ -154,14 +154,14 @@ def lmdb_setup_test_gene_vs_protein(app):
     serpina1_protein = create_ner_type_protein(name='Serpin A1', synonym='Serpin A1')
 
     human = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='human',
         synonym='human',
     )
 
     moni_roreri = create_ner_type_species(
-        id_='221103',
+        id='221103',
         category=OrganismCategory.EUKARYOTA.value,
         name='Moniliophthora roreri',
         synonym='Moniliophthora roreri',
@@ -185,14 +185,14 @@ def lmdb_setup_test_gene_vs_protein(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_chemical_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     hypofluorite = create_ner_type_chemical(
-        id_='CHEBI:30244',
+        id='CHEBI:30244',
         name='hypofluorite',
         synonym='Hypofluorite',
     )
@@ -215,14 +215,14 @@ def lmdb_setup_test_global_excluded_chemical_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_compound_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     guanosine = create_ner_type_compound(
-        id_='GUANOSINE',
+        id='GUANOSINE',
         name='guanosine',
         synonym='guanosine',
     )
@@ -245,14 +245,14 @@ def lmdb_setup_test_global_excluded_compound_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_disease_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     cold_sore = create_ner_type_disease(
-        id_='MESH:D006560',
+        id='MESH:D006560',
         name='cold sore',
         synonym='cold sore',
     )
@@ -275,7 +275,7 @@ def lmdb_setup_test_global_excluded_disease_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_gene_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
@@ -301,14 +301,14 @@ def lmdb_setup_test_global_excluded_gene_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_phenotype_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     whey_protein = create_ner_type_phenotype(
-        id_='MESH:D000067816',
+        id='MESH:D000067816',
         name='Whey Proteins',
         synonym='Whey Proteins',
     )
@@ -331,7 +331,7 @@ def lmdb_setup_test_global_excluded_phenotype_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_protein_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
@@ -360,14 +360,14 @@ def lmdb_setup_test_global_excluded_protein_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_excluded_species_annotations(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     human = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='human',
         synonym='human',
@@ -391,20 +391,20 @@ def lmdb_setup_test_global_excluded_species_annotations(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_exclusions_does_not_interfere_with_other_entities(app):
     rat = create_ner_type_species(
-        id_='10114',
+        id='10114',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat',
     )
 
     adenosine = create_ner_type_chemical(
-        id_='CHEBI:16335',
+        id='CHEBI:16335',
         name='adenosine',
         synonym='adenosine',
     )
 
     adenosine2 = create_ner_type_compound(
-        id_='ADENOSINE',
+        id='ADENOSINE',
         name='adenosine',
         synonym='adenosine',
     )
@@ -427,7 +427,7 @@ def lmdb_setup_test_global_exclusions_does_not_interfere_with_other_entities(app
 @pytest.fixture(scope='function')
 def lmdb_setup_test_global_gene_inclusion_annotation(app):
     human = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='human',
         synonym='human',
@@ -451,13 +451,13 @@ def lmdb_setup_test_global_gene_inclusion_annotation(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_no_annotation_for_abbreviation(app):
     pathway = create_ner_type_phenotype(
-        id_='MESH:D010427',
+        id='MESH:D010427',
         name='Pentose Phosphate Pathway',
         synonym='Pentose Phosphate Pathway',
     )
 
     hypertension = create_ner_type_disease(
-        id_='MESH:D000081029',
+        id='MESH:D000081029',
         name='Pulmonary Arterial Hypertension',
         synonym='Pulmonary Arterial Hypertension',
     )
@@ -487,7 +487,7 @@ def lmdb_setup_test_global_inclusion_normalized_already_in_lmdb(app):
     il8_protein = create_ner_type_protein(name='CXCL8', synonym='IL8')
 
     homosapiens = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='Homo Sapiens',
         synonym='Human',
@@ -511,13 +511,13 @@ def lmdb_setup_test_global_inclusion_normalized_already_in_lmdb(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_can_find_food_entities(app):
     sweetener = create_ner_type_food(
-        id_='MESH:D013549',
+        id='MESH:D013549',
         name='Sweetening Agents',
         synonym='Artificial Sweeteners',
     )
 
     bacon = create_ner_type_food(
-        id_='MESH:D000080305',
+        id='MESH:D000080305',
         name='Pork Meat',
         synonym='Bacon',
     )
@@ -540,13 +540,13 @@ def lmdb_setup_test_can_find_food_entities(app):
 @pytest.fixture(scope='function')
 def lmdb_setup_test_can_find_anatomy_entities(app):
     filamin = create_ner_type_anatomy(
-        id_='MESH:D064448',
+        id='MESH:D064448',
         name='Filamins',
         synonym='280 kDa Actin Binding Protein',
     )
 
     claws = create_ner_type_anatomy(
-        id_='MESH:D006724',
+        id='MESH:D006724',
         name='Hoof and Claw',
         synonym='Claws',
     )
@@ -571,13 +571,13 @@ def lmdb_setup_test_assume_human_gene_after_finding_virus(app):
     ace2 = create_ner_type_gene(name='ACE2', synonym='ACE2',)
 
     covid_19 = create_ner_type_disease(
-        id_='MESH:C000657245',
+        id='MESH:C000657245',
         name='COVID-19',
         synonym='COVID-19',
     )
 
     mers_cov = create_ner_type_species(
-        id_='1335626',
+        id='1335626',
         category=OrganismCategory.VIRUSES.value,
         name='MERS-CoV',
         synonym='MERS-CoV',
@@ -607,7 +607,7 @@ def lmdb_setup_test_gene_organism_escherichia_coli_pdf(app):
     purF = create_ner_type_gene(name='purD', synonym='purD')
 
     e_coli = create_ner_type_species(
-        id_='562',
+        id='562',
         category=OrganismCategory.BACTERIA.value,
         name='Escherichia coli',
         synonym='Escherichia coli',
@@ -634,7 +634,7 @@ def lmdb_setup_test_protein_organism_escherichia_coli_pdf(app):
     ydhb = create_ner_type_protein(name='YdhB', synonym='YdhB')
 
     e_coli = create_ner_type_species(
-        id_='562',
+        id='562',
         category=OrganismCategory.BACTERIA.value,
         name='Escherichia coli',
         synonym='Escherichia coli',
@@ -661,14 +661,14 @@ def lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
     edem3_caps = create_ner_type_gene(name='EDEM3', synonym='EDEM3')
 
     human = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='human',
         synonym='human'
     )
 
     rat = create_ner_type_species(
-        id_='10116',
+        id='10116',
         category=OrganismCategory.EUKARYOTA.value,
         name='rat',
         synonym='rat'
@@ -695,14 +695,14 @@ def lmdb_setup_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(a
     il7 = create_ner_type_gene(name='il-7', synonym='il-7')
 
     tetraodon = create_ner_type_species(
-        id_='31033',
+        id='31033',
         category=OrganismCategory.EUKARYOTA.value,
         name='Tetraodon rubripes',
         synonym='Tetraodon rubripes'
     )
 
     coelacanth = create_ner_type_species(
-        id_='7897',
+        id='7897',
         category=OrganismCategory.EUKARYOTA.value,
         name='coelacanth',
         synonym='coelacanth'
@@ -752,21 +752,21 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
     bst2 = create_ner_type_gene(name='BST2', synonym='BST2')
 
     cat = create_ner_type_species(
-        id_='9685',
+        id='9685',
         category=OrganismCategory.EUKARYOTA.value,
         name='Felis Catus',
         synonym='Felis Catus'
     )
 
     homo = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='Homo Sapiens',
         synonym='Homo Sapiens'
     )
 
     human = create_ner_type_species(
-        id_='9606',
+        id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='Human',
         synonym='Human'
@@ -1033,7 +1033,7 @@ def mock_global_chemical_inclusion_annotation():
             'entity_name': 'fake-chemical-(12345)',
             'synonym': 'fake-chemical-(12345)',
             'data_source': 'ChEBI',
-            'hyperlink': ''
+            'hyperlinks': []
         }
     ]
 
@@ -1042,7 +1042,7 @@ def mock_global_chemical_inclusion_annotation():
             entities=[create_ner_type_chemical(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc['hyperlink']
+            entity_id_hyperlinks=inc['hyperlinks']
         ) for inc in inclusions
     }
 
@@ -1055,7 +1055,7 @@ def mock_global_compound_inclusion_annotation():
             'entity_name': 'compound-(12345)',
             'synonym': 'compound-(12345)',
             'data_source': 'BioCyc',
-            'hyperlink': ''
+            'hyperlinks': []
         }
     ]
 
@@ -1064,7 +1064,7 @@ def mock_global_compound_inclusion_annotation():
             entities=[create_ner_type_compound(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc['hyperlinks']
         ) for inc in inclusions
     }
 
@@ -1084,7 +1084,7 @@ def mock_global_gene_inclusion_annotation():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlinks', [])
         ) for inc in inclusions
     }
 
@@ -1104,7 +1104,7 @@ def mock_global_inclusion_normalized_already_in_lmdb():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1125,7 +1125,7 @@ def mock_global_disease_inclusion_annotation():
             entities=[create_ner_type_disease(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1146,7 +1146,7 @@ def mock_global_phenomena_inclusion_annotation():
             entities=[create_ner_type_phenomena(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1167,7 +1167,7 @@ def mock_global_phenotype_inclusion_annotation():
             entities=[create_ner_type_phenotype(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1187,7 +1187,7 @@ def mock_global_protein_inclusion_annotation():
         normalize_str(inc['synonym']): Inclusion(
             entities=[create_ner_type_protein(inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }
 
@@ -1208,6 +1208,6 @@ def mock_global_species_inclusion_annotation():
             entities=[create_ner_type_species(
                 inc['entity_id'], inc['entity_name'], inc['synonym'])],
             entity_id_type=inc['data_source'],
-            entity_id_hyperlink=inc.get('hyperlink', '')
+            entity_id_hyperlinks=inc.get('hyperlink', [])
         ) for inc in inclusions
     }

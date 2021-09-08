@@ -18,7 +18,7 @@ from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from sqlalchemy.exc import IntegrityError
 
-from neo4japp.constants import LogEventType
+from neo4japp.constants import ANNOTATION_STYLES_DICT, LogEventType
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
@@ -268,7 +268,9 @@ def seed_globals_into_graph(filename):
     import csv
     import datetime
     import os
+    import json
     from enum import Enum
+    from urllib.parse import urlparse
 
     directory = os.path.realpath(os.path.dirname(__file__))
 
@@ -328,7 +330,9 @@ def seed_globals_into_graph(filename):
                     'id': entity_id,
                     'idType': data_source,
                     'allText': text,
-                    'idHyperlink': hyperlink
+                    'idHyperlinks': [json.dumps({
+                        'label': urlparse(hyperlink).netloc.replace('www.', ''),
+                        'url': hyperlink})] if hyperlink else []
                 }
             }
 
@@ -345,6 +349,99 @@ def seed_globals_into_graph(filename):
                 raise Exception(f'Failed to execute query for line {line}.')
 
 
+def add_file(filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes):
+    """Helper for adding a generic file to the database."""
+    user = db.session.query(AppUser).filter(AppUser.id == user_id).one()
+    parent = db.session.query(Files).filter(Files.id == parent_id).one()
+
+    file_type_service = get_file_type_service()
+
+    file = Files()
+    file.filename = filename
+    file.description = description
+    file.user = user
+    file.creator = user
+    file.modifier = user
+    file.public = False
+    file.parent = parent
+    file.upload_url = None
+
+    # Create operation
+    buffer = io.BytesIO(file_bstr)
+
+    # Detect the mime type of the file
+    mime_type = file_type_service.detect_mime_type(buffer)
+    buffer.seek(0)  # Must rewind
+    file.mime_type = mime_type
+
+    # Figure out file size
+    buffer.seek(0, io.SEEK_END)
+    size = buffer.tell()
+    buffer.seek(0)
+
+    # Check max file size
+    if size > 1024 * 1024 * 300:
+        raise ValidationError(
+            'Your file could not be processed because it is too large.')
+
+    # Get the provider based on what we know now
+    provider = file_type_service.get(file)
+
+    # Check if the user can even upload this type of file
+    if not provider.can_create():
+        raise ValidationError(f"The provided file type is not accepted.")
+
+    # Validate the content
+    try:
+        provider.validate_content(buffer)
+        buffer.seek(0)  # Must rewind
+    except ValueError as e:
+        raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+
+    # Get the DOI
+    file.doi = provider.extract_doi(buffer)
+    buffer.seek(0)  # Must rewind
+
+    # Save the file content if there's any
+    if size:
+        file.content_id = FileContent.get_or_create(buffer)
+        buffer.seek(0)  # Must rewind
+
+    # ========================================
+    # Commit and filename conflict resolution
+    # ========================================
+
+    # Filenames could conflict, so we may need to generate a new filename
+    # Trial 1: First attempt
+    # Trial 2: Try adding (N+1) to the filename and try again
+    # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
+    # Trial 4: Give up
+    # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
+    for trial in range(4):
+        if 1 <= trial <= 2:  # Try adding (N+1)
+            try:
+                file.filename = file.generate_non_conflicting_filename()
+            except ValueError:
+                raise ValidationError(
+                    'Filename conflicts with an existing file in the same folder.',
+                    "filename")
+        elif trial == 3:  # Give up
+            raise ValidationError(
+                'Filename conflicts with an existing file in the same folder.',
+                "filename")
+
+        try:
+            db.session.begin_nested()
+            db.session.add(file)
+            db.session.commit()
+            break
+        except IntegrityError as e:
+            # Warning: this could catch some other integrity error
+            db.session.rollback()
+
+    db.session.commit()
+
+
 @app.cli.command('merge-maps')
 @click.option('--user-id', '-u', required=True, type=int)
 @click.option('--parent-id', '-p', required=True, type=int)
@@ -356,11 +453,16 @@ def merge_maps(user_id, filename, description, parent_id, maps):
     Merges two or more existing drawing tool maps into a single map.
 
     Args:
-        user-id - ID of the user who will own the new map
-        parent-id - ID of the folder the new map should be added to
-        maps - IDs of two or more maps to merge (e.g. -m 1 -m 2 -m 3)
-        filename - Name of the new map
-        description - Description of the new map (Optional)
+
+        user-id -- ID of the user who will own the new map
+
+        parent-id -- ID of the folder the new map should be added to
+
+        maps -- IDs of two or more maps to merge (e.g. -m 1 -m 2 -m 3)
+
+        filename -- Name of the new map
+
+        description -- Description of the new map (Optional)
     """
     if maps is None or len(maps) < 2:
         raise ValueError('Should give at least 2 maps to merge.')
@@ -534,8 +636,6 @@ def merge_maps(user_id, filename, description, parent_id, maps):
             'edges': edges
         }
 
-    user = db.session.query(AppUser).filter(AppUser.id == user_id).one()
-    parent = db.session.query(Files).filter(Files.id == parent_id).one()
     raw_map_data = [
         [json.loads(raw_data[0]), raw_data[1]]
         for raw_data in db.session.query(
@@ -557,85 +657,117 @@ def merge_maps(user_id, filename, description, parent_id, maps):
         } for file_data, filename in raw_map_data
     ]
 
-    file_type_service = get_file_type_service()
+    add_file(
+        filename,
+        description,
+        user_id,
+        parent_id,
+        json.dumps(merge_maps(map_data)).encode('utf-8')
+    )
 
-    file = Files()
-    file.filename = filename or 'New Merged Map'
-    file.description = description or ''
-    file.user = user
-    file.creator = user
-    file.modifier = user
-    file.public = False
-    file.parent = parent
-    file.upload_url = None
-    file.mime_type = 'vnd.***ARANGO_DB_NAME***.document/map'
 
-    # Create operation
-    buffer = io.BytesIO(json.dumps(merge_maps(map_data)).encode('utf-8'))
+@app.cli.command('generate-plotly-sankey-from-***ARANGO_DB_NAME***')
+@click.option('--sankey-file-id', '-s', required=True, type=int)
+@click.option('--user-id', '-u', required=True, type=int)
+@click.option('--parent-id', '-p', required=True, type=int)
+def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
+    sankey_file_id,
+    user_id,
+    parent_id,
+):
+    """
+    Generates a Plotly compatible JSON file from a Lifelike sankey file.
 
-    # Figure out file size
-    buffer.seek(0, io.SEEK_END)
-    size = buffer.tell()
-    buffer.seek(0)
+    Args:
 
-    # Check max file size
-    if size > 1024 * 1024 * 300:
-        raise ValidationError(
-            'Your file could not be processed because it is too large.')
+        sankey-file-id -- ID of the user who will own the new map
 
-    # Get the provider based on what we know now
-    provider = file_type_service.get(file)
+        user-id -- ID of the user who will own the new map
 
-    # Check if the user can even upload this type of file
-    if not provider.can_create():
-        raise ValidationError(f"The provided file type is not accepted.")
+        parent-id -- ID of the folder the new map should be added to
+    """
 
-    # Validate the content
-    try:
-        provider.validate_content(buffer)
-        buffer.seek(0)  # Must rewind
-    except ValueError as e:
-        raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+    sankey_file = db.session.query(
+        FileContent.raw_file,
+    ).join(
+        Files,
+        and_(
+            Files.content_id == FileContent.id,
+            Files.id == sankey_file_id
+        )
+    ).one()
 
-    # Get the DOI
-    file.doi = provider.extract_doi(buffer)
-    buffer.seek(0)  # Must rewind
+    sankey_data = json.loads(sankey_file[0].decode('utf-8'))
 
-    # Save the file content if there's any
-    if size:
-        file.content_id = FileContent.get_or_create(buffer)
-        buffer.seek(0)  # Must rewind
+    traces = set()
+    node_ids_in_traces = {}
+    link_idx_in_traces = {}
+    for tn in sankey_data['graph']['trace_networks']:
+        tn_name = tn.get('description', tn.get('name', 'Unknown'))
+        traces.add(tn_name)
+        node_ids_in_traces[tn_name] = set()
+        link_idx_in_traces[tn_name] = set()
+        for trace in tn['traces']:
+            for path in trace['node_paths']:
+                node_ids_in_traces[tn_name].update(node_id for node_id in path)
+            link_idx_in_traces[tn_name].update(trace['edges'])
 
-    # ========================================
-    # Commit and filename conflict resolution
-    # ========================================
+    nodes_in_traces = {}
+    for node in sankey_data['nodes']:
+        db_label = node.get('type', 'Unknown')
+        color = ANNOTATION_STYLES_DICT.get(db_label.lower(), '#000000')['color']
+        plotly_node = {
+            'id': node['id'],
+            'label': node.get('label', node.get('displayName', 'Unknown')),
+            'databaseLabel': db_label,
+            'font': {
+                'color': color,
+            },
+            'color': {
+                'background': '#FFFFFF',
+                'border': color,
+                'hover': {
+                    'background': '#FFFFFF',
+                    'border': color,
+                },
+                'highlight': {
+                    'background': '#FFFFFF',
+                    'border': color,
+                }
+            }
+        }
+        for trace, nodes_in_trace in node_ids_in_traces.items():
+            if node['id'] in nodes_in_trace:
+                if trace in nodes_in_traces:
+                    nodes_in_traces[trace].append(plotly_node)
+                else:
+                    nodes_in_traces[trace] = [plotly_node]
 
-    # Filenames could conflict, so we may need to generate a new filename
-    # Trial 1: First attempt
-    # Trial 2: Try adding (N+1) to the filename and try again
-    # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
-    # Trial 4: Give up
-    # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-    for trial in range(4):
-        if 1 <= trial <= 2:  # Try adding (N+1)
-            try:
-                file.filename = file.generate_non_conflicting_filename()
-            except ValueError:
-                raise ValidationError(
-                    'Filename conflicts with an existing file in the same folder.',
-                    "filename")
-        elif trial == 3:  # Give up
-            raise ValidationError(
-                'Filename conflicts with an existing file in the same folder.',
-                "filename")
+    links_in_traces = {}
+    for trace, link_indexes in link_idx_in_traces.items():
+        links_in_traces[trace] = []
+        for idx in link_indexes:
+            link = sankey_data['links'][idx]
+            plotly_link = {
+                'id': str(uuid.uuid4()),
+                'from': link['source'],
+                'to': link['target'],
+                'label': link.get('label', link.get('description', 'Unknown')),
+                'color': {
+                    'color': '#0c8caa'
+                },
+                'arrows': 'to'
+            }
+            links_in_traces[trace].append(plotly_link)
 
-        try:
-            db.session.begin_nested()
-            db.session.add(file)
-            db.session.commit()
-            break
-        except IntegrityError as e:
-            # Warning: this could catch some other integrity error
-            db.session.rollback()
+    for trace in traces:
+        nodes = nodes_in_traces[trace]
+        links = links_in_traces[trace]
 
-    db.session.commit()
+        add_file(
+            f"{'_'.join(trace.replace('/', '').split(' '))}.json",
+            '',
+            user_id,
+            parent_id,
+            json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8')
+        )

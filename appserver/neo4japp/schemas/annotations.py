@@ -89,7 +89,7 @@ class BaseAnnotationMetaSchema(Schema):
     links = fields.Nested(AnnotationLinksSchema, required=True)
     id = fields.String(required=True)
     idType = fields.String(required=True)
-    idHyperlink = fields.String(required=True)
+    idHyperlinks = fields.List(fields.String(), required=True)
     isCustom = fields.Boolean(required=True)
     allText = fields.String(required=True)
 
@@ -180,6 +180,11 @@ class CustomAnnotationDeleteSchema(CamelCaseSchema):
     remove_all = fields.Boolean(required=False, missing=lambda: False)
 
 
+# this is used in the admin global annotations table
+class GlobalAnnotationTableType(CamelCaseSchema):
+    global_annotation_type = fields.String(required=True)
+
+
 # Responses
 # ----------------------------------------
 
@@ -214,7 +219,7 @@ class CombinedAnnotationListSchema(ResultListSchema):
 
 class AnnotationExclusionSchema(Schema):  # Camel case in Python
     id = fields.String(required=True)
-    idHyperlink = fields.String(required=True)
+    idHyperlinks = fields.List(fields.String(), required=True)
     text = fields.String(required=True)
     type = fields.String(required=True)
     rects = fields.List(fields.List(fields.Float(required=True)))
@@ -243,7 +248,7 @@ class AnnotationExclusionDeleteSchema(CamelCaseSchema):
 
 class AnnotationChangeExclusionMetaSchema(CamelCaseSchema):
     id = fields.String(required=True)
-    idHyperlink = fields.String(required=True)
+    idHyperlinks = fields.List(fields.String(), required=True)
     text = fields.String(required=True)
     type = fields.String(required=True)
     reason = fields.String(required=True)
