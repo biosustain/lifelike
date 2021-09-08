@@ -112,15 +112,19 @@ export const expandingColorPalletGenerator = (
 export const linkPalettes: ArrayWithDefault<Palette> = [
   {
     name: 'Hue palette',
-    palette: colorPaletteGenerator
+    palette: colorPaletteGenerator,
+    help: 'Using Cubehelix color mapping generate palette which has constant perceived lightness and colors varies in hue.'
   },
   {
     name: 'Adaptive hue, saturation, lightness',
-    palette: expandingColorPalletGenerator
+    palette: expandingColorPalletGenerator,
+    help: 'Using Cubehelix color mapping generate palette which varies mostly in hue but extends to saturation and lightness if more' +
+      ' colors are needed.'
   },
   {
     name: 'Predefined palette',
-    palette: predefinedColorPaletteGenerator
+    palette: predefinedColorPaletteGenerator,
+    help: 'Color graph using palette of 127 hand picked colors.'
   }
 ];
 
