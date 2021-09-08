@@ -45,7 +45,7 @@ export interface PreviewOptions {
 export interface Exporter {
   name: string;
 
-  export(): Observable<File>;
+  export(linkedExport?: boolean): Observable<File>;
 }
 
 /**

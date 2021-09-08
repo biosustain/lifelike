@@ -78,6 +78,10 @@ export class SankeyLayoutService extends AttributeAccessors {
     [[this.x0, this.y0], [this.x1, this.y1]] = extent;
   }
 
+  get fontSize() {
+    return (d?, i?, n?) => 12;
+  }
+
   x0 = 0;
   y0 = 0;
   x1 = 1;

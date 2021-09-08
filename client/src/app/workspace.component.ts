@@ -12,7 +12,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
 import { Observable } from 'rxjs';
 import { SplitComponent } from 'angular-split';
-import { ShareDialogComponent } from './shared/components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from './shared/components/dialog/copy-link-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -59,9 +59,9 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     });
   }
 
-  shareTab(pane: Pane, tab: Tab) {
+  copyLinkToTab(pane: Pane, tab: Tab) {
     const url = new URL(tab.url.replace(/^\/+/, '/'), window.location.href).href;
-    const modalRef = this.modalService.open(ShareDialogComponent);
+    const modalRef = this.modalService.open(CopyLinkDialogComponent);
     modalRef.componentInstance.url = url;
   }
 
@@ -105,7 +105,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     }
   }
 
-  closeWorkbench() {
+  clearWorkbench() {
     for (const pane of this.workspaceManager.panes.panes) {
       this.closeAllTabs(pane);
     }

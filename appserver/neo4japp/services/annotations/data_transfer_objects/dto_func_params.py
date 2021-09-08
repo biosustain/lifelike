@@ -1,8 +1,8 @@
 import attr
 
-from typing import Dict, List
+from typing import List
 
-from neo4japp.services.annotations.data_transfer_objects import PDFWord
+from .dto import PDFWord
 
 
 """Data Transfer Objects related to consolidating multiple
@@ -16,6 +16,6 @@ class CreateAnnotationObjParams():
     entity_category: str = attr.ib()
     entity_id: str = attr.ib()
     entity_id_type: str = attr.ib()
-    entity_id_hyperlink: str = attr.ib()
+    entity_id_hyperlinks: List[str] = attr.ib()
     token: PDFWord = attr.ib()
     token_type: str = attr.ib()

@@ -2,23 +2,17 @@
         [config]="config"
         [data]="data"
         [legend]="legend"
+        (nodeHover)="nodeHover($event)"
+        (nodeBlur)="nodeBlur($event)"
 >
     <ng-template #selection let-nodes="nodes" let-edges="edges">
         <ng-container *ngIf="nodes?.length">
             Nodes:
-            <ul>
-                <li *ngFor="let node of nodes">
-                    <pre>{{ getJSONDetails(node) }}</pre>
-                </li>
-            </ul>
+            <app-tree-view [dataSource]="nodes"></app-tree-view>
         </ng-container>
         <ng-container *ngIf="edges?.length">
             Edges:
-            <ul>
-                <li *ngFor="let edge of edges">
-                    <pre>{{ getJSONDetails(edge) }}</pre>
-                </li>
-            </ul>
+            <app-tree-view [dataSource]="edges"></app-tree-view>
         </ng-container>
     </ng-template>
 </app-vis-js-network>

@@ -9,7 +9,7 @@ import { BehaviorSubject, forkJoin, from, merge, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -79,7 +79,7 @@ export class FilesystemObjectActions {
             const progressDialogRef = this.createProgressDialog('Generating export...');
 
             try {
-              return value.exporter.export().pipe(
+              return value.exporter.export(value.exportLinked).pipe(
                 take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
                 finalize(() => progressDialogRef.close()),
                 map((file: File) => {
@@ -224,7 +224,7 @@ export class FilesystemObjectActions {
   }
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
-    const modalRef = this.modalService.open(ShareDialogComponent);
+    const modalRef = this.modalService.open(CopyLinkDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}${object.getURL(forEditing)}`;
     return modalRef.result;
   }

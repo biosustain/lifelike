@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 
 
-export const SANKEY_MIMETYPE = 'vnd.lifelike.document/sankey';
+export const GRAPH_MIMETYPE = 'vnd.lifelike.document/graph';
 export const SANKEY_SHORTHAND = 'Sankey';
 
 @Injectable()
@@ -20,22 +20,22 @@ export class SankeyTypeProvider extends AbstractObjectTypeProvider {
 
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === SANKEY_MIMETYPE;
+    return object.mimeType === GRAPH_MIMETYPE;
   }
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: SANKEY_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
+      Object.freeze({id: GRAPH_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
     ];
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
-      name: 'Sankey',
+      name: 'Graph',
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename.endsWith('.sankey') ? object.filename : object.filename + '.sankey');
+            return new File([blob], object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph');
           }),
         );
       },

@@ -10,36 +10,15 @@ const DOMAINS_URL = {
 };
 
 export function getLink(data: FTSQueryRecord) {
-  const domain = getDomain(data.node.subLabels);
-  const type = getType(data.node.subLabels);
+  const domain = data.node.domainLabels[0].split('_')[1];
+  const type = data.node.label;
   if (domain === 'NCBI' && type === 'Gene') {
-    return DOMAINS_URL[domain + '_' + type] + data.node.data.id;
+    return DOMAINS_URL[domain + '_' + type] + data.node.data.eid;
   } else if (domain === 'NCBI' && type === 'Taxonomy') {
-    return DOMAINS_URL[domain + '_' + type] + data.node.data.id;
+    return DOMAINS_URL[domain + '_' + type] + data.node.data.eid;
   } else if (domain === 'GO' || domain === 'UniProt') {
-    return DOMAINS_URL[domain] + data.node.data.id;
+    return DOMAINS_URL[domain] + `GO:${data.node.data.eid}`;
   } else {
-    return DOMAINS_URL[domain] + data.node.data.id.split(':')[1];
+    return DOMAINS_URL[domain] + data.node.data.eid;
   }
-}
-
-function getDomain(subLabels: string[]) {
-  removeUnneededLabels(subLabels);
-  return subLabels.find(element => element.match(/^db_*/))
-    .split('_')[1];
-}
-
-function removeUnneededLabels(subLabels: string[]) {
-  const tobeRemovedLabels = ['db_Literature', 'TopicalDescriptor'];
-  tobeRemovedLabels.forEach(label => {
-    const index = subLabels.indexOf(label);
-    if (index !== -1) {
-      subLabels.splice(index, 1);
-    }
-  });
-}
-
-function getType(subLabels: string[]) {
-  removeUnneededLabels(subLabels);
-  return subLabels.find(element => !element.match(/^db_*/));
 }

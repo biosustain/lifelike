@@ -47,6 +47,7 @@ from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
     AnnotationGenerationRequestSchema,
+    GlobalAnnotationTableType,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
     GlobalAnnotationListSchema,
@@ -85,7 +86,8 @@ from ..services.annotations.sorted_annotation_service import (
 from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
     get_global_inclusions_query,
-    get_global_inclusions_count_query
+    get_global_inclusions_count_query,
+    get_delete_global_inclusion_query
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
@@ -913,7 +915,8 @@ class GlobalAnnotationListView(MethodView):
     decorators = [auth.login_required, requires_role('admin')]
 
     @use_args(PaginatedRequestSchema())
-    def get(self, params):
+    @use_args(GlobalAnnotationTableType())
+    def get(self, params, global_type):
         """Since we need to aggregate from two different
         sources, we'll just query (paginate) for x number of results from
         each and combine them together.
@@ -923,121 +926,142 @@ class GlobalAnnotationListView(MethodView):
         limit = min(200, int(params.limit))
         page = max(1, int(params.page))
 
-        exclusions = db.session.query(
-            GlobalList.id.label('global_list_id'),
-            AppUser.username.label('creator'),
-            Files.hash_id.label('file_uuid'),
-            Files.deleter_id.label('file_deleted_by'),
-            GlobalList.creation_date.label('creation_date'),
-            GlobalList.annotation['text'].astext.label('text'),
-            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
-            GlobalList.annotation['type'].astext.label('entity_type'),
-            GlobalList.annotation['id'].astext.label('entity_id'),
-            GlobalList.annotation['reason'].astext.label('reason'),
-            GlobalList.annotation['comment'].astext.label('comment')
-        ).join(
-            AppUser,
-            AppUser.id == GlobalList.annotation['user_id'].as_integer()
-        ).outerjoin(
-            Files,
-            Files.id == GlobalList.file_id
-        ).filter(
-            GlobalList.type == ManualAnnotationType.EXCLUSION.value
-        ).order_by(
-            sa.asc(GlobalList.annotation['text'].astext.label('text'))
-        ).paginate(page, limit)
+        if global_type['global_annotation_type'] == ManualAnnotationType.EXCLUSION.value:
+            exclusions = db.session.query(
+                GlobalList.id.label('global_list_id'),
+                AppUser.username.label('creator'),
+                Files.hash_id.label('file_uuid'),
+                Files.deleter_id.label('file_deleted_by'),
+                GlobalList.creation_date.label('creation_date'),
+                GlobalList.annotation['text'].astext.label('text'),
+                GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
+                GlobalList.annotation['type'].astext.label('entity_type'),
+                GlobalList.annotation['id'].astext.label('entity_id'),
+                GlobalList.annotation['reason'].astext.label('reason'),
+                GlobalList.annotation['comment'].astext.label('comment')
+            ).join(
+                AppUser,
+                AppUser.id == GlobalList.annotation['user_id'].as_integer()
+            ).outerjoin(
+                Files,
+                Files.id == GlobalList.file_id
+            ).filter(
+                GlobalList.type == ManualAnnotationType.EXCLUSION.value
+            ).order_by(
+                sa.asc(GlobalList.annotation['text'].astext.label('text'))
+            ).paginate(page, limit)
 
-        graph = get_annotation_graph_service()
-        global_inclusions = graph.exec_read_query_with_params(
-            get_global_inclusions_paginated_query(), {'skip': 0 if page == 1 else limit, 'limit': limit})  # noqa
+            data = [{
+                'global_id': r.global_list_id,
+                'creator': r.creator,
+                'file_uuid': r.file_uuid if r.file_uuid else '',
+                'file_deleted': True if r.file_deleted_by else False,
+                'type': ManualAnnotationType.EXCLUSION.value,
+                'creation_date': r.creation_date,
+                'text': r.text,
+                'case_insensitive': True if r.case_insensitive == 'true' else False,
+                'entity_type': r.entity_type,
+                'entity_id': r.entity_id,
+                'reason': r.reason,
+                'comment': r.comment
+            } for r in exclusions.items]
+            query_total = exclusions.total
+        else:
+            graph = get_annotation_graph_service()
+            global_inclusions = graph.exec_read_query_with_params(
+                get_global_inclusions_paginated_query(), {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit})  # noqa
 
-        file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
-        file_data_query = db.session.query(
-            Files.hash_id.label('file_uuid'),
-            Files.deleter_id.label('file_deleted_by')
-        ).filter(
-            Files.hash_id.in_([fid for fid in file_uuids])
-        )
+            file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
+            file_data_query = db.session.query(
+                Files.hash_id.label('file_uuid'),
+                Files.deleter_id.label('file_deleted_by')
+            ).filter(
+                Files.hash_id.in_([fid for fid in file_uuids])
+            )
 
-        file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
-
-        data = [{
-            'global_id': r.global_list_id,
-            'creator': r.creator,
-            'file_uuid': r.file_uuid if r.file_uuid else '',
-            'file_deleted': True if r.file_deleted_by else False,
-            'type': ManualAnnotationType.EXCLUSION.value,
-            'creation_date': r.creation_date,
-            'text': r.text,
-            'case_insensitive': True if r.case_insensitive == 'true' else False,
-            'entity_type': r.entity_type,
-            'entity_id': r.entity_id,
-            'reason': r.reason,
-            'comment': r.comment
-        } for r in exclusions.items]
-
-        data += [{
-            'global_id': i['node_internal_id'],
-            'synonym_id': i['syn_node_internal_id'],
-            'creator': i['creator'],
-            'file_uuid': i['file_reference'],
-            # if not in this something must've happened to the file
-            # since a global inclusion referenced it
-            # so mark it as deleted
-            # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
-            'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
-            'type': ManualAnnotationType.INCLUSION.value,
-            'creation_date': graph.convert_datetime(i['creation_date']),
-            'text': i['synonym'],
-            'case_insensitive': True,
-            'entity_type': i['entity_type'],
-            'entity_id': i['entity_id'],
-            'reason': '',
-            'comment': ''
-        } for i in global_inclusions]
+            file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
+            data = [{
+                'global_id': i['node_internal_id'],
+                'synonym_id': i['syn_node_internal_id'],
+                'creator': i['creator'],
+                'file_uuid': i['file_reference'],
+                # if not in this something must've happened to the file
+                # since a global inclusion referenced it
+                # so mark it as deleted
+                # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+                'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
+                'type': ManualAnnotationType.INCLUSION.value,
+                'creation_date': graph.convert_datetime(i['creation_date']),
+                'text': i['synonym'],
+                'case_insensitive': True,
+                'entity_type': i['entity_type'],
+                'entity_id': i['entity_id'],
+                'reason': '',
+                'comment': ''
+            } for i in global_inclusions]
+            query_total = graph.exec_read_query(
+                get_global_inclusions_count_query())[0]['total']
 
         results = {
-            'total': exclusions.total + graph.exec_read_query(
-                get_global_inclusions_count_query())[0]['total'],
-            # have to reorder again since we're combining from
-            # two different data sources
-            'results': sorted(data, key=lambda d: d['text'].lower())
+            'total': query_total,
+            'results': data
         }
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
+    @use_args(GlobalAnnotationsDeleteSchema())
+    def delete(self, params):
+        yield g.current_user
 
-@bp.route('/global-list', methods=['POST', 'DELETE'])
-@auth.login_required
-@use_kwargs(GlobalAnnotationsDeleteSchema)
-@requires_role('admin')
-def delete_global_annotations(pids):
-    yield g.current_user
+        # exclusions in postgres will not have synonym_id
+        # those are for the graph nodes, and -1 represents not having one
+        exclusion_pids = [gid for gid, sid in params['pids'] if sid == -1]
+        inclusion_pids = [(gid, sid) for gid, sid in params['pids'] if sid != -1]
 
-    # exclusions in postgres will not have synonym_id
-    # those are for the graph nodes, and -1 represents not having one
-    query = GlobalList.__table__.delete().where(
-        GlobalList.id.in_([gid for gid, sid in pids if sid == -1])
-    )
-    try:
-        db.session.execute(query)
-        db.session.commit()
+        if exclusion_pids:
+            query = GlobalList.__table__.delete().where(
+                GlobalList.id.in_(exclusion_pids)
+            )
+            try:
+                db.session.execute(query)
+                db.session.commit()
 
-        current_app.logger.info(
-            f'Deleted {len(pids)} global annotations',
-            extra=UserEventLog(
-                username=g.current_user.username,
-                event_type=LogEventType.ANNOTATION.value).to_dict()
-        )
-    except SQLAlchemyError:
-        db.session.rollback()
-        raise ServerException(
-            title='Could not delete exclusion',
-            message='A database error occurred when deleting the global exclusion.')
+                current_app.logger.info(
+                    f'Deleted {len(exclusion_pids)} global exclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise ServerException(
+                    title='Could not delete exclusion',
+                    message='A database error occurred when deleting the global exclusion(s).')
 
-    # now delete from the KG
-    graph = get_annotation_graph_service()
+        if inclusion_pids:
+            graph = get_annotation_graph_service()
+            try:
+                graph.exec_write_query_with_params(
+                    get_delete_global_inclusion_query(),
+                    {'node_ids': [[gid, sid] for gid, sid in inclusion_pids]})
 
-    yield jsonify(dict(result='success'))
+                current_app.logger.info(
+                    f'Deleted {len(inclusion_pids)} global inclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'{str(e)}',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+                raise ServerException(
+                    title='Could not delete inclusion',
+                    message='A database error occurred when deleting the global inclusion(s).')
+
+        yield jsonify(dict(result='success'))
 
 
 @bp.route('/files/<int:file_id>', methods=['GET'])
