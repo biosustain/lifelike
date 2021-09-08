@@ -42,18 +42,6 @@
   :last-child {
     margin-left: .5em;
     margin-right: .5em;
+    flex-grow: 1;
   }
-}
-
-label {
-  display: flex;
-  align-items: baseline;
-}
-
-input[type='radio'], input[type='checkbox'] {
-  margin-right: .5em;
-}
-
-input[type='range'] {
-  width: 100px;
 }
