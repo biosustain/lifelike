@@ -500,7 +500,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     return typeMap[type] ? typeMap[type] : type;
   }
 
-  parseLocationFromUrl(fragment: string): BiocAnnotationLocation | undefined {
+  parseLocationFromUrl(fragment: string): BiocAnnotationLocation {
     const params = new URLSearchParams(fragment);
     return {
       offset: params.get('offset'),
