@@ -11,6 +11,8 @@
         <app-module-header *ngIf="object"
                            [object]="object"
                            (dragStarted)="dragStarted($event)"
+                           (dragEnd)="dragEnd($event)"
+                           [returnUrl]="returnUrl"
         >
             <app-object-menu [object]="object" [forEditing]="true" [showOpen]="false"
                              [showDelete]="false" (objectRefresh)="requestRefresh()">
