@@ -100,8 +100,8 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     return of([...(
       ['pdf', 'png', 'svg'].map(format => ({
         name: format.toUpperCase(),
-        export: () => {
-          return this.filesystemService.generateExport(object.hashId, {format}).pipe(
+        export: (exportLinked) => {
+          return this.filesystemService.generateExport(object.hashId, {format, exportLinked}).pipe(
             map(blob => {
               return new File([blob], object.filename + '.' + format);
             }),

@@ -35,6 +35,8 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
   @Input() showHeader = true;
   @Input() editable = true;
   @Input() fontAwesomeIcon = 'fa fa-link';
+  @Input() draggable = true;
+  @Input() limit = null;
 
   dropTargeted = false;
   activeLinkIndex = -1;
@@ -179,7 +181,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
   linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
-      openPotentialInternalLink(this.workspaceManager, link.url, false);
+      openPotentialInternalLink(this.workspaceManager, link.url);
     } catch (e) {
       this.messageDialog.display({
         title: 'Invalid Link',

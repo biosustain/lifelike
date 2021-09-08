@@ -23,8 +23,7 @@ import { map } from 'rxjs/operators';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { Location, Meta, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
+import { Location, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 
@@ -534,7 +533,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
                 offset: position,
                 start: startIndex,
                 len: len
-        } as BiocAnnotationLocation)
+        });
         source = '#' + source;
       }
       const link = meta.idHyperlink || '';

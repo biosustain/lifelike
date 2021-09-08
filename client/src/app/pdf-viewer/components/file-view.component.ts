@@ -401,17 +401,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
 
     const hyperlinks = [];
+    const hyperlink = meta.idHyperlinks || [];
 
-    const hyperlink = meta.idHyperlink || '';
-    if (hyperlink.length) {
+    for (const link of hyperlink) {
+      const {domain, url} = JSON.parse(link);
       let hyperlinkText = 'Annotation URL';
       try {
-        hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
-      } catch (e) {
-      }
+        hyperlinkText = new URL(url).hostname.replace(/^www\./i, '');
+      } catch (e) { }
+
       hyperlinks.push({
         domain: hyperlinkText,
-        url: hyperlink,
+        url,
       });
     }
 
@@ -442,7 +443,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           id: this.object.hashId,
         }, {
           type: 'DATABASE',
-          url: hyperlink,
+          // assumes first link will be main database source link
+          // tslint ignore cause other option is destructuring and that
+          // also gets name shadowing error
+          /* tslint:disable-next-line */
+          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])['url'] : '',
         }],
         hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',
