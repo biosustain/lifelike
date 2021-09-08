@@ -102,7 +102,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
             const fragmentMatch = url.match(/^[^#]+#(.+)$/);
             const biocViewComponent = component as BiocViewComponent;
             if (fragmentMatch && fragmentMatch[1]) {
-              (biocViewComponent).scrollInOffset(fragmentMatch[1]);
+              (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
             }
           }
           return false;

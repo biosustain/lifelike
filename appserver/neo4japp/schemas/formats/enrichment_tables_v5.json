@@ -46,14 +46,10 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "version",
         "domainInfo",
         "genes"
       ],
       "properties": {
-        "version": {
-          "const": "5"
-        },
         "domainInfo": {
           "type": "object",
           "additionalProperties": false,
