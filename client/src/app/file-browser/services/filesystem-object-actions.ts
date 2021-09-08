@@ -9,7 +9,7 @@ import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ShareDialogComponent } from 'app/shared/components/dialog/share-dialog.component';
+import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -214,7 +214,7 @@ export class FilesystemObjectActions {
   }
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
-    const modalRef = this.modalService.open(ShareDialogComponent);
+    const modalRef = this.modalService.open(CopyLinkDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}${object.getURL(forEditing)}`;
     return modalRef.result;
   }

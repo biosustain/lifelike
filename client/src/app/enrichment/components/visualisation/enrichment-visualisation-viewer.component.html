@@ -1,79 +1,41 @@
-<div class="position-relative h-100">
-    <div
-            class="position-absolute w-100 h-100 d-flex flex-column"
-            style="z-index: 0; overflow: scroll"
-    >
-        <div class="module">
-            <div class="module-header">
-                <!-- Breadcrumbs -->
-                <div class="module-breadcrumb-bar mb-1" *ngIf="object; else objectLoadedHeader">
-                    <app-object-path [object]="object" [newTab]="true"></app-object-path>
+<div class="module" *ngIf="(loadTask.status$ | async) as status">
+    <app-module-error *ngIf="status.error" [error]="status.error">
+    </app-module-error>
+    <app-module-progress *ngIf="status.running">
+        Loading Statistical Enrichment...
+    </app-module-progress>
+    <ng-template #tabTitle>Statistical Enrichment</ng-template>
+    <ng-container *ngIf="status.resultsShown">
+        <app-module-header *ngIf="object"
+                           [object]="object"
+                           [titleTemplate]="tabTitle"
+                           [showObjectMenu]="false"
+        >
+        </app-module-header>
+        <div class="module-body space-cards">
+            <app-group
+                    *ngFor="let d of data | keyvalue: originalOrder; let i = index"
+                    [title]="groups[i]"
+                    [data]="d.value"
+            >
+
+            </app-group>
+            <div class="card">
+                <div class="card-header">Significance legend
                 </div>
-                <ng-template #objectLoadedHeader>
-                    <ol>
-                        <li class="breadcrumb-item">
-                            <span class="placeholder-box">Loading loading</span>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <span class="placeholder-box">Loading</span>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <span class="placeholder-box">Loading load</span>
-                        </li>
-                    </ol>
-                </ng-template>
-                <!-- Title bar -->
-                <div class="d-flex flex-wrap align-items-center">
-                    <div class="module-title-bar mr-4">
-                        <h1 class="module-title text-truncate" draggable="true">
-                            Statistical Enrichment
-                        </h1>
-                    </div>
-                </div>
+                <dl class="card-body legend">
+                    <dt>' '</dt>
+                    <dd><i>q-value</i> <= 1</dd>
+                    <dt>.</dt>
+                    <dd><i>q-value</i> <= 0.1</dd>
+                    <dt>*</dt>
+                    <dd><i>q-value</i> <= 0.05</dd>
+                    <dt>**</dt>
+                    <dd><i>q-value</i> <= 0.01</dd>
+                    <dt>***</dt>
+                    <dd><i>q-value</i> <= 0.001</dd>
+                </dl>
             </div>
-
-            <ng-container *ngIf="(loadTask.status$ | async) as status">
-                <ng-container *ngIf="status.error">
-                    <app-module-error [error]="status.error" class="d-block p-4">
-                    </app-module-error>
-                </ng-container>
-
-                <ng-container *ngIf="status.running">
-                    <div class="d-flex flex-fill align-items-center justify-content-center">
-                        <app-module-progress>
-                            Loading Statistical Enrichment...
-                        </app-module-progress>
-                    </div>
-                </ng-container>
-
-                <ng-container *ngIf="status.loaded">
-                    <div class="module-body flex-fill overflow-auto space-cards">
-                        <app-group
-                                *ngFor="let d of data | keyvalue: originalOrder; let i = index"
-                                [title]="groups[i]"
-                                [data]="d.value"
-                        >
-
-                        </app-group>
-                        <div class="card">
-                            <div class="card-header">Significance legend
-                            </div>
-                            <dl class="card-body legend">
-                                <dt>' '</dt>
-                                <dd><i>q-value</i> <= 1</dd>
-                                <dt>.</dt>
-                                <dd><i>q-value</i> <= 0.1</dd>
-                                <dt>*</dt>
-                                <dd><i>q-value</i> <= 0.05</dd>
-                                <dt>**</dt>
-                                <dd><i>q-value</i> <= 0.01</dd>
-                                <dt>***</dt>
-                                <dd><i>q-value</i> <= 0.001</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </ng-container>
-            </ng-container>
         </div>
-    </div>
+    </ng-container>
 </div>

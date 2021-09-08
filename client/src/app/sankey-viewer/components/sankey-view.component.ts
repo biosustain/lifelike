@@ -19,7 +19,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { parseForRendering, isPositiveNumber } from './utils';
 import { uuidv4 } from 'app/shared/utils';
 import prescalers from 'app/sankey-viewer/components/algorithms/prescalers';
-import { ValueGenerator, SankeyAdvancedOptions } from './interfaces';
+import { ValueGenerator, SankeyAdvancedOptions, MultiValueAccessor } from './interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
@@ -42,7 +42,7 @@ const NODE_VALUE = {
 };
 
 const PREDEFINED_VALUE = {
-  default: 'Default',
+  fixed_height: 'Fixed height',
   input_count: LINK_VALUE.input_count
 };
 
@@ -104,11 +104,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     nodeValueAccessors: [],
     predefinedValueAccessors: [
       {
-        description: PREDEFINED_VALUE.default,
+        description: PREDEFINED_VALUE.fixed_height,
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-          this.onOptionsChange();
         }
       },
       {
@@ -116,7 +115,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-          this.onOptionsChange();
         }
       }],
     linkValueGenerators: {
@@ -187,9 +185,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly filesystemObjectActions: FilesystemObjectActions,
     private sankeyLayout: CustomisedSankeyLayoutService
   ) {
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-    this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default,
 
       this.selection = new BehaviorSubject([]);
@@ -237,7 +232,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                              result: [object, content],
                                                            }) => {
 
-      this.sankeyData = this.parseData(content);
+      this.sankeyData = content;
+      this.parseData(content);
       this.applyFilter();
       this.object = object;
       this.emitModuleProperties();
@@ -297,27 +293,45 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   // endregion
 
+  getNetworkTraceDefaultSizing(networkTrace) {
+    let {default_sizing} = networkTrace;
+    if (!default_sizing) {
+      const {graph: {node_sets}} = this.sankeyData;
+      const _inNodes = node_sets[networkTrace.sources];
+      const _outNodes = node_sets[networkTrace.targets];
+      if (Math.min(_inNodes.length, _outNodes.length) === 1) {
+        default_sizing = PREDEFINED_VALUE.input_count;
+      } else {
+        default_sizing = PREDEFINED_VALUE.fixed_height;
+      }
+    }
+    return this.options.predefinedValueAccessors
+      .find(({description}) => description === default_sizing);
+  }
+
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
-    const {default_sizing} = networkTrace;
-    const selectedPredefinedValueAccessor =
-      this.options.predefinedValueAccessors
-        .find(({description}) => description === default_sizing);
-    if (selectedPredefinedValueAccessor) {
-      this.options.selectedPredefinedValueAccessor = selectedPredefinedValueAccessor;
+    const predefinedValueAccessor = this.getNetworkTraceDefaultSizing(networkTrace);
+    if (predefinedValueAccessor) {
+      this.options.selectedPredefinedValueAccessor = predefinedValueAccessor;
+      predefinedValueAccessor.callback();
     }
+  }
+
+  applyOptions() {
+    const {selectedNetworkTrace} = this;
     const {links, nodes, graph: {node_sets}} = this.sankeyData;
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
-      networkTrace.traces.map(({group}) => group),
+      selectedNetworkTrace.traces.map(({group}) => group),
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
-    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
+    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
     this.sankeyLayout.colorNodes(nodes);
-    const _inNodes = node_sets[networkTrace.sources];
-    const _outNodes = node_sets[networkTrace.targets];
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
     this.filteredSankeyData = this.linkGraph({
       nodes: networkTraceNodes,
@@ -341,7 +355,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   applyFilter() {
     if (this.selectedNetworkTrace) {
-      this.selectNetworkTrace(this.selectedNetworkTrace);
+      this.applyOptions();
     } else {
       this.filteredSankeyData = this.sankeyData;
     }
@@ -471,23 +485,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
           } else {
             options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
           }
-          this.onOptionsChange();
         }
-      })));
+      } as MultiValueAccessor)));
   }
 
-  parseData({links, graph, nodes, ...data}) {
+  parseData({links, graph, nodes}) {
     this.networkTraces = graph.trace_networks;
-    this.selectedNetworkTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     this.extractPredefinedValueProperties(graph);
-    return {
-      ...data,
-      graph,
-      links,
-      nodes
-    } as SankeyData;
+    this.selectNetworkTrace(this.networkTraces[0]);
   }
 
   loadFromUrl() {
@@ -541,7 +548,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
     this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
     this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
-    this.selectNetworkTrace(this.selectedNetworkTrace);
+    this.sankeyLayout.normalizeLinks = this.options.normalizeLinks;
+    this.applyOptions();
   }
 
   dragStarted(event: DragEvent) {
@@ -669,7 +677,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   panToEntity(entity) {
     const y = (entity._y0 + entity._y1) / 2;
-    let x = 0;
+    let x;
     if (entity._x0 !== undefined) {
       x = (entity._x0 + entity._x1) / 2;
     } else {

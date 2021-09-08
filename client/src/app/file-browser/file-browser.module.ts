@@ -26,7 +26,6 @@ import {
 } from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
-import { ObjectPathComponent } from './components/object-path.component';
 import {
   AbstractObjectTypeProviderHelper,
   DefaultObjectTypeProvider,
@@ -35,16 +34,12 @@ import {
 } from './services/object-type.service';
 import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
-import { ObjectMenuComponent } from './components/object-menu.component';
 import { ProjectActions } from './services/project-actions';
-import { ProjectMenuComponent } from './components/project-menu.component';
-import { ProjectIconComponent } from './components/project-icon.component';
 import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
 import { ObjectAnnotationHistoryComponent } from './components/object-annotation-history.component';
 import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
-import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
@@ -73,16 +68,11 @@ import { ObjectViewerComponent } from './components/object-viewer.component';
     ObjectPreviewComponent,
     ObjectPreviewOutletComponent,
     ObjectExportDialogComponent,
-    ObjectPathComponent,
     DirectoryPreviewComponent,
-    ObjectMenuComponent,
-    ProjectMenuComponent,
-    ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
     ObjectReannotateResultsDialogComponent,
-    FilesystemObjectTargetDirective,
     ObjectViewerComponent,
   ],
   imports: [
@@ -100,9 +90,6 @@ import { ObjectViewerComponent } from './components/object-viewer.component';
     ObjectListComponent,
     ObjectTileDeckComponent,
     DirectoryPreviewComponent,
-    ObjectMenuComponent,
-    ProjectMenuComponent,
-    ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
@@ -116,13 +103,9 @@ import { ObjectViewerComponent } from './components/object-viewer.component';
     ObjectTileDeckComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
-    ObjectPathComponent,
-    ObjectMenuComponent,
-    ProjectIconComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
     ObjectReannotateResultsDialogComponent,
-    FilesystemObjectTargetDirective,
   ],
   providers: [
     ProjectsService,
