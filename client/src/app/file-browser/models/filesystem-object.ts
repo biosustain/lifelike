@@ -22,29 +22,9 @@ import {
 } from '../providers/data-transfer-data/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
-import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
-import { MimeTypes} from '../../shared/constants';
-
-// TODO: Really should move these to a shared file...or into the relevant type provider. This doesn't seem like the right place for them to
-// live.
-export const DIRECTORY_UNICODE = '\uf07b';
-export const MAP_UNICODE = '\uf542';
-// Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
-// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
-// other unicode values, they WILL NOT work.
-export const SANKEY_UNICODE = '\ue000';
-export const ENRICHMENT_TABLE_UNICODE = '\uf0ce';
-export const PDF_UNICODE = '\uf1c1';
-export const BIOC_UNICODE = '\uf1c1';
-export const DEFAULT_UNICODE = '\uf15b';
-
-export const DIRECTORY_FA_CLASS = 'fa fa-folder';
-export const MAP_FA_CLASS = 'fa fa-project-diagram';
-export const GRAPH_FA_CLASS = 'fak fa-diagram-sankey-solid';
-export const ENRICHMENT_TABLE_FA_CLASS = 'fa fa-table';
-export const PDF_FA_CLASS = 'fa fa-file-pdf';
-export const BIOC_FA_CLASS = 'fa fa-file-pdf';
-export const DEFAULT_FA_CLASS = 'fa fa-file';
+import { MimeTypes, Unicodes, FAClass} from '../../shared/constants';
+import {DragImage} from '../../shared/utils/drag';
+import {createDragImage} from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -312,19 +292,19 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return DIRECTORY_FA_CLASS;
+        return FAClass.Directory;
       case MimeTypes.Map:
-        return MAP_FA_CLASS;
+        return FAClass.Map;
       case MimeTypes.BioC:
-        return BIOC_FA_CLASS;
+        return FAClass.BioC;
       case MimeTypes.EnrichmentTable:
-        return ENRICHMENT_TABLE_FA_CLASS;
+        return FAClass.EnrichmentTable;
       case MimeTypes.Graph:
-        return GRAPH_FA_CLASS;
+        return FAClass.Graph;
       case MimeTypes.Pdf:
-        return PDF_FA_CLASS;
+        return FAClass.Pdf;
       default:
-        return DEFAULT_FA_CLASS;
+        return FAClass.Default;
     }
   }
 
@@ -332,19 +312,19 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return DIRECTORY_UNICODE;
+        return Unicodes.Directory;
       case MimeTypes.Map:
-        return MAP_UNICODE;
+        return Unicodes.Map;
       case MimeTypes.BioC:
-        return BIOC_UNICODE;
+        return Unicodes.BioC;
       case MimeTypes.EnrichmentTable:
-        return ENRICHMENT_TABLE_UNICODE;
+        return Unicodes.EnrichmentTable;
       case MimeTypes.Graph:
-        return SANKEY_UNICODE;
+        return Unicodes.Graph;
       case MimeTypes.Pdf:
-        return PDF_UNICODE;
+        return Unicodes.Pdf;
       default:
-        return DEFAULT_UNICODE;
+        return Unicodes.Default;
     }
   }
 
@@ -687,4 +667,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 export interface PathLocator {
   projectName?: string;
   directoryId?: string;
+}
+
+export function createProjectDragImage(project: ProjectImpl): DragImage {
+  return createDragImage(project.name, '\uf5fd');
+}
+
+export function createObjectDragImage(object: FilesystemObject): DragImage {
+  return createDragImage(object.filename, object.fontAwesomeIconCode);
 }
