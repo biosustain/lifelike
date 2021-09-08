@@ -17,12 +17,13 @@ import { RouterModule } from '@angular/router';
 import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
+import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
-import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-panel.module';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
+    SankeyAdvancedPanelComponent,
     SankeyDetailsPanelComponent
   ],
   imports: [
@@ -43,7 +44,6 @@ import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeyModule,
-    SankeyAdvancedPanelModule,
   ],
   entryComponents: [],
   providers: [{
@@ -53,6 +53,7 @@ import { SankeyAdvancedPanelModule } from './components/advanced-panel/advanced-
   }],
   exports: [
     SankeyViewComponent,
+    SankeyAdvancedPanelComponent,
     SankeyDetailsPanelComponent
   ],
 })
