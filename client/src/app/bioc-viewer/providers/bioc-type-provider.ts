@@ -11,10 +11,9 @@ import {
   Exporter,
 } from 'app/file-browser/services/object-type.service';
 import { SearchType } from 'app/search/shared';
+import { MimeTypes } from '../../shared/constants';
 
 
-
-export const BIOC_MIMETYPE = 'vnd.lifelike.document/bioc';
 export const BIOC_SHORTHAND = 'BioC';
 
 @Injectable()
@@ -27,12 +26,12 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
 
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === BIOC_MIMETYPE;
+    return object.mimeType === MimeTypes.BioC;
   }
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: BIOC_MIMETYPE, shorthand: BIOC_SHORTHAND, name: BIOC_SHORTHAND}),
+      Object.freeze({id: MimeTypes.BioC, shorthand: BIOC_SHORTHAND, name: BIOC_SHORTHAND}),
     ];
   }
 

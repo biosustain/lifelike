@@ -72,3 +72,12 @@ export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'Uni
 
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 50;
+
+export enum MimeTypes {
+  Map = 'vnd.lifelike.document/map',
+  EnrichmentTable = 'vnd.lifelike.document/enrichment-table',
+  Directory = 'vnd.lifelike.filesystem/directory',
+  Graph = 'vnd.lifelike.document/graph',
+  Pdf = 'application/pdf',
+  BioC = 'vnd.lifelike.document/bioc'
+}
