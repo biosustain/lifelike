@@ -12,7 +12,6 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
 import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
-import { MAP_MIMETYPE } from '../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-community-browser',

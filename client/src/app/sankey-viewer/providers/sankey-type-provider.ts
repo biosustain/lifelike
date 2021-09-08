@@ -5,9 +5,8 @@ import { Observable, of } from 'rxjs';
 import { SearchType } from '../../search/shared';
 import { map } from 'rxjs/operators';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { MimeTypes } from '../../shared/constants';
 
-
-export const GRAPH_MIMETYPE = 'vnd.lifelike.document/graph';
 export const SANKEY_SHORTHAND = 'Sankey';
 
 @Injectable()
@@ -20,12 +19,12 @@ export class SankeyTypeProvider extends AbstractObjectTypeProvider {
 
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === GRAPH_MIMETYPE;
+    return object.mimeType === MimeTypes.Graph;
   }
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: GRAPH_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
+      Object.freeze({id: MimeTypes.Graph, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
     ];
   }
 

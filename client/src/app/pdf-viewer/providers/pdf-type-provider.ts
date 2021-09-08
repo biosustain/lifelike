@@ -8,6 +8,7 @@ import { Observable, of } from 'rxjs';
 import { SearchType } from '../../search/shared';
 import { map } from 'rxjs/operators';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { MimeTypes } from '../../shared/constants';
 
 @Injectable()
 export class PdfTypeProvider extends AbstractObjectTypeProvider {
@@ -24,7 +25,7 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: PDF_MIMETYPE, shorthand: PDF_SHORTHAND, name: 'Documents'}),
+      Object.freeze({id: MimeTypes.Pdf, shorthand: PDF_SHORTHAND, name: 'Documents'}),
     ];
   }
 
@@ -43,5 +44,4 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
 
 }
 
-export const PDF_MIMETYPE = 'application/pdf';
 export const PDF_SHORTHAND = 'pdf';
