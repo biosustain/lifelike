@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-percent-input',
-  templateUrl: './percent-input.component.html',
+  templateUrl: './percent-input.component.html'
 })
 export class PercentInputComponent {
   @Input() inputId;
