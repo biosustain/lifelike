@@ -11,10 +11,10 @@ import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
-import { PDF_MIMETYPE } from 'app/pdf-viewer/providers/pdf-type-provider';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { MimeTypes } from '../../shared/constants';
 
 
 @Component({
@@ -55,7 +55,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
   }
 
   openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
-    if (this.object.mimeType === PDF_MIMETYPE) {
+    if (this.object.mimeType === MimeTypes.Pdf) {
       const url = this.object.getURL();
       this.workspaceManager.navigateByUrl(
         `${url}#annotation=${encodeURIComponent(annotation.id)}`, {
