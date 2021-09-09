@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 interface TreeNode {
   label?: string;
-  value?: string | number | boolean | any;
+  value?: string | number | boolean;
   children?: Array<any>;
 }
 
