@@ -12,6 +12,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
   @Input() text;
   @Input() annotations: Annotation[];
   @Input() offset;
+  @Input() position: string|number;
 
   parts: (string | Annotation)[];
 
