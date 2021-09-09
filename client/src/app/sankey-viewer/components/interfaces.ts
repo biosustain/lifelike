@@ -74,3 +74,9 @@ interface LinkedNode {
 }
 
 export type IntermediateNodeType = visNetwork.Node & SankeyNode & LinkedNode;
+
+
+export interface SelectionEntity {
+  type: string;
+  entity: SankeyLink | SankeyNode | object;
+}

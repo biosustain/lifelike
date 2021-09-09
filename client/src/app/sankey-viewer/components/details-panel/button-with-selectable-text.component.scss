@@ -1,0 +1,9 @@
+.btn:disabled:hover {
+  text-decoration: none;
+}
+
+.selectable-text {
+  pointer-events: all;
+  user-select: text;
+  cursor: text;
+}
