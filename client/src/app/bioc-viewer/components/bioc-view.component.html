@@ -11,6 +11,8 @@
         <app-module-header *ngIf="object"
                            [object]="object"
                            (dragStarted)="dragStarted($event)"
+                           (dragEnd)="dragEnd($event)"
+                           [returnUrl]="returnUrl"
         >
             <app-object-menu [object]="object" [forEditing]="true" [showOpen]="false"
                              [showDelete]="false" (objectRefresh)="requestRefresh()">
@@ -19,34 +21,34 @@
         <div class="module-body overflow-auto">
             <div class="document" *ngFor="let doc of biocData">
                 <h1 class="title ordertop">
-                    <app-bioc-annotated-text [text]="doc.passages[0].text"
+                    <app-bioc-annotated-text [position]="0" [text]="doc.passages[0].text"
                         [annotations]="doc.passages[0].annotations" [offset]="doc.passages[0].offset"
                         [ngClass]="doc.passages[0].infons.type">
                     </app-bioc-annotated-text>
                 </h1>
-                <ng-template ngFor let-passage [ngForOf]="doc.passages.slice(1)">
+                <ng-template ngFor let-passage [ngForOf]="doc.passages.slice(1)" let-index="index">
 
                     <!-- generic component -->
-                    <app-bioc-annotated-text *ngIf="isGeneric(passage)" [text]="passage.text"
+                    <app-bioc-annotated-text *ngIf="isGeneric(passage)" [position]="index+1" [text]="passage.text"
                         [annotations]="passage.annotations" [offset]="passage.offset"
                         [ngClass]="passage.infons.type">
                     </app-bioc-annotated-text>
 
                     <app-bioc-table-view *ngIf="isTableView(passage)" [passage]="passage"></app-bioc-table-view>
 
-                    <!-- figure view -->
-                    <div *ngIf="isFigure(passage)" class="figure row">
-                        <div class="col-lg-3 col-md-12 col-sm-12 figure-img">
-                            <a href="{{ buildFigureLink(doc, passage) }}" target="_blank">
-                                <img src="{{ buildFigureLink(doc, passage) }}">
-                            </a>
-                        </div>
-                        <div class="figure-text col-lg-9 col-md-12 col-sm-12">
-                            <b>{{ getFigureCaption(passage) }}: </b>
-                            <app-bioc-annotated-text [text]="passage.text" [annotations]="passage.annotations"
-                                [offset]="passage.offset" [ngClass]="passage.infons.type">
-                            </app-bioc-annotated-text>
-                        </div>
+                        <!-- figure view -->
+                        <div *ngIf="isFigure(passage)" class="figure row">
+                            <div class="col-lg-3 col-md-12 col-sm-12 figure-img">
+                                <a href="{{ buildFigureLink(doc, passage) }}" target="_blank">
+                                    <img src="{{ buildFigureLink(doc, passage) }}">
+                                </a>
+                            </div>
+                            <div class="figure-text col-lg-9 col-md-12 col-sm-12">
+                                <b>{{ getFigureCaption(passage) }}: </b>
+                                <app-bioc-annotated-text [position]="index+1" [text]="passage.text" [annotations]="passage.annotations"
+                                    [offset]="passage.offset" [ngClass]="passage.infons.type">
+                                </app-bioc-annotated-text>
+                            </div>
                     </div>
 
                     <div class="sentences">
