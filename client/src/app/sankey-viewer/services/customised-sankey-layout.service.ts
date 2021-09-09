@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { normalizeGenerator } from '../components/sankey/utils';
+import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
 import { christianColors, createMapToColor } from '../components/color-palette';
 
 const groupByTraceGroupWithAccumulation = () => {
@@ -176,6 +176,53 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
       return composeLinkPath(link._calculated_params);
     };
+  }
+
+  get nodeLabelShort() {
+    const {
+      labelEllipsis: {
+        value,
+        enabled
+      },
+      nodeLabel,
+      truncatePipe: { transform }
+    } = this;
+    if (enabled) {
+      return n => transform(nodeLabel(n), value);
+    } else {
+      return n => nodeLabel(n);
+    }
+  }
+
+  get nodeLabelShouldBeShorted() {
+    const {
+      labelEllipsis: {
+        value,
+        enabled
+      },
+      nodeLabel
+    } = this;
+    if (enabled) {
+      return n => nodeLabel(n).length > value;
+    } else {
+      return _ => false;
+    }
+  }
+
+  get nodeColor() {
+    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      if (difference.size === 1) {
+        return difference.values().next().value._trace._color;
+      } else {
+        return _color;
+      }
+    };
+  }
+
+  get fontSize() {
+    const { fontSizeScale } = this;
+    return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
   getYScaleFactor(nodes) {
