@@ -736,7 +736,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     this.nodeSelection
       .data(
-        graph.nodes,
+        graph.nodes.filter(
+          // should no longer be an issue but leaving as sanity check
+          // (if not satisfied visualisation brakes)
+          n => n._sourceLinks.length + n._targetLinks.length > 0
+        ),
         id
       )
       .join(
