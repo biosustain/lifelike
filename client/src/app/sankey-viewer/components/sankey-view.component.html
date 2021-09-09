@@ -214,7 +214,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Value</b>
-                            {{ parseProperty(graphLink._value) }}
+                            <span class="selectable-text">{{ parseProperty(graphLink._value) }}</span>
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -312,7 +312,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Value</b>
-                            {{ parseProperty(node._value) }}
+                            <span class="selectable-text">{{ parseProperty(node._value) }}</span>
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -321,7 +321,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Label</b>
-                            {{ parseProperty(node.label) }}
+                            <span class="selectable-text">{{ parseProperty(node.label) }}</span>
                         </button>
                     </ng-template>
                 </ngb-panel>
@@ -331,7 +331,7 @@
                            class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                            target="_blank">
                             <span>Reactome</span>
-                            {{ node.stId }}
+                            <span class="selectable-text">{{ node.stId }}</span>
                         </a>
                     </ng-template>
                 </ngb-panel>
@@ -388,7 +388,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Source</b>
-                            {{ getNodeById(trace.source).id }}
+                            <span class="selectable-text">{{ getNodeById(trace.source).id }}</span>
                         </button>
                     </ng-template>
                     <ng-template ngbPanelContent>
@@ -400,7 +400,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Target</b>
-                            {{ getNodeById(trace.target).id }}
+                            <span class="selectable-text">{{ getNodeById(trace.target).id }}</span>
                         </button>
                     </ng-template>
                     <ng-template ngbPanelContent>
@@ -412,7 +412,7 @@
                         <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                                 ngbPanelToggle>
                             <b>Group</b>
-                            {{ parseProperty(trace.group) }}
+                            <span class="selectable-text">{{ parseProperty(trace.group) }}</span>
                         </button>
                     </ng-template>
                 </ngb-panel>
