@@ -173,6 +173,7 @@ class TaxonomyParser(BaseParser):
     def create_indexes(self, database: Database):
         database.create_constraint(NODE_TAXONOMY, PROP_ID, 'constraint_taxonomy_id')
         database.create_index(NODE_TAXONOMY, PROP_NAME, 'index_taxonomy_name')
+        database.create_index(NODE_TAXONOMY, 'species_id', 'index_taxonomy_speciesid')
         database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
 
     def load_data_to_neo4j(self, database: Database):
@@ -187,18 +188,18 @@ class TaxonomyParser(BaseParser):
         database.load_csv_file(file, self.SYNONYM_FILE_HEADER, query, 1, '\t', 2000, [PROP_ID])
 
         self.logger.info("load taxonomy2parent relationship")
-        query = """
+        query = f"""
         call apoc.periodic.iterate(
-        "match(n:Taxonomy), (m:Taxonomy) where m.id = n.parent_id return n, m",
+        "match(n:Taxonomy), (m:Taxonomy) where m.{PROP_ID} = n.parent_id return n, m",
         "merge (n)-[:HAS_PARENT]->(m)",
-        {batchSize: 5000}
+        {{batchSize: 5000}}
         )  
         """
         database.run_query(query);
 
         self.logger.info("set species_id for all species node children")
-        query = """
-        match(n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'}) set n.species_id = s.id
+        query = f"""
+        match(n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {{rank: 'species'}}) set n.species_id = s.{PROP_ID}
         """
         database.run_query(query);
 

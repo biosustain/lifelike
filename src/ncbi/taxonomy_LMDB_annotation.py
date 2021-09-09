@@ -17,11 +17,11 @@ def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmenta
     # find the strains that are used to replace its parent species for annotation
     query = """
     match p=(n:Taxonomy)-[:HAS_PARENT*0..]->(:Taxonomy {rank: 'species'}) 
-    where n.id in $tax_ids
+    where n.{PROP_ID} in $tax_ids
     with nodes(p) as nodes, n 
     unwind nodes as p 
     with n, p where n <> p
-    return n.id as tax_id, p.id as parent_id, p.name as parent_name
+    return n.{PROP_ID} as tax_id, p.{PROP_ID} as parent_id, p.name as parent_name
     """
     df = database.get_data(query, {'tax_ids': LMDB_SPECIES_MAPPING_STRAIN})
     replace_id_map = {}

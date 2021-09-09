@@ -29,13 +29,14 @@ relationship_map = {
         'relationship': RelationshipType(None, 'to', DB_CHEBI, PROP_ID)
 }
 
-NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DEF, PROP_INCHI, PROP_INCHI_KEY, PROP_SMILES, PROP_ALT_ID]
+NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DEF, PROP_INCHI, PROP_INCHI_KEY, PROP_SMILES, PROP_ALT_ID, PROP_DATA_SOURCE]
 
 
 class ChebiOboParser(OboParser, BaseParser):
     def __init__(self, basedir=None):
         BaseParser.__init__(self, 'chebi', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_CHEBI, PROP_ID)
+        self.id_prefix = 'CHEBI:'
         self.logger = logging.getLogger(__name__)
 
     def create_indexes(self, database: Database):
@@ -44,12 +45,17 @@ class ChebiOboParser(OboParser, BaseParser):
         """
         database.create_constraint(NODE_CHEBI, PROP_ID, "constraint_chebi_id")
         database.create_index(NODE_CHEBI, PROP_NAME, "index_chebi_name")
+        database.create_index(NODE_CHEMICAL, PROP_ID, "index_chemical_id")
+        database.create_index(NODE_CHEMICAL, PROP_NAME, "index_chemical_name")
         database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
 
     def parse_obo_file(self)->[NodeData]:
         self.logger.info("Parsing chebi.obo")
         file = os.path.join(self.download_dir, 'chebi.obo')
         nodes = self.parse_file(file)
+        # remove prefix 'GO:' from id
+        for node in nodes:
+            node.update_attribute(PROP_DATA_SOURCE, 'ChEBI')
         self.logger.info(f"Number of chebi nodes parsed from chebi.obo: {len(nodes)}")
         return nodes
 
@@ -57,9 +63,7 @@ class ChebiOboParser(OboParser, BaseParser):
         nodes = self.parse_obo_file()
         if not nodes:
             return
-
         self.create_indexes(database)
-
         self.logger.info("Add nodes to " + NODE_CHEBI)
         self.load_nodes(database, nodes, NODE_CHEBI, NODE_CHEMICAL, PROP_ID, NODE_ATTRS)
         self.logger.info("Add synonyms to " + NODE_CHEBI)

@@ -18,6 +18,7 @@ class OboParser(object):
         self.node_labels = node_labels
         self.node_id_name = node_id_attr_name
         self.rel_names = set()
+        self.id_prefix = ''
 
     def parse_file(self, file_path)->[NodeData]:
         with open(file_path, 'r', encoding="ISO-8859-1") as file_data:
@@ -68,19 +69,27 @@ class OboParser(object):
                 match = re.search(r'".+"', attr_val)
                 if match:
                     attr_val = match.group(0).replace('"', '')
-            node.add_attribute(attr_type[0], attr_val.strip(), attr_type[1])
+            attr_val = self._clean_attr_val(attr_val)
+            node.add_attribute(attr_type[0], attr_val, attr_type[1])
         elif attr_name == 'relationship':
             vals = attr_val.split(' ')
             rel_name = vals[0].upper()
             rel_val = vals[1]
+            rel_val = self._clean_attr_val(rel_val)
             rel_node = NodeData(self.node_labels, self.node_id_name)
-            rel_node.update_attribute(self.node_id_name, rel_val.strip())
+            rel_node.update_attribute(self.node_id_name, rel_val)
             node.add_edge(node, rel_node, rel_name)
             self.rel_names.add(rel_name)
         elif attr_name in self.relationships_map:
             vals = attr_val.split(' ')
-            rel_val = vals[0]
-            node.add_edge_type(self.relationships_map[attr_name], rel_val.strip())
+            rel_val = self._clean_attr_val(vals[0])
+            node.add_edge_type(self.relationships_map[attr_name], rel_val)
+
+    def _clean_attr_val(self, attr_val):
+        if self.id_prefix != '' and attr_val.startswith(self.id_prefix):
+            attr_val = attr_val.replace(self.id_prefix, '')
+        return attr_val.strip()
+
 
     @classmethod
     def load_nodes(cls, database: Database, nodes:[], db_node_label, entity_node_label, id_name, node_attributes:[]):

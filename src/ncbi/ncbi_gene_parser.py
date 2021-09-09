@@ -31,6 +31,7 @@ class GeneParser(BaseParser):
         database.create_constraint(NODE_GENE, PROP_ID, 'constraint_gene_id')
         database.create_index(NODE_GENE, PROP_NAME, 'index_gene_name')
         database.create_index(NODE_GENE, PROP_LOCUS_TAG, 'index_locus_tag')
+        database.create_index(NODE_GENE, PROP_TAX_ID, 'index_gene_taxid')
         database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
 
     def load_data_to_neo4j(self, database: Database):
