@@ -51,7 +51,7 @@ using a species synonym which is not part of strain synonym. Not sure if we need
 #### LMDB Annotation file
 In the LMDB file, set the species' tax_id as the default strain id so that any searching for the species will map to the default strain
 
-| Stran tax_id | strain_name | species_id | species_name | 
+| Strain tax_id | strain_name | species_id | species_name | 
 |:------ |: ---------- |: --------- |: ----------- | 
 | 367830 | Staphylococcus aureus subsp. aureus USA300 | 46170 | Staphylococcus aureus subsp. aureus | 
 | 367830 | Staphylococcus aureus subsp. aureus USA300 | 1280 | Staphylococcus aureus | 

@@ -156,7 +156,7 @@ class BiocycParser(object):
                     no_of_updated_nodes = 0
                     no_of_created_relations = 0
                     no_of_updated_relations = 0
-
+                    parser.create_indexes(database)
                     if nodes:
                         node_count, result_counters = parser.update_nodes_in_graphdb(nodes, database, etl_load_id)
                         no_of_created_nodes += result_counters.nodes_created
