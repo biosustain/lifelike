@@ -102,8 +102,9 @@
                     <button class="btn btn-primary" ngbDropdownToggle>
                         {{ selectedNetworkTrace ? selectedNetworkTrace.description : 'Select Trace Network' }}
                     </button>
-                    <div ngbDropdownMenu>
-                        <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
+                    <!-- add class dropdown-menu to avoid relayout -->
+                    <div ngbDropdownMenu class="dropdown-menu">
+                        <button (click)="selectNetworkTrace(trace);applyOptions()" *ngFor="let trace of networkTraces"
                                 ngbDropdownItem>{{trace.description}}</button>
                     </div>
                 </div>
@@ -113,8 +114,9 @@
                         options.selectedPredefinedValueAccessor.description :
                         'Select Predefined Value Accessor' }}
                     </button>
-                    <div ngbDropdownMenu>
-                        <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor)"
+                    <!-- add class dropdown-menu to avoid relayout -->
+                    <div ngbDropdownMenu class="dropdown-menu">
+                        <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor);applyOptions()"
                                 *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors"
                                 ngbDropdownItem>{{predefinedValueAccessor.description}}</button>
                     </div>
