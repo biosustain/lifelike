@@ -13,20 +13,18 @@
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Value</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Value</b>
                         {{ parseProperty(entity._value) }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Label</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Label</b>
                         {{ parseProperty(entity.label) }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
             <ngb-panel *ngIf="entity.stId" [disabled]="true">

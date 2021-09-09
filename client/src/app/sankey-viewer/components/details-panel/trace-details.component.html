@@ -8,11 +8,10 @@
         <ngb-accordion ngbAccordion activeIds="source target">
             <ngb-panel id="source">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Source</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Source</b>
                         {{ getNodeById(entity.source).id }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
                     {{ getNodeById(entity.source).description }}
@@ -20,11 +19,10 @@
             </ngb-panel>
             <ngb-panel id="target">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Target</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Target</b>
                         {{ getNodeById(entity.target).id }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
                     {{ getNodeById(entity.target).description }}
@@ -32,11 +30,10 @@
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Group</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Group</b>
                         {{ parseProperty(entity.group) }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
             <ngb-panel *ngIf="entity.detail_edges">
