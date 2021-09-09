@@ -2,6 +2,7 @@ import visNetwork from 'vis-network';
 
 export interface ValueAccessor {
   description: string;
+  help?: string;
 }
 
 export interface ValueGenerator extends ValueAccessor {
@@ -27,6 +28,7 @@ export interface Prescaler {
 export interface Palette {
   name: string;
   palette: (size: number, params: object) => (i: number) => string | object;
+  help?: string;
 }
 
 interface SankeyNodeHeight {
