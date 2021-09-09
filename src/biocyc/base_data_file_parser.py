@@ -119,9 +119,16 @@ class BaseDataFileParser(BaseParser):
 
     def add_dblink(self, node:NodeData, db_name, reference_id):
         link_node = NodeData(NODE_DBLINK, PROP_REF_ID)
+        if reference_id.startswith(db_name):
+            reference_id = reference_id[len(db_name)+1:]  # remove db prefix
         link_node.update_attribute(PROP_REF_ID, reference_id)
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
+
+    def create_indexes(self, database: Database):
+        database.create_index(self.entity_name, PROP_ID, f"index_{self.entity_name.lower}_id")
+        database.create_index(self.entity_name, PROP_BIOCYC_ID, f"index_{self.entity_name.lower}_biocycid")
+        database.create_index(self.entity_name, PROP_NAME, f"index_{self.entity_name.lower}_name")
 
     def update_nodes_in_graphdb(self, nodes:[], database:Database, etl_load_id: str):
         """
@@ -137,7 +144,7 @@ class BaseDataFileParser(BaseParser):
         rows = []
         for node in nodes:
             rows.append(node.to_dict())
-        attrs = self.attrs + [PROP_DATA_SOURCE]
+        attrs = self.attrs + [PROP_ID, PROP_DATA_SOURCE]
         query = get_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, attrs, self.node_labels, etl_load_id=etl_load_id, return_node_count=True)
         return database.load_data_from_rows(query, rows, return_node_count=True)
 
@@ -166,8 +173,6 @@ class BaseDataFileParser(BaseParser):
                     if db_name in self.db_link_sources:
                         if db_name not in db_link_dict:
                             db_link_dict[db_name] = []
-                        if self.db_link_sources[db_name] and not to_id.startswith(db_name):
-                            to_id = db_name + ':' + to_id
                         db_link_dict[db_name].append({'from_id': from_id, 'to_id': to_id})
                 else:
                     if rel not in entity_rel_dict:
@@ -212,7 +217,6 @@ class BaseDataFileParser(BaseParser):
             no_of_updated_relations += (node_count - result_counters.relationships_created)
 
         return no_of_created_relations, no_of_updated_relations
-
 
     def write_entity_data_files(self, nodes:[]):
         os.makedirs(self.db_output_dir, 0o777, True)
