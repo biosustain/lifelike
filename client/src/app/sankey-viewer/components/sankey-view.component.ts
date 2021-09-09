@@ -151,7 +151,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   searchFocus = undefined;
 
   selectNetworkTrace(trace) {
-    return this.sankeyController.selectNetworkTrace(trace);
+    this.sankeyController.selectNetworkTrace(trace);
+    this.sankeyController.applyOptions();
   }
 
   open(content) {
@@ -307,6 +308,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   selectPredefinedValueAccessor(accessor) {
     this.sankeyController.options.selectedPredefinedValueAccessor = accessor;
     accessor.callback();
+    this.sankeyController.applyOptions();
   }
 
   // region Search

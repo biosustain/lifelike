@@ -1,4 +1,4 @@
-<ng-template ngFor let-part [ngForOf]="parts">
+<ng-template ngFor let-part [ngForOf]="parts" let-index="index">
     <span *ngIf="part.text; else text"
           [ngClass]="'x-y-z-annotation ' + part.infons.type"
           [ngbTooltip]="tooltip"
@@ -11,6 +11,7 @@
           [attr.identifier]="part.infons.identifier || part.infons.Identifier"
           [attr.annType]="part.infons.type"
           (dragstart)="dragStarted($event)"
+          [attr.position]="position + '-' + index"
     ></span>
     <ng-template #tooltip>
         <dl>
@@ -23,6 +24,6 @@
         </dl>
     </ng-template>
     <ng-template #text>
-        <span [innerHTML]="part"></span>
+        <span [attr.position]="position + '-' + index" [innerHTML]="part"></span>
     </ng-template>
 </ng-template>

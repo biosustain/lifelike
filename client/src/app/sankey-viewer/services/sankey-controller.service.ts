@@ -22,7 +22,7 @@ const NODE_VALUE = {
   fixedValue1: 'Fixed Value = 1'
 };
 const PREDEFINED_VALUE = {
-  default: 'Default',
+  fixed_height: 'Fixed height',
   input_count: LINK_VALUE.input_count
 };
 
@@ -68,11 +68,10 @@ export class SankeyControllerService {
     nodeValueAccessors: [],
     predefinedValueAccessors: [
       {
-        description: PREDEFINED_VALUE.default,
+        description: PREDEFINED_VALUE.fixed_height,
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-          this.optionsChange();
         }
       },
       {
@@ -80,7 +79,6 @@ export class SankeyControllerService {
         callback: () => {
           this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
           this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-          this.optionsChange();
         }
       }],
     linkValueGenerators: {
@@ -138,40 +136,56 @@ export class SankeyControllerService {
 
   selectedNetworkTrace;
 
+
+  getNetworkTraceDefaultSizing(networkTrace) {
+    let {default_sizing} = networkTrace;
+    if (!default_sizing) {
+      const {graph: {node_sets}} = this.allData;
+      const _inNodes = node_sets[networkTrace.sources];
+      const _outNodes = node_sets[networkTrace.targets];
+      if (Math.min(_inNodes.length, _outNodes.length) === 1) {
+        default_sizing = PREDEFINED_VALUE.input_count;
+      } else {
+        default_sizing = PREDEFINED_VALUE.fixed_height;
+      }
+    }
+    return this.options.predefinedValueAccessors
+      .find(({description}) => description === default_sizing);
+  }
+
   selectNetworkTrace(networkTrace) {
     this.selectedNetworkTrace = networkTrace;
-    const {default_sizing} = networkTrace;
-    const selectedPredefinedValueAccessor =
-      this.options.predefinedValueAccessors
-        .find(({description}) => description === default_sizing);
-    if (selectedPredefinedValueAccessor) {
-      this.options.selectedPredefinedValueAccessor = selectedPredefinedValueAccessor;
+    const predefinedValueAccessor = this.getNetworkTraceDefaultSizing(networkTrace);
+    if (predefinedValueAccessor) {
+      this.options.selectedPredefinedValueAccessor = predefinedValueAccessor;
+      predefinedValueAccessor.callback();
     }
+  }
+
+  applyOptions() {
+    const {selectedNetworkTrace} = this;
     const {links, nodes, graph: {node_sets}} = this.allData;
     const {palette} = this.options.selectedLinkPalette;
     const traceColorPaletteMap = createMapToColor(
-      networkTrace.traces.map(({group}) => group),
+      selectedNetworkTrace.traces.map(({group}) => group),
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
-    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(networkTrace, links, traceColorPaletteMap);
+    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
     this.sankeyLayout.colorNodes(nodes);
-    const _inNodes = node_sets[networkTrace.sources];
-    const _outNodes = node_sets[networkTrace.targets];
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
-    const qn = new Map();
-    networkTraceLinks.forEach(l => {
-      qn.set(l.source + ' ' + l.target, l);
-    });
     this.dataToRender.next(
       this.linkGraph({
         nodes: networkTraceNodes,
-        links: [...qn.values()],
+        links: networkTraceLinks,
         _inNodes, _outNodes
       })
     );
   }
+
 
   // region Extract options
   private extractLinkValueProperties([link = {}]) {
@@ -249,17 +263,16 @@ export class SankeyControllerService {
           } else {
             options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
           }
-          this.optionsChange();
         }
       })));
   }
 
-  private extractOptionsFromGraph({links, graph, nodes, ...data}) {
+  private extractOptionsFromGraph({links, graph, nodes}) {
     this.networkTraces = graph.trace_networks;
-    this.selectedNetworkTrace = this.networkTraces[0];
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     this.extractPredefinedValueProperties(graph);
+    this.selectNetworkTrace(this.networkTraces[0]);
   }
 
   // endregion
@@ -272,14 +285,14 @@ export class SankeyControllerService {
   }
 
   load(content) {
-    this.extractOptionsFromGraph(content);
     this.allData = content as SankeyData;
+    this.extractOptionsFromGraph(content);
     this.applyFilter();
   }
 
   private applyFilter() {
     if (this.selectedNetworkTrace) {
-      this.selectNetworkTrace(this.selectedNetworkTrace);
+      this.applyOptions();
     } else {
       this.dataToRender.next(this.allData);
     }

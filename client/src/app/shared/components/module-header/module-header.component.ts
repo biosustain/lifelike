@@ -1,6 +1,6 @@
 import { Component, Input, EventEmitter, Output, TemplateRef } from '@angular/core';
-import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-module-header',
@@ -11,13 +11,16 @@ export class ModuleHeaderComponent {
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
   @Input() showObjectMenu = true;
+  @Input() showBreadCrumbs = true;
+  @Input() showNewWindowButton = true;
   @Output() dragStarted = new EventEmitter();
 
   constructor(
-    private readonly filesystemObjectActions: FilesystemObjectActions
+    protected readonly route: ActivatedRoute,
   ) {}
 
   openNewWindow() {
-    this.filesystemObjectActions.openNewWindow(this.object);
+    const url = '/' + this.route.snapshot.url.join('/');
+    window.open(url);
   }
 }

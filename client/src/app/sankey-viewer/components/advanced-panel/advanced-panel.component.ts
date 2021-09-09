@@ -28,7 +28,8 @@ export class SankeyAdvancedPanelComponent {
 
   customSizingUpdate() {
     this.options.selectedPredefinedValueAccessor = {
-      description: 'Customised'
+      description: 'Customised',
+      callback: () => {}
     };
     this.update();
   }

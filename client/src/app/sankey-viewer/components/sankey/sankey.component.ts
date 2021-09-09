@@ -437,16 +437,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // Assign attr based on accessor and raise trueish results
   assignAttrAndRaise(selection, attr, accessor) {
-    selection
-      .each(function(s) {
-        // use each so we search traces only once
-        const selected = accessor(s);
-        const element = d3.select(this)
-          .attr(attr, selected);
-        if (selected) {
-          element.raise();
-        }
-      });
+    return selection
+      // This technique fails badly
+      // there is race condition between attr set and moving the node by raise call
+      // .each(function(s) {
+      //   // use each so we search traces only once
+      //   const selected = accessor(s);
+      //   const element = d3.select(this)
+      //     .attr(attr, selected);
+      //   if (selected) {
+      //     element.raise();
+      //   }
+      // })
+      .attr(attr, accessor)
+      .filter(accessor)
+      .call(e => e.raise());
   }
 
   // region Select
@@ -753,7 +758,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         exit => exit.remove()
       )
       .attr('fill', linkColor)
-      .attr('thickness', d => d._width)
+      .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
           .text(linkTitle)
