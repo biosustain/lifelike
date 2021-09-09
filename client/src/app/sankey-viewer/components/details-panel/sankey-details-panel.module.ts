@@ -16,6 +16,7 @@ import { SankeyLinkDetailsComponent } from './link-details.component';
 import { SankeyTraceDetailsComponent } from './trace-details.component';
 import { SankeyDetailsPanelComponent } from './details-panel.component';
 import { SankeyDetailsComponent } from './details.component';
+import { ButtonWithSelectableTextComponent } from './button-with-selectable-text.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { SankeyDetailsComponent } from './details.component';
     SankeyNodeDetailsComponent,
     SankeyLinkDetailsComponent,
     SankeyTraceDetailsComponent,
-    SankeyDetailsComponent
+    SankeyDetailsComponent,
+    ButtonWithSelectableTextComponent
   ],
   imports: [
     CommonModule,

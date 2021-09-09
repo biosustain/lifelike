@@ -13,11 +13,10 @@
             </ngb-panel>
             <ngb-panel *ngIf="!entity._multiple_values else multipleValues" [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <button class="btn btn-link w-100 d-flex align-items-center justify-content-between"
-                            ngbPanelToggle>
-                        <b>Value</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
+                        <b title>Value</b>
                         {{ parseProperty(entity._value) }}
-                    </button>
+                    </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
             <ng-template #multipleValues>
