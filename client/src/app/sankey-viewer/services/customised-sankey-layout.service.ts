@@ -5,7 +5,7 @@ import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
 import { christianColors, createMapToColor } from '../components/color-palette';
-import { SankeyNode, SankeyData } from '../components/interfaces';
+import { SankeyNode, SankeyData, SankeyLink, SankeyTraceNetwork } from '../components/interfaces';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -148,6 +148,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     };
   }
 
+  /**
+   * Compose SVG path based on set of intermediate points
+   */
   composeLinkPath({
                     sourceX,
                     sourceY0,
@@ -186,7 +189,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         enabled
       },
       nodeLabel,
-      truncatePipe: { transform }
+      truncatePipe: {transform}
     } = this;
     if (enabled) {
       return n => transform(nodeLabel(n), value);
@@ -212,7 +215,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get nodeColor() {
     return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      // check if any trace is finishing or starting here
       const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      // if it is only one then color node
       if (difference.size === 1) {
         return difference.values().next().value._trace._color;
       } else {
@@ -222,13 +227,17 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   }
 
   get fontSize() {
-    const { fontSizeScale } = this;
+    const {fontSizeScale} = this;
     // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
+  /**
+   * Adjust Y scale factor based on columns and min/max node height
+   */
   getYScaleFactor(nodes) {
     const {y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns} = this;
+    // normal calculation based on tallest column
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     let scale = 1;
     if (nodeHeight.max.enabled) {
@@ -255,6 +264,10 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   }
 
   // @ts-ignore
+  /**
+   * Calculate nodes position by traversing it from side with less nodes as a tree
+   * iteratively figuring order of the nodes
+   */
   initializeNodeBreadths(graph) {
     const {columns} = this;
     const ky = this.getYScaleFactor(graph.nodes);
@@ -267,7 +280,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const firstColumn = columns[0];
     const lastColumn = columns[columns.length - 1];
 
+    // decide on direction
     const dt = new DirectedTraversal([firstColumn, lastColumn]);
+    // order next related nodes in order this group first appeared
     const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
     const visited = new Set();
     let order = 0;
@@ -287,31 +302,38 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         const links = sortByTrace(dt.nextLinks(node));
         relayoutLinks(links);
       });
+    // traverse tree of connections
     relayoutNodes(dt.startNodes);
 
     const traces = [...traceOrder];
     const groups = [...traces.map(({group}) => group)];
 
     this.linkSort = (a, b) => (
+      // sort by order given in tree traversal
       (a._source._order - b._source._order) ||
       (a._target._order - b._target._order) ||
+      // if links connects same nodes sort them by group
       (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group)) ||
+      // each group sort by trace
       (traces.indexOf(a._trace) - traces.indexOf(b._trace))
     );
 
     columns.forEach(nodes => {
       const {length} = nodes;
       const nodesHeight = sum(nodes, ({_value}) => _value) * ky;
+      // do we want space above and below nodes or should it fill column till the edges?
       const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
       const freeSpace = height - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
       let y = additionalSpacers ? spacerSize + marginTop : marginTop;
+      // nodes are placed in order from tree traversal
       nodes.sort((a, b) => a._order - b._order).forEach(node => {
         const nodeHeight = node._value * ky;
         node._y0 = y;
         node._y1 = y + nodeHeight;
         y += nodeHeight + spacerSize;
 
+        // apply the y scale on links
         for (const link of node._sourceLinks) {
           link._width = link._value * ky;
         }
@@ -325,6 +347,10 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     });
   }
 
+  /**
+   * Same as parent method just ignoring circular links
+   * (circular links does not change min node depth)
+   */
   computeNodeDepths({nodes}: SankeyData) {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
@@ -347,6 +373,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     }
   }
 
+  /**
+   * Same as parent method just ignoring circular links
+   */
   computeNodeHeights({nodes}: SankeyData) {
     const n = nodes.length;
     let current = new Set(nodes);
@@ -370,6 +399,12 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     }
   }
 
+  /**
+   *  Similar to parent method however we are not having graph relaxation
+   *  node order is calculated by tree structure and this decision is final
+   *  additionally this method adds placeholders for links spawning through multiple layers
+   *  this approach reduces overlays in more complex graphs
+   */
   computeNodeBreadths(graph) {
     const {dy, y1, y0} = this;
     this.columns = this.computeNodeLayers(graph);
@@ -378,10 +413,19 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     this.initializeNodeBreadths(graph);
   }
 
+  /**
+   * Helper so we can create columns copy with minimum overhead
+   */
   getColumnsCopy() {
     return this.columns.map(c => [...c]);
   }
 
+  /**
+   * If link spawns on multiple columns (both normal and circular) on each intermediate
+   * column place placeholder node with height of this link.
+   * For best results this method places only one node with summed for all links going from the
+   * same source to same target node.
+   */
   createVirtualNodes(graph) {
     this.columnsWithLinkPlaceholders = this.getColumnsCopy();
     // create graph backup
@@ -418,13 +462,17 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     }
   }
 
-  cleanVirtualLinksAndNodes(graph) {
+  /**
+   * Once layout has been calculated we can safely delete placeholder nodes
+   */
+  cleanVirtualNodes(graph) {
     graph.nodes = graph._nodes;
   }
 
+  /**
+   * Calculate layout and address possible circular links
+   */
   calcLayout(graph) {
-    // Process the graph's nodes and links, setting their positions
-
     // Associate the nodes with their respective links, and vice versa
     this.computeNodeLinks(graph);
     // Determine which links result in a circular path in the graph
@@ -442,12 +490,21 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's
     this.computeNodeBreadths(graph);
     SankeyLayoutService.computeLinkBreadths(graph);
-    this.cleanVirtualLinksAndNodes(graph);
+    this.cleanVirtualNodes(graph);
     return graph;
   }
 
-  // Trace logic
-  getAndColorNetworkTraceLinks(networkTrace, links, colorMap?) {
+  // region Trace logic
+  /**
+   * Extract links which relates to certain trace network and
+   * assign _color property based on their trace.
+   * Also creates duplicates if given link is used in multiple traces.
+   */
+  getAndColorNetworkTraceLinks(
+    networkTrace: SankeyTraceNetwork,
+    links: Array<SankeyLink>,
+    colorMap?
+  ) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ? colorMap : new Map(
       networkTrace.traces.map(({group}) => [group, christianColors[group]])
@@ -463,7 +520,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
             _color: color,
             _trace: trace
           };
-          link.id += trace.group;
+          link._id += trace.group;
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
             adjacentLinks = [];
@@ -486,11 +543,17 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     return networkTraceLinks;
   }
 
+  /**
+   * Helper to create Map for fast lookup
+   */
   getNodeById(nodes) {
     const {id} = this;
     return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
   }
 
+  /**
+   * Given links find all nodes they are connecting to and replace id ref with objects
+   */
   getNetworkTraceNodes(networkTraceLinks, nodes) {
     const nodeById = this.getNodeById(nodes);
     return [
@@ -509,6 +572,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     ];
   }
 
+  /**
+   * Color nodes in gray scale based on group they are relating to.
+   */
   colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
     // set colors for all node types
     const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
@@ -529,12 +595,19 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     });
   }
 
+  /**
+   * Given nodes and links find all traces which they are relating to.
+   */
   getRelatedTraces({nodes, links}) {
+    // check nodes links for traces which are comming in and out
     const nodesLinks = [...nodes].reduce(
       (linksAccumulator, {_sourceLinks, _targetLinks}) =>
         linksAccumulator.concat(_sourceLinks, _targetLinks)
       , []
     );
+    // add links traces and reduce to unique values
     return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
   }
+
+  // endregion
 }

@@ -149,6 +149,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     SankeyLayoutService.computeLinkBreadths(graph);
   }
 
+  /**
+   * Reposition each node based on its incoming (target) links.
+   */
   registerLinks({links, nodes}) {
     const {id} = this;
     const {find} = SankeyLayoutService;
@@ -183,6 +186,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Reposition each node based on its incoming (target) links.
+   */
   computeNodeLinks({nodes, links}: SankeyData) {
     for (const [i, node] of nodes.entries()) {
       node._index = i;
@@ -192,6 +198,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     this.registerLinks({links, nodes});
   }
 
+  /**
+   * Reposition each node based on its incoming (target) links.
+   */
   identifyCircles(graph: SankeyData) {
     let circularLinkID = 0;
 
@@ -242,6 +251,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     });
   }
 
+  /**
+   * Reposition each node based on its incoming (target) links.
+   */
   computeNodeValues({nodes}: SankeyData) {
     const {value} = this;
     for (const node of nodes) {
@@ -251,6 +263,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Calculate the nodes' depth based on the incoming and outgoing links
+   * Sets the nodes':
+   * - depth:  the depth in the graph
+   */
   computeNodeDepths({nodes}: SankeyData) {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
@@ -292,6 +309,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Calculate into which layer node has to be placed and assign x coordinates of this layer
+   * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+   * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
+   */
   computeNodeLayers({nodes}: SankeyData) {
     const {x1, x0, dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
@@ -316,6 +338,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     return columns;
   }
 
+  /**
+   * Calculate Y scaling factor and initialise nodes height&position.
+   */
   initializeNodeBreadths(columns) {
     const {y1, y0, py, value} = this;
 
@@ -340,6 +365,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Initialise node position both on column and Y, then try rearranging them to untangle network.
+   */
   computeNodeBreadths(graph) {
     const {dy, y1, y0, iterations} = this;
     const columns = this.computeNodeLayers(graph);
@@ -353,7 +381,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Reposition each node based on its incoming (target) links.
+  /**
+   * Reposition each node based on its incoming (target) links.
+   */
   relaxLeftToRight(columns, alpha, beta) {
     for (let i = 1, n = columns.length; i < n; ++i) {
       const column = columns[i];
@@ -380,7 +410,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Reposition each node based on its outgoing (source) links.
+  /**
+   * Reposition each node based on its outgoing (source) links.
+   */
   relaxRightToLeft(columns, alpha, beta) {
     const {ascendingBreadth} = SankeyLayoutService;
 
@@ -409,6 +441,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Move nodes up and down hopefully resolving collisions.
+   */
   resolveCollisions(nodes: Array<SankeyNode>, alpha) {
     const {
       py, y1, y0
@@ -422,7 +457,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     this.resolveCollisionsTopToBottom(nodes, y0, 0, alpha);
   }
 
-  // Push any overlapping nodes down.
+  /**
+   * Rearrange nodes down.
+   */
   resolveCollisionsTopToBottom(nodes, y, i, alpha) {
     const {py} = this;
     for (; i < nodes.length; ++i) {
@@ -435,7 +472,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Push any overlapping nodes up.
+  /**
+   * Rearrange nodes up.
+   */
   resolveCollisionsBottomToTop(nodes, y, i, alpha) {
     const {py} = this;
     for (; i >= 0; --i) {
@@ -474,7 +513,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Returns the target._y0 that would produce an ideal link from source to target.
+  /**
+   * Returns the target._y0 that would produce an ideal link from source to target.
+   */
   targetTop(source, target) {
     const {py} = this;
     let y = source._y0 - (source._sourceLinks.length - 1) * py / 2;
@@ -494,7 +535,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     return y;
   }
 
-  // Returns the source._y0 that would produce an ideal link from source to target.
+  /**
+   * Returns the source._y0 that would produce an ideal link from source to target.
+   */
   sourceTop(source, target) {
     const {py} = this;
     let y = target._y0 - (target._targetLinks.length - 1) * py / 2;
@@ -526,12 +569,12 @@ export class SankeyLayoutService extends AttributeAccessors {
     // Calculate the nodes' depth based on the incoming and outgoing links
     //     Sets the nodes':
     //     - depth:  the depth in the graph
-    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
     this.computeNodeDepths(graph);
     this.computeNodeHeights(graph);
     // Calculate the nodes' and links' vertical position within their respective column
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
     this.computeNodeBreadths(graph);
     SankeyLayoutService.computeLinkBreadths(graph);
     return graph;
