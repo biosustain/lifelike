@@ -73,7 +73,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.filename = '';
           object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
-          let zip = new JSZip();
+          const zip = new JSZip();
           zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
           return zip.generateAsync({ type: 'blob' }).then((content) => {
             return this.objectCreationService.openCreateDialog(object, {
