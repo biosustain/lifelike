@@ -67,7 +67,8 @@ from neo4japp.constants import (
     IMAGES_RE,
     ASSETS_PATH,
     ICON_NODES,
-    RELATION_NODES
+    RELATION_NODES,
+    DETAIL_TEXT_LIMIT
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -424,7 +425,8 @@ def create_default_node(node):
 def create_detail_node(node, params):
     """
     Add parameters specific to the nodes which has a 'show detail text instead of a label'
-    property.
+    property. Due to the copyright, we limit the text in detail nodes dragged from the pdfs to 250
+    characters - see https://sbrgsoftware.atlassian.net/browse/LL-3387
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
@@ -432,6 +434,10 @@ def create_detail_node(node, params):
     """
     params['style'] += ',filled'
     detail_text = node['data'].get('detail', ' ')
+    if node['data'].get('sources'):
+        # Check if the node was dragged from the pdf - if so, it will have a source link
+        if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
+            detail_text = detail_text[:DETAIL_TEXT_LIMIT]
     params['label'] = '\n'.join(
         textwrap.TextWrapper(
             width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
@@ -710,7 +716,9 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         graph = graphviz.Digraph(
                 file.filename,
-                comment=file.description.replace('\n', ' '),
+                # New lines are not permitted in the comment - they will crash the export.
+                # Replace them with spaces until we find different solution
+                comment=file.description.replace('\n', ' ') if file.description else None,
                 engine='neato',
                 graph_attr=graph_attr,
                 format=format)
