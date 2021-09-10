@@ -1,5 +1,4 @@
 import { formatNumber } from '@angular/common';
-import { cubehelix } from 'd3';
 
 // region Collections
 export function isIterable(obj) {
