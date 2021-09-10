@@ -432,7 +432,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // Assign attr based on accessor and raise trueish results
   assignAttrAndRaise(selection, attr, accessor) {
-    selection
+    return selection
       // This technique fails badly
       // there is race condition between attr set and moving the node by raise call
       // .each(function(s) {
@@ -728,7 +728,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         exit => exit.remove()
       )
       .attr('fill', linkColor)
-      .attr('thickness', d => d._width)
+      .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
           .text(linkTitle)
