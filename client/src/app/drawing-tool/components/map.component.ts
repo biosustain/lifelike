@@ -231,9 +231,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.graphCanvas.setGraph(graph);
         for (const node of this.graphCanvas.getGraph().nodes) {
           if (node.image_id !== undefined) {
+            // put image nodes back into renderTree, doesn't seem to make a difference though
             this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
-            console.log('image node in render tree is');
-            console.log(this.graphCanvas.renderTree.get(node));
           }
         }
         this.graphCanvas.zoomToFit(0);
