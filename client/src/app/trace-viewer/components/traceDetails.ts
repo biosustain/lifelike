@@ -3,14 +3,14 @@ import { isNullOrUndefined } from 'util';
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
-import { IntermediateNodeType } from '../../sankey-viewer/components/interfaces';
+import { IntermediateNodeType } from './interfaces';
 
 function find(nodeById, id) {
   const node = nodeById.get(id);
   if (!node) {
     throw new Error('missing: ' + id);
   }
-  return node as SankeyNode;
+  return node as GraphNode;
 }
 
 function* generateSLayout(segmentSize, scale = 1) {
@@ -49,7 +49,7 @@ export const getTraceDetailsGraph = (trace) => {
     node.fromEdges = [];
     node.toEdges = [];
   });
-  const nodeById: Map<number, IntermediateNodeType> = new Map(nodes.map((d, i) => [d.id, d]));
+  const nodeById: Map<number, IntermediateNodeType> = new Map(nodes.map(d => [d.id, d]));
   for (const edge of edges) {
     let {from, to} = edge;
     if (typeof from !== 'object') {

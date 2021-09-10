@@ -19,6 +19,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { representativePositiveNumber } from '../utils';
 import { SankeyLayoutService } from './sankey-layout.service';
+import { SankeyData, SankeyNode } from '../interfaces';
 
 
 @Component({
@@ -184,8 +185,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   ngAfterViewInit() {
-    const {width, height} = this.size = this.getCloudSvgDimensions();
-
     // attach zoom behaviour
     const {g, zoom} = this;
     const zoomContainer = d3.select(g.nativeElement);
@@ -267,20 +266,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
-
-
-  /**
-   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example,
-   * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
-   */
-  private getCloudSvgDimensions() {
-    const wrapper = this.wrapper.nativeElement;
-    return {
-      width: wrapper.offsetWidth,
-      height: wrapper.offsetHeight
-    };
-  }
-
   // endregion
 
   // region Events
@@ -370,9 +355,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   scaleZoom(scaleBy) {
+    // @ts-ignore
     this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
   }
 
+  // noinspection JSUnusedGlobalSymbols
   resetZoom() {
     // it is used by its parent
     this.sankeySelection.call(this.zoom.transform, d3.zoomIdentity);
@@ -554,6 +541,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('focused', true);
   }
 
+  // noinspection JSUnusedLocalSymbols
   unFocusLink(link: object) {
     this.linkSelection
       .attr('focused', undefined);
@@ -682,6 +670,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param graph: { links, nodes } to be rendered
    */
   private updateDOM(graph) {
+    // noinspection JSUnusedLocalSymbols
     const {
       updateNodeRect, updateNodeText,
       sankey: {
@@ -718,7 +707,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
           //   return t => {
           //     const interpolatedParams = paramsInterpolator(t);
-          //     // save last params on each iterration so we can interpolate from last position upon
+          //     // save last params on each iteration so we can interpolate from last position upon
           //     // animation interrupt/cancel
           //     link._calculated_params = interpolatedParams;
           //     return composeLinkPath(interpolatedParams);

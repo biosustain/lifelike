@@ -1,5 +1,6 @@
 import * as d3Sankey from 'd3-sankey';
 import { TruncatePipe } from '../../../shared/pipes';
+import { SankeyNode } from '../interfaces';
 
 export class AttributeAccessors {
   get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
@@ -11,7 +12,7 @@ export class AttributeAccessors {
   }
 
   get nodeLabelShort() {
-    const {nodeLabel, truncatePipe: { transform }} = this;
+    const {nodeLabel, truncatePipe: {transform}} = this;
     return n => transform(nodeLabel(n), AttributeAccessors.labelEllipsis);
   }
 
@@ -21,7 +22,7 @@ export class AttributeAccessors {
   }
 
   get nodeColor() {
-    return ({_color}) => _color;
+    return ({_color}: SankeyNode) => _color;
   }
 
   get linkColor() {

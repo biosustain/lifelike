@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 
-import { SankeyAdvancedOptions, ValueGenerator } from '../components/interfaces';
+import { SankeyAdvancedOptions, ValueGenerator, SankeyData } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
 import prescalers from '../components/algorithms/prescalers';
@@ -9,7 +9,7 @@ import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } fro
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
-import { ReplaySubject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 const LINK_VALUE = {
   fixedValue0: 'Fixed Value = 0',
@@ -237,7 +237,7 @@ export class SankeyControllerService {
     }, []);
   }
 
-  private extractPredefinedValueProperties({sizing = {}}: { sizing: SankeyPredefinedSizing }) {
+  private extractPredefinedValueProperties({sizing = {}}: { sizing: GraphPredefinedSizing }) {
     this.options.predefinedValueAccessors = this.options.predefinedValueAccessors.concat(
       Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
         description: name,
