@@ -15,13 +15,11 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
 import { TraceViewComponent } from './components/trace-view.component';
 import { TraceDetailsComponent } from './components/trace-details.component';
-import { TreeViewComponent } from './components/tree-view.component';
 
 @NgModule({
   declarations: [
     TraceViewComponent,
-    TraceDetailsComponent,
-    TreeViewComponent
+    TraceDetailsComponent
   ],
   imports: [
     CommonModule,

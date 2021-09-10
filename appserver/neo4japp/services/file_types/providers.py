@@ -133,6 +133,9 @@ MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
+# As other links begin with "projects" as well, we are looking for those without additional slashes
+# looking like /projects/Example or /projects/COVID-19
+PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
 ICON_DATA: dict = {}
 
 
@@ -485,6 +488,8 @@ def get_link_icon_type(node):
             else:
                 node['data']['hyperlinks'].remove(link)
             return 'document', None
+        elif PROJECTS_RE.match(link['url']):
+            return 'project', link['url']
         # We do not return on email, as email icon has lower precedence.
         elif MAIL_RE.match(link['url']):
             label = 'email'

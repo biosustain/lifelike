@@ -37,10 +37,10 @@ import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-g
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
-import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
+import { MimeTypes } from '../../../shared/constants';
 
 import { DragDropEntityBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
 import { ImageUploadBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
@@ -185,7 +185,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       const observable = this.filesystemService.putBackup({
         hashId: this.locator,
         contentValue: new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
-          type: MAP_MIMETYPE,
+          type: MimeTypes.Map,
         }),
       });
       observable.subscribe(); // Need to subscribe so it actually runs

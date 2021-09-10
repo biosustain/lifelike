@@ -192,9 +192,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
 
     // resize and listen to future resize events
-    this.onResize(width, height).then(_ => {
-      this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
-    });
+    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
   }
 
   ngOnDestroy() {
@@ -252,8 +250,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Graph sizing
   onResize(width, height) {
     const {zoom, margin} = this;
-    const extentRight = width - margin.right;
-    const extentLeft = height - margin.bottom;
+    const extentX = width - margin.right;
+    const extentY = height - margin.bottom;
 
     // Get the svg element and update
     this.sankeySelection
@@ -265,7 +263,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
-    this.sankey.extent = [[margin.left, margin.top], [extentRight, extentLeft]];
+    this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
@@ -277,12 +275,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   private getCloudSvgDimensions() {
     const wrapper = this.wrapper.nativeElement;
-    const {
-      margin
-    } = this;
     return {
-      width: wrapper.offsetWidth - margin.left - margin.right,
-      height: wrapper.offsetHeight - margin.top - margin.bottom
+      width: wrapper.offsetWidth,
+      height: wrapper.offsetHeight
     };
   }
 
@@ -437,7 +432,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // Assign attr based on accessor and raise trueish results
   assignAttrAndRaise(selection, attr, accessor) {
-    selection
+    return selection
       // This technique fails badly
       // there is race condition between attr set and moving the node by raise call
       // .each(function(s) {
@@ -507,6 +502,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.linkSelection
       .attr('searched', undefined);
   }
+
   // endregion
 
   // region Focus
@@ -649,33 +645,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   updateLayout(data) {
     return new Promise(resolve => {
-        this.sankey.computeNodeLinks(data);
-        this.sankey.identifyCircles(data);
-        const {nodes, links, ...rest} = data;
-        const [circularLinks, nonCircularLinks] = links.reduce(([c, nc], n) => {
-          if (n._circular) {
-            c.push(n);
-          } else {
-            nc.push(n);
-          }
-          return [c, nc];
-        }, [[], []]);
-        // Calculate layout by skipping circular links
-        this.sankey.calcLayout({nodes, links: nonCircularLinks});
-        // Link into graph prev filtered links
-        this.sankey.registerLinks({nodes, links: circularLinks});
-        // adjust width of circular links
-        const {_width, _value} = nonCircularLinks[0];
-        const valueScaler = _width / _value;
-        circularLinks.forEach(link => {
-          link._width = link._value * valueScaler;
-        });
-        const layout = {
-          nodes,
-          links: nonCircularLinks.concat(circularLinks),
-          ...rest
-        };
-        resolve(layout);
+        this.sankey.calcLayout(data);
+        resolve(data);
       }
     );
   }
@@ -757,7 +728,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         exit => exit.remove()
       )
       .attr('fill', linkColor)
-      .attr('thickness', d => d._width)
+      .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
           .text(linkTitle)
