@@ -90,6 +90,7 @@ export interface SankeyNode extends GraphNode {
 
 // Add properties used internally to compute layout
 export interface SankeyLink extends GraphLink {
+  _id: string;
   _trace?: GraphTrace;
   _source?: SankeyNode | string | number;
   _target?: SankeyNode | string | number;
@@ -103,8 +104,21 @@ export interface SankeyLink extends GraphLink {
   _value: number;
 }
 
+export interface SankeyTrace extends GraphTrace {
+  _color: string;
+}
+
+export interface SankeyTraceNetwork extends GraphTraceNetwork {
+  traces: Array<SankeyTrace>;
+}
+
+export interface SankeyGraph extends GraphGraph {
+  trace_networks: Array<SankeyTraceNetwork>;
+}
+
 // Add properties used internally to compute layout
 export interface SankeyData extends GraphFile {
+  graph: SankeyGraph;
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
 
@@ -114,5 +128,5 @@ export interface SankeyData extends GraphFile {
 
 export interface SelectionEntity {
   type: string;
-  entity: SankeyLink | SankeyNode | GraphTrace;
+  entity: SankeyLink | SankeyNode | SankeyTrace;
 }
