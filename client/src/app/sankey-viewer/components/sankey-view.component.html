@@ -98,7 +98,8 @@
                                     selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
                                 <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                     </button>
-                    <div ngbDropdownMenu>
+                    <!-- add class dropdown-menu to avoid relayout -->
+                    <div ngbDropdownMenu class="dropdown-menu">
                         <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
                                 ngbDropdownItem>{{trace.description}}</button>
                     </div>
@@ -109,7 +110,8 @@
                         options.selectedPredefinedValueAccessor.description :
                         'Select Predefined Value Accessor' }}
                     </button>
-                    <div ngbDropdownMenu>
+                    <!-- add class dropdown-menu to avoid relayout -->
+                    <div ngbDropdownMenu class="dropdown-menu">
                         <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor)"
                                 *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors"
                                 ngbDropdownItem>{{predefinedValueAccessor.description}}</button>
