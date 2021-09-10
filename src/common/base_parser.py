@@ -1,5 +1,4 @@
 import os, gzip
-import pandas as pd
 from common.database import Database
 from common.utils import get_data_dir
 
@@ -38,11 +37,6 @@ class BaseParser:
     def parse_and_write_data_files(self):
         pass
 
-    def create_indexes(self, database: Database):
-        pass
-
-    def load_data_to_neo4j(self, database: Database):
-        pass
 
 
 
