@@ -4,7 +4,8 @@ import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
-import { christianColors, createMapToColor } from '../components/color-palette';
+import { TruncatePipe } from '../../shared/pipes';
+import { SankeyControllerService } from './sankey-controller.service';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -19,28 +20,16 @@ const groupByTraceGroupWithAccumulation = () => {
   };
 };
 
-interface SizeLimit {
-  enabled?: boolean;
-  value?: number;
-  ratio?: number;
-}
-
 @Injectable()
 // @ts-ignore
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
-  // height adjustments
-  nodeHeight = {
-    max: {} as SizeLimit,
-    min: {} as SizeLimit
-  };
+  constructor(
+    readonly truncatePipe: TruncatePipe,
+    readonly sankeyController: SankeyControllerService
+  ) {
+    super(truncatePipe);
+  }
 
-  // @ts-ignore
-  labelEllipsis: SizeLimit = {
-    enabled: true,
-    value: 10
-  };
-
-  fontSizeScale = 1.0;
 
   normalizeLinks = false;
 
@@ -170,7 +159,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {
       calculateLinkPathParams,
       composeLinkPath,
-      normalizeLinks
+      sankeyController:
+        {
+          options:
+            {
+              normalizeLinks
+            }
+        }
     } = this;
     return link => {
       link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
@@ -180,12 +175,18 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get nodeLabelShort() {
     const {
-      labelEllipsis: {
-        value,
-        enabled
-      },
+      sankeyController:
+        {
+          options:
+            {
+              labelEllipsis: {
+                value,
+                enabled
+              }
+            }
+        },
       nodeLabel,
-      truncatePipe: { transform }
+      truncatePipe: {transform}
     } = this;
     if (enabled) {
       return n => transform(nodeLabel(n), value);
@@ -196,10 +197,16 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get nodeLabelShouldBeShorted() {
     const {
-      labelEllipsis: {
-        value,
-        enabled
-      },
+      sankeyController:
+        {
+          options:
+            {
+              labelEllipsis: {
+                value,
+                enabled
+              }
+            }
+        },
       nodeLabel
     } = this;
     if (enabled) {
@@ -221,12 +228,28 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   }
 
   get fontSize() {
-    const { fontSizeScale } = this;
+    const {
+      sankeyController:
+        {
+          options:
+            {
+              fontSizeScale
+            }
+        }
+    } = this;
     return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
   getYScaleFactor(nodes) {
-    const {y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns} = this;
+    const {
+      y1, y0, py, dx, sankeyController:
+        {
+          options:
+            {
+              nodeHeight
+            }
+        }, value, columnsWithLinkPlaceholders: columns
+    } = this;
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     let scale = 1;
     if (nodeHeight.max.enabled) {
@@ -442,95 +465,5 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     return graph;
   }
 
-  // Trace logic
-  getAndColorNetworkTraceLinks(networkTrace, links, colorMap?) {
-    const traceBasedLinkSplitMap = new Map();
-    const traceGroupColorMap = colorMap ? colorMap : new Map(
-      networkTrace.traces.map(({group}) => [group, christianColors[group]])
-    );
-    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
-      const color = traceGroupColorMap.get(trace.group);
-      trace._color = color;
-      return o.concat(
-        trace.edges.map(linkIdx => {
-          const originLink = links[linkIdx];
-          const link = {
-            ...originLink,
-            _color: color,
-            _trace: trace
-          };
-          link.id += trace.group;
-          let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
-          if (!adjacentLinks) {
-            adjacentLinks = [];
-            traceBasedLinkSplitMap.set(originLink, adjacentLinks);
-          }
-          adjacentLinks.push(link);
-          return link;
-        })
-      );
-    }, []);
-    for (const adjacentLinkGroup of traceBasedLinkSplitMap.values()) {
-      const adjacentLinkGroupLength = adjacentLinkGroup.length;
-      // normalise only if multiple (skip /1)
-      if (adjacentLinkGroupLength) {
-        adjacentLinkGroup.forEach(l => {
-          l._adjacent_divider = adjacentLinkGroupLength;
-        });
-      }
-    }
-    return networkTraceLinks;
-  }
 
-  getNodeById(nodes) {
-    const {id} = this;
-    return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
-  }
-
-  getNetworkTraceNodes(networkTraceLinks, nodes) {
-    const nodeById = this.getNodeById(nodes);
-    return [
-      ...networkTraceLinks.reduce((o, link) => {
-        let {_source = link.source, _target = link.target} = link;
-        if (typeof _source !== 'object') {
-          _source = SankeyLayoutService.find(nodeById, _source);
-        }
-        if (typeof _target !== 'object') {
-          _target = SankeyLayoutService.find(nodeById, _target);
-        }
-        o.add(_source);
-        o.add(_target);
-        return o;
-      }, new Set())
-    ];
-  }
-
-  colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
-    // set colors for all node types
-    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
-    const nodesColorMap = createMapToColor(
-      nodeCategories,
-      {
-        hue: () => 0,
-        lightness: (i, n) => {
-          // all but not extreme (white, black)
-          return (i + 1) / (n + 2);
-        },
-        saturation: () => 0,
-        alpha: () => 0.75
-      }
-    );
-    nodes.forEach(node => {
-      node._color = nodesColorMap.get(nodeColorCategoryAccessor(node));
-    });
-  }
-
-  getRelatedTraces({nodes, links}) {
-    const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
-        linksAccumulator.concat(_sourceLinks, _targetLinks)
-      , []
-    );
-    return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
-  }
 }
