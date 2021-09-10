@@ -12,6 +12,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SankeyComponent } from '../sankey/sankey.component';
 import { SankeyLayoutService } from '../sankey/sankey-layout.service';
+import * as aligns from '../sankey/aligin';
 
 
 @Component({
@@ -30,8 +31,16 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   }
 
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, ...rest}: SimpleChanges) {
-    super.ngOnChanges(rest);
+  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+    // using on Changes in place of setters as order is important
+    if (nodeAlign) {
+      const align = nodeAlign.currentValue;
+      if (typeof align === 'function') {
+        this.sankey.align = align;
+      } else if (align) {
+        this.sankey.align = aligns[align];
+      }
+    }
     if (data && this.svg) {
       // using this.data instead of current value so we use copy made by setter
       this.updateLayout(this.data).then(d => this.updateDOM(d));
