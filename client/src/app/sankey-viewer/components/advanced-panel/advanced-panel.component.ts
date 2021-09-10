@@ -23,7 +23,7 @@ export class SankeyAdvancedPanelComponent {
   }
 
   update() {
-    this.sankeyController.optionsChange();
+    this.sankeyController.applyOptions();
   }
 
   customSizingUpdate() {
