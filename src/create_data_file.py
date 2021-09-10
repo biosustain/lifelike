@@ -31,22 +31,22 @@ def create_data_file(db: Database, filepath: str, query: str):
                     writer.writerow([row.node_id, row.node_labels])
 
 
-def azure_upload(filepath: str, filename: str):
+def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: str):
     sas_token = generate_file_sas(
         account_name=os.environ.get('AZURE_ACCOUNT_STORAGE_NAME'),
         account_key=os.environ.get('AZURE_ACCOUNT_STORAGE_KEY'),
         permission=AccountSasPermissions(write=True),
         share_name='knowledge-graph',
-        file_path=[filename],
+        file_path=[zip_filename],
         expiry=datetime.utcnow() + timedelta(hours=1))
     azure = ShareFileClient(
         account_url=f"https://{os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')}.file.core.windows.net",
         credential=sas_token,
         share_name='knowledge-graph',
-        file_path=filename,
+        file_path=zip_filename,
         logging_enable=True)
     cloudstorage = AzureCloudStorage(azure)
-    cloudstorage.upload(filepath, filename)
+    cloudstorage.upload(filepath, filename, zip_filename, zip_filepath)
     azure.close_all_handles()
 
 
@@ -54,6 +54,8 @@ if __name__ == '__main__':
     db = get_database()
     filename = 'LL_3625_add_entity_type_array.tsv'
     filepath = os.path.join(get_data_dir(), filename)
+    zip_filename = 'LL_3625_add_entity_type_array.zip'
+    zip_filepath = os.path.join(get_data_dir(), zip_filename)
     query = """
     MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s:Synonym)
     WITH n, r, [l IN labels(n) WHERE NOT l IN ['db_MESH', 'TopicalDescriptor', 'TreeNumber']] AS labels WHERE size(labels) >= 1
@@ -61,4 +63,4 @@ if __name__ == '__main__':
         exists(r.global_inclusion) AS is_global, r.entity_type AS edge_entity_type
     """
     create_data_file(db, filepath, query)
-    azure_upload(filepath, filename)
+    azure_upload(filepath, filename, zip_filename, zip_filepath)
