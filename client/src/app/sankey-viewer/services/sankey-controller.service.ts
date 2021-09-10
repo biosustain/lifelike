@@ -273,7 +273,6 @@ export class SankeyControllerService {
     );
   }
 
-
   // region Extract options
   private extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
@@ -361,12 +360,7 @@ export class SankeyControllerService {
     this.extractPredefinedValueProperties(graph);
     this.selectNetworkTrace(this.networkTraces[0]);
   }
-
   // endregion
-
-  optionsChange() {
-    this.applyOptions();
-  }
 
   load(content) {
     this.allData = content as SankeyData;
