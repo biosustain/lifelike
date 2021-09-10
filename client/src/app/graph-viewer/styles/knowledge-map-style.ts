@@ -30,7 +30,7 @@ import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-
 import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
-import { SANKEY_UNICODE } from 'app/file-browser/models/filesystem-object';
+import {Unicodes} from '../../shared/constants';
 
 /**
  * Implements the style used on the Knowledge Graph.
@@ -171,7 +171,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
-      const fontAwesomeFont = iconCode === SANKEY_UNICODE ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+      const fontAwesomeFont = iconCode === Unicodes.Graph ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, fontAwesomeFont);
       const iconFont = `${iconSize}px ${iconFontFace}`;
 
