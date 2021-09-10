@@ -7,6 +7,7 @@
 * [Checking Migration Version Logs](#checking-migration-version-logs)
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
+* [Important References](#important-references)
 
 ## Why Use Migrations
 Using migrations allows us to consistently deploy a copy of the current graph model on any server. Without migrations, we have to keep creating a database backup file and download/upload them. This takes a long time because of how large the files are.
@@ -61,10 +62,6 @@ Liquibase Community 4.4.1 by Datical
 You will need two `.jar` files for liquibase to work:
 - liquibase-neo4j: https://github.com/liquibase/liquibase-neo4j/releases
 - Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
-    - Update 7/23/2021: Check out the 4.0 branch and build it instead.
-    - The reason is because a bug fix (about frozen return queries) was merged but hasn't been released yet.
-    - Run `mvn package -DskipTest` and copy the `neo4j-jdbc-driver/target/neo4j-jdbc-driver-4.0.1.jar` file.
-    - Note: The `mvn` (maven) should have been installed along with the OpenJDK.
 
 Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
 
@@ -73,8 +70,8 @@ Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put the
 /usr/local/opt/liquibase/libexec/lib
 > ls -lt
 total 27112
--rw-r--r--@ 1 ...  9466290 Jul 20 13:54 neo4j-jdbc-driver-4.0.1.jar
--rw-r--r--@ 1 ...    25536 Jul 20 13:52 liquibase-neo4j-4.4.1.jar
+-rw-r--r--@ 1 ...  9466290 Jul 20 13:54 neo4j-jdbc-driver-4.0.3.jar
+-rw-r--r--@ 1 ...    25536 Jul 20 13:52 liquibase-neo4j-4.4.3.jar
 -rw-r--r--  1 ...  2303679 Jul  9 09:50 h2-1.4.200.jar
 -rw-r--r--  1 ...   125632 Jul  9 09:50 jaxb-api-2.3.0.jar
 -rw-r--r--  1 ...   255502 Jul  9 09:50 jaxb-core-2.3.0.jar
@@ -91,7 +88,7 @@ Some of our queries are advance queries that liquibase does not have support for
 ```bash
 cd migrations/java
 mvn package
-cp target/liquibase-lib-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
+cp target/***ARANGO_DB_NAME***-graph-migration-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
 ```
 
 To use these class, you need to pass them into the class property:
@@ -229,3 +226,7 @@ This command (dry run) will give you a preview of what liquibase will run. You c
 liquibase --log-level=info --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
 ```
 This command will run the queries and update the database.
+
+## Important References
+- Naming convention: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+- Azure SDK References: https://docs.microsoft.com/en-us/java/api/com.azure.storage.file.share?view=azure-java-stable
