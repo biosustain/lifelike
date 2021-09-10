@@ -138,3 +138,6 @@ dmypy.json
 
 # liquibase
 liquibase.properties
+
+# shaded POM file
+dependency-reduced-pom.xml

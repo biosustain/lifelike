@@ -26,7 +26,9 @@ public class LoopHandler implements CustomTaskChange {
 
     public LoopHandler() { }
 
-    public String getQuery() { return this.query; }
+    public String getQuery() {
+        return this.query;
+    }
 
     public void setQuery(String query) {
         this.query = query;
@@ -40,9 +42,9 @@ public class LoopHandler implements CustomTaskChange {
     public void execute(Database database) throws CustomChangeException {
         // TODO: temp way to get database credentials
         // need to figure out how to get credentials from liquibase
-        final String host = System.getenv("SBRG_NEO4J_URL");
-        final String username = System.getenv("SBRG_NEO4J_USERNAME");
-        final String password = System.getenv("SBRG_NEO4J_PASSWORD");
+        final String host = System.getenv("NEO4J_INSTANCE_URI");
+        final String username = System.getenv("NEO4J_USERNAME");
+        final String password = System.getenv("NEO4J_PWD");
 
         System.out.println("Executing query: " + this.getQuery());
 
