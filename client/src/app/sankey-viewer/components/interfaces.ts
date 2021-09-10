@@ -80,4 +80,3 @@ export interface SelectionEntity {
   type: string;
   entity: SankeyLink | SankeyNode | object;
 }
-
