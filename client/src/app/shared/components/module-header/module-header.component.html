@@ -1,6 +1,6 @@
 <div class="module-header">
     <!-- Breadcrumbs -->
-    <div class="module-breadcrumb-bar mb-1">
+    <div class="module-breadcrumb-bar mb-1" *ngIf="showBreadCrumbs">
         <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
     </div>
     <div class="module-title-bar">
@@ -17,7 +17,8 @@
         </ng-container>
         <ng-template #titleFromTemplate>
             <h1 class="toolbar-title text-truncate mr-1 ml-0" [draggable]="dragStarted.observers.length"
-                (dragstart)="dragStarted.next($event)" [ngTemplateOutlet]="titleTemplate">
+                (dragstart)="dragStarted.next($event)">
+                <ng-container [ngTemplateOutlet]="titleTemplate"></ng-container>
             </h1>
         </ng-template>
         <div ngbDropdown class="d-inline-block mr-4 ml-0" container="body" *ngIf="showObjectMenu">
@@ -29,7 +30,7 @@
                 <ng-content select="[objectMenuAdditions]"></ng-content>
             </div>
         </div>
-        <button class="btn btn-secondary ml-2 mr-0" (click)="openNewWindow()">
+        <button class="btn btn-secondary ml-2 mr-0" (click)="openNewWindow()"  *ngIf="showNewWindowButton">
             <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
         </button>
         <ng-content></ng-content>

@@ -31,26 +31,32 @@ export function throttled(fn: (...r: any[]) => void) {
 }
 
 export const createResizeObserver = (callback, container) => {
+  let prevWidth;
+  let prevHeight;
   const resize = throttled(async (width, height) => {
-    const w = container.clientWidth;
-    await callback(width, height - 42);
-    if (w < container.clientWidth) {
-      // If the container size shrank during chart resize, let's assume
-      // scrollbar appeared. So we resize again with the scrollbar visible -
-      // effectively making chart smaller and the scrollbar hidden again.
-      // Because we are inside `throttled`, and currently `ticking`, scroll
-      // events are ignored during this whole 2 resize process.
-      // If we assumed wrong and something else happened, we are resizing
-      // twice in a frame (potential performance issue)
-      await callback(container.offsetWidth, container.offsetHeight - 42);
+    if (width !== prevWidth || height !== prevHeight) {
+      const w = container.clientWidth;
+      await callback(width, height);
+      if (w < container.clientWidth) {
+        // If the container size shrank during chart resize, let's assume
+        // scrollbar appeared. So we resize again with the scrollbar visible -
+        // effectively making chart smaller and the scrollbar hidden again.
+        // Because we are inside `throttled`, and currently `ticking`, scroll
+        // events are ignored during this whole 2 resize process.
+        // If we assumed wrong and something else happened, we are resizing
+        // twice in a frame (potential performance issue)
+        await callback(container.offsetWidth, container.offsetHeight);
+      }
     }
+    prevWidth = width;
+    prevHeight = height;
   });
 
   // @ts-ignore until https://github.com/microsoft/TypeScript/issues/37861 implemented
   const observer = new ResizeObserver(entries => {
     const entry = entries[0];
-    const width = entry.contentRect.width;
-    const height = entry.contentRect.height;
+    const width = Math.round(entry.contentRect.width);
+    const height = Math.round(entry.contentRect.height);
     // When its container's display is set to 'none' the callback will be called with a
     // size of (0, 0), which will cause the chart to lost its original height, so skip
     // resizing in such case.
