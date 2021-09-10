@@ -72,3 +72,35 @@ export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'Uni
 
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 50;
+
+export enum MimeTypes {
+  Map = 'vnd.***ARANGO_DB_NAME***.document/map',
+  EnrichmentTable = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
+  Directory = 'vnd.***ARANGO_DB_NAME***.filesystem/directory',
+  Graph = 'vnd.***ARANGO_DB_NAME***.document/graph',
+  Pdf = 'application/pdf',
+  BioC = 'vnd.***ARANGO_DB_NAME***.document/bioc'
+}
+
+export enum FAClass {
+  Directory = 'fa fa-folder',
+  Map = 'fa fa-project-diagram',
+  Graph = 'fak fa-diagram-sankey-solid',
+  EnrichmentTable = 'fa fa-table',
+  Pdf = 'fa fa-file-pdf',
+  BioC = 'fa fa-file-pdf',
+  Default = 'fa fa-file',
+}
+
+export enum Unicodes {
+  Directory = '\uf07b',
+  Map = '\uf542',
+// Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
+// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
+// other unicode values, they WILL NOT work.
+  Graph = '\ue000',
+  EnrichmentTable = '\uf0ce',
+  Pdf = '\uf1c1',
+  BioC = '\uf1c1',
+  Default = '\uf15b',
+}

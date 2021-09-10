@@ -1,9 +1,9 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { symmetricDifference, normalizeGenerator } from '../components/sankey/utils';
+import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
 import { christianColors, createMapToColor } from '../components/color-palette';
 
 const groupByTraceGroupWithAccumulation = () => {
@@ -44,6 +44,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   normalizeLinks = false;
 
+  columns;
+  columnsWithLinkPlaceholders;
+
   calculateLinkPathParams(link, normalize = true) {
     const {_source, _target, _multiple_values} = link;
     let {_value: linkValue} = link;
@@ -59,15 +62,6 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const bezierOffset = (link._circular ? linkWidth / columns : linkWidth) / 2;
     const sourceBezierX = sourceX + bezierOffset;
     const targetBezierX = targetX - bezierOffset;
-    if (isDevMode()) {
-      console.assert(
-        link._circular || (sourceBezierX === targetBezierX),
-        'Non circular bezier s/t should equal at average',
-        sourceBezierX, '(source bez) ===',
-        targetBezierX, '(target bez) ===',
-        (sourceX + targetX) / 2, '(average)'
-      );
-    }
     let sourceY0;
     let sourceY1;
     let targetY0;
@@ -231,8 +225,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
-  getYScaleFactor(columns, nodes) {
-    const {y1, y0, py, dx, nodeHeight, value} = this;
+  getYScaleFactor(nodes) {
+    const {y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns} = this;
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     let scale = 1;
     if (nodeHeight.max.enabled) {
@@ -259,8 +253,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   }
 
   // @ts-ignore
-  initializeNodeBreadths(columns, graph) {
-    const ky = this.getYScaleFactor(columns, graph.nodes);
+  initializeNodeBreadths(graph) {
+    const {columns} = this;
+    const ky = this.getYScaleFactor(graph.nodes);
 
     const [[_marginLeft, marginTop]] = this.extent;
     const [_width, height] = this.size;
@@ -326,11 +321,101 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     });
   }
 
+  computeNodeDepths({nodes}: SankeyData) {
+    const n = nodes.length;
+    let current = new Set<SankeyNode>(nodes);
+    let next = new Set<SankeyNode>();
+    let x = 0;
+    while (current.size) {
+      for (const node of current) {
+        node._depth = x;
+        for (const {_target, _circular} of node._sourceLinks) {
+          if (!_circular) {
+            next.add(_target as SankeyNode);
+          }
+        }
+      }
+      if (++x > n) {
+        throw new Error('Unaddressed circular link');
+      }
+      current = next;
+      next = new Set();
+    }
+  }
+
+  computeNodeHeights({nodes}: SankeyData) {
+    const n = nodes.length;
+    let current = new Set(nodes);
+    let next = new Set<SankeyNode>();
+    let x = 0;
+    while (current.size) {
+      for (const node of current) {
+        // noinspection JSSuspiciousNameCombination
+        node._height = x;
+        for (const {_source, _circular} of node._targetLinks) {
+          if (!_circular) {
+            next.add(_source as SankeyNode);
+          }
+        }
+      }
+      if (++x > n) {
+        throw new Error('Unaddressed circular link');
+      }
+      current = next;
+      next = new Set();
+    }
+  }
+
   computeNodeBreadths(graph) {
     const {dy, y1, y0} = this;
-    const columns = this.computeNodeLayers(graph);
-    this.py = Math.min(dy, (y1 - y0) / (max(columns, c => c.length) - 1));
-    this.initializeNodeBreadths(columns, graph);
+    this.columns = this.computeNodeLayers(graph);
+    this.createVirtualNodes(graph);
+    this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
+    this.initializeNodeBreadths(graph);
+  }
+
+  getColumnsCopy() {
+    return this.columns.map(c => [...c]);
+  }
+
+  createVirtualNodes(graph) {
+    this.columnsWithLinkPlaceholders = this.getColumnsCopy();
+    // create graph backup
+    graph._nodes = graph.nodes;
+    // and start to operate on substitutes
+    graph.nodes = [...graph.nodes];
+    const _virtualPaths = new Map();
+
+    for (const link of graph.links) {
+      const totalToCreate = Math.abs(link._target._layer - link._source._layer);
+
+      // if the link spans more than 1 column, then replace it with virtual nodes and links
+      if (totalToCreate > 1) {
+        const startNode = link._circular ? link._target : link._source;
+
+        const id = link._source.id + ' ' + link._target.id;
+        const virtualPath = _virtualPaths.get(id) || [];
+        _virtualPaths.set(id, virtualPath);
+
+        let newNode;
+        for (let n = 1; n < totalToCreate; n++) {
+          newNode = virtualPath[n];
+          if (!newNode) {
+            newNode = {
+              _value: 0,
+              _layer: startNode._layer + n
+            } as SankeyNode;
+            virtualPath.push(newNode);
+            this.columnsWithLinkPlaceholders[newNode._layer].push(newNode);
+          }
+          newNode._value += link._value;
+        }
+      }
+    }
+  }
+
+  cleanVirtualLinksAndNodes(graph) {
+    graph.nodes = graph._nodes;
   }
 
   calcLayout(graph) {
@@ -339,7 +424,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     // Associate the nodes with their respective links, and vice versa
     this.computeNodeLinks(graph);
     // Determine which links result in a circular path in the graph
-    // this.identifyCircles(graph);
+    this.identifyCircles(graph);
     // Calculate the nodes' values, based on the values of the incoming and outgoing links
     this.computeNodeValues(graph);
     // Calculate the nodes' depth based on the incoming and outgoing links
@@ -353,6 +438,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's
     this.computeNodeBreadths(graph);
     SankeyLayoutService.computeLinkBreadths(graph);
+    this.cleanVirtualLinksAndNodes(graph);
     return graph;
   }
 
@@ -396,9 +482,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     return networkTraceLinks;
   }
 
-  getNetworkTraceNodes(networkTraceLinks, nodes) {
+  getNodeById(nodes) {
     const {id} = this;
-    const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
+    return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
+  }
+
+  getNetworkTraceNodes(networkTraceLinks, nodes) {
+    const nodeById = this.getNodeById(nodes);
     return [
       ...networkTraceLinks.reduce((o, link) => {
         let {_source = link.source, _target = link.target} = link;

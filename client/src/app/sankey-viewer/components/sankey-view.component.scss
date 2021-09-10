@@ -1,3 +1,13 @@
+.btn:disabled:hover {
+  text-decoration: none;
+}
+
+.selectable-text {
+  pointer-events: all !important;
+  user-select: text !important;
+  cursor: text;
+}
+
 .mat-sidenav {
   min-width: 320px;
 
