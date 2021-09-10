@@ -16,5 +16,5 @@ class CloudStorage:
     def _delete_local_file(self, filepath: str) -> None:
         os.remove(filepath)
 
-    def upload(self, filepath: str, filename: str) -> None:
-        raise NotImplementedError
+    def upload(self, filepath: str, filename: str, zip_filename: str, zip_filepath: str) -> None:
+        raise NotImplementedError()

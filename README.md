@@ -74,23 +74,24 @@ Optional:
 --log-file: Name of log file. If specified, logs are written to this files.
 
 ### Examples
+Before running these scripts, run the `set-env` bash script to set environment variables: `source ./set-env`.
 
 Load Chebi with default (INFO) log level:
 ``` bash    
-python3 ./lifelike_graphdb/app.py chebi
+PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./lifelike_graphdb/app.py chebi
 ```
 
 Load Chebi, overriding log level and specifying log file:
 ``` bash    
-python3 ./lifelike_graphdb/app.py --log-file kg_load.log --log-level DEBUG chebi
+PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./lifelike_graphdb/app.py --log-file kg_load.log --log-level DEBUG chebi
 ```
 
 Load all BioCyc sources as specified in ../lifelike_graphdb/biocyc/data_sources.json:
 ``` bash    
-python3 ./lifelike_graphdb/app.py biocyc
+PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./lifelike_graphdb/app.py biocyc
 ```
 
 Load specific BioCyc data sources:
 ``` bash    
-python3 ./lifelike_graphdb/app.py biocyc --data-sources EcoCyc YeastCyc MetaCyc
+PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./lifelike_graphdb/app.py biocyc --data-sources EcoCyc YeastCyc MetaCyc
 ```
