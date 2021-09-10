@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 
-import { cubehelix } from 'd3';
 
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -45,7 +44,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   error: any;
   object: FilesystemObject;
 
-  sankeyData: SankeyData;
+  sankeyData: GraphFile;
   networkTraces;
 
   sourceFileURL: string;
@@ -81,7 +80,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         graph,
         links,
         nodes
-      } as SankeyData;
+      } as GraphFile;
 
       const traceData = this.getMatchingTrace(this.networkTraces, traceHash);
       if (traceData !== undefined) {
@@ -133,20 +132,16 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       nodesSet.add(to);
       return nodesSet;
     }, new Set())];
-    const nodes: Array<visNetwork.Node> = nodeIds.map(nodeId => {
+    const nodes: Array<Partial<visNetwork.Node>> = nodeIds.map(nodeId => {
       const node = mainNodes.find(({id}) => id === nodeId);
       if (node) {
-        const color = cubehelix(node._color);
-        color.s = 0;
         const label = nodeLabel(node);
         const labelShort = truncate(label, 20);
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
         }
-        const {_sourceLinks, _targetLinks, sourceLinks, targetLinks, ...otherProperties} = node;
         return {
-          ...otherProperties,
-          color: '' + color,
+          ...node,
           databaseLabel: node.type,
           label: labelShort,
           fullLabel: label,

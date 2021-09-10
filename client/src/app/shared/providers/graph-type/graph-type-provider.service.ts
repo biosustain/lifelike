@@ -1,17 +1,21 @@
-import { AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper, Exporter, } from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import {
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
+  Exporter
+} from 'app/file-browser/services/object-type.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { SearchType } from '../../search/shared';
+import { SearchType } from 'app/search/shared';
 import { map } from 'rxjs/operators';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
 
 export const GRAPH_MIMETYPE = 'vnd.lifelike.document/graph';
-export const SANKEY_SHORTHAND = 'Sankey';
+export const GRAPH_SHORTHAND = 'Graph';
 
 @Injectable()
-export class SankeyTypeProvider extends AbstractObjectTypeProvider {
+export class GraphTypeProvider extends AbstractObjectTypeProvider {
 
   constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
               protected readonly filesystemService: FilesystemService) {
@@ -25,7 +29,7 @@ export class SankeyTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: GRAPH_MIMETYPE, shorthand: SANKEY_SHORTHAND, name: 'Sankey'}),
+      Object.freeze({id: GRAPH_MIMETYPE, shorthand: GRAPH_SHORTHAND, name: 'Graph'}),
     ];
   }
 

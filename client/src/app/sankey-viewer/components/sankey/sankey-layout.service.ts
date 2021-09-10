@@ -58,6 +58,7 @@ import findCircuits from 'elementary-circuits-directed-graph';
 import { max, min, sum } from 'd3-array';
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
+import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
 
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {
@@ -79,6 +80,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   get fontSize() {
+    // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => 12;
   }
 
@@ -98,7 +100,6 @@ export class SankeyLayoutService extends AttributeAccessors {
 
 
   // Some constants for circular link calculations
-  verticalMargin = 25;
   baseRadius = 10;
   scale = 0.3;
 
@@ -192,66 +193,53 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   identifyCircles(graph: SankeyData) {
-    const sortNodes = null;
     let circularLinkID = 0;
-    if (sortNodes === null) {
 
-      // Building adjacency graph
-      const adjList = [];
-      graph.links.forEach(link => {
-        const source = (link._source as SankeyNode)._index;
-        const target = (link._target as SankeyNode)._index;
-        if (!adjList[source]) {
-          adjList[source] = [];
-        }
-        if (!adjList[target]) {
-          adjList[target] = [];
-        }
-
-        // Add links if not already in set
-        if (adjList[source].indexOf(target) === -1) {
-          adjList[source].push(target);
-        }
-      });
-
-      // Find all elementary circuits
-      const cycles = findCircuits(adjList);
-
-      // Sort by circuits length
-      cycles.sort((a, b) => a.length - b.length);
-
-      const circularLinks = {};
-      for (const cycle of cycles) {
-        const last = cycle.slice(-2);
-        if (!circularLinks[last[0]]) {
-          circularLinks[last[0]] = {};
-        }
-        circularLinks[last[0]][last[1]] = true;
+    // Building adjacency graph
+    const adjList = [];
+    graph.links.forEach(link => {
+      const source = (link._source as SankeyNode)._index;
+      const target = (link._target as SankeyNode)._index;
+      if (!adjList[source]) {
+        adjList[source] = [];
+      }
+      if (!adjList[target]) {
+        adjList[target] = [];
       }
 
-      graph.links.forEach(link => {
-        const target = (link._target as SankeyNode)._index;
-        const source = (link._source as SankeyNode)._index;
-        // If self-linking or a back-edge
-        if (target === source || (circularLinks[source] && circularLinks[source][target])) {
-          link._circular = true;
-          link._circularLinkID = circularLinkID;
-          circularLinkID = circularLinkID + 1;
-        } else {
-          link._circular = false;
-        }
-      });
-    } else {
-      graph.links.forEach(link => {
-        if (link._source[sortNodes] < link._target[sortNodes]) {
-          link._circular = false;
-        } else {
-          link._circular = true;
-          link._circularLinkID = circularLinkID;
-          circularLinkID = circularLinkID + 1;
-        }
-      });
+      // Add links if not already in set
+      if (adjList[source].indexOf(target) === -1) {
+        adjList[source].push(target);
+      }
+    });
+
+    // Find all elementary circuits
+    const cycles = findCircuits(adjList);
+
+    // Sort by circuits length
+    cycles.sort((a, b) => a.length - b.length);
+
+    const circularLinks = {};
+    for (const cycle of cycles) {
+      const last = cycle.slice(-2);
+      if (!circularLinks[last[0]]) {
+        circularLinks[last[0]] = {};
+      }
+      circularLinks[last[0]][last[1]] = true;
     }
+
+    graph.links.forEach(link => {
+      const target = (link._target as SankeyNode)._index;
+      const source = (link._source as SankeyNode)._index;
+      // If self-linking or a back-edge
+      if (target === source || (circularLinks[source] && circularLinks[source][target])) {
+        link._circular = true;
+        link._circularLinkID = circularLinkID;
+        circularLinkID = circularLinkID + 1;
+      } else {
+        link._circular = false;
+      }
+    });
   }
 
   computeNodeValues({nodes}: SankeyData) {

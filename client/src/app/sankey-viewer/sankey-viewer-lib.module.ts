@@ -15,7 +15,7 @@ import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
 import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyTypeProvider } from './providers/sankey-type-provider';
+import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-provider.service';
 import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
@@ -48,7 +48,7 @@ import { SankeyDetailsPanelModule } from './components/details-panel/sankey-deta
   entryComponents: [],
   providers: [{
     provide: TYPE_PROVIDER,
-    useClass: SankeyTypeProvider,
+    useClass: GraphTypeProvider,
     multi: true,
   }],
   exports: [

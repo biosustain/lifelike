@@ -5,6 +5,7 @@ import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
 import { christianColors, createMapToColor } from '../components/color-palette';
+import { SankeyNode, SankeyData } from '../components/interfaces';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -222,6 +223,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get fontSize() {
     const { fontSizeScale } = this;
+    // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
@@ -257,7 +259,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {columns} = this;
     const ky = this.getYScaleFactor(graph.nodes);
 
+    // noinspection JSUnusedLocalSymbols
     const [[_marginLeft, marginTop]] = this.extent;
+    // noinspection JSUnusedLocalSymbols
     const [_width, height] = this.size;
 
     const firstColumn = columns[0];
