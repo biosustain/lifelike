@@ -59,9 +59,14 @@ import { max, min, sum } from 'd3-array';
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
 import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
+import { TruncatePipe } from '../../../shared/pipes';
 
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {
+  constructor(readonly truncatePipe: TruncatePipe) {
+    super(truncatePipe);
+  }
+
   get size() {
     return [this.x1 - this.x0, this.y1 - this.y0];
   }
@@ -77,11 +82,6 @@ export class SankeyLayoutService extends AttributeAccessors {
 
   set extent(extent) {
     [[this.x0, this.y0], [this.x1, this.y1]] = extent;
-  }
-
-  get fontSize() {
-    // noinspection JSUnusedLocalSymbols
-    return (d?, i?, n?) => 12;
   }
 
   x0 = 0;
