@@ -5,11 +5,11 @@ import { SankeyAdvancedOptions, ValueGenerator, SankeyData } from '../components
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
 import prescalers from '../components/algorithms/prescalers';
-import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../components/color-palette';
+import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../components/color-palette';
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
-import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
 import { BehaviorSubject } from 'rxjs';
+
 
 export const LINK_VALUE = {
   fixedValue0: 'Fixed Value = 0',
@@ -35,17 +35,11 @@ export const PREDEFINED_VALUE = {
 @Injectable()
 // @ts-ignore
 export class SankeyControllerService {
-  constructor(
-    private sankeyLayout: CustomisedSankeyLayoutService
-  ) {
+  constructor() {
     this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
     this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
     this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
     this.options.selectedLinkPalette = this.options.linkPalettes.default;
-  }
-
-  get getRelatedTraces() {
-    return this.sankeyLayout.getRelatedTraces;
   }
 
   allData: SankeyData;
@@ -138,6 +132,101 @@ export class SankeyControllerService {
 
   oneToMany;
 
+  // Trace logic
+  getAndColorNetworkTraceLinks(networkTrace, links, colorMap?) {
+    const traceBasedLinkSplitMap = new Map();
+    const traceGroupColorMap = colorMap ? colorMap : new Map(
+      networkTrace.traces.map(({group}) => [group, christianColors[group]])
+    );
+    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
+      const color = traceGroupColorMap.get(trace.group);
+      trace._color = color;
+      return o.concat(
+        trace.edges.map(linkIdx => {
+          const originLink = links[linkIdx];
+          const link = {
+            ...originLink,
+            _color: color,
+            _trace: trace
+          };
+          link.id += trace.group;
+          let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
+          if (!adjacentLinks) {
+            adjacentLinks = [];
+            traceBasedLinkSplitMap.set(originLink, adjacentLinks);
+          }
+          adjacentLinks.push(link);
+          return link;
+        })
+      );
+    }, []);
+    for (const adjacentLinkGroup of traceBasedLinkSplitMap.values()) {
+      const adjacentLinkGroupLength = adjacentLinkGroup.length;
+      // normalise only if multiple (skip /1)
+      if (adjacentLinkGroupLength) {
+        adjacentLinkGroup.forEach(l => {
+          l._adjacent_divider = adjacentLinkGroupLength;
+        });
+      }
+    }
+    return networkTraceLinks;
+  }
+
+  getNodeById(nodes) {
+    // todo: find the way to declare it only once
+    // tslint:disable-next-line
+    const id = ({id}, i?, nodes?) => id;
+    return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
+  }
+
+  getNetworkTraceNodes(networkTraceLinks, nodes) {
+    const nodeById = this.getNodeById(nodes);
+    return [
+      ...networkTraceLinks.reduce((o, link) => {
+        let {_source = link.source, _target = link.target} = link;
+        if (typeof _source !== 'object') {
+          _source = SankeyLayoutService.find(nodeById, _source);
+        }
+        if (typeof _target !== 'object') {
+          _target = SankeyLayoutService.find(nodeById, _target);
+        }
+        o.add(_source);
+        o.add(_target);
+        return o;
+      }, new Set())
+    ];
+  }
+
+  colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
+    // set colors for all node types
+    const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
+    const nodesColorMap = createMapToColor(
+      nodeCategories,
+      {
+        hue: () => 0,
+        lightness: (i, n) => {
+          // all but not extreme (white, black)
+          return (i + 1) / (n + 2);
+        },
+        saturation: () => 0,
+        alpha: () => 0.75
+      }
+    );
+    nodes.forEach(node => {
+      node._color = nodesColorMap.get(nodeColorCategoryAccessor(node));
+    });
+  }
+
+  getRelatedTraces({nodes, links}) {
+    const nodesLinks = [...nodes].reduce(
+      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
+        linksAccumulator.concat(_sourceLinks, _targetLinks)
+      , []
+    );
+    return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
+  }
+
+
   getNetworkTraceDefaultSizing(networkTrace) {
     let {default_sizing} = networkTrace;
     if (!default_sizing) {
@@ -173,9 +262,9 @@ export class SankeyControllerService {
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
-    const networkTraceLinks = this.sankeyLayout.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
-    const networkTraceNodes = this.sankeyLayout.getNetworkTraceNodes(networkTraceLinks, nodes);
-    this.sankeyLayout.colorNodes(nodes);
+    const networkTraceLinks = this.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
+    const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+    this.colorNodes(nodes);
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
@@ -187,7 +276,6 @@ export class SankeyControllerService {
       })
     );
   }
-
 
   // region Extract options
   private extractLinkValueProperties([link = {}]) {
@@ -276,15 +364,7 @@ export class SankeyControllerService {
     this.extractPredefinedValueProperties(graph);
     this.selectNetworkTrace(this.networkTraces[0]);
   }
-
   // endregion
-
-  optionsChange() {
-    this.sankeyLayout.nodeHeight = {...this.options.nodeHeight};
-    this.sankeyLayout.labelEllipsis = {...this.options.labelEllipsis};
-    this.sankeyLayout.fontSizeScale = this.options.fontSizeScale;
-    this.selectNetworkTrace(this.selectedNetworkTrace);
-  }
 
   load(content) {
     this.allData = content as SankeyData;
