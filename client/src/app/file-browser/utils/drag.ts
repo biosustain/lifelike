@@ -1,11 +1,11 @@
-import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
+
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
 import { DragImage } from 'app/shared/utils/drag';
+import {Unicodes} from '../../shared/constants';
 
-export const SANKEY_UNICODE = '\ue000';
 
-function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
+export function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -18,7 +18,7 @@ function createDragImage(label: string, fontAwesomeIconCode: string): DragImage 
   let height = paddingY * 2 + shadowSize;
 
   // Specifies the correct font to use depending on whether the icon is in our custom kit or not
-  const fontAwesomeFont = fontAwesomeIconCode === SANKEY_UNICODE ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+  const fontAwesomeFont = fontAwesomeIconCode === Unicodes.Graph ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
   const iconTextElement = new TextElement(ctx, {
     text: fontAwesomeIconCode,
     font: `900 16px ${fontAwesomeFont}`,
@@ -71,10 +71,3 @@ function createDragImage(label: string, fontAwesomeIconCode: string): DragImage 
   return new DragImage(canvas, 0, 0);
 }
 
-export function createProjectDragImage(project: ProjectImpl): DragImage {
-  return createDragImage(project.name, '\uf5fd');
-}
-
-export function createObjectDragImage(object: FilesystemObject): DragImage {
-  return createDragImage(object.filename, object.fontAwesomeIconCode);
-}
