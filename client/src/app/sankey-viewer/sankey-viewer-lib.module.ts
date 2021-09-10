@@ -19,11 +19,15 @@ import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-pro
 import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
+import { SankeyManyToManyComponent } from './components/sankey-many-to-many/sankey-many-to-many.component';
+import { SankeyOneToManyComponent } from './components/sankey-one-to-many/sankey-one-to-many.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    SankeyAdvancedPanelComponent
+    SankeyAdvancedPanelComponent,
+    SankeyManyToManyComponent,
+    SankeyOneToManyComponent
   ],
   imports: [
     CommonModule,
