@@ -53,7 +53,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
   const openInternally = workspaceManager.isWithinWorkspace()
     && (window.location.hostname === urlObject.hostname
       && (window.location.port || '80') === (urlObject.port || '80'));
-  const pathSearchHash = urlObject.pathname + urlObject.search + urlObject.hash;
+  const pathSearchHash: string = urlObject.pathname + urlObject.search + urlObject.hash;
 
   if (openInternally) {
     let m;
@@ -107,7 +107,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
               const fragmentMatch = url.match(/^[^#]+#(.+)$/);
               const biocViewComponent = component as BiocViewComponent;
               if (fragmentMatch && fragmentMatch[1]) {
-                (biocViewComponent).scrollInOffset(fragmentMatch[1]);
+                (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
               }
             }
             return false;
