@@ -2,6 +2,7 @@ from biocyc.base_data_file_parser import BaseDataFileParser
 from common.graph_models import *
 from common.query_builder import *
 from common.database import Database
+from common.constants import *
 import logging
 
 ATTR_NAMES = {
@@ -28,6 +29,10 @@ class GeneParser(BaseDataFileParser):
 
     def create_synonym_rels(self) -> bool:
         return True
+
+    def create_indexes(self, database: Database):
+        BaseDataFileParser.create_indexes(database)
+        database.create_index(NODE_GENE, PROP_ACCESSION, 'index_gene_accession')
 
     def add_dblinks_to_graphdb(self, db_link_dict:dict, database: Database, etl_load_id):
         no_of_created_relations = 0

@@ -57,10 +57,10 @@ class TestGeneParser(unittest.TestCase):
         """
         Synonyms in google stg and prod were not unique (need to merge nodes), therefore need to use distinct synonym name
         """
-        query = """
+        query = f"""
         match(n:Gene:db_NCBI)-[:HAS_TAXONOMY]-(:Taxonomy {id:$taxId}) with n where exists(n.tax_id) 
         match (n)-[r:HAS_SYNONYM]-(s) where not exists(r.inclusion_date) 
-        with distinct n.id as id, s.name as name return count(*)
+        with distinct n.{PROP_ID} as id, s.name as name return count(*)
         """
         result = self.database.get_data(query, {'taxId': str(self.tax_id)})
         db_count = result.loc[0][0]
@@ -68,10 +68,10 @@ class TestGeneParser(unittest.TestCase):
         self.assertTrue(db_count == file_count, f'synonym counts does not match: {db_count}, {file_count}')
 
     def compare_synonyms(self):
-        query = """
+        query = f"""
                 match(n:Gene:db_NCBI)-[:HAS_TAXONOMY]-(:Taxonomy {id:$taxId}) with n where exists(n.tax_id) 
                 match (n)-[r:HAS_SYNONYM]-(s) where not exists(r.inclusion_date) 
-                return distinct n.id as id, s.name as name order by id, name
+                return distinct n.{PROP_ID} as id, s.name as name order by id, name
                 """
         df_db = self.database.get_data(query, {'taxId': str(self.tax_id)})
         df_db = df_db.drop_duplicates()

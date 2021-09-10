@@ -1,5 +1,4 @@
 import os, gzip
-import pandas as pd
 from common.database import Database
 from common.utils import get_data_dir
 
@@ -17,13 +16,6 @@ class BaseParser:
         self.download_dir = os.path.join(self.base_dir, 'download', data_dir_name)
         self.output_dir = os.path.join(self.base_dir, 'processed', data_dir_name)
         os.makedirs(self.output_dir, 0o777, True)
-
-    def set_database(self, database: Database):
-        self.database = database
-
-    def close_database(self):
-        if self.database:
-            self.database.close()
 
     def output_sample_import_file(self):
         """
@@ -45,11 +37,6 @@ class BaseParser:
     def parse_and_write_data_files(self):
         pass
 
-    def create_indexes(self, database: Database):
-        pass
-
-    def load_data_to_neo4j(self, database: Database, update=True):
-        pass
 
 
 

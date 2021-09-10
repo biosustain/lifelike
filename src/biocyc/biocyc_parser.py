@@ -128,6 +128,7 @@ class BiocycParser(object):
         database.create_constraint(
             NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
         )
+        database.create_constraint(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id')
         database.create_index(NODE_BIOCYC, PROP_NAME, "index_biocyc_name")
         database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
 
@@ -135,7 +136,8 @@ class BiocycParser(object):
         for db, file in self.data_sources_to_load.items():
             DB_NODE = 'db_' + db
             database.create_index(DB_NODE, PROP_BIOCYC_ID, f'index_{db}_{PROP_BIOCYC_ID}')
-            database.create_index(DB_NODE, PROP_NAME, f'index_{db}_{PROP_NAME}')
+            database.create_constraint(DB_NODE, PROP_ID, f'index_{db}_id')
+            database.create_index(DB_NODE, PROP_NAME, f'index_{db}_name')
             version = ''
             for entity in ENTITIES:
                 self.logger.info(f"Load {db}: {entity}")
@@ -154,7 +156,7 @@ class BiocycParser(object):
                     no_of_updated_nodes = 0
                     no_of_created_relations = 0
                     no_of_updated_relations = 0
-
+                    parser.create_indexes(database)
                     if nodes:
                         node_count, result_counters = parser.update_nodes_in_graphdb(nodes, database, etl_load_id)
                         no_of_created_nodes += result_counters.nodes_created
