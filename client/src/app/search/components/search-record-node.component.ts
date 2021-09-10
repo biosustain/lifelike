@@ -8,6 +8,7 @@ import { stringToHex } from 'app/shared/utils';
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
+import {parseURLToDomainName} from '../../shared/utils/links';
 
 @Component({
   selector: 'app-search-record-node',
@@ -19,6 +20,7 @@ export class SearchRecordNodeComponent {
   private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
+  private readonly defaultDomain = 'Knowledge Graph';
 
   @Input() params: GraphSearchParameters;
 
@@ -42,11 +44,11 @@ export class SearchRecordNodeComponent {
 
     try {
       url = new URL(getLink(this.node));
-      domain = this.getNodeDomain(url);
+      domain = parseURLToDomainName(url.href, this.defaultDomain);
     } catch {
       // Expect a TypeError here if the url was invalid
       url = getLink(this.node);
-      domain = 'Knowledge Graph';
+      domain = this.defaultDomain;
     }
 
     dataTransfer.setData('text/plain', this.node.node.displayName);
