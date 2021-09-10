@@ -16,6 +16,7 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   @Input() title = 'Export';
 
   exporters: Exporter[];
+  isLinkedExportSupported: boolean;
   private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
   private _target: FilesystemObject;
   private isMapExport = false;
@@ -42,6 +43,7 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
         this.form.patchValue({
           exporter: 0,
         });
+        this.setLinkedExportSupported();
       } else {
         this.modal.dismiss(true);
       }
@@ -55,12 +57,12 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent {
   getValue(): ObjectExportDialogValue {
     return {
       exporter: this.exporters[this.form.get('exporter').value],
-      exportLinked: this.isLinkedExportSupported() && this.form.get('exportLinked').value
+      exportLinked: this.isLinkedExportSupported && this.form.get('exportLinked').value
     };
   }
 
-  isLinkedExportSupported(): boolean {
-    return this.isMapExport && this._linkedExporters.includes(this.exporters[this.form.get('exporter').value].name);
+  setLinkedExportSupported() {
+    this.isLinkedExportSupported = this.isMapExport && this._linkedExporters.includes(this.exporters[this.form.get('exporter').value].name);
   }
 }
 
