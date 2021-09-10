@@ -76,10 +76,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
-    let zip = new JSZip();
-    let imgs = zip.folder('images');
-    const imageIds: string[] = []
-    const imageNodeObservables: Observable<Blob>[] = []
+    const zip = new JSZip();
+    const imgs = zip.folder('images');
+    const imageIds: string[] = [];
+    const imageNodeObservables: Observable<Blob>[] = [];
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image
         imageIds.push(node.image_id);
@@ -96,7 +96,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      * a better way might be to use HashMap (`Map` in typescript) but maps don't have
      *     functions like `combineLatest`
      */
-    zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
+    zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
     // graph has no images
     if (imageNodeObservables.length === 0) {
       zip.generateAsync({ type: 'blob' }).then((content) => {
@@ -117,7 +117,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
       for (let i = 0; i < imageIds.length; i++) {
         imgs.file(imageIds[i] + '.png', imageBlobs[i]);
       }
-      zip.generateAsync({ type: "blob" })
+      zip.generateAsync({ type: 'blob' })
         .then((content) => {
           // saveAs(content, 'map.zip'); // uncomment this line to download and verify that the generated zip file is correct
           this.filesystemService.save([this.locator], { contentValue: content })

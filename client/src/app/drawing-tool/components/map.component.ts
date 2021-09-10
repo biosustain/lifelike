@@ -72,7 +72,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchTerm = '';
   entitySearchList: GraphEntity[] = [];
   entitySearchListIdx = -1;
-  
+
   constructor(
     readonly filesystemService: FilesystemService,
     readonly snackBar: MatSnackBar,
@@ -194,7 +194,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       imageFolder.forEach(async (f) => {
         imageIds.push(f.substring(0, f.indexOf('.')));
         imageProms.push(imageFolder.file(f).async('blob')); // pushes Promise<Blob>
-      })
+      });
       return unzipped;
     });
 

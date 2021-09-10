@@ -162,15 +162,18 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
-    this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('delete-keyboard-shortcut', 
+      new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('image-upload',
       new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
       new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
-    this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
+    this.graphCanvas.behaviors.add('history-keyboard-shortcut', 
+      new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
     this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10); // from below
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
+    this.graphCanvas.behaviors.add('edge-creation', 
+      new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
     this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
   }
 
