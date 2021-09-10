@@ -12,8 +12,8 @@ import {
   ObjectTypeService,
 } from '../../file-browser/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { map, tap } from 'rxjs/operators';
-import { MAP_MIMETYPE } from '../../drawing-tool/providers/map.type-provider';
+import { tap } from 'rxjs/operators';
+import {MimeTypes} from '../../shared/constants';
 
 @Component({
   selector: 'app-associated-maps',
@@ -67,7 +67,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
     };
 
     const testMap = new FilesystemObject();
-    testMap.mimeType = MAP_MIMETYPE;
+    testMap.mimeType = MimeTypes.Map;
     this.objectTypeService.get(testMap).pipe(
       tap(provider => provider.getCreateDialogOptions()[0].item.create(options).then(
         object => this.workspaceManager.navigate(object.getCommands(), {
