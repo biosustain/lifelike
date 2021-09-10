@@ -99,7 +99,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     zip.file("graph.json", JSON.stringify(this.graphCanvas.getGraph()));
     // graph has no images
     if (imageNodeObservables.length === 0) {
-      console.log('no images if');
       zip.generateAsync({ type: 'blob' }).then((content) => {
         this.filesystemService.save([this.locator], { contentValue: content })
           .pipe(this.errorHandler.create({label: 'Update map'}))
