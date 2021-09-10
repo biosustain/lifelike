@@ -9,7 +9,6 @@ import {
   ComponentFactoryResolver,
   Injectable,
   Injector,
-  NgZone,
 } from '@angular/core';
 import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
@@ -17,12 +16,8 @@ import { DirectoryPreviewComponent } from '../components/directory-preview.compo
 import { RankedItem } from 'app/shared/schemas/common';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { Observable } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AnnotationsService } from '../services/annotations.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MimeTypes } from '../../shared/constants';
 
-export const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 export const DIRECTORY_SHORTHAND = 'directory';
 
 @Injectable()
@@ -37,7 +32,7 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
   }
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === DIRECTORY_MIMETYPE;
+    return object.mimeType === MimeTypes.Directory;
   }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
@@ -61,7 +56,7 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
         create: (options?: CreateActionOptions) => {
           const object = new FilesystemObject();
           object.filename = '';
-          object.mimeType = DIRECTORY_MIMETYPE;
+          object.mimeType = MimeTypes.Directory;
           object.parent = options.parent;
           return this.objectCreationService.openCreateDialog(object, {
             title: 'New Folder',
