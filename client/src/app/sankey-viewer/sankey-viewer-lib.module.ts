@@ -18,13 +18,12 @@ import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyTypeProvider } from './providers/sankey-type-provider';
 import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
+import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent
+    SankeyAdvancedPanelComponent
   ],
   imports: [
     CommonModule,
@@ -44,6 +43,7 @@ import { SankeyDetailsPanelComponent } from './components/details-panel/details-
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeyModule,
+    SankeyDetailsPanelModule
   ],
   entryComponents: [],
   providers: [{
@@ -53,8 +53,7 @@ import { SankeyDetailsPanelComponent } from './components/details-panel/details-
   }],
   exports: [
     SankeyViewComponent,
-    SankeyAdvancedPanelComponent,
-    SankeyDetailsPanelComponent
+    SankeyAdvancedPanelComponent
   ],
 })
 export class SankeyViewerLibModule {

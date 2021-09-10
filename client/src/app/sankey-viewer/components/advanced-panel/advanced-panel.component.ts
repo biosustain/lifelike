@@ -1,6 +1,7 @@
-import { Component, Input, EventEmitter, Output, } from '@angular/core';
+import { Component, } from '@angular/core';
 import { SankeyAdvancedOptions } from '../interfaces';
 import { uuidv4 } from '../../../shared/utils';
+import { SankeyControllerService } from '../../services/sankey-controller.service';
 
 
 @Component({
@@ -9,22 +10,26 @@ import { uuidv4 } from '../../../shared/utils';
   styleUrls: ['./advanced-panel.component.scss'],
 })
 export class SankeyAdvancedPanelComponent {
-  @Input() options!: SankeyAdvancedOptions;
-  @Output() optionsChange = new EventEmitter<SankeyAdvancedOptions>();
-
   uuid: string;
 
-  constructor() {
+  constructor(
+    private sankeyController: SankeyControllerService
+  ) {
     this.uuid = uuidv4();
   }
 
+  get options(): SankeyAdvancedOptions {
+    return this.sankeyController.options;
+  }
+
   update() {
-    this.optionsChange.emit(this.options);
+    this.sankeyController.optionsChange();
   }
 
   customSizingUpdate() {
     this.options.selectedPredefinedValueAccessor = {
-      description: 'Customised'
+      description: 'Customised',
+      callback: () => {}
     };
     this.update();
   }
