@@ -1,5 +1,5 @@
 interface SankeyNode {
-  id?: number;
+  id?: number|string;
   description?: string;
   stId?: string;
   name?: string | Array<string>;
@@ -13,7 +13,7 @@ interface SankeyNode {
   // End temp definitions
 
   // region Used internally to compute layout
-  _index?: number;
+  _index?: number|string;
   _sourceLinks?: Array<SankeyLink>;
   _targetLinks?: Array<SankeyLink>;
   _y0?: number;
@@ -26,7 +26,10 @@ interface SankeyNode {
   _fixedValue?: number;
   _layer?: number;
   _color?: string;
+
   // endregion
+
+  [key: string]: any;
 }
 
 interface SankeyTrace {
@@ -54,7 +57,10 @@ interface SankeyLink {
   _circular?: boolean;
   _folded?: boolean;
   _value: number;
+
   // endregion
+
+  [key: string]: any;
 }
 
 interface SankeyNodeSets {
