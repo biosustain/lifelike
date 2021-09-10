@@ -113,6 +113,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
             return false;
           },
         }
+      });
       return true;
     }
 
