@@ -3,7 +3,6 @@ import {
   ComponentFactoryResolver,
   Injectable,
   Injector,
-  NgZone,
 } from '@angular/core';
 
 import { Observable, of } from 'rxjs';
@@ -25,10 +24,7 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MimeTypes } from '../../shared/constants';
 
 import JSZip from 'jszip';
 
@@ -47,7 +43,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   }
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === MAP_MIMETYPE;
+    return object.mimeType === MimeTypes.Map;
   }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
@@ -75,7 +71,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
         create: (options?: CreateActionOptions) => {
           const object = new FilesystemObject();
           object.filename = '';
-          object.mimeType = MAP_MIMETYPE;
+          object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
           let zip = new JSZip();
           zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
@@ -95,7 +91,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: MAP_MIMETYPE, shorthand: 'map', name: 'Maps'}),
+      Object.freeze({id: MimeTypes.Map, shorthand: 'map', name: 'Maps'}),
     ];
   }
 

@@ -16,11 +16,11 @@ import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
-import { MAP_MIMETYPE, MAP_SHORTHAND } from '../providers/map.type-provider';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { MimeTypes } from '../../shared/constants';
 
 @Component({
   selector: 'app-map-view',

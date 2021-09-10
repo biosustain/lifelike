@@ -22,38 +22,9 @@ import {
 } from '../providers/data-transfer-data/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
-import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
-
-// These are legacy mime type definitions that have to exist in this file until
-// all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
-const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
-const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
-const GRAPH_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/graph';
-const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
-const PDF_MIMETYPE = 'application/pdf';
-const BIOC_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/bioc';
-
-
-// TODO: Really should move these to a shared file...or into the relevant type provider. This doesn't seem like the right place for them to
-// live.
-export const DIRECTORY_UNICODE = '\uf07b';
-export const MAP_UNICODE = '\uf542';
-// Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
-// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
-// other unicode values, they WILL NOT work.
-export const SANKEY_UNICODE = '\ue000';
-export const ENRICHMENT_TABLE_UNICODE = '\uf0ce';
-export const PDF_UNICODE = '\uf1c1';
-export const BIOC_UNICODE = '\uf1c1';
-export const DEFAULT_UNICODE = '\uf15b';
-
-export const DIRECTORY_FA_CLASS = 'fa fa-folder';
-export const MAP_FA_CLASS = 'fa fa-project-diagram';
-export const GRAPH_FA_CLASS = 'fak fa-diagram-sankey-solid';
-export const ENRICHMENT_TABLE_FA_CLASS = 'fa fa-table';
-export const PDF_FA_CLASS = 'fa fa-file-pdf';
-export const BIOC_FA_CLASS = 'fa fa-file-pdf';
-export const DEFAULT_FA_CLASS = 'fa fa-file';
+import { MimeTypes, Unicodes, FAClass} from '../../shared/constants';
+import {DragImage} from '../../shared/utils/drag';
+import {createDragImage} from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -178,7 +149,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   annotationsTooltipContent: string;
 
   get isDirectory() {
-    return this.mimeType === DIRECTORY_MIMETYPE;
+    return this.mimeType === MimeTypes.Directory;
   }
 
   get isFile() {
@@ -187,11 +158,11 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isOpenable() {
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
-      case MAP_MIMETYPE:
-      case ENRICHMENT_TABLE_MIMETYPE:
-      case GRAPH_MIMETYPE:
-      case BIOC_MIMETYPE:
+      case MimeTypes.Directory:
+      case MimeTypes.Map:
+      case MimeTypes.EnrichmentTable:
+      case MimeTypes.Graph:
+      case MimeTypes.BioC:
       case 'application/pdf':
         return true;
       default:
@@ -211,7 +182,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get promptOrganism() {
-    return this.mimeType !== ENRICHMENT_TABLE_MIMETYPE;
+    return this.mimeType !== MimeTypes.EnrichmentTable;
   }
 
   get isMovable() {
@@ -231,18 +202,18 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === MAP_MIMETYPE;
+    return this.mimeType === MimeTypes.Map;
   }
 
   get isNavigable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === MAP_MIMETYPE
-      || this.mimeType === ENRICHMENT_TABLE_MIMETYPE || this.mimeType === BIOC_MIMETYPE;
+    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.Map
+      || this.mimeType === MimeTypes.EnrichmentTable || this.mimeType === MimeTypes.BioC;
   }
 
   get hasWordCloud() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
+    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.EnrichmentTable;
   }
 
   /**
@@ -294,13 +265,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   get mimeTypeLabel() {
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
+      case MimeTypes.Directory:
         return 'Folder';
-      case MAP_MIMETYPE:
+      case MimeTypes.Map:
         return 'Map';
-      case BIOC_MIMETYPE:
+      case MimeTypes.BioC:
         return 'Bioc';
-      case ENRICHMENT_TABLE_MIMETYPE:
+      case MimeTypes.EnrichmentTable:
         return 'Enrichment Table';
       case 'application/pdf':
         return 'Document';
@@ -320,46 +291,46 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
-        return DIRECTORY_FA_CLASS;
-      case MAP_MIMETYPE:
-        return MAP_FA_CLASS;
-      case BIOC_MIMETYPE:
-        return BIOC_FA_CLASS;
-      case ENRICHMENT_TABLE_MIMETYPE:
-        return ENRICHMENT_TABLE_FA_CLASS;
-      case GRAPH_MIMETYPE:
-        return GRAPH_FA_CLASS;
-      case PDF_MIMETYPE:
-        return PDF_FA_CLASS;
+      case MimeTypes.Directory:
+        return FAClass.Directory;
+      case MimeTypes.Map:
+        return FAClass.Map;
+      case MimeTypes.BioC:
+        return FAClass.BioC;
+      case MimeTypes.EnrichmentTable:
+        return FAClass.EnrichmentTable;
+      case MimeTypes.Graph:
+        return FAClass.Graph;
+      case MimeTypes.Pdf:
+        return FAClass.Pdf;
       default:
-        return DEFAULT_FA_CLASS;
+        return FAClass.Default;
     }
   }
 
   get fontAwesomeIconCode() {
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
-        return DIRECTORY_UNICODE;
-      case MAP_MIMETYPE:
-        return MAP_UNICODE;
-      case BIOC_MIMETYPE:
-        return BIOC_UNICODE;
-      case ENRICHMENT_TABLE_MIMETYPE:
-        return ENRICHMENT_TABLE_UNICODE;
-      case GRAPH_MIMETYPE:
-        return SANKEY_UNICODE;
-      case PDF_MIMETYPE:
-        return PDF_UNICODE;
+      case MimeTypes.Directory:
+        return Unicodes.Directory;
+      case MimeTypes.Map:
+        return Unicodes.Map;
+      case MimeTypes.BioC:
+        return Unicodes.BioC;
+      case MimeTypes.EnrichmentTable:
+        return Unicodes.EnrichmentTable;
+      case MimeTypes.Graph:
+        return Unicodes.Graph;
+      case MimeTypes.Pdf:
+        return Unicodes.Pdf;
       default:
-        return DEFAULT_UNICODE;
+        return Unicodes.Default;
     }
   }
 
   get mapNodeLabel() {
     switch (this.mimeType) {
-      case MAP_MIMETYPE:
+      case MimeTypes.Map:
         return 'map';
       default:
         return 'link';
@@ -378,9 +349,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
    */
   get type(): 'dir' | 'file' | 'map' {
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
+      case MimeTypes.Directory:
         return 'dir';
-      case MAP_MIMETYPE:
+      case MimeTypes.Map:
         return 'map';
       default:
         return 'file';
@@ -494,18 +465,18 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
-      case DIRECTORY_MIMETYPE:
+      case MimeTypes.Directory:
         // TODO: Convert to hash ID
         return ['/projects', projectName, 'folders', this.hashId];
-      case ENRICHMENT_TABLE_MIMETYPE:
+      case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
-      case PDF_MIMETYPE:
+      case MimeTypes.Pdf:
         return ['/projects', projectName, 'files', this.hashId];
-      case BIOC_MIMETYPE:
+      case MimeTypes.BioC:
         return ['/projects', projectName, 'bioc', this.hashId];
-      case MAP_MIMETYPE:
+      case MimeTypes.Map:
         return ['/projects', projectName, 'maps', this.hashId];
-      case GRAPH_MIMETYPE:
+      case MimeTypes.Graph:
         return ['/projects', projectName, 'sankey', this.hashId];
       default:
         return ['/files', this.hashId];
@@ -519,7 +490,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }).join('/');
 
     switch (this.mimeType) {
-      case ENRICHMENT_TABLE_MIMETYPE:
+      case MimeTypes.EnrichmentTable:
         let fragment = '';
         if (!isNullOrUndefined(meta)) {
           fragment = '#' + [
@@ -696,4 +667,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 export interface PathLocator {
   projectName?: string;
   directoryId?: string;
+}
+
+export function createProjectDragImage(project: ProjectImpl): DragImage {
+  return createDragImage(project.name, '\uf5fd');
+}
+
+export function createObjectDragImage(object: FilesystemObject): DragImage {
+  return createDragImage(object.filename, object.fontAwesomeIconCode);
 }
