@@ -112,6 +112,36 @@
               "traces"
             ]
           }
+        },
+        "sizing": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "link_sizing": {
+                  "type": "string"
+                },
+                "node_sizing": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "log": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       },
       "additionalProperties": true,
