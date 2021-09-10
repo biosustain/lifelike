@@ -37,13 +37,13 @@ def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: 
         account_key=os.environ.get('AZURE_ACCOUNT_STORAGE_KEY'),
         permission=AccountSasPermissions(write=True),
         share_name='knowledge-graph',
-        file_path=[zip_filename],
+        file_path=['migration', zip_filename],
         expiry=datetime.utcnow() + timedelta(hours=1))
     azure = ShareFileClient(
         account_url=f"https://{os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')}.file.core.windows.net",
         credential=sas_token,
         share_name='knowledge-graph',
-        file_path=zip_filename,
+        file_path=f'migration/{zip_filename}',
         logging_enable=True)
     cloudstorage = AzureCloudStorage(azure)
     cloudstorage.upload(filepath, filename, zip_filename, zip_filepath)
@@ -52,9 +52,9 @@ def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: 
 
 if __name__ == '__main__':
     db = get_database()
-    filename = 'LL_3625_add_entity_type_array.tsv'
+    filename = 'jira-LL-3625-add-entity-type-array.tsv'
     filepath = os.path.join(get_data_dir(), filename)
-    zip_filename = 'LL_3625_add_entity_type_array.zip'
+    zip_filename = 'jira-LL-3625-add-entity-type-array.zip'
     zip_filepath = os.path.join(get_data_dir(), zip_filename)
     query = """
     MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s:Synonym)
