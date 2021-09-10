@@ -4,6 +4,7 @@ interface SankeyNode {
   stId?: string;
   name?: string | Array<string>;
   label?: string;
+  labels?: Array<string>;
   type?: string;
 
   // Temp definitions to fix LL-3499
@@ -31,6 +32,13 @@ interface SankeyNode {
   [key: string]: any;
 }
 
+interface SankeyTrace {
+  group?: number | string;
+  detail_edges?: Array<any>;
+  target?: number;
+  source?: number;
+}
+
 interface SankeyLink {
   index?: number;
   source?: string | number;
@@ -38,6 +46,7 @@ interface SankeyLink {
   description?: string;
 
   // region Used internally to compute layout
+  _trace?: SankeyTrace;
   _source?: SankeyNode | string | number;
   _target?: SankeyNode | string | number;
   _width?: number;
