@@ -22,11 +22,11 @@
       class="edu.ucsd.sbrg.liquibase.neo4j.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (n) WHERE id(n) = row.node_id
+      MATCH (n) WHERE id(n) = row.node_id[0]
       SET n.original_entity_types = row.entity_types
       "
       fileName="jira-LL-3625-add-entity-type-array.zip"
-      shareName="knowledge-graph"/>
+      startAt="0"/>
   </changeSet>
 
   <!-- TODO: finish up the other queries -->
