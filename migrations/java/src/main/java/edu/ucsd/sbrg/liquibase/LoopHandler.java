@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.liquibase.neo4j;
+package edu.ucsd.sbrg.liquibase;
 
 import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
