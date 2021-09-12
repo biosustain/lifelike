@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.liquibase.neo4j.cloudstorage;
+package edu.ucsd.sbrg.liquibase.storage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ public class GoogleCloudStorage extends CloudStorage {
     }
 
     @Override
-    public void writeToFile(ByteArrayOutputStream bao) throws IOException {
+    public void writeToFile(ByteArrayOutputStream bao, String localSaveDir) throws IOException {
         //
     }
 }
