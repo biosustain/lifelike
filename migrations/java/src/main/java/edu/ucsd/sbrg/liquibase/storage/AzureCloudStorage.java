@@ -1,11 +1,10 @@
-package edu.ucsd.sbrg.liquibase.neo4j.cloudstorage;
+package edu.ucsd.sbrg.liquibase.storage;
 
 import com.azure.storage.file.share.ShareDirectoryClient;
 import com.azure.storage.file.share.ShareFileClient;
 import com.azure.storage.file.share.ShareFileClientBuilder;
 
 import java.io.IOException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -15,33 +14,24 @@ import java.util.zip.ZipInputStream;
 
 public class AzureCloudStorage extends CloudStorage {
     ShareDirectoryClient storageClient;
-    final String shareName = "knowledge-graph";
-    final String fileDir = "migration";
+    static final String CLOUD_SHARE_NAME = "knowledge-graph";
+    static final String CLOUD_FILE_DIR = "migration";
 
-    public AzureCloudStorage(String storageAccountName, String storageAccountKey, String saveDir) {
+    public AzureCloudStorage(String storageAccountName, String storageAccountKey) {
         this.connectionString = "DefaultEndpointsProtocol=https;" +
                 "AccountName=" + storageAccountName + ";" +
                 "AccountKey=" + storageAccountKey;
-        this.localSaveDir = saveDir;
     }
 
-    private ShareDirectoryClient getStorageClient(String shareName) {
+    private ShareDirectoryClient initStorageClient() {
         this.storageClient = new ShareFileClientBuilder().connectionString(this.connectionString)
-                .shareName(shareName).resourcePath(this.fileDir).buildDirectoryClient();
+                .shareName(CLOUD_SHARE_NAME).resourcePath(CLOUD_FILE_DIR).buildDirectoryClient();
         return this.storageClient;
     }
 
-//    public void setShareName(String shareName) {
-//        this.shareName = shareName;
-//    }
-//
-    public String getShareName() {
-        return this.shareName;
-    }
-
     @Override
-    public OutputStream download(String fileName) {
-        ShareFileClient fileClient = this.getStorageClient(this.getShareName()).getFileClient(fileName);
+    public OutputStream download(String fileName) throws IOException {
+        ShareFileClient fileClient = this.initStorageClient().getFileClient(fileName);
         OutputStream out = new ByteArrayOutputStream();
         fileClient.download(out);
         return out;
@@ -51,11 +41,12 @@ public class AzureCloudStorage extends CloudStorage {
      * Save the byte stream to a file(s). This will effectively "unzip" and
      * save individual files.
      *
-     * @param bao the zip file in bytes
+     * @param bao the zip file in bytes.
+     * @param localSaveDir local directory to save file to.
      * @throws IOException
      */
     @Override
-    public void writeToFile(ByteArrayOutputStream bao) throws IOException {
+    public void writeToFile(ByteArrayOutputStream bao, String localSaveDir) throws IOException {
         ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(bao.toByteArray()));
 
         FileOutputStream out;
@@ -64,7 +55,7 @@ public class AzureCloudStorage extends CloudStorage {
         ZipEntry entry;
 
         while ((entry = zip.getNextEntry()) != null) {
-            String filePath = this.localSaveDir + "/" + entry.getName();
+            String filePath = localSaveDir + "/" + entry.getName();
             out = new FileOutputStream(filePath);
             while ((read = zip.read(buffer, 0, buffer.length)) != -1) {
                 out.write(buffer, 0, read);

@@ -19,10 +19,10 @@
       now returns back as a synonym for both types.
     </comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.neo4j.FileQueryHandler"
+      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (n) WHERE id(n) = row.node_id[0]
+      MATCH (n) WHERE id(n) = apoc.convert.toInteger(row.node_id[0])
       SET n.original_entity_types = row.entity_types
       "
       fileName="jira-LL-3625-add-entity-type-array.zip"
