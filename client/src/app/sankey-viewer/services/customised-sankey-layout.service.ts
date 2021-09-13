@@ -4,10 +4,9 @@ import { max, min, sum } from 'd3-array';
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
+import { SankeyNode, SankeyData } from '../components/interfaces';
 import { TruncatePipe } from '../../shared/pipes';
 import { SankeyControllerService } from './sankey-controller.service';
-import { christianColors, createMapToColor } from '../components/color-palette';
-import { SankeyNode, SankeyData, SankeyLink, SankeyTraceNetwork } from '../components/interfaces';
 
 const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -244,6 +243,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
             }
         }
     } = this;
+    // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => 12 * fontSizeScale;
   }
 
@@ -260,6 +260,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
             }
         }, value, columnsWithLinkPlaceholders: columns
     } = this;
+    // normal calculation based on tallest column
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     let scale = 1;
     if (nodeHeight.max.enabled) {
@@ -515,6 +516,4 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     this.cleanVirtualNodes(graph);
     return graph;
   }
-
-
 }

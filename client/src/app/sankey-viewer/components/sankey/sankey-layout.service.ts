@@ -150,7 +150,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its incoming (target) links.
+   * Given list of links resolve their source/target node id to actual object
+   * and register this link to input/output link list in node.
    */
   registerLinks({links, nodes}) {
     const {id} = this;
@@ -187,7 +188,9 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its incoming (target) links.
+   * Each node maintains list of its source/target links
+   * this function resets these lists and repopulates them
+   * based on list of links.
    */
   computeNodeLinks({nodes, links}: SankeyData) {
     for (const [i, node] of nodes.entries()) {
@@ -199,7 +202,9 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its incoming (target) links.
+   * Find circular links using Johnson's circuit finding algorithm.
+   * This function simply preformats data cals `elementary-circuits-directed-graph`
+   * library and add results to our graph object.
    */
   identifyCircles(graph: SankeyData) {
     let circularLinkID = 0;
@@ -252,7 +257,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its incoming (target) links.
+   * Assign node value either based on _fixedValue property or as a max of
+   * sum of all source links and sum of target links.
    */
   computeNodeValues({nodes}: SankeyData) {
     const {value} = this;
@@ -382,7 +388,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its incoming (target) links.
+   * Going from left to right try putting next linked nodes in straight lines
+   * then resolve just made collisions.
    */
   relaxLeftToRight(columns, alpha, beta) {
     for (let i = 1, n = columns.length; i < n; ++i) {
@@ -411,7 +418,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   /**
-   * Reposition each node based on its outgoing (source) links.
+   * Going from right to left try putting next linked nodes in straight lines
+   * then resolve just made collisions.
    */
   relaxRightToLeft(columns, alpha, beta) {
     const {ascendingBreadth} = SankeyLayoutService;
