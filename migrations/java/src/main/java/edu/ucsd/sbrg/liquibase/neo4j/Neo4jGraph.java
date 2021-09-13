@@ -72,14 +72,18 @@ public class Neo4jGraph {
         });
 
         final int[] processed = {0};
+        final String[] firstInChunk = {""};
         try (Session session = this.driver.session()) {
             chunkedCypherParams.forEach(paramChunk -> {
                 session.writeTransaction(tx -> tx.run(query, parameters("rows", paramChunk)));
                 processed[0] += paramChunk.size();
+                firstInChunk[0] = paramChunk.get(0).toString();
             });
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Encountered error! Processed " + processed[0] + " lines before error occurred...");
+            String output = "Encountered error! Set startAt to " +
+                    processed[0] + "(value in file: " + firstInChunk[0] + ") to pick up where left off.";
+            System.out.println(output);
             throw new CustomChangeException();
         }
     }

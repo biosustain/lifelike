@@ -21,7 +21,7 @@ public class CloudStorageTest {
         this.cloudStorage = new AzureCloudStorage(this.storageName, this.storageKey);
     }
 
-//    @Ignore // ignore and run manually, cause need storage keys etc
+    @Ignore // ignore and run manually, cause need storage keys etc
     @Test
     public void testDownloadToTSVFile() throws IOException {
         String fileName = "jira-LL-3625-add-entity-type-array.zip";
