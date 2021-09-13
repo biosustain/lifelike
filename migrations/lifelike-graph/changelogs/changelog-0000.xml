@@ -26,7 +26,8 @@
       SET n.original_entity_types = row.entity_types
       "
       fileName="jira-LL-3625-add-entity-type-array.zip"
-      startAt="0"/>
+      startAt="0"
+      fileType="TSV"/>
   </changeSet>
 
   <!-- TODO: finish up the other queries -->

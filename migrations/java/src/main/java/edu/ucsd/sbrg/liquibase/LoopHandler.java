@@ -17,7 +17,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Helper class for queries that need to loop.
+ * <changeSet id="..." author="...">
+ *   <customChange
+ *     class="edu.ucsd.sbrg.liquibase.neo4j.LoopHandler"
+ *     loopQuery="..."
+ *     execQuery="..."/>
+ * </changeSet>
  */
 public class LoopHandler implements CustomTaskChange {
     private Driver driver;
