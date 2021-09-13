@@ -27,10 +27,26 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * <changeSet id="..." author="...">
+ *     <comment>...</comment>
+ *     <customChange
+ *       class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+ *       query="..."
+ *       fileName="<filename>.zip"
+ *       startAt="0"/>
+ * </changeSet>
+ *
+ * query: the cypher query to be executed.
+ * fileName: the data file on Azure to download and use.
+ * startAt: the starting index (default should be zero) for the data processing.
+ *          headers are not included, so first data line is zero.
+ */
 public class FileQueryHandler implements CustomTaskChange {
     private Driver driver;
     private String query;
     private String fileName;
+    private String fileType;
     private int startAt;
     private ResourceAccessor resourceAccessor;
 
@@ -60,13 +76,13 @@ public class FileQueryHandler implements CustomTaskChange {
         this.startAt = Integer.parseInt(startAt);
     }
 
-//    public String getShareName() {
-//        return this.shareName;
-//    }
-//
-//    public void setShareName(String shareName) {
-//        this.shareName = shareName;
-//    }
+    public String getFileType() {
+        return this.fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
 
     public void setDatabaseDriver(String uri, String user, String password) {
         this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
@@ -88,7 +104,7 @@ public class FileQueryHandler implements CustomTaskChange {
         this.setDatabaseDriver(neo4jHost, neo4JUsername, neo4jPassword);
 
         AzureCloudStorage cloudStorage = new AzureCloudStorage(azureStorageName, azureStorageKey);
-        FileExtract fileExtract = new FileExtractFactory(FileType.valueOf("TSV")).getInstance(this.fileName, azureSaveFileDir);
+        FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.fileName, azureSaveFileDir);
 
         List<String[]> content = null;
         try {
