@@ -47,6 +47,7 @@ export class SankeyControllerService {
   networkTraces;
 
   options: SankeyAdvancedOptions = {
+    highlightCircular: true,
     nodeHeight: {
       min: {
         enabled: false,
@@ -291,10 +292,14 @@ export class SankeyControllerService {
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
+    const qn = new Map();
+    networkTraceLinks.forEach(l => {
+      qn.set(l.source + ' ' + l.target, l);
+    });
     this.dataToRender.next(
       this.linkGraph({
         nodes: networkTraceNodes,
-        links: networkTraceLinks,
+        links: [...qn.values()],
         _inNodes, _outNodes
       })
     );
@@ -387,6 +392,7 @@ export class SankeyControllerService {
     this.extractPredefinedValueProperties(graph);
     this.selectNetworkTrace(this.networkTraces[0]);
   }
+
   // endregion
 
   load(content) {

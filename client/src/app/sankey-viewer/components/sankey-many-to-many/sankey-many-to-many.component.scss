@@ -1,7 +1,7 @@
 $link-opacity: .75;
 $link-stroke-opacity: .2;
 $link-active-stroke-opacity: .85;
-$non-active-link-opacity: .45;
+$non-active-link-opacity: .15;
 
 $node-opacity: .90;
 $node-stroke-opacity: .70;
@@ -139,7 +139,7 @@ $non-active-node-opacity: .50;
             stroke-dasharray: 4 4;
           }
 
-          &[selected=false] {
+          &[highlighted=false], &[selected=false] {
             opacity: $non-active-link-opacity;
           }
 
@@ -147,7 +147,6 @@ $non-active-node-opacity: .50;
             opacity: $link-opacity;
 
             &[thickness='0'] {
-              stroke: red;
               opacity: 100%;
               stroke-opacity: 100% !important;
               stroke-width: 3px;

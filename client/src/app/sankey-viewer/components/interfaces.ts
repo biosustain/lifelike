@@ -64,6 +64,7 @@ export interface SankeyAdvancedOptions {
     value: number
   } | undefined;
   fontSizeScale: number;
+  highlightCircular: boolean;
 }
 
 // Add properties used internally to compute layout

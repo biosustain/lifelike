@@ -1,4 +1,11 @@
 <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
+    <input [(ngModel)]="options.highlightCircular" (ngModelChange)="update()"
+           ngbButton
+           type="checkbox">
+    Highlight circular
+</label>
+<div class="dropdown-divider"></div>
+<label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
     <input [(ngModel)]="options.normalizeLinks" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
