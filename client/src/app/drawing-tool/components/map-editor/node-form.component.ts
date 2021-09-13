@@ -6,12 +6,12 @@ import {
   Input,
   Output,
   ViewChild,
+  HostListener,
 } from '@angular/core';
 import { cloneDeep, startCase } from 'lodash';
 import {
   DETAIL_NODE_LABELS,
   isCommonNodeDisplayName,
-  Source,
   UniversalGraphNode,
 } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
@@ -25,10 +25,12 @@ import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-node-form',
+  styleUrls: ['./node-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
+  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -38,6 +40,7 @@ export class NodeFormComponent implements AfterViewInit {
     ...LINE_TYPES.entries(),
   ];
   paletteChoices = [...PALETTE_COLORS];
+  private ASSUMED_PANEL_HEIGHT = 450;
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
@@ -52,10 +55,36 @@ export class NodeFormComponent implements AfterViewInit {
 
   previousLabel: string;
 
+  overflow = false;
+
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
 
+  changeOverflow(newValue) {
+    if (this.overflow !== newValue) {
+      // stops overflowing
+      if (!newValue && this.infoPanel.activeTab === 'search') {
+        this.infoPanel.activeTab = 'properties';
+      }
+      this.overflow = newValue;
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    const {
+      scrollWrapper: {
+        nativeElement: {
+          offsetHeight
+        }
+      },
+      ASSUMED_PANEL_HEIGHT
+    } = this;
+    this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
+  }
+
   ngAfterViewInit() {
+    setTimeout(() => this.onResize(), 0);
   }
 
   get nodeSubtypeChoices() {
@@ -97,8 +126,8 @@ export class NodeFormComponent implements AfterViewInit {
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
       if (nullIfEmpty(this.node.data.detail) === null
-          && this.node.display_name != null
-          && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
+        && this.node.display_name != null
+        && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
         this.node.style.showDetail = true;
         this.node.data.detail = this.node.display_name;
         this.node.display_name = startCase(this.node.label);
@@ -110,9 +139,9 @@ export class NodeFormComponent implements AfterViewInit {
     } else if (fromDetailNode && !toDetailNode) {
       // If we are moving away from a detail node, restore the display name (sometimes)
       if ((nullIfEmpty(this.node.display_name) === null
-          || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
-          && nullIfEmpty(this.node.data.detail) !== null
-          && this.node.data.detail.length <= 50) {
+        || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
+        && nullIfEmpty(this.node.data.detail) !== null
+        && this.node.data.detail.length <= 50) {
         this.node.display_name = this.node.data.detail;
         this.node.data.detail = '';
       }
