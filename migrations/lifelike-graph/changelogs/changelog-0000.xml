@@ -27,7 +27,8 @@
       "
       fileName="jira-LL-3625-add-entity-type-array.zip"
       startAt="0"
-      fileType="TSV"/>
+      fileType="TSV"
+      queryKeys="node_id,entity_types"/>
   </changeSet>
 
   <!-- TODO: finish up the other queries -->
