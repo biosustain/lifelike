@@ -3,14 +3,12 @@ import { isNullOrUndefined } from 'util';
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
-import { IntermediateNodeType } from './interfaces';
-
 function find(nodeById, id) {
   const node = nodeById.get(id);
   if (!node) {
     throw new Error('missing: ' + id);
   }
-  return node as GraphNode;
+  return node;
 }
 
 function* generateSLayout(segmentSize, scale = 1) {
@@ -43,26 +41,32 @@ function* generateSLayout(segmentSize, scale = 1) {
   yield* iterateX();
 }
 
+
 export const getTraceDetailsGraph = (trace) => {
-  const {edges, nodes} = trace;
+  const {
+    edges,
+    nodes
+  } = trace;
   nodes.forEach(node => {
-    node.fromEdges = [];
-    node.toEdges = [];
+    node._fromEdges = [];
+    node._toEdges = [];
   });
-  const nodeById: Map<number, IntermediateNodeType> = new Map(nodes.map(d => [d.id, d]));
+  const nodeById = new Map(nodes.map(d => [d.id, d]));
   for (const edge of edges) {
-    let {from, to} = edge;
+    const {
+      from, to
+    } = edge;
     if (typeof from !== 'object') {
-      from = edge.from_obj = find(nodeById, from);
+      edge._fromObj = find(nodeById, from);
+      edge._fromObj._fromEdges.push(edge);
     }
     if (typeof to !== 'object') {
-      to = edge.to_obj = find(nodeById, to);
+      edge._toObj = find(nodeById, to);
+      edge._toObj._toEdges.push(edge);
     }
-    from.fromEdges.push(edge);
-    to.toEdges.push(edge);
   }
-  const startNode = find(nodeById, trace.source) as IntermediateNodeType;
-  const endNode = find(nodeById, trace.target) as IntermediateNodeType;
+  const startNode = find(nodeById, trace.source);
+  const endNode = find(nodeById, trace.target);
 
   [startNode, endNode].map(node => {
     node.borderWidth = 5;
