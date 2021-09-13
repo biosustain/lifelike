@@ -2,15 +2,14 @@ import { isNullOrUndefined } from 'util';
 
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-
-import { IntermediateNodeType } from '../../sankey-viewer/components/interfaces';
+import { TraceNode, TraceData } from './interfaces';
 
 function find(nodeById, id) {
   const node = nodeById.get(id);
   if (!node) {
     throw new Error('missing: ' + id);
   }
-  return node as SankeyNode;
+  return node;
 }
 
 function* generateSLayout(segmentSize, scale = 1) {
@@ -43,26 +42,28 @@ function* generateSLayout(segmentSize, scale = 1) {
   yield* iterateX();
 }
 
-export const getTraceDetailsGraph = (trace) => {
+export const getTraceDetailsGraph = (trace: TraceData) => {
   const {edges, nodes} = trace;
   nodes.forEach(node => {
-    node.fromEdges = [];
-    node.toEdges = [];
+    node._fromEdges = [];
+    node._toEdges = [];
   });
-  const nodeById: Map<number, IntermediateNodeType> = new Map(nodes.map((d, i) => [d.id, d]));
+  const nodeById = new Map(nodes.map(d => [d.id, d]));
   for (const edge of edges) {
-    let {from, to} = edge;
+    const {
+      from, to
+    } = edge;
     if (typeof from !== 'object') {
-      from = edge.from_obj = find(nodeById, from);
+      edge._fromObj = find(nodeById, from);
+      edge._fromObj._fromEdges.push(edge);
     }
     if (typeof to !== 'object') {
-      to = edge.to_obj = find(nodeById, to);
+      edge._toObj = find(nodeById, to);
+      edge._toObj._toEdges.push(edge);
     }
-    from.fromEdges.push(edge);
-    to.toEdges.push(edge);
   }
-  const startNode = find(nodeById, trace.source) as IntermediateNodeType;
-  const endNode = find(nodeById, trace.target) as IntermediateNodeType;
+  const startNode = find(nodeById, trace.source);
+  const endNode = find(nodeById, trace.target);
 
   [startNode, endNode].map(node => {
     node.borderWidth = 5;
@@ -71,25 +72,25 @@ export const getTraceDetailsGraph = (trace) => {
   const segmentSize = Math.ceil(nodes.length / 8);
 
   const sLayout = generateSLayout(segmentSize, 2500 / segmentSize);
-  const traverseGraph = node => {
+  const traverseGraph = (node: TraceNode) => {
     if (!node._visited) {
       const nextPosition = sLayout.next().value;
       // console.log(nextPosition);
-      if (node.fromEdges.length <= 1 && node.toEdges.length <= 1) {
+      if (node._fromEdges.length <= 1 && node._toEdges.length <= 1) {
         Object.assign(node, nextPosition);
         // Object.assign(node, nextPosition, {fixed: {x: true, y: true}});
       }
       node._visited = true;
-      node.toEdges.forEach(edge => {
-        if (edge.from_obj !== endNode && !edge._visited) {
+      node._toEdges.forEach(edge => {
+        if (edge._fromObj !== endNode && !edge._visited) {
           edge._visited = true;
-          traverseGraph(edge.from_obj);
+          traverseGraph(edge._fromObj);
         }
       });
-      node.fromEdges.forEach(edge => {
-        if (edge.to_obj !== endNode && !edge._visited) {
+      node._fromEdges.forEach(edge => {
+        if (edge._toObj !== endNode && !edge._visited) {
           edge._visited = true;
-          traverseGraph(edge.to_obj);
+          traverseGraph(edge._toObj);
         }
       });
     }
@@ -101,7 +102,7 @@ export const getTraceDetailsGraph = (trace) => {
     endNode,
     edges,
     nodes: nodes.map(n => {
-      const label = n.databaseLabel || 'unknown';
+      const label = n.type || 'unknown';
       const style = annotationTypesMap.get(label.toLowerCase());
       return {
         ...n,
