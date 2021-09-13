@@ -82,6 +82,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Output() nodeClicked = new EventEmitter();
   @Output() linkClicked = new EventEmitter();
+  @Output() backgroundClicked = new EventEmitter();
   @Output() enter = new EventEmitter();
   @Output() adjustLayout = new EventEmitter();
 
@@ -90,6 +91,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() selectedNodes = new Set<object>();
   @Input() searchedEntities = new Set<object>();
   @Input() focusedNode;
+  @Input() highlightCircular;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
@@ -190,6 +192,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const zoomContainer = d3.select(g.nativeElement);
     zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
 
+    this.sankeySelection.on('click', () => {
+      console.log(d3.event, d3.event.defaultPrevented);
+      const e = d3.event;
+      console.log(e);
+      console.log(e.bubbles, e.defaultPrevented, e.cancelBubble, e.target);
+      if (!e.target.__data__) {
+        this.backgroundClicked.emit();
+      }
+    });
+
     // resize and listen to future resize events
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
   }
@@ -273,6 +285,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const {linkClick, pathMouseOver, pathMouseOut} = this;
     d3Links
       .on('click', function(data) {
+        const e = d3.event;
+        console.log(e);
+        console.log(e.bubbles, e.defaultPrevented, e.cancelBubble);
+        d3.event.stopPropagation();
         return linkClick(this, data);
       })
       .on('mouseover', function(data) {
@@ -297,16 +313,32 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .call(
         d3.drag()
           .on('start', function() {
+            const e = d3.event;
+            console.log(e);
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.stopImmediatePropagation();
+            d3.event.sourceEvent.preventDefault();
             dx = 0;
             dy = 0;
             d3.select(this).raise();
           })
           .on('drag', function(d) {
+            const e = d3.event;
+            console.log(e);
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.stopImmediatePropagation();
+            d3.event.sourceEvent.preventDefault();
             dx += d3.event.dx;
             dy += d3.event.dy;
             dragmove(this, d);
           })
           .on('end', function(d) {
+            const e = d3.event.sourceEvent;
+            console.log(e);
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.stopImmediatePropagation();
+            d3.event.sourceEvent.preventDefault();
+            console.log(e.bubbles, e.defaultPrevented, e.cancelBubble);
             // d3v5 does not include implementation for this
             if (Math.hypot(dx, dy) < 10) {
               return nodeClick(this, d);
@@ -342,6 +374,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   async nodeMouseOver(element, data) {
+    const {highlightCircular} = this;
     this.highlightNode(element);
     const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
