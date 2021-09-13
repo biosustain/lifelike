@@ -20,6 +20,7 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { getTraceDetailsGraph } from './traceDetails';
 import { TruncatePipe } from '../../shared/pipes';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { TraceNode, TraceEdge } from './interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -147,20 +148,19 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         }
         return {
           ...node,
-          databaseLabel: node.type,
           label: labelShort,
           fullLabel: label,
           labelShort,
           title: label
-        } as visNetwork.Node;
+        } as TraceNode;
       } else {
         console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
         return {
           id: nodeId,
           label: nodeId,
-          databaseLabel: 'Implicitly defined',
+          type: 'Implicitly defined',
           color: 'red'
-        } as visNetwork.Node;
+        } as TraceNode;
       }
     });
 
