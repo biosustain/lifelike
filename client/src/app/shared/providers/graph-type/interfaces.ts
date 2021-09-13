@@ -80,7 +80,7 @@ interface GraphTrace {
   target: number;
   group: number;
 
-  detail_edges?: [number, number, GraphDetailEdge];
+  detail_edges?: Array<[number, number, GraphDetailEdge]>;
 
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
