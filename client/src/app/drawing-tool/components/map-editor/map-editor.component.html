@@ -9,11 +9,11 @@
     </ng-container>
     <app-module-header *ngIf="map" [object]="map"
                        (dragStarted)="dragStarted($event)">
-                <app-object-menu [object]="map" [forEditing]="true"
-                                 [showOpen]="false" [showDelete]="false"
-                                 [showRestore]="true" (objectRestore)="restore($event)"
-                                 (objectUpdate)="emitModuleProperties()">
-                </app-object-menu>
+        <app-object-menu [object]="map" [forEditing]="true"
+                         [showOpen]="false" [showDelete]="false"
+                         [showRestore]="true" (objectRestore)="restore($event)"
+                         (objectUpdate)="emitModuleProperties()">
+        </app-object-menu>
         <div *ngIf="unsavedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
@@ -98,7 +98,7 @@
                     <canvas #canvas class="graph-view" [class.drop-target]="dropTargeted"></canvas>
                 </div>
             </as-split-area>
-            <as-split-area size="250"
+            <as-split-area size="256"
                            [order]="1" #infoPanelSidebar>
                 <ng-container
                         *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else graphInfo">
