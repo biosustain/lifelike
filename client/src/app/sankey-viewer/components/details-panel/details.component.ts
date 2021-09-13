@@ -3,6 +3,7 @@ import { parseForRendering } from '../utils';
 import { SankeyControllerService } from '../../services/sankey-controller.service';
 import * as CryptoJS from 'crypto-js';
 import { ActivatedRoute } from '@angular/router';
+import { SankeyNode } from '../interfaces';
 
 
 @Component({

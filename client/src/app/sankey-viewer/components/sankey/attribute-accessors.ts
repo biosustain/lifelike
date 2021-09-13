@@ -1,5 +1,6 @@
 import * as d3Sankey from 'd3-sankey';
 import { TruncatePipe } from '../../../shared/pipes';
+import { SankeyNode } from '../interfaces';
 
 export class AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
@@ -24,7 +25,7 @@ export class AttributeAccessors {
   }
 
   get nodeColor() {
-    return ({_color}) => _color;
+    return ({_color}: SankeyNode) => _color;
   }
 
   get linkColor() {
