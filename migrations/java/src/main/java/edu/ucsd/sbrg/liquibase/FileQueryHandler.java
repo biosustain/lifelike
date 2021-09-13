@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.liquibase;
 import edu.ucsd.sbrg.liquibase.extract.FileExtract;
 import edu.ucsd.sbrg.liquibase.extract.FileExtractFactory;
 import edu.ucsd.sbrg.liquibase.extract.FileType;
+import edu.ucsd.sbrg.liquibase.neo4j.Neo4jGraph;
 import edu.ucsd.sbrg.liquibase.storage.AzureCloudStorage;
 
 import liquibase.change.custom.CustomTaskChange;
@@ -11,21 +12,10 @@ import liquibase.exception.CustomChangeException;
 import liquibase.exception.SetupException;
 import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Session;
-import static org.neo4j.driver.Values.parameters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * <changeSet id="..." author="...">
@@ -34,19 +24,27 @@ import java.util.stream.Collectors;
  *       class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
  *       query="..."
  *       fileName="<filename>.zip"
- *       startAt="0"/>
+ *       startAt="0"
+ *       fileType="TSV"
+ *       queryKeys="..."/>
  * </changeSet>
  *
  * query: the cypher query to be executed.
- * fileName: the data file on Azure to download and use.
+ * fileName: the data file (ZIP) on Azure to download and use.
  * startAt: the starting index (default should be zero) for the data processing.
  *          headers are not included, so first data line is zero.
+ * fileType: the type of file within the zip (e.g CSV, TSV, etc...).
+ * queryKeys: a comma separated string representing the keys used in query.
+ *            ORDER OF KEYS MUST MATCH ORDER OF DATA IN FILE.
+ *            e.g
+ *              MATCH (n:New) WHERE n.name = $name AND n.date = $date
+ *              queryKeys = "name,date"
  */
 public class FileQueryHandler implements CustomTaskChange {
-    private Driver driver;
     private String query;
     private String fileName;
     private String fileType;
+    private String[] queryKeys;
     private int startAt;
     private ResourceAccessor resourceAccessor;
 
@@ -68,14 +66,6 @@ public class FileQueryHandler implements CustomTaskChange {
         this.fileName = fileName;
     }
 
-    public int getStartAt() {
-        return this.startAt;
-    }
-
-    public void setStartAt(String startAt) {
-        this.startAt = Integer.parseInt(startAt);
-    }
-
     public String getFileType() {
         return this.fileType;
     }
@@ -84,8 +74,20 @@ public class FileQueryHandler implements CustomTaskChange {
         this.fileType = fileType;
     }
 
-    public void setDatabaseDriver(String uri, String user, String password) {
-        this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
+    public void setQueryKeys(String queryKeys) {
+        this.queryKeys = queryKeys.split(",");
+    }
+
+    public String[] getQueryKeys() {
+        return this.queryKeys;
+    }
+
+    public int getStartAt() {
+        return this.startAt;
+    }
+
+    public void setStartAt(String startAt) {
+        this.startAt = Integer.parseInt(startAt);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class FileQueryHandler implements CustomTaskChange {
         // TODO: temp way to get database credentials
         // need to figure out how to get credentials from liquibase
         final String neo4jHost = System.getenv("NEO4J_INSTANCE_URI");
-        final String neo4JUsername = System.getenv("NEO4J_USERNAME");
+        final String neo4jUsername = System.getenv("NEO4J_USERNAME");
         final String neo4jPassword = System.getenv("NEO4J_PWD");
         final String azureStorageName = System.getenv("AZURE_ACCOUNT_STORAGE_NAME");
         final String azureStorageKey = System.getenv("AZURE_ACCOUNT_STORAGE_KEY");
@@ -101,10 +103,9 @@ public class FileQueryHandler implements CustomTaskChange {
 
         System.out.println("Executing query: " + this.getQuery());
 
-        this.setDatabaseDriver(neo4jHost, neo4JUsername, neo4jPassword);
-
         AzureCloudStorage cloudStorage = new AzureCloudStorage(azureStorageName, azureStorageKey);
         FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.fileName, azureSaveFileDir);
+        Neo4jGraph graph = new Neo4jGraph(neo4jHost, neo4jUsername, neo4jPassword);
 
         List<String[]> content = null;
         try {
@@ -116,37 +117,9 @@ public class FileQueryHandler implements CustomTaskChange {
         }
 
         final int chunkSize = 5000;
-
-        List<List<Map<String, String[]>>> chunkedCypherParams = new ArrayList<>();
-        AtomicInteger counter = new AtomicInteger();
-        final Collection<List<String[]>> chunkedContent = content.stream()
-                .collect(Collectors.groupingBy(i -> counter.getAndIncrement() / chunkSize)).values();
-
-        chunkedContent.stream().skip(this.getStartAt()).forEach(contentChunk -> {
-            List<Map<String, String[]>> cypherParamsChunk = new ArrayList<>();
-            contentChunk.forEach(row -> {
-                Map<String, String[]> param = new HashMap<>();
-                param.put("node_id", row[0].split(","));
-                param.put("entity_types", row[1].split(","));
-                cypherParamsChunk.add(param);
-            });
-            chunkedCypherParams.add(cypherParamsChunk);
-        });
-
-        final int[] processed = {0};
-        try (Session session = this.driver.session()) {
-            chunkedCypherParams.forEach(paramChunk -> {
-                session.writeTransaction(tx -> tx.run(this.getQuery(), parameters("rows", paramChunk)));
-                processed[0] += + paramChunk.size();
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Encountered error! Processed " + processed[0] + " lines before error occurred...");
-            throw new CustomChangeException();
-        }
+        graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize, this.getStartAt());
 
         // TODO: delete file once done
-        // TODO: extract neo4j into a class
     }
 
     @Override
