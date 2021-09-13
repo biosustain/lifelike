@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 
-import { SankeyAdvancedOptions, ValueGenerator, SankeyData } from '../components/interfaces';
+import { SankeyAdvancedOptions, ValueGenerator, SankeyData, SankeyTraceNetwork, SankeyLink } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
 import prescalers from '../components/algorithms/prescalers';
@@ -133,7 +133,16 @@ export class SankeyControllerService {
   oneToMany;
 
   // Trace logic
-  getAndColorNetworkTraceLinks(networkTrace, links, colorMap?) {
+  /**
+   * Extract links which relates to certain trace network and
+   * assign _color property based on their trace.
+   * Also creates duplicates if given link is used in multiple traces.
+   */
+  getAndColorNetworkTraceLinks(
+    networkTrace: SankeyTraceNetwork,
+    links: Array<SankeyLink>,
+    colorMap?
+  ) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ? colorMap : new Map(
       networkTrace.traces.map(({group}) => [group, christianColors[group]])
@@ -149,7 +158,7 @@ export class SankeyControllerService {
             _color: color,
             _trace: trace
           };
-          link.id += trace.group;
+          link._id += trace.group;
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
             adjacentLinks = [];
@@ -172,6 +181,9 @@ export class SankeyControllerService {
     return networkTraceLinks;
   }
 
+  /**
+   * Helper to create Map for fast lookup
+   */
   getNodeById(nodes) {
     // todo: find the way to declare it only once
     // tslint:disable-next-line
@@ -179,6 +191,9 @@ export class SankeyControllerService {
     return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
   }
 
+  /**
+   * Given links find all nodes they are connecting to and replace id ref with objects
+   */
   getNetworkTraceNodes(networkTraceLinks, nodes) {
     const nodeById = this.getNodeById(nodes);
     return [
@@ -197,6 +212,9 @@ export class SankeyControllerService {
     ];
   }
 
+  /**
+   * Color nodes in gray scale based on group they are relating to.
+   */
   colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
     // set colors for all node types
     const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
@@ -217,12 +235,17 @@ export class SankeyControllerService {
     });
   }
 
+  /**
+   * Given nodes and links find all traces which they are relating to.
+   */
   getRelatedTraces({nodes, links}) {
+    // check nodes links for traces which are comming in and out
     const nodesLinks = [...nodes].reduce(
       (linksAccumulator, {_sourceLinks, _targetLinks}) =>
         linksAccumulator.concat(_sourceLinks, _targetLinks)
       , []
     );
+    // add links traces and reduce to unique values
     return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
   }
 

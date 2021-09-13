@@ -1,9 +1,36 @@
 import visNetwork from 'vis-network';
-import { SankeyNode } from '../../sankey-viewer/components/interfaces';
 
-export interface LinkedNode {
-  fromEdges: Array<any>;
-  toEdges: Array<any>;
+/**
+ * visNetwork.Node interface extended with:
+ * + properties used to calculate initial layout
+ * + optional data from GraphNode
+ */
+export interface TraceNode extends visNetwork.Node,
+  // GraphNode id collides with visNetwork.Node id
+  Partial<Omit<GraphNode, 'id'>> {
+  _visited?: boolean;
+  _fromEdges?: Array<TraceEdge>;
+  _toEdges?: Array<TraceEdge>;
+  label?: string;
+  fullLabel?: string;
+  labelShort?: string;
 }
 
-export type IntermediateNodeType = visNetwork.Node & SankeyNode & LinkedNode;
+/**
+ * visNetwork.Edge interface extended with:
+ * + properties used to calculate initial layout
+ * + optional data from GraphLink
+ */
+export interface TraceEdge extends visNetwork.Edge, Partial<GraphLink> {
+  _visited?: boolean;
+  _fromObj?: TraceNode;
+  _toObj?: TraceNode;
+}
+
+
+export interface TraceData {
+  nodes: TraceNode[];
+  edges: TraceEdge[];
+  source: number;
+  target: number;
+}
