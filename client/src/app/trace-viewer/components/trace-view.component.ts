@@ -9,8 +9,6 @@ import { combineLatest, Subscription, Observable } from 'rxjs';
 
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
-import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { UserError } from 'app/shared/exceptions';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -20,17 +18,13 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { getTraceDetailsGraph } from './traceDetails';
 import { TruncatePipe } from '../../shared/pipes';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { TraceNode, TraceEdge } from './interfaces';
+import { TraceNode } from './interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
   templateUrl: './trace-view.component.html',
   styleUrls: ['./trace-view.component.scss'],
   providers: [
-    CustomisedSankeyLayoutService, {
-      provide: SankeyLayoutService,
-      useExisting: CustomisedSankeyLayoutService
-    },
     TruncatePipe
   ]
 })
@@ -53,7 +47,6 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private sankeyLayout: CustomisedSankeyLayoutService,
     protected readonly truncatePipe: TruncatePipe
   ) {
     const projectName = this.route.snapshot.params.project_name;
@@ -112,9 +105,6 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       sankeyData: {
         nodes: mainNodes
       },
-      sankeyLayout: {
-        nodeLabel
-      },
       truncatePipe: {
         transform: truncate
       }
@@ -141,7 +131,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     const nodes = nodeIds.map(nodeId => {
       const node = mainNodes.find(({id}) => id === nodeId);
       if (node) {
-        const label = nodeLabel(node);
+        const label = node.label;
         const labelShort = truncate(label, 20);
         if (isDevMode() && !label) {
           console.error(`Node ${node.id} has no label property.`, node);
