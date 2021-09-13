@@ -1,6 +1,7 @@
 # Migrations
 
 ## Table of Contents
+* [What The Folders Mean](#what-the-folders-mean)
 * [Why Use Migrations](#why-use-migration)
 * [Installation](#installation)
 * [How Liquibase Works](#how-liquibase-works)
@@ -8,6 +9,14 @@
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
 * [Important References](#important-references)
+
+## What The Folders Mean
+`lifelike-graph`
+- this folder contains migration for the current PROD graph (starting at whatever state on 9/13/2021).
+`new-graph`
+- this folder contains migration to create a **new** graph. Run these migrations first, then run the ones in `lifelike-graph`.
+`small-test-graph`
+- this folder contains migration to create a small subset graph for development or testing purposes. Run these migrations first, then run the ones in `lifelike-graph`.
 
 ## Why Use Migrations
 Using migrations allows us to consistently deploy a copy of the current graph model on any server. Without migrations, we have to keep creating a database backup file and download/upload them. This takes a long time because of how large the files are.
@@ -70,8 +79,8 @@ Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put the
 /usr/local/opt/liquibase/libexec/lib
 > ls -lt
 total 27112
--rw-r--r--@ 1 ...  9466290 Jul 20 13:54 neo4j-jdbc-driver-4.0.3.jar
--rw-r--r--@ 1 ...    25536 Jul 20 13:52 liquibase-neo4j-4.4.3.jar
+-rw-r--r--@ 1 ...  10830098 Sep 10 14:53 neo4j-jdbc-driver-4.0.3.jar
+-rw-r--r--@ 1 ...    25529 Sep 10 14:53 liquibase-neo4j-4.4.3.jar
 -rw-r--r--  1 ...  2303679 Jul  9 09:50 h2-1.4.200.jar
 -rw-r--r--  1 ...   125632 Jul  9 09:50 jaxb-api-2.3.0.jar
 -rw-r--r--  1 ...   255502 Jul  9 09:50 jaxb-core-2.3.0.jar
@@ -82,8 +91,8 @@ total 27112
 -rw-r--r--  1 ...   310104 Jul  9 09:50 snakeyaml-1.27.jar
 ```
 
-## Custom Java Classes
-Some of our queries are advance queries that liquibase does not have support for. To workaround this, we created Java classes (located in `migrations/java`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
+### Custom Java Classes
+Some of our queries are advance queries that liquibase does not have support for. To workaround this, we created `*Handler.java` Java classes (located in `migrations/java`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
 
 ```bash
 cd migrations/java
@@ -91,25 +100,7 @@ mvn package
 cp target/lifelike-graph-migration-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
 ```
 
-To use these class, you need to pass them into the class property:
-```xml
-<!-- the `loopQuery` and `execQuery` are parameters for the LoopHandler class -->
-<changeSet id="..." author="...">
-  <!-- customChange tags allow us to call these Java classes -->
-  <customChange
-    class="edu.ucsd.sbrg.liquibase.neo4j.LoopHandler"
-    loopQuery="..."
-    execQuery="..."/>
-</changeSet>
-```
-
-Loading new data into the graph will also require new Java classes, e.g:
-
-```java
-public interface FileParser { ... }
-public class NcbiFileParser implements FileParser { ... }
-...
-```
+To use these classes, check the comment docs in the source code.
 
 ### Useful Neo4j Java Documentation
 Useful documentations...
