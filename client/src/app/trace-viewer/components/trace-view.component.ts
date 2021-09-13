@@ -3,10 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 
-
-import { combineLatest, Subscription } from 'rxjs';
-
 import visNetwork from 'vis-network';
+
+import { combineLatest, Subscription, Observable } from 'rxjs';
+
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
@@ -34,7 +34,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
   ]
 })
 export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
-  loadTask: BackgroundTask<string, any>;
+  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   sankeyDataSub: Subscription;
 
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -45,7 +45,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   object: FilesystemObject;
 
   sankeyData: GraphFile;
-  networkTraces;
+  networkTraces: Array<GraphTraceNetwork>;
 
   sourceFileURL: string;
 
@@ -67,7 +67,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
-        )
+        ) as Observable<GraphFile>
       );
     });
 
@@ -106,7 +106,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  parseTraceDetails(trace) {
+  parseTraceDetails(trace: GraphTrace) {
     const {
       sankeyData: {
         nodes: mainNodes
@@ -119,20 +119,25 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       }
     } = this;
 
-    const edges = (trace.detail_edges || trace.edges).map(([from, to, d]) => ({
-      from,
-      to,
-      id: uuidv4(),
-      arrows: 'to',
-      label: d.type,
-      ...(d || {})
-    }));
-    const nodeIds = [...edges.reduce((nodesSet, {from, to}) => {
-      nodesSet.add(from);
-      nodesSet.add(to);
-      return nodesSet;
-    }, new Set())];
-    const nodes: Array<Partial<visNetwork.Node>> = nodeIds.map(nodeId => {
+    const edges: visNetwork.Edge[] = trace.detail_edges.map(
+      ([from, to, d]) => ({
+        from,
+        to,
+        id: uuidv4(),
+        arrows: 'to',
+        label: d.type,
+        ...(d || {})
+      })
+    );
+    const nodeIds: Array<visNetwork.IdType> = [...edges.reduce(
+      (nodesSet, {from, to}) => {
+        nodesSet.add(from);
+        nodesSet.add(to);
+        return nodesSet;
+      },
+      new Set<visNetwork.IdType>()
+    )];
+    const nodes = nodeIds.map(nodeId => {
       const node = mainNodes.find(({id}) => id === nodeId);
       if (node) {
         const label = nodeLabel(node);
@@ -147,7 +152,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
           fullLabel: label,
           labelShort,
           title: label
-        };
+        } as visNetwork.Node;
       } else {
         console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
         return {
@@ -155,7 +160,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
           label: nodeId,
           databaseLabel: 'Implicitly defined',
           color: 'red'
-        };
+        } as visNetwork.Node;
       }
     });
 
@@ -172,7 +177,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
    * @param traceHash hash string representing a unique node trace
    * @returns the network trace matching the input hash, or undefined if no match
    */
-  getMatchingTrace(networkTraces: any[], traceHash: string) {
+  getMatchingTrace(networkTraces: GraphTraceNetwork[], traceHash: string) {
     for (const networkTrace of networkTraces) {
       for (const trace of networkTrace.traces) {
         const hash = CryptoJS.MD5(JSON.stringify({
