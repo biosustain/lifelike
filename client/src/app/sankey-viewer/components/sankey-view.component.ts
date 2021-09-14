@@ -68,6 +68,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.selectedLinks = this.selection.pipe(map(currentSelection => {
       return new Set(currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity));
     }));
+    this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
 
     this.loadTask = new BackgroundTask(hashId => {
       return combineLatest(
@@ -293,12 +294,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNode(node) {
     this.toggleSelect(node, 'node');
-    this.openDetailsPanel();
   }
 
   selectLink(link) {
     this.toggleSelect(link, 'link');
-    this.openDetailsPanel();
   }
 
   resetSelection() {
