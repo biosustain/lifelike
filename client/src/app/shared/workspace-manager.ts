@@ -569,11 +569,11 @@ export class WorkspaceManager {
       tab.fontAwesomeIcon = tabDefaults.fontAwesomeIcon;
       tab.defaultsSet = true;
     }
-    return this.navigateByUrl(url, extras);
+    return this.navigateByUrl({url, extras});
   }
 
-  navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
-    extras = extras || {};
+  navigateByUrl(navigationData: NavigationData): Promise<boolean> {
+    let extras = navigationData.extras || {};
 
     const withinWorkspace = this.isWithinWorkspace();
 
@@ -644,24 +644,51 @@ export class WorkspaceManager {
     }
 
     if (!withinWorkspace && extras.forceWorkbench) {
-      return this.router.navigateByUrl(this.workspaceUrl).then(() => {
-        return new Promise((accept, reject) => {
-          // We need a delay because things break if we do it too quickly
-          setTimeout(() => {
-            this.navigateByUrl(url, {
-              ...extras,
-              preferPane: extras.preferPane || extras.preferStartupPane,
-            }).then(accept, reject);
-          }, 10);
+        return this.router.navigateByUrl(this.workspaceUrl).then(() => {
+          return new Promise((accept, reject) => {
+            const navigationArray = [];
+            // If the works only together with parent (like statistical enrichment and enrichment table)
+            // then force the workbench, open the parent on the left and 'child' on the right
+            if (extras.openParentFirst && extras.parentAddress) {
+              // If opening parent on the left, make sure that child will open on the right
+              const parentExtras = {
+                ...extras,
+                openParentFirst: false,
+                preferPane: 'left',
+                matchExistingTab: extras.parentAddress.toString(),
+                shouldReplaceTab: true
+              };
+              extras = {
+                ...extras,
+                openParentFirst: false,
+                preferPane: 'right'
+              };
+              navigationArray.push({url: extras.parentAddress, extras: parentExtras});
+            }
+            navigationArray.push({url: navigationData.url, extras});
+            this.navigateByUrls(navigationArray).then(accept, reject);
+          });
         });
-      });
     } else {
-      return this.router.navigateByUrl(url, extras);
+      return this.router.navigateByUrl(navigationData.url, extras);
     }
   }
 
+  navigateByUrls(navigationData: NavigationData[]): Promise<boolean> {
+    return new Promise((accept, reject) => {
+      navigationData.forEach((navData) => {
+        const extras = navData.extras || {};
+        // We need a delay because things break if we do it too quickly
+        setTimeout(() => {
+          this.navigateByUrl({url: navData.url, extras}).then(accept, reject);
+        }, 10);
+      });
+    });
+
+  }
+
   navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
-    return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
+    return this.navigateByUrl({url: this.router.createUrlTree(commands, extras), extras});
   }
 
   emitEvents(): void {
@@ -761,6 +788,15 @@ export interface WorkspaceNavigationExtras {
   matchExistingTab?: string | RegExp;
   shouldReplaceTab?: (component: any) => boolean;
   forceWorkbench?: boolean;
+  openParentFirst?: boolean;
+  parentAddress?: UrlTree;
+}
+
+// Grouped the arguments required by the navigateByUrl function in order to simplify handling navigateByUrls
+// of missing extras in navigateByUrls
+export interface NavigationData {
+  url: string | UrlTree;
+  extras?: NavigationExtras & WorkspaceNavigationExtras;
 }
 
 function getQueryString(params: { [key: string]: string }) {
