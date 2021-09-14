@@ -10,17 +10,18 @@ import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { BehaviorSubject } from 'rxjs';
 
-const LINK_VALUE = {
+
+export const LINK_VALUE = {
   fixedValue0: 'Fixed Value = 0',
   fixedValue1: 'Fixed Value = 1',
   input_count: 'Input count',
   fraction_of_fixed_node_value: 'Fraction of fixed node value',
 };
-const NODE_VALUE = {
+export const NODE_VALUE = {
   none: 'None',
   fixedValue1: 'Fixed Value = 1'
 };
-const PREDEFINED_VALUE = {
+export const PREDEFINED_VALUE = {
   fixed_height: 'Fixed height',
   input_count: LINK_VALUE.input_count
 };
@@ -128,6 +129,8 @@ export class SankeyControllerService {
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
 
   selectedNetworkTrace;
+
+  oneToMany;
 
   // Trace logic
   /**
@@ -253,7 +256,8 @@ export class SankeyControllerService {
       const {graph: {node_sets}} = this.allData;
       const _inNodes = node_sets[networkTrace.sources];
       const _outNodes = node_sets[networkTrace.targets];
-      if (Math.min(_inNodes.length, _outNodes.length) === 1) {
+      this.oneToMany = Math.min(_inNodes.length, _outNodes.length) === 1;
+      if (this.oneToMany) {
         default_sizing = PREDEFINED_VALUE.input_count;
       } else {
         default_sizing = PREDEFINED_VALUE.fixed_height;
