@@ -20,7 +20,7 @@ public class Neo4jGraph {
     String neo4jHost;
     String neo4jUsername;
     String neo4jPassword;
-    private final Driver driver;
+    Driver driver;
 
     public Neo4jGraph(String neo4jHost, String neo4jUsername, String neo4jPassword) {
         this.neo4jHost = neo4jHost;
@@ -41,13 +41,15 @@ public class Neo4jGraph {
         return this.neo4jPassword;
     }
 
+    public Driver getDriver() { return this.driver; }
+
     private Collection<List<String[]>> partitionData(List<String[]> data, int chunkSize) {
         AtomicInteger counter = new AtomicInteger();
         return data.stream()
                 .collect(Collectors.groupingBy(i -> counter.getAndIncrement() / chunkSize)).values();
     }
 
-    public void execute(String query, List<String[]> data, String[] keys, int chunkSize, int startIndex) throws CustomChangeException {
+    public void execute(String query, List<String[]> data, String[] keys, int chunkSize) throws CustomChangeException {
         if (keys.length != data.get(0).length) {
             throw new IllegalArgumentException("The number of keys do not match number of data entries!");
         }
@@ -55,7 +57,7 @@ public class Neo4jGraph {
         Collection<List<String[]>> chunkedData = this.partitionData(data, chunkSize);
         List<List<Map<String, String[]>>> chunkedCypherParams = new ArrayList<>();
 
-        chunkedData.stream().skip(startIndex).forEach(contentChunk -> {
+        chunkedData.forEach(contentChunk -> {
             List<Map<String, String[]>> cypherParamsChunk = new ArrayList<>();
             contentChunk.forEach(row -> {
                 Map<String, String[]> param = new HashMap<>();
@@ -71,20 +73,10 @@ public class Neo4jGraph {
             chunkedCypherParams.add(cypherParamsChunk);
         });
 
-        final int[] processed = {0};
-        final String[] firstInChunk = {""};
-        try (Session session = this.driver.session()) {
-            chunkedCypherParams.forEach(paramChunk -> {
-                session.writeTransaction(tx -> tx.run(query, parameters("rows", paramChunk)));
-                processed[0] += paramChunk.size();
-                firstInChunk[0] = paramChunk.get(0).toString();
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            String output = "Encountered error! Set startAt to " +
-                    processed[0] + "(value in file: " + firstInChunk[0] + ") to pick up where left off.";
-            System.out.println(output);
-            throw new CustomChangeException();
-        }
+        Session session = this.driver.session();
+        chunkedCypherParams.forEach(paramChunk -> {
+            session.writeTransaction(tx -> tx.run(query, parameters("rows", paramChunk)));
+        });
+        session.close();
     }
 }

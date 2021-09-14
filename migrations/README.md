@@ -135,6 +135,12 @@ We will increment by 10s, as this should allow us to increment alphabetically up
 The simplest changeset `.xml` should be something like this:
 
 ```xml
+<!--
+    < : &lt;
+    > : &gt;
+    some reason the < character breaks the xml, the > is fine;
+    so need to escape that character
+-->
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"

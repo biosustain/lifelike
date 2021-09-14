@@ -15,8 +15,10 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -42,6 +44,10 @@ import java.util.Scanner;
  *            ORDER OF KEYS MUST MATCH ORDER OF DATA IN FILE.
  *            e.g
  *              MATCH (n:New) WHERE n.name = $name AND n.date = $date
+ *
+ *              content in <name>.tsv:
+ *                  name\tdate
+ *                  bob\t12/12/12
  *              queryKeys = "name,date"
  */
 public class FileQueryHandler implements CustomTaskChange {
@@ -113,35 +119,66 @@ public class FileQueryHandler implements CustomTaskChange {
 
         List<String[]> content = new ArrayList<>();
         final int chunkSize = 5000;
-        String header = null;
+        int processed = 0;
+        int skipCount = 0;
+        String line = null;
         try {
             cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), azureSaveFileDir);
 //            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
             Scanner sc = new Scanner(input);
             while (sc.hasNextLine()) {
-                if (header == null) {
-                    header = sc.nextLine();
+                if (skipCount != this.getStartAt()) {
+                    sc.nextLine();
+                    skipCount++;
                 } else {
-                    if (content.size() > 0 && (content.size() % (chunkSize * 2) == 0)) {
-                        graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize, this.getStartAt());
+                    if ((content.size() > 0 && (content.size() % (chunkSize * 4) == 0))) {
+                        try {
+                            graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize);
+                        } catch (CustomChangeException ce) {
+                            ce.printStackTrace();
+                            String output = "Encountered error! Set startAt to line " +
+                                    (processed + 1) + " (last value processed in file: " + line +
+                                    ") to pick up where left off.";
+                            System.out.println(output);
+                            throw new CustomChangeException();
+                        }
+                        processed += content.size();
+                        line = Arrays.toString(content.get(content.size() - 1));
                         content.clear();
                     } else {
                         content.add(sc.nextLine().split(TSVFileExtract.DELIMITER));
                     }
                 }
-
             }
+
             input.close();
             sc.close();
+
+            // wrap up any leftovers in content
+            // since file could be smaller than chunkSize * 4
+            if (content.size() > 0) {
+                try {
+                    graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize);
+                    processed += content.size();
+                    line = Arrays.toString(content.get(content.size() - 1));
+                    content.clear();
+                } catch (CustomChangeException ce) {
+                    ce.printStackTrace();
+                    String output = "Encountered error! Set startAt to line " +
+                            (processed + 1) + " (last value processed in file: " + line +
+                            ") to pick up where left off.";
+                    System.out.println(output);
+                    throw new CustomChangeException();
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
 
-
-
-        // TODO: delete file once done
+        new File(fileExtract.getFilePath()).delete();
+        graph.getDriver().close();
     }
 
     @Override
