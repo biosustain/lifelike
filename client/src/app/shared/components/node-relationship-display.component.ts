@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import {parseURLToDomainName} from '../utils/links';
 
 @Component({
   selector: 'app-node-relationship',
@@ -39,7 +40,7 @@ export class NodeRelationshipComponent {
       sub_labels: [],
       data: {
         hyperlinks: [{
-          domain: '',
+          domain: parseURLToDomainName(databaseUrl),
           url: databaseUrl,
         }],
         references: [{
