@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.liquibase;
 import edu.ucsd.sbrg.liquibase.extract.FileExtract;
 import edu.ucsd.sbrg.liquibase.extract.FileExtractFactory;
 import edu.ucsd.sbrg.liquibase.extract.FileType;
+import edu.ucsd.sbrg.liquibase.extract.TSVFileExtract;
 import edu.ucsd.sbrg.liquibase.neo4j.Neo4jGraph;
 import edu.ucsd.sbrg.liquibase.storage.AzureCloudStorage;
 
@@ -14,8 +15,11 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * <changeSet id="..." author="...">
@@ -107,17 +111,35 @@ public class FileQueryHandler implements CustomTaskChange {
         FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.fileName, azureSaveFileDir);
         Neo4jGraph graph = new Neo4jGraph(neo4jHost, neo4jUsername, neo4jPassword);
 
-        List<String[]> content = null;
+        List<String[]> content = new ArrayList<>();
+        final int chunkSize = 5000;
+        String header = null;
         try {
             cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), azureSaveFileDir);
-            content = fileExtract.getFileContent();
+//            content = fileExtract.getFileContent();
+            FileInputStream input = new FileInputStream(fileExtract.getFilePath());
+            Scanner sc = new Scanner(input);
+            while (sc.hasNextLine()) {
+                if (header == null) {
+                    header = sc.nextLine();
+                } else {
+                    if (content.size() > 0 && (content.size() % (chunkSize * 2) == 0)) {
+                        graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize, this.getStartAt());
+                        content.clear();
+                    } else {
+                        content.add(sc.nextLine().split(TSVFileExtract.DELIMITER));
+                    }
+                }
+
+            }
+            input.close();
+            sc.close();
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
 
-        final int chunkSize = 5000;
-        graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize, this.getStartAt());
+
 
         // TODO: delete file once done
     }

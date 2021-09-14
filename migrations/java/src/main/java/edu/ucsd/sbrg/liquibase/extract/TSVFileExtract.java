@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TSVFileExtract extends FileExtract {
-    static final String DELIMITER = "\t";
+    public static final String DELIMITER = "\t";
 
     public TSVFileExtract(String fileName, String fileDir, String fileExtension) {
         this.fileDir = fileDir;
