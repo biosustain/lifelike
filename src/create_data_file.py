@@ -72,15 +72,15 @@ def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: 
 
 if __name__ == '__main__':
     db = get_database()
-    filename = 'jira-LL-3625-add-entity-type-array.tsv'
+    filename = 'jira-LL-3625-add-entity-type-array-biocyc-compound.tsv'
     filepath = os.path.join(get_data_dir(), filename)
-    zip_filename = 'jira-LL-3625-add-entity-type-array.zip'
+    zip_filename = 'jira-LL-3625-add-entity-type-array-biocyc-compound.zip'
     zip_filepath = os.path.join(get_data_dir(), zip_filename)
     query = """
-    MATCH (n:db_MESH)-[r:HAS_SYNONYM]-(s:Synonym)
-    WITH n, r, [l IN labels(n) WHERE NOT l IN ['db_MESH', 'TopicalDescriptor', 'TreeNumber']] AS labels
-    WHERE size(labels) >= 1
-    RETURN DISTINCT id(n) AS node_id, labels AS node_labels,
+    MATCH (n:db_BioCyc:Compound)-[r:HAS_SYNONYM]-(s:Synonym)
+    WITH n, r, s, [l IN labels(n) WHERE NOT l starts with 'db_' and l <> 'BioCycClass'] as entityLabel
+    WHERE size(entityLabel) >= 1
+    RETURN DISTINCT id(n) AS node_id, entityLabel AS node_labels,
         exists(r.global_inclusion) AS is_global, collect(DISTINCT r.entity_type) AS edge_entity_types
     """
     create_data_file(db, filepath, query)
