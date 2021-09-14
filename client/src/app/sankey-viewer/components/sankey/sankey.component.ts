@@ -193,10 +193,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
 
     this.sankeySelection.on('click', () => {
-      console.log(d3.event, d3.event.defaultPrevented);
       const e = d3.event;
-      console.log(e);
-      console.log(e.bubbles, e.defaultPrevented, e.cancelBubble, e.target);
       if (!e.target.__data__) {
         this.backgroundClicked.emit();
       }
@@ -314,7 +311,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         d3.drag()
           .on('start', function() {
             const e = d3.event;
-            console.log(e);
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.stopImmediatePropagation();
             d3.event.sourceEvent.preventDefault();
@@ -324,7 +320,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           })
           .on('drag', function(d) {
             const e = d3.event;
-            console.log(e);
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.stopImmediatePropagation();
             d3.event.sourceEvent.preventDefault();
@@ -334,11 +329,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           })
           .on('end', function(d) {
             const e = d3.event.sourceEvent;
-            console.log(e);
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.stopImmediatePropagation();
             d3.event.sourceEvent.preventDefault();
-            console.log(e.bubbles, e.defaultPrevented, e.cancelBubble);
             // d3v5 does not include implementation for this
             if (Math.hypot(dx, dy) < 10) {
               return nodeClick(this, d);
