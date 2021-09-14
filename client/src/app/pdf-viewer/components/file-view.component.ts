@@ -647,11 +647,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     return this.fileObjectActions.openShareDialog(this.object);
   }
 
-  openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
-  }
-
   openFileAnnotationHistoryDialog() {
     this.fileObjectActions.openFileAnnotationHistoryDialog(this.object).then(() => {
     }, () => {

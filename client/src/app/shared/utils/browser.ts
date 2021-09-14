@@ -53,7 +53,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
   const openInternally = workspaceManager.isWithinWorkspace()
     && (window.location.hostname === urlObject.hostname
       && (window.location.port || '80') === (urlObject.port || '80'));
-  const pathSearchHash = urlObject.pathname + urlObject.search + urlObject.hash;
+  const pathSearchHash: string = urlObject.pathname + urlObject.search + urlObject.hash;
 
   if (openInternally) {
     let m;
@@ -63,10 +63,13 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
     // for each.
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
     if (m != null) {
-      workspaceManager.navigateByUrl(pathSearchHash, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `^/+folders/${escapeRegExp(m[2])}.*`,
+      workspaceManager.navigateByUrl({
+        url: pathSearchHash,
+        extras: {
+          newTab: true,
+          sideBySide: true,
+          matchExistingTab: `^/+folders/${escapeRegExp(m[2])}.*`,
+        }
       });
 
       return true;
@@ -74,51 +77,56 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
 
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
     if (m != null) {
-      workspaceManager.navigateByUrl(pathSearchHash, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
-        shouldReplaceTab: component => {
-          if (m[1] === 'files') {
-            const fileViewComponent = component as FileViewComponent;
-            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
-            if (fragmentMatch) {
-              fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
-            }
-          } else if (m[1] === 'enrichment-table') {
-            const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
-            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
-            if (fragmentMatch) {
-              enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
-              enrichmentTableViewerComponent.startAnnotationFind(
-                enrichmentTableViewerComponent.annotation.id,
-                enrichmentTableViewerComponent.annotation.text,
-                enrichmentTableViewerComponent.annotation.color
-              );
-            }
+      workspaceManager.navigateByUrl({
+        url: pathSearchHash,
+        extras: {
+          newTab: true,
+          sideBySide: true,
+          matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
+          shouldReplaceTab: component => {
+            if (m[1] === 'files') {
+              const fileViewComponent = component as FileViewComponent;
+              const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+              if (fragmentMatch) {
+                fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
+              }
+            } else if (m[1] === 'enrichment-table') {
+              const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+              const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+              if (fragmentMatch) {
+                enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
+                enrichmentTableViewerComponent.startAnnotationFind(
+                  enrichmentTableViewerComponent.annotation.id,
+                  enrichmentTableViewerComponent.annotation.text,
+                  enrichmentTableViewerComponent.annotation.color
+                );
+              }
 
+              return false;
+            } else if (m[1] === 'bioc') {
+              const fragmentMatch = url.match(/^[^#]+#(.+)$/);
+              const biocViewComponent = component as BiocViewComponent;
+              if (fragmentMatch && fragmentMatch[1]) {
+                (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
+              }
+            }
             return false;
-          } else if (m[1] === 'bioc') {
-            const fragmentMatch = url.match(/^[^#]+#(.+)$/);
-            const biocViewComponent = component as BiocViewComponent;
-            if (fragmentMatch && fragmentMatch[1]) {
-              (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
-            }
-          }
-          return false;
-        },
+          },
+        }
       });
-
       return true;
     }
 
     m = pathSearchHash.match(/^\/projects\/([^\/]+)/);
     if (m != null) {
-      workspaceManager.navigateByUrl(pathSearchHash, {
-        newTab: true,
-        sideBySide: true,
-        // Need the regex end character here so we don't accidentally match a child of this directory
-        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\?$`,
+      workspaceManager.navigateByUrl({
+        url: pathSearchHash,
+        extras: {
+          newTab: true,
+          sideBySide: true,
+          // Need the regex end character here so we don't accidentally match a child of this directory
+          matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\?$`,
+        }
       });
 
       return true;
@@ -135,10 +143,13 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
         coordD,
       ] = pathSearchHash.replace(/^\/dt\/pdf\//, '').split('/');
       const newUrl = `/projects/beta-project/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
-      workspaceManager.navigateByUrl(newUrl, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `^/projects/beta-project/files/${fileId}`,
+      workspaceManager.navigateByUrl({
+        url: newUrl,
+        extras: {
+          newTab: true,
+          sideBySide: true,
+          matchExistingTab: `^/projects/beta-project/files/${fileId}`,
+        }
       });
 
       return true;
@@ -146,10 +157,13 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
 
     m = pathSearchHash.match(/^\/dt\/map\/([0-9a-f]+)$/);
     if (m != null) {
-      workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `/maps/${m[1]}`,
+      workspaceManager.navigateByUrl({
+        url: `/dt/map/${m[1]}`,
+        extras: {
+          newTab: true,
+          sideBySide: true,
+          matchExistingTab: `/maps/${m[1]}`,
+        }
       });
 
       return true;
