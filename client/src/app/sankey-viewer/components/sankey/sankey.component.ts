@@ -30,9 +30,9 @@ import { SankeyData, SankeyNode } from '../interfaces';
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
-    private clipboard: ClipboardService,
-    private readonly snackBar: MatSnackBar,
-    private sankey: SankeyLayoutService
+    readonly clipboard: ClipboardService,
+    readonly snackBar: MatSnackBar,
+    readonly sankey: SankeyLayoutService
   ) {
     Object.assign(sankey, {
       py: 10, // nodePadding
@@ -669,7 +669,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * Run d3 lifecycle code to update DOM
    * @param graph: { links, nodes } to be rendered
    */
-  private updateDOM(graph) {
+  updateDOM(graph) {
     // noinspection JSUnusedLocalSymbols
     const {
       updateNodeRect, updateNodeText,

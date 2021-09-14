@@ -20,7 +20,7 @@ import { CustomisedSankeyLayoutService } from '../services/customised-sankey-lay
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
-import { SankeyControllerService } from '../services/sankey-controller.service';
+import { SankeyControllerService, PREDEFINED_VALUE } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
 
@@ -120,6 +120,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   get selectedNetworkTrace() {
     return this.sankeyController.selectedNetworkTrace;
+  }
+
+  get oneToMany() {
+    const {sankeyController: {options: {selectedPredefinedValueAccessor}}} = this;
+    if (selectedPredefinedValueAccessor.description === PREDEFINED_VALUE.fixed_height) {
+      return false;
+    }
+    if (selectedPredefinedValueAccessor.description === PREDEFINED_VALUE.input_count) {
+      return true;
+    }
+    return this.sankeyController.oneToMany;
   }
 
   paramsSubscription: Subscription;
@@ -300,6 +311,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       delete l._selected;
     });
   }
+
   // endregion
 
   selectPredefinedValueAccessor(accessor) {
@@ -392,5 +404,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.setSearchFocus();
   }
+
   // endregion
 }
