@@ -134,19 +134,19 @@
                   unit="pixel">
             <as-split-area [order]="0">
                 <ng-container *ngIf="oneToMany; else manyToMany">
-                    <app-sankey-on-to-many #sankey
-                                           *ngIf="dataToRender | async"
-                                           (linkClicked)="selectLink($event)"
-                                           (nodeClicked)="selectNode($event)"
-                                           [nodeAlign]="nodeAlign"
-                                           [data]="dataToRender | async"
-                                           [normalizeLinks]="options.normalizeLinks"
-                                           [selectedLinks]="selectedLinks | async"
-                                           [selectedNodes]="selectedNodes | async"
-                                           [searchedEntities]="entitySearchList"
-                                           [focusedNode]="searchFocus">
+                    <app-sankey-one-to-many #sankey
+                                            *ngIf="dataToRender | async"
+                                            (linkClicked)="selectLink($event)"
+                                            (nodeClicked)="selectNode($event)"
+                                            [nodeAlign]="nodeAlign"
+                                            [data]="dataToRender | async"
+                                            [normalizeLinks]="options.normalizeLinks"
+                                            [selectedLinks]="selectedLinks | async"
+                                            [selectedNodes]="selectedNodes | async"
+                                            [searchedEntities]="entitySearchList"
+                                            [focusedNode]="searchFocus">
 
-                    </app-sankey-on-to-many>
+                    </app-sankey-one-to-many>
                 </ng-container>
                 <ng-template #manyToMany>
                     <app-sankey-many-to-many #sankey

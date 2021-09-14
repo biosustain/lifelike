@@ -9,7 +9,7 @@ import * as aligns from '../sankey/aligin';
 
 
 @Component({
-  selector: 'app-sankey-on-to-many',
+  selector: 'app-sankey-one-to-many',
   templateUrl: '../sankey/sankey.component.html',
   styleUrls: ['../sankey/sankey.component.scss', './sankey-one-to-many.component.scss'],
   encapsulation: ViewEncapsulation.None,
