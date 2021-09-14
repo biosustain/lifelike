@@ -655,6 +655,8 @@ export class WorkspaceManager {
                 ...extras,
                 openParentFirst: false,
                 preferPane: 'left',
+                matchExistingTab: extras.parentAddress.toString(),
+                shouldReplaceTab: true
               };
               extras = {
                 ...extras,
