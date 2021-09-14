@@ -142,7 +142,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   align(n, node) {
-    return justify(node, n);
+    return justify(n, node);
   }
 
   update(graph) {
