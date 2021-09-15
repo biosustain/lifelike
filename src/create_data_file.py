@@ -72,13 +72,13 @@ def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: 
 
 if __name__ == '__main__':
     db = get_database()
-    filename = 'jira-LL-3625-add-entity-type-array-chemical.tsv'
+    filename = 'jira-LL-3625-add-entity-type-array-protein.tsv'
     filepath = os.path.join(get_data_dir(), filename)
-    zip_filename = 'jira-LL-3625-add-entity-type-array-chemical.zip'
+    zip_filename = 'jira-LL-3625-add-entity-type-array-protein.zip'
     zip_filepath = os.path.join(get_data_dir(), zip_filename)
     query = """
-    MATCH (n:Chemical)-[r:HAS_SYNONYM]-(s:Synonym)
-    WITH n, r, s, [l IN labels(n) WHERE NOT l starts WITH 'db_' AND NOT l IN ['TopicalDescriptor', 'GlobalInclusion']] as entityLabel
+    MATCH (n:Protein)-[r:HAS_SYNONYM]-(s:Synonym)
+    WITH n, r, s, [l IN labels(n) WHERE NOT l starts WITH 'db_' AND NOT l IN ['Complex', 'GlobalInclusion']] as entityLabel
     WHERE size(entityLabel) >= 1
     RETURN DISTINCT id(n) AS node_id, entityLabel AS node_labels,
         exists(r.global_inclusion) AS is_global, collect(DISTINCT r.entity_type) AS edge_entity_types
