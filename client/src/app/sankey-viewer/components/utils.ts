@@ -51,8 +51,8 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
         return vAsArray;
       }
     }
-    if (v._id) {
-      return `{ id: ${v._id}, ... }`;
+    if (v.id) {
+      return `{ id: ${v.id}, ... }`;
     }
     if (v.index) {
       return `{ index: ${v.index}, ... }`;
