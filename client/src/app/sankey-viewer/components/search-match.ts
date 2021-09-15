@@ -3,7 +3,7 @@ const filterObjects = arr =>
   arr.filter(n => typeof n !== 'object' && n != null);
 
 const nodesIdToMatchTerms = (nodeIds, nodes) =>
-  nodes.filter(gn => nodeIds.includes(gn.id)).map(nodeToMatchTerms);
+  nodes.filter(gn => nodeIds.includes(gn._id)).map(nodeToMatchTerms);
 
 const linkToMatchTerms = (link, graph) =>
   Object.entries(link).reduce((o, [k, n]) => {

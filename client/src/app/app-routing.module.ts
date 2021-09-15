@@ -31,6 +31,7 @@ import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component'
 import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
 import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
 import { TraceViewComponent } from './trace-viewer/components/trace-view.component';
+import { SankeyManyToManyViewComponent } from './sankey-many-to-many-viewer/components/sankey-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -131,6 +132,15 @@ const routes: Routes = [
     path: 'projects/:project_name/sankey/:file_id',
     canActivate: [AuthGuard],
     component: SankeyViewComponent,
+    data: {
+      title: 'Sankey',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    },
+  },
+  {
+    path: 'projects/:project_name/sankey-many-to-many/:file_id',
+    canActivate: [AuthGuard],
+    component: SankeyManyToManyViewComponent,
     data: {
       title: 'Sankey',
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid',

@@ -7,6 +7,10 @@ $node-opacity: .90;
 $node-stroke-opacity: .70;
 $node-active-stroke-opacity: .90;
 $non-active-node-opacity: .50;
+$inactive-colour: lightgray;
+$left-color: blue;
+$right-color: green;
+$multi-color: teal;
 
 
 .wrapper {
@@ -23,7 +27,7 @@ $non-active-node-opacity: .50;
     g {
       // tune out links out when node is hovered
       &:hover .links path {
-        opacity: $non-active-node-opacity;
+
       }
 
       .nodes {
@@ -31,43 +35,63 @@ $non-active-node-opacity: .50;
 
         // tune out other nodes when ones are hovered
         &:hover > g > rect {
-          opacity: $non-active-link-opacity;
+
         }
 
         g {
-          // todo reenable when performance improves
-          //transition: opacity 250ms 250ms;
+          &[highlighted=false], &[selected=false] {
+            & > rect {
+              opacity: 50%;
+            }
+          }
+
+          &[selected=true], &[highlighted=true] {
+            & > rect {
+              opacity: 100% !important;
+            }
+          }
+
+          &[graphRelativePosition=left] {
+            & > rect {
+              fill: $left-color;
+            }
+          }
+
+          &[graphRelativePosition=right] {
+            & > rect {
+              fill: $right-color;
+            }
+          }
+
+          &[graphRelativePosition=multiple] {
+            & > rect {
+              fill: $multi-color;
+            }
+          }
 
           rect {
             cursor: move;
-            fill-opacity: $node-opacity;
+            fill: gray;
             shape-rendering: crispEdges;
             stroke: #000000;
-            stroke-opacity: $node-stroke-opacity;
-            transition: opacity 200ms;
-
-            &:hover {
-              opacity: $node-opacity;
-              stroke: $node-active-stroke-opacity;
-            }
           }
 
           &[selected=false] {
             & > rect {
-              opacity: $non-active-node-opacity;
+
             }
           }
 
-          &[highlighted=true] {
+
+          &[highlighted=left] {
             & > rect {
-              opacity: $node-opacity;
+              fill: $left-color;
             }
           }
 
           &[selected=true] {
             & > rect {
-              opacity: $node-opacity;
-              stroke-opacity: $node-active-stroke-opacity;
+
             }
           }
 
@@ -120,48 +144,72 @@ $non-active-node-opacity: .50;
       }
 
       .links {
-        fill: none;
-        stroke: #000;
-        transition: opacity 200ms;
 
         // tune out other links when one is hovered
         &:hover path {
-          opacity: $non-active-link-opacity;
+
         }
 
         path {
-          // todo reenable when performance improves
-          //transition: opacity 250ms 250ms;
-          opacity: $link-opacity;
-          stroke-opacity: $link-stroke-opacity;
+          fill: gray;
+          stroke: #666;
 
           &.circular {
             stroke-dasharray: 4 4;
           }
 
-          &[selected=false] {
-            opacity: $non-active-link-opacity;
+          &[highlighted=false], &[selected=false] {
+            fill: $inactive-colour;
+            stroke: $inactive-colour;
+          }
+
+          &[highlighted=true], &[selected=true] {
+            fill: gray;
+            stroke: #666;
+          }
+
+          &[highlighted=left] {
+            fill: $left-color;
+            stroke: $left-color;
+          }
+
+          &[highlighted=right] {
+            fill: $right-color;
+            stroke: $right-color;
+          }
+
+          &[highlighted=multiple] {
+            fill: $multi-color;
+            stroke: $multi-color;
           }
 
           &[highlighted=true], &[selectedTrace=true] {
-            opacity: $link-opacity;
-
             &[thickness='0'] {
-              stroke: red;
-              opacity: 100%;
-              stroke-opacity: 100% !important;
+              stroke: #808080;
               stroke-width: 3px;
             }
           }
 
+          &[selected=left] {
+            fill: $left-color;
+            stroke: $left-color;
+          }
+
+          &[selected=right] {
+            fill: $right-color;
+            stroke: $right-color;
+          }
+
+          &[selected=multiple] {
+            fill: $multi-color;
+            stroke: $multi-color;
+          }
 
           &[selected=true], &:hover {
-            opacity: $link-opacity;
-            stroke-opacity: $link-active-stroke-opacity;
+
           }
 
           &[searched=true] {
-            stroke-opacity: $link-active-stroke-opacity;
             stroke: red;
           }
 
