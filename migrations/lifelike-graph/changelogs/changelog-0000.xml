@@ -60,7 +60,18 @@
       a certain type, resulting in a node with two type, one real and one fake. This means that node
       now returns back as a synonym for both types.
     </comment>
-    <sql>MATCH (n:db_CHEBI:Chemical) SET n.original_entity_types = [l IN labels(n) WHERE NOT l IN ['db_CHEBI', 'TopicalDescriptor', 'GlobalInclusion']]</sql>
+    <customChange
+      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (n) WHERE id(n) = apoc.convert.toInteger(row.node_id[0])
+      SET n.original_entity_types = row.entity_types
+      "
+      fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
+      startAt="1"
+      fileType="TSV"
+      queryKeys="node_id,entity_types"/>
+  </changeSet>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
