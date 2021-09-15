@@ -41,12 +41,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal,
+    readonly modalService: NgbModal,
     protected readonly workSpaceManager: WorkspaceManager,
-    private router: Router,
-    private sessionStorage: SessionStorageService,
-    private readonly filesystemObjectActions: FilesystemObjectActions,
-    private sankeyController: SankeyControllerService
+    readonly router: Router,
+    readonly sessionStorage: SessionStorageService,
+    readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly sankeyController: SankeyControllerService
   ) {
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -121,17 +121,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   get selectedNetworkTrace() {
     return this.sankeyController.selectedNetworkTrace;
-  }
-
-  get oneToMany() {
-    const {sankeyController: {options: {selectedPredefinedValueAccessor}}} = this;
-    if (selectedPredefinedValueAccessor.description === PREDEFINED_VALUE.fixed_height) {
-      return false;
-    }
-    if (selectedPredefinedValueAccessor.description === PREDEFINED_VALUE.input_count) {
-      return true;
-    }
-    return this.sankeyController.oneToMany;
   }
 
   paramsSubscription: Subscription;
@@ -310,7 +299,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       delete l._selected;
     });
   }
-
   // endregion
 
   selectPredefinedValueAccessor(accessor) {
@@ -403,6 +391,5 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.setSearchFocus();
   }
-
   // endregion
 }
