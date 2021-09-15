@@ -24,7 +24,7 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
   });
   nodes.forEach(n => n.fixedValue = n._fixedValue);
   d3Sankey.sankeyCircular()
-    .nodeId(n => n.id)
+    .nodeId(n => n._id)
     .nodePadding(1)
     .nodePaddingRatio(0.5)
     .nodeAlign(d3Sankey.sankeyRight)
@@ -82,7 +82,7 @@ export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
     l.t = l.target;
   });
   d3Sankey.sankeyCircular()
-    .nodeId(n => n.id)
+    .nodeId(n => n._id)
     .nodePadding(1)
     .nodePaddingRatio(0.5)
     .nodeAlign(d3Sankey.sankeyRight)
@@ -96,7 +96,7 @@ export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
   const dt = new DirectedTraversal([_inNodes, _outNodes]);
   dt.reverse();
   [...nodes].sort(dt.depthSorter()).forEach(n => {
-    if (dt.startNodes.includes(n.id)) {
+    if (dt.startNodes.includes(n._id)) {
       n.value = 1;
     } else {
       n.value = 0;

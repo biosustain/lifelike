@@ -91,7 +91,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() selectedNodes = new Set<object>();
   @Input() searchedEntities = new Set<object>();
   @Input() focusedNode;
-  @Input() highlightCircular;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
@@ -282,10 +281,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const {linkClick, pathMouseOver, pathMouseOut} = this;
     d3Links
       .on('click', function(data) {
-        const e = d3.event;
-        console.log(e);
-        console.log(e.bubbles, e.defaultPrevented, e.cancelBubble);
-        d3.event.stopPropagation();
         return linkClick(this, data);
       })
       .on('mouseover', function(data) {
@@ -310,28 +305,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .call(
         d3.drag()
           .on('start', function() {
-            const e = d3.event;
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.stopImmediatePropagation();
-            d3.event.sourceEvent.preventDefault();
             dx = 0;
             dy = 0;
             d3.select(this).raise();
           })
           .on('drag', function(d) {
-            const e = d3.event;
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.stopImmediatePropagation();
-            d3.event.sourceEvent.preventDefault();
             dx += d3.event.dx;
             dy += d3.event.dy;
             dragmove(this, d);
           })
           .on('end', function(d) {
-            const e = d3.event.sourceEvent;
-            d3.event.sourceEvent.stopPropagation();
-            d3.event.sourceEvent.stopImmediatePropagation();
-            d3.event.sourceEvent.preventDefault();
             // d3v5 does not include implementation for this
             if (Math.hypot(dx, dy) < 10) {
               return nodeClick(this, d);
@@ -363,11 +346,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   async pathMouseOut(element, _data) {
-    this.unhighlightTraces();
+    this.unhighlightLinks();
   }
 
   async nodeMouseOver(element, data) {
-    const {highlightCircular} = this;
     this.highlightNode(element);
     const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
@@ -377,7 +359,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async nodeMouseOut(element, _data) {
     this.unhighlightNode(element);
-    this.unhighlightTraces();
+    this.unhighlightLinks();
   }
 
   scaleZoom(scaleBy) {
@@ -580,7 +562,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({_trace}) => traces.has(_trace));
   }
 
-  unhighlightTraces() {
+  unhighlightLinks() {
     this.linkSelection
       .attr('highlighted', undefined);
   }
@@ -742,7 +724,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           .attr('d', linkPath),
         exit => exit.remove()
       )
-      .attr('fill', linkColor)
+      .style('fill', linkColor)
       .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
@@ -807,7 +789,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         updateNodeRect(
           joined
             .select('rect')
-            .attr('fill', nodeColor)
+            .style('fill', nodeColor)
         );
         joined.select('g')
           .call(textGroup => {
