@@ -23,6 +23,7 @@ import { isNodeMatching, isLinkMatching } from './search-match';
 import { SankeyControllerService, PREDEFINED_VALUE } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
+import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -104,7 +105,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get options() {
-    return this.sankeyController.options;
+    return this.sankeyController.options as SankeyManyToManyAdvancedOptions;
   }
 
   get dataToRender() {
