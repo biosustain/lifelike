@@ -1,17 +1,27 @@
-$link-opacity: .75;
-$link-stroke-opacity: .2;
-$link-active-stroke-opacity: .85;
-$non-active-link-opacity: .45;
+$darken-link-stroke: 5%;
+$link-lightness: 65%;
+$link-saturation: 30%;
+$link-color: hsl(0, 0, $link-lightness);
+$inactive-colour: lighten($link-color, 25%);
+$link-left-color: hsl(240, $link-saturation, $link-lightness);
+$link-right-color: hsl(120, $link-saturation, $link-lightness);
+$link-multi-color: hsl(180, $link-saturation, $link-lightness);
 
-$node-opacity: .90;
-$node-stroke-opacity: .70;
-$node-active-stroke-opacity: .90;
-$non-active-node-opacity: .50;
-$inactive-colour: lightgray;
-$left-color: blue;
-$right-color: green;
-$multi-color: teal;
+$darken-node-stroke: 100%;
+$node-lightness: 60%;
+$node-saturation: 40%;
+$node-color: hsl(0, 0, $node-lightness);
+$node-border-colour: darken($node-color, $darken-node-stroke);
+$node-left-color: hsl(240, $node-saturation, $node-lightness);
+$node-right-color: hsl(120, $node-saturation, $node-lightness);
+$node-multi-color: hsl(180, $node-saturation, $node-lightness);
 
+$search-color: red;
+
+@mixin link-color($color) {
+  fill: $color;
+  stroke: darken($color, $darken-link-stroke);
+}
 
 .wrapper {
   position: relative;
@@ -31,6 +41,7 @@ $multi-color: teal;
       }
 
       .nodes {
+        shape-rendering: crispEdges;
         z-index: 1;
 
         // tune out other nodes when ones are hovered
@@ -53,27 +64,25 @@ $multi-color: teal;
 
           &[graphRelativePosition=left] {
             & > rect {
-              fill: $left-color;
+              fill: $node-left-color;
             }
           }
 
           &[graphRelativePosition=right] {
             & > rect {
-              fill: $right-color;
+              fill: $node-right-color;
             }
           }
 
           &[graphRelativePosition=multiple] {
             & > rect {
-              fill: $multi-color;
+              fill: $node-multi-color;
             }
           }
 
           rect {
-            cursor: move;
-            fill: gray;
-            shape-rendering: crispEdges;
-            stroke: #000000;
+            fill: $node-color;
+            stroke: $node-border-colour;
           }
 
           &[selected=false] {
@@ -85,7 +94,7 @@ $multi-color: teal;
 
           &[highlighted=left] {
             & > rect {
-              fill: $left-color;
+              fill: $node-left-color;
             }
           }
 
@@ -97,7 +106,7 @@ $multi-color: teal;
 
           &[searched=true] .text-shadow {
             fill: rgba(187, 187, 187, 0.5);
-            stroke: red;
+            stroke: $search-color;
             transform-origin: 15px 0;
             transform: scaleY(1.5) scaleX(1.1);
             filter: none;
@@ -151,58 +160,49 @@ $multi-color: teal;
         }
 
         path {
-          fill: gray;
-          stroke: #666;
+          @include link-color($link-color);
 
           &.circular {
             stroke-dasharray: 4 4;
           }
 
           &[highlighted=false], &[selected=false] {
-            fill: $inactive-colour;
-            stroke: $inactive-colour;
+            @include link-color($inactive-colour);
           }
 
           &[highlighted=true], &[selected=true] {
-            fill: gray;
-            stroke: #666;
+            @include link-color($link-color);
           }
 
           &[highlighted=left] {
-            fill: $left-color;
-            stroke: $left-color;
+            @include link-color($link-left-color);
           }
 
           &[highlighted=right] {
-            fill: $right-color;
-            stroke: $right-color;
+            @include link-color($link-right-color);
           }
 
           &[highlighted=multiple] {
-            fill: $multi-color;
-            stroke: $multi-color;
+            @include link-color($link-multi-color);
           }
 
           &[highlighted=true], &[selectedTrace=true] {
             &[thickness='0'] {
-              stroke: #808080;
+              stroke: darken($link-color, $darken-link-stroke);
               stroke-width: 3px;
             }
           }
 
           &[selected=left] {
-            fill: $left-color;
-            stroke: $left-color;
+            @include link-color($link-left-color);
           }
 
           &[selected=right] {
-            fill: $right-color;
-            stroke: $right-color;
+            @include link-color($link-right-color);
           }
 
           &[selected=multiple] {
-            fill: $multi-color;
-            stroke: $multi-color;
+            @include link-color($link-multi-color);
           }
 
           &[selected=true], &:hover {
@@ -210,11 +210,11 @@ $multi-color: teal;
           }
 
           &[searched=true] {
-            stroke: red;
+            stroke: $search-color;
           }
 
           &[focused=true] {
-            fill: red;
+            fill: $search-color;
           }
         }
       }
