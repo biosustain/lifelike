@@ -23,7 +23,7 @@
       query="
       UNWIND $rows AS row
       MATCH (n:db_MESH) WHERE n.eid = row.entity_id[0]
-      SET n.original_entity_types = row.entity_types
+      SET n.original_entity_types = row.entity_type
       "
       fileName="jira-LL-3625-add-entity-type-array-mesh.zip"
       startAt="1"
@@ -43,7 +43,7 @@
       query="
       UNWIND $rows AS row
       MATCH (n:Compound) WHERE n.eid = row.entity_id[0]
-      SET n.original_entity_types = row.entity_types
+      SET n.original_entity_types = row.entity_type
       "
       fileName="jira-LL-3625-add-entity-type-array-compound.zip"
       startAt="1"
@@ -63,7 +63,7 @@
       query="
       UNWIND $rows AS row
       MATCH (n:Chemical) WHERE n.eid = row.entity_id[0]
-      SET n.original_entity_types = row.entity_types
+      SET n.original_entity_types = row.entity_type
       "
       fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
       startAt="1"
@@ -94,7 +94,7 @@
       query="
       UNWIND $rows AS row
       MATCH (n:Protein) WHERE n.eid = row.entity_id[0]
-      SET n.original_entity_types = row.entity_types
+      SET n.original_entity_types = row.entity_type
       "
       fileName="jira-LL-3625-add-entity-type-array-protein.zip"
       startAt="1"
