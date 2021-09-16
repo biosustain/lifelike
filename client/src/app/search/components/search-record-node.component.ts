@@ -8,6 +8,7 @@ import { stringToHex } from 'app/shared/utils';
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
+import {parseURLToDomainName} from '../../shared/utils/links';
 
 @Component({
   selector: 'app-search-record-node',
@@ -19,6 +20,7 @@ export class SearchRecordNodeComponent {
   private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
+  private readonly defaultDomain = 'Knowledge Graph';
 
   @Input() params: GraphSearchParameters;
 
@@ -39,13 +41,14 @@ export class SearchRecordNodeComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     let url: URL | string;
     let domain = '';
+
     try {
       url = new URL(getLink(this.node));
-      domain = this.getNodeDomain(url.hostname);
+      domain = parseURLToDomainName(url.href, this.defaultDomain);
     } catch {
       // Expect a TypeError here if the url was invalid
       url = getLink(this.node);
-      domain = 'Knowledge Graph';
+      domain = this.defaultDomain;
     }
 
     dataTransfer.setData('text/plain', this.node.node.displayName);
@@ -66,11 +69,20 @@ export class SearchRecordNodeComponent {
     } as Partial<UniversalGraphNode>));
   }
 
-  getNodeDomain(hostname: string): string {
-    switch (hostname) {
+  getNodeDomain(url: URL): string {
+    switch (url.hostname) {
       case DBHostname.UniProt:
         return 'UniProt';
       case DBHostname.NCBI:
+        if (url.href.includes('mesh')) {
+          return 'MeSH';
+        }
+        if (url.href.includes('Taxonomy')) {
+          return 'NCBI Taxonomy';
+        }
+        if (url.href.includes('gene')) {
+          return 'NCBI Gene';
+        }
         return 'NCBI';
       case DBHostname.ChEBI:
         return 'ChEBI';

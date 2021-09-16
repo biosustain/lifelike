@@ -19,21 +19,13 @@
       </div>
     </div>
 
-    <ng-container *ngIf="selected.entity.data?.sources && selected.entity.data?.sources.length">
+    <ng-container *ngIf="(selected.entity.data?.sources && selected.entity.data?.sources.length)
+                        || (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
       <fieldset class="fieldset-properties mt-4">
-        <legend>Sources</legend>
-        <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
-                         [ngModel]="selected.entity.data.sources"
+        <legend>Links</legend>
+        <app-links-panel [ngModel]="selected.entity.data.sources"
                          [showHeader]="false" [editable]="false"></app-links-panel>
-      </fieldset>
-    </ng-container>
-
-    <ng-container
-      *ngIf="selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length">
-      <fieldset class="fieldset-properties mt-4">
-        <legend>Hyperlinks</legend>
-        <app-links-panel title="Hyperlinks" singularTitle="Hyperlink"
-                         [ngModel]="selected.entity.data.hyperlinks"
+        <app-links-panel [ngModel]="selected.entity.data.hyperlinks"
                          [showHeader]="false" [editable]="false"></app-links-panel>
       </fieldset>
     </ng-container>
