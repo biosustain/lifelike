@@ -170,6 +170,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .then(_ => _, _ => _);
   }
 
+  resetView() {
+    this.sankeyController.resetController();
+  }
+
   // region Zoom
   resetZoom() {
     if (this.sankey) {

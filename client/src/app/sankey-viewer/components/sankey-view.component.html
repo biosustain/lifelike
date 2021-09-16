@@ -73,6 +73,11 @@
                     </ng-template>
                 </button>
             </ng-container>
+            <button (click)="resetView()" class="btn btn-secondary ml-1 mr-auto" container="body"
+                    ngbTooltip="Reset the view" placement="bottom"
+                    type="button">
+                <i class="fas fa-sync"></i>
+            </button>
             <div class="btn-group btn-group-toggle mx-auto">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
