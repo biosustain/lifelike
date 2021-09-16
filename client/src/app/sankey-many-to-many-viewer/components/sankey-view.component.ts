@@ -9,7 +9,10 @@ import { SankeyViewComponent } from '../../sankey-viewer/components/sankey-view.
 @Component({
   selector: 'app-sankey-viewer',
   templateUrl: './sankey-view.component.html',
-  styleUrls: ['./sankey-view.component.scss'],
+  styleUrls: [
+    '../../sankey-viewer/components/sankey-view.component.scss',
+    './sankey-view.component.scss'
+  ],
   providers: [
     CustomisedSankeyManyToManyLayoutService, {
       provide: SankeyLayoutService,
