@@ -18,9 +18,10 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
   readonly errors = {
     url: 'The provided URL is not valid.',
   };
+  readonly domainDefault = 'Link';
 
   readonly form: FormGroup = new FormGroup({
-    domain: new FormControl('', Validators.required),
+    domain: new FormControl(''),
     url: new FormControl('', [
       Validators.required,
       potentiallyInternalUrl,
@@ -47,6 +48,7 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
     for (const key of Object.keys(value)) {
       this.link[key] = value[key];
     }
+    this.link.domain = this.link.domain || this.domainDefault;
     return this.link;
   }
 

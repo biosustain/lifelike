@@ -130,10 +130,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
       if (confirm('Leave editor? Changes you made may not be saved.')) {
-        this.workspaceManager.navigateByUrl(this.returnUrl);
+        this.workspaceManager.navigateByUrl({url: this.returnUrl});
       }
     } else {
-      this.workspaceManager.navigateByUrl(this.returnUrl);
+      this.workspaceManager.navigateByUrl({url: this.returnUrl});
     }
   }
 }
