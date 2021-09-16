@@ -24,7 +24,7 @@ import { SankeyData, SankeyNode } from '../interfaces';
 
 @Component({
   selector: 'app-sankey',
-  templateUrl: './sankey.component.html',
+  templateUrl: './sankey.component.svg',
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
@@ -32,7 +32,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
-    readonly sankey: SankeyLayoutService
+    readonly sankey: SankeyLayoutService,
+    readonly wrapper: ElementRef
   ) {
     Object.assign(sankey, {
       py: 10, // nodePadding
@@ -73,8 +74,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // shallow copy of input data
   private _data: SankeyData = {} as SankeyData;
 
-  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
@@ -87,7 +86,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Output() adjustLayout = new EventEmitter();
 
   @Input() normalizeLinks = true;
-  @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
   @Input() searchedEntities = new Set<object>();
   @Input() focusedNode;
