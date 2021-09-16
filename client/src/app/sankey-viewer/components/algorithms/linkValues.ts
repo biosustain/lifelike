@@ -161,6 +161,7 @@ export const byProperty = property => ({links}) => {
     }
   };
 };
+
 export const byArrayProperty = property => ({links}) => {
   links.forEach(l => {
     const [v1, v2] = l[property];

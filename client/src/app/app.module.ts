@@ -36,6 +36,8 @@ import { BiocViewerLibModule } from './bioc-viewer/bioc-viewer-lib.module';
 import { SankeyViewerLibModule } from './sankey-viewer/sankey-viewer-lib.module';
 import { TraceViewComponent } from './trace-viewer/components/trace-view.component';
 import { TraceViewerLibModule } from './trace-viewer/trace-viewer-lib.module';
+import { SankeyManyToManyViewComponent } from './sankey-many-to-many-viewer/components/sankey-view.component';
+import { SankeyManyToManyViewerLibModule } from './sankey-many-to-many-viewer/sankey-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -67,6 +69,7 @@ import { TraceViewerLibModule } from './trace-viewer/trace-viewer-lib.module';
     ChartsModule,
     DrawingToolModule,
     SankeyViewerLibModule,
+    SankeyManyToManyViewerLibModule,
     TraceViewerLibModule,
     NgbModule,
     FileNavigatorModule,

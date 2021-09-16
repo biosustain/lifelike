@@ -94,6 +94,8 @@ export interface SankeyLink extends GraphLink {
   _trace?: GraphTrace;
   _source?: SankeyNode | string | number;
   _target?: SankeyNode | string | number;
+  _sourceLinks?: SankeyLink[];
+  _targetLinks?: SankeyLink[];
   _width?: number;
   _y0?: number;
   _y1?: number;
