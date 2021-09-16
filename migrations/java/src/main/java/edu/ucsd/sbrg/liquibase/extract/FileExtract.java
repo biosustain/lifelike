@@ -33,4 +33,6 @@ public abstract class FileExtract implements Extract {
     public String getFilePath() {
         return this.filePath;
     }
+
+    public abstract String getDelimiter();
 }
