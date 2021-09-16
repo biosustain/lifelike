@@ -33,7 +33,7 @@ jobs:
             - name: Start docker
               run: |-
                 docker-compose -f docker-compose.ci-test.yml up -d
-                ./appserver/bin/wait-for-flask
+                docker-compose exec appserver timeout 300 bin/wait-for-flask
 
             - name: Appserver Linting Checks
               run: |-
