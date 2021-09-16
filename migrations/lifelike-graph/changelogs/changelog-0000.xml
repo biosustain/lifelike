@@ -48,8 +48,7 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-biocyc-compound.zip"
       startAt="1"
-      fileType="TSV"
-      queryKeys="node_id,entity_types"/>
+      fileType="TSV"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-chebi-chemical" author="Binh Vu">
@@ -69,8 +68,7 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
       startAt="1"
-      fileType="TSV"
-      queryKeys="node_id,entity_types"/>
+      fileType="TSV"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
@@ -101,8 +99,7 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-protein.zip"
       startAt="1"
-      fileType="TSV"
-      queryKeys="node_id,entity_types"/>
+      fileType="TSV"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-gene" author="Binh Vu">
