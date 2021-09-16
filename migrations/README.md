@@ -1,5 +1,7 @@
 # Migrations
 
+**IMPORTANT** Read [SETUP.md](SETUP.md) to set up Java project and liquibase.
+
 ## Table of Contents
 * [What The Folders Mean](#what-the-folders-mean)
 * [Why Use Migrations](#why-use-migration)
@@ -8,8 +10,6 @@
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
 * [Important References](#important-references)
-
-Read [SETUP.md](SETUP.md) to set up Java project and liquibase.
 
 ## What The Folders Mean
 `lifelike-graph`
