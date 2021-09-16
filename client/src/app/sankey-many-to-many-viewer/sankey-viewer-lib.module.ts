@@ -14,16 +14,16 @@ import { SharedModule } from 'app/shared/shared.module';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
-import { SankeyViewComponent } from './components/sankey-view.component';
 import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-provider.service';
-import { SankeyModule } from './components/sankey/sankey.module';
-import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
+import { SankeyManyToManyModule } from './components/sankey/sankey.module';
+import { SankeyManyToManyViewComponent } from './components/sankey-view.component';
+import { SankeyManyToManyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
+import { SankeyDetailsPanelModule } from '../sankey-viewer/components/details-panel/sankey-details-panel.module';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent
+    SankeyManyToManyViewComponent,
+    SankeyManyToManyAdvancedPanelComponent
   ],
   imports: [
     CommonModule,
@@ -42,7 +42,7 @@ import { SankeyDetailsPanelModule } from './components/details-panel/sankey-deta
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeyModule,
+    SankeyManyToManyModule,
     SankeyDetailsPanelModule
   ],
   entryComponents: [],
@@ -52,8 +52,8 @@ import { SankeyDetailsPanelModule } from './components/details-panel/sankey-deta
     multi: true,
   }],
   exports: [
-    SankeyViewComponent
+    SankeyManyToManyViewComponent
   ],
 })
-export class SankeyViewerLibModule {
+export class SankeyManyToManyViewerLibModule {
 }
