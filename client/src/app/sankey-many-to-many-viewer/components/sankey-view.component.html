@@ -74,12 +74,12 @@
                 </button>
             </ng-container>
             <button
-                    [appLink]="['/projects', object?.project.name, 'sankey-many-to-many', object?.hashId]"
+                    [appLink]="['/projects', object?.project.name, 'sankey', object?.hashId]"
                     class="btn btn-secondary mr-auto ml-1"
                     container="body"
-                    ngbTooltip="Trace View" placement="bottom"
+                    ngbTooltip="Default View" placement="bottom"
                     type="button">
-                Trace View
+                Default View
             </button>
             <div class="btn-group btn-group-toggle mx-auto">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
@@ -138,20 +138,20 @@
             </div>
         </app-module-header>
         <div class="relative w-100 h-100">
-            <app-sankey #sankey
-                        *ngIf="dataToRender | async"
-                        (linkClicked)="selectLink($event)"
-                        (nodeClicked)="selectNode($event)"
-                        (backgroundClicked)="closeDetailsPanel()"
-                        [nodeAlign]="nodeAlign"
-                        [data]="dataToRender | async"
-                        [normalizeLinks]="options.normalizeLinks"
-                        [selectedLinks]="selectedLinks | async"
-                        [selectedNodes]="selectedNodes | async"
-                        [searchedEntities]="entitySearchList"
-                        [focusedNode]="searchFocus">
-
-            </app-sankey>
+            <app-sankey-many-to-many #sankey
+                                     *ngIf="dataToRender | async"
+                                     (linkClicked)="selectLink($event)"
+                                     (nodeClicked)="selectNode($event)"
+                                     (backgroundClicked)="closeDetailsPanel()"
+                                     [highlightCircular]="options.highlightCircular"
+                                     [nodeAlign]="nodeAlign"
+                                     [data]="dataToRender | async"
+                                     [normalizeLinks]="options.normalizeLinks"
+                                     [selectedLinks]="selectedLinks | async"
+                                     [selectedNodes]="selectedNodes | async"
+                                     [searchedEntities]="entitySearchList"
+                                     [focusedNode]="searchFocus">
+            </app-sankey-many-to-many>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"

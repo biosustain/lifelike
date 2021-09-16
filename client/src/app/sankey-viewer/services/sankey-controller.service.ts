@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 
-import { SankeyAdvancedOptions, ValueGenerator, SankeyData, SankeyTraceNetwork, SankeyLink } from '../components/interfaces';
+import { SankeyAdvancedOptions, ValueGenerator, SankeyData, SankeyTraceNetwork, SankeyLink, SankeyNode } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
 import prescalers from '../components/algorithms/prescalers';
@@ -64,8 +64,8 @@ export class SankeyControllerService {
       {
         description: PREDEFINED_VALUE.fixed_height,
         callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
         }
       },
       {
@@ -130,7 +130,13 @@ export class SankeyControllerService {
 
   selectedNetworkTrace;
 
-  oneToMany;
+  get oneToMany() {
+    const {graph: {node_sets}} = this.allData;
+    const {selectedNetworkTrace} = this;
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
+    return Math.min(_inNodes.length, _outNodes.length) === 1;
+  }
 
   // Trace logic
   /**
@@ -184,11 +190,11 @@ export class SankeyControllerService {
   /**
    * Helper to create Map for fast lookup
    */
-  getNodeById(nodes) {
+  getNodeById<T extends {id: number}>(nodes: T[]) {
     // todo: find the way to declare it only once
     // tslint:disable-next-line
     const id = ({id}, i?, nodes?) => id;
-    return new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
+    return new Map<number, T>(nodes.map((d, i) => [id(d, i, nodes), d]));
   }
 
   /**
@@ -208,7 +214,7 @@ export class SankeyControllerService {
         o.add(_source);
         o.add(_target);
         return o;
-      }, new Set())
+      }, new Set<SankeyNode>())
     ];
   }
 
@@ -253,10 +259,6 @@ export class SankeyControllerService {
   getNetworkTraceDefaultSizing(networkTrace) {
     let {default_sizing} = networkTrace;
     if (!default_sizing) {
-      const {graph: {node_sets}} = this.allData;
-      const _inNodes = node_sets[networkTrace.sources];
-      const _outNodes = node_sets[networkTrace.targets];
-      this.oneToMany = Math.min(_inNodes.length, _outNodes.length) === 1;
       if (this.oneToMany) {
         default_sizing = PREDEFINED_VALUE.input_count;
       } else {
@@ -403,7 +405,7 @@ export class SankeyControllerService {
     }
   }
 
-  private linkGraph(data) {
+  linkGraph(data) {
     data.links.forEach(l => {
       l.id = uuidv4();
     });
