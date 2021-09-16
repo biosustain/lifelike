@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 public class CSVFileExtract extends FileExtract {
+    @Override
+    public String getDelimiter() {
+        return null;
+    }
+
     /**
      * TODO
      * http://opencsv.sourceforge.net/#where_can_i_get_it

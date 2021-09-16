@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.liquibase;
 import edu.ucsd.sbrg.liquibase.extract.FileExtract;
 import edu.ucsd.sbrg.liquibase.extract.FileExtractFactory;
 import edu.ucsd.sbrg.liquibase.extract.FileType;
-import edu.ucsd.sbrg.liquibase.extract.TSVFileExtract;
 import edu.ucsd.sbrg.liquibase.neo4j.Neo4jGraph;
 import edu.ucsd.sbrg.liquibase.storage.AzureCloudStorage;
 
@@ -31,8 +30,7 @@ import java.util.Scanner;
  *       query="..."
  *       fileName="<filename>.zip"
  *       startAt="0"
- *       fileType="TSV"
- *       queryKeys="..."/>
+ *       fileType="TSV"/>
  * </changeSet>
  *
  * query: the cypher query to be executed.
@@ -40,21 +38,11 @@ import java.util.Scanner;
  * startAt: the starting index (default should be zero) for the data processing.
  *          headers are not included, so first data line is zero.
  * fileType: the type of file within the zip (e.g CSV, TSV, etc...).
- * queryKeys: a comma separated string representing the keys used in query.
- *            ORDER OF KEYS MUST MATCH ORDER OF DATA IN FILE.
- *            e.g
- *              MATCH (n:New) WHERE n.name = $name AND n.date = $date
- *
- *              content in <name>.tsv:
- *                  name\tdate
- *                  bob\t12/12/12
- *              queryKeys = "name,date"
  */
 public class FileQueryHandler implements CustomTaskChange {
     private String query;
     private String fileName;
     private String fileType;
-    private String[] queryKeys;
     private int startAt;
     private ResourceAccessor resourceAccessor;
 
@@ -82,14 +70,6 @@ public class FileQueryHandler implements CustomTaskChange {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
-    }
-
-    public void setQueryKeys(String queryKeys) {
-        this.queryKeys = queryKeys.split(",");
-    }
-
-    public String[] getQueryKeys() {
-        return this.queryKeys;
     }
 
     public int getStartAt() {
@@ -122,32 +102,38 @@ public class FileQueryHandler implements CustomTaskChange {
         int processed = 0;
         int skipCount = 0;
         String line = null;
+        String[] header = null;
         try {
             cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), azureSaveFileDir);
 //            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
             Scanner sc = new Scanner(input);
             while (sc.hasNextLine()) {
-                if (skipCount != this.getStartAt()) {
-                    sc.nextLine();
+                if (header == null) {
+                    header = sc.nextLine().split(fileExtract.getDelimiter());
                     skipCount++;
                 } else {
-                    if ((content.size() > 0 && (content.size() % (chunkSize * 4) == 0))) {
-                        try {
-                            graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize);
-                        } catch (CustomChangeException ce) {
-                            ce.printStackTrace();
-                            String output = "Encountered error! Set startAt to line " +
-                                    (processed + 1) + " (last value processed in file: " + line +
-                                    ") to pick up where left off.";
-                            System.out.println(output);
-                            throw new CustomChangeException();
-                        }
-                        processed += content.size();
-                        line = Arrays.toString(content.get(content.size() - 1));
-                        content.clear();
+                    if (skipCount != this.getStartAt()) {
+                        sc.nextLine();
+                        skipCount++;
                     } else {
-                        content.add(sc.nextLine().split(TSVFileExtract.DELIMITER));
+                        if ((content.size() > 0 && (content.size() % (chunkSize * 4) == 0))) {
+                            try {
+                                graph.execute(this.getQuery(), content, header, chunkSize);
+                            } catch (CustomChangeException ce) {
+                                ce.printStackTrace();
+                                String output = "Encountered error! Set startAt to line " +
+                                        (processed + 1) + " (last value processed in file: " + line +
+                                        ") to pick up where left off.";
+                                System.out.println(output);
+                                throw new CustomChangeException();
+                            }
+                            processed += content.size();
+                            line = Arrays.toString(content.get(content.size() - 1));
+                            content.clear();
+                        } else {
+                            content.add(sc.nextLine().split(fileExtract.getDelimiter()));
+                        }
                     }
                 }
             }
@@ -159,7 +145,7 @@ public class FileQueryHandler implements CustomTaskChange {
             // since file could be smaller than chunkSize * 4
             if (content.size() > 0) {
                 try {
-                    graph.execute(this.getQuery(), content, this.getQueryKeys(), chunkSize);
+                    graph.execute(this.getQuery(), content, header, chunkSize);
                     processed += content.size();
                     line = Arrays.toString(content.get(content.size() - 1));
                     content.clear();

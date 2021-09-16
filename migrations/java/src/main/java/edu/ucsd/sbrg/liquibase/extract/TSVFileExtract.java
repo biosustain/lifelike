@@ -7,13 +7,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TSVFileExtract extends FileExtract {
-    public static final String DELIMITER = "\t";
+    static final String DELIMITER = "\t";
 
     public TSVFileExtract(String fileName, String fileDir, String fileExtension) {
         this.fileDir = fileDir;
         this.fileExtension = fileExtension;
         this.fileName = fileName;
         this.filePath = fileDir + "/" + fileName.substring(0, fileName.lastIndexOf(".")) + fileExtension;
+    }
+
+    @Override
+    public String getDelimiter() {
+        return DELIMITER;
     }
 
     /**
