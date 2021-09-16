@@ -6,6 +6,9 @@ IntelliJ: https://www.jetbrains.com/idea/ (Download community version)
 Once repo is cloned, open IntelliJ and go to File > New > Project from existing sources
 - Follow the setup wizard
 
+If you want to add new dependencies, you will need to update the `pom.xml` file, then right-click the file, go to Maven (bottom) > Reload Project.
+- To update the `pom.xml` file, go to the maven repository listing to find the dependencies you want: https://mvnrepository.com/
+
 ## Installation
 Migration uses Liquibase for Neo4j (https://neo4j.com/labs/liquibase/):
 - https://github.com/liquibase/liquibase-neo4j
