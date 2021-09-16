@@ -1,33 +1,39 @@
-$darken-link-stroke: 5%;
-$link-lightness: 65%;
-$link-saturation: 30%;
-$link-color: hsl(0, 0, $link-lightness);
-$inactive-colour: lighten($link-color, 25%);
-$link-left-color: hsl(240, $link-saturation, $link-lightness);
-$link-right-color: hsl(120, $link-saturation, $link-lightness);
-$link-multi-color: hsl(180, $link-saturation, $link-lightness);
+app-sankey-many-to-many {
+  $darken-link-stroke: 5%;
+  $link-lightness: 65%;
+  $link-saturation: 30%;
+  $link-color: hsl(0, 0, $link-lightness);
+  $inactive-colour: lighten($link-color, 25%);
+  $link-left-color: hsl(240, $link-saturation, $link-lightness);
+  $link-right-color: hsl(120, $link-saturation, $link-lightness);
+  $link-multi-color: hsl(180, $link-saturation, $link-lightness);
 
-$darken-node-stroke: 100%;
-$node-lightness: 60%;
-$node-saturation: 40%;
-$node-color: hsl(0, 0, $node-lightness);
-$node-border-colour: darken($node-color, $darken-node-stroke);
-$node-left-color: hsl(240, $node-saturation, $node-lightness);
-$node-right-color: hsl(120, $node-saturation, $node-lightness);
-$node-multi-color: hsl(180, $node-saturation, $node-lightness);
+  $darken-node-stroke: 100%;
+  $node-lightness: 60%;
+  $node-saturation: 40%;
+  $node-color: hsl(0, 0, $node-lightness);
+  $node-border-colour: darken($node-color, $darken-node-stroke);
+  $node-left-color: hsl(240, $node-saturation, $node-lightness);
+  $node-right-color: hsl(120, $node-saturation, $node-lightness);
+  $node-multi-color: hsl(180, $node-saturation, $node-lightness);
 
-$search-color: red;
+  $search-color: red;
 
-@mixin link-color($color) {
-  fill: $color;
-  stroke: darken($color, $darken-link-stroke);
-}
+  @mixin link-color($color) {
+    fill: $color;
+    stroke: darken($color, $darken-link-stroke);
+  }
 
-.wrapper {
   position: relative;
   //touch-action: none;
   //user-select: none;
   transform-origin: 0 0;
+
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  min-height: 100%;
 
   svg {
     width: 100%;
@@ -35,19 +41,9 @@ $search-color: red;
     background-color: white;
 
     g {
-      // tune out links out when node is hovered
-      &:hover .links path {
-
-      }
-
       .nodes {
         shape-rendering: crispEdges;
         z-index: 1;
-
-        // tune out other nodes when ones are hovered
-        &:hover > g > rect {
-
-        }
 
         g {
           &[highlighted=false], &[selected=false] {
@@ -81,26 +77,15 @@ $search-color: red;
           }
 
           rect {
+            cursor: move;
+            shape-rendering: crispEdges;
             fill: $node-color;
             stroke: $node-border-colour;
           }
 
-          &[selected=false] {
-            & > rect {
-
-            }
-          }
-
-
           &[highlighted=left] {
             & > rect {
               fill: $node-left-color;
-            }
-          }
-
-          &[selected=true] {
-            & > rect {
-
             }
           }
 
@@ -152,70 +137,58 @@ $search-color: red;
         }
       }
 
-      .links {
+      .links path {
+        @include link-color($link-color);
 
-        // tune out other links when one is hovered
-        &:hover path {
-
+        &.circular {
+          stroke-dasharray: 4 4;
         }
 
-        path {
+        &[highlighted=false], &[selected=false] {
+          @include link-color($inactive-colour);
+        }
+
+        &[highlighted=true], &[selected=true] {
           @include link-color($link-color);
+        }
 
-          &.circular {
-            stroke-dasharray: 4 4;
+        &[highlighted=left] {
+          @include link-color($link-left-color);
+        }
+
+        &[highlighted=right] {
+          @include link-color($link-right-color);
+        }
+
+        &[highlighted=multiple] {
+          @include link-color($link-multi-color);
+        }
+
+        &[highlighted=true], &[selectedTrace=true] {
+          &[thickness='0'] {
+            stroke: darken($link-color, $darken-link-stroke);
+            stroke-width: 3px;
           }
+        }
 
-          &[highlighted=false], &[selected=false] {
-            @include link-color($inactive-colour);
-          }
+        &[selected=left] {
+          @include link-color($link-left-color);
+        }
 
-          &[highlighted=true], &[selected=true] {
-            @include link-color($link-color);
-          }
+        &[selected=right] {
+          @include link-color($link-right-color);
+        }
 
-          &[highlighted=left] {
-            @include link-color($link-left-color);
-          }
+        &[selected=multiple] {
+          @include link-color($link-multi-color);
+        }
 
-          &[highlighted=right] {
-            @include link-color($link-right-color);
-          }
+        &[searched=true] {
+          stroke: $search-color;
+        }
 
-          &[highlighted=multiple] {
-            @include link-color($link-multi-color);
-          }
-
-          &[highlighted=true], &[selectedTrace=true] {
-            &[thickness='0'] {
-              stroke: darken($link-color, $darken-link-stroke);
-              stroke-width: 3px;
-            }
-          }
-
-          &[selected=left] {
-            @include link-color($link-left-color);
-          }
-
-          &[selected=right] {
-            @include link-color($link-right-color);
-          }
-
-          &[selected=multiple] {
-            @include link-color($link-multi-color);
-          }
-
-          &[selected=true], &:hover {
-
-          }
-
-          &[searched=true] {
-            stroke: $search-color;
-          }
-
-          &[focused=true] {
-            fill: $search-color;
-          }
+        &[focused=true] {
+          fill: $search-color;
         }
       }
     }

@@ -10,7 +10,7 @@ import { SankeyManyToManyLink } from '../interfaces';
 
 @Component({
   selector: 'app-sankey-many-to-many',
-  templateUrl: './sankey.component.html',
+  templateUrl: './sankey.component.svg',
   styleUrls: [
     '../../../sankey-many-to-many-viewer/components/sankey/sankey.component.scss',
     './sankey.component.scss'
