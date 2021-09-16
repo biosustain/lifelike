@@ -14,8 +14,10 @@
 ## What The Folders Mean
 `***ARANGO_DB_NAME***-graph`
 - this folder contains migration for the current PROD graph (starting at whatever state on 9/10/2021).
+
 `new-graph`
 - this folder contains migration to create a **new** graph. Run these migrations first, then run the ones in `***ARANGO_DB_NAME***-graph`.
+
 `small-test-graph`
 - this folder contains migration to create a small subset graph for development or testing purposes. Run these migrations first, then run the ones in `***ARANGO_DB_NAME***-graph`.
 
