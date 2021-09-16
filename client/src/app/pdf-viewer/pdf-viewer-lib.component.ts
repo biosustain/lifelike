@@ -35,6 +35,7 @@ import { FindState, RenderTextMode } from './utils/constants';
 import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import {toValidLink} from '../shared/utils/browser';
 
 declare var jQuery: any;
 
@@ -437,7 +438,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
-
+    
     let htmlLinks = '<div>';
 
     // source links if any
@@ -449,7 +450,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       for (const link of an.meta.idHyperlinks) {
           const {label, url} = JSON.parse(link);
-          htmlLinks += `<a target="_blank" href="${escape(url)}">${escape(label)}</a><br>`;
+          htmlLinks += `<a target="_blank" href="${escape(toValidLink(url))}">${escape(label)}</a><br>`;
       }
 
       htmlLinks += `</div></div>`;
