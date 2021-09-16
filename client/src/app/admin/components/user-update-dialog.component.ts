@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 import {
   FormGroup,
@@ -17,8 +17,10 @@ import { AppUser, UserUpdateRequest } from '../../interfaces';
   templateUrl: './user-update-dialog.component.html',
 })
 export class UserUpdateDialogComponent extends CommonFormDialogComponent {
+  @Input() isSelf: boolean;
   user: AppUser;
   roles = ['admin', 'user'];
+
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
@@ -32,15 +34,10 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): UserUpdateRequest {
-    const userData = {hashId: this.user.hashId};
-    Object.keys(this.form.controls)
-            .forEach(key => {
-                const currentControl = this.form.controls[key];
-                if (currentControl.value !== this.user[key] && currentControl.value !== '') {
-                        userData[key] = currentControl.value;
-                }
-            });
-    return userData;
+    return {
+      ...this.form.value,
+      hashId: this.user.hashId,
+    };
   }
 
   setUser(user: AppUser) {
@@ -49,8 +46,11 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent {
       username: this.user.username,
       firstName: this.user.firstName,
       lastName: this.user.lastName,
-      roles: ''
+      roles: this.user.roles.includes('admin') ? 'admin' : 'user'
     });
+    if (this.isSelf) {
+          this.form.controls.roles.disable();
+    }
   }
 }
 

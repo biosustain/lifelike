@@ -170,13 +170,13 @@ class AccountView(MethodView):
                 message='You do not have sufficient privileges.')
         else:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-            params['username'] = params.get('username') or target.username
-            if target.username != params.get('username'):
-                if db.session.query(AppUser.query_by_username(params["username"]).exists()
+            username = params.get('username') or target.username
+            if target.username != username:
+                if db.session.query(AppUser.query_by_username(username).exists()
                                     ).scalar():
                     raise ServerException(
                         title='Cannot Update The User',
-                        message=f'Username {params["username"]} already taken.',
+                        message=f'Username {username} already taken.',
                         code=400)
             if params.get('roles'):
                 if not admin_access:
