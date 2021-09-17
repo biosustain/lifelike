@@ -763,6 +763,27 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const that = this;
       let avgHeight = 0;
       let rectHeights = [];
+      const meta: Meta = {
+        allText: that.allText,
+        type: 'link',
+      };
+      const location: Location = {
+        pageNumber: that.currentPage,
+        rect: that.getMultilinedRect(),
+      };
+
+      const selection_wrapper = document.createElement('div');
+      selection_wrapper.setAttribute('draggable', 'true');
+      selection_wrapper.addEventListener('dragstart', event => {
+        jQuery('.frictionless-annotation').qtip('hide');
+        this.annotationDragStart.emit({
+          event,
+          meta,
+          location,
+        });
+      });
+        selection_wrapper.setAttribute('location', JSON.stringify(location));
+        selection_wrapper.setAttribute('meta', JSON.stringify(meta));
       jQuery.each(fixedSelectedRects, (idx, r) => {
 
         const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
@@ -785,25 +806,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         const mouseRectBottomBorder = mouseRectTop + mouseRectHeight + Number(avgHeight * 1.2);
 
         const el = document.createElement('div');
-        const meta: Meta = {
-          allText: that.allText,
-          type: 'link',
-        };
-        const location: Location = {
-          pageNumber: that.currentPage,
-          rect: that.getMultilinedRect(),
-        };
-        el.setAttribute('draggable', 'true');
-        el.addEventListener('dragstart', event => {
-          jQuery('.frictionless-annotation').qtip('hide');
-          this.annotationDragStart.emit({
-            event,
-            meta,
-            location,
-          });
-        });
-        el.setAttribute('location', JSON.stringify(location));
-        el.setAttribute('meta', JSON.stringify(meta));
         el.setAttribute('class', 'frictionless-annotation');
         el.setAttribute('style', `
         position: absolute;
@@ -816,7 +818,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         el.setAttribute('id', 'newElement' + idx);
 
         if (mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
-          pageElement.appendChild(el);
+          selection_wrapper.appendChild(el);
           this.selectedElements.push(el);
         }
 
@@ -857,6 +859,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           },
         );
       });
+      pageElement.appendChild(selection_wrapper);
 
       this.clearSelection();
     }
