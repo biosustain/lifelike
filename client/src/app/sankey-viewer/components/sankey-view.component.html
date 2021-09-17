@@ -73,9 +73,14 @@
                     </ng-template>
                 </button>
             </ng-container>
+            <button (click)="resetView()" class="btn btn-secondary mx-1" container="body"
+                    ngbTooltip="Reset the view" placement="bottom"
+                    type="button">
+                <i class="fas fa-sync"></i>
+            </button>
             <button
                     [appLink]="['/projects', object?.project.name, 'sankey-many-to-many', object?.hashId]"
-                    class="btn btn-secondary mr-auto ml-1"
+                    class="btn btn-secondary mr-auto"
                     container="body"
                     ngbTooltip="Trace View" placement="bottom"
                     type="button">

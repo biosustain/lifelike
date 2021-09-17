@@ -9,6 +9,7 @@ import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, chri
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { BehaviorSubject } from 'rxjs';
+import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 
 export const LINK_VALUE = {
@@ -36,93 +37,94 @@ export const PREDEFINED_VALUE = {
 // @ts-ignore
 export class SankeyControllerService {
   constructor() {
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-    this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
-    this.options.selectedLinkPalette = this.options.linkPalettes.default;
+    this.resetOptions();
+  }
+
+  get defaultOptions(): SankeyAdvancedOptions {
+    return {
+      nodeHeight: {
+        min: {
+          enabled: false,
+          value: 0
+        },
+        max: {
+          enabled: false,
+          ratio: 10
+        }
+      },
+      normalizeLinks: false,
+      linkValueAccessors: [],
+      nodeValueAccessors: [],
+      predefinedValueAccessors: [
+        {
+          description: PREDEFINED_VALUE.fixed_height,
+          callback: () => {
+          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
+          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          }
+        },
+        {
+          description: PREDEFINED_VALUE.input_count,
+          callback: () => {
+            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
+            this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+          }
+        }],
+      linkValueGenerators: {
+        input_count: {
+          description: LINK_VALUE.input_count,
+          preprocessing: linkValues.inputCount,
+          disabled: () => false
+        } as ValueGenerator,
+        fixedValue0: {
+          description: LINK_VALUE.fixedValue0,
+          preprocessing: linkValues.fixedValue(0),
+          disabled: () => false
+        } as ValueGenerator,
+        fixedValue1: {
+          description: LINK_VALUE.fixedValue1,
+          preprocessing: linkValues.fixedValue(1),
+          disabled: () => false
+        } as ValueGenerator,
+        fraction_of_fixed_node_value: {
+          description: LINK_VALUE.fraction_of_fixed_node_value,
+          disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
+          requires: ({node}) => node.fixedValue,
+          preprocessing: linkValues.fractionOfFixedNodeValue
+        } as ValueGenerator
+      },
+      nodeValueGenerators: {
+        none: {
+          description: NODE_VALUE.none,
+          preprocessing: nodeValues.noneNodeValue,
+          disabled: () => false
+        } as ValueGenerator,
+        fixedValue1: {
+          description: NODE_VALUE.fixedValue1,
+          preprocessing: nodeValues.fixedValue(1),
+          disabled: () => false
+        } as ValueGenerator
+      },
+      selectedLinkValueAccessor: undefined,
+      selectedNodeValueAccessor: undefined,
+      selectedPredefinedValueAccessor: undefined,
+      prescalers,
+      selectedPrescaler: prescalers.default,
+      linkPalettes,
+      selectedLinkPalette: linkPalettes.default,
+      labelEllipsis: {
+        enabled: true,
+        value: SankeyLayoutService.labelEllipsis
+      },
+      fontSizeScale: 1.0
+    };
   }
 
   allData: SankeyData;
   dataToRender = new BehaviorSubject(undefined);
   networkTraces;
 
-  options: SankeyAdvancedOptions = {
-    nodeHeight: {
-      min: {
-        enabled: false,
-        value: 0
-      },
-      max: {
-        enabled: false,
-        ratio: 10
-      }
-    },
-    normalizeLinks: false,
-    linkValueAccessors: [],
-    nodeValueAccessors: [],
-    predefinedValueAccessors: [
-      {
-        description: PREDEFINED_VALUE.fixed_height,
-        callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-        }
-      },
-      {
-        description: PREDEFINED_VALUE.input_count,
-        callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-        }
-      }],
-    linkValueGenerators: {
-      input_count: {
-        description: LINK_VALUE.input_count,
-        preprocessing: linkValues.inputCount,
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue0: {
-        description: LINK_VALUE.fixedValue0,
-        preprocessing: linkValues.fixedValue(0),
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue1: {
-        description: LINK_VALUE.fixedValue1,
-        preprocessing: linkValues.fixedValue(1),
-        disabled: () => false
-      } as ValueGenerator,
-      fraction_of_fixed_node_value: {
-        description: LINK_VALUE.fraction_of_fixed_node_value,
-        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
-        requires: ({node}) => node.fixedValue,
-        preprocessing: linkValues.fractionOfFixedNodeValue
-      } as ValueGenerator
-    },
-    nodeValueGenerators: {
-      none: {
-        description: NODE_VALUE.none,
-        preprocessing: nodeValues.noneNodeValue,
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue1: {
-        description: NODE_VALUE.fixedValue1,
-        preprocessing: nodeValues.fixedValue(1),
-        disabled: () => false
-      } as ValueGenerator
-    },
-    selectedLinkValueAccessor: undefined,
-    selectedNodeValueAccessor: undefined,
-    selectedPredefinedValueAccessor: undefined,
-    prescalers,
-    selectedPrescaler: prescalers.default,
-    linkPalettes,
-    selectedLinkPalette: linkPalettes.default,
-    labelEllipsis: {
-      enabled: true,
-      value: SankeyLayoutService.labelEllipsis
-    },
-    fontSizeScale: 1.0
-  };
+  options: SankeyAdvancedOptions;
 
   nodeAlign;
 
@@ -136,6 +138,14 @@ export class SankeyControllerService {
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
     return Math.min(_inNodes.length, _outNodes.length) === 1;
+  }
+
+  resetOptions() {
+    this.options = this.defaultOptions;
+    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
+    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
+    this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
+    this.options.selectedLinkPalette = this.options.linkPalettes.default;
   }
 
   // Trace logic
@@ -391,8 +401,13 @@ export class SankeyControllerService {
   }
   // endregion
 
+  resetController() {
+    this.load(this.allData);
+  }
+
   load(content) {
     this.allData = content as SankeyData;
+    this.resetOptions();
     this.extractOptionsFromGraph(content);
     this.applyFilter();
   }

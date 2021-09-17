@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ValueGenerator, SankeyTraceNetwork, SankeyLink, SankeyNode } from '../../sankey-viewer/components/interfaces';
+import { SankeyTraceNetwork, SankeyLink } from '../../sankey-viewer/components/interfaces';
+import { SankeyControllerService, PREDEFINED_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
 import { SankeyManyToManyAdvancedOptions } from '../components/interfaces';
-import * as linkValues from '../../sankey-viewer/components/algorithms/linkValues';
-import * as nodeValues from '../../sankey-viewer/components/algorithms/nodeValues';
-import prescalers from '../../sankey-viewer/components/algorithms/prescalers';
-import { linkPalettes } from '../../sankey-viewer/components/color-palette';
-import { SankeyLayoutService } from '../../sankey-viewer/components/sankey/sankey-layout.service';
-import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE, NODE_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -17,84 +12,21 @@ import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE, NODE_VALUE } fro
 @Injectable()
 // @ts-ignore
 export class SankeyManyToManyControllerService extends SankeyControllerService {
-  options: SankeyManyToManyAdvancedOptions = {
-    highlightCircular: true,
-    nodeHeight: {
-      min: {
-        enabled: false,
-        value: 0
-      },
-      max: {
-        enabled: true,
-        ratio: 10
+  get defaultOptions(): SankeyManyToManyAdvancedOptions {
+    return Object.assign(super.defaultOptions, {
+      highlightCircular: true,
+      nodeHeight: {
+        min: {
+          enabled: false,
+          value: 0
+        },
+        max: {
+          enabled: true,
+          ratio: 10
+        }
       }
-    },
-    normalizeLinks: false,
-    linkValueAccessors: [],
-    nodeValueAccessors: [],
-    predefinedValueAccessors: [
-      {
-        description: PREDEFINED_VALUE.fixed_height,
-        callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-        }
-      },
-      {
-        description: PREDEFINED_VALUE.input_count,
-        callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-        }
-      }],
-    linkValueGenerators: {
-      input_count: {
-        description: LINK_VALUE.input_count,
-        preprocessing: linkValues.inputCount,
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue0: {
-        description: LINK_VALUE.fixedValue0,
-        preprocessing: linkValues.fixedValue(0),
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue1: {
-        description: LINK_VALUE.fixedValue1,
-        preprocessing: linkValues.fixedValue(1),
-        disabled: () => false
-      } as ValueGenerator,
-      fraction_of_fixed_node_value: {
-        description: LINK_VALUE.fraction_of_fixed_node_value,
-        disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
-        requires: ({node}) => node.fixedValue,
-        preprocessing: linkValues.fractionOfFixedNodeValue
-      } as ValueGenerator
-    },
-    nodeValueGenerators: {
-      none: {
-        description: NODE_VALUE.none,
-        preprocessing: nodeValues.noneNodeValue,
-        disabled: () => false
-      } as ValueGenerator,
-      fixedValue1: {
-        description: NODE_VALUE.fixedValue1,
-        preprocessing: nodeValues.fixedValue(1),
-        disabled: () => false
-      } as ValueGenerator
-    },
-    selectedLinkValueAccessor: undefined,
-    selectedNodeValueAccessor: undefined,
-    selectedPredefinedValueAccessor: undefined,
-    prescalers,
-    selectedPrescaler: prescalers.default,
-    linkPalettes,
-    selectedLinkPalette: linkPalettes.default,
-    labelEllipsis: {
-      enabled: true,
-      value: SankeyLayoutService.labelEllipsis
-    },
-    fontSizeScale: 1.0
-  };
+    });
+  }
 
   // Trace logic
   /**
