@@ -31,13 +31,13 @@ import java.util.Scanner;
  *       class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
  *       query="..."
  *       fileName="<filename>.zip"
- *       startAt="0"
+ *       startAt="1"
  *       fileType="TSV"/>
  * </changeSet>
  *
  * query: the cypher query to be executed.
  * fileName: the data file (ZIP) on Azure to download and use.
- * startAt: the starting index (default should be zero) for the data processing.
+ * startAt: the starting index (default should be 1 to skip header line) for the data processing.
  *          headers are not included, so first data line is zero.
  * fileType: the type of file within the zip (e.g CSV, TSV, etc...).
  */
