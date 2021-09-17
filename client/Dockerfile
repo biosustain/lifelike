@@ -3,8 +3,6 @@ FROM node:13.10.1 as base
 # Landing page
 # ========================================
 
-ARG ANGULAR_CONFIG=production
-
 FROM base as landing
 # Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
 RUN apt-get autoclean && \
@@ -69,6 +67,7 @@ ENV CLIENT_USER node
 ENV CLIENT_HOME /home/$CLIENT_USER
 ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
+ARG ANGULAR_CONFIG=production
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
 RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
