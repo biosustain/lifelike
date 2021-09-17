@@ -2,9 +2,6 @@ FROM node:13.10.1 as base
 # ========================================
 # Landing page
 # ========================================
-
-ARG ANGULAR_CONFIG=dev
-
 FROM base as landing
 # Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
 RUN apt-get autoclean && \
