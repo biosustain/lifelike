@@ -99,3 +99,6 @@ Useful documentations...
 - https://github.com/neo4j/neo4j-java-driver
 - https://neo4j.com/docs/java-manual/current/session-api/
 - https://neo4j.com/docs/api/java-driver/current/
+- Naming convention: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+- Azure SDK References: https://docs.microsoft.com/en-us/java/api/com.azure.storage.file.share?view=azure-java-stable
+- GCloud SDK References: https://cloud.google.com/storage/docs/apis & https://pypi.org/project/google-cloud-storage/
