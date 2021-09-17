@@ -139,6 +139,9 @@
           "configurations": {
             "production": {
               "browserTarget": "client:build:production"
+            },
+            "staging": {
+              "browserTarget": "client:build:staging"
             }
           }
         },
@@ -189,6 +192,9 @@
           "configurations": {
             "production": {
               "devServerTarget": "client:serve:production"
+            },
+            "staging": {
+              "devServerTarget": "client:serve:staging"
             }
           }
         }
