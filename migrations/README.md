@@ -9,7 +9,6 @@
 * [Checking Migration Version Logs](#checking-migration-version-logs)
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
-* [Important References](#important-references)
 
 ## What The Folders Mean
 `lifelike-graph`
@@ -149,8 +148,3 @@ This command (dry run) will give you a preview of what liquibase will run. You c
 liquibase --log-level=info --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile <path-to>/changelog-master.xml update
 ```
 This command will run the queries and update the database.
-
-## Important References
-- Naming convention: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
-- Azure SDK References: https://docs.microsoft.com/en-us/java/api/com.azure.storage.file.share?view=azure-java-stable
-- GCloud SDK References: https://cloud.google.com/storage/docs/apis & https://pypi.org/project/google-cloud-storage/
