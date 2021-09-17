@@ -76,6 +76,12 @@ RUN yarn build --configuration="production" --output-path=dist
 # ========================================
 # Set the nginx conf file to use
 FROM nginx:latest AS webserver
+
+RUN apt-get update && \
+    apt-get install vim net-tools -y && \
+    apt-get autoclean && \
+    apt-get autoremove -y
+
 RUN mkdir -p /home/node/client/dist
 RUN mkdir -p /home/node/client/landing/dist
 COPY --from=compile /home/node/client/dist /usr/share/nginx/html
