@@ -21,6 +21,18 @@ Once installed, you need to set the `LIQUIBASE_HOME` path. If you used homebrew,
 You should set the environment variable LIQUIBASE_HOME to
   /usr/local/opt/liquibase/libexec
 ```
+So edit your `.bash_profile`:
+```bash
+> vim ~/<path>/<to>/.bash_profile
+# then add the below to the file
+# where liquibase was installed
+LIQUIBASE_HOME="<liquibase>/<installed>" # e.g "/usr/local/opt/liquibase/libexec"
+...
+export PATH="...:$LIQUIBASE_HOME"
+
+# :wq to exit vim and save
+> source <path>/<to>/.bash_profile
+```
 
 You will also need the Java JDK (version 8+). Again, if you're on Mac OS, you can use `brew install openjdk@<version>`. To see the available versions do `brew list`. Once installed, you can see a similar output:
 ```bash
