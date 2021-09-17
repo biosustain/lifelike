@@ -134,6 +134,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     for (const selectedUser of this.shownUsers.slice().reverse()) {
       if (this.selection.isSelected(selectedUser)) {
         const modalRef = this.modalService.open(UserUpdateDialogComponent);
+        modalRef.componentInstance.isSelf = this.currentUser.hashId === selectedUser.hashId;
         modalRef.componentInstance.setUser(selectedUser);
         modalRef.result.then(updatedUser => {
           const progressDialogRef = this.progressDialog.display({
@@ -142,36 +143,26 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
               status: 'Updating user...',
             })),
           });
-          // Data object containing one key (hash_id) -> no update data provided
-          if (Object.keys(updatedUser).length === 1) {
+          this.accountService.updateUser(updatedUser)
+          .pipe(this.errorHandler.create({label: 'Update user'}))
+          .subscribe(() => {
             progressDialogRef.close();
+            if (this.currentUser.hashId === selectedUser.hashId) {
+                updatedUser = {...this.currentUser, ...updatedUser};
+                this.store.dispatch(AuthActions.userUpdated(
+                    {user: updatedUser},
+                  ));
+                this.currentUser = updatedUser;
+            }
+            this.refresh();
             this.snackBar.open(
-                `Provided data is either empty of unmodified!`,
-                'close',
-                {duration: 5000},
-              );
-          } else {
-            this.accountService.updateUser(updatedUser)
-            .pipe(this.errorHandler.create({label: 'Update user'}))
-            .subscribe(() => {
-              progressDialogRef.close();
-              if (this.currentUser.hashId === selectedUser.hashId) {
-                  updatedUser = {...this.currentUser, ...updatedUser};
-                  this.store.dispatch(AuthActions.userUpdated(
-                      {user: updatedUser},
-                    ));
-                  this.currentUser = updatedUser;
-              }
-              this.refresh();
-              this.snackBar.open(
-                `User ${selectedUser.username} updated!`,
-                'close',
-                {duration: 5000},
-              );
-            }, () => {
-              progressDialogRef.close();
-            });
-          }
+              `User ${selectedUser.username} updated!`,
+              'close',
+              {duration: 5000},
+            );
+          }, () => {
+            progressDialogRef.close();
+          });
         }, () => {
         });
       }
