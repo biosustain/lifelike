@@ -9,6 +9,7 @@ import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, chri
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
 import { BehaviorSubject } from 'rxjs';
+import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 
 export const LINK_VALUE = {
@@ -39,7 +40,7 @@ export class SankeyControllerService {
     this.resetOptions();
   }
 
-  get defaultOptions() {
+  get defaultOptions(): SankeyAdvancedOptions {
     return {
       nodeHeight: {
         min: {
