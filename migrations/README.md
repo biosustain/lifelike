@@ -131,14 +131,22 @@ Simply enter `N` and continue.
 
 ```bash
 # don't need port in ip address
-liquibase --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml updateSQL
+# the <path-to>/changelog-master.xml can be one of
+# migrations/lifelike-graph/changelog-master.xml
+# migrations/new-graph/changelog-master.xml
+# ... - see `What the folders mean` section above
+liquibase --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile <path-to>/changelog-master.xml updateSQL
 ```
 This command (dry run) will give you a preview of what liquibase will run. You can use this command to **make sure the changelog files are going to execute in order**. **IMPORTANT** If the changeset has a `customChange` that calls a Java class, it **WILL** update the database even with this dry run command. So be careful and use a test database.
 
 ```bash
 # don't need port in ip address
 # --log-level is optional
-liquibase --log-level=info --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile migrations/changelog-master.xml update
+# the <path-to>/changelog-master.xml can be one of
+# migrations/lifelike-graph/changelog-master.xml
+# migrations/new-graph/changelog-master.xml
+# ... - see `What the folders mean` section above
+liquibase --log-level=info --url jdbc:neo4j:bolt://<ip_address> --username <db_name> --password <db_pass> --changeLogFile <path-to>/changelog-master.xml update
 ```
 This command will run the queries and update the database.
 
