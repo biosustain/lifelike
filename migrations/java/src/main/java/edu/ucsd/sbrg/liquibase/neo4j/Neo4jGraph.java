@@ -3,10 +3,7 @@ package edu.ucsd.sbrg.liquibase.neo4j;
 import liquibase.exception.CustomChangeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Session;
+import org.neo4j.driver.*;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -23,13 +20,23 @@ public class Neo4jGraph {
     String neo4jHost;
     String neo4jUsername;
     String neo4jPassword;
+    String databaseName;
     Driver driver;
+
     static final Logger logger = LogManager.getLogger(Neo4jGraph.class);
 
     public Neo4jGraph(String neo4jHost, String neo4jUsername, String neo4jPassword) {
+        this(neo4jHost, neo4jUsername, neo4jPassword, "neo4j");
+    }
+
+    public Neo4jGraph(String neo4jHost, String neo4jUsername, String neo4jPassword, String databaseName) {
         this.neo4jHost = neo4jHost;
         this.neo4jUsername = neo4jUsername;
         this.neo4jPassword = neo4jPassword;
+        this.databaseName = databaseName;
+        if (databaseName == null) {
+            this.databaseName = "neo4j";
+        }
         this.driver = GraphDatabase.driver(neo4jHost, AuthTokens.basic(neo4jUsername, neo4jPassword));
     }
 
@@ -90,7 +97,7 @@ public class Neo4jGraph {
             chunkedCypherParams.add(cypherParamsChunk);
         });
 
-        Session session = this.driver.session();
+        Session session = this.driver.session(SessionConfig.forDatabase(databaseName));
         logger.info("Executing cypher query: " + query);
         chunkedCypherParams.forEach(paramChunk -> {
             session.writeTransaction(tx -> tx.run(query, parameters("rows", paramChunk)));
