@@ -57,7 +57,7 @@ jobs:
           image_tag: ${{ github.sha }},latest
           context: ./client
           dockerfile: ./Dockerfile
-          build_extra_args: "--build-arg=ANGULAR_CONFIG=staging"
+          build_extra_args: "--build-arg=ANGULAR_CONFIG=staging,production"
 
       - name: Build Filebeat Image
         uses: whoan/docker-build-with-cache-action@v5
