@@ -136,8 +136,5 @@ dmypy.json
 .vscode/settings.json
 .vscode/launch.json
 
-# liquibase
-liquibase.properties
-
 # shaded POM file
 dependency-reduced-pom.xml
