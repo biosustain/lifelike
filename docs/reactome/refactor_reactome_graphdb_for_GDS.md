@@ -1,4 +1,4 @@
-# Modify Reactome database for GDS
+# Modify Reactome database for GDS (LL-3119)
 
 ### 1. Remove "un-needed" nodes and labels
 - Remove label: DatabaseObject
@@ -136,3 +136,48 @@ merge (c)-[:catalyzes]->(n2)
 ```
 236 relationships created
 
+# additinal changes (local ***ARANGO_DB_NAME***-stg instance reactome-human) 
+```
+create constraint constraint_synonym_name on (n:Synonym) assert (n.name) is Unique;
+match(n:ReferenceGeneProduct) with n unwind n.geneName as synonym 
+merge (s:Synonym {name:synonym}) merge (n)-[:HAS_SYNONYM]->(s);
+
+call apoc.periodic.iterate(
+    "match(n:PhysicalEntity) unwind n.name as syn return n, syn",
+    "merge(s:Synonym {name:syn}) merge (n)-[:HAS_SYNONYM]->(s)",
+    {batchSize: 5000}
+)
+```
+
+
+### Based on Christian's code, the following changes made
+8/24/2021
+- Change hasCandidate to candidateOf, reverse
+- Change requiredInputComponent to requiredInput, reverse
+- Change repeatedUnit to repeatedUnitOf, reverse
+``` 
+match(n)-[r:hasCandidate]->(x) merge (x)-[:candidateOf]->(n) delete r;
+match(n)-[r:requiredInputComponent]->(x) merge (x)-[:requiredInput]->(n) delete r;
+match(n)-[r:repeatedUnit]->(x) merge (x)-[:repeatedUnitOf]->(n) delete r
+```
+
+9/15/2021
+set nodeLabel for display 
+``` 
+match(n:Protein) set n.nodeLabel ='Protein';
+match(n:Gene) set n.nodeLabel='Gene';
+match(n:ReferenceGeneProduct) set n.nodeLabel = 'Gene';
+match(n:Chemical) set n.nodeLabel = 'Chemical';
+match(n:Complex) set n.nodeLabel = 'Complex';
+match(n:EntitySet) set n.nodeLabel = 'EntitySet';
+match(n:Polymer) set n.nodeLabel = 'Polymer';
+match(n:ProteinDrug) set n.nodeLabel = 'Protein';
+match(n:ChemicalDrug) set n.nodeLabel = 'Chemical';
+match(n:RNA) set n.nodeLabel = 'RNA';
+match(n:PhysicalEntity) where not exists (n.nodeLabel) set n.nodeLabel = 'Entity'
+
+match(n:ReactionLikeEvent) set n.nodeLabel = 'Reaction';
+match(n:CatalystActivity) set n.nodeLabel = 'CatalystActivity';
+match(n:Regulation) set n.nodeLabel = 'Regulation';
+match(n:Pathway) set n.nodeLabel = 'Pathway';
+```

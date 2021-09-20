@@ -36,6 +36,7 @@ drop index index_yeastcyc_id;
 
 
 ### 2. Extract and set eid:
+For CHEBI, MESH and GO, remove the prefix from id
 ```
 match(n:db_CHEBI) with n, apoc.text.split(n.id, ':')[1] as eid set n.eid = eid;
 match(n:db_MESH) with n, apoc.text.split(n.id, ':')[1] as eid set n.eid = eid;
