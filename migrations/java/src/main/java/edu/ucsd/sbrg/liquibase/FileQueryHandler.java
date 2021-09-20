@@ -90,13 +90,14 @@ public class FileQueryHandler implements CustomTaskChange {
         final String neo4jHost = System.getenv("NEO4J_INSTANCE_URI");
         final String neo4jUsername = System.getenv("NEO4J_USERNAME");
         final String neo4jPassword = System.getenv("NEO4J_PWD");
+        final String neo4jDatabase = System.getenv("NEO4J_DBNAME");
         final String azureStorageName = System.getenv("AZURE_ACCOUNT_STORAGE_NAME");
         final String azureStorageKey = System.getenv("AZURE_ACCOUNT_STORAGE_KEY");
         final String azureSaveFileDir = System.getenv("HOME");
 
         AzureCloudStorage cloudStorage = new AzureCloudStorage(azureStorageName, azureStorageKey);
         FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.fileName, azureSaveFileDir);
-        Neo4jGraph graph = new Neo4jGraph(neo4jHost, neo4jUsername, neo4jPassword);
+        Neo4jGraph graph = new Neo4jGraph(neo4jHost, neo4jUsername, neo4jPassword, neo4jDatabase);
 
         List<String[]> content = new ArrayList<>();
         final int chunkSize = 5000;
