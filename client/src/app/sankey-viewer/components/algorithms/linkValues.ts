@@ -1,6 +1,6 @@
 import * as d3Sankey from 'd3-sankey-circular';
 import { representativePositiveNumber } from '../utils';
-import { DirectedTraversal } from '../../services/directed-traversal';
+import { DirectedTraversal, ltr } from '../../services/directed-traversal';
 import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
 
 export const fixedValue = value => ({links}) => {
@@ -87,18 +87,30 @@ export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
   layout.computeNodeDepths({nodes, links});
   const dt = new DirectedTraversal([_inNodes, _outNodes]);
   dt.reverse();
-  [...nodes].sort(dt.depthSorter()).forEach(n => {
+  const sortedNodes = [...nodes].sort(dt.depthSorter());
+  sortedNodes.forEach(n => {
     if (dt.startNodes.includes(n.id)) {
       n._value = 1;
     } else {
       n._value = 0;
     }
-    n._value = dt.prevLinks(n).reduce((a, l) => a + l._value, n._value || 0);
-    const outFrac = n._value / dt.nextLinks(n).length;
-    dt.nextLinks(n).forEach(l => {
-      l._value = outFrac;
+    const prevLinks = dt.prevLinks(n);
+    const nextLinks = dt.nextLinks(n);
+    const minPrev = Math.min(...prevLinks.map(({_value}) => _value));
+    n._value = prevLinks.reduce((a, l) => a + (l._circular ? minPrev : l._value), n._value || 0);
+    const outFrac = n._value / nextLinks.length;
+    nextLinks.forEach(l => {
+      if (l._circular) {
+        const circularPrevLinks = dt.prevLinks(dt.nextNode(l));
+        const minCircularPrev = Math.min(...circularPrevLinks.map(({_value}) => _value));
+
+        l._multiple_values = dt.direction === ltr ? [outFrac, minCircularPrev] : [minCircularPrev, outFrac];
+      } else {
+        l._value = outFrac;
+      }
     });
   });
+
   return {
     nodes: nodes
       .filter(n => n._sourceLinks.length + n._targetLinks.length > 0),
