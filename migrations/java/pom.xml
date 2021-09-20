@@ -105,7 +105,6 @@
 <!--                                    </includes>-->
 <!--                                </relocation>-->
 <!--                            </relocations>-->
-<!--                            <propertyFile>liquibase.properties</propertyFile>-->
                         </configuration>
                     </execution>
                 </executions>
