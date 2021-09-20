@@ -67,9 +67,10 @@ ENV CLIENT_USER node
 ENV CLIENT_HOME /home/$CLIENT_USER
 ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
+ARG ANGULAR_CONFIG=production
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
-RUN yarn build --configuration="production" --output-path=dist
+RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
 
 # ========================================
 # nginx
