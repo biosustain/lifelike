@@ -106,26 +106,17 @@
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.staging.scss"
                 }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
+              ]
+            },
+            "qa": {
+              "fileReplacements": [
                 {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "10mb"
+                  "replace": "src/scss/_vertical-menu.scss",
+                  "with": "src/scss/_vertical-menu.qa.scss"
                 },
                 {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "replace": "src/scss/bootstrap.scss",
+                  "with": "src/scss/bootstrap.qa.scss"
                 }
               ]
             }
@@ -142,6 +133,9 @@
             },
             "staging": {
               "browserTarget": "client:build:staging"
+            },
+            "qa": {
+              "browserTarget": "client:build:qa"
             }
           }
         },
@@ -195,6 +189,9 @@
             },
             "staging": {
               "devServerTarget": "client:serve:staging"
+            },
+            "qa": {
+              "devServerTarget": "client:serve:qa"
             }
           }
         }
