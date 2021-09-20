@@ -6,13 +6,13 @@ interface Direction {
   nodeAccessor: string;
 }
 
-const ltr = {
+export const ltr = {
   nextLinksAccessor: '_sourceLinks',
   prevLinksAccessor: '_targetLinks',
   nodeAccessor: '_target'
 } as Direction;
 
-const rtl = {
+export const rtl = {
   nextLinksAccessor: '_targetLinks',
   prevLinksAccessor: '_sourceLinks',
   nodeAccessor: '_source'
