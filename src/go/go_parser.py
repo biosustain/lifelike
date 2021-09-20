@@ -44,8 +44,9 @@ class GoOboParser(OboParser, BaseParser):
         self.logger.info("Parsing go.obo")
         go_file = os.path.join(self.download_dir, 'go.obo')
         nodes = self.parse_file(go_file)
-        # remove prefix 'GO:' from id
+        # need to remove prefix 'GO:' from id
         for node in nodes:
+            node.update_attribut(PROP_ID, node.get_attribute(PROP_ID).replace(self.id_prefix, ''))
             node.update_attribute(PROP_DATA_SOURCE, DB_GO)
         self.logger.info(f"Total go nodes: {len(nodes)}")
         return nodes
