@@ -263,7 +263,7 @@ class RegulonDbParser(BaseParser):
         self.database.load_csv_file(file, [PROP_REGULONDB_ID, PROP_LOCUS_TAG], query)
 
     def set_id_prperty(self):
-        query = "match (n:db_RegulonDB) set n.id = n.regulondb_id"
+        query = "match (n:db_RegulonDB) set n.eid = n.regulondb_id"
         self.database.run_query(query)
 
     def add_name_property_as_synonym(self):
