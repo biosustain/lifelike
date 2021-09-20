@@ -1,0 +1,4 @@
+changeLogFile: changelog-master.xml
+url: jdbc:neo4j:bolt://localhost?database=***ARANGO_DB_NAME***
+username:neo4j
+password:rcai
