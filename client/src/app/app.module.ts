@@ -81,10 +81,10 @@ import { SankeyManyToManyViewerLibModule } from './sankey-many-to-many-viewer/sa
     Title,
     WorkspaceManager,
     UnloadConfirmationGuard,
-    // {
-    //   provide: ErrorHandler,
-    //   useClass: GlobalErrorHandler,
-    // }
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+    }
   ],
   exports: [],
   bootstrap: [AppComponent],
