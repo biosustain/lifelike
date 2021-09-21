@@ -21,7 +21,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
   @Input() multiple = false;
   @Input() placeholder = '';
   @Input() excludeSelf = false;
-  @ViewChild('selectInput', { read: SelectInputComponent, static: true }) selectInputComponent;
+  @ViewChild('selectInput', {static: false, read: SelectInputComponent}) selectInputComponent;
 
   protected changeCallback: ((value: any) => any) | undefined;
   protected touchCallback: (() => any) | undefined;

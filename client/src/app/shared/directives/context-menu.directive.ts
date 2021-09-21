@@ -44,7 +44,7 @@ export class ContextMenuBodyDirective {
   selector: '[appContextMenu]',
 })
 export class ContextMenuDirective implements AfterViewInit, OnDestroy {
-  @ContentChild(ContextMenuBodyDirective, { read: ElementRef, static: true })
+  @ContentChild(ContextMenuBodyDirective, {static: false, read: ElementRef})
   private bodyDirective: ElementRef;
 
   @Output() contextMenuOpened = new EventEmitter<any>();

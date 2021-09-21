@@ -25,7 +25,7 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HighlightTextComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
-  @ViewChild('container', { read: ElementRef, static: true }) containerRef: ElementRef;
+  @ViewChild('container', {read: ElementRef, static: false}) containerRef: ElementRef;
   @Input() object: FilesystemObject | undefined;
   @Input() highlight: string;
   @Input() eventSubscriptions = true;
