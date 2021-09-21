@@ -29,8 +29,8 @@ import { InfoPanel } from '../../models/info-panel';
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent implements AfterViewInit {
-  @ViewChild('displayName') displayNameRef: ElementRef;
-  @ViewChild('scrollWrapper') scrollWrapper: ElementRef;
+  @ViewChild('displayName', { static: true }) displayNameRef: ElementRef;
+  @ViewChild('scrollWrapper', { static: true }) scrollWrapper: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [

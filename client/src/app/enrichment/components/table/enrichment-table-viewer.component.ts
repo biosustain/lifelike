@@ -57,7 +57,7 @@ interface AnnotationData {
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  @ViewChild('tableScroll') tableScrollRef: ElementRef;
+  @ViewChild('tableScroll', {static: true}) tableScrollRef: ElementRef;
   @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
 
   annotation: AnnotationData;
@@ -145,7 +145,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             // Actually not sure if this the desired behavior.
             this.findController.start();
           }, 0);
-        // Only reset the findController target when the table is reset
+          // Only reset the findController target when the table is reset
         } else if (isNullOrUndefined(this.findTarget.first)) {
           this.findController.target = null;
           setTimeout(() => {

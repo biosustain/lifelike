@@ -17,7 +17,7 @@ import { Container } from './shared/workspace-manager';
 export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnInit, OnDestroy {
   @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
-  @ViewChild('child', { read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
+  @ViewChild('child', { read: ViewContainerRef, static: true }) viewComponentRef: ViewContainerRef;
   private currentActive = false;
   private previouslyActive = false;
   private currentContainer: Container<any>;
