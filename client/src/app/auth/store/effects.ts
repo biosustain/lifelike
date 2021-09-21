@@ -20,7 +20,7 @@ import * as AuthSelectors from './selectors';
 import { State } from './state';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   TermsOfServiceDialogComponent,
 } from 'app/users/components/terms-of-service-dialog.component';
