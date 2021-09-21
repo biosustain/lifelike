@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
-import { MatSelectChange } from '@angular/material';
+import { MatSelectChange } from '@angular/material/select';
 import { By, BrowserModule } from '@angular/platform-browser';
 
 import { Store } from '@ngrx/store';
