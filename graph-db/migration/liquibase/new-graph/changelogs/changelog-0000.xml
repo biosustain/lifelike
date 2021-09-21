@@ -26,7 +26,7 @@
   <changeSet id="LL-3216-liquibase-kegg-data-load-pathway" author="Binh Vu">
     <comment>Create KEGG data from scratch; loading pathway data.</comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
       MERGE (n:db_KEGG {eid: row.eid[0]})
