@@ -25,14 +25,15 @@ public class Neo4jGraph {
 
     static final Logger logger = LogManager.getLogger(Neo4jGraph.class);
 
-    public Neo4jGraph(String neo4jHost, String neo4jUsername, String neo4jPassword) {
-        this(neo4jHost, neo4jUsername, neo4jPassword, "neo4j");
+    public Neo4jGraph(String neo4jHost, String neo4jCredentials) {
+        this(neo4jHost, neo4jCredentials, "neo4j");
     }
 
-    public Neo4jGraph(String neo4jHost, String neo4jUsername, String neo4jPassword, String databaseName) {
+    public Neo4jGraph(String neo4jHost, String neo4jCredentials, String databaseName) {
+        String[] creds = neo4jCredentials.split(",");
         this.neo4jHost = neo4jHost;
-        this.neo4jUsername = neo4jUsername;
-        this.neo4jPassword = neo4jPassword;
+        this.neo4jUsername = creds[0];
+        this.neo4jPassword = creds[1];
         this.databaseName = databaseName;
         if (databaseName == null) {
             this.databaseName = "neo4j";

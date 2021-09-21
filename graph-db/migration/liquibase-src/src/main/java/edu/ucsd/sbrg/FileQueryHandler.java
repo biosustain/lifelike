@@ -34,8 +34,7 @@ import java.util.Scanner;
  *       startAt="1"
  *       fileType="TSV"
  *       neo4jHost="${neo4jHost}"
- *       neo4jUsername="${neo4jUsername}"  -> these ${} are parameters set in liquibase.properties
- *       neo4jPassword="${neo4jPassword}"
+ *       neo4jCredentials="${neo4jCredentials}"  -> these ${} are parameters set in liquibase.properties
  *       neo4jDatabase="${neo4jDatabase}"
  *       azureStorageName="${azureStorageName}"
  *       azureStorageKey="${azureStorageKey}"
@@ -57,8 +56,7 @@ public class FileQueryHandler implements CustomTaskChange {
     static final Logger logger = LogManager.getLogger(FileQueryHandler.class);
 
     private String neo4jHost;
-    private String neo4jUsername;
-    private String neo4jPassword;
+    private String neo4jCredentials;
     private String neo4jDatabase;
     private String azureStorageName;
     private String azureStorageKey;
@@ -106,18 +104,12 @@ public class FileQueryHandler implements CustomTaskChange {
         this.neo4jHost = neo4jHost;
     }
 
-    public String getNeo4jUsername() {
-        return this.neo4jUsername;
-    }
-
-    public String getNeo4jPassword() {
-        return this.neo4jPassword;
+    public String getNeo4jCredentials() {
+        return this.neo4jCredentials;
     }
 
     public void setNeo4jCredentials(String neo4jCredentials) {
-        String[] creds = neo4jCredentials.split(",");
-        this.neo4jUsername = creds[0];
-        this.neo4jPassword = creds[1];
+        this.neo4jCredentials = neo4jCredentials;
     }
 
     public String getNeo4jDatabase() {
@@ -156,7 +148,7 @@ public class FileQueryHandler implements CustomTaskChange {
     public void execute(Database database) throws CustomChangeException {
         AzureCloudStorage cloudStorage = new AzureCloudStorage(this.getAzureStorageName(), this.getAzureStorageKey());
         FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.getFileName(), this.getAzureSaveFileDir());
-        Neo4jGraph graph = new Neo4jGraph(this.getNeo4jHost(), this.getNeo4jUsername(), this.getNeo4jPassword(), this.getNeo4jDatabase());
+        Neo4jGraph graph = new Neo4jGraph(this.getNeo4jHost(), this.getNeo4jCredentials(), this.getNeo4jDatabase());
 
         List<String[]> content = new ArrayList<>();
         final int chunkSize = 5000;
