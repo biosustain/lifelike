@@ -1,7 +1,7 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  * Implements CTRL/CMD-Z and CTRL/CMD-Y.

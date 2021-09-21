@@ -4,7 +4,7 @@ import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { PdfViewerLibModule } from './pdf-viewer-lib.module';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatSnackBarModule } from '@angular/material';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
 
