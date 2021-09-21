@@ -199,7 +199,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   private firstFrictionlessAnnotationRange: Range | undefined;
   private requestAnimationFrameId: number | undefined;
 
-  @ViewChild(PdfViewerComponent, {static: false})
+  @ViewChild(PdfViewerComponent)
   private pdfComponent: PdfViewerComponent;
 
   constructor(protected readonly elementRef: ElementRef,

@@ -15,7 +15,7 @@ import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
   templateUrl: './object-edit-dialog.component.html',
 })
 export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
-  @ViewChild('fileInput', {static: false})
+  @ViewChild('fileInput')
   protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';

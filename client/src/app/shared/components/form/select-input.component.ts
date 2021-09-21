@@ -52,9 +52,9 @@ export class SelectInputComponent<T extends { label?: string }>
     static: true,
     read: MouseNavigableDirective,
   }) mouseNavigableDirective;
-  @ContentChild('inputChoiceTemplate', {static: false}) inputChoiceTemplateRef: TemplateRef<any>;
-  @ContentChild('dropdownChoiceTemplate', {static: false}) dropdownChoiceTemplateRef: TemplateRef<any>;
-  @ContentChild('noResultsTemplate', {static: false}) noResultsTemplateRef: TemplateRef<any>;
+  @ContentChild('inputChoiceTemplate') inputChoiceTemplateRef: TemplateRef<any>;
+  @ContentChild('dropdownChoiceTemplate') dropdownChoiceTemplateRef: TemplateRef<any>;
+  @ContentChild('noResultsTemplate') noResultsTemplateRef: TemplateRef<any>;
 
   selection: Map<any, T> = new Map<any, T>();
   unselectedChoices: T[] = [];

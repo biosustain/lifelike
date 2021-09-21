@@ -33,11 +33,10 @@ import { SEARCH_LINKS } from 'app/shared/links';
   styleUrls: ['./bioc-view.component.scss'],
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', { read: NgbDropdown }) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
-    static: false,
-    read: SearchControlComponent,
-  }) searchControlComponent: SearchControlComponent;
+    read: SearchControlComponent
+}) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<BiocFile> = new EventEmitter();
 

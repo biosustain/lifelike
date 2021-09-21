@@ -141,7 +141,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   object: FilesystemObject;
   currentFileId;
 
-  @ViewChild('sankey', {static: false}) sankey;
+  @ViewChild('sankey') sankey;
   isArray = Array.isArray;
 
   entitySearchTerm = '';
