@@ -3,6 +3,8 @@ from common.base_parser import BaseParser
 from common.database import *
 import logging
 
+from create_data_file import azure_upload
+
 
 class KeggParser(BaseParser):
     def __init__(self, basedir=None):
@@ -62,15 +64,24 @@ class KeggParser(BaseParser):
 
     def parse_and_write_data_files(self):
         df_pathway = self.parse_pathway_file()
+        filepath = os.path.join(self.output_dir, 'pathway_data.tsv')
+        zipfilepath = os.path.join(self.output_dir, 'pathway_data.zip')
         logging.info('kegg pathways: ' + str(len(df_pathway)))
-        df_pathway.to_csv(os.path.join(self.output_dir, 'pathway_data.tsv'), sep='\t', index=False)
+        df_pathway.to_csv(filepath, sep='\t', index=False)
+        # upload to azure
+        azure_upload(filepath, 'jira-LL-3216-pathway_data.tsv', 'jira-LL-3216-pathway_data.zip', zipfilepath)
 
         df_ko = self.parse_ko_file()
+        filepath = os.path.join(self.output_dir, 'ko_data.tsv')
+        zipfilepath = os.path.join(self.output_dir, 'ko_data.zip')
         logging.info('kegg ko: ' + str(len(df_ko)))
-        df_ko.to_csv(os.path.join(self.output_dir, 'ko_data.tsv'), sep='\t', index=False)
+        df_ko.to_csv(filepath, sep='\t', index=False)
+        # upload to azure
+        azure_upload(filepath, 'jira-LL-3216-ko_data.tsv', 'jira-LL-3216-ko_data.zip', zipfilepath)
 
         # Write gene data file
         outfile = os.path.join(self.output_dir, 'gene_data.tsv')
+        zipoutfile = os.path.join(self.output_dir, 'gene_data.zip')
         infile = os.path.join(self.download_dir, 'genes', 'genes_ncbi-geneid.list')
         header = True
         chunks = pd.read_csv(infile, sep='\t', chunksize=3000, header=None, names=[PROP_ID, 'gene_id'])
@@ -84,17 +95,27 @@ class KeggParser(BaseParser):
             chunk.to_csv(outfile, header=header, mode='a', sep='\t', index=False)
             header = False
         logging.info('total genes: ' + str(total))
+        # upload to azure
+        azure_upload(outfile, 'jira-LL-3216-gene_data.tsv', 'jira-LL-3216-gene_data.zip', zipoutfile)
 
         ko2pathway = self.parse_pathway2ko_file()
-        logging.info('ko2pathways: ' + str(len(ko2pathway)))
-        ko2pathway.to_csv(os.path.join(self.output_dir, 'ko2pathway_data.tsv'), sep='\t', index=False,
-                              columns=['ko', 'pathway'])
+        filepath = os.path.join(self.output_dir, 'ko2pathway_data.tsv')
+        zipfilepath = os.path.join(self.output_dir, 'ko2pathway_data.zip')
+        logging.info('total ko2pathways: ' + str(len(ko2pathway)))
+        ko2pathway.to_csv(filepath, sep='\t', index=False, columns=['ko', 'pathway'])
+        # upload to azure
+        azure_upload(filepath, 'jira-LL-3216-ko2pathway_data.tsv', 'jira-LL-3216-ko2pathway_data.zip', zipfilepath)
 
+        filepath = os.path.join(self.output_dir, 'genome2pathway_data.tsv')
+        zipfilepath = os.path.join(self.output_dir, 'genome2pathway_data.zip')
         genome2pathways = self.parse_pathway2genome_file()
-        genome2pathways.to_csv(os.path.join(self.output_dir, 'genome2pathway_data.tsv'), sep='\t', index=False,
-                                   columns=['genome', 'pathway'])
+        logging.info('total genome2pathways: ' + str(len(genome2pathways)))
+        genome2pathways.to_csv(filepath, sep='\t', index=False, columns=['genome', 'pathway'])
+        # upload to azure
+        azure_upload(filepath, 'jira-LL-3216-genome2pathway_data.tsv', 'jira-LL-3216-genome2pathway_data.zip', zipfilepath)
 
         outfile = os.path.join(self.output_dir, 'gene2ko_data.tsv')
+        zipoutfile = os.path.join(self.output_dir, 'gene2ko_data.zip')
         infile = os.path.join(self.download_dir, 'genes', 'ko', 'ko_genes.list')
         header = True
         chunks = pd.read_csv(infile, sep='\t', chunksize=3000, header=None, names=['ko', 'gene'])
@@ -108,5 +129,14 @@ class KeggParser(BaseParser):
             chunk.to_csv(outfile, header=header, columns=['gene', 'ko'], mode='a', sep='\t', index=False)
             header = False
         logging.info('total gene2ko: ' + str(total))
+        # upload to azure
+        azure_upload(outfile, 'jira-LL-3216-gene2ko_data.tsv', 'jira-LL-3216-gene2ko_data.zip', zipoutfile)
 
 
+def main():
+    parser = KeggParser()
+    parser.parse_and_write_data_files()
+
+
+if __name__ == "__main__":
+    main()
