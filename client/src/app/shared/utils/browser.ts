@@ -5,20 +5,47 @@ import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 import { WorkspaceManager } from '../workspace-manager';
 
-export function toValidLink(url: string) {
-  let newUrl: string;
+/**
+ * Create a valid url string suitable for <a> tag href usage.
+ * @param url - user provided string that might need enhancement - such as adding http:// for external links
+ */
+export function toValidLink(url: string): string {
+  url = url.trim();
   // Watch out for javascript:!
   if (url.match(/^(http|ftp)s?:\/\//i)) {
-    newUrl = url;
+    return url;
   } else if (url.match(/^\/\//i)) {
-    newUrl = 'http:' + url;
+    return 'http:' + url;
+    // Internal URL begins with single /
+  } else if (url.startsWith('/')) {
+    return url;
   } else if (url.match(/^mailto:/i)) {
-    newUrl = url;
+    return url;
   } else {
-    newUrl = 'http://' + url;
+    return 'http://' + url;
   }
-  const urlObject = new URL(newUrl);
-  return newUrl;
+}
+
+/**
+ * Returns the string as a valid URL object
+ * @param url - user provided string with url
+ */
+
+export function toValidUrl(url: string): URL {
+  // Create a valid href string
+  url = toValidLink(url);
+  let urlObject;
+  try {
+    // This will fail in case of internal URL
+    urlObject = new URL(url);
+  } catch (e) {
+    if (url.startsWith('/')) {
+      urlObject = new URL(url, window.location.href);
+    } else {
+      urlObject = new URL('https://' + url);
+    }
+  }
+  return urlObject;
 }
 
 /**
@@ -39,17 +66,7 @@ export function openLink(url: string, target = '_blank'): boolean {
 
 export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
                                           url: string): boolean {
-  url = url.trim();
-  let urlObject;
-  try {
-    urlObject = new URL(url);
-  } catch (e) {
-    if (url.charAt(0) === '/') {
-      urlObject = new URL(url, window.location.href);
-    } else {
-      urlObject = new URL('https://' + url);
-    }
-  }
+  const urlObject = toValidUrl(url);
   const openInternally = workspaceManager.isWithinWorkspace()
     && (window.location.hostname === urlObject.hostname
       && (window.location.port || '80') === (urlObject.port || '80'));
@@ -171,4 +188,26 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
   }
 
   return openLink(urlObject.href, '_blank');
+}
+
+
+const DOMAIN_MAP = new Map([
+  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/gene\/.+$/, 'NCBI Gene'],
+  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/Taxonomy\/.+$/, 'NCBI Taxonomy'],
+  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/mesh\/.+$/, 'MeSH'],
+  [/^((https|http)(:\/\/))?(www.)?ebi.ac.uk\/.+$/, 'ChEBI'],
+  [/^((https|http)(:\/\/))?(www.)?uniprot.org\/.+$/, 'UniProt'],
+  [/^((https|http)(:\/\/))?(www.)?amigo.geneontology.org\/.+$/, 'GO'],
+  [/^((https|http)(:\/\/))?(www.)?pubchem.ncbi.nlm.nih.gov\/.+$/, 'PubChem'],
+  [/^((https|http)(:\/\/))?(www.)?biocyc.org\/.+$/, 'BioCyc'],
+]);
+
+// Match the url address with the domain
+export function parseURLToDomainName(url: string, defaultReturn?: string): string {
+   for (const [re, val] of DOMAIN_MAP.entries()) {
+    if (re.exec(url)) {
+      return val;
+    }
+   }
+   return defaultReturn || 'Link';
 }

@@ -8,7 +8,7 @@ import { stringToHex } from 'app/shared/utils';
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
-import {parseURLToDomainName} from '../../shared/utils/links';
+import { parseURLToDomainName } from '../../shared/utils/browser';
 
 @Component({
   selector: 'app-search-record-node',
