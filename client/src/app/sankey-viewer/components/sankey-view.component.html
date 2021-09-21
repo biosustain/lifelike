@@ -107,14 +107,15 @@
                 <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
                     <button class="btn btn-primary" ngbDropdownToggle>
                         <ng-container
-                                *ngIf="selectedNetworkTrace; else noSelectedTrace">{{
-                            selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
+                                *ngIf="selectedNetworkTrace; else noSelectedTrace">{{ selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
                         <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
                     <div ngbDropdownMenu class="dropdown-menu">
                         <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
-                                ngbDropdownItem>{{trace.description}}</button>
+                                ngbDropdownItem>
+                            {{ trace?.name || trace?.description || 'Trace Description Unknown' }}
+                        </button>
                     </div>
                 </div>
                 <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
