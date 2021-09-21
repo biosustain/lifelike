@@ -64,11 +64,10 @@ class EntityTypeEntry {
 })
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', { read: NgbDropdown }) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
-    static: false,
-    read: SearchControlComponent,
-  }) searchControlComponent: SearchControlComponent;
+    read: SearchControlComponent
+}) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -123,7 +122,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removeAnnotationExclusionSub: Subscription;
   removedAnnotationExclusion: RemovedAnnotationExclusion;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
+  @ViewChild(PdfViewerLibComponent) pdfViewerLib: PdfViewerLibComponent;
 
   matchesCount = {
     current: 0,

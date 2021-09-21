@@ -25,7 +25,7 @@ export class ObjectPreviewComponent implements OnChanges {
   @Input() object: FilesystemObject;
   @Input() contentValue: Blob;
   @Input() highlightTerms: string[] | undefined;
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild('child', { read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
   readonly previewComponent$ = this.object$.pipe(
@@ -64,7 +64,7 @@ export class ObjectPreviewComponent implements OnChanges {
 })
 export class ObjectPreviewOutletComponent implements AfterViewInit {
 
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild('child', { read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
   private _componentRef: ComponentRef<any>;
 
   @Input()
