@@ -74,8 +74,6 @@ Optional:
 --log-file: Name of log file. If specified, logs are written to this files.
 
 ### Examples
-Before running these scripts, run the `set-env` bash script to set environment variables: `source ./set-env`.
-
 Load Chebi with default (INFO) log level:
 ``` bash    
 PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./lifelike_graphdb/app.py chebi

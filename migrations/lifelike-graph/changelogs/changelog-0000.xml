@@ -27,7 +27,14 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-mesh.zip"
       startAt="1"
-      fileType="TSV"/>
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jUsername="${neo4jUsername}"
+      neo4jPassword="${neo4jPassword}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-compound" author="Binh Vu">
@@ -47,7 +54,14 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-compound.zip"
       startAt="1"
-      fileType="TSV"/>
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jUsername="${neo4jUsername}"
+      neo4jPassword="${neo4jPassword}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-chemical" author="Binh Vu">
@@ -67,7 +81,14 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
       startAt="1"
-      fileType="TSV"/>
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jUsername="${neo4jUsername}"
+      neo4jPassword="${neo4jPassword}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
@@ -98,7 +119,14 @@
       "
       fileName="jira-LL-3625-add-entity-type-array-protein.zip"
       startAt="1"
-      fileType="TSV"/>
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jUsername="${neo4jUsername}"
+      neo4jPassword="${neo4jPassword}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-gene" author="Binh Vu">
