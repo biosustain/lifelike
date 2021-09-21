@@ -256,15 +256,23 @@ export class SankeyLayoutService extends AttributeAccessors {
     });
   }
 
+  get sourceValue() {
+    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[0] : _value;
+  }
+
+  get targetValue() {
+    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[1] : _value;
+  }
+
   /**
    * Assign node value either based on _fixedValue property or as a max of
    * sum of all source links and sum of target links.
    */
   computeNodeValues({nodes}: SankeyData) {
-    const {value} = this;
+    const {sourceValue, targetValue} = this;
     for (const node of nodes) {
       node._value = node._fixedValue === undefined
-        ? Math.max(sum(node._sourceLinks, value), sum(node._targetLinks, value))
+        ? Math.max(sum(node._sourceLinks, sourceValue), sum(node._targetLinks, targetValue))
         : node._fixedValue;
     }
   }

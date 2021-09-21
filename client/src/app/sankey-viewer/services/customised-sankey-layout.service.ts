@@ -59,28 +59,21 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     let sourceY = 0;
     let targetY = 0;
 
-    if (_multiple_values) {
-      for (let i = 0; i < sourceIndex; i++) {
-        sourceY += _sourceLinks[i]._multiple_values[0];
-      }
-      for (let i = 0; i < targetIndex; i++) {
-        targetY += _targetLinks[i]._multiple_values[1];
-      }
-    } else {
-      for (let i = 0; i < sourceIndex; i++) {
-        sourceY += _sourceLinks[i]._value;
-      }
-      for (let i = 0; i < targetIndex; i++) {
-        targetY += _targetLinks[i]._value;
-      }
+    for (let i = 0; i < sourceIndex; i++) {
+      const nestedLink = _sourceLinks[i];
+      sourceY += nestedLink._multiple_values ? nestedLink._multiple_values[0] : nestedLink._value;
+    }
+    for (let i = 0; i < targetIndex; i++) {
+      const nestedLink = _targetLinks[i];
+      targetY += nestedLink._multiple_values ? nestedLink._multiple_values[1] : nestedLink._value;
     }
 
     if (normalize) {
       let sourceValues;
       let targetValues;
       if (_multiple_values) {
-        sourceValues = _sourceLinks.map(({_multiple_values: [value]}) => value);
-        targetValues = _targetLinks.map(({_multiple_values: [_, value]}) => value);
+        sourceValues = _sourceLinks.map(l => l._multiple_values ? l._multiple_values[0] : l._value);
+        targetValues = _targetLinks.map(l => l._multiple_values ? l._multiple_values[1] : l._value);
       } else {
         sourceValues = _sourceLinks.map(({_value}) => _value);
         targetValues = _targetLinks.map(({_value}) => _value);
