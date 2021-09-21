@@ -20,7 +20,7 @@ import { CustomisedSankeyLayoutService } from '../services/customised-sankey-lay
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
-import { SankeyControllerService, PREDEFINED_VALUE } from '../services/sankey-controller.service';
+import { SankeyControllerService } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
 import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
@@ -133,15 +133,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   ready = false;
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  detailsPanel: boolean;
-  advancedPanel: boolean;
+  detailsPanel = false;
+  advancedPanel = false;
   selectedNodes;
   selectedLinks;
   selectedTraces;
   object: FilesystemObject;
   currentFileId;
 
-  @ViewChild('sankey', {static: true}) sankey;
+  @ViewChild('sankey', {static: false}) sankey;
   isArray = Array.isArray;
 
   entitySearchTerm = '';
@@ -304,6 +304,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       delete l._selected;
     });
   }
+
   // endregion
 
   selectPredefinedValueAccessor(accessor) {
@@ -396,5 +397,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.setSearchFocus();
   }
+
   // endregion
 }

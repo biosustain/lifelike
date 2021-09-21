@@ -45,8 +45,8 @@ import { MimeTypes } from '../../../shared/constants';
   ],
 })
 export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('infoPanelSidebar', { static: true }) infoPanelSidebarElementRef: ElementRef;
-  @ViewChild('modalContainer', { static: true }) modalContainer: ElementRef;
+  @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
+  @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
 

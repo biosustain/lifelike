@@ -23,7 +23,7 @@ export class UserFileImportColumnRelationshipMappingRowComponent {
 
     @Output() deleteMapping: EventEmitter<boolean>;
 
-    @ViewChild('newRelationshipInput', {static: true}) newRelationshipInput: ElementRef;
+    @ViewChild('newRelationshipInput', {static: false}) newRelationshipInput: ElementRef;
 
     disableRelationshipDropdown: boolean;
 

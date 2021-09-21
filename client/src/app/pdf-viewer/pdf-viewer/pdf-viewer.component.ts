@@ -11,7 +11,7 @@ import {
   OnDestroy,
   ViewChild
 } from '@angular/core';
-import { PDFDocumentProxy, PDFViewerParams, PDFPageProxy, PDFPageViewport, PDFSource, PDFProgressData, PDFPromise } from 'pdfjs-dist';
+import { PDFDocumentProxy, PDFViewerParams, PDFPageProxy, PDFPageViewport, PDFSource, PDFProgressData } from 'pdfjs-dist';
 
 import { createEventBus } from '../utils/event-bus-utils';
 
@@ -580,7 +580,7 @@ export class PdfViewerComponent
     };
 
     const src = this.src;
-    (this.loadingTask.promise as PDFPromise<PDFDocumentProxy>).then(
+    (this.loadingTask.promise as Promise<any>).then(
       (pdf: PDFDocumentProxy) => {
         this.internalPdf = pdf;
         this.lastLoaded = src;
