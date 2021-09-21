@@ -9,7 +9,6 @@ import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree.component';
 
-@Directive()
 export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeComponent<T> implements OnDestroy {
   private _resetTree: Subject<boolean>;
   @Input() set resetTree(resetSubject: Subject<boolean>) {
