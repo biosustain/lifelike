@@ -11,12 +11,12 @@ class KeggDataLoader(BaseDataLoader):
 
     def create_indexes(self, database: Database):
         database.create_constraint(NODE_KEGG, PROP_ID, "constraint_kegg_id")
-        database.create_constraint(NODE_KO, 'constraint_ko_id')
-        database.create_constraint(NODE_PATHWAY, 'constraint_pathway_id')
-        database.create_constraint(NODE_GENE, 'constraint_gene_id')
-        database.create_constraint(NODE_GENOME, 'constraint_genome_id')
-        database.create_constraint(NODE_SYNONYM, 'constraint_synonym_name')
-        database.create_index(NODE_PATHWAY, 'index_pathway_name')
+        database.create_constraint(NODE_KO, PROP_ID, 'constraint_ko_id')
+        database.create_constraint(NODE_PATHWAY, PROP_ID, 'constraint_pathway_id')
+        database.create_constraint(NODE_GENE, PROP_ID, 'constraint_gene_id')
+        database.create_constraint(NODE_GENOME, PROP_ID, 'constraint_genome_id')
+        database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
+        database.create_index(NODE_PATHWAY, PROP_NAME, 'index_pathway_name')
 
     def load_data_to_neo4j(self, database: Database):
         # load pathway
