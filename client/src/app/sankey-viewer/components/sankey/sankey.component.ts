@@ -74,10 +74,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // shallow copy of input data
   private _data: SankeyData = {} as SankeyData;
 
-  @ViewChild('svg') svg!: ElementRef;
-  @ViewChild('g') g!: ElementRef;
-  @ViewChild('nodes') nodes!: ElementRef;
-  @ViewChild('links') links!: ElementRef;
+  @ViewChild('svg', { static: true }) svg!: ElementRef;
+  @ViewChild('g', { static: true }) g!: ElementRef;
+  @ViewChild('nodes', { static: true }) nodes!: ElementRef;
+  @ViewChild('links', { static: true }) links!: ElementRef;
 
   @Output() nodeClicked = new EventEmitter();
   @Output() linkClicked = new EventEmitter();

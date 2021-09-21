@@ -36,6 +36,7 @@ export class TraceDetailsComponent implements OnChanges {
       font: {
         size: 30
       },
+      // @ts-ignore
       chosen: {
         // @ts-ignore
         label: (values, id, selected, hovering) => {

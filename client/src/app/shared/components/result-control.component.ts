@@ -17,7 +17,7 @@ export class ResultControlComponent {
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
 
-  @ViewChild('searchInput') searchElement: ElementRef;
+  @ViewChild('searchInput', {static: true}) searchElement: ElementRef;
 
   clear() {
     this.valueClear.emit();

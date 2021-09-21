@@ -26,7 +26,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Output() enterPress = new EventEmitter();
   @Output() valueClear = new EventEmitter();
 
-  @ViewChild('searchInput') searchElement: ElementRef;
+  @ViewChild('searchInput', {static: true}) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {

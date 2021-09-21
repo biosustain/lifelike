@@ -19,7 +19,7 @@ import { ModuleProperties } from 'app/shared/modules';
   templateUrl: './graph-search.component.html',
 })
 export class GraphSearchComponent implements OnInit, OnDestroy {
-  @ViewChild('body') body: ElementRef;
+  @ViewChild('body', {static: true}) body: ElementRef;
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
