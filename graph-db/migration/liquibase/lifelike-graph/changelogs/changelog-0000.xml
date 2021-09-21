@@ -19,7 +19,7 @@
       now returns back as a synonym for both types.
     </comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
       MATCH (n:db_MESH) WHERE n.eid = row.entity_id[0]
@@ -45,7 +45,7 @@
       now returns back as a synonym for both types.
     </comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
       MATCH (n:Compound) WHERE n.eid = row.entity_id[0]
@@ -71,7 +71,7 @@
       now returns back as a synonym for both types.
     </comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
       MATCH (n:Chemical) WHERE n.eid = row.entity_id[0]
@@ -108,7 +108,7 @@
       now returns back as a synonym for both types.
     </comment>
     <customChange
-      class="edu.ucsd.sbrg.liquibase.FileQueryHandler"
+      class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
       MATCH (n:Protein) WHERE n.eid = row.entity_id[0]
