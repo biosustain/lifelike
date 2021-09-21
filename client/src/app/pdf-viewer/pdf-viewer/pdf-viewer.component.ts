@@ -169,7 +169,7 @@ export class PdfViewerComponent
 
   static CSS_UNITS: number = 96.0 / 72.0;
   static BORDER_WIDTH = 9;
-  @ViewChild('pdfViewerContainer') pdfViewerContainer;
+  @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
   private isVisible = false;
 
   private pdfMultiPageViewer: any;
