@@ -68,7 +68,7 @@
     "vis-util": "5.0.2",
     "web-animations-js": "^2.3.2",
     "webcola": "^3.4.0",
-    "zone.js": "~0.11.3"
+    "zone.js": "~0.10.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.15",
@@ -81,11 +81,11 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/jquery": "^3.3.33",
     "@types/jqueryui": "^1.12.10",
-    "@types/node": "~8.9.4",
+    "@types/node": "^12.11.1",
     "@types/pdfjs-dist": "^2.1.6",
     "@types/vis": "^4.21.19",
     "babel-loader": "^8.2.1",
-    "codelyzer": "^5.0.0",
+    "codelyzer": "^5.1.2",
     "jasmine-core": "~3.4.0",
     "jasmine-marbles": "^0.6.0",
     "jasmine-spec-reporter": "~4.2.1",
