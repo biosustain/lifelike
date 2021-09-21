@@ -10,7 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class CopyLinkDialogComponent {
 
-  @ViewChild('input', { static: true }) input: ElementRef;
+  @ViewChild('input', {static: false}) input: ElementRef;
   @Input() url: string;
 
   constructor(public readonly modal: NgbActiveModal,

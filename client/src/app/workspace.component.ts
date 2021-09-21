@@ -23,7 +23,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked {
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
-  @ViewChild('splitComponent', {static: true}) splitComponent: SplitComponent;
+  @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
