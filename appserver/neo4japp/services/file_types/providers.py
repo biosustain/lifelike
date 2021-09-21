@@ -337,7 +337,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
             # If it is xml file and bioc
             self.check_xml_and_bioc(buffer)
             return [(0, self.MIME_TYPE)]
-        except ValueError:
+        except BaseException:
             return []
         finally:
             buffer.seek(0)
