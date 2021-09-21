@@ -68,7 +68,7 @@ class Database:
             except Exception as error:
                 self.logger.error("Could not create index %r. %r", index_name, error)
 
-    def create_fulltext_index(self, index_name, node_labels:[], index_properties:[]):
+    def create_fulltext_index(self, index_name, node_labels: list, index_properties: list):
         query = get_create_fulltext_index_query()
         with self.driver.session(database=self.dbname) as session:
             try:
@@ -105,7 +105,7 @@ class Database:
             df = pd.DataFrame(results.values(), columns=results.keys())
         return df
 
-    def load_data_from_rows(self, query: str, data_rows: [], return_node_count: bool = False):
+    def load_data_from_rows(self, query: str, data_rows: list, return_node_count: bool = False):
         """
         run the query by passing data rows
         :param query: the query with $dict parameter (see query_builder.py)
@@ -149,7 +149,7 @@ class Database:
                 result = session.run(query, dict=rows_dict).consume()
                 self.logger.info(result.counters)
 
-    def load_csv_file(self, data_file: str, col_names:[], query: str, skip_lines=0, separator='\t',
+    def load_csv_file(self, data_file: str, col_names: list, query: str, skip_lines=0, separator='\t',
                       chunk_size=2000, apply_str_columns=[]):
         """
         load csv file to neo4j database
@@ -191,7 +191,7 @@ class Database:
                     # self.logger.info(result.counters)
                 self.logger.info("Rows processed: " + str(count))
 
-    def log_etl_load_start(self, domain: str, node_labels: [], node_version: str):
+    def log_etl_load_start(self, domain: str, node_labels: list, node_version: str):
         """Log an etl load start by creating an EtlLoad node.
         :param domain: Name of the domain to be loaded, e.g. "BioCyc" or "NCBI".
         :param nodel_labels: A list of labels applied to the nodes.

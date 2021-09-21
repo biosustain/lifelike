@@ -1,6 +1,6 @@
-# Lifelike-graphdb
+# Extraction
 
-This README describes how to set up a develoment environment for Lifelike-graphdb and how to load data into the graph.
+This README describes how to set up a develoment environment to run scripts to parse data from various sources; e.g KEGG, BioCyc, etc... and produce TSV files.
 
 ## Initial setup
 
@@ -55,12 +55,11 @@ Or update a specific package:
 pipenv update <package>
 ```
 
-## Loading data to the graph
+## Parsing Data
 
-Data is parsed and loaded to the graph by executing the `app.py` script with the data domain as argument. Some domains, like BioCyc, will have additional arguments to specify  which specific data sources to load.
+Data is parsed by executing the `app.py` script with the data domain as argument. Some domains, like BioCyc, will have additional arguments to specify which specific data sources to load.
 
-Data source files are loaded from the folder \<base data dir>/download/\<domain name>, e.g. /mnt/data/graphdata/download/biocyc.
-Base data dir is set in environment variable BASE_DATA_DIR.
+The TSV data files are zipped and uploaded to Azure (or other cloud storage of choice).
 
 ### Arguments
 Required:
@@ -75,21 +74,25 @@ Optional:
 
 ### Examples
 Load Chebi with default (INFO) log level:
-``` bash    
-PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./***ARANGO_DB_NAME***_graphdb/app.py chebi
+```bash
+# assumes current directory is graph-db/extraction
+PYTHONPATH=/path/to/graph-db/src python3 src/app.py chebi
 ```
 
 Load Chebi, overriding log level and specifying log file:
-``` bash    
-PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./***ARANGO_DB_NAME***_graphdb/app.py --log-file kg_load.log --log-level DEBUG chebi
+```bash
+# assumes current directory is graph-db/extraction
+PYTHONPATH=/path/to/graph-db/src python3 src/app.py --log-file kg_load.log --log-level DEBUG chebi
 ```
 
-Load all BioCyc sources as specified in ../***ARANGO_DB_NAME***_graphdb/biocyc/data_sources.json:
-``` bash    
-PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./***ARANGO_DB_NAME***_graphdb/app.py biocyc
+Load all BioCyc sources as specified in src/biocyc/data_sources.json:
+```bash
+# assumes current directory is graph-db/extraction
+PYTHONPATH=/path/to/graph-db/src python3 src/app.py biocyc
 ```
 
 Load specific BioCyc data sources:
-``` bash    
-PYTHONPATH=/path/to/Lifelike-graphdb/src python3 ./***ARANGO_DB_NAME***_graphdb/app.py biocyc --data-sources EcoCyc YeastCyc MetaCyc
+```bash
+# assumes current directory is graph-db/extraction
+PYTHONPATH=/path/to/graph-db/src python3 src/app.py biocyc --data-sources EcoCyc YeastCyc MetaCyc
 ```

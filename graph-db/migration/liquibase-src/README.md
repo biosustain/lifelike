@@ -3,7 +3,7 @@ This is a JAVA maven project, so you will need some sort of IDE so the project c
 
 IntelliJ: https://www.jetbrains.com/idea/ (Download community version)
 
-Once repo is cloned, open IntelliJ and go to File > New > Project from existing sources
+Once repo is cloned, open IntelliJ and go to File > New > Project from existing sources (select **liquibase-src** folder)
 - Follow the setup wizard
 
 If you want to add new dependencies, you will need to update the `pom.xml` file, then right-click the file, go to Maven (bottom) > Reload Project.
@@ -70,11 +70,11 @@ Liquibase Community 4.4.1 by Datical
 ```
 
 ### JAR Files
-You will need two `.jar` files for liquibase to work:
+You will need two JAR (`.jar`) files for liquibase to work:
 - liquibase-neo4j: https://github.com/liquibase/liquibase-neo4j/releases
 - Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
 
-Download them based on the neo4j version, e.g 4.x `.jars` for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
+Download them based on the neo4j version, e.g 4.x for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
 
 ```bash
 > pwd
@@ -94,12 +94,12 @@ total 27112
 ```
 
 ### Custom Java Classes
-Some of our queries are advance queries or require some sort of data file parsing that liquibase does not have support for. To workaround this, we created `*Handler.java` Java classes (located in `migrations/java`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
+Some of our queries are advance queries or require some sort of data file parsing that liquibase does not have support for. To workaround this, we created `*Handler.java` Java classes (located in `migration/liquibase-src`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
 
 ```bash
 cd migrations/java
 mvn package
-cp target/***ARANGO_DB_NAME***-graph-migration-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
+cp target/***ARANGO_DB_NAME***-liquibase-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
 ```
 
 To use these classes, check the comment docs in the source code.
