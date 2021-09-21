@@ -18,7 +18,7 @@ import { InfoPanel } from '../../models/info-panel';
 export class EdgeFormComponent implements AfterViewInit {
 
   @Input() infoPanel: InfoPanel;
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
+  @ViewChild('displayName') displayNameRef: ElementRef;
 
   lineTypeChoices = [
     [null, {

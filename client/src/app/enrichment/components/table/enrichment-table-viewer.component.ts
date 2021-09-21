@@ -57,7 +57,7 @@ interface AnnotationData {
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
+  @ViewChild('tableScroll') tableScrollRef: ElementRef;
   @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
 
   annotation: AnnotationData;
