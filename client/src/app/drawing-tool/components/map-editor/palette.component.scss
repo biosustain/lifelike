@@ -1,4 +1,5 @@
-@import "../../../../scss/bootstrap";
+@import '~bootstrap/scss/variables';
+@import '~bootstrap/scss/mixins';
 
 .palette-container {
   display: flex;
