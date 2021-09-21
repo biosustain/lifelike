@@ -4,15 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
@@ -22,6 +13,15 @@ import { BiocTypeProvider } from './providers/bioc-type-provider';
 import { InfonsComponent } from './components/infons/infons.component';
 import { AnnotatedTextComponent } from './components/annotated-text/annotated-text.component';
 import { BiocTableViewComponent } from './components/bioc-table-view/bioc-table-view.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
 
 @NgModule({
   declarations: [

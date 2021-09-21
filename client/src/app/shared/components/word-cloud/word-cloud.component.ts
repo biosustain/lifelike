@@ -85,10 +85,10 @@ const createResizeObserver = (callback, container) => {
   encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('cloudWrapper') cloudWrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper') hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg') svg!: ElementRef;
-  @ViewChild('g') g!: ElementRef;
+  @ViewChild('cloudWrapper', { static: true }) cloudWrapper!: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', { static: true }) hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild('svg', { static: true }) svg!: ElementRef;
+  @ViewChild('g', { static: true }) g!: ElementRef;
   @Output() enter = new EventEmitter();
 
   private _data: (string | WordCloudNode)[] = [];

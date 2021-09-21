@@ -31,11 +31,11 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
 
-  @ViewChild('hiddenTextAreaWrapper') hiddenTextAreaWrapperEl: ElementRef;
-  @ViewChild('wordCloudWrapper') wordCloudWrapperEl: ElementRef;
-  @ViewChild('wordCloudTooltip') wordCloudTooltipEl: ElementRef;
-  @ViewChild('wordCloudSvg') wordCloudSvgEl: ElementRef;
-  @ViewChild('wordCloudGroup') wordCloudGroupEl: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', { static: true }) hiddenTextAreaWrapperEl: ElementRef;
+  @ViewChild('wordCloudWrapper', { static: true }) wordCloudWrapperEl: ElementRef;
+  @ViewChild('wordCloudTooltip', { static: true }) wordCloudTooltipEl: ElementRef;
+  @ViewChild('wordCloudSvg', { static: true }) wordCloudSvgEl: ElementRef;
+  @ViewChild('wordCloudGroup', { static: true }) wordCloudGroupEl: ElementRef;
   layout: any;
 
   loadTask: BackgroundTask<any, [NodeLegend, string]>;
