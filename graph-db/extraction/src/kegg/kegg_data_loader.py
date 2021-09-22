@@ -61,12 +61,8 @@ class KeggDataLoader(BaseDataLoader):
         df = pd.read_csv(os.path.join(self.output_dir, 'genome2pathway_data.tsv'), sep='\t', dtype={'pathway': str})
         df[PROP_DATA_SOURCE] = 'KEGG'
         df_genome = df[['genome', PROP_DATA_SOURCE]].drop_duplicates()
-        query = get_create_nodes_query(NODE_GENOME, PROP_ID, 'genome', [PROP_DATA_SOURCE], [NODE_KEGG])
+        query = get_create_nodes_query(NODE_GENOME, PROP_ID, ['genome'], [PROP_DATA_SOURCE], [NODE_KEGG])
         database.load_data_from_dataframe(df_genome, query, 5000)
         cols = ['genome', 'pathway']
         query = get_create_relationships_query(NODE_GENOME, PROP_ID, 'genome', NODE_PATHWAY, PROP_ID, 'pathway', REL_HAS_PATHWAY)
         database.load_data_from_dataframe(df, query, 5000)
-
-
-
-
