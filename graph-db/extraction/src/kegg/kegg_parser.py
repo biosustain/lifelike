@@ -1,6 +1,7 @@
 from common.constants import *
 from common.base_parser import BaseParser
 from common.database import *
+from common.utils import get_data_dir
 import logging
 
 from create_data_file import azure_upload
@@ -92,7 +93,7 @@ class KeggParser(BaseParser):
         for chunk in chunks:
             total = total + len(chunk)
             chunk['gene_id'] = chunk['gene_id'].str.replace('ncbi-geneid:', '')
-            chunk['genome'] = chunk['gene_id'].str.split(':', 1, True)[0]
+            chunk['genome'] = chunk[PROP_ID].str.split(':', 1, True)[0]
             chunk.to_csv(outfile, header=header, mode='a', sep='\t', index=False)
             header = False
         logging.info('total genes: ' + str(total))
@@ -135,7 +136,7 @@ class KeggParser(BaseParser):
 
 
 def main():
-    parser = KeggParser()
+    parser = KeggParser(get_data_dir())
     parser.parse_and_write_data_files()
 
 
