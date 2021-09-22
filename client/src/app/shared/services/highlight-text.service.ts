@@ -1,4 +1,4 @@
-import { escape } from 'lodash';
+import { escape } from 'lodash-es';
 import { Injectable, InjectionToken, Injector } from '@angular/core';
 import { Subscription } from 'rxjs';
 

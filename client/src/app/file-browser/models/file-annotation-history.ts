@@ -7,7 +7,7 @@ import {
 } from '../schema';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
-import { startCase } from 'lodash';
+import { startCase } from 'lodash-es';
 import { ModelList } from 'app/shared/models';
 import { AppUser } from '../../interfaces';
 

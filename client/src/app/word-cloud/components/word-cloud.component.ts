@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 
 import { combineLatest, Subscription } from 'rxjs';
 import { first } from 'rxjs/operators';

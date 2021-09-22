@@ -1,4 +1,5 @@
-import { escape, uniqueId } from 'lodash';
+import { escape } from 'lodash-es';
+import { uniqueId } from 'lodash-es';
 import Color from 'color';
 import { Injectable, RendererFactory2 } from '@angular/core';
 import { DropdownController } from '../../utils/dom/dropdown-controller';

@@ -16,7 +16,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
 import { getObjectLabel } from '../utils/objects';
-import { clone } from 'lodash';
+import { clone } from 'lodash-es';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
 import {
