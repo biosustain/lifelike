@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+  <!--
+    Neo4j does not allow the same transaction for changing the scheme and writes.
+    So group changeSets together by id="some text-#"
+    And separate changeSets grouping by empty new line space
+  -->
+
+  <changeSet id="LL-3216-liquibase-kegg-data-constraints" author="Binh Vu">
+    <comment>Create KEGG data from scratch; creating constraints.</comment>
+    <sql>
+      CREATE CONSTRAINT constraint_kegg_id IF NOT EXISTS ON (n:db_KEGG) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_ko_id IF NOT EXISTS ON (n:KO) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_pathway_id IF NOT EXISTS ON (n:Pathway) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_genome_id IF NOT EXISTS ON (n:Genome) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+      CREATE INDEX index_pathway_name IF NOT EXISTS FOR (n:Pathway) ON (n.name)
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3216-liquibase-kegg-data-load-pathway" author="Binh Vu">
+    <comment>Create KEGG data from scratch; loading pathway data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (n:db_KEGG {eid: row.eid[0]})
+      ON CREATE SET n:Pathway, n.name=row.name[0], n.data_source='KEGG'
+      "
+      fileName="jira-LL-3216-pathway_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+</databaseChangeLog>
