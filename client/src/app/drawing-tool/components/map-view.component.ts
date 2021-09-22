@@ -15,7 +15,7 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MimeTypes } from '../../shared/constants';
 

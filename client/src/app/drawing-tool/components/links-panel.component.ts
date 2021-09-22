@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';

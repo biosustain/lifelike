@@ -15,7 +15,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../../../file-browser/services/object-type.service';
 import { Observable } from 'rxjs';
