@@ -117,6 +117,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         id: uuidv4(),
         arrows: 'to',
         label: d.type,
+        color: 'black',
         ...(d || {})
       })
     );
