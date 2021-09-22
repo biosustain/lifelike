@@ -92,6 +92,7 @@ class KeggParser(BaseParser):
         for chunk in chunks:
             total = total + len(chunk)
             chunk['gene_id'] = chunk['gene_id'].str.replace('ncbi-geneid:', '')
+            chunk['genome'] = chunk['gene_id'].str.split(':', 1, True)[0]
             chunk.to_csv(outfile, header=header, mode='a', sep='\t', index=False)
             header = False
         logging.info('total genes: ' + str(total))
