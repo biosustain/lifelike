@@ -152,7 +152,7 @@
       WITH collect(DISTINCT row.genome[0]) AS genomes
       UNWIND genomes AS genome
       MERGE (n:Genome {eid: genome})
-      SET n:db_KEGG
+      ON CREATE SET n:db_KEGG, n.data_source = 'KEGG'
       "
       fileName="jira-LL-3216-genome2pathway_data.zip"
       startAt="1"
