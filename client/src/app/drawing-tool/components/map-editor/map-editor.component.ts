@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';

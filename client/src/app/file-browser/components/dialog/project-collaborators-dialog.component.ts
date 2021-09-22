@@ -7,7 +7,7 @@ import { ModelList } from 'app/shared/models';
 import { Collaborator } from '../../models/collaborator';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { ProjectsService } from '../../services/projects.service';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { nonEmptyList } from 'app/shared/validators';

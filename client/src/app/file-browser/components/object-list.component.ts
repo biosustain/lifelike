@@ -8,7 +8,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { nullCoalesce } from 'app/shared/utils/types';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';

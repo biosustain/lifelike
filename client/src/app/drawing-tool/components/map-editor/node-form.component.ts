@@ -8,7 +8,8 @@ import {
   ViewChild,
   HostListener,
 } from '@angular/core';
-import { cloneDeep, startCase } from 'lodash';
+import { cloneDeep } from 'lodash-es';
+import { startCase } from 'lodash-es';
 import {
   DETAIL_NODE_LABELS,
   isCommonNodeDisplayName,
