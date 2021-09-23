@@ -129,18 +129,18 @@
                     ngbTooltip="File Navigator" placement="bottom">
               <i class="fas fa-fw fa-compass"></i>
             </button>
-          </div>
-      <div class="flex-fill overflow-hidden position-relative d-flex h-100">
-        <div *ngIf="isPendingPostLoadAction()"
-             class="pending-scroll-box-container">
-          <div class="pending-scroll-box floating-toolbar d-flex align-items-center flex-column">
-            <div>
-              <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+        <div class="flex-fill overflow-hidden position-relative d-flex h-100">
+            <div *ngIf="isPendingPostLoadAction()"
+                 class="pending-scroll-box-container">
+                <div class="pending-scroll-box floating-toolbar d-flex align-items-center flex-column">
+                    <div>
+                        <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+                    </div>
+              </div>
             </div>
-          </div>
         </div>
-      </div>
-        </app-module-header>
+    </div>
+    </app-module-header>
         <div class="flex-fill overflow-hidden position-relative d-flex h-100">
             <div *ngIf="isPendingPostLoadAction()"
                  class="pending-scroll-box-container">
