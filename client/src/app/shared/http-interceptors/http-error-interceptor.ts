@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+
 import { catchError } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
-
 import { Store } from '@ngrx/store';
+
 import { State } from 'app/root-store/state';
 import { SnackbarActions } from 'app/shared/store';
 import { ErrorHandler} from 'app/shared/services/error-handler.service';

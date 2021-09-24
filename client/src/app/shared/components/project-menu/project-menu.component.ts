@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { ProjectImpl } from '../../../file-browser/models/filesystem-object';
-import { ProjectActions } from '../../../file-browser/services/project-actions';
+
+import { ProjectImpl } from 'app/file-browser/models/filesystem-object';
+import { ProjectActions } from 'app/file-browser/services/project-actions';
 
 @Component({
   selector: 'app-project-menu',

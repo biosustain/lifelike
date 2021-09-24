@@ -1,8 +1,11 @@
 import { Component, Input, HostBinding } from '@angular/core';
+
+import { Observable, of } from 'rxjs';
+
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+
 import { UserError } from '../exceptions';
 import { ErrorHandler } from '../services/error-handler.service';
-import { Observable, of } from 'rxjs';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 @Component({
   selector: 'app-module-error',

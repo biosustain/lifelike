@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { select, Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material';
 
-import { AuthenticationService } from '../services/authentication.service';
-
+import { select, Store } from '@ngrx/store';
 import { from } from 'rxjs';
 import {
   catchError,
@@ -14,20 +13,19 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
-
-import * as AuthActions from './actions';
-import * as AuthSelectors from './selectors';
-import { State } from './state';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
-import { MatSnackBar } from '@angular/material';
 import {
   TermsOfServiceDialogComponent,
 } from 'app/users/components/terms-of-service-dialog.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
-import { successPasswordUpdate } from './actions';
+
+import { AuthenticationService } from '../services/authentication.service';
+import * as AuthActions from './actions';
+import * as AuthSelectors from './selectors';
+import { State } from './state';
+import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
 import { ChangePasswordDialogComponent } from '../../users/components/change-password-dialog.component';
 
 @Injectable()

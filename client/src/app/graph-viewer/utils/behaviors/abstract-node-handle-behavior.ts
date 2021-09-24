@@ -1,15 +1,17 @@
 // @ts-ignore
 import * as d3 from 'd3';
+
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
+
 import {
   AbstractCanvasBehavior,
   BehaviorResult,
   DragBehaviorEvent,
 } from '../../renderers/behaviors';
-import {
-  GraphEntity,
-  GraphEntityType,
-  UniversalGraphNode,
-} from '../../../drawing-tool/services/interfaces';
 import { PlacedNode } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
 

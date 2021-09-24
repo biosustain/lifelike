@@ -1,23 +1,26 @@
-import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
+import { HttpEventType } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { BehaviorSubject, Observable, iif, of, merge } from 'rxjs';
+import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ResultMapping } from 'app/shared/schemas/common';
+
+import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
-import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
-import { HttpEventType } from '@angular/common/http';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from '../components/dialog/object-edit-dialog.component';
-import { Injectable } from '@angular/core';
 import { AnnotationsService } from './annotations.service';
-import { ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemService } from './filesystem.service';
-import { ResultMapping } from 'app/shared/schemas/common';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
 @Injectable()

@@ -1,9 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { FilesystemObject } from '../../models/filesystem-object';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+
+import { FilesystemObject } from '../../models/filesystem-object';
 import { ObjectVersion } from '../../models/object-version';
 
 @Component({

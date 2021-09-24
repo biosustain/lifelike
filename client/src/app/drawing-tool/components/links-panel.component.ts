@@ -1,19 +1,22 @@
-import { cloneDeep } from 'lodash';
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { cloneDeep } from 'lodash';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
-import { Hyperlink, Source } from '../services/interfaces';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import {
   LABEL_TOKEN,
   URI_TOKEN,
   URIData,
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
 import { openPotentialInternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+
+import { Hyperlink, Source } from '../services/interfaces';
+import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Component({

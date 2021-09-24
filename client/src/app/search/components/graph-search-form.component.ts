@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { OrganismAutocomplete } from 'app/interfaces';
-
 import { KG_VIZ_DOMAINS, KG_VIZ_FILTER_TYPES } from 'app/shared/constants';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 

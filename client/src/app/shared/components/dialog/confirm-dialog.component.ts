@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageDialog } from '../../services/message-dialog.service';
 import { CommonDialogComponent } from './common-dialog.component';
 

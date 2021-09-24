@@ -1,20 +1,17 @@
 import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { combineLatest, Subscription, BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { map } from 'rxjs/operators';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-
-
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
+
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';

@@ -1,14 +1,16 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
+import { isNullOrUndefined } from 'util';
+
+import { RecursivePartial } from 'app/shared/utils/types';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+
 import { UniversalGraphEdge } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
-import { RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
-import { isNullOrUndefined } from 'util';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({

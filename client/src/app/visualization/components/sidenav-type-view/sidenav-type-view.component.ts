@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { VisNode } from 'app/interfaces';
 
+import { VisNode } from 'app/interfaces';
 import {
   AssociatedType,
   AssociatedTypeEntry,

@@ -2,6 +2,7 @@ import { isNullOrUndefined } from 'util';
 
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
+
 import { TraceNode, TraceData } from './interfaces';
 
 function find(nodeById, id) {

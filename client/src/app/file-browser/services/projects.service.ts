@@ -1,9 +1,20 @@
 import { Injectable } from '@angular/core';
-import { ApiService } from 'app/shared/services/api.service';
 import { HttpClient } from '@angular/common/http';
+
 import { map } from 'rxjs/operators';
-import { ProjectList } from '../models/project-list';
 import { Observable } from 'rxjs';
+
+import { ApiService } from 'app/shared/services/api.service';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from 'app/shared/schemas/common';
+import { ModelList } from 'app/shared/models';
+import { serializePaginatedParams } from 'app/shared/utils/params';
+
+import { ProjectList } from '../models/project-list';
 import { ProjectImpl } from '../models/filesystem-object';
 import {
   BulkProjectUpdateRequest,
@@ -14,15 +25,7 @@ import {
   ProjectSearchRequest,
 } from '../schema';
 import { encode } from 'punycode';
-import {
-  PaginatedRequestOptions,
-  ResultList,
-  ResultMapping,
-  SingleResult,
-} from 'app/shared/schemas/common';
-import { ModelList } from 'app/shared/models';
 import { Collaborator } from '../models/collaborator';
-import { serializePaginatedParams } from 'app/shared/utils/params';
 
 @Injectable()
 export class ProjectsService {

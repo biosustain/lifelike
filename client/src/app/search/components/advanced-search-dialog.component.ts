@@ -2,16 +2,15 @@ import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { Subject } from 'rxjs';
 
 import { FilesystemObjectData } from 'app/file-browser/schema';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { ContentSearchOptions } from '../content-search';
 import { SearchType } from '../shared';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-advanced-search-dialog',

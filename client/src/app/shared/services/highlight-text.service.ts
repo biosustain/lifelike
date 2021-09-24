@@ -1,5 +1,6 @@
-import { escape } from 'lodash';
 import { Injectable, InjectionToken, Injector } from '@angular/core';
+
+import { escape } from 'lodash';
 import { Subscription } from 'rxjs';
 
 export const HIGHLIGHT_TEXT_TAG_HANDLER = new InjectionToken<TagHandler[]>('highlightTextTagHandler');

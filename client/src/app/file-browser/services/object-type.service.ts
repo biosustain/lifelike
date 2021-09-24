@@ -1,7 +1,15 @@
 import { ComponentRef, Injectable, InjectionToken, Injector, NgZone } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
+
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { RankedItem } from 'app/shared/schemas/common';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { openModal } from 'app/shared/utils/modals';
+
+import { FilesystemObject } from '../models/filesystem-object';
 import { CreateDialogOptions } from './object-creation.service';
 import { SearchType } from '../../search/shared';
 import {
@@ -9,14 +17,9 @@ import {
   ObjectEditDialogValue,
 } from '../components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from '../utils/objects';
-import { finalize, map } from 'rxjs/operators';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { openModal } from 'app/shared/utils/modals';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
