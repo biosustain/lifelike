@@ -57,25 +57,27 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
   openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
     if (this.object.mimeType === MimeTypes.Pdf) {
       const url = this.object.getURL();
-      this.workspaceManager.navigateByUrl(
-        `${url}#annotation=${encodeURIComponent(annotation.id)}`, {
+      this.workspaceManager.navigateByUrl({
+        url: `${url}#annotation=${encodeURIComponent(annotation.id)}`,
+        extras: {
           newTab: true,
           sideBySide: true,
           matchExistingTab: `^/*${escapeRegExp(url)}.*`,
           shouldReplaceTab: component => {
-            const fileViewComponent = component as FileViewComponent;
-            fileViewComponent.highlightAnnotation(annotation.id);
-            return false;
+              const fileViewComponent = component as FileViewComponent;
+              fileViewComponent.highlightAnnotation(annotation.id);
+              return false;
           },
-        },
-      );
+        }
+      });
     } else if (this.object.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
       const url = this.object.getURL();
       const encodedId = encodeURIComponent(annotation.id);
       const encodedText = encodeURIComponent(annotation.text);
       const encodedColor = encodeURIComponent(annotation.color);
-      this.workspaceManager.navigateByUrl(
-        `${url}#id=${encodedId}&text=${encodedText}&color=${encodedColor}`, {
+      this.workspaceManager.navigateByUrl({
+        url: `${url}#id=${encodedId}&text=${encodedText}&color=${encodedColor}`,
+        extras: {
           newTab: true,
           sideBySide: true,
           matchExistingTab: `^/*${escapeRegExp(url)}.*`,
@@ -84,8 +86,8 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
             enrichmentTableViewerComponent.startAnnotationFind(annotation.id, annotation.text, annotation.color);
             return false;
           },
-        },
-      );
+        }
+      });
     } else {
       this.workspaceManager.navigate(
         ['/search', 'content'], {

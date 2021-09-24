@@ -1,7 +1,11 @@
 import * as d3Sankey from 'd3-sankey';
 import { TruncatePipe } from '../../../shared/pipes';
+import { SankeyNode } from '../interfaces';
 
 export class AttributeAccessors {
+  constructor(readonly truncatePipe: TruncatePipe) {
+  }
+
   get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
     return ({id}) => id;
   }
@@ -11,7 +15,7 @@ export class AttributeAccessors {
   }
 
   get nodeLabelShort() {
-    const {nodeLabel, truncatePipe: { transform }} = this;
+    const {nodeLabel, truncatePipe: {transform}} = this;
     return n => transform(nodeLabel(n), AttributeAccessors.labelEllipsis);
   }
 
@@ -21,7 +25,7 @@ export class AttributeAccessors {
   }
 
   get nodeColor() {
-    return ({_color}) => _color;
+    return ({_color}: SankeyNode) => _color;
   }
 
   get linkColor() {
@@ -48,7 +52,9 @@ export class AttributeAccessors {
     return ({_circular}) => _circular;
   }
 
+  get fontSize() {
+    return (d?, i?, n?) => 12;
+  }
+
   static labelEllipsis = 10;
-  // inheritance in angular makes it hard to use DI
-  readonly truncatePipe = new TruncatePipe();
 }

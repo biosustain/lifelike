@@ -60,7 +60,8 @@
   </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
-            [newTab]="true" [sideBySide]="true">
+            [parentAddress]="router.url"
+            [newTab]="true" [forceWorkbench]="true" [sideBySide]="true" [openParentFirst]="true">
       Open file navigator
     </button>
   </ng-container>

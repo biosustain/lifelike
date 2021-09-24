@@ -7,11 +7,11 @@ if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development"
     echo "### Starting up development environment ###"
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # wait for postgres
-    ${__dir__}/wait-for-postgres
+    timeout 300 ${__dir__}/wait-for-postgres
     # wait for neo4j
-    ${__dir__}/wait-for-neo4j
+    timeout 300 ${__dir__}/wait-for-neo4j
     #wait for elastic
-    ${__dir__}/wait-for-elastic
+    timeout 300 ${__dir__}/wait-for-elastic
     # setup db
     ${__dir__}/dev-db-setup
     # Start in server directory

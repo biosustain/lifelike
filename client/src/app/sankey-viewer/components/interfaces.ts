@@ -1,5 +1,3 @@
-import visNetwork from 'vis-network';
-
 export interface ValueAccessor {
   description: string;
   help?: string;
@@ -68,15 +66,69 @@ export interface SankeyAdvancedOptions {
   fontSizeScale: number;
 }
 
-interface LinkedNode {
-  fromEdges: Array<any>;
-  toEdges: Array<any>;
+// Add properties used internally to compute layout
+export interface SankeyNode extends GraphNode {
+  // Temp definitions to fix LL-3499
+  sourceLinks?: Array<SankeyLink>;
+  targetLinks?: Array<SankeyLink>;
+  // End temp definitions
+
+  _index?: number | string;
+  _sourceLinks?: Array<SankeyLink>;
+  _targetLinks?: Array<SankeyLink>;
+  _y0?: number;
+  _y1?: number;
+  _x0?: number;
+  _x1?: number;
+  _depth?: number;
+  _height?: number;
+  _value?: number;
+  _fixedValue?: number;
+  _layer?: number;
+  _color?: string;
 }
 
-export type IntermediateNodeType = visNetwork.Node & SankeyNode & LinkedNode;
+// Add properties used internally to compute layout
+export interface SankeyLink extends GraphLink {
+  _id: string;
+  _trace?: GraphTrace;
+  _source?: SankeyNode | string | number;
+  _target?: SankeyNode | string | number;
+  _sourceLinks?: SankeyLink[];
+  _targetLinks?: SankeyLink[];
+  _width?: number;
+  _y0?: number;
+  _y1?: number;
+  _multiple_values?: [number, number];
+  _circularLinkID?: number;
+  _circular?: boolean;
+  _folded?: boolean;
+  _value: number;
+}
 
+export interface SankeyTrace extends GraphTrace {
+  _color: string;
+}
+
+export interface SankeyTraceNetwork extends GraphTraceNetwork {
+  traces: Array<SankeyTrace>;
+}
+
+export interface SankeyGraph extends GraphGraph {
+  trace_networks: Array<SankeyTraceNetwork>;
+}
+
+// Add properties used internally to compute layout
+export interface SankeyData extends GraphFile {
+  graph: SankeyGraph;
+  nodes: Array<SankeyNode>;
+  links: Array<SankeyLink>;
+
+  _inNodes?: Array<number>;
+  _outNodes?: Array<number>;
+}
 
 export interface SelectionEntity {
   type: string;
-  entity: SankeyLink | SankeyNode | object;
+  entity: SankeyLink | SankeyNode | SankeyTrace;
 }

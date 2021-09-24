@@ -1,19 +1,24 @@
-$link-opacity: .75;
-$link-stroke-opacity: .2;
-$link-active-stroke-opacity: .85;
-$non-active-link-opacity: .45;
+app-sankey {
+  $link-opacity: .75;
+  $link-stroke-opacity: .2;
+  $link-active-stroke-opacity: .85;
+  $non-active-link-opacity: .45;
 
-$node-opacity: .90;
-$node-stroke-opacity: .70;
-$node-active-stroke-opacity: .90;
-$non-active-node-opacity: .50;
+  $node-opacity: .90;
+  $node-stroke-opacity: .70;
+  $node-active-stroke-opacity: .90;
+  $non-active-node-opacity: .50;
 
-
-.wrapper {
   position: relative;
   //touch-action: none;
   //user-select: none;
   transform-origin: 0 0;
+
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  min-height: 100%;
 
   svg {
     width: 100%;

@@ -165,6 +165,7 @@ const components = [
   ],
   providers: [
     ApiService,
+    TruncatePipe,
     SharedNgrxEffects,
     SharedSearchService,
     SessionStorageService,
