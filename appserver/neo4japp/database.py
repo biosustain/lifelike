@@ -1,7 +1,6 @@
 import hashlib
 import os
 
-from elasticsearch import Elasticsearch
 from flask import g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
@@ -9,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from neo4j import GraphDatabase, basic_auth
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
+from elasticsearch import Elasticsearch
 from neo4japp.utils.flask import scope_flask_app_ctx
 
 
@@ -145,7 +145,7 @@ def get_file_type_service():
     """
     from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
     from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        MapTypeProvider, PDFTypeProvider, BiocTypeProvider, \
+        PDFTypeProvider, BiocTypeProvider, \
         DirectoryTypeProvider, MapTypeProvider, GraphTypeProvider
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
