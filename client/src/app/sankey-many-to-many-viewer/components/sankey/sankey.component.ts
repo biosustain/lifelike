@@ -14,7 +14,7 @@ import { SankeyManyToManyLink } from '../interfaces';
   selector: 'app-sankey-many-to-many',
   templateUrl: './sankey.component.svg',
   styleUrls: [
-    'app/sankey-many-to-many-viewer/components/sankey/sankey.component.scss',
+    '../../../sankey-many-to-many-viewer/components/sankey/sankey.component.scss',
     './sankey.component.scss'
   ],
   encapsulation: ViewEncapsulation.None,
