@@ -8,7 +8,7 @@ module.exports = function (config) {
     files: [
       { pattern: 'https://cdn.plot.ly/plotly-latest.js', watched: false },
     ],
-    basePath: './',
+    basePath: '',
     // The threshold for this timeout is likely to increase as we add more code to the
     // app; the time required here is directly proportional to the time it takes to
     // compile the code
@@ -27,7 +27,7 @@ module.exports = function (config) {
       ChromeCustom: {
         base: 'Chrome',
         flags: [
-          // '--headless',
+          '--headless',
           '--no-sandbox',
           '--remote-debugging-port=9222',
           '--remote-debugging-address=0.0.0.0',
