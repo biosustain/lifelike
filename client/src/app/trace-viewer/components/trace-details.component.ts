@@ -72,9 +72,9 @@ export class TraceDetailsComponent implements OnChanges {
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
       data.currentValue.nodes.forEach((node) => {
-        if (!isNullOrUndefined(node.databaseLabel)) {
-          const style = annotationTypesMap.get(node.databaseLabel.toLowerCase());
-          this.legend.set(node.databaseLabel, isNullOrUndefined(style) ? ['#000', '#000'] : [style.color, style.color]);
+        if (!isNullOrUndefined(node.type)) {
+          const style = annotationTypesMap.get(node.type.toLowerCase());
+          this.legend.set(node.type, isNullOrUndefined(style) ? ['#000', '#000'] : [style.color, style.color]);
         }
       });
     }

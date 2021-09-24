@@ -1,0 +1,196 @@
+app-sankey-many-to-many {
+  $darken-link-stroke: 5%;
+  $link-lightness: 65%;
+  $link-saturation: 30%;
+  $link-color: hsl(0, 0, $link-lightness);
+  $inactive-colour: lighten($link-color, 25%);
+  $link-left-color: hsl(240, $link-saturation, $link-lightness);
+  $link-right-color: hsl(120, $link-saturation, $link-lightness);
+  $link-multi-color: hsl(180, $link-saturation, $link-lightness);
+
+  $darken-node-stroke: 100%;
+  $node-lightness: 60%;
+  $node-saturation: 40%;
+  $node-color: hsl(0, 0, $node-lightness);
+  $node-border-colour: darken($node-color, $darken-node-stroke);
+  $node-left-color: hsl(240, $node-saturation, $node-lightness);
+  $node-right-color: hsl(120, $node-saturation, $node-lightness);
+  $node-multi-color: hsl(180, $node-saturation, $node-lightness);
+
+  $search-color: red;
+
+  @mixin link-color($color) {
+    fill: $color;
+    stroke: darken($color, $darken-link-stroke);
+  }
+
+  position: relative;
+  //touch-action: none;
+  //user-select: none;
+  transform-origin: 0 0;
+
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  min-height: 100%;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+
+    g {
+      .nodes {
+        shape-rendering: crispEdges;
+        z-index: 1;
+
+        g {
+          &[highlighted=false], &[selected=false] {
+            & > rect {
+              opacity: 50%;
+            }
+          }
+
+          &[selected=true], &[highlighted=true] {
+            & > rect {
+              opacity: 100% !important;
+            }
+          }
+
+          &[graphRelativePosition=left] {
+            & > rect {
+              fill: $node-left-color;
+            }
+          }
+
+          &[graphRelativePosition=right] {
+            & > rect {
+              fill: $node-right-color;
+            }
+          }
+
+          &[graphRelativePosition=multiple] {
+            & > rect {
+              fill: $node-multi-color;
+            }
+          }
+
+          rect {
+            cursor: move;
+            shape-rendering: crispEdges;
+            fill: $node-color;
+            stroke: $node-border-colour;
+          }
+
+          &[highlighted=left] {
+            & > rect {
+              fill: $node-left-color;
+            }
+          }
+
+          &[searched=true] .text-shadow {
+            fill: rgba(187, 187, 187, 0.5);
+            stroke: $search-color;
+            transform-origin: 15px 0;
+            transform: scaleY(1.5) scaleX(1.1);
+            filter: none;
+            display: initial;
+            mix-blend-mode: normal;
+          }
+
+          &[focused=true] {
+            .text-shadow {
+              fill: rgba(187, 187, 187, 0.85);
+            }
+
+            text {
+              font-size: 1em;
+              fill: black;
+            }
+          }
+
+          .text-shadow {
+            mix-blend-mode: lighten;
+            stroke: none;
+            fill: #bbb;
+            display: none;
+            filter: blur(0.1em);
+            transform: scaleY(1.5);
+          }
+
+          &:hover .text-shadow {
+            display: initial;
+          }
+
+          text {
+            font-size: 0.5em;
+            // todo: reenable when performance improves
+            //transition: font-size 250ms 250ms, fill 250ms 250ms;
+            pointer-events: none;
+          }
+
+          &:hover text {
+            font-size: 1em;
+            fill: black;
+          }
+        }
+      }
+
+      .links path {
+        @include link-color($link-color);
+
+        &.circular {
+          stroke-dasharray: 4 4;
+        }
+
+        &[highlighted=false], &[selected=false] {
+          @include link-color($inactive-colour);
+        }
+
+        &[highlighted=true], &[selected=true] {
+          @include link-color($link-color);
+        }
+
+        &[highlighted=left] {
+          @include link-color($link-left-color);
+        }
+
+        &[highlighted=right] {
+          @include link-color($link-right-color);
+        }
+
+        &[highlighted=multiple] {
+          @include link-color($link-multi-color);
+        }
+
+        &[highlighted=true], &[selectedTrace=true] {
+          &[thickness='0'] {
+            stroke: darken($link-color, $darken-link-stroke);
+            stroke-width: 3px;
+          }
+        }
+
+        &[selected=left] {
+          @include link-color($link-left-color);
+        }
+
+        &[selected=right] {
+          @include link-color($link-right-color);
+        }
+
+        &[selected=multiple] {
+          @include link-color($link-multi-color);
+        }
+
+        &[searched=true] {
+          stroke: $search-color;
+        }
+
+        &[focused=true] {
+          fill: $search-color;
+        }
+      }
+    }
+  }
+}

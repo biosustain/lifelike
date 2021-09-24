@@ -58,9 +58,15 @@ import findCircuits from 'elementary-circuits-directed-graph';
 import { max, min, sum } from 'd3-array';
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
+import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
+import { TruncatePipe } from '../../../shared/pipes';
 
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {
+  constructor(readonly truncatePipe: TruncatePipe) {
+    super(truncatePipe);
+  }
+
   get size() {
     return [this.x1 - this.x0, this.y1 - this.y0];
   }
@@ -76,10 +82,6 @@ export class SankeyLayoutService extends AttributeAccessors {
 
   set extent(extent) {
     [[this.x0, this.y0], [this.x1, this.y1]] = extent;
-  }
-
-  get fontSize() {
-    return (d?, i?, n?) => 12;
   }
 
   x0 = 0;
@@ -98,7 +100,6 @@ export class SankeyLayoutService extends AttributeAccessors {
 
 
   // Some constants for circular link calculations
-  verticalMargin = 25;
   baseRadius = 10;
   scale = 0.3;
 
@@ -141,13 +142,17 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   align(n, node) {
-    return justify(node, n);
+    return justify(n, node);
   }
 
   update(graph) {
     SankeyLayoutService.computeLinkBreadths(graph);
   }
 
+  /**
+   * Given list of links resolve their source/target node id to actual object
+   * and register this link to input/output link list in node.
+   */
   registerLinks({links, nodes}) {
     const {id} = this;
     const {find} = SankeyLayoutService;
@@ -182,6 +187,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Each node maintains list of its source/target links
+   * this function resets these lists and repopulates them
+   * based on list of links.
+   */
   computeNodeLinks({nodes, links}: SankeyData) {
     for (const [i, node] of nodes.entries()) {
       node._index = i;
@@ -191,78 +201,87 @@ export class SankeyLayoutService extends AttributeAccessors {
     this.registerLinks({links, nodes});
   }
 
+  /**
+   * Find circular links using Johnson's circuit finding algorithm.
+   * This function simply preformats data cals `elementary-circuits-directed-graph`
+   * library and add results to our graph object.
+   */
   identifyCircles(graph: SankeyData) {
-    const sortNodes = null;
     let circularLinkID = 0;
-    if (sortNodes === null) {
 
-      // Building adjacency graph
-      const adjList = [];
-      graph.links.forEach(link => {
-        const source = (link._source as SankeyNode)._index;
-        const target = (link._target as SankeyNode)._index;
-        if (!adjList[source]) {
-          adjList[source] = [];
-        }
-        if (!adjList[target]) {
-          adjList[target] = [];
-        }
-
-        // Add links if not already in set
-        if (adjList[source].indexOf(target) === -1) {
-          adjList[source].push(target);
-        }
-      });
-
-      // Find all elementary circuits
-      const cycles = findCircuits(adjList);
-
-      // Sort by circuits length
-      cycles.sort((a, b) => a.length - b.length);
-
-      const circularLinks = {};
-      for (const cycle of cycles) {
-        const last = cycle.slice(-2);
-        if (!circularLinks[last[0]]) {
-          circularLinks[last[0]] = {};
-        }
-        circularLinks[last[0]][last[1]] = true;
+    // Building adjacency graph
+    const adjList = [];
+    graph.links.forEach(link => {
+      const source = (link._source as SankeyNode)._index;
+      const target = (link._target as SankeyNode)._index;
+      if (!adjList[source]) {
+        adjList[source] = [];
+      }
+      if (!adjList[target]) {
+        adjList[target] = [];
       }
 
-      graph.links.forEach(link => {
-        const target = (link._target as SankeyNode)._index;
-        const source = (link._source as SankeyNode)._index;
-        // If self-linking or a back-edge
-        if (target === source || (circularLinks[source] && circularLinks[source][target])) {
-          link._circular = true;
-          link._circularLinkID = circularLinkID;
-          circularLinkID = circularLinkID + 1;
-        } else {
-          link._circular = false;
-        }
-      });
-    } else {
-      graph.links.forEach(link => {
-        if (link._source[sortNodes] < link._target[sortNodes]) {
-          link._circular = false;
-        } else {
-          link._circular = true;
-          link._circularLinkID = circularLinkID;
-          circularLinkID = circularLinkID + 1;
-        }
-      });
+      // Add links if not already in set
+      if (adjList[source].indexOf(target) === -1) {
+        adjList[source].push(target);
+      }
+    });
+
+    // Find all elementary circuits
+    const cycles = findCircuits(adjList);
+
+    // Sort by circuits length
+    cycles.sort((a, b) => a.length - b.length);
+
+    const circularLinks = {};
+    for (const cycle of cycles) {
+      const last = cycle.slice(-2);
+      if (!circularLinks[last[0]]) {
+        circularLinks[last[0]] = {};
+      }
+      circularLinks[last[0]][last[1]] = true;
     }
+
+    graph.links.forEach(link => {
+      const target = (link._target as SankeyNode)._index;
+      const source = (link._source as SankeyNode)._index;
+      // If self-linking or a back-edge
+      if (target === source || (circularLinks[source] && circularLinks[source][target])) {
+        link._circular = true;
+        link._circularLinkID = circularLinkID;
+        circularLinkID = circularLinkID + 1;
+      } else {
+        link._circular = false;
+      }
+    });
   }
 
+  get sourceValue() {
+    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[0] : _value;
+  }
+
+  get targetValue() {
+    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[1] : _value;
+  }
+
+  /**
+   * Assign node value either based on _fixedValue property or as a max of
+   * sum of all source links and sum of target links.
+   */
   computeNodeValues({nodes}: SankeyData) {
-    const {value} = this;
+    const {sourceValue, targetValue} = this;
     for (const node of nodes) {
       node._value = node._fixedValue === undefined
-        ? Math.max(sum(node._sourceLinks, value), sum(node._targetLinks, value))
+        ? Math.max(sum(node._sourceLinks, sourceValue), sum(node._targetLinks, targetValue))
         : node._fixedValue;
     }
   }
 
+  /**
+   * Calculate the nodes' depth based on the incoming and outgoing links
+   * Sets the nodes':
+   * - depth:  the depth in the graph
+   */
   computeNodeDepths({nodes}: SankeyData) {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
@@ -304,6 +323,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Calculate into which layer node has to be placed and assign x coordinates of this layer
+   * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+   * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
+   */
   computeNodeLayers({nodes}: SankeyData) {
     const {x1, x0, dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
@@ -328,6 +352,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     return columns;
   }
 
+  /**
+   * Calculate Y scaling factor and initialise nodes height&position.
+   */
   initializeNodeBreadths(columns) {
     const {y1, y0, py, value} = this;
 
@@ -352,6 +379,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Initialise node position both on column and Y, then try rearranging them to untangle network.
+   */
   computeNodeBreadths(graph) {
     const {dy, y1, y0, iterations} = this;
     const columns = this.computeNodeLayers(graph);
@@ -365,7 +395,10 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Reposition each node based on its incoming (target) links.
+  /**
+   * Going from left to right try putting next linked nodes in straight lines
+   * then resolve just made collisions.
+   */
   relaxLeftToRight(columns, alpha, beta) {
     for (let i = 1, n = columns.length; i < n; ++i) {
       const column = columns[i];
@@ -392,7 +425,10 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Reposition each node based on its outgoing (source) links.
+  /**
+   * Going from right to left try putting next linked nodes in straight lines
+   * then resolve just made collisions.
+   */
   relaxRightToLeft(columns, alpha, beta) {
     const {ascendingBreadth} = SankeyLayoutService;
 
@@ -421,6 +457,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
+  /**
+   * Move nodes up and down hopefully resolving collisions.
+   */
   resolveCollisions(nodes: Array<SankeyNode>, alpha) {
     const {
       py, y1, y0
@@ -434,7 +473,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     this.resolveCollisionsTopToBottom(nodes, y0, 0, alpha);
   }
 
-  // Push any overlapping nodes down.
+  /**
+   * Rearrange nodes down.
+   */
   resolveCollisionsTopToBottom(nodes, y, i, alpha) {
     const {py} = this;
     for (; i < nodes.length; ++i) {
@@ -447,7 +488,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Push any overlapping nodes up.
+  /**
+   * Rearrange nodes up.
+   */
   resolveCollisionsBottomToTop(nodes, y, i, alpha) {
     const {py} = this;
     for (; i >= 0; --i) {
@@ -486,7 +529,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  // Returns the target._y0 that would produce an ideal link from source to target.
+  /**
+   * Returns the target._y0 that would produce an ideal link from source to target.
+   */
   targetTop(source, target) {
     const {py} = this;
     let y = source._y0 - (source._sourceLinks.length - 1) * py / 2;
@@ -506,7 +551,9 @@ export class SankeyLayoutService extends AttributeAccessors {
     return y;
   }
 
-  // Returns the source._y0 that would produce an ideal link from source to target.
+  /**
+   * Returns the source._y0 that would produce an ideal link from source to target.
+   */
   sourceTop(source, target) {
     const {py} = this;
     let y = target._y0 - (target._targetLinks.length - 1) * py / 2;
@@ -538,12 +585,12 @@ export class SankeyLayoutService extends AttributeAccessors {
     // Calculate the nodes' depth based on the incoming and outgoing links
     //     Sets the nodes':
     //     - depth:  the depth in the graph
-    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
     this.computeNodeDepths(graph);
     this.computeNodeHeights(graph);
     // Calculate the nodes' and links' vertical position within their respective column
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
     this.computeNodeBreadths(graph);
     SankeyLayoutService.computeLinkBreadths(graph);
     return graph;

@@ -1,0 +1,127 @@
+interface GraphNode {
+  id: number;
+  labels?: Array<string>;
+  description?: string;
+  schemaClass?: string;
+  type?: string;
+  oldStId?: string;
+  isInDisease?: boolean;
+  displayName?: string;
+  stIdVersion?: string;
+  dbId?: number;
+  name?: string | Array<string>;
+  referenceType?: string;
+  stId?: string;
+  endoHigh?: boolean;
+  endo?: boolean;
+  pageUpdown?: number;
+  pageMetab?: number;
+  label?: string;
+  speciesName?: string;
+  startCoordinate?: number;
+  endCoordinate?: number;
+  isChimeric?: boolean;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphLinkEdge {
+  types: Array<string>;
+  nodes: Array<number>;
+  left: boolean;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphLink {
+  description: string;
+  source: number;
+  target: number;
+
+  key?: number;
+  inedge?: GraphLinkEdge;
+  outedge?: GraphLinkEdge;
+  node?: number;
+  pageUpdown?: number;
+  '1/pageUpdown'?: number | string;
+  pageMetab?: number;
+  '1/pageMetab'?: number | string;
+  NLG?: string;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphSizingGroup {
+  link_sizing?: string;
+  node_sizing?: string;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphPredefinedSizing {
+  [key: string]: GraphSizingGroup;
+}
+
+interface GraphDetailEdge {
+  type: string;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphTrace {
+  node_paths: Array<Array<number>>;
+  edges: Array<number>;
+  source: number;
+  target: number;
+  group: number;
+
+  detail_edges?: Array<[number, number, GraphDetailEdge]>;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphTraceNetwork {
+  sources: string;
+  targets: string;
+  description: string;
+  traces: Array<GraphTrace>;
+
+  method?: string;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphNodeSets {
+  [key: string]: Array<number>;
+}
+
+interface GraphGraph {
+  node_sets: GraphNodeSets;
+  description: string;
+  trace_networks: Array<GraphTraceNetwork>;
+  name?: string;
+  sizing?: GraphPredefinedSizing;
+  log?: string | Array<string>;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}
+
+interface GraphFile {
+  directed: boolean;
+  multigraph: boolean;
+  graph: GraphGraph;
+
+  nodes: Array<GraphNode>;
+  links: Array<GraphLink>;
+
+  // by design all objects can have dynamic properties however this code should not be concerned about them
+  // [key: string]: any;
+}

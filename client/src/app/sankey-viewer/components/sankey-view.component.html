@@ -73,6 +73,19 @@
                     </ng-template>
                 </button>
             </ng-container>
+            <button (click)="resetView()" class="btn btn-secondary mx-1" container="body"
+                    ngbTooltip="Reset the view" placement="bottom"
+                    type="button">
+                <i class="fas fa-sync"></i>
+            </button>
+            <button
+                    [appLink]="['/projects', object?.project.name, 'sankey-many-to-many', object?.hashId]"
+                    class="btn btn-secondary mr-auto"
+                    container="body"
+                    ngbTooltip="Trace View" placement="bottom"
+                    type="button">
+                Trace View
+            </button>
             <div class="btn-group btn-group-toggle mx-auto">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
@@ -93,15 +106,16 @@
             <div class="btn-group btn-group-toggle ml-auto">
                 <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
                     <button class="btn btn-primary" ngbDropdownToggle>
-                                <ng-container
-                                        *ngIf="selectedNetworkTrace; else noSelectedTrace">{{
-                                    selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
-                                <ng-template #noSelectedTrace>Select Trace Network</ng-template>
+                        <ng-container
+                                *ngIf="selectedNetworkTrace; else noSelectedTrace">{{ selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
+                        <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
                     <div ngbDropdownMenu class="dropdown-menu">
                         <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
-                                ngbDropdownItem>{{trace.description}}</button>
+                                ngbDropdownItem>
+                            {{ trace?.name || trace?.description || 'Trace Description Unknown' }}
+                        </button>
                     </div>
                 </div>
                 <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
@@ -129,67 +143,77 @@
                 </div>
             </div>
         </app-module-header>
-        <as-split [gutterSize]="5"
-                  direction="horizontal"
-                  unit="pixel">
-            <as-split-area [order]="0">
-                <app-sankey #sankey
-                            *ngIf="dataToRender | async"
-                            (linkClicked)="selectLink($event)"
-                            (nodeClicked)="selectNode($event)"
-                            [nodeAlign]="nodeAlign"
-                            [data]="dataToRender | async"
-                            [normalizeLinks]="options.normalizeLinks"
-                            [selectedLinks]="selectedLinks | async"
-                            [selectedNodes]="selectedNodes | async"
-                            [searchedEntities]="entitySearchList"
-                            [focusedNode]="searchFocus"
-                >
-                </app-sankey>
-            </as-split-area>
-            <as-split-area [class]="detailsPanel ? 'as-split-area border' : 'as-split-area as-hidden'"
-                           [order]="1"
-                           [visible]="detailsPanel"
-                           size="340">
-                <div class="w-100 h-100 p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        Selection
-                        <button (click)="closeDetailsPanel()"
-                                class="btn btn-danger"
-                                type="button"
-                                title="Click to close tha panel and clear selection">
-                            <i class="fa fa-close"></i>
-                        </button>
+        <div class="relative w-100 h-100">
+            <app-sankey #sankey
+                        *ngIf="dataToRender | async"
+                        (linkClicked)="selectLink($event)"
+                        (nodeClicked)="selectNode($event)"
+                        (backgroundClicked)="closeDetailsPanel()"
+                        [nodeAlign]="nodeAlign"
+                        [data]="dataToRender | async"
+                        [normalizeLinks]="options.normalizeLinks"
+                        [selectedLinks]="selectedLinks | async"
+                        [selectedNodes]="selectedNodes | async"
+                        [searchedEntities]="entitySearchList"
+                        [focusedNode]="searchFocus">
+
+            </app-sankey>
+            <as-split [gutterSize]="5"
+                      direction="horizontal"
+                      unit="pixel"
+                      class="overlaying-panel"
+            >
+                <as-split-area [order]="0"></as-split-area>
+                <as-split-area [class]="[
+                                'as-split-area',
+                                detailsPanel ? 'border' : 'as-hidden'
+                               ].join(' ')"
+                               [order]="1"
+                               [visible]="detailsPanel"
+                               size="340">
+                    <div class="w-100 h-100 p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            Selection
+                            <button (click)="closeDetailsPanel()"
+                                    class="btn btn-danger"
+                                    type="button"
+                                    title="Click to close tha panel and clear selection">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="border-bottom border-secondary pb-3 mb-3">
+                            <app-sankey-details-panel *ngIf="selectionWithTraces | async"
+                                                      [details]="selectionWithTraces | async">
+                            </app-sankey-details-panel>
+                        </div>
                     </div>
-                    <div class="dropdown-divider"></div>
-                    <div class="border-bottom border-secondary pb-3 mb-3">
-                        <app-sankey-details-panel *ngIf="selectionWithTraces | async"
-                                                  [details]="selectionWithTraces | async">
-                        </app-sankey-details-panel>
+                </as-split-area>
+                <as-split-area [class]="[
+                                    'as-split-area',
+                                    advancedPanel ? 'border' : 'as-hidden'
+                               ].join(' ')"
+                               [order]="2"
+                               [visible]="advancedPanel"
+                               size="340">
+                    <div class="w-100 h-100 p-3">
+                        <div class="d-flex justify-content-between align-items-center pl-3">
+                            Advanced options
+                            <button (click)="closeAdvancedPanel()"
+                                    class="btn btn-danger"
+                                    type="button">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="border-bottom border-secondary pb-3 mb-3">
+                            <app-sankey-advanced-panel>
+                                <!-- Interacts with view through Sankey Controller service -->
+                            </app-sankey-advanced-panel>
+                        </div>
                     </div>
-                </div>
-            </as-split-area>
-            <as-split-area [class]="advancedPanel ? 'as-split-area border' : 'as-split-area as-hidden'"
-                           [order]="2"
-                           [visible]="advancedPanel"
-                           size="340">
-                <div class="w-100 h-100 p-3">
-                    <div class="d-flex justify-content-between align-items-center pl-3">
-                        Advanced options
-                        <button (click)="closeAdvancedPanel()"
-                                class="btn btn-danger"
-                                type="button">
-                            <i class="fa fa-close"></i>
-                        </button>
-                    </div>
-                    <div class="dropdown-divider"></div>
-                    <div class="border-bottom border-secondary pb-3 mb-3">
-                        <app-sankey-advanced-panel>
-                            <!-- Interacts with view through Sankey Controller service -->
-                        </app-sankey-advanced-panel>
-                    </div>
-                </div>
-            </as-split-area>
-        </as-split>
+                </as-split-area>
+            </as-split>
+        </div>
     </ng-container>
 </div>
