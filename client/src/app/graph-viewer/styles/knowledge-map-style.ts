@@ -18,6 +18,7 @@ import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-e
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
+
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
 import { LineHead } from '../utils/canvas/line-heads/line-heads';

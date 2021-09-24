@@ -3,23 +3,14 @@ import {
   TestBed,
 } from '@angular/core/testing';
 import { FormBuilder, FormArray } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-
 import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
-
-import {
-    UserFileImportState as userFileImportState,
-    UserFileImportSelectors as selectors,
-} from '../store';
-
-import { saveNodeMapping } from '../store/actions';
-
-import { UserFileImportColumnMappingComponent } from './user-file-import-column-mapping.component';
 import {
     ColumnNameIndex,
     Neo4jNodeMapping,
@@ -27,7 +18,13 @@ import {
     SheetNameAndColumnNames,
     SheetRowPreview,
 } from 'app/interfaces';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import {
+    UserFileImportState as userFileImportState,
+    UserFileImportSelectors as selectors,
+} from '../store';
+import { saveNodeMapping } from '../store/actions';
+import { UserFileImportColumnMappingComponent } from './user-file-import-column-mapping.component';
 
 const chosenSheetToMap = {
     sheetName: 'sheet1',

@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-
 import { MatSnackBar } from '@angular/material';
 
 import { Actions, createEffect, ofType, } from '@ngrx/effects';
-
 import { map, tap } from 'rxjs/operators';
 
 import { displaySnackbar } from './snackbar-actions';

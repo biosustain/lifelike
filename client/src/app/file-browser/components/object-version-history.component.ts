@@ -1,11 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { from, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
-import { from, Observable } from 'rxjs';
 import { FilesystemService } from '../services/filesystem.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { map } from 'rxjs/operators';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
   selector: 'app-object-version-history',

@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot } from '@angular/router';
-import { AccountService } from 'app/users/services/account.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
+
+import { AccountService } from 'app/users/services/account.service';
 import { AppUser } from 'app/interfaces';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
@@ -17,9 +18,7 @@ import {
     UserFileImportExistingColumnMappingRowComponent } from './components/user-file-import-existing-column-mapping-row.component';
 import {
     UserFileImportNewColumnMappingRowComponent } from './components/user-file-import-new-column-mapping-row.component';
-
 import { UserFileImportService } from './services/user-file-import.service';
-
 import { reducer } from './store/reducer';
 import { UserFileImportEffects } from './store/effects';
 

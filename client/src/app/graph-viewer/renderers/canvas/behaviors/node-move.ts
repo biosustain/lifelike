@@ -1,11 +1,13 @@
 import { cloneDeep } from 'lodash';
 import * as d3 from 'd3';
+
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
+import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
+import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils';
+
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
-import { GraphEntityUpdate } from '../../../actions/graph';
-import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**

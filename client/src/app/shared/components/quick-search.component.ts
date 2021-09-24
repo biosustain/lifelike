@@ -1,7 +1,9 @@
 import { Component, Input, OnChanges } from '@angular/core';
+
+import { cloneDeep } from 'lodash';
+
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from '../links';
-import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-quick-search',

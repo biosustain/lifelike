@@ -2,9 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { ApiService } from 'app/shared/services/api.service';
+import { ResultList, ResultMapping } from 'app/shared/schemas/common';
 
 import { Annotation } from '../../pdf-viewer/annotation-type';
-import { ApiService } from 'app/shared/services/api.service';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
@@ -13,8 +16,6 @@ import {
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
 } from '../schema';
-import { map } from 'rxjs/operators';
-import { ResultList, ResultMapping } from 'app/shared/schemas/common';
 import {
   SortingAlgorithmId
 } from '../../word-cloud/sorting/sorting-algorithms';

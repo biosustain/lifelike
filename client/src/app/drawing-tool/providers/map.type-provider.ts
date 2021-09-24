@@ -20,10 +20,10 @@ import {
 } from 'app/file-browser/services/object-type.service';
 import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
+import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 
 import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
-import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from '../../shared/constants';
 
 export const MAP_SHORTHAND = 'map';

@@ -2,7 +2,6 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { Input, OnDestroy } from '@angular/core';
 
 import { Subject, Subscription } from 'rxjs';
-
 import { isNullOrUndefined } from 'util';
 
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';

@@ -1,5 +1,8 @@
 import { NgModule } from '@angular/core';
+
 import { SharedModule } from 'app/shared/shared.module';
+import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
+
 import { ObjectBrowserComponent } from './components/object-browser.component';
 import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
@@ -42,7 +45,6 @@ import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
-import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { ObjectViewerComponent } from './components/object-viewer.component';
 
 @NgModule({

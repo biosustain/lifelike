@@ -2,11 +2,8 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { MockComponents } from 'ng-mocks';
-
 import { of } from 'rxjs';
-
 import { DataSet } from 'vis-data';
 
 import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
@@ -39,7 +36,6 @@ import { uuidv4 } from 'app/shared/utils';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
-
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { SidenavClusterViewComponent } from '../sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view.component';

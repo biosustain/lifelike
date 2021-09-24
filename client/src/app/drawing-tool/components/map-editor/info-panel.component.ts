@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { GraphEntity, GraphEntityType } from '../../services/interfaces';
-
-import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
-import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
+import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
+import { EdgeDeletion, NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { GraphAction } from '../../../graph-viewer/actions/actions';
+import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
+
+import { GraphEntity, GraphEntityType } from '../../services/interfaces';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({

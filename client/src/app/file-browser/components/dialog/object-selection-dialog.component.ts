@@ -1,10 +1,13 @@
 import { Component, Input, OnDestroy } from '@angular/core';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
+
 import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';
-import { MessageType } from '../../../interfaces/message-dialog.interface';
-import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
 
 @Component({
   selector: 'app-object-selection-dialog',

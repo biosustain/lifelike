@@ -1,16 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { FormControl, FormGroup } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
+import { HttpEventType } from '@angular/common/http';
+
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
 import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
-import { tap } from 'rxjs/operators';
-import { FormControl, FormGroup } from '@angular/forms';
-import { SelectionModel } from '@angular/cdk/collections';
 import { downloader } from 'app/shared/utils';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import {
@@ -18,6 +20,7 @@ import {
   ResultList,
   StandardRequestOptions,
 } from 'app/shared/schemas/common';
+
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 

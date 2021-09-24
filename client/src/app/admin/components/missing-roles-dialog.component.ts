@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { BehaviorSubject } from 'rxjs';
+
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { AppUser, UserUpdateRequest } from '../../interfaces';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { AccountService } from '../../users/services/account.service';
 

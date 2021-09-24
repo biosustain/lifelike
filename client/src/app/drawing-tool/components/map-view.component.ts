@@ -1,21 +1,23 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
-import { ModuleAwareComponent } from 'app/shared/modules';
-import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { cloneDeep } from 'lodash';
+
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { MapComponent } from './map.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { MapComponent } from './map.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
-import { cloneDeep } from 'lodash';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MimeTypes } from '../../shared/constants';
 

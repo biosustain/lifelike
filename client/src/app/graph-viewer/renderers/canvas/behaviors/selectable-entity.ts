@@ -1,7 +1,8 @@
-import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils';
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
+
+import { CanvasGraphView } from '../canvas-graph-view';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 

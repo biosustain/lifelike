@@ -14,21 +14,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { GraphEntity, UniversalGraph } from '../services/interfaces';
+
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
+import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+
+import { GraphEntity, UniversalGraph } from '../services/interfaces';
+import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';

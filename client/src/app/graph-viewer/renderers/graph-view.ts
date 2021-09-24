@@ -1,7 +1,5 @@
 import * as d3 from 'd3';
-
 import { Subject } from 'rxjs';
-
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Group, Link } from 'webcola/WebCola/src/layout';

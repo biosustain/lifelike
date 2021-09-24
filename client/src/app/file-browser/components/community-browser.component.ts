@@ -1,17 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
-import { FormControl, FormGroup } from '@angular/forms';
+import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
+
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
-import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
 
 @Component({
   selector: 'app-community-browser',

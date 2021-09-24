@@ -1,8 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+
 import { BiocTableViewComponent } from './bioc-table-view.component';
 import { AnnotatedTextComponent } from '../annotated-text/annotated-text.component';
-import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 
 describe('BiocTableViewComponent', () => {
   let component: BiocTableViewComponent;
