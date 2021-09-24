@@ -4,17 +4,16 @@ import { HttpEventType } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, throwError, zip, of, EMPTY } from 'rxjs';
-import { mergeAll, concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
+import { concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { StorageService } from 'app/shared/services/storage.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+// TODO: Deprecate after LL-2840
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
-
-// TODO: Deprecate after LL-2840
 
 @Component({
     selector: 'app-admin-settings-view',
