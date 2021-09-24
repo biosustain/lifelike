@@ -19,19 +19,21 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { representativePositiveNumber } from '../utils';
 import { SankeyLayoutService } from './sankey-layout.service';
+import { SankeyData, SankeyNode } from '../interfaces';
 
 
 @Component({
   selector: 'app-sankey',
-  templateUrl: './sankey.component.html',
+  templateUrl: './sankey.component.svg',
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
-    private clipboard: ClipboardService,
-    private readonly snackBar: MatSnackBar,
-    private sankey: SankeyLayoutService
+    readonly clipboard: ClipboardService,
+    readonly snackBar: MatSnackBar,
+    readonly sankey: SankeyLayoutService,
+    readonly wrapper: ElementRef
   ) {
     Object.assign(sankey, {
       py: 10, // nodePadding
@@ -72,8 +74,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // shallow copy of input data
   private _data: SankeyData = {} as SankeyData;
 
-  @ViewChild('wrapper', {static: false}) wrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
@@ -81,11 +81,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Output() nodeClicked = new EventEmitter();
   @Output() linkClicked = new EventEmitter();
+  @Output() backgroundClicked = new EventEmitter();
   @Output() enter = new EventEmitter();
   @Output() adjustLayout = new EventEmitter();
 
   @Input() normalizeLinks = true;
-  @Input() timeInterval;
   @Input() selectedNodes = new Set<object>();
   @Input() searchedEntities = new Set<object>();
   @Input() focusedNode;
@@ -184,12 +184,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   ngAfterViewInit() {
-    const {width, height} = this.size = this.getCloudSvgDimensions();
-
     // attach zoom behaviour
     const {g, zoom} = this;
     const zoomContainer = d3.select(g.nativeElement);
     zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
+
+    this.sankeySelection.on('click', () => {
+      const e = d3.event;
+      if (!e.target.__data__) {
+        this.backgroundClicked.emit();
+      }
+    });
 
     // resize and listen to future resize events
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
@@ -267,20 +272,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
-
-
-  /**
-   * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example,
-   * if the parent is 600px x 600px, and our margin is 10px, the size of the word cloud svg will be 580px x 580px.
-   */
-  private getCloudSvgDimensions() {
-    const wrapper = this.wrapper.nativeElement;
-    return {
-      width: wrapper.offsetWidth,
-      height: wrapper.offsetHeight
-    };
-  }
-
   // endregion
 
   // region Events
@@ -353,7 +344,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   async pathMouseOut(element, _data) {
-    this.unhighlightTraces();
+    this.unhighlightLinks();
   }
 
   async nodeMouseOver(element, data) {
@@ -366,13 +357,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async nodeMouseOut(element, _data) {
     this.unhighlightNode(element);
-    this.unhighlightTraces();
+    this.unhighlightLinks();
   }
 
   scaleZoom(scaleBy) {
+    // @ts-ignore
     this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
   }
 
+  // noinspection JSUnusedGlobalSymbols
   resetZoom() {
     // it is used by its parent
     this.sankeySelection.call(this.zoom.transform, d3.zoomIdentity);
@@ -554,6 +547,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('focused', true);
   }
 
+  // noinspection JSUnusedLocalSymbols
   unFocusLink(link: object) {
     this.linkSelection
       .attr('focused', undefined);
@@ -566,7 +560,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({_trace}) => traces.has(_trace));
   }
 
-  unhighlightTraces() {
+  unhighlightLinks() {
     this.linkSelection
       .attr('highlighted', undefined);
   }
@@ -681,7 +675,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * Run d3 lifecycle code to update DOM
    * @param graph: { links, nodes } to be rendered
    */
-  private updateDOM(graph) {
+  updateDOM(graph) {
+    // noinspection JSUnusedLocalSymbols
     const {
       updateNodeRect, updateNodeText,
       sankey: {
@@ -718,7 +713,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
           //   return t => {
           //     const interpolatedParams = paramsInterpolator(t);
-          //     // save last params on each iterration so we can interpolate from last position upon
+          //     // save last params on each iteration so we can interpolate from last position upon
           //     // animation interrupt/cancel
           //     link._calculated_params = interpolatedParams;
           //     return composeLinkPath(interpolatedParams);
@@ -727,7 +722,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           .attr('d', linkPath),
         exit => exit.remove()
       )
-      .attr('fill', linkColor)
+      .style('fill', linkColor)
       .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
@@ -792,7 +787,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         updateNodeRect(
           joined
             .select('rect')
-            .attr('fill', nodeColor)
+            .style('fill', nodeColor)
         );
         joined.select('g')
           .call(textGroup => {

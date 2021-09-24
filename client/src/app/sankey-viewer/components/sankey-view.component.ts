@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
+import { combineLatest, Subscription, BehaviorSubject, Observable } from 'rxjs';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -20,9 +20,10 @@ import { CustomisedSankeyLayoutService } from '../services/customised-sankey-lay
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
-import { SankeyControllerService } from '../services/sankey-controller.service';
+import { SankeyControllerService, PREDEFINED_VALUE } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
+import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -41,12 +42,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    private modalService: NgbModal,
+    readonly modalService: NgbModal,
     protected readonly workSpaceManager: WorkspaceManager,
-    private router: Router,
-    private sessionStorage: SessionStorageService,
-    private readonly filesystemObjectActions: FilesystemObjectActions,
-    private sankeyController: SankeyControllerService
+    readonly router: Router,
+    readonly sessionStorage: SessionStorageService,
+    readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly sankeyController: SankeyControllerService
   ) {
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
@@ -68,14 +69,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.selectedLinks = this.selection.pipe(map(currentSelection => {
       return new Set(currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity));
     }));
+    this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
 
-    this.loadTask = new BackgroundTask(([hashId]) => {
+    this.loadTask = new BackgroundTask(hashId => {
       return combineLatest(
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
-        )
+        ) as Observable<GraphFile>
       );
     });
 
@@ -103,7 +105,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get options() {
-    return this.sankeyController.options;
+    return this.sankeyController.options as SankeyManyToManyAdvancedOptions;
   }
 
   get dataToRender() {
@@ -124,12 +126,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   paramsSubscription: Subscription;
   returnUrl: string;
-  selection: BehaviorSubject<Array<{
-    type: string,
-    entity: SankeyLink | SankeyNode | object
-  }>>;
+  selection: BehaviorSubject<Array<SelectionEntity>>;
   selectionWithTraces;
-  loadTask: BackgroundTask<any, any>;
+  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
   ready = false;
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
@@ -160,6 +159,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'
     }).result
       .then(_ => _, _ => _);
+  }
+
+  resetView() {
+    this.sankeyController.resetController();
   }
 
   // region Zoom
@@ -206,7 +209,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.ready = false;
 
-    this.loadTask.update([hashId]);
+    this.loadTask.update(hashId);
   }
 
   loadFromUrl() {
@@ -285,12 +288,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNode(node) {
     this.toggleSelect(node, 'node');
-    this.openDetailsPanel();
   }
 
   selectLink(link) {
     this.toggleSelect(link, 'link');
-    this.openDetailsPanel();
   }
 
   resetSelection() {
@@ -315,7 +316,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms
-   * @param options addiitonal find options
+   * @param options additional find options
    */
   findMatching(terms: string[], options: FindOptions = {}) {
     const matcher = compileFind(terms, options);
@@ -359,6 +360,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   panToEntity(entity) {
+    // @ts-ignore
     this.sankey.sankeySelection.transition().call(
       this.sankey.zoom.translateTo,
       // x

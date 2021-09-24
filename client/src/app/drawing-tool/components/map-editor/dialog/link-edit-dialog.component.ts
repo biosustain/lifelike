@@ -5,6 +5,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { potentiallyInternalUrl } from 'app/shared/validators';
+import { toValidLink } from 'app/shared/utils/browser';
 
 @Component({
   selector: 'app-link-edit-dialog',
@@ -18,9 +19,10 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
   readonly errors = {
     url: 'The provided URL is not valid.',
   };
+  readonly domainDefault = 'Link';
 
   readonly form: FormGroup = new FormGroup({
-    domain: new FormControl('', Validators.required),
+    domain: new FormControl(''),
     url: new FormControl('', [
       Validators.required,
       potentiallyInternalUrl,
@@ -43,10 +45,8 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
   }
 
   getValue(): Source {
-    const value = this.form.value;
-    for (const key of Object.keys(value)) {
-      this.link[key] = value[key];
-    }
+    this.link.domain = this.form.controls.domain.value || this.domainDefault;
+    this.link.url = toValidLink(this.form.controls.url.value);
     return this.link;
   }
 

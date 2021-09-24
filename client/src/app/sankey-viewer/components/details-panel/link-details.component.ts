@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { SankeyDetailsComponent } from './details.component';
+import { SankeyLink } from '../interfaces';
 
 @Component({
   selector: 'app-sankey-link-details',
@@ -8,3 +9,4 @@ import { SankeyDetailsComponent } from './details.component';
 export class SankeyLinkDetailsComponent extends SankeyDetailsComponent {
   @Input() entity: SankeyLink;
 }
+

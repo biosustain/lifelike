@@ -404,14 +404,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const hyperlink = meta.idHyperlinks || [];
 
     for (const link of hyperlink) {
-      const {domain, url} = JSON.parse(link);
-      let hyperlinkText = 'Annotation URL';
-      try {
-        hyperlinkText = new URL(url).hostname.replace(/^www\./i, '');
-      } catch (e) { }
-
+      const {label, url} = JSON.parse(link);
       hyperlinks.push({
-        domain: hyperlinkText,
+        domain: label,
         url,
       });
     }
@@ -650,11 +645,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   displayShareDialog() {
     return this.fileObjectActions.openShareDialog(this.object);
-  }
-
-  openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 
   openFileAnnotationHistoryDialog() {
