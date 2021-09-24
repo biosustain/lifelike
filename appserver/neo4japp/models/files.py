@@ -15,7 +15,7 @@ from typing import BinaryIO, Optional, List, Dict
 from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
-from neo4japp.models import Projects
+from neo4japp.models.projects import Projects
 from neo4japp.models.common import (
     RDBMSBase,
     TimestampMixin,
