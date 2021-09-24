@@ -1,19 +1,19 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { select, Store } from '@ngrx/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
+import { Title } from '@angular/platform-browser';
 
+import { select, Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+
+import { State } from 'app/***ARANGO_USERNAME***-store';
 import { downloader } from 'app/shared/utils';
 import { StorageService } from 'app/shared/services/storage.service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
-import { Observable } from 'rxjs';
-
 import { AppUser } from 'app/interfaces';
-import { Title } from '@angular/platform-browser';
-import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+
 import { AppVersionDialogComponent } from './app-version-dialog.component';
 
 /**

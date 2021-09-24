@@ -14,27 +14,23 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { escape, uniqueId } from 'lodash';
-
-import { PDFPageViewport } from 'pdfjs-dist';
-
 import { Observable, Subject, Subscription } from 'rxjs';
-
 import { isNullOrUndefined } from 'util';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
+import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
+import { openModal } from 'app/shared/utils/modals';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
+import { PDFPageViewport } from 'pdfjs-dist';
 import { AddedAnnotationExclusion, Annotation, Location, Meta, Rect, RemovedAnnotationExclusion, } from './annotation-type';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
-import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
-import { openModal } from 'app/shared/utils/modals';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import {toValidLink} from '../shared/utils/browser';
 
 declare var jQuery: any;

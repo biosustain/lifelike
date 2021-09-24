@@ -1,16 +1,13 @@
+import {
+  GraphEntity
+} from 'app/drawing-tool/services/interfaces';
+import { CompoundAction } from 'app/graph-viewer/actions/actions';
+import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
+import { extractGraphEntityActions } from 'app/graph-viewer/../drawing-tool/utils/data';
+import { DataTransferDataService } from 'app/graph-viewer/../shared/services/data-transfer-data.service';
+
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { NodeCreation } from '../../../actions/nodes';
-import {
-  GraphEntity,
-  GraphEntityType,
-  UniversalGraphNode,
-} from 'app/drawing-tool/services/interfaces';
-import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { makeid } from 'app/shared/utils/identifiers';
-import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
-import { extractGraphEntityActions } from '../../../../drawing-tool/utils/data';
-import { DataTransferDataService } from '../../../../shared/services/data-transfer-data.service';
 
 /**
  * We use this string to know that it's our own JSON.

@@ -8,10 +8,11 @@ import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
 import { MatSelectChange } from '@angular/material';
 import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-
 import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
@@ -20,12 +21,8 @@ import { SharedModule } from 'app/shared/shared.module';
 import {
     UserFileImportState as userFileImportState,
 } from '../store';
-
 import { getNodeProperties } from '../store/actions';
-
 import { UserFileImportColumnRelationshipMappingRowComponent } from './user-file-import-column-relationship-mapping-row.component';
-import { DebugElement } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
     let component: UserFileImportColumnRelationshipMappingRowComponent;

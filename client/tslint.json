@@ -23,7 +23,10 @@
     ],
     "import-blacklist": [
       true,
-      ["rxjs/Rx", "^(../){3,}"]
+      [
+        "rxjs/Rx",
+        "^(../){3,}"
+      ]
     ],
     "interface-name": false,
     "max-classes-per-file": false,
@@ -72,8 +75,19 @@
         "grouped-imports": true,
         "groups": [
           {
+            "name": "Group Angular imports",
             "match": "^@angular",
             "order": 10
+          },
+          {
+            "name": "Group 3-rd party imports",
+            "match": "^[^(app)(\\.)]",
+            "order": 20
+          },
+          {
+            "name": "Group source ***ARANGO_USERNAME*** based imports",
+            "match": "^app/",
+            "order": 30
           }
         ],
         "named-imports-order": "any",
@@ -101,7 +115,13 @@
       "options": [
         "allow-leading-underscore"
       ]
-    }
+    },
+    "no-duplicate-imports": [
+      true,
+      {
+        "allow-namespace-imports": true
+      }
+    ]
   },
   "rulesDirectory": [
     "codelyzer"

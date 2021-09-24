@@ -11,10 +11,9 @@ import {
   OnDestroy,
   ViewChild
 } from '@angular/core';
+
 import { PDFDocumentProxy, PDFViewerParams, PDFPageProxy, PDFPageViewport, PDFSource, PDFProgressData, PDFPromise } from 'pdfjs-dist';
-
 import { createEventBus } from '../utils/event-bus-utils';
-
 import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
 import { FindState, RenderTextMode } from '../utils/constants';
 

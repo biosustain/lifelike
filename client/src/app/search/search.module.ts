@@ -15,7 +15,6 @@ import { RejectedOptionsDialogComponent } from './components/rejected-options-di
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
 import { SynonymSearchComponent } from './components/synonym-search.component';
-
 import { ContentSearchService } from './services/content-search.service';
 import { GraphSearchService } from './services/graph-search.service';
 

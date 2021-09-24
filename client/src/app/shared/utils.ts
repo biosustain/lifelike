@@ -1,8 +1,10 @@
-import { OperatingSystems } from 'app/interfaces/shared.interface';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import { catchError } from 'rxjs/operators';
 import { from, Observable, throwError, pipe } from 'rxjs';
 import { UnaryFunction } from 'rxjs/src/internal/types';
-import { HttpErrorResponse } from '@angular/common/http';
+
+import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 /**
  * Takes an input string and returns the title-cased version of that string. E.g., 'lazy dog' becomes 'Lazy Dog'.

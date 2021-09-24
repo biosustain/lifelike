@@ -1,9 +1,11 @@
 import { Observable, of } from 'rxjs';
-import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { map, mergeMap } from 'rxjs/operators';
-import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
+
+import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { nullCoalesce } from 'app/shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+
+import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
 
 
 export class BaseEnrichmentDocument {

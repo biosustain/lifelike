@@ -2,11 +2,8 @@ import { Component, EventEmitter, isDevMode, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
-
 import visNetwork from 'vis-network';
-
 import { combineLatest, Subscription, Observable } from 'rxjs';
-
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { UserError } from 'app/shared/exceptions';

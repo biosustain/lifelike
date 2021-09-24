@@ -1,9 +1,13 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import { Subscription } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
@@ -11,8 +15,6 @@ import {
   CreateActionOptions,
   ObjectTypeService,
 } from '../../file-browser/services/object-type.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { tap } from 'rxjs/operators';
 import {MimeTypes} from '../../shared/constants';
 
 @Component({

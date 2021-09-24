@@ -1,9 +1,10 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { uniqueId } from 'lodash';
-
 import { combineLatest, Subscription } from 'rxjs';
 import { first } from 'rxjs/operators';
+import * as d3 from 'd3';
+import * as cloud from 'd3.layout.cloud';
 
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -13,9 +14,6 @@ import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
-
-import * as d3 from 'd3';
-import * as cloud from 'd3.layout.cloud';
 
 @Component({
   selector: 'app-word-cloud',

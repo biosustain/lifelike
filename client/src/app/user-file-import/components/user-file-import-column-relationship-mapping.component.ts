@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Observable } from 'rxjs';
-
 import { Store, select } from '@ngrx/store';
 
 import {
@@ -14,7 +13,6 @@ import {
 
 import { State } from '../../***ARANGO_USERNAME***-store';
 import { UserFileImportSelectors as selectors } from '../store';
-
 import { uploadNodeMapping } from '../store/actions';
 
 @Component({

@@ -3,12 +3,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { MockComponents } from 'ng-mocks';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
-
 import { WorksheetPreviewComponent } from 'app/kg-import/components/worksheet-preview/worksheet-preview.component';
 import { GeneImportConfigComponent } from 'app/kg-import/components/gene-import-config/gene-import-config.component';
 

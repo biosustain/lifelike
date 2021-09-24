@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 
+import { BehaviorSubject } from 'rxjs';
+
+import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { SankeyAdvancedOptions, ValueGenerator, SankeyData, SankeyTraceNetwork, SankeyLink, SankeyNode } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
@@ -8,7 +10,6 @@ import prescalers from '../components/algorithms/prescalers';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../components/color-palette';
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
-import { BehaviorSubject } from 'rxjs';
 import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 

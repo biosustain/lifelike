@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
@@ -10,9 +9,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
-import { SharedModule } from 'app/shared/shared.module';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
+
+import { SharedModule } from 'app/shared/shared.module';
+
+import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { TraceViewComponent } from './components/trace-view.component';
 import { TraceDetailsComponent } from './components/trace-details.component';
 

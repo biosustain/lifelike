@@ -1,6 +1,8 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, OnDestroy } from '@angular/core';
-import { Annotation } from '../bioc.format';
+
 import { SEARCH_LINKS } from 'app/shared/links';
+
+import { Annotation } from '../bioc.format';
 
 @Component({
   selector: 'app-bioc-annotated-text',

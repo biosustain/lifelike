@@ -1,6 +1,8 @@
 // region Colors
 import { isDevMode } from '@angular/core';
+
 import { cubehelix } from 'd3';
+
 import { ArrayWithDefault, Palette } from './interfaces';
 
 export const DEFAULT_SATURATION = 0.35;

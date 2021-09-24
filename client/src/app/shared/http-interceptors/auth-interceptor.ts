@@ -7,7 +7,6 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 
-import { AuthenticationService } from 'app/auth/services/authentication.service';
 import {
     BehaviorSubject,
     Observable,
@@ -19,10 +18,10 @@ import {
     filter,
     take,
 } from 'rxjs/operators';
-
 import { Store } from '@ngrx/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
 
+import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AuthActions } from 'app/auth/store';
 import { SnackbarActions } from 'app/shared/store';
 
