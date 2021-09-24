@@ -5,14 +5,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from neo4japp.util import CamelDictMixin
 
 
-@attr.s(frozen=False)
-class Inclusion():
-    entities: List[dict] = attr.ib()
-    entity_id_type: str = attr.ib()
-    entity_id_hyperlinks: List[str] = attr.ib()
-
-
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class NLPResults():
     anatomy: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
     chemicals: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
@@ -26,7 +19,7 @@ class NLPResults():
     species: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class PDFWord():
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
@@ -103,15 +96,13 @@ class GeneAnnotation(Annotation):
         category: str = attr.ib(default='')
 
 
-@attr.s(frozen=False)
+@attr.s(slots=True)
 class LMDBMatch():
     entities: List[dict] = attr.ib()
     token: PDFWord = attr.ib()
-    id_type: str = attr.ib(default='')
-    id_hyperlinks: List[str] = attr.ib(default='')
 
 
-@attr.s(frozen=False)
+@attr.s(slots=True)
 class RecognizedEntities():
     recognized_anatomy: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     recognized_chemicals: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
@@ -131,7 +122,7 @@ class RecognizedEntities():
     recognized_lab_strains: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class GlobalExclusions():
     excluded_anatomy: Set[str] = attr.ib(default=attr.Factory(set))
     excluded_chemicals: Set[str] = attr.ib(default=attr.Factory(set))
@@ -152,34 +143,34 @@ class GlobalExclusions():
     excluded_lab_strains: Set[str] = attr.ib(default=attr.Factory(set))
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class GlobalInclusions():
-    included_anatomy: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_chemicals: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_compounds: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_diseases: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_foods: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_genes: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_phenomenas: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_phenotypes: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_proteins: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_species: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_local_species: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_anatomy: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_chemicals: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_compounds: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_diseases: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_foods: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_genes: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_phenomenas: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_phenotypes: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_proteins: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_species: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_local_species: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
     # non LMDB entity types
-    included_companies: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_entities: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_lab_samples: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
-    included_lab_strains: Dict[str, Inclusion] = attr.ib(default=attr.Factory(dict))
+    included_companies: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_entities: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_lab_samples: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
+    included_lab_strains: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class SpecifiedOrganismStrain():
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
 
 
-@attr.s(frozen=True)
+@attr.s(slots=True)
 class BestOrganismMatch():
     entity_id: str = attr.ib()
     organism_id: str = attr.ib()
@@ -187,7 +178,8 @@ class BestOrganismMatch():
     specified_organism_id: Optional[str] = attr.ib(default=None)
 
 
-@attr.s(frozen=False)
+@attr.s(slots=True)
 class GeneOrProteinToOrganism():
     matches: dict = attr.ib(default=attr.Factory(dict))
     data_sources: dict = attr.ib(default=attr.Factory(dict))
+    primary_names: dict = attr.ib(default=attr.Factory(dict))
