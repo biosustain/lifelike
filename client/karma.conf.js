@@ -6,12 +6,9 @@ module.exports = function (config) {
     // Adding "files:" to fix errors as explained at:
     // https://github.com/SBRG/kg-prototypes/pull/93#issuecomment-617272392
     files: [
-      { pattern: 'node_modules/vis-network/dist/vis-network.min.js', watched: false },
-      { pattern: 'node_modules/jquery/dist/jquery.min.js', watched: false },
-      { pattern: 'node_modules/jquery-ui-dist/jquery-ui.min.js', watched: false },
-      { pattern: 'node_modules/qtip2/dist/jquery.qtip.min.js', watched: false },
+      { pattern: 'https://cdn.plot.ly/plotly-latest.js', watched: false },
     ],
-    basePath: '',
+    basePath: './',
     // The threshold for this timeout is likely to increase as we add more code to the
     // app; the time required here is directly proportional to the time it takes to
     // compile the code
@@ -30,7 +27,7 @@ module.exports = function (config) {
       ChromeCustom: {
         base: 'Chrome',
         flags: [
-          '--headless',
+          // '--headless',
           '--no-sandbox',
           '--remote-debugging-port=9222',
           '--remote-debugging-address=0.0.0.0',
