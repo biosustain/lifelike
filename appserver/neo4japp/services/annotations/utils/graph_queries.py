@@ -149,7 +149,6 @@ def get_node_labels_and_relationship_query():
                 'GlobalInclusion',
                 'Complex']
             ] AS node_labels,
-        collect(DISTINCT exists(r.global_inclusion)) AS has_global,
         n.original_entity_types AS valid_entity_types,
         collect(DISTINCT r.entity_type) AS rel_entity_types
     """
