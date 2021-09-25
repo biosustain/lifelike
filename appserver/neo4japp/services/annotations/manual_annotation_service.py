@@ -274,21 +274,14 @@ class ManualAnnotationService:
                 {'node_ids': [gid for gid, _ in inclusion_ids]})
 
             for result in results:
-                # messy because cannot parameterize labels
-                if True not in result['has_global'] and result['node_labels'] != result['valid_entity_types']:  # noqa
-                    labels_to_remove = result['node_labels']
-                else:
-                    # has global inclusion relationships, but we still need to check
-                    # if there are bad labels that do not match to a relationship
-                    # (leftover labels)
-                    mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
-                    # remove Taxonomy because there is inconsistency between graph and annotations
-                    # annotation uses Species instead
+                mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
+                # remove Taxonomy because there is inconsistency between graph and annotations
+                # annotation uses Species instead
+                if EntityType.SPECIES.value in result['rel_entity_types']:
                     mismatch.remove('Taxonomy')
-                    labels_to_remove = list(mismatch)
 
                 s = ''
-                for label in labels_to_remove:
+                for label in list(mismatch):
                     if label not in result['valid_entity_types']:
                         if label == 'Anatomy':
                             s += ':Anatomy'
