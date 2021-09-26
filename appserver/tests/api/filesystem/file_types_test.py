@@ -47,37 +47,39 @@ blocked_file_exts = [
     ],
     ids=lambda x: x[1],
 )
-# def test_upload_file_mime_type_detection(
-#         request,
-#         session,
-#         client,
-#         login_password: str,
-#         user_with_project_roles: AppUser,
-#         file_in_project: Files,
-#         file_data: Tuple[str, str]):
-#     file_content = pkg_resources.read_binary(sample_files, file_data[0])
-#
-#     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-#     headers = generate_jwt_headers(login_resp['accessToken']['token'])
-#
-#     resp = client.post(
-#         f'/filesystem/objects',
-#         headers=headers,
-#         content_type='multipart/form-data',
-#         data={
-#             'contentValue': (BytesIO(file_content), 'test.file'),
-#             'parentHashId': file_in_project.parent.hash_id,
-#             'filename': 'test',
-#         },
-#     )
-#
-#     assert resp.status_code == 200
-#
-#     resp_data = resp.get_json()
-#
-#     assert file_data[1] == session.query(Files.mime_type) \
-#         .filter(Files.hash_id == resp_data['result']['hashId']) \
-#         .one()[0]
+def test_upload_file_mime_type_detection(
+        request,
+        session,
+        client,
+        login_password: str,
+        user_with_project_roles: AppUser,
+        file_in_project: Files,
+        file_data: Tuple[str, str]):
+    file_content = pkg_resources.read_binary(sample_files, file_data[0])
+
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    resp = client.post(
+        f'/filesystem/objects',
+        headers=headers,
+        content_type='multipart/form-data',
+        data={
+            'contentValue': (BytesIO(file_content), 'test.file'),
+            'parentHashId': file_in_project.parent.hash_id,
+            'filename': 'test',
+        },
+    )
+
+    assert resp.status_code == 200
+
+    resp_data = resp.get_json()
+
+    assert file_data[1] == session.query(Files.mime_type) \
+        .filter(Files.hash_id == resp_data['result']['hashId']) \
+        .one()[0]
+
+
 @pytest.mark.parametrize(
     'user_with_project_roles', [
         ParameterizedAppUser([], ['project-write']),
