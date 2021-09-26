@@ -11,11 +11,9 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import table, column, and_
-from sqlalchemy.dialects import postgresql
 import zipfile
 from io import BytesIO
 from sqlalchemy.orm import Session
-from os import path
 
 from migrations.utils import window_chunk
 from neo4japp.models import FileContent
@@ -26,9 +24,6 @@ revision = '5a16c1f00f2e'
 down_revision = 'd75017512d42'
 branch_labels = None
 depends_on = None
-
-directory = path.realpath(path.dirname(__file__))
-schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/map_v2.json')
 
 
 def upgrade():
@@ -68,8 +63,7 @@ def data_upgrades():
         column('raw_file', sa.LargeBinary))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files.c.id.label('file_id'),
-        t_files_content.c.id.label('file_content_id'),
+        t_files_content.c.id,
         t_files_content.c.raw_file
     ]).where(
         and_(
@@ -80,19 +74,19 @@ def data_upgrades():
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
-        for file_id, file_content_id, content in chunk:
+        for id, content in chunk:
             zip_bytes = BytesIO()
-            with zipfile.ZipFile(zip_bytes, 'a') as zip_file:
+            with zipfile.ZipFile(zip_bytes, 'x') as zip_file:
                 zip_file.writestr('graph.json', content)
             new_bytes = zip_bytes.getvalue()
             new_hash = hashlib.sha256(new_bytes).digest()
-            files_to_update.append({'id': file_content_id, 'raw_file': new_bytes,
+            files_to_update.append({'id': id, 'raw_file': new_bytes,
                                     'checksum_sha256': new_hash})
         try:
             session.bulk_update_mappings(FileContent, files_to_update)
             session.commit()
         except Exception:
-            raise
+            pass
 
 
 def data_downgrades():
