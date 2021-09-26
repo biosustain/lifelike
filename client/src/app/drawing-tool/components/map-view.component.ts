@@ -19,8 +19,6 @@ import { cloneDeep } from 'lodash';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
-import { MimeTypes } from '../../shared/constants';
 
 @Component({
   selector: 'app-map-view',
