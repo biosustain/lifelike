@@ -4,9 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
-
 import { DataSet } from 'vis-data';
-
 import { isArray, isNullOrUndefined } from 'util';
 
 import {
@@ -25,14 +23,14 @@ import {
 } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-
-import { VisualizationService } from '../../services/visualization.service';
-import { createSearchParamsFromQuery, getQueryParams } from '../../../search/utils/search';
+import { createSearchParamsFromQuery, getQueryParams } from 'app/search/utils/search';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { MessageType } from '../../../interfaces/message-dialog.interface';
-import { Progress } from '../../../interfaces/common-dialog.interface';
-import { GraphSearchParameters } from '../../../search/graph-search';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { GraphSearchParameters } from 'app/search/graph-search';
+
+import { VisualizationService } from '../../services/visualization.service';
 
 @Component({
   selector: 'app-visualization',

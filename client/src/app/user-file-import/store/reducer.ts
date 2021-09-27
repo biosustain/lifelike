@@ -4,7 +4,6 @@ import {
     initialState,
     State,
 } from './state';
-
 import * as UserFileImportActions from './actions';
 
 export const userFileImportReducer = createReducer(

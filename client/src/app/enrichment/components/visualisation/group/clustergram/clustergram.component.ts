@@ -1,7 +1,8 @@
 import { Component, Input, OnChanges } from '@angular/core';
+import { KeyValue } from '@angular/common';
+
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from 'app/enrichment/services/enrichment-visualisation.service';
-import { KeyValue } from '@angular/common';
 
 class GeneRow {
   values: boolean[];

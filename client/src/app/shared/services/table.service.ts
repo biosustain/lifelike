@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Observable, of, Subject, ReplaySubject } from 'rxjs';
-
 import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
+
 import { SortDirectionType, SortDirection } from '../directives/table-sortable-header.directive';
 
 interface SearchResult {

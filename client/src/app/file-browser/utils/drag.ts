@@ -1,7 +1,9 @@
 
-import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
+
 import { DragImage } from 'app/shared/utils/drag';
+
+import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import {Unicodes} from '../../shared/constants';
 
 

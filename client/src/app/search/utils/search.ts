@@ -1,4 +1,5 @@
 import { VIZ_SEARCH_LIMIT } from 'app/shared/constants';
+
 import { GraphSearchParameters } from '../graph-search';
 
 export function getQueryParams(params: GraphSearchParameters) {

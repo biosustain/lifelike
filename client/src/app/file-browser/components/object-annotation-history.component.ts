@@ -1,8 +1,11 @@
 import { Component, Input } from '@angular/core';
+
 import { from, Observable, Subscription } from 'rxjs';
+
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { FilesystemService } from '../services/filesystem.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({

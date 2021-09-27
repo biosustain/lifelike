@@ -9,32 +9,33 @@ import {
 } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
-
-import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
-import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
-import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
-import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
-import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
-import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
-import { MapViewComponent } from '../map-view.component';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
-import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
+
+import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
+import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { DeleteKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
+import { PasteKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
+import { HistoryKeyboardShortcuts } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import {
   CompoundAction,
   GraphAction,
   GraphActionReceiver,
-} from '../../../graph-viewer/actions/actions';
-import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
-import { ObjectVersion } from '../../../file-browser/models/object-version';
-import { LockError } from '../../../file-browser/services/filesystem.service';
-import { ObjectLock } from '../../../file-browser/models/object-lock';
+} from 'app/graph-viewer/actions/actions';
+import { mergeDeep } from 'app/graph-viewer/utils/objects';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ObjectVersion } from 'app/file-browser/models/object-version';
+import { LockError } from 'app/file-browser/services/filesystem.service';
+import { ObjectLock } from 'app/file-browser/models/object-lock';
+import { MimeTypes } from 'app/shared/constants';
+
+import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
+import { MapViewComponent } from '../map-view.component';
+import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
-import { MimeTypes } from '../../../shared/constants';
 
 @Component({
   selector: 'app-drawing-tool',

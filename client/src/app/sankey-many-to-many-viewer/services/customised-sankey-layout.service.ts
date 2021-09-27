@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
+
 import { TruncatePipe } from '../../shared/pipes';
 import { normalizeGenerator, symmetricDifference } from '../../sankey-viewer/components/sankey/utils';
 import { SankeyNode, SankeyData } from '../../sankey-viewer/components/interfaces';

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 
 import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
+import { AuthSelectors } from 'app/auth/store';
 import { State } from 'app/root-store';
 import { AppUser } from 'app/interfaces';
 

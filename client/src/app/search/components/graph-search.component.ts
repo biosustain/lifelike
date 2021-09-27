@@ -2,17 +2,17 @@ import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChi
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ModuleProperties } from 'app/shared/modules';
 
 import { GraphSearchService } from '../services/graph-search.service';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
 import { GraphSearchParameters } from '../graph-search';
-import { ModuleProperties } from 'app/shared/modules';
 
 @Component({
   selector: 'app-graph-search',

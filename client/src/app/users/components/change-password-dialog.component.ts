@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ofType } from '@ngrx/effects';
+import { map } from 'rxjs/operators';
+
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { CommonDialogComponent } from '../../shared/components/dialog/common-dialog.component';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { PrivateAppUser } from '../../interfaces';
 import { AccountService } from '../services/account.service';
-import { ofType } from '@ngrx/effects';
 import * as UserActions from '../store/actions';
-import { map } from 'rxjs/operators';
 import { SnackbarActions } from '../../shared/store';
 import { UserEffects } from '../store/effects';
 

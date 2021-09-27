@@ -8,20 +8,22 @@ import {
   ViewChild,
   HostListener,
 } from '@angular/core';
-import { cloneDeep } from 'lodash-es';
-import { startCase } from 'lodash-es';
+
+import { cloneDeep, startCase } from 'lodash-es';
+import { isNullOrUndefined } from 'util';
+
+import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
+import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
+import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+
 import {
   DETAIL_NODE_LABELS,
   isCommonNodeDisplayName,
   UniversalGraphNode,
 } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
-import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
-import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
-import { isNullOrUndefined } from 'util';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({

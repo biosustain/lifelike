@@ -1,4 +1,5 @@
 import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+
 import {PDFResult} from '../../interfaces';
 
 @Component({

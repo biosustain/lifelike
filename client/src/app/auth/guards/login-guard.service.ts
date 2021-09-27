@@ -5,9 +5,11 @@ import {
     Router,
     RouterStateSnapshot,
 } from '@angular/router';
+
 import { Store, select } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
+
 import { State } from '../store/state';
 import { AuthSelectors } from '../store';
 

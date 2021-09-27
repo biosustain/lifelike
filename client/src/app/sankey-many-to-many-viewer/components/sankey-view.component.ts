@@ -1,5 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
+
 import { ModuleAwareComponent } from 'app/shared/modules';
+
 import { CustomisedSankeyManyToManyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from '../../sankey-viewer/components/sankey/sankey-layout.service';
 import { SankeyManyToManyControllerService } from '../services/sankey-controller.service';

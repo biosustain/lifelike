@@ -6,9 +6,12 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
-import { HighlightTextService } from '../../services/highlight-text.service';
+
 import { Subscription } from 'rxjs';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+
+import { HighlightTextService } from '../../services/highlight-text.service';
 
 @Component({
   selector: 'app-generic-table',

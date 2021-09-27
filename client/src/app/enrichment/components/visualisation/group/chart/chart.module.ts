@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { ChartsModule, ThemeService } from 'ng2-charts';
+
 import { SharedModule } from 'app/shared/shared.module';
 
 import { ChartComponent } from './chart.component';
-import { ChartsModule, ThemeService } from 'ng2-charts';
 
 const components = [
   ChartComponent

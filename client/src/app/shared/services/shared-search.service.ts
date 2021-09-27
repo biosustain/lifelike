@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
 import { map } from 'rxjs/operators';
-import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
 import { Observable } from 'rxjs';
+
+import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
+
 import { ApiService } from './api.service';
 
 @Injectable()
