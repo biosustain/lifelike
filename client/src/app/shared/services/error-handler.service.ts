@@ -4,7 +4,7 @@ import { AbstractControl } from '@angular/forms';
 
 import { EMPTY, Observable, of, pipe, throwError } from 'rxjs';
 import { catchError, first, map, mergeMap } from 'rxjs/operators';
-import { UnaryFunction } from 'rxjs/src/internal/types';
+import { UnaryFunction } from 'rxjs/internal/types';
 
 import { MessageDialog } from './message-dialog.service';
 import { UserError } from '../exceptions';

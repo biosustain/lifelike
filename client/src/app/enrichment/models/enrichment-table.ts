@@ -1,7 +1,7 @@
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
 import { Observable, of } from 'rxjs';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import { nullCoalesce } from 'app/shared/utils/types';
 
 export class EnrichmentTable {

@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { flatten } from 'lodash';
+import { flatten } from 'lodash-es';
 
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
