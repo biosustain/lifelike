@@ -7,6 +7,9 @@ verify_ssl = true
 pytest = "==5.3.5"
 pycodestyle = "==2.7.0"
 mypy = "==0.910"
+types-paramiko = "==2.7.0"
+types-redis = "==3.5.8"
+types-requests = "==2.25.8"
 
 [packages]
 attrs = "==20.3.0"
@@ -60,9 +63,6 @@ lmdb = "==1.2.1"
 pillow = "==8.3.1"
 pyparsing = "==2.4.7"
 svg-stack = "==0.1.0"
-types-paramiko = "*"
-types-redis = "*"
-types-requests = "*"
 
 [requires]
 python_version = "3.8.2"
