@@ -717,9 +717,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                 # Test zip returns the name of the first invalid file inside the archive; if any
                 if zip_file.testzip():
                     raise ValueError
-                json_graph = json.loads(zip_file.read('graph.json'))
-                validate_map(json_graph)
+
                 try:
+                    json_graph = json.loads(zip_file.read('graph.json'))
+                    validate_map(json_graph)
                     for node in json_graph['nodes']:
                         if node.get('image_id'):
                             # Will throw KeyError exception is image is not present
