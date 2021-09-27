@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { merge, isObject } from 'lodash';
+import { merge, isObject } from 'lodash-es';
 import Timer = NodeJS.Timer;
 
 export enum TaskState {

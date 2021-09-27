@@ -1,10 +1,11 @@
-import { chunk } from 'lodash';
+import { chunk } from 'lodash-es';
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
 } from '../../services/data-transfer-data.service';
 import { nullCoalesce } from '../../utils/types';
+import { Injectable } from '@angular/core';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');
@@ -14,6 +15,7 @@ export class URIData {
   uri: string;
 }
 
+@Injectable()
 export class GenericDataProvider implements DataTransferDataProvider {
 
   private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');

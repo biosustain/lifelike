@@ -25,7 +25,7 @@ import {
   WorkspaceSessionLoader,
   WorkspaceSessionService,
 } from './services/workspace-session.service';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 export interface TabDefaults {
   title: string;

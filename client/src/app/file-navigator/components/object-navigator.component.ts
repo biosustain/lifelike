@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 
 import { combineLatest, Subscription } from 'rxjs';
 

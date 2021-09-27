@@ -1,5 +1,5 @@
 import { DirectoryObject } from '../../interfaces/projects.interface';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 import { FilesystemObject } from '../models/filesystem-object';
 
 export function getObjectCommands(object: DirectoryObject) {
