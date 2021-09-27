@@ -8,11 +8,14 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { AppUser} from 'app/interfaces';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import * as UserActions from '../store/actions';
+
 import { Store } from '@ngrx/store';
+
+import { AppUser} from 'app/interfaces';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import * as UserActions from '../store/actions';
 import { State } from '../../root-store';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../../shared/constants';
 

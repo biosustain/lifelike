@@ -9,29 +9,40 @@ import {
   OnInit,
   HostListener,
   OnDestroy,
-  ViewChild
+  ViewChild,
+  NgZone
 } from '@angular/core';
-import { PDFDocumentProxy, PDFViewerParams, PDFPageProxy, PDFPageViewport, PDFSource, PDFProgressData, PDFPromise } from 'pdfjs-dist';
 
+/**
+ * current pdf.js build contains optional chaining
+ * which is not supported by typescript
+ */
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+import * as viewerx from 'pdfjs-dist/legacy/web/pdf_viewer';
+import { PDFDocumentProxy, PDFPageProxy, DocumentInitParameters, PDFDocumentLoadingTask } from 'pdfjs-dist/types/display/api';
+import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
+import { PDFProgressData, PDFViewerParams, PDFSource } from './interfaces';
 import { createEventBus } from '../utils/event-bus-utils';
-
-import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
 import { FindState, RenderTextMode } from '../utils/constants';
 
-declare var require: any;
-let PDFJS: any;
-let pdfjsViewer: any;
+
+
+const PDFJS = pdfjsLib;
+let pdfjsViewer;
+const DEFAULT_DOCUMENT_INIT_PARAMETERS: DocumentInitParameters = {};
 
 function isSSR() {
   return typeof window === 'undefined';
 }
 
 if (!isSSR()) {
-  PDFJS = require('pdfjs-dist/build/pdf');
   pdfjsViewer = viewerx;
 
-  PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
+  DEFAULT_DOCUMENT_INIT_PARAMETERS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
+
+Object.freeze(DEFAULT_DOCUMENT_INIT_PARAMETERS);
+
 
 @Component({
   selector: 'app-pdf-viewer-lib',
@@ -44,6 +55,7 @@ if (!isSSR()) {
 })
 export class PdfViewerComponent
   implements OnChanges, OnInit, OnDestroy {
+
 
   @Input('c-maps-url')
   set cMapsUrl(cMapsUrl: string) {
@@ -135,7 +147,10 @@ export class PdfViewerComponent
     this.internalShowBorders = Boolean(value);
   }
 
-  constructor(private element: ElementRef) {
+  constructor(
+    private element: ElementRef,
+    private ngZone: NgZone
+  ) {
     if (isSSR()) {
       return;
     }
@@ -150,18 +165,18 @@ export class PdfViewerComponent
       pdfWorkerSrc = (window as any).pdfWorkerSrc;
     } else {
       pdfWorkerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${
-        (PDFJS as any).version
+        PDFJS.version
       }/pdf.worker.min.js`;
     }
 
-    (PDFJS as any).GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+    PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
   }
 
-  get pdfViewer(): any {
+  get pdfViewer() {
     return this.getCurrentViewer();
   }
 
-  get pdfFindController(): any {
+  get pdfFindController() {
     return this.internalShowAll
       ? this.pdfMultiPageFindController
       : this.pdfSinglePageFindController;
@@ -170,25 +185,24 @@ export class PdfViewerComponent
   static CSS_UNITS: number = 96.0 / 72.0;
   static BORDER_WIDTH = 9;
   @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
-  private isVisible = false;
 
-  private pdfMultiPageViewer: any;
-  private pdfMultiPageLinkService: any;
-  private pdfMultiPageFindController: any;
+  private pdfMultiPageViewer;
+  private pdfMultiPageLinkService;
+  private pdfMultiPageFindController;
 
-  private pdfSinglePageViewer: any;
-  private pdfSinglePageLinkService: any;
-  private pdfSinglePageFindController: any;
+  private pdfSinglePageViewer;
+  private pdfSinglePageLinkService;
+  private pdfSinglePageFindController;
 
   private internalCMapsUrl =
     typeof PDFJS !== 'undefined'
-      ? `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
+      ? `https://unpkg.com/pdfjs-dist@${PDFJS.version}/cmaps/`
       : null;
   private internalRenderText = true;
   private internalRenderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   private internalStickToPage = false;
   private internalOriginalSize = true;
-  private internalPdf: PDFDocumentProxy;
+  internalPdf: PDFDocumentProxy;
   private internalPage = 1;
   private internalZoom = 1;
   private internalRotation = 0;
@@ -197,13 +211,13 @@ export class PdfViewerComponent
   private internalFitToPage = false;
   private internalExternalLinkTarget = 'blank';
   private internalShowBorders = false;
-  private lastLoaded: string | Uint8Array | PDFSource;
+  private lastLoaded: PDFSource;
   private internalLatestScrolledPage: number;
 
   private resizeTimeout: NodeJS.Timer;
   private pageScrollTimeout: NodeJS.Timer;
   private isInitialized = false;
-  private loadingTask: any;
+  private loadingTask: PDFDocumentLoadingTask;
 
   // tslint:disable-next-line
   @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
@@ -212,39 +226,45 @@ export class PdfViewerComponent
   // tslint:disable-next-line
   @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
   // tslint:disable-next-line
-  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
+  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter();
   // tslint:disable-next-line
-  @Output('find-control-state-updated') findControlStateUpdated = new EventEmitter<any>();
+  @Output('find-control-state-updated') findControlStateUpdated = new EventEmitter();
   // tslint:disable-next-line
   @Output('error') onError = new EventEmitter<any>();
   // tslint:disable-next-line
   @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
   @Input()
-  src: string | Uint8Array | PDFSource;
+  src: PDFSource;
 
   static getLinkTarget(type: string) {
     switch (type) {
       case 'blank':
-        return (PDFJS as any).LinkTarget.BLANK;
+        return PDFJS.LinkTarget.BLANK;
       case 'none':
-        return (PDFJS as any).LinkTarget.NONE;
+        return PDFJS.LinkTarget.NONE;
       case 'self':
-        return (PDFJS as any).LinkTarget.SELF;
+        return PDFJS.LinkTarget.SELF;
       case 'parent':
-        return (PDFJS as any).LinkTarget.PARENT;
+        return PDFJS.LinkTarget.PARENT;
       case 'top':
-        return (PDFJS as any).LinkTarget.TOP;
+        return PDFJS.LinkTarget.TOP;
     }
 
     return null;
   }
 
-  static setExternalLinkTarget(type: string) {
+  setExternalLinkTarget(type: string) {
     const linkTarget = PdfViewerComponent.getLinkTarget(type);
+    const {pdfMultiPageLinkService, pdfSinglePageLinkService} = this;
 
     if (linkTarget !== null) {
-      (PDFJS as any).externalLinkTarget = linkTarget;
+      if (pdfMultiPageLinkService) {
+        pdfMultiPageLinkService.externalLinkTarget = linkTarget;
+      }
+      if (pdfSinglePageLinkService) {
+        pdfSinglePageLinkService.externalLinkTarget = linkTarget;
+      }
     }
   }
 
@@ -312,7 +332,7 @@ export class PdfViewerComponent
       this.internalPdf.getPage(pageNum)
         .then((page: PDFPageProxy) => {
           const rotation = this.internalRotation || page.rotate;
-          const viewPort: PDFPageViewport =
+          const viewPort: PageViewport =
             (page as any).getViewport({
               scale: this.internalZoom,
               rotation
@@ -387,9 +407,10 @@ export class PdfViewerComponent
   }
 
   private setupMultiPageViewer() {
-    (PDFJS as any).disableTextLayer = !this.internalRenderText;
+    pdfjsViewer.TextLayerBuilder.disableTextLayer = this.internalRenderText ?
+      this.internalRenderTextMode : RenderTextMode.DISABLED;
 
-    PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
+    this.setExternalLinkTarget(this.internalExternalLinkTarget);
 
     const eventBus = createEventBus(pdfjsViewer);
 
@@ -450,7 +471,7 @@ export class PdfViewerComponent
       eventBus
     });
 
-    const pdfOptions: PDFViewerParams | any = {
+    const pdfOptions: PDFViewerParams = {
       eventBus,
       container: this.element.nativeElement.querySelector('div'),
       removePageBorders: !this.internalShowBorders,
@@ -461,14 +482,16 @@ export class PdfViewerComponent
       findController: this.pdfMultiPageFindController
     };
 
-    this.pdfMultiPageViewer = new pdfjsViewer.PDFViewer(pdfOptions);
-    this.pdfMultiPageLinkService.setViewer(this.pdfMultiPageViewer);
+    this.ngZone.runOutsideAngular(() => {
+      this.pdfMultiPageViewer = new pdfjsViewer.PDFViewer(pdfOptions);
+      this.pdfMultiPageLinkService.setViewer(this.pdfMultiPageViewer);
+    });
   }
 
   private setupSinglePageViewer() {
-    (PDFJS as any).disableTextLayer = !this.internalRenderText;
+    pdfjsViewer.TextLayerBuilder.enhanceTextSelection = !this.internalRenderText;
 
-    PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
+    this.setExternalLinkTarget(this.internalExternalLinkTarget);
 
     const eventBus = createEventBus(pdfjsViewer);
 
@@ -507,7 +530,7 @@ export class PdfViewerComponent
       eventBus
     });
 
-    const pdfOptions: PDFViewerParams | any = {
+    const pdfOptions: PDFViewerParams = {
       eventBus,
       container: this.element.nativeElement.querySelector('div'),
       removePageBorders: !this.internalShowBorders,
@@ -536,26 +559,25 @@ export class PdfViewerComponent
     return page;
   }
 
-  private getDocumentParams() {
+  private getDocumentParams(): DocumentInitParameters {
     const srcType = typeof this.src;
 
-    if (!this.internalCMapsUrl) {
-      return this.src;
-    }
-
-    const params: any = {
-      cMapUrl: this.internalCMapsUrl,
-      cMapPacked: true
-    };
-
+    const params: DocumentInitParameters = Object.assign({}, DEFAULT_DOCUMENT_INIT_PARAMETERS);
     if (srcType === 'string') {
-      params.url = this.src;
+      params.url = this.src as string;
     } else if (srcType === 'object') {
-      if ((this.src as any).byteLength !== undefined) {
-        params.data = this.src;
+      if ((this.src as Uint8Array).byteLength !== undefined) {
+        params.data = this.src as Uint8Array;
       } else {
         Object.assign(params, this.src);
       }
+    }
+
+    if (this.internalCMapsUrl) {
+      Object.assign(params, {
+        cMapUrl: this.internalCMapsUrl,
+        cMapPacked: true
+      });
     }
 
     return params;
@@ -573,14 +595,16 @@ export class PdfViewerComponent
 
     this.clear();
 
-    this.loadingTask = (PDFJS as any).getDocument(this.getDocumentParams());
+    this.ngZone.runOutsideAngular(() => {
+      this.loadingTask = PDFJS.getDocument(this.getDocumentParams());
+    });
 
     this.loadingTask.onProgress = (progressData: PDFProgressData) => {
       this.onProgress.emit(progressData);
     };
 
     const src = this.src;
-    (this.loadingTask.promise as PDFPromise<PDFDocumentProxy>).then(
+    this.loadingTask.promise.then(
       (pdf: PDFDocumentProxy) => {
         this.internalPdf = pdf;
         this.lastLoaded = src;
@@ -637,7 +661,7 @@ export class PdfViewerComponent
     );
   }
 
-  private getCurrentViewer(): any {
+  private getCurrentViewer() {
     return this.internalShowAll ? this.pdfMultiPageViewer : this.pdfSinglePageViewer;
   }
 

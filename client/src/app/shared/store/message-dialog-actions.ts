@@ -1,4 +1,5 @@
 import { createAction, props, union } from '@ngrx/store';
+
 import { MessageArguments } from '../services/message-dialog.service';
 
 export const displayMessageDialog = createAction(

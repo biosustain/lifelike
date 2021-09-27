@@ -1,6 +1,8 @@
 import { Component, } from '@angular/core';
+
+import { uuidv4 } from 'app/shared/utils';
+
 import { SankeyAdvancedOptions } from '../interfaces';
-import { uuidv4 } from '../../../shared/utils';
 import { SankeyControllerService } from '../../services/sankey-controller.service';
 
 

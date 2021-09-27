@@ -4,9 +4,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/user-file-import.interface';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { AbstractService } from 'app/shared/services/abstract-service';
+
+import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/user-file-import.interface';
 
 @Injectable()
 export class UserFileImportService extends AbstractService {

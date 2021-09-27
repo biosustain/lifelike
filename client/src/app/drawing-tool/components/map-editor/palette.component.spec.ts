@@ -2,9 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { RootStoreModule } from 'app/root-store';
+
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { PaletteComponent } from './palette.component';
-import { RootStoreModule } from 'app/root-store';
 
 describe('PaletteComponent', () => {
     let component: PaletteComponent;

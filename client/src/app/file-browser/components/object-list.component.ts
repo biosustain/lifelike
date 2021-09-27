@@ -1,21 +1,24 @@
 import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { uniqueId } from 'lodash-es';
+import { BehaviorSubject } from 'rxjs';
+import { finalize, map, tap } from 'rxjs/operators';
+
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { nullCoalesce } from 'app/shared/utils/types';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
+import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { DirectoryObject } from '../../interfaces/projects.interface';
-import { nullCoalesce } from 'app/shared/utils/types';
-import { uniqueId } from 'lodash';
-import { CollectionModel } from 'app/shared/utils/collection-model';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map, tap } from 'rxjs/operators';
 import { openDownloadForBlob } from '../../shared/utils/files';
 
 @Component({

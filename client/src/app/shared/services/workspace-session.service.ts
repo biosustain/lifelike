@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { Pane} from '../workspace-manager';
 
 const LOCAL_STORAGE_KEY = 'lifelike_workspace_session';

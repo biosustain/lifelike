@@ -33,6 +33,10 @@ node_labels = {
 }
 
 
+def query_builder(parts):
+    return '\n'.join(parts)
+
+
 def get_organisms_from_gene_ids_query():
     return """
     MATCH (g:Gene) WHERE g.eid IN $gene_ids
@@ -129,6 +133,24 @@ def get_mesh_by_ids():
     return """
     MATCH (n:db_MESH:TopicalDescriptor) WHERE n.eid IN $ids
     RETURN n.eid AS mesh_id, n.name AS mesh_name
+    """
+
+
+def get_node_labels_and_relationship_query():
+    return """
+    MATCH (n)-[r:HAS_SYNONYM]-()
+    WHERE id(n) IN $node_ids AND exists(n.original_entity_types)
+    RETURN id(n) AS node_id, n.eid AS entity_id,
+        [l IN labels(n) WHERE NOT l starts WITH 'db_' AND
+            NOT l IN [
+                'TopicalDescriptor',
+                'TreeNumber',
+                'BioCycClass',
+                'GlobalInclusion',
+                'Complex']
+            ] AS node_labels,
+        n.original_entity_types AS valid_entity_types,
+        collect(DISTINCT r.entity_type) AS rel_entity_types
     """
 
 

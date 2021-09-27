@@ -2,12 +2,9 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-import { flatten } from 'lodash';
-
+import { flatten } from 'lodash-es';
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';

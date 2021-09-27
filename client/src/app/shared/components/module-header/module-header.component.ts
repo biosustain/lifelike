@@ -1,6 +1,7 @@
 import { Component, Input, EventEmitter, Output, TemplateRef } from '@angular/core';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { ActivatedRoute } from '@angular/router';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-module-header',

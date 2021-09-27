@@ -8,12 +8,12 @@ import { GraphSearchComponent } from 'app/search/components/graph-search.compone
 import { ObjectBrowserComponent } from 'app/file-browser/components/object-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
-
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
+
 import { KgStatisticsComponent } from './kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';

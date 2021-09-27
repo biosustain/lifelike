@@ -1,15 +1,15 @@
 import {Component, Input} from '@angular/core';
-
 import {
   FormGroup,
   FormControl,
   Validators,
 } from '@angular/forms';
 
-
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+
 import { AppUser, UserUpdateRequest } from '../../interfaces';
 
 @Component({

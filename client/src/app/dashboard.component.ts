@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+
 import { Observable } from 'rxjs';
 
 import { MetaDataService } from 'app/shared/services/metadata.service';

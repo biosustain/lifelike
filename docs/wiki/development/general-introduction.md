@@ -159,6 +159,15 @@ make clean
 4. Under the *File* -> *Project Settings* window, setup the Python interpreter for the appserver module.
 5. From the *Make* tool window, run `init` if you haven't yet previously run `make init`. You can also choose to run Docker from this menu.
 
+## Automated linting fix
+
+Many client linting problems can be fixed in automated manner by running:
+
+```
+cd client 
+yarn tslint --fix -c tslint.json 'src/**/*.ts'
+```
+
 ## Continued Reading
 
 * [[AppServer Development]]

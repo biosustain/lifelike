@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { Subject } from 'rxjs';
 
 import { GenericFileUploadComponent } from './generic-file-upload.component';

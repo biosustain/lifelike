@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/root-store';

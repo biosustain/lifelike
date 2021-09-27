@@ -1,7 +1,5 @@
 import * as d3 from 'd3';
-
 import { Subject } from 'rxjs';
-
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Group, Link } from 'webcola/WebCola/src/layout';
@@ -21,7 +19,6 @@ import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { escapeRegExp } from 'lodash';
 import { RenderTree } from './render-tree';
 
 /**

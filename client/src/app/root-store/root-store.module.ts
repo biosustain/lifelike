@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+
 import { EffectsModule } from '@ngrx/effects';
 import {
     ActionReducer,
@@ -6,21 +7,18 @@ import {
     MetaReducer,
     StoreModule,
 } from '@ngrx/store';
-
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { localStorageSync } from 'ngrx-store-localstorage';
 
 import { UserFileImportModule } from 'app/user-file-import/user-file-import.module';
+import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
 import { environment } from '../../environments/environment';
-
 import { State } from './state';
-
-import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
 /**
  * Syncs ngrx-store with local storage for persistent client state.
  */
-import { localStorageSync } from 'ngrx-store-localstorage';
 
 
 /**

@@ -1,16 +1,14 @@
 import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
-import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
-import { EdgeCreation } from '../../../actions/edges';
-import { asLiteral } from '@angular/compiler/src/render3/view/util';
+import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
+import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { isAltOrOptionPressed } from 'app/shared/utils';
-import { TestCtx } from 'ng-bullet';
-import { min } from 'rxjs/operators';
+
+import { CanvasGraphView } from '../canvas-graph-view';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+
 
 const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
 const HELPER_BEHAVIOR_KEY = '_interactive-edge-creation/helper';

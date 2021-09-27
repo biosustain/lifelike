@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 @Component({

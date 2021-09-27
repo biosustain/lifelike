@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 
-import { uuidv4 } from 'app/shared/utils';
-
 import * as d3 from 'd3';
+
+import { uuidv4 } from 'app/shared/utils';
 
 declare const Plotly: any;
 
@@ -13,7 +13,7 @@ declare const Plotly: any;
 })
 export class PlotlySankeyDiagramComponent implements AfterViewInit {
   @Input() config: any;
-  @Input() data: any;
+  @Input() data: any = {};
   @Input() legend: Map<string, string[]>;
 
   sankeyContainerId: string;

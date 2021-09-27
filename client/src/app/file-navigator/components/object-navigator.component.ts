@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { escapeRegExp } from 'lodash';
-
+import { escapeRegExp } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
@@ -14,6 +13,7 @@ import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+
 import { MimeTypes } from '../../shared/constants';
 
 

@@ -1,19 +1,22 @@
-import { escape, uniqueId } from 'lodash';
-import Color from 'color';
 import { Injectable, RendererFactory2 } from '@angular/core';
-import { DropdownController } from '../../utils/dom/dropdown-controller';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+
+import { escape, uniqueId } from 'lodash-es';
+import Color from 'color';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
   Hyperlink,
   Reference,
   Source,
   UniversalGraphNode,
   UniversalGraphNodeTemplate,
-} from '../../../drawing-tool/services/interfaces';
-import { createNodeDragImage } from '../../../drawing-tool/utils/drag';
+} from 'app/drawing-tool/services/interfaces';
+import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
+import { Meta } from 'app/pdf-viewer/annotation-type';
+
+import { DropdownController } from '../../utils/dom/dropdown-controller';
 import { GenericDataProvider } from '../data-transfer-data/generic-data.provider';
 import { isCtrlOrMetaPressed } from '../../utils';
-import { Meta } from '../../../pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from '../../links';
 import { annotationTypesMap } from '../../annotation-styles';
 import { TagHandler } from '../../services/highlight-text.service';

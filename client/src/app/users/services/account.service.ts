@@ -1,5 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
+import { map, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
+
 import {
   AppUser,
   UserCreationRequest,
@@ -9,8 +13,6 @@ import {
 
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
-import { map, takeUntil } from 'rxjs/operators';
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class AccountService implements OnDestroy {

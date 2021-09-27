@@ -11,8 +11,10 @@ import {
   OnDestroy, Output,
   Renderer2,
 } from '@angular/core';
+
 import { fromEvent, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { DropdownController } from '../utils/dom/dropdown-controller';
 
 /**
