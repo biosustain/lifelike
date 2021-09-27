@@ -729,7 +729,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 raise ValueError
                 except KeyError:
                     raise ValueError
-
         except zipfile.BadZipFile:
             raise ValueError
 
