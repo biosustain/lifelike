@@ -1,3 +1,4 @@
+import imghdr
 import io
 import json
 import math
@@ -702,19 +703,35 @@ class MapTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # used to be simple as below
-        # `graph = json.loads(buffer.read())`
-        # But now the frontend sends the graph as a zip file
-        # so the buffer has a zip file
-        # so extract JSON from zip first and then validate
+        """
+        Validates whether the uploaded file is a Lifelike map - a zip containing graph.json file
+        describing the map and optionally, folder with the images. If there are any images specified
+        in the json graph, their presence and accordance to the png standard is verified.
+        :params:
+        :param buffer: buffer containing the bytes of the file that has to be tested
+        :raises ValueError: if the file is not a proper map file
+        """
         zipped_map = buffer.read()
-        graph = None
-        with zipfile.ZipFile(io.BytesIO(zipped_map)) as z:
-            # `read` returns the file content as a string
-            # need to load it to JSON format before validating it
-            graph = json.loads(z.read('graph.json'))
-        # TODO: not only validate JSON, but also other files in the zip, especially images
-        validate_map(graph)
+        try:
+            with zipfile.ZipFile(io.BytesIO(zipped_map)) as zip_file:
+                # Test zip returns the name of the first invalid file inside the archive; if any
+                if zip_file.testzip():
+                    raise ValueError
+                json_graph = json.loads(zip_file.read('graph.json'))
+                validate_map(json_graph)
+                try:
+                    for node in json_graph['nodes']:
+                        if node.get('image_id'):
+                            # Will throw KeyError exception is image is not present
+                            im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+                            # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
+                            if imghdr.what(None, im) is not 'png':
+                                raise ValueError
+                except KeyError:
+                    raise ValueError
+
+        except zipfile.BadZipFile:
+            raise ValueError
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
