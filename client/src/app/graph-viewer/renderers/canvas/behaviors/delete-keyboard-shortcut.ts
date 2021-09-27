@@ -1,12 +1,13 @@
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
-import { CanvasGraphView } from '../canvas-graph-view';
 import {
   GraphEntityType,
   UniversalGraphEdge,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeDeletion, NodeDeletion } from '../../../actions/nodes';
-import { GraphAction } from '../../../actions/actions';
+import { EdgeDeletion, NodeDeletion } from 'app/graph-viewer/actions/nodes';
+import { GraphAction } from 'app/graph-viewer/actions/actions';
+
+import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { CanvasGraphView } from '../canvas-graph-view';
 
 /**
  * Implements the 'delete' key.

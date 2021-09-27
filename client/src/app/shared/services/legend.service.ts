@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { AbstractService } from './abstract-service';
 
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 import {
     NodeLegend,
 } from 'app/interfaces';
+
+import { AbstractService } from './abstract-service';
 
 @Injectable({providedIn: 'root'})
 export class LegendService extends AbstractService {

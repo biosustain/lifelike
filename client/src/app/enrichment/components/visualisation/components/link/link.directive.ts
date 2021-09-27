@@ -1,9 +1,11 @@
 import { Directive, Input, HostBinding } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import { map } from 'rxjs/operators';
+
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
-import { map } from 'rxjs/operators';
-import { EnrichmentTableViewerComponent } from '../../../table/enrichment-table-viewer.component';
+import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 
 export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
   appLink: [

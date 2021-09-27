@@ -1,8 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
-import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 import { Subject, Observable, race, timer, Subscription } from 'rxjs';
 import { mapTo, first, takeUntil } from 'rxjs/operators';
+
+import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 
 @Injectable()
 export class ContextMenuControlService extends TooltipControlService implements OnDestroy {

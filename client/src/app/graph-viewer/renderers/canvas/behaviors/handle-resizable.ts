@@ -2,10 +2,11 @@ import { cloneDeep } from 'lodash-es';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
+import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
+import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
-import { GraphEntityUpdate } from '../../../actions/graph';
-import { AbstractNodeHandleBehavior, Handle } from '../../../utils/behaviors/abstract-node-handle-behavior';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 

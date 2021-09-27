@@ -2,13 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { MockComponents } from 'ng-mocks';
 
 import { CollapsibleWindowComponent } from '../collapsible-window.component';
 import { LegendComponent } from '../legend.component';
 import { SearchControlComponent } from '../search-control.component';
-
 import { VisJsNetworkComponent } from './vis-js-network.component';
 
 describe('VisJsNetworkComponent', () => {

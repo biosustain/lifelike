@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeyManyToManyComponent } from './sankey.component';
-import { ClipboardService } from '../../../shared/services/clipboard.service';
 
 const components = [
   SankeyManyToManyComponent

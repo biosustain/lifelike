@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+
 import { ChartOptions, ChartType, ChartPoint } from 'chart.js';
+
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 const mapTootipItem = func =>

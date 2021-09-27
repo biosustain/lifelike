@@ -1,14 +1,17 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
-import { OrganismAutocomplete } from '../../../interfaces';
-import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { OrganismAutocomplete } from 'app/interfaces';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+
+import { FilesystemObject } from '../../models/filesystem-object';
+import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
+import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 
 @Component({
   selector: 'app-object-edit-dialog',

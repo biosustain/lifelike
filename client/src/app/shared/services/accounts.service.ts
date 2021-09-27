@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ApiService } from './api.service';
+
 import { Observable } from 'rxjs';
-import { ResultList } from '../schemas/common';
 import { map } from 'rxjs/operators';
+
+import { ApiService } from './api.service';
+import { ResultList } from '../schemas/common';
 import { ModelList } from '../models';
 import { AppUser } from '../../interfaces';
 import { AccountSearchRequest } from '../schema/accounts';

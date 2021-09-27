@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input } from '@angular/core';
 
 import * as d3 from 'd3';
-import { SankeyNode, SankeyLink } from '../../../sankey-viewer/components/interfaces';
-import * as aligns from '../../../sankey-viewer/components/sankey/aligin';
-import { SankeyComponent } from '../../../sankey-viewer/components/sankey/sankey.component';
-import { uuidv4 } from '../../../shared/utils';
+
+import { SankeyNode, SankeyLink } from 'app/sankey-viewer/components/interfaces';
+import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
+import { SankeyComponent } from 'app/sankey-viewer/components/sankey/sankey.component';
+import { uuidv4 } from 'app/shared/utils';
+
 import { SankeyManyToManyLink } from '../interfaces';
 
 

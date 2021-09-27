@@ -1,7 +1,9 @@
+import * as d3 from 'd3';
+
+import { DragImage } from 'app/shared/utils/drag';
+
 import { UniversalGraphNode } from '../services/interfaces';
 import { PlacedNode } from '../../graph-viewer/styles/styles';
-import * as d3 from 'd3';
-import { DragImage } from 'app/shared/utils/drag';
 import { KnowledgeMapStyle } from '../../graph-viewer/styles/knowledge-map-style';
 
 const style = new KnowledgeMapStyle();

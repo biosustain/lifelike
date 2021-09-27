@@ -1,10 +1,13 @@
 import { Component, OnChanges, Input, SimpleChanges } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { map } from 'rxjs/operators';
+
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
-import { WorkspaceManager } from '../../../../../shared/workspace-manager';
-import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs/operators';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+
 import { paramsToEnrichmentTableLink, triggerSearchOnShouldReplaceTab } from '../../components/link/link.directive';
 
 @Component({

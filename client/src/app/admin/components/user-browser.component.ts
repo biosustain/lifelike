@@ -1,20 +1,22 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { select, Store } from '@ngrx/store';
 
 import { AccountService } from 'app/users/services/account.service';
 import { AppUser, PrivateAppUser } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { SelectionModel } from '@angular/cdk/collections';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { AuthActions, AuthSelectors } from '../../auth/store';
-import { select, Store } from '@ngrx/store';
 import { State } from '../../root-store';
 import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 

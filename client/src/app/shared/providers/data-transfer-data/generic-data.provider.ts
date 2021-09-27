@@ -1,11 +1,13 @@
+import { Injectable } from '@angular/core';
+
 import { chunk } from 'lodash-es';
+
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
 } from '../../services/data-transfer-data.service';
 import { nullCoalesce } from '../../utils/types';
-import { Injectable } from '@angular/core';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');

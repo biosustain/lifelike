@@ -1,5 +1,6 @@
-import { TableCell, TableHeader } from '../../components/table/generic-table.component';
 import { Observable, of } from 'rxjs';
+
+import { TableCell, TableHeader } from '../../components/table/generic-table.component';
 
 /**
  * Generates a CSV from a generic table.
