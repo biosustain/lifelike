@@ -10,6 +10,9 @@ import { WorkspaceManager } from '../workspace-manager';
  * Implements a version of [routerLink] that works with the workspace manager to load
  * routes in the current workspace.
  */
+@Directive({
+  selector: '[appAbstractLinkDirective]'
+})
 export class AbstractLinkDirective {
   @HostBinding('attr.href') @Input() href: string;
   @HostBinding('attr.target') @Input() target: string;

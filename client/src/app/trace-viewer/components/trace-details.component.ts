@@ -14,6 +14,7 @@ import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis
   encapsulation: ViewEncapsulation.None
 })
 export class TraceDetailsComponent implements OnChanges {
+  // @ts-ignore
   config: Options = {
     physics: {
       enabled: false,
@@ -37,6 +38,7 @@ export class TraceDetailsComponent implements OnChanges {
       },
       // @ts-ignore
       chosen: {
+        // @ts-ignore
         label: (values, id, selected, hovering) => {
           values.size = 35;
         }

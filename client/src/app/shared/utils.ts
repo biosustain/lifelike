@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { catchError } from 'rxjs/operators';
 import { from, Observable, throwError, pipe } from 'rxjs';
-import { UnaryFunction } from 'rxjs/src/internal/types';
+import { UnaryFunction } from 'rxjs/internal/types';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 

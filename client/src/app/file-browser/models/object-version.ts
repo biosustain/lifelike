@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { of } from 'rxjs';
 
 import { RecursivePartial } from 'app/shared/utils/types';

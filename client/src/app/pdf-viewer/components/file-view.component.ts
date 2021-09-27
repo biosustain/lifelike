@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 

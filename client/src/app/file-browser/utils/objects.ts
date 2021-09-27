@@ -1,4 +1,4 @@
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { FilesystemObject } from '../models/filesystem-object';
