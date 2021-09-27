@@ -21,7 +21,7 @@ import bioc
 from marshmallow import ValidationError
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from PIL import Image
-
+from lxml import etree
 
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -332,6 +332,16 @@ class BiocTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
     ALLOWED_TYPES = ['.xml', '.bioc']
 
+    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+        try:
+            # If it is xml file and bioc
+            self.check_xml_and_bioc(buffer)
+            return [(0, self.MIME_TYPE)]
+        except BaseException:
+            return []
+        finally:
+            buffer.seek(0)
+
     def handles(self, file: Files) -> bool:
         ext = os.path.splitext(file.filename)[1].lower()
         return super().handles(file) and ext in self.ALLOWED_TYPES
@@ -360,6 +370,13 @@ class BiocTypeProvider(BaseFileTypeProvider):
             for doc in collection.documents:
                 writer.write(biocToJSON(doc))
         buffer.seek(0)
+
+    def check_xml_and_bioc(self, buffer: BufferedIOBase):
+        tree = etree.parse(buffer)
+        system_url: str = tree.docinfo.system_url
+        result = system_url.lower().find('bioc')
+        if result < 0:
+            raise ValueError()
 
 
 def substitute_svg_images(map_content: io.BytesIO):

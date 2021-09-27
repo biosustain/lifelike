@@ -66,6 +66,8 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.service import GenericFileTypeProvider
+from neo4japp.services.file_types.providers import BiocTypeProvider
+import os
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -750,12 +752,18 @@ class FileListView(FilesystemBaseView):
             # Get the provider based on what we know now
             provider = file_type_service.get(file)
             # if no provider matched try to convert
-            if provider == file_type_service.default_provider \
-                    or isinstance(provider, GenericFileTypeProvider):
-                import os
+
+            # if it is a bioc-xml file
+            if isinstance(provider, BiocTypeProvider):
+                # then convert it to BiocJSON
+                provider.convert(buffer)
+                file_name, ext = os.path.splitext(file.filename)
+                # if ext is not bioc then set it bioc.
+                if ext.lower() != '.bioc':
+                    file.filename = file_name + '.bioc'
+
+            if provider == file_type_service.default_provider:
                 file_name, extension = os.path.splitext(file.filename)
-                if extension.lower() == '.xml' or extension.lower() == '.bioc':
-                    file.mime_type = 'vnd.***ARANGO_DB_NAME***.document/bioc'
                 if extension.isupper():
                     file.mime_type = 'application/pdf'
                 provider = file_type_service.get(file)

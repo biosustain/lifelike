@@ -6,13 +6,13 @@ interface Direction {
   nodeAccessor: string;
 }
 
-const ltr = {
+export const ltr = {
   nextLinksAccessor: '_sourceLinks',
   prevLinksAccessor: '_targetLinks',
   nodeAccessor: '_target'
 } as Direction;
 
-const rtl = {
+export const rtl = {
   nextLinksAccessor: '_targetLinks',
   prevLinksAccessor: '_sourceLinks',
   nodeAccessor: '_source'
@@ -53,7 +53,7 @@ export class DirectedTraversal {
   depthSorter(asc = true) {
     const { direction } = this;
     const sortDirection = Math.pow(-1, Number(asc !== (direction === ltr)));
-    return (a, b) => sortDirection * (a.depth - b.depth);
+    return (a, b) => sortDirection * (a._depth - b._depth);
   }
 
   nextLinks(node) {

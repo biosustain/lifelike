@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import {parseURLToDomainName} from '../utils/links';
+import { parseURLToDomainName } from '../utils/browser';
 
 @Component({
   selector: 'app-node-relationship',
