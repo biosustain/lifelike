@@ -14,8 +14,7 @@ export {
   PDFViewerParams,
   PDFPageProxy,
   PDFSource,
-  PDFProgressData,
-  PDFPromise
+  PDFProgressData
 } from 'pdfjs-dist';
 
 @NgModule({

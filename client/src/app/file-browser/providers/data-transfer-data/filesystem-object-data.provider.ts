@@ -5,6 +5,7 @@ import {
   DataTransferToken,
 } from 'app/shared/services/data-transfer-data.service';
 import { FilePrivileges } from '../../models/privileges';
+import { Injectable } from '@angular/core';
 
 export const FILESYSTEM_OBJECT_TRANSFER_TOKEN = new DataTransferToken<FilesystemObject[]>('filesystemObjectTransfer');
 export const FILESYSTEM_OBJECT_TRANSFER_TYPE = 'vnd.lifelike.transfer/filesystem-object';
@@ -14,6 +15,7 @@ export class FilesystemObjectTransferData {
   privileges: FilePrivileges;
 }
 
+@Injectable()
 export class FilesystemObjectDataProvider implements DataTransferDataProvider {
 
   extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
