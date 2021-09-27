@@ -97,7 +97,7 @@ class Pipeline:
         start = time.time()
         nlp_results = predict(text=self.text, entities=entities_to_run_nlp)
         current_app.logger.info(
-            f'Total NLP processing time {time.time() - start}',
+            f'Total NLP processing time for entities {entities_to_run_nlp} {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
 
