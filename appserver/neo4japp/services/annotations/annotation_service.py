@@ -146,32 +146,30 @@ class AnnotationService:
             link_search_term = param.token.keyword
             hyperlinks = []
 
-            if not param.entity_id_hyperlinks:
-                if 'NULL' not in param.entity_id:
-                    entity_data_source = param.entity['id_type']
+            # global inclusions will have id_hyperlinks property
+            if not param.entity_hyperlinks:
+                if 'NULL' not in param.entity_id and param.entity_datasource:
                     try:
-                        if entity_data_source == DatabaseType.BIOCYC.value:
-                            hyperlink = cast(dict, ENTITY_HYPERLINKS[entity_data_source])[param.token_type]  # noqa
+                        if param.entity_datasource == DatabaseType.BIOCYC.value:
+                            hyperlink = cast(dict, ENTITY_HYPERLINKS[param.entity_datasource])[param.token_type]  # noqa
                         else:
-                            hyperlink = cast(str, ENTITY_HYPERLINKS[entity_data_source])
+                            hyperlink = cast(str, ENTITY_HYPERLINKS[param.entity_datasource])
                     except KeyError:
                         raise
 
-                    if entity_data_source == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
+                    if param.entity_datasource == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
                         hyperlink += uri_encode(param.entity_id[5:])
                     else:
                         hyperlink += uri_encode(param.entity_id)
 
                     hyperlinks.append(json.dumps(
-                        {'label': param.entity['id_type'], 'url': hyperlink}))
+                        {'label': param.entity_datasource, 'url': hyperlink}))
             else:
-                hyperlinks = param.entity_id_hyperlinks
+                hyperlinks = param.entity_hyperlinks
 
-            id_type = param.entity_id_type or ''
-            if not id_type and 'NULL' not in param.entity_id:
-                id_type = param.entity['id_type']
-            synonym = param.entity['synonym']
-            primary_name = param.entity['name']
+            id_type = param.entity_datasource or ''
+            synonym = param.entity_synonym
+            primary_name = param.entity_name
             keyword_length = keyword_ending_idx - keyword_starting_idx + 1
 
             if param.token_type == EntityType.SPECIES.value:
@@ -266,28 +264,6 @@ class AnnotationService:
         token_type: str,
         id_str: str,
     ) -> List[Annotation]:
-        """Create annotation objects for tokens.
-
-        Assumption:
-            - An entity in LMDB will always have a common name and synonym
-                (1) this means a common name will have itself as a synonym
-
-        Algorithm:
-            - Handle common synonyms across multiple common names, because
-              cannot infer entity.
-                (1) if none of the common names appears, then ignore synonym
-                (2) if more than one common name appears, then ignore synonym
-                (3) if only one common name appears, identify synonym as entity of common name
-            - NOTE: The above DOES NOT apply to synonyms that HAVE ONLY ONE common name
-                (1) so if a synonym appears but its common name does not, the synonym
-                will be in annotations
-
-            - TODO: Considerations:
-                (1) A synonym that is also a common name, and the other common name appears
-                    (1a) how to handle? Currently apply above as well (?)
-
-        Returns list of matched annotations
-        """
         tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)  # noqa
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
@@ -322,10 +298,11 @@ class AnnotationService:
                         CreateAnnotationObjParams(
                             token=match.token,
                             token_type=token_type,
-                            entity=entity,
+                            entity_synonym=entity['synonym'],
+                            entity_name=entity['name'],
                             entity_id=entity[id_str],
-                            entity_id_type=match.id_type,
-                            entity_id_hyperlinks=match.id_hyperlinks,
+                            entity_datasource=entity['id_type'],
+                            entity_hyperlinks=entity.get('id_hyperlinks', []),
                             entity_category=entity.get('category', '')
                         )
                     )
@@ -456,12 +433,10 @@ class AnnotationService:
                         # prioritize common name that is same as synonym
                         fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
                     except KeyError:
-                        # only take the first gene/protein for the organism
-                        # no way for us to infer which to use
-                        for d in list(fallback_organism_matches[entity_synonym].values()):  # noqa
-                            key = next(iter(d))
-                            if key not in fallback_organisms_to_match:
-                                fallback_organisms_to_match[key] = d[key]
+                        # an organism can have multiple different genes w/ same synonym
+                        # since we don't know which to use, doing this is fine
+                        for d in list(fallback_organism_matches[entity_synonym].values()):
+                            fallback_organisms_to_match = {**fallback_organisms_to_match, **d}
 
                 # if matched in KG then set to fallback strain
                 if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
@@ -520,13 +495,15 @@ class AnnotationService:
 
         entity_token_pairs = []
         gene_names: Set[str] = set()
-
         for match in matches_list:
+            entities_set = set()
             for entity in match.entities:
-                entity_synonym = entity['synonym']
-                gene_names.add(entity_synonym)
-                entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlinks, match.token))
+                gene_names.add(entity['synonym'])
+                entities_set.add((entity['synonym'], entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+            for synonym, datasource, hyperlinks in entities_set:
+                if hyperlinks == '':
+                    hyperlinks = []
+                entity_token_pairs.append((synonym, datasource, hyperlinks, match.token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
@@ -543,6 +520,7 @@ class AnnotationService:
 
         gene_organism_matches = graph_results.matches
         gene_data_sources = graph_results.data_sources
+        gene_primary_names = graph_results.primary_names
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
@@ -561,33 +539,27 @@ class AnnotationService:
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
 
-        gene_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
-        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
+        for entity_synonym, entity_datasource, entity_hyperlinks, token in entity_token_pairs:
             gene_id = None
             category = None
-            token_offset = (token.lo_location_offset, token.hi_location_offset)
-            synonym_common_name_tuple = (entity['name'], entity['synonym'])
 
-            entity_synonym = entity['synonym']
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in gene_organism_matches:
                 try:
                     # prioritize common name that is same as synonym
                     organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
                 except KeyError:
+                    # an organism can have multiple different genes w/ same synonym
+                    # since we don't know which to use, doing this is fine
                     for d in list(gene_organism_matches[entity_synonym].values()):
                         organisms_to_match = {**organisms_to_match, **d}
 
-                try:
-                    best_match = gene_mem[(synonym_common_name_tuple, token_offset)]
-                except KeyError:
-                    best_match = self._find_best_organism_match(
-                        token=token,
-                        entity_synonym=entity_synonym,
-                        organisms_to_match=organisms_to_match,
-                        fallback_organism_matches=fallback_gene_organism_matches,
-                        entity_type=EntityType.GENE.value)
-                    gene_mem[(synonym_common_name_tuple, token_offset)] = best_match
+                best_match = self._find_best_organism_match(
+                    token=token,
+                    entity_synonym=entity_synonym,
+                    organisms_to_match=organisms_to_match,
+                    fallback_organism_matches=fallback_gene_organism_matches,
+                    entity_type=EntityType.GENE.value)
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -603,6 +575,8 @@ class AnnotationService:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
                 except KeyError:
+                    # an organism can have multiple different genes w/ same synonym
+                    # since we don't know which to use, doing this is fine
                     for d in list(fallback_gene_organism_matches[entity_synonym].values()):
                         organisms_to_match = {**organisms_to_match, **d}
                 try:
@@ -612,16 +586,17 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
-                if entity['id_type'] != gene_data_sources[f'{entity_synonym}{organism_id}']:
+                if entity_datasource != gene_data_sources[f'{entity_synonym}{organism_id}']:
                     continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
                         token=token,
                         token_type=EntityType.GENE.value,
-                        entity=entity,
+                        entity_synonym=entity_synonym,
+                        entity_name=gene_primary_names[gene_id],
                         entity_id=gene_id,
-                        entity_id_type=entity_id_type,
-                        entity_id_hyperlinks=entity_id_hyperlinks,
+                        entity_datasource=entity_datasource,
+                        entity_hyperlinks=entity_hyperlinks,
                         entity_category=category
                     )
                 )
@@ -643,11 +618,14 @@ class AnnotationService:
         entity_token_pairs = []
         protein_names: Set[str] = set()
         for match in matches_list:
+            entities_set = set()
             for entity in match.entities:
-                entity_synonym = entity['synonym']
-                protein_names.add(entity_synonym)
-                entity_token_pairs.append(
-                    (entity, match.id_type, match.id_hyperlinks, match.token))
+                protein_names.add(entity['synonym'])
+                entities_set.add((entity['synonym'], entity.get('category', ''), entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+            for synonym, category, datasource, hyperlinks in entities_set:
+                if hyperlinks == '':
+                    hyperlinks = []
+                entity_token_pairs.append((synonym, category, datasource, hyperlinks, match.token))
 
         protein_names_list = list(protein_names)
 
@@ -662,6 +640,7 @@ class AnnotationService:
         )
 
         protein_organism_matches = graph_results.matches
+        protein_primary_names = graph_results.primary_names
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
 
@@ -679,25 +658,17 @@ class AnnotationService:
 
             fallback_protein_organism_matches = fallback_graph_results.matches
 
-        protein_mem: Dict[Tuple[Tuple[str, str], Tuple[int, int]], BestOrganismMatch] = {}
-        for entity, entity_id_type, entity_id_hyperlinks, token in entity_token_pairs:
-            category = entity.get('category', '')
-            protein_id = entity[EntityIdStr.PROTEIN.value]
-            entity_synonym = entity['synonym']
-            token_offset = (token.lo_location_offset, token.hi_location_offset)
-            synonym_common_name_tuple = (entity['name'], entity['synonym'])
+        for entity_synonym, category, entity_datasource, entity_hyperlinks, token in entity_token_pairs:  # noqa
+            # in LMDB we use the synonym as id and name, so do the same here
+            protein_id = entity_synonym
 
             if entity_synonym in protein_organism_matches:
-                try:
-                    best_match = protein_mem[(synonym_common_name_tuple, token_offset)]
-                except KeyError:
-                    best_match = self._find_best_organism_match(
-                        token=token,
-                        entity_synonym=entity_synonym,
-                        organisms_to_match=protein_organism_matches[entity_synonym],
-                        fallback_organism_matches=fallback_protein_organism_matches,
-                        entity_type=EntityType.PROTEIN.value)
-                    protein_mem[(synonym_common_name_tuple, token_offset)] = best_match
+                best_match = self._find_best_organism_match(
+                    token=token,
+                    entity_synonym=entity_synonym,
+                    organisms_to_match=protein_organism_matches[entity_synonym],
+                    fallback_organism_matches=fallback_protein_organism_matches,
+                    entity_type=EntityType.PROTEIN.value)
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -718,10 +689,11 @@ class AnnotationService:
                 CreateAnnotationObjParams(
                     token=token,
                     token_type=EntityType.PROTEIN.value,
-                    entity=entity,
+                    entity_synonym=entity_synonym,
+                    entity_name=protein_primary_names.get(protein_id, entity_synonym),
                     entity_id=protein_id,
-                    entity_id_type=entity_id_type,
-                    entity_id_hyperlinks=entity_id_hyperlinks,
+                    entity_datasource=entity_datasource,
+                    entity_hyperlinks=entity_hyperlinks,
                     entity_category=category
                 )
             )
@@ -749,10 +721,11 @@ class AnnotationService:
                         CreateAnnotationObjParams(
                             token=match.token,
                             token_type=EntityType.SPECIES.value,
-                            entity=entity,
+                            entity_name=entity['name'],
+                            entity_synonym=entity['synonym'],
                             entity_id=entity[EntityIdStr.SPECIES.value],
-                            entity_id_type=match.id_type,
-                            entity_id_hyperlinks=match.id_hyperlinks,
+                            entity_datasource=entity['id_type'],
+                            entity_hyperlinks=entity.get('id_hyperlinks', []),
                             entity_category=entity.get('category', '')
                         )
                     )
@@ -988,11 +961,7 @@ class AnnotationService:
             f'Time to clean and run annotation interval tree {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
         )
-        # update the annotations with the common primary name
-        # do this after cleaning because it's easier to
-        # query the KG for the primary names after the
-        # duplicates/overlapping intervals are removed
-        return self._add_primary_name(annotations=cleaned)
+        return cleaned
 
     def _clean_annotations(
         self,
@@ -1004,40 +973,6 @@ class AnnotationService:
         fixed_unified_annotations = self.fix_conflicting_annotations(
             unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
-
-    # TODO: move this to AnnotationGraphService
-    def _add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
-        """Apply the primary name to the annotations based on the returned data
-        from the knowledge graph. Done to Gene and Protein due to organism
-        matching may change the id/name.
-
-        Also update the annotation id to have the source database prefix.
-        """
-        gene_ids = set()
-        protein_ids = set()
-
-        for anno in annotations:
-            if anno.meta.type == EntityType.GENE.value:
-                gene_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.PROTEIN.value:
-                protein_ids.add(anno.meta.id)
-
-        gene_names = self.graph.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
-        protein_names = self.graph.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))  # noqa
-
-        for anno in annotations:
-            try:
-                if anno.meta.type == EntityType.GENE.value:
-                    anno.primary_name = gene_names[anno.meta.id]
-                elif anno.meta.type == EntityType.PROTEIN.value:
-                    anno.primary_name = protein_names[anno.meta.id]
-            except KeyError:
-                # just keep what is already there or use the
-                # synonym if blank
-                if not anno.primary_name:
-                    anno.primary_name = anno.keyword
-
-        return annotations
 
     def fix_conflicting_annotations(
         self,

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select, Store } from '@ngrx/store';
 import { from } from 'rxjs';
@@ -26,6 +26,7 @@ import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
 import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
+import { successPasswordUpdate } from './actions';
 import { ChangePasswordDialogComponent } from '../../users/components/change-password-dialog.component';
 
 @Injectable()

@@ -20,7 +20,7 @@ import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from './modules';
 import {

@@ -36,7 +36,7 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   ngOnDestroy(): void {
-    this.viewComponentRef.detach(0);
+    this.viewComponentRef.detach();
   }
 
   get container() {
@@ -76,7 +76,7 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
 
   private attachComponent(): void {
     if (this.viewComponentRef) {
-      this.viewComponentRef.detach(0);
+      this.viewComponentRef.detach();
       if (this.currentContainer) {
         this.currentContainer.attach(this.viewComponentRef);
         this.changeDetectorRef.detectChanges();

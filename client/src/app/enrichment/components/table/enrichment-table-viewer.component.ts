@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';

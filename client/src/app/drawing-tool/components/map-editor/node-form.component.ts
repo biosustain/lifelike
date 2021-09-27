@@ -9,7 +9,7 @@ import {
   HostListener,
 } from '@angular/core';
 
-import { cloneDeep, startCase } from 'lodash';
+import { cloneDeep, startCase } from 'lodash-es';
 import { isNullOrUndefined } from 'util';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';

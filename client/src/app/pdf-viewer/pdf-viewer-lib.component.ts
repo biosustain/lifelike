@@ -14,7 +14,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, uniqueId } from 'lodash';
+import { escape, uniqueId } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { isNullOrUndefined } from 'util';
 
@@ -360,7 +360,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         top = this.normalizeTopCoordinate(top, annotation);
         const opacity = this.normalizeOpacityLevel(annotation);
         const bgcolor = this.normalizeBackgroundColor(annotation);
-        overlayDiv.setAttribute('style', `opacity:${escape(opacity)}; background-color: ${escape(bgcolor)};position:absolute;` +
+        overlayDiv.setAttribute('style', `opacity:${escape(String(opacity))}; background-color: ${escape(bgcolor)};position:absolute;` +
           'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px');
         overlayContainer.appendChild(overlayDiv);
         (annotation as any).ref = overlayDiv;

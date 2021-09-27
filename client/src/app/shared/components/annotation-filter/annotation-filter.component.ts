@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';

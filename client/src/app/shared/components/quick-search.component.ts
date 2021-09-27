@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from '../links';
@@ -12,7 +12,7 @@ import { SEARCH_LINKS } from '../links';
 export class QuickSearchComponent implements OnChanges {
   @Input() query: string | undefined;
   @Input() links: Hyperlink[] | undefined;
-  @Input() linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
+  @Input() linkTemplates: readonly Hyperlink[] = cloneDeep(SEARCH_LINKS);
   @Input() normalizeDomains = true;
 
   generated = false;

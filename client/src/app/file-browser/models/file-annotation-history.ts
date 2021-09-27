@@ -1,4 +1,4 @@
-import { startCase } from 'lodash';
+import { startCase } from 'lodash-es';
 
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ModelList } from 'app/shared/models';

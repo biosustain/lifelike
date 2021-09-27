@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { isNullOrUndefined } from 'util';
 
 import { RecursivePartial } from 'app/shared/utils/types';

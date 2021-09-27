@@ -1,7 +1,7 @@
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
