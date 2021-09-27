@@ -1,9 +1,10 @@
+from collections import defaultdict
 from typing import Dict, List
 
 from flask import current_app
 
 from .constants import EntityType
-from .data_transfer_objects import GlobalInclusions, Inclusion, GeneOrProteinToOrganism
+from .data_transfer_objects import GlobalInclusions, GeneOrProteinToOrganism
 from .utils.lmdb import *
 from .utils.graph_queries import *
 
@@ -68,14 +69,17 @@ class AnnotationGraphService(GraphConnection):
                 entity = createfuncs[entity_type](
                     name=inclusion['entity_name'], synonym=inclusion['synonym'])  # type: ignore
 
-            if normalized_synonym in inclusion_dict:
-                inclusion_dict[normalized_synonym].entities.append(entity)
-            else:
-                inclusion_dict[normalized_synonym] = Inclusion(
-                    entities=[entity],
-                    entity_id_type=inclusion['data_source'],
-                    entity_id_hyperlinks=inclusion.get('hyperlinks', [])
-                )
+                # for proteins, we use the name as the id in the LMDB data, but we don't
+                # want to do this if the user provided an id or left it blank
+                # so set it back to what it was
+                if entity_type == EntityType.PROTEIN.value:
+                    entity[EntityIdStr.PROTEIN.value] = inclusion['entity_id']
+
+            # override the default data source
+            # e.g gene default is NCBI, but globals can be BioCyc
+            entity['id_type'] = inclusion['data_source']
+            entity['id_hyperlinks'] = inclusion.get('hyperlinks')
+            inclusion_dict[normalized_synonym].append(entity)
 
     def get_entity_inclusions(self, inclusions: List[dict]) -> GlobalInclusions:
         """Returns global inclusions for each entity type.
@@ -85,24 +89,24 @@ class AnnotationGraphService(GraphConnection):
             - need to be filtered for local inclusions
         """
         inclusion_dicts: Dict[str, dict] = {
-            EntityType.ANATOMY.value: {},
-            EntityType.CHEMICAL.value: {},
-            EntityType.COMPOUND.value: {},
-            EntityType.DISEASE.value: {},
-            EntityType.FOOD.value: {},
-            EntityType.GENE.value: {},
-            EntityType.PHENOMENA.value: {},
-            EntityType.PHENOTYPE.value: {},
-            EntityType.PROTEIN.value: {},
-            EntityType.SPECIES.value: {},
-            EntityType.COMPANY.value: {},
-            EntityType.ENTITY.value: {},
-            EntityType.LAB_SAMPLE.value: {},
-            EntityType.LAB_STRAIN.value: {}
+            EntityType.ANATOMY.value: defaultdict(list),
+            EntityType.CHEMICAL.value: defaultdict(list),
+            EntityType.COMPOUND.value: defaultdict(list),
+            EntityType.DISEASE.value: defaultdict(list),
+            EntityType.FOOD.value: defaultdict(list),
+            EntityType.GENE.value: defaultdict(list),
+            EntityType.PHENOMENA.value: defaultdict(list),
+            EntityType.PHENOTYPE.value: defaultdict(list),
+            EntityType.PROTEIN.value: defaultdict(list),
+            EntityType.SPECIES.value: defaultdict(list),
+            EntityType.COMPANY.value: defaultdict(list),
+            EntityType.ENTITY.value: defaultdict(list),
+            EntityType.LAB_SAMPLE.value: defaultdict(list),
+            EntityType.LAB_STRAIN.value: defaultdict(list)
         }
 
         local_inclusion_dicts: Dict[str, dict] = {
-            EntityType.SPECIES.value: {}
+            EntityType.SPECIES.value: defaultdict(list)
         }
 
         for k, v in inclusion_dicts.items():
@@ -144,14 +148,12 @@ class AnnotationGraphService(GraphConnection):
                         synonym=synonym
                     )
 
-                    if normalized_synonym in local_inclusion_dicts[entity_type]:
-                        local_inclusion_dicts[entity_type][normalized_synonym].entities.append(entity)  # noqa
-                    else:
-                        local_inclusion_dicts[entity_type][normalized_synonym] = Inclusion(
-                            entities=[entity],
-                            entity_id_type=entity_id_type,
-                            entity_id_hyperlinks=entity_id_hyperlinks
-                        )
+                    # override the default data source
+                    # e.g gene default is NCBI, but globals can be BioCyc
+                    entity['id_type'] = entity_id_type
+                    entity['id_hyperlinks'] = entity_id_hyperlinks
+                    local_inclusion_dicts[entity_type][normalized_synonym].append(entity)
+
         return GlobalInclusions(
             included_anatomy=inclusion_dicts[EntityType.ANATOMY.value],
             included_chemicals=inclusion_dicts[EntityType.CHEMICAL.value],
@@ -177,6 +179,7 @@ class AnnotationGraphService(GraphConnection):
     ) -> GeneOrProteinToOrganism:
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
         data_sources: Dict[str, str] = {}
+        primary_names: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
             get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
@@ -189,6 +192,7 @@ class AnnotationGraphService(GraphConnection):
             data_source = row['data_source']
             data_source_key = f'{gene_synonym}{organism_id}'
 
+            primary_names[gene_id] = gene_name
             data_sources[data_source_key] = data_source
 
             if gene_to_organism_map.get(gene_synonym, None) is not None:
@@ -199,7 +203,17 @@ class AnnotationGraphService(GraphConnection):
             else:
                 gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
-        return GeneOrProteinToOrganism(matches=gene_to_organism_map, data_sources=data_sources)
+        # clean any gene/organism matches that have excess results
+        # we want to prioritize matches where the primary name and synonym are the same
+        for synonym, v in gene_to_organism_map.items():
+            if synonym in v and len(v) > 1:
+                gene_to_organism_map[synonym] = {synonym: v[synonym]}
+
+        return GeneOrProteinToOrganism(
+            matches=gene_to_organism_map,
+            data_sources=data_sources,
+            primary_names=primary_names
+        )
 
     def get_proteins_to_organisms(
         self,
@@ -207,6 +221,7 @@ class AnnotationGraphService(GraphConnection):
         organisms: List[str],
     ) -> GeneOrProteinToOrganism:
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
+        primary_names: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
             get_protein_to_organism_query(), {'proteins': proteins, 'organisms': organisms})
@@ -216,14 +231,16 @@ class AnnotationGraphService(GraphConnection):
             organism_id: str = row['organism_id']
             # For now just get the first protein in the list of matches,
             # no way for us to infer which to use
-            gene_id: str = row['protein_ids'][0]
+            protein_id: str = row['protein_ids'][0]
+
+            primary_names[protein_id] = protein_name
 
             if protein_to_organism_map.get(protein_name, None) is not None:
-                protein_to_organism_map[protein_name][organism_id] = gene_id
+                protein_to_organism_map[protein_name][organism_id] = protein_id
             else:
-                protein_to_organism_map[protein_name] = {organism_id: gene_id}
+                protein_to_organism_map[protein_name] = {organism_id: protein_id}
 
-        return GeneOrProteinToOrganism(matches=protein_to_organism_map)
+        return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)
 
     def get_organisms_from_gene_ids_query(self, gene_ids: List[str]):
         return self.exec_read_query_with_params(

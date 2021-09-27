@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Input, OnDestroy } from '@angular/core';
+import { Input, OnDestroy, Directive } from '@angular/core';
 
 import { Subject, Subscription } from 'rxjs';
 import { isNullOrUndefined } from 'util';

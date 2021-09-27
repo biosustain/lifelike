@@ -8,12 +8,13 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { DeleteKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
 import { PasteKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
@@ -23,7 +24,6 @@ import {
   GraphActionReceiver,
 } from 'app/graph-viewer/actions/actions';
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { LockError } from 'app/file-browser/services/filesystem.service';

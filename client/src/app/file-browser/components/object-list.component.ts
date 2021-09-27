@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 

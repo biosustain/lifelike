@@ -3,18 +3,18 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'lodash-es';
 import { finalize, tap } from 'rxjs/operators';
 
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ModelList } from 'app/shared/models';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { nonEmptyList } from 'app/shared/validators';
-import { AppUser } from 'app/interfaces';
-import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { AppUser } from 'app/interfaces';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';

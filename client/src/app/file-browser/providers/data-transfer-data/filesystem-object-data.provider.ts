@@ -1,3 +1,5 @@
+import { Injectable } from '@angular/core';
+
 import {
   DataTransferData,
   DataTransferDataProvider,
@@ -15,6 +17,7 @@ export class FilesystemObjectTransferData {
   privileges: FilePrivileges;
 }
 
+@Injectable()
 export class FilesystemObjectDataProvider implements DataTransferDataProvider {
 
   extract(dataTransfer: DataTransfer): DataTransferData<any>[] {

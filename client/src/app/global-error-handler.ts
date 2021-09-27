@@ -9,8 +9,7 @@ import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-h
  * errors that only occur client side.
  */
 export class GlobalErrorHandler implements ErrorHandler {
-  constructor(protected readonly errorHandlerService: ErrorHandlerService,
-              protected readonly injector: Injector) {
+  constructor(protected readonly injector: Injector) {
   }
 
   // Used to prevent error dialogs for specific HTTP codes

@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
-import { clone } from 'lodash';
+import { clone } from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';

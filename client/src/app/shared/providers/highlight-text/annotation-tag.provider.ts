@@ -1,6 +1,6 @@
 import { Injectable, RendererFactory2 } from '@angular/core';
 
-import { escape, uniqueId } from 'lodash';
+import { escape, uniqueId } from 'lodash-es';
 import Color from 'color';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
