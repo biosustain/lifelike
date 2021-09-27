@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { Pane} from '../workspace-manager';
 
 const LOCAL_STORAGE_KEY = '***ARANGO_DB_NAME***_workspace_session';

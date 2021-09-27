@@ -16,7 +16,6 @@ import {
     GetAssociatedTypeResult,
     GetNodePairSnippetsResult,
 } from 'app/interfaces';
-
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { AbstractService } from 'app/shared/services/abstract-service';
 

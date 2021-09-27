@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
+
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';

@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
 
 import { SharedModule } from 'app/shared/shared.module';
-
 import { AccountService } from 'app/users/services/account.service';
-import { AdminGuard } from './services/admin-guard.service';
 
+import { AdminGuard } from './services/admin-guard.service';
 import { AnnotationTableComponent } from './components/annotations-table.component';
 import { AdminPanelComponent } from './components/admin-panel.component';
 import { AdminSettingsComponent } from './components/admin-settings.component';

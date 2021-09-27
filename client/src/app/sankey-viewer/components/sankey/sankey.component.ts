@@ -11,12 +11,14 @@ import {
   SimpleChanges,
   OnChanges
 } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import * as d3 from 'd3';
+
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+
 import * as aligns from './aligin';
 import { createResizeObserver } from './utils';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { representativePositiveNumber } from '../utils';
 import { SankeyLayoutService } from './sankey-layout.service';
 import { SankeyData, SankeyNode } from '../interfaces';

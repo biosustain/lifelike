@@ -1,19 +1,22 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { BehaviorSubject } from 'rxjs';
+import { select, Store } from '@ngrx/store';
+
 import { AppUser, PrivateAppUser, UserUpdateRequest } from 'app/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { BehaviorSubject } from 'rxjs';
+
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { AccountService } from '../services/account.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ResultList } from '../../shared/schemas/common';
 import { userUpdated } from '../../auth/store/actions';
-import { select, Store } from '@ngrx/store';
 import { State } from '../../***ARANGO_USERNAME***-store';
 import { AuthActions, AuthSelectors } from '../../auth/store';
 

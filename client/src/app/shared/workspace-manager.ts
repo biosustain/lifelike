@@ -16,16 +16,18 @@ import {
   RoutesRecognized,
   UrlTree,
 } from '@angular/router';
+import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+
 import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { cloneDeep } from 'lodash-es';
+
 import { ModuleAwareComponent, ModuleProperties } from './modules';
 import {
   TabData,
   WorkspaceSessionLoader,
   WorkspaceSessionService,
 } from './services/workspace-session.service';
-import { cloneDeep } from 'lodash-es';
 
 export interface TabDefaults {
   title: string;

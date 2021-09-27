@@ -1,5 +1,7 @@
 import * as d3 from 'd3';
-import { GraphView } from '../graph-view';
+import { debounceTime, throttleTime } from 'rxjs/operators';
+import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+
 import {
   GraphEntity,
   GraphEntityType,
@@ -15,12 +17,12 @@ import {
   PlacedNode,
   PlacedObject,
 } from 'app/graph-viewer/styles/styles';
-import { debounceTime, throttleTime } from 'rxjs/operators';
-import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+import { nullCoalesce } from 'app/shared/utils/types';
+
+import { GraphView } from '../graph-view';
 import { DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
-import { nullCoalesce } from 'app/shared/utils/types';
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;

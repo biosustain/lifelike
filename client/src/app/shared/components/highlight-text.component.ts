@@ -11,9 +11,11 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+
+import { Subscription } from 'rxjs';
+
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { HighlightTextService } from '../services/highlight-text.service';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-highlight-text',

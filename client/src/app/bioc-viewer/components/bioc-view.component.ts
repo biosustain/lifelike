@@ -3,28 +3,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { uniqueId } from 'lodash-es';
-
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { BiocFile } from 'app/interfaces/bioc-files.interface';
-
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { map } from 'rxjs/operators';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { Location, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
+
+import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 
 @Component({

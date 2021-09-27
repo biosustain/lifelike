@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-
 import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
-
 import { EMPTY, of } from 'rxjs';
+
+import { displaySnackbar } from 'app/shared/store/snackbar-actions';
+import { ErrorResponse } from 'app/shared/schemas/common';
 
 import {
   getDbLabels,
@@ -18,11 +19,7 @@ import {
   uploadNodeMapping,
   uploadNodeMappingSuccess,
 } from './actions';
-
-import { displaySnackbar } from 'app/shared/store/snackbar-actions';
-
 import { UserFileImportService } from '../services/user-file-import.service';
-import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Injectable()
 export class UserFileImportEffects {

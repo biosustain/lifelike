@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
@@ -13,7 +12,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
+
 import { SharedModule } from 'app/shared/shared.module';
+
 import { SankeyNodeDetailsComponent } from './node-details.component';
 import { SankeyLinkDetailsComponent } from './link-details.component';
 import { SankeyTraceDetailsComponent } from './trace-details.component';

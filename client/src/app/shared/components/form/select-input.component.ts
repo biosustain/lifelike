@@ -15,10 +15,12 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { fromEvent, Subscription } from 'rxjs';
+
 import { DropdownController, FitOptions } from '../../utils/dom/dropdown-controller';
 import { MouseNavigableDirective } from '../../directives/mouse-navigable.directive';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { fromEvent, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-select-input',

@@ -3,10 +3,14 @@ import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 
 import { Store, select } from '@ngrx/store';
-
 import { Observable, Subscription } from 'rxjs';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
+import {
+    FileNameAndSheets,
+    SheetNameAndColumnNames,
+    NodeMappingHelper,
+} from 'app/interfaces/user-file-import.interface';
 
 import { UserFileImportSelectors as selectors } from '../store';
 import {
@@ -14,12 +18,6 @@ import {
     getDbLabels,
     getDbRelationshipTypes,
 } from '../store/actions';
-
-import {
-    FileNameAndSheets,
-    SheetNameAndColumnNames,
-    NodeMappingHelper,
-} from 'app/interfaces/user-file-import.interface';
 
 @Component({
     selector: 'app-user-file-import',

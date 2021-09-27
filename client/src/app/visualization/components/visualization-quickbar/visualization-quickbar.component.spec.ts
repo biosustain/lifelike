@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -6,7 +7,6 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationQuickbarComponent } from './visualization-quickbar.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('VisualizationQuickbarComponent', () => {
     let fixture: ComponentFixture<VisualizationQuickbarComponent>;

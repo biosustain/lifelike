@@ -1,4 +1,5 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
+
 import { TextElement } from '../text-element';
 
 export interface IconNodeOptions {

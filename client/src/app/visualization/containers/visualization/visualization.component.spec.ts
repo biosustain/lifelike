@@ -4,11 +4,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { MockComponents } from 'ng-mocks';
-
 import { of } from 'rxjs';
-
 import { DataSet } from 'vis-data';
 
 import {
@@ -26,13 +23,12 @@ import {
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { GraphSearchFormComponent } from 'app/search/components/graph-search-form.component';
 import { SharedModule } from 'app/shared/shared.module';
-
-import { VisualizationComponent } from './visualization.component';
-
-import { VisualizationService } from '../../services/visualization.service';
-import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
+
+import { VisualizationComponent } from './visualization.component';
+import { VisualizationService } from '../../services/visualization.service';
+import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;

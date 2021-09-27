@@ -15,12 +15,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { escapeRegExp } from 'lodash-es';
-
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -32,13 +29,13 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
-import { Progress } from '../../../interfaces/common-dialog.interface';
 import { EnrichmentService } from '../../services/enrichment.service';
 
 // TODO: Is there an existing interface we could use here?

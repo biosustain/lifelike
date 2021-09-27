@@ -3,7 +3,6 @@ import { Input, OnDestroy, Directive, Component } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 
 import { Subscription } from 'rxjs';
-
 import { isNullOrUndefined } from 'util';
 
 import {TreeNode, FlatNode} from 'app/shared/schemas/common';

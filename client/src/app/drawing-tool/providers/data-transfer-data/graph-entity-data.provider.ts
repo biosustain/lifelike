@@ -1,17 +1,19 @@
+import { Injectable } from '@angular/core';
+
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
 } from 'app/shared/services/data-transfer-data.service';
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../services/interfaces';
-import { Injectable } from '@angular/core';
 import {
   GenericDataProvider,
   LABEL_TOKEN,
   URI_TOKEN,
   URIData,
-} from '../../../shared/providers/data-transfer-data/generic-data.provider';
-import { makeid } from '../../../shared/utils/identifiers';
+} from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { makeid } from 'app/shared/utils/identifiers';
+
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../services/interfaces';
 
 export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>('universalGraphEntity');
 export const GRAPH_NODE_TYPE = 'application/***ARANGO_DB_NAME***-node';

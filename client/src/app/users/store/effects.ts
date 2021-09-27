@@ -1,14 +1,15 @@
 import { EventEmitter, Injectable, Output } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { AccountService } from '../services/account.service';
-
-import * as UserActions from './actions';
-import { SnackbarActions } from 'app/shared/store';
-
 import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { from } from 'rxjs';
+
+import { SnackbarActions } from 'app/shared/store';
 import { ErrorResponse } from 'app/shared/schemas/common';
+
+import { AccountService } from '../services/account.service';
+import * as UserActions from './actions';
 
 @Injectable()
 export class UserEffects {

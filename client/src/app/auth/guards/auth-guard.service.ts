@@ -6,7 +6,6 @@ import {
 } from '@angular/router';
 
 import { Store, select } from '@ngrx/store';
-
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 
