@@ -27,7 +27,6 @@ import {
   AddedAnnotationExclusion,
   Annotation,
   Location,
-  Meta,
   RemovedAnnotationExclusion,
 } from '../annotation-type';
 import {
@@ -68,7 +67,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     static: false,
     read: SearchControlComponent,
   }) searchControlComponent: SearchControlComponent;
-  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  @Output() requestClose: EventEmitter<null> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
   id = uniqueId('FileViewComponent-');
