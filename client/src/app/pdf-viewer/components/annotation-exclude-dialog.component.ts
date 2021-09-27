@@ -41,7 +41,7 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent 
     super(modal, messageDialog);
   }
 
-  getValue(): any {
+  getValue() {
     return {
       ...this.form.value,
     };
