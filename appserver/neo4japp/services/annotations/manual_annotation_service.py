@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from flask import current_app
 from neo4j.exceptions import ServiceUnavailable
-from typing import List
+from typing import List, Tuple
 from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
@@ -244,6 +244,82 @@ class ManualAnnotationService:
                 code=500)
 
         return removed_annotation_uuids
+
+    def remove_global_inclusions(self, inclusion_ids: List[Tuple[int, int]]):
+        try:
+            self.graph.exec_write_query_with_params(
+                get_delete_global_inclusion_query(),
+                {'node_ids': [[gid, sid] for gid, sid in inclusion_ids]})
+        except (BrokenPipeError, ServiceUnavailable):
+            raise
+        except Exception:
+            current_app.logger.error(
+                f'Failed executing cypher: {get_delete_global_inclusion_query()}.\n' +
+                f'PARAMETERS: <node_ids: {inclusion_ids}>.',
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
+            raise AnnotationError(
+                title='Failed to Remove Global Inclusion',
+                message='A system error occurred while creating the annotation, '
+                        'we are working on a solution. Please try again later.',
+                code=500)
+
+        try:
+            # we need to do some cleaning up
+            # a global could've been added with the wrong entity type
+            # so we need to remove those bad labels to prevent
+            # incorrect results coming back as synonyms
+            results = self.graph.exec_read_query_with_params(
+                get_node_labels_and_relationship_query(),
+                {'node_ids': [gid for gid, _ in inclusion_ids]})
+
+            for result in results:
+                mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
+                # remove Taxonomy because there is inconsistency between graph and annotations
+                # annotation uses Species instead
+                if EntityType.SPECIES.value in result['rel_entity_types']:
+                    mismatch.remove('Taxonomy')
+
+                s = ''
+                for label in list(mismatch):
+                    if label not in result['valid_entity_types']:
+                        if label == 'Anatomy':
+                            s += ':Anatomy'
+                        elif label == 'Chemical':
+                            s += ':Chemical'
+                        elif label == 'Compound':
+                            s += ':Compound'
+                        elif label == 'Disease':
+                            s += ':Disease'
+                        elif label == 'Food':
+                            s += ':Food'
+                        elif label == 'Gene':
+                            s += ':Gene'
+                        elif label == 'Phenomena':
+                            s += ':Phenomena'
+                        elif label == 'Phenotype':
+                            s += ':Phenotype'
+                        elif label == 'Protein':
+                            s += ':Protein'
+                        elif label == 'Taxonomy':
+                            s += ':Taxonomy'
+                if s:
+                    self.graph.exec_write_query_with_params(
+                        query_builder(['MATCH (n) WHERE id(n) = $node_id', f'REMOVE n{s}']),
+                        {'node_id': result['node_id']})
+        except (BrokenPipeError, ServiceUnavailable):
+            raise
+        except Exception:
+            current_app.logger.error(
+                f'Failed executing cypher: {query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])}.\n' +  # noqa
+                f'PARAMETERS: <node_id: {result["node_id"]}>.',
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
+            raise AnnotationError(
+                title='Failed to Remove Global Inclusion',
+                message='A system error occurred while creating the annotation, '
+                        'we are working on a solution. Please try again later.',
+                code=500)
 
     def add_exclusion(self, file: Files, user: AppUser, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
