@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
+
 import { Observable } from 'rxjs';
 
 import { DataService } from 'app/shared/services/table.service';

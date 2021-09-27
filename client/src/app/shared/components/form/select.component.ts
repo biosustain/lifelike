@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 
 // Copy instead based on: https://github.com/ng-bootstrap/ng-bootstrap/issues/2632

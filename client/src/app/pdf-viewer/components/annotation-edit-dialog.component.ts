@@ -1,13 +1,16 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Annotation } from '../annotation-type';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Hyperlink } from '../../drawing-tool/services/interfaces';
+
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { AnnotationType } from 'app/shared/constants';
+
+import { Annotation } from '../annotation-type';
+import { Hyperlink } from '../../drawing-tool/services/interfaces';
 
 @Component({
   selector: 'app-annotation-panel',

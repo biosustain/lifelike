@@ -1,23 +1,24 @@
 import { Platform } from '@angular/cdk/platform';
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
+import { BehaviorSubject } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { catchError } from 'rxjs/operators';
+
 import { State } from 'app/root-store';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 
 import { AuthActions } from '../store';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
 import { AccountService } from '../../users/services/account.service';
-import { catchError } from 'rxjs/operators';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',

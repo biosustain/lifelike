@@ -1,7 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { AnnotationType } from 'app/shared/constants';
 
@@ -39,7 +41,7 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent 
     super(modal, messageDialog);
   }
 
-  getValue(): any {
+  getValue() {
     return {
       ...this.form.value,
     };

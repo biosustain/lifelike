@@ -9,10 +9,11 @@ import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+
 import { EffectsModule } from '@ngrx/effects';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AngularSplitModule } from 'angular-split';
-
 import { AngularMaterialModule } from './angular-material.module';
 import { HighlightSnippetComponent } from './components/highlight-snippet.component';
 import { LegendComponent } from './components/legend.component';
@@ -26,7 +27,6 @@ import { FriendlyDateStrPipe, ScrubHtmlPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
 import { SharedSearchService } from './services/shared-search.service';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort-legend.component';
 import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
 import { FormInputFeedbackComponent } from './components/form/form-input-feedback.component';

@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+
 import { TaskStatus } from '../rxjs/background-task';
 
 @Component({

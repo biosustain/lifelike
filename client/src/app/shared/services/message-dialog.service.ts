@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { MessageDialogComponent } from '../components/dialog/message-dialog.component';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+
+import { MessageDialogComponent } from '../components/dialog/message-dialog.component';
 import { ErrorLog } from '../schemas/common';
 
 export interface MessageArguments extends ErrorLog {

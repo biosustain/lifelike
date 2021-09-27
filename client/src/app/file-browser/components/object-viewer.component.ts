@@ -1,12 +1,14 @@
 import { Component, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { finalize, map, tap } from 'rxjs/operators';
+
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FilesystemService } from '../services/filesystem.service';
-import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map, tap } from 'rxjs/operators';
 import { openDownloadForBlob } from '../../shared/utils/files';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 

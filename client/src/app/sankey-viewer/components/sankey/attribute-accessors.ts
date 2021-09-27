@@ -1,5 +1,7 @@
 import * as d3Sankey from 'd3-sankey';
-import { TruncatePipe } from '../../../shared/pipes';
+
+import { TruncatePipe } from 'app/shared/pipes';
+
 import { SankeyNode } from '../interfaces';
 
 export class AttributeAccessors {

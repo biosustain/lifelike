@@ -8,15 +8,11 @@ import {
 } from '@angular/core';
 
 import { Options } from '@popperjs/core';
-
 import { Subject, Subscription } from 'rxjs';
 import { skip, first } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
-
 import { DataSet } from 'vis-data';
 import { Network, IdType } from 'vis-network';
-
 
 import {
   DuplicateVisEdge,

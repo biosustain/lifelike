@@ -2,10 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Store, select } from '@ngrx/store';
-
 import { Observable } from 'rxjs';
-
-import { State } from '../../root-store';
 
 import {
     SheetNameAndColumnNames,
@@ -13,6 +10,7 @@ import {
     NodeMappingHelper,
 } from 'app/interfaces/user-file-import.interface';
 
+import { State } from '../../root-store';
 import { UserFileImportSelectors as selectors } from '../store';
 import { saveNodeMapping } from '../store/actions';
 

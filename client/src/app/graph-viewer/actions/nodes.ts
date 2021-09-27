@@ -1,4 +1,5 @@
 import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+
 import { GraphAction, GraphActionReceiver } from './actions';
 
 /**

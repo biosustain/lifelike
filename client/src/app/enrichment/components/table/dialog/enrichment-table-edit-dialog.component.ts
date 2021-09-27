@@ -1,10 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormControl, Validators } from '@angular/forms';
+
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { ObjectEditDialogComponent, ObjectEditDialogValue } from 'app/file-browser/components/dialog/object-edit-dialog.component';
-import { EnrichmentDocument } from '../../../models/enrichment-document';
+import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 

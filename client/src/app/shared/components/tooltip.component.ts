@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, AfterViewInit } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
-
 import { isNullOrUndefined } from 'util';
 
 import { uuidv4 } from '../utils';

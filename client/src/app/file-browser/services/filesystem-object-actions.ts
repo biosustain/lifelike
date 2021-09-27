@@ -1,34 +1,37 @@
 import { Injectable } from '@angular/core';
-import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
+import { finalize, map, mergeMap, take } from 'rxjs/operators';
+import { clone } from 'lodash-es';
+
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map, mergeMap, take } from 'rxjs/operators';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
-import { FilesystemObject } from '../models/filesystem-object';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { openDownloadForBlob } from 'app/shared/utils/files';
+import { ResultMapping } from 'app/shared/schemas/common';
+
+import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
+import { Progress } from '../../interfaces/common-dialog.interface';
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
 import { getObjectLabel } from '../utils/objects';
-import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
 import {
   ObjectExportDialogComponent,
   ObjectExportDialogValue,
 } from '../components/dialog/object-export-dialog.component';
-import { openDownloadForBlob } from 'app/shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
 import { ObjectTypeService } from './object-type.service';
-import { ResultMapping } from 'app/shared/schemas/common';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 

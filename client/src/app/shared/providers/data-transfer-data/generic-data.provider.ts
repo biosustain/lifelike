@@ -1,4 +1,7 @@
-import { chunk } from 'lodash';
+import { Injectable } from '@angular/core';
+
+import { chunk } from 'lodash-es';
+
 import {
   DataTransferData,
   DataTransferDataProvider,
@@ -14,6 +17,7 @@ export class URIData {
   uri: string;
 }
 
+@Injectable()
 export class GenericDataProvider implements DataTransferDataProvider {
 
   private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');

@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { ShortestPathService } from '../services/shortest-path.service';
-
 import { DisplayType } from './route-display.component';
 
 @Component({

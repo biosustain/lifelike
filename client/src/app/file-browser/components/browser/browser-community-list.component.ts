@@ -1,6 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
+
 import { Subscription } from 'rxjs';
+
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
 import { FilesystemService } from '../../services/filesystem.service';
 

@@ -1,4 +1,5 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
+
 import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';

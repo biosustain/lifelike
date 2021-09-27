@@ -1,13 +1,12 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { MatSelectChange } from '@angular/material';
+import { MatSelectChange } from '@angular/material/select';
 
 import { Store } from '@ngrx/store';
 
 import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
 
 import { State } from '../../root-store';
-
 import { getNodeProperties } from '../store/actions';
 
 @Component({

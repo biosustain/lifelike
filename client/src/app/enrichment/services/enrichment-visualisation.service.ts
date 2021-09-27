@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, combineLatest } from 'rxjs';
-import { ApiService } from 'app/shared/services/api.service';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { Observable, combineLatest } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
+
+import { ApiService } from 'app/shared/services/api.service';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 

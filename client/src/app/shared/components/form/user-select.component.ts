@@ -1,9 +1,12 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ChoiceListRequest, SelectInputComponent } from './select-input.component';
-import { AppUser } from '../../../interfaces';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+
 import { EMPTY, Observable, of, Subject, Subscription, timer } from 'rxjs';
 import { debounce, map, switchMap, tap } from 'rxjs/operators';
+
+import { AppUser } from 'app/interfaces';
+
+import { ChoiceListRequest, SelectInputComponent } from './select-input.component';
 import { AccountsService } from '../../services/accounts.service';
 import { ErrorHandler } from '../../services/error-handler.service';
 

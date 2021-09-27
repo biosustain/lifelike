@@ -1,8 +1,9 @@
 import { Component, } from '@angular/core';
-import { uuidv4 } from '../../../shared/utils';
-import { SankeyManyToManyControllerService } from '../../services/sankey-controller.service';
+
+import { uuidv4 } from 'app/shared/utils';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+
 import { SankeyManyToManyAdvancedOptions } from '../interfaces';
-import { SankeyControllerService } from '../../../sankey-viewer/services/sankey-controller.service';
 
 
 @Component({

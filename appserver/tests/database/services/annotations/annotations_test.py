@@ -1225,3 +1225,28 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
     assert '5743' in matches['PTGS2']
     assert '627' in matches['BDNF']
     assert '684' in matches['BST2']
+
+
+def test_prioritize_primary_name_that_equals_synonym(
+    lmdb_setup_test_prioritize_primary_name_that_equals_synonym,
+    get_lmdb_service,
+    get_annotation_service
+):
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_prioritize_primary_name_that_equals_synonym.json')
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = process_parsed_content(parsed)
+    annotations = annotate_pdf_for_testing(
+        annotation_service=get_annotation_service,
+        lmdb_service=get_lmdb_service,
+        parsed=parsed)
+
+    assert len(annotations) == 2
+
+    matches = {a.keyword: a.meta.id for a in annotations}
+    assert 'CHEBI:46715' in matches['halite']
+    assert 'CHEBI:127342' in matches['atomoxetine']

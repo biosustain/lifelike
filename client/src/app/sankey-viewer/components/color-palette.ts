@@ -1,6 +1,8 @@
 // region Colors
 import { isDevMode } from '@angular/core';
+
 import { cubehelix } from 'd3';
+
 import { ArrayWithDefault, Palette } from './interfaces';
 
 export const DEFAULT_SATURATION = 0.35;
@@ -41,9 +43,9 @@ export const colorPaletteGenerator = (
   size,
   {
     hue = (i, n) => i / n,
-    saturation = (_i, _n) => DEFAULT_SATURATION,
-    lightness = (_i, _n) => DEFAULT_LIGHTNESS,
-    alpha = (_i, _n) => DEFAULT_ALPHA
+    saturation = (_i, _n): number => DEFAULT_SATURATION,
+    lightness = (_i, _n): number => DEFAULT_LIGHTNESS,
+    alpha = (_i, _n): number => DEFAULT_ALPHA
   } = {}
 ) => {
   return i => cubehelix(

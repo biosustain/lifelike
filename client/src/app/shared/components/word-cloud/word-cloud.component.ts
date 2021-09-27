@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, EventEmitter, Output } from '@angular/core';
 
-import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
-
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
+
+import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 
 /**
  * Throttles calling `fn` once per animation frame

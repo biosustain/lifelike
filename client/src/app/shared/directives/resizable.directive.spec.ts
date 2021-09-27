@@ -1,8 +1,9 @@
-import { ResizableDirective } from './resizable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HostListener, Component, ElementRef } from '@angular/core';
 
 import { configureTestSuite } from 'ng-bullet';
+
+import { ResizableDirective } from './resizable.directive';
 
 // Simple test component that will not in the actual app
 @Component({

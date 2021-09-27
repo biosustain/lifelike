@@ -3,9 +3,9 @@ import { FormControl, FormGroup } from '@angular/forms';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormComponent } from 'app/shared/components/base/form.component';
+import { SearchableRequestOptions } from 'app/shared/schemas/common';
 
 import { ContentSearchOptions } from '../content-search';
-import { SearchableRequestOptions } from 'app/shared/schemas/common';
 
 @Component({
   selector: 'app-content-search-form',
