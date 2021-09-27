@@ -1,10 +1,5 @@
 import 'canvas-plus';
-<<<<<<< HEAD
-=======
 
-import { PlacedNode } from 'app/graph-viewer/styles/styles';
-
->>>>>>> 86d8cf636145c5157aefcc9de4da22d1377473ba
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
