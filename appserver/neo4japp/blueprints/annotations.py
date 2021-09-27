@@ -1038,12 +1038,9 @@ class GlobalAnnotationListView(MethodView):
                     message='A database error occurred when deleting the global exclusion(s).')
 
         if inclusion_pids:
-            graph = get_annotation_graph_service()
+            manual_as = get_manual_annotation_service()
             try:
-                graph.exec_write_query_with_params(
-                    get_delete_global_inclusion_query(),
-                    {'node_ids': [[gid, sid] for gid, sid in inclusion_pids]})
-
+                manual_as.remove_global_inclusions(inclusion_pids)
                 current_app.logger.info(
                     f'Deleted {len(inclusion_pids)} global inclusions',
                     extra=UserEventLog(
