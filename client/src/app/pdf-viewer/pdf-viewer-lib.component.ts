@@ -24,13 +24,14 @@ import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import { PDFPageViewport } from 'pdfjs-dist';
+import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
+import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { AddedAnnotationExclusion, Annotation, Location, Meta, Rect, RemovedAnnotationExclusion, } from './annotation-type';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
-import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
+import { PDFSource, PDFProgressData } from './pdf-viewer/interfaces';
 import {toValidLink} from '../shared/utils/browser';
 
 declare var jQuery: any;
@@ -64,7 +65,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
   private searchChangedSub: Subscription;
-  @Input() pdfSrc: string | PDFSource | ArrayBuffer;
+  @Input() pdfSrc: PDFSource;
   @Input() annotations: Annotation[];
   @Input() goToPosition: Subject<Location>;
   @Input() highlightAnnotations: Observable<string>;
@@ -209,8 +210,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.legacySelectionMode = window.localStorage['***ARANGO_DB_NAME***_new_pdf_selection'] !== 'true';
 
-    (window as any).pdfViewerRef = (window as any).pdfViewerRef || {};
-    (window as any).pdfViewerRef[this.pdfViewerId] = {
+    this.pdfViewerRef[this.pdfViewerId] = {
       openAnnotationPanel: () => this.zone.run(() => this.openAnnotationPanel()),
       copySelectedText: () => this.zone.run(() => this.copySelectedText()),
       removeCustomAnnotation: (uuid) => this.zone.run(() => this.removeCustomAnnotation(uuid)),
@@ -283,8 +283,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.searchChangedSub.unsubscribe();
     }
 
-    delete (window as any).pdfViewerRef[this.pdfViewerId];
 
+    delete this.pdfViewerRef[this.pdfViewerId];
+  }
+
+  get pdfViewerRef() {
+    return 'pdfViewerRef' in (window as any) ?
+      (window as any).pdfViewerRef :
+      (window as any).pdfViewerRef = {};
   }
 
   private requestAnimationFrame() {
@@ -326,7 +332,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // Do NOT attempt to draw an annotation if the corresponding page has yet to be rendered! (It will get drawn on-demand)
     if (!isNullOrUndefined(this.pageRef[pageNum])) {
       const pdfPageView = this.pageRef[pageNum];
-      const viewPort: PDFPageViewport = pdfPageView.viewport;
+      const viewPort: PageViewport = pdfPageView.viewport;
       const elementRefs = [];
       this.annotationHighlightElementMap.set(annotation, elementRefs);
 
@@ -906,8 +912,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   //endregion
 
   deleteFrictionless() {
-    jQuery('.frictionless-annotation').qtip('destroy');
-    jQuery('.frictionless-annotation').remove();
+    const annotationRef = jQuery('.frictionless-annotation');
+    annotationRef.qtip('destroy');
+    annotationRef.remove();
   }
 
   resetSelection() {
@@ -1033,7 +1040,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * Set custom path to pdf worker
    */
   setCustomWorkerPath() {
-    (window as any).pdfWorkerSrc = '/lib/pdfjs-dist/build/pdf.worker.js';
+    (window as any).pdfWorkerSrc = '/lib/pdfjs-dist/legacy/build/pdf.worker.js';
   }
 
   incrementPage(amount: number) {
@@ -1232,7 +1239,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.scrollToPage(pageNum, highlightRect);
       return;
     }
-    const viewPort: PDFPageViewport = pdfPageView.viewport;
+    const viewPort: PageViewport = pdfPageView.viewport;
     const bounds = viewPort.convertToViewportRectangle(highlightRect);
     const left = Math.min(bounds[0], bounds[2]);
     const top = Math.min(bounds[1], bounds[3]);

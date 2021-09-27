@@ -11,7 +11,7 @@ import { PdfViewerModule } from './pdf-viewer.module';
 })
 class TestComponent {}
 
-describe('AppComponent', () => {
+describe('PDFViewerComponent', () => {
   let pdfViewerFixture: ComponentFixture<PdfViewerComponent>;
   let pdfViewer: PdfViewerComponent;
   let testFixture: ComponentFixture<TestComponent>;
@@ -89,7 +89,8 @@ describe('AppComponent', () => {
     const cMapUrl = 'assets/';
 
     it('should check default url', () => {
-      const PDFJS = require('pdfjs-dist/build/pdf');
+      // current pdf.js build contains optional chaining which is not supported by typescript
+      const PDFJS = require('pdfjs-dist/legacy/build/pdf');
 
       expect((pdfViewer as any).internalCMapsUrl).toBe(
         `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
@@ -100,7 +101,10 @@ describe('AppComponent', () => {
       pdfViewer.cMapsUrl = null;
       pdfViewer.src = src;
 
-      expect((pdfViewer as any).getDocumentParams()).toBe(src);
+      expect((pdfViewer as any).getDocumentParams()).toEqual({
+        verbosity: 0,
+        url: src
+      });
     });
 
     it('should return object', () => {
@@ -108,6 +112,7 @@ describe('AppComponent', () => {
       pdfViewer.cMapsUrl = cMapUrl;
 
       expect((pdfViewer as any).getDocumentParams()).toEqual({
+        verbosity: 0,
         url: src,
         cMapUrl,
         cMapPacked: true
@@ -120,6 +125,7 @@ describe('AppComponent', () => {
 
       expect((pdfViewer as any).getDocumentParams()).toEqual({
         url: src,
+        verbosity: 0,
         cMapUrl,
         cMapPacked: true
       });
@@ -133,7 +139,8 @@ describe('AppComponent', () => {
       expect((pdfViewer as any).getDocumentParams()).toEqual({
         url,
         cMapUrl,
-        cMapPacked: true
+        cMapPacked: true,
+        verbosity: 0
       });
     });
   });
