@@ -53,13 +53,15 @@
 // endregion
 
 import { Injectable } from '@angular/core';
-import findCircuits from 'elementary-circuits-directed-graph';
 
+import findCircuits from 'elementary-circuits-directed-graph';
 import { max, min, sum } from 'd3-array';
+
+import { TruncatePipe } from 'app/shared/pipes';
+
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
 import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
-import { TruncatePipe } from '../../../shared/pipes';
 
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {

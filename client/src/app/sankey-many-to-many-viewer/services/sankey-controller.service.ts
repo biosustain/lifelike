@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { SankeyTraceNetwork, SankeyLink } from '../../sankey-viewer/components/interfaces';
 import { SankeyControllerService, PREDEFINED_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
 import { SankeyManyToManyAdvancedOptions } from '../components/interfaces';

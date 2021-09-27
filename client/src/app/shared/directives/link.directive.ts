@@ -1,13 +1,18 @@
 import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
-import { WorkspaceManager } from '../workspace-manager';
 import { ActivatedRoute, NavigationEnd, QueryParamsHandling, Router, UrlTree } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { LocationStrategy } from '@angular/common';
+
+import { Subscription } from 'rxjs';
+
+import { WorkspaceManager } from '../workspace-manager';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load
  * routes in the current workspace.
  */
+@Directive({
+  selector: '[appAbstractLinkDirective]'
+})
 export class AbstractLinkDirective {
   @HostBinding('attr.href') @Input() href: string;
   @HostBinding('attr.target') @Input() target: string;

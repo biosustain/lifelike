@@ -1,21 +1,24 @@
 import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
-  CreateActionOptions,
-  CreateDialogAction, PreviewOptions,
-} from '../services/object-type.service';
-import { FilesystemObject } from '../models/filesystem-object';
-import {
   ComponentFactory,
   ComponentFactoryResolver,
   Injectable,
   Injector,
 } from '@angular/core';
-import { FilesystemService } from '../services/filesystem.service';
+
 import { map } from 'rxjs/operators';
-import { DirectoryPreviewComponent } from '../components/directory-preview.component';
-import { RankedItem } from 'app/shared/schemas/common';
-import { ObjectCreationService } from '../services/object-creation.service';
 import { Observable } from 'rxjs';
+
+import { RankedItem } from 'app/shared/schemas/common';
+
+import {
+  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
+  CreateActionOptions,
+  CreateDialogAction, PreviewOptions,
+} from '../services/object-type.service';
+import { FilesystemObject } from '../models/filesystem-object';
+import { FilesystemService } from '../services/filesystem.service';
+import { DirectoryPreviewComponent } from '../components/directory-preview.component';
+import { ObjectCreationService } from '../services/object-creation.service';
 import { MimeTypes } from '../../shared/constants';
 
 export const DIRECTORY_SHORTHAND = 'directory';

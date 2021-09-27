@@ -1,13 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { MatSelectChange } from '@angular/material';
+import { MatSelectChange } from '@angular/material/select';
 
 import { Store } from '@ngrx/store';
 
-import { State } from '../../***ARANGO_USERNAME***-store';
-
-import { getNodeProperties } from '../store/actions';
 import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
+
+import { State } from '../../***ARANGO_USERNAME***-store';
+import { getNodeProperties } from '../store/actions';
 
 @Component({
   selector: 'app-user-file-import-existing-column-mapping-row',

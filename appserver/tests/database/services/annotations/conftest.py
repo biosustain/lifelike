@@ -25,10 +25,7 @@ from neo4japp.services.annotations.constants import (
     PROTEINS_LMDB,
     SPECIES_LMDB
 )
-from neo4japp.services.annotations.data_transfer_objects import (
-    Inclusion,
-    GeneOrProteinToOrganism
-)
+from neo4japp.services.annotations.data_transfer_objects import GeneOrProteinToOrganism
 from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
@@ -787,6 +784,47 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
 
+@pytest.fixture(scope='function')
+def lmdb_setup_test_prioritize_primary_name_that_equals_synonym(app):
+    halite_sodium = create_ner_type_chemical(
+        id='CHEBI:26710',
+        name='sodium chloride',
+        synonym='halite',
+    )
+
+    halite = create_ner_type_chemical(
+        id='CHEBI:46715',
+        name='halite',
+        synonym='halite',
+    )
+
+    atomoxetine = create_ner_type_chemical(
+        id='CHEBI:127342',
+        name='atomoxetine',
+        synonym='atomoxetine',
+    )
+
+    atomoxetine_hydro = create_ner_type_chemical(
+        id='CHEBI:26710',
+        name='atomoxetine hydrochloride',
+        synonym='atomoxetine',
+    )
+
+    entities = [
+        (ANATOMY_LMDB, 'anatomy', []),
+        (CHEMICALS_LMDB, 'chemicals', [halite_sodium, halite, atomoxetine, atomoxetine_hydro]),
+        (COMPOUNDS_LMDB, 'compounds', []),
+        (DISEASES_LMDB, 'diseases', []),
+        (FOODS_LMDB, 'foods', []),
+        (GENES_LMDB, 'genes', []),
+        (PHENOTYPES_LMDB, 'phenotypes', []),
+        (PROTEINS_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+
 # ################################################################################
 # # Start monkeypatch mocks here
 # # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
@@ -800,6 +838,9 @@ def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
             },
             data_sources={
                 'BOLA39606': 'NCBI Gene'
+            },
+            primary_names={
+                '388962': 'BOLA3'
             })
 
     monkeypatch.setattr(
@@ -816,13 +857,16 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
             matches={
                 'hyp27': {'hyp27': {'221103': '2846957'}},
                 'SERPINA1': {
-                    # 'serpina1': {'9606': '5265'},
                     'SERPINA1': {'9606': '5265'}
                 }
             },
             data_sources={
                 'hyp27221103': 'NCBI Gene',
                 'SERPINA19606': 'NCBI Gene'
+            },
+            primary_names={
+                '2846957': 'hyp27',
+                '5265': 'SERPINA1'
             })
 
     monkeypatch.setattr(
@@ -838,13 +882,14 @@ def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(m
         return GeneOrProteinToOrganism(
             matches={
                 'il-7': {
-                    # 'IL7': {'7897': '102353780'},
                     'il-7': {'31033': '99999'}
                 }
             },
             data_sources={
-                'il-731033': 'NCBI Gene',
-                # '99999': 'NCBI Gene'
+                'il-731033': 'NCBI Gene'
+            },
+            primary_names={
+                '99999': 'il-7'
             })
 
     monkeypatch.setattr(
@@ -865,6 +910,9 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
             data_sources={
                 'ACE29606': 'NCBI Gene',
                 'Fake_ACE29606': 'NCBI Gene'
+            },
+            primary_names={
+                '59272': 'ACE2'
             })
 
     monkeypatch.setattr(
@@ -883,6 +931,9 @@ def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
             },
             data_sources={
                 'gene-(12345)9606': 'NCBI Gene'
+            },
+            primary_names={
+                '59272': 'ACE2'
             })
 
     monkeypatch.setattr(
@@ -903,6 +954,9 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
             data_sources={
                 'IL89606': 'NCBI Gene',
                 'IL-89606': 'NCBI Gene'
+            },
+            primary_names={
+                '3576': 'CXCL8'
             })
 
     monkeypatch.setattr(
@@ -918,13 +972,14 @@ def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
         return GeneOrProteinToOrganism(
             matches={
                 'EDEM3': {
-                    'EDEM3': {'9606': '80267'},
-                    # 'Edem3': {'10116': '289085'}
+                    'EDEM3': {'9606': '80267'}
                 }
             },
             data_sources={
-                'EDEM39606': 'NCBI Gene',
-                # '289085': 'NCBI Gene'
+                'EDEM39606': 'NCBI Gene'
+            },
+            primary_names={
+                '80267': 'EDEM3'
             })
 
     monkeypatch.setattr(
@@ -951,6 +1006,13 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
                 'purC562': 'NCBI Gene',
                 'purD562': 'NCBI Gene',
                 'purF562': 'NCBI Gene'
+            },
+            primary_names={
+                '948695': 'purA',
+                '945695': 'purB',
+                '946957': 'purC',
+                '948504': 'purD',
+                '946794': 'purF'
             })
 
     monkeypatch.setattr(
@@ -971,6 +1033,10 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
             data_sources={
                 'PPP9606': 'NCBI Gene',
                 'PAH9606': 'NCBI Gene'
+            },
+            primary_names={
+                '80267': 'PPP',
+                '289085': 'PAH'
             })
 
     monkeypatch.setattr(
@@ -991,6 +1057,10 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
             data_sources={
                 'YdhC562': 'NCBI Gene',
                 'YdhB562': 'NCBI Gene'
+            },
+            primary_names={
+                'P37597': 'YdhC',
+                'P0ACR2': 'YdhB'
             })
 
     monkeypatch.setattr(
@@ -1016,6 +1086,14 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
                 'BDNF9685': 'NCBI Gene',
                 'BST29606': 'NCBI Gene',
                 'BST29685': 'NCBI Gene'
+            },
+            primary_names={
+                '5743': 'PTGS2',
+                '100126581': 'PTGS2',
+                '627': 'BDNF',
+                '493690': 'BDNF',
+                '684': 'BST2',
+                '100652388': 'BST2'
             })
 
     monkeypatch.setattr(
@@ -1037,14 +1115,13 @@ def mock_global_chemical_inclusion_annotation():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_chemical(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc['hyperlinks']
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_chemical(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = inc['hyperlinks']
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1059,14 +1136,13 @@ def mock_global_compound_inclusion_annotation():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_compound(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc['hyperlinks']
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_compound(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = inc['hyperlinks']
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1080,13 +1156,13 @@ def mock_global_gene_inclusion_annotation():
         },
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlinks', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_gene(inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1100,13 +1176,13 @@ def mock_global_inclusion_normalized_already_in_lmdb():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_gene(inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_gene(inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1116,18 +1192,17 @@ def mock_global_disease_inclusion_annotation():
             'entity_id': 'MESH:852753',
             'entity_name': 'disease-(12345)',
             'synonym': 'disease-(12345)',
-            'data_source': 'MESH',
+            'data_source': 'MeSH',
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_disease(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_disease(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1141,14 +1216,13 @@ def mock_global_phenomena_inclusion_annotation():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_phenomena(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_phenomena(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1158,18 +1232,17 @@ def mock_global_phenotype_inclusion_annotation():
             'entity_id': 'FakePheno',
             'entity_name': 'phenotype-(12345)',
             'synonym': 'phenotype-(12345)',
-            'data_source': 'CUSTOM',
+            'data_source': 'MeSH',
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_phenotype(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_phenotype(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1183,13 +1256,13 @@ def mock_global_protein_inclusion_annotation():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_protein(inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_protein(inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval
 
 
 @pytest.fixture(scope='function')
@@ -1203,11 +1276,10 @@ def mock_global_species_inclusion_annotation():
         }
     ]
 
-    return {
-        normalize_str(inc['synonym']): Inclusion(
-            entities=[create_ner_type_species(
-                inc['entity_id'], inc['entity_name'], inc['synonym'])],
-            entity_id_type=inc['data_source'],
-            entity_id_hyperlinks=inc.get('hyperlink', [])
-        ) for inc in inclusions
-    }
+    retval = {}
+    for inc in inclusions:
+        entity = create_ner_type_species(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity['id_type'] = inc['data_source']
+        entity['id_hyperlinks'] = []
+        retval[normalize_str(inc['synonym'])] = [entity]
+    return retval

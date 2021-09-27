@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { TagHandler } from '../../services/highlight-text.service';
 
 @Injectable()

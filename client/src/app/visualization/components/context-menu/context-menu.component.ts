@@ -9,12 +9,9 @@ import {
 } from '@angular/core';
 
 import { createPopper, Instance } from '@popperjs/core';
-
 import { Subscription } from 'rxjs';
 import { first, filter } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
-
 import { IdType } from 'vis-network';
 
 import { VisNode } from 'app/interfaces/neo4j.interface';

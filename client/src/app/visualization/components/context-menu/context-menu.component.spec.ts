@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
-
 import { IdType } from 'vis-network';
 
 import { Direction, VisNode } from 'app/interfaces';

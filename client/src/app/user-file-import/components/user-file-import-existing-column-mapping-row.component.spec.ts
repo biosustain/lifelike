@@ -6,12 +6,12 @@ import {
 } from '@angular/core/testing';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
-import { MatSelectChange } from '@angular/material';
+import { MatSelectChange } from '@angular/material/select';
 import { By, BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-
 import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
@@ -20,11 +20,8 @@ import { SharedModule } from 'app/shared/shared.module';
 import {
     UserFileImportState as userFileImportState,
 } from '../store';
-
 import { getNodeProperties } from '../store/actions';
-
 import { UserFileImportExistingColumnMappingRowComponent } from './user-file-import-existing-column-mapping-row.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportExistingColumnMappingRowComponent', () => {
     let component: UserFileImportExistingColumnMappingRowComponent;

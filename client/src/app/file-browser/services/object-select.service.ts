@@ -1,8 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
+
 import { from, Observable, Subscription } from 'rxjs';
-import { FilesystemService } from './filesystem.service';
 import { map } from 'rxjs/operators';
+
+import { FilesystemObject } from '../models/filesystem-object';
+import { FilesystemService } from './filesystem.service';
 import { ProjectList } from '../models/project-list';
 import { ProjectsService } from './projects.service';
 

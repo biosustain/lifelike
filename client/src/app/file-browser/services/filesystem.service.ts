@@ -1,14 +1,26 @@
 import { Injectable } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ApiService } from 'app/shared/services/api.service';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
+import { serializePaginatedParams } from 'app/shared/utils/params';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from 'app/shared/schemas/common';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
+import { FilesystemObject } from '../models/filesystem-object';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   BulkObjectUpdateRequest,
   FileAnnotationHistoryResponse,
@@ -21,18 +33,9 @@ import {
   ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
-import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
-import { serializePaginatedParams } from 'app/shared/utils/params';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
-import {
-  PaginatedRequestOptions,
-  ResultList,
-  ResultMapping,
-  SingleResult,
-} from 'app/shared/schemas/common';
 import { FileAnnotationHistory } from '../models/file-annotation-history';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ObjectLock } from '../models/object-lock';
 
 /**

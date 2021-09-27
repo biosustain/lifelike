@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Output, Input, ViewEncapsulation } from '@angular/core';
+
 import { SortingAlgorithm } from './sorting-algorithms';
 
 

@@ -14,29 +14,28 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { GraphEntity, UniversalGraph } from '../services/interfaces';
+import JSZip from 'jszip';
+
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { SelectableEntityBehavior } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
-import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
+import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 
+import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
+import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
-import JSZip from 'jszip';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
 
 @Component({

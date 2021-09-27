@@ -1,9 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AppUser, JWTTokenResponse } from 'app/interfaces';
+
 import { isNullOrUndefined } from 'util';
 import { Observable, of, timer, Subscription } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
+
+import { AppUser, JWTTokenResponse } from 'app/interfaces';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AuthenticationService implements OnDestroy {

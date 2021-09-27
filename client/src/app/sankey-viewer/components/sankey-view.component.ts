@@ -1,26 +1,23 @@
 import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { combineLatest, Subscription, BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { map } from 'rxjs/operators';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-
-
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
+
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
-import { SankeyControllerService, PREDEFINED_VALUE } from '../services/sankey-controller.service';
+import { SankeyControllerService } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
 import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
@@ -133,8 +130,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   ready = false;
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  detailsPanel: boolean;
-  advancedPanel: boolean;
+  detailsPanel = false;
+  advancedPanel = false;
   selectedNodes;
   selectedLinks;
   selectedTraces;
@@ -304,6 +301,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       delete l._selected;
     });
   }
+
   // endregion
 
   selectPredefinedValueAccessor(accessor) {
@@ -396,5 +394,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.setSearchFocus();
   }
+
   // endregion
 }

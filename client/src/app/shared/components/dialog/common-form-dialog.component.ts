@@ -1,7 +1,9 @@
-import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { AbstractControl } from '@angular/forms';
-import { CommonDialogComponent } from './common-dialog.component';
+
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageArguments } from 'app/shared/services/message-dialog.service';
+
+import { CommonDialogComponent } from './common-dialog.component';
 
 /**
  * An abstract component for dialogs that use forms.

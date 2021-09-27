@@ -1,5 +1,4 @@
-import { escapeRegExp } from 'lodash';
-
+import { escapeRegExp } from 'lodash-es';
 import { isNullOrUndefined } from 'util';
 
 import {
@@ -9,7 +8,6 @@ import {
   walkParentElements,
 } from '../dom';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
-
 import { AsyncFindController } from './find-controller';
 
 /**

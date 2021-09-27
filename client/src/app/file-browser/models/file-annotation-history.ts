@@ -1,3 +1,8 @@
+import { startCase } from 'lodash-es';
+
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import { ModelList } from 'app/shared/models';
+
 import {
   AnnotationChangeData,
   AnnotationExclusionChangeData,
@@ -5,10 +10,7 @@ import {
   FileAnnotationChangeData,
   FileAnnotationHistoryResponse,
 } from '../schema';
-import { CollectionModel } from 'app/shared/utils/collection-model';
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
-import { startCase } from 'lodash';
-import { ModelList } from 'app/shared/models';
 import { AppUser } from '../../interfaces';
 
 class AnnotationChange {

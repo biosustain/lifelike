@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { ApiService } from 'app/shared/services/api.service';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+
 import { EnrichmentParsedData } from '../models/enrichment-document';
 
 @Injectable()

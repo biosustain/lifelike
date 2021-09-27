@@ -1,7 +1,8 @@
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { Subject } from 'rxjs';
 
@@ -10,7 +11,6 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { KgImportService } from 'app/kg-import/services/kg-import.service';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Component({

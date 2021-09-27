@@ -1,30 +1,34 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-import { uniqueId } from 'lodash';
-
+import { uniqueId } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { mapBlobToBuffer } from 'app/shared/utils/files';
+import { SearchControlComponent } from 'app/shared/components/search-control.component';
+import { ErrorResponse } from 'app/shared/schemas/common';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   AddedAnnotationExclusion,
   Annotation,
   Location,
-  Meta,
   RemovedAnnotationExclusion,
 } from '../annotation-type';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 import {
   AnnotationDragEvent,
   AnnotationHighlightResult,
@@ -32,14 +36,8 @@ import {
 } from '../pdf-viewer-lib.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { map } from 'rxjs/operators';
-import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { ErrorResponse } from 'app/shared/schemas/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -69,7 +67,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     static: false,
     read: SearchControlComponent,
   }) searchControlComponent: SearchControlComponent;
-  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  @Output() requestClose: EventEmitter<null> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
   id = uniqueId('FileViewComponent-');

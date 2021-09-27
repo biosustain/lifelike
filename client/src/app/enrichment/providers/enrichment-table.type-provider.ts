@@ -1,3 +1,15 @@
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, of } from 'rxjs';
+
+import { RankedItem } from 'app/shared/schemas/common';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { openModal } from 'app/shared/utils/modals';
+
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
@@ -7,19 +19,12 @@ import {
   PreviewOptions,
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
-import { RankedItem } from 'app/shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchType } from '../../search/shared';
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 import { EnrichmentTable } from '../models/enrichment-table';
 import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
 import {
@@ -28,8 +33,6 @@ import {
 } from '../components/table/dialog/enrichment-table-edit-dialog.component';
 import { ObjectContentSource, ObjectCreateRequest } from '../../file-browser/schema';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { openModal } from 'app/shared/utils/modals';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 

@@ -8,42 +8,35 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { cloneDeep } from 'lodash';
-
-import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
-import { makeid } from '../../../shared/utils/identifiers';
-
-import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
-import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior';
-import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
-import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
-import { DeleteKeyboardShortcutBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
-import { PasteKeyboardShortcutBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
-import { HistoryKeyboardShortcutsBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
-
-import { MapViewComponent } from '../map-view.component';
+import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
-import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
+
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
+import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
+import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import {
   CompoundAction,
   GraphAction,
   GraphActionReceiver,
-} from '../../../graph-viewer/actions/actions';
-import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
-import { ObjectVersion } from '../../../file-browser/models/object-version';
-import { LockError } from '../../../file-browser/services/filesystem.service';
-import { ObjectLock } from '../../../file-browser/models/object-lock';
+} from 'app/graph-viewer/actions/actions';
+import { mergeDeep } from 'app/graph-viewer/utils/objects';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ObjectVersion } from 'app/file-browser/models/object-version';
+import { LockError } from 'app/file-browser/services/filesystem.service';
+import { ObjectLock } from 'app/file-browser/models/object-lock';
+import { MimeTypes } from 'app/shared/constants';
+import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
+import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
+import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
+
+import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
+import { MapViewComponent } from '../map-view.component';
+import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
-import { MimeTypes } from '../../../shared/constants';
-
-import { DragDropEntityBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
-import { ImageUploadBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
 
 @Component({
   selector: 'app-drawing-tool',

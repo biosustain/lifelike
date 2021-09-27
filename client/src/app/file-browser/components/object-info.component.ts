@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
+
 import { FindOptions } from 'app/shared/utils/find';
+
+import { FilesystemObject } from '../models/filesystem-object';
 import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({

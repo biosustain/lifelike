@@ -7,30 +7,27 @@ import {
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormArray } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-
 import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
-
-import {
-    UserFileImportState as userFileImportState,
-    UserFileImportSelectors as selectors,
-} from '../store';
-
-import { uploadExperimentalDataFile } from '../store/actions';
-
-import { UserFileImportComponent } from './user-file-import.component';
 import {
     FileNameAndSheets,
     NodeMappingHelper,
     SheetNameAndColumnNames,
     SheetRowPreview,
 } from 'app/interfaces';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import {
+    UserFileImportState as userFileImportState,
+    UserFileImportSelectors as selectors,
+} from '../store';
+import { uploadExperimentalDataFile } from '../store/actions';
+import { UserFileImportComponent } from './user-file-import.component';
 
 describe('UserFileImportComponent', () => {
     let component: UserFileImportComponent;

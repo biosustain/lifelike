@@ -12,10 +12,11 @@ function parameters into one object.
 
 @attr.s(frozen=True)
 class CreateAnnotationObjParams():
-    entity: dict = attr.ib()
+    entity_synonym: str = attr.ib()
+    entity_name: str = attr.ib()
     entity_category: str = attr.ib()
     entity_id: str = attr.ib()
-    entity_id_type: str = attr.ib()
-    entity_id_hyperlinks: List[str] = attr.ib()
+    entity_datasource: str = attr.ib()
+    entity_hyperlinks: List[str] = attr.ib()
     token: PDFWord = attr.ib()
     token_type: str = attr.ib()
