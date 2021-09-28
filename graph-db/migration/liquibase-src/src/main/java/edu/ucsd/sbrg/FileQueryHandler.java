@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,16 +159,19 @@ public class FileQueryHandler implements CustomTaskChange {
         String lastProcessedLine = null;
         String[] header = null;
         try {
-            logger.info("Downloading file " + this.getFileName() + " from Azure Cloud.");
-            cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getAzureSaveFileDir());
+            if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
+                logger.info("Downloading file " + this.getFileName() + " from Azure Cloud.");
+                cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getAzureSaveFileDir());
+            }
 //            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
             Scanner sc = new Scanner(input);
+            sc.useDelimiter(fileExtract.getDelimiter());
             while (sc.hasNextLine()) {
                 String currentLine = sc.nextLine();
                 logger.debug("Read line '" + currentLine + "' from file.");
                 if (header == null) {
-                    header = currentLine.split(fileExtract.getDelimiter());
+                    header = currentLine.split(fileExtract.getDelimiter(), -1);
                     skipCount++;
                 } else {
                     if (skipCount != this.getStartAt()) {
@@ -187,7 +192,7 @@ public class FileQueryHandler implements CustomTaskChange {
                             lastProcessedLine = Arrays.toString(content.get(content.size() - 1));
                             content.clear();
                         } else {
-                            content.add(currentLine.split(fileExtract.getDelimiter()));
+                            content.add(currentLine.split(fileExtract.getDelimiter(), -1));
                         }
                     }
                 }
@@ -218,7 +223,6 @@ public class FileQueryHandler implements CustomTaskChange {
             System.exit(1);
         }
 
-        new File(fileExtract.getFilePath()).delete();
         graph.getDriver().close();
     }
 
