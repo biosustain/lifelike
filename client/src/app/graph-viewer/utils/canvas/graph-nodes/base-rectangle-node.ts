@@ -1,4 +1,5 @@
-import { PlacedNode } from '../../../styles/styles';
+import { PlacedNode } from 'app/graph-viewer/styles/styles';
+
 import { pointOnRect } from '../../geometry';
 
 export interface BaseRectangleNodeOptions {

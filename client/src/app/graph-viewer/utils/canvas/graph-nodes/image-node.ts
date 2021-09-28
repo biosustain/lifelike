@@ -1,7 +1,6 @@
-import { ResourceManager, ResourceOwner } from '../../resource/resource-manager';
-import { RectangleNode, RectangleNodeOptions } from './rectangle-node';
 import { Subscription } from 'rxjs';
-import { PlacedNode } from '../../../styles/styles';
+
+import { ResourceManager, ResourceOwner } from '../../resource/resource-manager';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
 
 export interface ImageNodeOptions extends BaseRectangleNodeOptions {
