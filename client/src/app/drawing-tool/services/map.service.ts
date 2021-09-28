@@ -3,11 +3,12 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { KnowledgeMap } from './interfaces';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { Project } from 'app/file-browser/services/project-space.service';
 import { AppUser } from 'app/interfaces';
 import { AbstractService } from 'app/shared/services/abstract-service';
+
+import { KnowledgeMap } from './interfaces';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
 
