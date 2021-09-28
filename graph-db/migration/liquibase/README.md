@@ -105,6 +105,8 @@ liquibase rollback "some text description" --url jdbc:neo4j:bolt://<ip_address> 
 ```
 
 ## Running Migrations
+**IMPORTANT: The neo4j version needs to be at least 4.2.11**.
+
 ```bash
 cd graph-db/migration/liquibase
 ```
