@@ -10,6 +10,18 @@ If you want to add new dependencies, you will need to update the `pom.xml` file,
 - To update the `pom.xml` file, go to the maven repository listing to find the dependencies you want: https://mvnrepository.com/
 
 ## Installation
+Before installing liquibase and maven, make sure you have the openjdk installed and added to your path in the `.bash_profile`.
+```bash
+> brew install openjdk openjdk@11
+> vim ~/<path>/<to>/.bash_profile
+
+# in .bash_profile (if file doesn't exist, then create it in ~/.bash_profile)
+export PATH="/usr/local/opt/openjdk/bin:$PATH"
+
+# :wq to exit vim and save
+> source <path>/<to>/.bash_profile
+```
+
 Migration uses Liquibase for Neo4j (https://neo4j.com/labs/liquibase/):
 - https://github.com/liquibase/liquibase-neo4j
 
