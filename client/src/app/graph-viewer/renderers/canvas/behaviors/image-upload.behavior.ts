@@ -1,8 +1,9 @@
+import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
+import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { MapImageProviderService } from '../../../../drawing-tool/services/map-image-provider.service';
-import { NodeCreation } from '../../../actions/nodes';
-import { makeid, uuidv4 } from '../../../../shared/utils/identifiers';
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
