@@ -1,6 +1,7 @@
-import { PlacedObject, PlacedObjectRenderer } from '../../styles/styles';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, map } from 'rxjs/operators';
+
+import { PlacedObject, PlacedObjectRenderer } from '../../styles/styles';
 import { RenderTree } from '../render-tree';
 
 export class PlacedObjectRenderTree<T = any> implements PlacedObjectRenderer, RenderTree {
