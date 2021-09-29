@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+  <!--
+    Neo4j does not allow the same transaction for changing the scheme and writes.
+    So group changeSets together by id="some text-#"
+    And separate changeSets grouping by empty new line space
+  -->
+
+  <changeSet id="LL-3213-liquibase-go-data-constraints" author="Binh Vu">
+    <comment>Create GO data from scratch; creating constraints.</comment>
+    <sql>
+      CREATE CONSTRAINT constraint_go_id IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
+      CREATE INDEX index_go_name IF NOT EXISTS FOR (n:db_GO) ON (n.name);
+      CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3198-liquibase-go-data-load-biological-processes" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO Biological Process data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (n:db_GO {eid: row.eid[0]})
+      SET n.name = row.name[0], n.description = row.description[0],
+        n.alt_id = row.alt_id[0], n.obsolete = row.obsolete[0], n.data_source = row.data_source[0]
+      FOREACH (item IN CASE WHEN row.namespace[0] = 'biological_process' THEN [1] ELSE [] END | SET n:BiologicalProcess)
+      "
+      fileName="jira-LL-3213-go-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3198-liquibase-go-data-load-molecular-function" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO Molecular Function data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (n:db_GO {eid: row.eid[0]})
+      SET n.name = row.name[0], n.description = row.description[0],
+        n.alt_id = row.alt_id[0], n.obsolete = row.obsolete[0], n.data_source = row.data_source[0]
+      FOREACH (item IN CASE WHEN row.namespace[0] = 'molecular_function' THEN [1] ELSE [] END | SET n:MolecularFunction)
+      "
+      fileName="jira-LL-3213-go-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3198-liquibase-go-data-load-cellular-component" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO Cellular Component data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (n:db_GO {eid: row.eid[0]})
+      SET n.name = row.name[0], n.description = row.description[0],
+        n.alt_id = row.alt_id[0], n.obsolete = row.obsolete[0], n.data_source = row.data_source[0]
+      FOREACH (item IN CASE WHEN row.namespace[0] = 'cellular_component' THEN [1] ELSE [] END | SET n:CellularComponent)
+      "
+      fileName="jira-LL-3213-go-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3198-liquibase-go-data-load-synonym" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO synonym data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (a:Synonym {name: row.name[0]}) SET a.lowercase_name = toLower(row.name[0])
+      WITH row, a MATCH (b:db_GO {eid: row.eid[0]})
+      MERGE (b)-[r:HAS_SYNONYM]->(a)
+      "
+      fileName="jira-LL-3213-go-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3198-liquibase-go-data-load-synonym" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO synonym data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (a:Synonym {name: row.name[0]}) SET a.lowercase_name = toLower(row.name[0])
+      WITH row, a MATCH (b:db_GO {eid: row.eid[0]})
+      MERGE (b)-[r:HAS_SYNONYM]->(a)
+      "
+      fileName="jira-LL-3213-go-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-is-a" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship IS_A.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-part-of" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship PART_OF.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'PART_OF' THEN [1] ELSE [] END | MERGE (a)-[r:PART_OF]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-regulates" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship REGULATES.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:REGULATES]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-has-part" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship HAS_PART.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-replaced-by" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship REPLACED_BY.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'REPLACED_BY' THEN [1] ELSE [] END | MERGE (a)-[r:REPLACED_BY]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-negative-regulates" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship NEGATIVELY_REGULATES.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'NEGATIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:NEGATIVELY_REGULATES]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-positive-regulates" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship POSITIVELY_REGULATES.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'POSITIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:POSITIVELY_REGULATES]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-occurs-in" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship OCCURS_IN.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'OCCURS_IN' THEN [1] ELSE [] END | MERGE (a)-[r:OCCURS_IN]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-happens-during" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship HAPPENS_DURING.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAPPENS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:HAPPENS_DURING]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3213-liquibase-go-data-load-relationship-ends-during" author="Binh Vu">
+    <comment>Create GO data from scratch; load GO relationship ENDS_DURING.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_GO {eid: row.from_id[0]}), (b:db_GO {eid: row.to_id[0]})
+      FOREACH (item IN CASE WHEN row.relationship[0] = 'ENDS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:ENDS_DURING]->(b))
+      RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship-data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"/>
+  </changeSet>
+</databaseChangeLog>
