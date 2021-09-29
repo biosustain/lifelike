@@ -1,13 +1,15 @@
 app-sankey {
-  $link-opacity: .75;
+  $link-opacity: .9;
+  $link-dimmed-opacity: .1;
   $link-stroke-opacity: .2;
-  $link-active-stroke-opacity: .85;
-  $non-active-link-opacity: .45;
+  $link-selected-stroke-opacity: .85;
 
-  $node-opacity: .90;
+  $node-opacity: .9;
+  $node-dimmed-opacity: .1;
   $node-stroke-opacity: .70;
-  $node-active-stroke-opacity: .90;
-  $non-active-node-opacity: .50;
+  $node-selected-stroke-opacity: .90;
+  $node-stroke-width: 1;
+  $node-selected-stroke-width: 3;
 
   position: relative;
   //touch-action: none;
@@ -26,18 +28,8 @@ app-sankey {
     background-color: white;
 
     g {
-      // tune out links out when node is hovered
-      &:hover .links path {
-        opacity: $non-active-node-opacity;
-      }
-
       .nodes {
         z-index: 1;
-
-        // tune out other nodes when ones are hovered
-        &:hover > g > rect {
-          opacity: $non-active-link-opacity;
-        }
 
         g {
           // todo reenable when performance improves
@@ -48,31 +40,28 @@ app-sankey {
             fill-opacity: $node-opacity;
             shape-rendering: crispEdges;
             stroke: #000000;
+            stroke-width: 1;
             stroke-opacity: $node-stroke-opacity;
             transition: opacity 200ms;
+          }
 
-            &:hover {
-              opacity: $node-opacity;
-              stroke: $node-active-stroke-opacity;
+          &[highlighted=false], &[selected=false], &[transitively-selected=false] {
+            & > rect {
+              opacity: $node-dimmed-opacity;
             }
           }
 
-          &[selected=false] {
+          &[highlighted=true], &[transitively-selected=true] {
             & > rect {
-              opacity: $non-active-node-opacity;
-            }
-          }
-
-          &[highlighted=true] {
-            & > rect {
-              opacity: $node-opacity;
+                opacity: $node-opacity;
             }
           }
 
           &[selected=true] {
             & > rect {
               opacity: $node-opacity;
-              stroke-opacity: $node-active-stroke-opacity;
+              stroke-opacity: $node-selected-stroke-opacity;
+              stroke-width: $node-selected-stroke-width;
             }
           }
 
@@ -129,11 +118,6 @@ app-sankey {
         stroke: #000;
         transition: opacity 200ms;
 
-        // tune out other links when one is hovered
-        &:hover path {
-          opacity: $non-active-link-opacity;
-        }
-
         path {
           // todo reenable when performance improves
           //transition: opacity 250ms 250ms;
@@ -144,29 +128,22 @@ app-sankey {
             stroke-dasharray: 4 4;
           }
 
-          &[selected=false] {
-            opacity: $non-active-link-opacity;
+          &[highlighted=false], &[selected=false], &[transitively-selected=false] {
+            opacity: $link-dimmed-opacity;
           }
 
-          &[highlighted=true], &[selectedTrace=true] {
+          &[highlighted=true], &[transitively-selected=true] {
             opacity: $link-opacity;
-
-            &[thickness='0'] {
-              stroke: red;
-              opacity: 100%;
-              stroke-opacity: 100% !important;
-              stroke-width: 3px;
-            }
           }
 
-
-          &[selected=true], &:hover {
+          &[selected=true] {
             opacity: $link-opacity;
-            stroke-opacity: $link-active-stroke-opacity;
+            stroke-opacity: $link-selected-stroke-opacity;
           }
 
           &[searched=true] {
-            stroke-opacity: $link-active-stroke-opacity;
+            opacity: $link-opacity;
+            stroke-opacity: $link-selected-stroke-opacity;
             stroke: red;
           }
 
