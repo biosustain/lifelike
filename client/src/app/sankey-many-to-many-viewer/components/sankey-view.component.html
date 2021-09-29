@@ -78,14 +78,23 @@
                     type="button">
                 <i class="fas fa-sync"></i>
             </button>
-            <button
-                    [appLink]="['/projects', object?.project.name, 'sankey', object?.hashId]"
-                    class="btn btn-secondary mr-auto"
-                    container="body"
-                    ngbTooltip="Default View" placement="bottom"
-                    type="button">
-                Default View
-            </button>
+            <div class="btn-group d-inline-block mr-auto" ngbDropdown title="Select view">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                    Trace View
+                </button>
+                <!-- add class dropdown-menu to avoid relayout -->
+                <div ngbDropdownMenu class="dropdown-menu">
+                    <button ngbDropdownItem
+                            [appLink]="['/projects', object?.project.name, 'sankey', object?.hashId]">
+                        Default View
+                    </button>
+                    <button ngbDropdownItem
+                            [disabled]="true"
+                            [appLink]="['/projects', object?.project.name, 'sankey-many-to-many', object?.hashId]">
+                        Trace View
+                    </button>
+                </div>
+            </div>
             <div class="btn-group btn-group-toggle mx-auto">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
