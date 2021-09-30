@@ -4,14 +4,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, of, Subscription, throwError, from } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ApiService } from 'app/shared/services/api.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { serializePaginatedParams } from 'app/shared/utils/params';
-import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
@@ -32,12 +37,11 @@ import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ObjectLock } from '../models/object-lock';
-import { RecentFilesService } from './recent-files.service';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
  */
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
@@ -48,8 +52,7 @@ export class FilesystemService {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly http: HttpClient,
-              protected readonly apiService: ApiService,
-              protected readonly recentFilesService: RecentFilesService) {
+              protected readonly apiService: ApiService) {
     this.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
@@ -105,7 +108,6 @@ export class FilesystemService {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => new FilesystemObject().update(data.result)),
-      tap(fileObj => this.recentFilesService.addToList(fileObj)),
     );
   }
 
@@ -120,7 +122,7 @@ export class FilesystemService {
 
   // TODO: Deprecate after LL-3006
   getAllEnrichmentTables() {
-    return this.http.get<{ result: string[] }>(
+    return this.http.get<{result: string[]}>(
       `/api/filesystem/enrichment-tables`, {
         ...this.apiService.getHttpOptions(true),
         responseType: 'json',
@@ -177,9 +179,6 @@ export class FilesystemService {
         responseType: 'json',
       },
     ).pipe(
-      tap(data =>
-        hashIds.forEach(hashId => this.recentFilesService.deleteFromList({hashId} as FilesystemObjectData))
-      ),
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
         for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
