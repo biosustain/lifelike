@@ -78,24 +78,24 @@ export interface MultiCollaboratorUpdateRequest {
 export interface FilesystemObjectData {
   hashId: string;
   filename: string;
-  user: unknown;
-  description: string;
+  user?: unknown;
+  description?: string;
   mimeType: string;
-  doi: string;
-  public: boolean;
-  annotationsDate: string;
+  doi?: string;
+  public?: boolean;
+  annotationsDate?: string;
   creationDate: string;
   modifiedDate: string;
   recyclingDate: string;
   parent: FilesystemObjectData;
   children: FilesystemObjectData[];
   project: ProjectData;
-  privileges: FilePrivileges;
-  recycled: boolean;
-  effectivelyRecycled: boolean;
+  privileges?: FilePrivileges;
+  recycled?: boolean;
+  effectivelyRecycled?: boolean;
   highlight?: string[];
-  fallbackOrganism: OrganismAutocomplete;
-  annotationConfigs: AnnotationConfigurations;
+  fallbackOrganism?: OrganismAutocomplete;
+  annotationConfigs?: AnnotationConfigurations;
   // TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a root file.
   trueFilename: string;
