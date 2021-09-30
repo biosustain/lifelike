@@ -23,7 +23,10 @@ import { ProjectsService } from './services/projects.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
-import { ObjectPreviewComponent, ObjectPreviewOutletComponent, } from './components/object-preview.component';
+import {
+  ObjectPreviewComponent,
+  ObjectPreviewOutletComponent,
+} from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import {
@@ -43,8 +46,6 @@ import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
 import { ObjectViewerComponent } from './components/object-viewer.component';
-import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
-import { RecentFilesService } from './services/recent-files.service';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,6 @@ import { RecentFilesService } from './services/recent-files.service';
     BrowserComponent,
     BrowserContextComponent,
     BrowserCommunityListComponent,
-    BrowserRecentListComponent,
     BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
