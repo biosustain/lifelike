@@ -39,6 +39,17 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
+class DummyFile implements PdfFile {
+  constructor(
+    // tslint:disable-next-line
+    public file_id: string,
+    public filename: string = null,
+    // tslint:disable-next-line
+    public creation_date: string = null,
+    public username: string = null) {
+  }
+}
+
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
   }
