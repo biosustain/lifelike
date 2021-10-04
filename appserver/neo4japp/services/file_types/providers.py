@@ -70,7 +70,9 @@ from neo4japp.constants import (
     ASSETS_PATH,
     ICON_NODES,
     RELATION_NODES,
-    DETAIL_TEXT_LIMIT
+    DETAIL_TEXT_LIMIT,
+    DEFAULT_IMAGE_NODE_WIDTH,
+    DEFAULT_IMAGE_NODE_HEIGHT
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -108,20 +110,20 @@ def is_valid_doi(doi):
 # Has a good breakdown of the DOI specifications,
 # in case need to play around with the regex in the future
 doi_re = re.compile(
-        # match label pointing that it is DOI
-        rb'(doi[\W]*)?'
-        # match url to doi.org
-        # doi might contain subdomain or 'www' etc.
-        rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
-        # match folder (10) and register name
-        rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
-        # try match commonly used DOI format
-        rb'([-A-z0-9]*)'
-        # match up to first space (values after # are ~ignored anyway)
-        rb'([^ \n\f#]*)'
-        # match up to 20 characters in the same line (values after # are ~ignored anyway)
-        rb'([^\n\f#]{0,20})',
-        flags=re.IGNORECASE
+    # match label pointing that it is DOI
+    rb'(doi[\W]*)?'
+    # match url to doi.org
+    # doi might contain subdomain or 'www' etc.
+    rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+    # match folder (10) and register name
+    rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+    # try match commonly used DOI format
+    rb'([-A-z0-9]*)'
+    # match up to first space (values after # are ~ignored anyway)
+    rb'([^ \n\f#]*)'
+    # match up to 20 characters in the same line (values after # are ~ignored anyway)
+    rb'([^\n\f#]{0,20})',
+    flags=re.IGNORECASE
 )  # noqa
 protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -162,18 +164,18 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # if contains escape patterns try substitute them
                 if common_escape_patterns_re.search(match.group()):
                     doi = _search_doi_in(
-                            common_escape_patterns_re.sub(
-                                    b'', match.group()
-                            )
+                        common_escape_patterns_re.sub(
+                            b'', match.group()
+                        )
                     )
                     if is_valid_doi(doi):
                         return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
                     doi = _search_doi_in(
-                            dash_types_re.sub(
-                                    b'-', match.group()
-                            )
+                        dash_types_re.sub(
+                            b'-', match.group()
+                        )
                     )
                     if is_valid_doi(doi):
                         return doi
@@ -183,7 +185,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
+                            reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
                         )
@@ -199,7 +201,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
+                            reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + reversedDOIEnding[::-1]
                         )
@@ -219,9 +221,9 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
-                                # new input = match + 50 chars after new line
-                                match.group() +
-                                content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                            # new input = match + 50 chars after new line
+                            match.group() +
+                            content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -300,20 +302,20 @@ class PDFTypeProvider(BaseFileTypeProvider):
     # Has a good breakdown of the DOI specifications,
     # in case need to play around with the regex in the future
     doi_re = re.compile(
-            # match label pointing that it is DOI
-            rb'(doi[\W]*)?'
-            # match url to doi.org
-            # doi might contain subdomain or 'www' etc.
-            rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
-            # match folder (10) and register name
-            rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
-            # try match commonly used DOI format
-            rb'([-A-z0-9]*)'
-            # match up to first space (values after # are ~ignored anyway)
-            rb'([^ \n\f#]*)'
-            # match up to 20 characters in the same line (values after # are ~ignored anyway)
-            rb'([^\n\f#]{0,20})',
-            flags=re.IGNORECASE
+        # match label pointing that it is DOI
+        rb'(doi[\W]*)?'
+        # match url to doi.org
+        # doi might contain subdomain or 'www' etc.
+        rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+        # match folder (10) and register name
+        rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+        # try match commonly used DOI format
+        rb'([-A-z0-9]*)'
+        # match up to first space (values after # are ~ignored anyway)
+        rb'([^ \n\f#]*)'
+        # match up to 20 characters in the same line (values after # are ~ignored anyway)
+        rb'([^\n\f#]{0,20})',
+        flags=re.IGNORECASE
     )  # noqa
     protocol_re = re.compile(r'https?:\/\/')
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -401,7 +403,7 @@ def get_icon_strings():
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
-                                                           + b64encode(file.read())\
+                                                       + b64encode(file.read()) \
                                                            .decode(BYTE_ENCODING)
         return ICON_DATA
 
@@ -442,6 +444,23 @@ def create_default_node(node):
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
         if style.get('lineType') != 'none' else '0.0'
     }
+
+
+def create_image_node(node, params):
+    """
+    Add parameters specific to the image label.
+
+    :params:
+    :param node: dict containing the node data
+    :param params: dict containing baseline parameters
+    :returns: modified params
+    """
+    params['penwidth'] = '0.0'
+    params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
+    params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
+    params['fixedsize'] = 'true'
+    params['imagescale'] = 'both'
+    return params
 
 
 def create_detail_node(node, params):
@@ -536,9 +555,9 @@ def create_icon_node(node, params):
 
     # Move the label below to make space for the icon node
     params['pos'] = (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
-        )
+        f"{node['data']['x'] / SCALING_FACTOR},"
+        f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
+    )
 
     # Create a separate node which will hold the image
     icon_params = {
@@ -759,20 +778,25 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
-        json_graph = json.loads(file.content.raw_file)
+        zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+        try:
+            json_graph = json.loads(zip_file.read('graph.json'))
+        except KeyError:
+            raise ValidationError
+
         graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                file.filename,
-                # New lines are not permitted in the comment - they will crash the export.
-                # Replace them with spaces until we find different solution
-                comment=file.description.replace('\n', ' ') if file.description else None,
-                engine='neato',
-                graph_attr=graph_attr,
-                format=format)
+            file.filename,
+            # New lines are not permitted in the comment - they will crash the export.
+            # Replace them with spaces until we find different solution
+            comment=file.description.replace('\n', ' ') if file.description else None,
+            engine='neato',
+            graph_attr=graph_attr,
+            format=format)
 
         node_hash_type_dict = {}
         x_values, y_values = [], []
@@ -786,6 +810,17 @@ class MapTypeProvider(BaseFileTypeProvider):
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
             params = create_default_node(node)
+
+            if node['label'] == 'image':
+                try:
+                    # im = json.loads(zip_file.read("".join(['images/', node.get('image_id'),
+                    #                                        '.png'])))
+                    params = create_image_node(node, params)
+                    params['image'] = (
+                        f'{ASSETS_PATH}placeholder.png'
+                    )
+                except KeyError:
+                    raise ValidationError
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
@@ -828,9 +863,9 @@ class MapTypeProvider(BaseFileTypeProvider):
             content = substitute_svg_images(content)
 
         return FileExport(
-                content=content,
-                mime_type=extension_mime_types[ext],
-                filename=f"{file.filename}{ext}"
+            content=content,
+            mime_type=extension_mime_types[ext],
+            filename=f"{file.filename}{ext}"
         )
 
     def merge(self, files: list, requested_format: str, links=None):
@@ -1081,8 +1116,8 @@ def get_content_offsets(file):
             # indicates due to the addition of the icon node
             y_values[-1] -= BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
                 node['display_name']) // 3, MAX_LINE_WIDTH)) \
-                * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-                (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
+                            * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+                            (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
     x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
