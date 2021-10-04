@@ -6,17 +6,6 @@ from common.liquibase_utils import *
 from datetime import datetime
 
 
-def update_outfiles_to_azure(basedir, fileprefix="jira-LL-3216-"):
-    parser = KeggParser(basedir)
-    parser.upload_azure_file(PATHWAY_FILE)
-    parser.upload_azure_file(GENOME_FILE)
-    parser.upload_azure_file(GENE_FILE)
-    parser.upload_azure_file(KO_FILE)
-    parser.upload_azure_file(GENE2KO_FILE)
-    parser.upload_azure_file(GENOME2PATHWAY_FILE)
-    parser.upload_azure_file(KO2PATHWAY_FILE)
-
-
 class KeggChangeLog(object):
     def __init__(self, author, change_id_prefix):
         self.author = author
