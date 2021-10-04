@@ -119,30 +119,30 @@ FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 class FileSchema(CamelCaseSchema):
     hash_id = fields.String()
     filename = fields.String()
-    user = fields.Nested(UserSchema, required=False)
-    description = fields.String(required=False)
+    user = fields.Nested(UserSchema)
+    description = fields.String()
     mime_type = fields.String()
-    doi = fields.String(required=False)
-    upload_url = fields.String(required=False)
-    public = fields.Boolean(required=False)
-    annotations_date = fields.DateTime(required=False)
-    fallback_organism = fields.Nested(FallbackOrganismSchema, required=False)
+    doi = fields.String()
+    upload_url = fields.String()
+    public = fields.Boolean()
+    annotations_date = fields.DateTime()
+    fallback_organism = fields.Nested(FallbackOrganismSchema)
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
-    recycling_date = fields.DateTime(required=False)
+    recycling_date = fields.DateTime()
     parent = fields.Method('get_parent')
     children = fields.Method('get_children')
     project = fields.Method('get_project', exclude='***ARANGO_USERNAME***')
-    privileges = fields.Method('get_privileges', required=False)
-    highlight = fields.Method('get_highlight', required=False)
-    recycled = fields.Boolean(required=False)
-    effectively_recycled = fields.Boolean(required=False)
+    privileges = fields.Method('get_privileges')
+    highlight = fields.Method('get_highlight')
+    recycled = fields.Boolean()
+    effectively_recycled = fields.Boolean()
     file_path = fields.String()
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     true_filename = fields.String()
-    fallback_organism = fields.Nested(FallbackOrganismSchema, required=False)
-    annotation_configs = fields.Nested(AnnotationConfigurations, required=False)
+    fallback_organism = fields.Nested(FallbackOrganismSchema)
+    annotation_configs = fields.Nested(AnnotationConfigurations)
 
     def get_user_privilege_filter(self):
         try:
@@ -302,8 +302,7 @@ class FileNode(CamelCaseSchema):
     data = fields.Nested(
         FileSchema,
         only=(
-            'hash_id', 'filename', 'mime_type', 'creation_date',
-            'modified_date', 'children', 'true_filename'))
+            'hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename'))
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 
