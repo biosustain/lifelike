@@ -52,6 +52,7 @@ def parse_args(argv):
         default='INFO',
         choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
     )
+    parser.add_argument('--prefix', help='The JIRA card numeric number only')
 
     subparser = parser.add_subparsers(dest='domain', required=True)
     biocyc_parser = subparser.add_parser('biocyc')
@@ -105,11 +106,7 @@ def main(argv):
     parser = get_domain_parser(args.domain)
 
     # call main function and pass arguments
-
-    if args.domain == 'biocyc':
-        parser.main(args)
-    else:
-        parser.main()
+    parser.main(args)
 
 
 if __name__ == '__main__':

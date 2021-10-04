@@ -128,10 +128,13 @@ class KeggParser(BaseParser):
         logging.info('total gene2ko: ' + str(total))
 
 
-def main():
+def main(args):
     parser = KeggParser(get_data_dir())
     parser.parse_and_write_data_files()
 
+    for filename in [PATHWAY_FILE, KO_FILE, GENE_FILE, GENOME_FILE, KO2PATHWAY_FILE, GENOME2PATHWAY_FILE, GENE2KO_FILE]:
+        parser.upload_azure_file(filename, args.prefix)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
