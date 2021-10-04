@@ -1,5 +1,6 @@
 import os, gzip
-from create_data_file import azure_upload
+
+from common.cloud_utils import azure_upload
 from common.utils import get_data_dir
 
 DEFAULT_DATADIR = get_data_dir()
@@ -37,13 +38,5 @@ class BaseParser:
     def parse_and_write_data_files(self):
         pass
 
-    def upload_azure_file(self, filename, fileprefix):
-        zipfile = filename.replace('.tsv', '.zip')
-        zipoutfile = os.path.join(self.output_dir, zipfile)
-        azure_upload(os.path.join(self.output_dir, filename), fileprefix + filename, fileprefix + zipfile, zipoutfile)
-
-
-
-
-
-
+    def upload_azure_file(self, filename: str, fileprefix: str):
+        azure_upload(os.path.join(self.output_dir, filename), f'jira-LL-{fileprefix}-{filename}')
