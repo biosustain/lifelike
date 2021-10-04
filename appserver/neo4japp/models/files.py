@@ -1,3 +1,4 @@
+import base64
 import enum
 import hashlib
 import os
@@ -64,6 +65,17 @@ class FileContent(RDBMSBase):
     @raw_file_utf8.setter
     def raw_file_utf8(self, value):
         self.raw_file = value.encode('utf-8')
+        self.checksum_sha256 = hashlib.sha256(self.raw_file).digest()
+
+    @property
+    def raw_file_base64(self):
+        byt = self.raw_file
+        base64.b64encode(self.raw_file)
+        return byt.decode('utf-8')
+
+    @raw_file_base64.setter
+    def raw_file_base64(self, value):
+        self.raw_file = base64.b64decode(value.encode('utf-8'))
         self.checksum_sha256 = hashlib.sha256(self.raw_file).digest()
 
     @classmethod
