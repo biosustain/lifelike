@@ -1167,7 +1167,6 @@ class FileExportView(FilesystemBaseView):
 
     def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
         current_user = g.current_user
-
         zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
