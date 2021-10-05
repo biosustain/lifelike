@@ -1,3 +1,4 @@
+import configparser
 import hashlib
 import os
 
@@ -12,6 +13,9 @@ from azure.storage.fileshare import (
 )
 
 from .cloud_storage import CloudStorage
+
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
 
 
 class AzureCloudStorage(CloudStorage):
@@ -29,9 +33,11 @@ class AzureCloudStorage(CloudStorage):
     @staticmethod
     def generate_token(filename: str):
         zipfilename = filename.replace('.tsv', '.zip')
+        config = configparser.ConfigParser()
+        config.read(os.path.join(directory, 'properties.ini'))
         return generate_file_sas(
-            account_name=os.environ.get('AZURE_ACCOUNT_STORAGE_NAME'),
-            account_key=os.environ.get('AZURE_ACCOUNT_STORAGE_KEY'),
+            account_name=config.get('azure_cloud', 'azure_account_storage_name'),
+            account_key=config.get('azure_cloud', 'azure_account_storage_key'),
             permission=AccountSasPermissions(write=True),
             share_name='knowledge-graph',
             file_path=['migration', zipfilename],
@@ -41,8 +47,10 @@ class AzureCloudStorage(CloudStorage):
     @staticmethod
     def get_file_client(token, filename: str):
         zipfilename = filename.replace('.tsv', '.zip')
+        config = configparser.ConfigParser()
+        config.read(os.path.join(directory, 'properties.ini'))
         return ShareFileClient(
-            account_url=f"https://{os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')}.file.core.windows.net",
+            account_url=f"https://{config.get('azure_cloud', 'azure_account_storage_name')}.file.core.windows.net",
             credential=token,
             share_name='knowledge-graph',
             file_path=f'migration/{zipfilename}',

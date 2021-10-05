@@ -1,10 +1,14 @@
 from common.query_builder import *
-from neo4j import GraphDatabase, ResultSummary
+from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
-from enum import Enum
-import pandas as pd
+
+import configparser
 import logging
+import pandas as pd
 import os
+
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
 
 
 def get_database():
@@ -12,10 +16,12 @@ def get_database():
     Get database instance based on environment variables
     :return: database instance
     """
-    uri = os.environ.get("NEO4J_INSTANCE_URI")
-    dbname = os.environ.get("NEO4J_DATABASE_NAME")
-    username = os.environ.get("NEO4J_USERNAME")
-    pwd = os.environ.get("NEO4J_PWD")
+    config = configparser.ConfigParser()
+    config.read(os.path.join(directory, 'properties.ini'))
+    uri = config.get('neo4j', 'neo4j_uri')
+    dbname = config.get('neo4j', 'neo4j_database')
+    username = config.get('neo4j', 'neo4j_username')
+    pwd = config.get('neo4j', 'neo4j_password')
     driver = GraphDatabase.driver(uri, auth=(username, pwd))
     return Database(driver, dbname)
 
