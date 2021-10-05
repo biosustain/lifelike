@@ -29,8 +29,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MERGE (n:db_KEGG {eid: row.eid[0]})
-      ON CREATE SET n:Pathway, n.name = row.name[0], n.data_source = 'KEGG'
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:Pathway, n.name = row.name, n.data_source = 'KEGG'
       "
       fileName="jira-LL-3216-pathway_data.zip"
       startAt="1"
@@ -49,8 +49,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MERGE (n:db_KEGG {eid: row.eid[0]})
-      ON CREATE SET n:KO, n.name = row.name[0], n.definition = row.definition[0], n.data_source = 'KEGG'
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:KO, n.name = row.name, n.definition = row.definition, n.data_source = 'KEGG'
       "
       fileName="jira-LL-3216-ko_data.zip"
       startAt="1"
@@ -69,8 +69,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MERGE (n:db_KEGG {eid: row.eid[0]})
-      ON CREATE SET n:Gene, n.genome = row.genome[0], n.data_source = 'KEGG'
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:Gene, n.genome = row.genome, n.data_source = 'KEGG'
       "
       fileName="jira-LL-3216-gene_data.zip"
       startAt="1"
@@ -89,7 +89,7 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_KEGG {eid: row.eid[0]}), (b:Gene {eid: row.gene_id[0]})
+      MATCH (a:db_KEGG {eid: row.eid}), (b:Gene {eid: row.gene_id})
       MERGE (a)-[r:IS]->(b)
       "
       fileName="jira-LL-3216-gene_data.zip"
@@ -109,7 +109,7 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_KEGG {eid: row.gene[0]}), (b:KO {eid: row.ko[0]})
+      MATCH (a:db_KEGG {eid: row.gene}), (b:KO {eid: row.ko})
       MERGE (a)-[r:HAS_KO]->(b)
       "
       fileName="jira-LL-3216-gene2ko_data.zip"
@@ -129,7 +129,7 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:KO {eid: row.ko[0]}), (b:Pathway {eid: row.pathway[0]})
+      MATCH (a:KO {eid: row.ko}), (b:Pathway {eid: row.pathway})
       MERGE (a)-[r:IN_PATHWAY]->(b)
       "
       fileName="jira-LL-3216-ko2pathway_data.zip"
@@ -149,7 +149,7 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      WITH collect(DISTINCT row.genome[0]) AS genomes
+      WITH collect(DISTINCT row.genome) AS genomes
       UNWIND genomes AS genome
       MERGE (n:Genome {eid: genome})
       ON CREATE SET n:db_KEGG, n.data_source = 'KEGG'
@@ -171,7 +171,7 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:Genome {eid: row.genome[0]}), (b:Pathway {eid: row.pathway[0]})
+      MATCH (a:Genome {eid: row.genome}), (b:Pathway {eid: row.pathway})
       MERGE (a)-[r:HAS_PATHWAY]->(b)
       "
       fileName="jira-LL-3216-genome2pathway_data.zip"

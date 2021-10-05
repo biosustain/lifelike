@@ -35,7 +35,8 @@ class Entry(object):
         self.go_ids = []
 
     def add_protein_name(self, type, name):
-        self.proteinNames.append((type, name))
+        if name:
+            self.proteinNames.append((type, name))
 
     def get_all_names(self):
         names = []
@@ -141,15 +142,18 @@ class UniprotParser(BaseParser):
         self.write_protein_file(entries)
         self.write_protein2synonym_file(entries)
         self.write_protein2go_file(entries)
-        # self.write_sprot2gene_file()
-        # self.extract_protein_symbol_as_synonym()
+        self.parse_and_write_sprot2gene_file()
+        self.extract_protein_symbol_as_synonym()
+        self.extract_multiple_genes_from_sprot2gene()
 
     def write_protein_file(self, entries):
+        self.logger.info("write sprot.tsv")
         with open(os.path.join(self.output_dir, 'sprot.tsv'), 'w') as f:
             f.write('\t'.join([PROP_ID, PROP_NAME, PROP_GENE_NAME, PROP_TAX_ID, PROP_PATHWAY, PROP_FUNCTION]) + '\n')
             f.writelines('\t'.join([entry.id, entry.name, entry.gene_name, entry.tax_id, entry.pathway, entry.function])+'\n' for entry in entries)
 
     def write_protein2synonym_file(self, entries):
+        self.logger.info("write sprot2syn")
         names = set()
         for entry in entries:
             names.update(entry.get_all_names())
@@ -158,11 +162,12 @@ class UniprotParser(BaseParser):
             f.writelines(entry.get_synonym_rows() for entry in entries)
 
     def write_protein2go_file(self, entries):
+        self.logger.info("write sprot2go")
         with open(os.path.join(self.output_dir, 'sprot2go.tsv'), 'w') as f:
             f.write(f'{PROP_ID}\t{PROP_GO_ID}\n')
             f.writelines(entry.get_go_rows() for entry in entries)
 
-    def write_sprot2gene_file(self):
+    def parse_and_write_sprot2gene_file(self):
         self.logger.info("write sprot2gene")
         # get sprot ids
         df = pd.read_table(os.path.join(self.output_dir, 'sprot.tsv'))
@@ -171,8 +176,6 @@ class UniprotParser(BaseParser):
         with gzip.open(os.path.join(self.download_dir, self.id_mapping_file), 'rt') as f,\
                 open(os.path.join(self.output_dir, 'sprot2gene.tsv'), 'w') as outfile:
             outfile.write(f'{PROP_ID}\t{PROP_GENE_ID}\n')
-
-
             rows = 0
             lines = 0
             for line in f:
@@ -188,16 +191,36 @@ class UniprotParser(BaseParser):
                     outfile.write(f'{row[0]}\t{row[2]}\n')
         self.logger.info('finished writing sprot2gene.tsv. rows:' + str(rows))
 
+    def extract_multiple_genes_from_sprot2gene(self):
+        self.logger.info('split gene_id columns when values have multiple gene ids')
+        df = pd.read_table(os.path.join(self.output_dir, 'sprot2gene.tsv'))
+        print('sprot2gene:', len(df))
+        df_m = df[df[PROP_GENE_ID].str.contains(';')]
+        df = df[~df[PROP_GENE_ID].str.contains(';')]
+        print('sprot2gene with multiple genes:', len(df_m), 'single gene:', len(df))
+        df_m.set_index(PROP_ID, inplace=True)
+        df_m = df_m[PROP_GENE_ID].str.split(';', expand=True).stack()
+        df_m = df_m.reset_index().rename(columns={0: PROP_GENE_ID})
+        df_m[PROP_GENE_ID] = df_m[PROP_GENE_ID].str.strip()
+        df_m = df_m[[PROP_ID, PROP_GENE_ID]]
+        print('split genes:', len(df_m))
+        df = pd.concat([df, df_m])
+        print(len(df))
+        df.to_csv(os.path.join(self.output_dir, 'sprot2gene2.tsv'), index=False, sep='\t')
+
     def extract_protein_symbol_as_synonym(self):
+        self.logger.info("extract protein symbol")
         '''
         Check protein names for the last word. If it matches with gene_name (case insensitive), and it is not the same as protein name, add as a new synonym
         :return: file with columns for protein_id and names derived from gene_name
         '''
-        df_prot = pd.read_table(os.path.join(self.output_dir, 'sprot.tsv'))
-        df_prot = df_prot[[PROP_ID, PROP_GENE_NAME]]
-
+        df_prot = pd.read_table(os.path.join(self.output_dir, 'sprot.tsv'), usecols= [PROP_ID, PROP_GENE_NAME])
+        print(len(df_prot))
         df_syn = pd.read_table(os.path.join(self.output_dir, 'sprot2syn.tsv'))
-        df_syn = df_syn.loc[df_syn[PROP_NAME].str.contains(' ')]
+        print(len(df_syn))
+        df_syn = df_syn.dropna()
+        print(len(df_syn))
+        df_syn = df_syn[df_syn[PROP_NAME].str.contains(' ')]
         df_syn['symbol'] = df_syn[PROP_NAME].str.split(' ').str[-1]
         df_syn.set_index(PROP_ID)
         df = df_syn.merge(df_prot, on=PROP_ID)
@@ -205,6 +228,7 @@ class UniprotParser(BaseParser):
         self.logger.info(f'symbol synonyms:{len(df)}')
         df = df[[PROP_ID, 'symbol']]
         df.columns = [PROP_ID, PROP_NAME]
+        df[PROP_TYPE] = 'extracted protein symbol'
         df.to_csv(os.path.join(self.output_dir, 'sprot2syn_derived.tsv'), sep='\t', index=False)
 
 

@@ -1,8 +1,8 @@
 import os, gzip
-from common.database import Database
+
+from common.cloud_utils import azure_upload
 from common.utils import get_data_dir
 
-DEFAULT_DATADIR = get_data_dir()
 
 class BaseParser:
     REL_LABEL_COL = 'REL_TYPE'
@@ -11,7 +11,7 @@ class BaseParser:
 
     def __init__(self, data_dir_name, base_dir: str = None):
         if not base_dir:
-            base_dir = os.environ.get('BASE_DATA_DIR', DEFAULT_DATADIR)
+            base_dir = get_data_dir()
         self.base_dir = base_dir
         self.download_dir = os.path.join(self.base_dir, 'download', data_dir_name)
         self.output_dir = os.path.join(self.base_dir, 'processed', data_dir_name)
@@ -37,11 +37,5 @@ class BaseParser:
     def parse_and_write_data_files(self):
         pass
 
-
-
-
-
-
-
-
-
+    def upload_azure_file(self, filename: str, fileprefix: str):
+        azure_upload(os.path.join(self.output_dir, filename), f'jira-{fileprefix}-{filename}')
