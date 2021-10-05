@@ -813,12 +813,13 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] == 'image':
                 try:
-                    # im = json.loads(zip_file.read("".join(['images/', node.get('image_id'),
-                    #                                        '.png'])))
+                    im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
                     params = create_image_node(node, params)
-                    params['image'] = (
-                        f'{ASSETS_PATH}placeholder.png'
-                    )
+                    # if format == 'svg':
+                    #     params['image'] = 'data:image/png;base64,' + b64encode(im)\
+                    #         .decode(BYTE_ENCODING)
+                    # else:
+                    params['image'] = f'{ASSETS_PATH}placeholder.png'
                 except KeyError:
                     raise ValidationError
 
