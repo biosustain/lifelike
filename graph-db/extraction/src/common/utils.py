@@ -27,8 +27,11 @@ def file_compress(inp_file_names, out_zip_file):
 
 
 def get_data_dir():
-    basedir = os.getcwd().split('src')[0]
-    return os.path.join(basedir, 'data')
+    return os.path.join(get_base_dir(), 'data')
+
+
+def get_base_dir():
+    return os.getcwd().split('src')[0]
 
 
 def get_git_version(short: int = None):

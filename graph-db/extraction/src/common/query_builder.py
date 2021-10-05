@@ -47,40 +47,11 @@ def get_create_fulltext_index_query():
     """
     return 'CALL db.index.fulltext.createNodeIndex($indexName, $labels, $properties)'
 
-def get_create_nodes_query(node_label:str, id_name: str, properties:[], additional_labels=[], update_labels=False):
-    """
-    Build query that take a param $dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
-    e.g. for $dict = {'rows':[{'id': '123a', 'name':'abc'}, {'id':'456', 'name': 'xyz'}]}, the id_name should be 'id',
-    and properties=['name']
-    Make sure for each row, the keys match with properties
-    :param node_label: the primary node label with id_name constraint or index
-    :param id_name: the indexed property
-    :param properties: node property names
-    :param additional_labels: other node labels if exists
-    :param update_labels: if True, always add the additional labels for the node, even the node is not newly created
-    :return: cypher query with param $dict
-    """
-    query_rows = list()
-    query_rows.append("WITH $dict.rows as rows UNWIND rows as row")
-    query_rows.append("MERGE (n:%s {%s: row.%s})" % (node_label, id_name, id_name))
-    if additional_labels or properties:
-        prop_sets = []
-        if additional_labels:
-            label_set = 'n:' + ':'.join(additional_labels)
-            prop_sets.append(label_set)
-            if update_labels:
-                query_rows.append('ON MATCH SET ' + label_set)
-        if properties:
-            props = ['n.' + prop + '=row.' + prop for prop in properties if prop != id_name]
-            prop_sets += props
-        if prop_sets:
-            query_rows.append('ON CREATE SET ' + ','.join(prop_sets))
-    return '\n'.join(query_rows)
 
-
-def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], update_only=False, etl_load_id: str=None, return_node_count: bool=False):
+def get_create_update_nodes_query(node_label:str, id_name: str, update_properties:[], additional_labels=[], datasource=None,
+                           original_entity_type=None):
     """
-    Build query to update nodes.  If a node not exists, and update_only = False, create one then update.
+    Build query to create or update nodes.  If a node not exists, and update_only = False, create one then update.
     The query will take a param $dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
     e.g. for $dict = {'rows':[{'id': '123a', 'name':'abc'}, {'id':'456', 'name': 'xyz'}]}, the id_name should be 'id',
     and properties=['name']
@@ -89,31 +60,28 @@ def get_update_nodes_query(node_label:str, id_name: str, update_properties:[], a
     :param id_name: the indexed property
     :param update_properties: node property names to be updated
     :param additional_labels: other node labels if exists
-    :param update_only: if true, no new nodes will be added. Otherwise use merge node to add new nodes
-    :param etl_load_id: Id that (virtually) links a node to an EtlLoad node.
+    :param datasource: e.g. KEGG, NCBI Gene
+    :param original_entity_type: e.g. Gene, Protein, Chemical, Disease
     :return_node_count: If True, return COUNT(n).
     :return: query with param $dict
     """
     query_rows = list()
-    query_rows.append("WITH $dict.rows as rows UNWIND rows as row")
-    if update_only:
-        query_rows.append("MATCH (n:%s {%s: row.%s})" % (node_label, id_name, id_name))
-    else:
-        query_rows.append("MERGE (n:%s {%s: row.%s})" % (node_label, id_name, id_name))
+    query_rows.append("UNWIND $rows as row")
+    query_rows.append("MERGE (n:%s {%s: row.%s})" % (node_label, id_name, id_name))
     if additional_labels or update_properties:
         prop_sets = []
         if additional_labels:
             label_set = 'n:' + ':'.join(additional_labels)
             prop_sets.append(label_set)
         if update_properties:
-            props = ['n.' + prop + '=row.' + prop for prop in update_properties if prop != id_name]
+            props = [f"n.{prop}=row.{prop}" for prop in update_properties if prop != id_name]
             prop_sets += props
-        if etl_load_id:
-            prop_sets.append(f'n.etl_load_id="{etl_load_id}"')
+        if datasource:
+            prop_sets.append(f"n.data_source='{datasource}'")
+        if original_entity_type:
+            prop_sets.append(f"n.original_entity_type='{original_entity_type}'")
         if len(prop_sets) > 0:
             query_rows.append('SET ' + ','.join(prop_sets))
-    if return_node_count:
-        query_rows.append('RETURN COUNT(n)')
     return '\n'.join(query_rows)
 
 
@@ -129,7 +97,7 @@ def get_delete_nodes_query(node_label: str, id_name: str):
 
 
 def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
-                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[], etl_load_id=None, return_node_count: bool=False):
+                                       node2_label, node2_id, node2_col,  relationship:str, rel_properties=[], etl_load_id=None):
     """
     Build the query to create relationships from dataframe.  Dataframe need to transfer to dictionary using the following code:
     dict = {'rows': dataframe.to_dict('Records')}
@@ -142,11 +110,10 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
     :param relationship: the relationship type
     :param rel_properties: relationship properties
     :param etl_load_id: Id that (virtually) links a node to an EtlLoad node.
-    :return_node_count: If True, return COUNT(r).
     :return: cypher query with parameter $dict
     """
     rows = list()
-    rows.append("WITH $dict.rows as rows UNWIND rows as row")
+    rows.append("UNWIND $rows as row")
     rows.append("MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
         node1_label, node1_id, node1_col, node2_label, node2_id, node2_col))
     rows.append(f"MERGE (a)-[r:{relationship}]->(b)")
@@ -159,8 +126,6 @@ def get_create_relationships_query(node1_label:str, node1_id:str, node1_col:str,
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
         rows.append(f"SET {set_phrase}")
-    if return_node_count:
-        rows.append('RETURN COUNT(r)')
     return '\n'.join(rows)
 
 
@@ -178,7 +143,7 @@ def get_create_synonym_relationships_query(node_label:str, node_id:str, node_id_
     :return: cypher query with parameter $dict
     """
     query_rows = list()
-    query_rows.append("WITH $dict.rows as rows UNWIND rows as row")
+    query_rows.append("UNWIND $rows as row")
     query_rows.append("MERGE (a:Synonym {name: row.%s}) set a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
     query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col))
     query_rows.append("MERGE (b)-[r:HAS_SYNONYM]->(a)")

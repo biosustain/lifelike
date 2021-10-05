@@ -2,9 +2,6 @@ import csv
 import os
 
 from collections import defaultdict
-from datetime import datetime, timedelta
-
-from azure.storage.fileshare import generate_file_sas, ShareFileClient, AccountSasPermissions
 
 from common.database import get_database, Database
 from common.utils import get_data_dir
@@ -42,40 +39,26 @@ def create_data_file(db: Database, filepath: str, query: str):
 
         for entity_id, global_set in node_id_global.items():
             if True not in global_set:
-                writer.writerow([entity_id, ','.join(label for label in node_id_labels[entity_id])])
+                writer.writerow([entity_id, '|'.join(label for label in node_id_labels[entity_id])])
             else:
                 if len(node_id_labels[entity_id]) == 1:
-                    writer.writerow([entity_id, ','.join(label for label in node_id_labels[entity_id])])
+                    writer.writerow([entity_id, '|'.join(label for label in node_id_labels[entity_id])])
                 else:
-                    writer.writerow([entity_id, ','.join(
+                    writer.writerow([entity_id, '|'.join(
                         label for label in set(node_id_labels[entity_id]) - node_id_edge_entity_type[entity_id])])
 
 
-def azure_upload(filepath: str, filename: str, zip_filename: str, zip_filepath: str):
-    sas_token = generate_file_sas(
-        account_name=os.environ.get('AZURE_ACCOUNT_STORAGE_NAME'),
-        account_key=os.environ.get('AZURE_ACCOUNT_STORAGE_KEY'),
-        permission=AccountSasPermissions(write=True),
-        share_name='knowledge-graph',
-        file_path=['migration', zip_filename],
-        expiry=datetime.utcnow() + timedelta(hours=1))
-    azure = ShareFileClient(
-        account_url=f"https://{os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')}.file.core.windows.net",
-        credential=sas_token,
-        share_name='knowledge-graph',
-        file_path=f'migration/{zip_filename}',
-        logging_enable=True)
-    cloudstorage = AzureCloudStorage(azure)
-    cloudstorage.upload(filepath, filename, zip_filename, zip_filepath)
-    azure.close_all_handles()
+def azure_upload(filepath: str, filename: str):
+    sas_token = AzureCloudStorage.generate_token(filename)
+    cloudstorage = AzureCloudStorage(AzureCloudStorage.get_file_client(sas_token, filename))
+    cloudstorage.upload(filepath, filename)
+    cloudstorage.close()
 
 
 if __name__ == '__main__':
     db = get_database()
     filename = 'jira-LL-3625-add-entity-type-array-protein.tsv'
     filepath = os.path.join(get_data_dir(), filename)
-    zip_filename = 'jira-LL-3625-add-entity-type-array-protein.zip'
-    zip_filepath = os.path.join(get_data_dir(), zip_filename)
     query = """
     MATCH (n:Protein)-[r:HAS_SYNONYM]-(s:Synonym)
     WHERE NOT n:GlobalInclusion
@@ -85,4 +68,4 @@ if __name__ == '__main__':
     exists(r.global_inclusion) AS is_global, collect(DISTINCT r.entity_type) AS edge_entity_types
     """
     create_data_file(db, filepath, query)
-    azure_upload(filepath, filename, zip_filename, zip_filepath)
+    azure_upload(filepath, filename)
