@@ -1,15 +1,19 @@
-from common.constants import *
-from kegg.kegg_parser import *
-from kegg.kegg_data_loader import *
-from common.query_builder import *
-from common.liquibase_utils import *
+import os
 from datetime import datetime
 
+from common.constants import *
+from common.liquibase_utils import *
+from common.query_builder import *
+from kegg.kegg_parser import *
+from kegg.kegg_data_loader import *
 
-class KeggChangeLog(object):
-    def __init__(self, author, change_id_prefix):
-        self.author = author
-        self.id_prefix = change_id_prefix
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
+
+
+class KeggChangeLog(ChangeLog):
+    def __init__(self, author: str, change_id_prefix: str):
+        super().__init__(author, change_id_prefix)
         self.date_tag = datetime.today().strftime('%m%d%Y')
         self.change_sets = []
 
@@ -37,9 +41,8 @@ class KeggChangeLog(object):
             print(s)
             changes.append(s)
         change_str = '\n\n'.join(changes)
-        with open(outfile, 'w') as f:
+        with open(os.path.join(directory, outfile), 'w') as f:
             f.write(template.render(change_sets_str=change_str))
-
 
     def create_indexes(self):
         queries = []
@@ -66,7 +69,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + id
         comment = 'Load KEGG gene nodes'
         query = KeggDataLoader.get_load_gene_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, GENE_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GENE_FILE}')
         self.change_sets.append(changeset)
 
     def load_genome_nodes(self):
@@ -75,7 +78,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + id
         comment = 'Load KEGG genome nodes'
         query = KeggDataLoader.get_load_geneome_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, GENOME_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GENOME_FILE}')
         self.change_sets.append(changeset)
 
     def load_ko_nodes(self):
@@ -84,7 +87,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG KO nodes'
         query = KeggDataLoader.get_load_ko_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, KO_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{KO_FILE}')
         self.change_sets.append(changeset)
 
     def load_pathway_nodes(self):
@@ -93,7 +96,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG pathway nodes'
         query = KeggDataLoader.get_load_pathway_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, PATHWAY_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{PATHWAY_FILE}')
         self.change_sets.append(changeset)
 
     def load_gene2ko_rels(self):
@@ -102,7 +105,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG gene to ko relationships'
         query = KeggDataLoader.get_load_gene2ko_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, GENE2KO_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GENE2KO_FILE}')
         self.change_sets.append(changeset)
 
     def load_ko2pathway_rels(self):
@@ -111,7 +114,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG KO to pathway relationships'
         query = KeggDataLoader.get_load_ko2pathway_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, KO2PATHWAY_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{KO2PATHWAY_FILE}')
         self.change_sets.append(changeset)
 
     def load_genome2pathway_rels(self):
@@ -120,7 +123,7 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG genome to pathway relationships'
         query = KeggDataLoader.get_load_gene2ko_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, GENOME2PATHWAY_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GENOME2PATHWAY_FILE}')
         self.change_sets.append(changeset)
 
     def load_gene2ncbi_rels(self):
@@ -129,11 +132,11 @@ class KeggChangeLog(object):
             id = self.id_prefix + ' ' + id
         comment = 'Load KEGG gene to NCBI gene relationships'
         query = KeggDataLoader.get_load_gene2ko_query()
-        changeset = CustomChangeSet(id, self.author, comment, query, GENE_FILE)
+        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GENE_FILE}')
         self.change_sets.append(changeset)
 
 
 if __name__ == '__main__':
-    task = KeggChangeLog('rcai', 'test ')
+    task = KeggChangeLog('rcai', 'LL-1234')
     task.create_change_logs(True)
-    task.generate_liquibase_changelog_file('kegg_changelogs.xml')
+    task.generate_liquibase_changelog_file('kegg_changelog.xml')

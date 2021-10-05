@@ -8,12 +8,13 @@ custom_template = 'custom_change_set.template'
 changelog_template = 'changelog.template'
 
 CUSTOM_PARAMS = """
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}" """
+neo4jHost="${neo4jHost}"
+neo4jCredentials="${neo4jCredentials}"
+neo4jDatabase="${neo4jDatabase}"
+azureStorageName="${azureStorageName}"
+azureStorageKey="${azureStorageKey}"
+azureSaveFileDir="${azureSaveFileDir}"
+"""
 
 
 def get_template(templatefilename):
@@ -24,7 +25,21 @@ def get_changelog_template():
     return get_template(changelog_template)
 
 
-class ChangeSet(object):
+class ChangeLog:
+    def __init__(self, author: str, change_id_prefix: str):
+        if not change_id_prefix:
+            raise ValueError('The argument change_id_prefix must not be null or empty string')
+
+        try:
+            int(change_id_prefix.split('-')[1])
+        except Exception:
+            raise ValueError('The argument change_id_prefix must be the JIRA card number; e.g LL-1234')
+        self.author = author
+        self.id_prefix = change_id_prefix
+        self.file_prefix = f'jira-{change_id_prefix}-'
+
+
+class ChangeSet:
     def __init__(self, id, author, comment, cypher):
         self.id = id
         self.author = author
@@ -44,7 +59,7 @@ class CustomChangeSet(ChangeSet):
                  startrow=1):
         ChangeSet.__init__(self, id, author, comment, cypher)
         self.handler = handler
-        self.filename = filename
+        self.filename = filename.replace('.tsv', '.zip')
         self.filetype = filetype
         self.start_at = startrow
 
@@ -69,4 +84,3 @@ if __name__ == '__main__':
     generate_sql_changelog_file('LL-3702 cut string rels with threshold', 'rcai',
                                 comment,
                                 cypher, outfile)
-
