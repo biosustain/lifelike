@@ -2,11 +2,10 @@ import logging
 import os
 import sys
 
-from azure.storage.fileshare import ShareFileClient
-
 
 class CloudStorage:
-    def __init__(self, provider: ShareFileClient) -> None:
+    def __init__(self, provider) -> None:
+        """Provider is file client."""
         self.provider = provider
         self.logger = logging.getLogger('azure.storage.fileshare')
         self.logger.setLevel(logging.INFO)
@@ -16,5 +15,8 @@ class CloudStorage:
     def _delete_local_file(self, filepath: str) -> None:
         os.remove(filepath)
 
-    def upload(self, filepath: str, filename: str, zip_filename: str, zip_filepath: str) -> None:
+    def close(self) -> None:
+        raise NotImplementedError()
+
+    def upload(self, filename: str, filepath: str) -> None:
         raise NotImplementedError()

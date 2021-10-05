@@ -69,21 +69,20 @@ public class Neo4jGraph {
         }
 
         Collection<List<String[]>> chunkedData = this.partitionData(data, chunkSize);
-        List<List<Map<String, String[]>>> chunkedCypherParams = new ArrayList<>();
+        List<List<Map<String, String>>> chunkedCypherParams = new ArrayList<>();
 
         logger.info("Creating chunks of cypher parameters.");
         chunkedData.forEach(contentChunk -> {
             logger.info("New cypher parameters chunk");
-            List<Map<String, String[]>> cypherParamsChunk = new ArrayList<>();
+            List<Map<String, String>> cypherParamsChunk = new ArrayList<>();
             contentChunk.forEach(row -> {
-                Map<String, String[]> param = new HashMap<>();
+                Map<String, String> param = new HashMap<>();
                 try {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Added to param chunk: {");
                     for (int i = 0; i < keys.length; i++) {
-                        String[] value = row[i].split(",");
-                        param.put(keys[i], value);
-                        sb.append(keys[i] + ": " + Arrays.toString(value));
+                        param.put(keys[i], row[i]);
+                        sb.append(keys[i] + ": " + row[i]);
                         sb.append(",");
                     }
                     // delete the last comma

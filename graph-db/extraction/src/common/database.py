@@ -1,10 +1,14 @@
 from common.query_builder import *
-from neo4j import GraphDatabase, ResultSummary
+from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
-from enum import Enum
-import pandas as pd
+
+import configparser
 import logging
+import pandas as pd
 import os
+
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
 
 
 def get_database():
@@ -12,10 +16,12 @@ def get_database():
     Get database instance based on environment variables
     :return: database instance
     """
-    uri = os.environ.get("NEO4J_INSTANCE_URI")
-    dbname = os.environ.get("NEO4J_DATABASE_NAME")
-    username = os.environ.get("NEO4J_USERNAME")
-    pwd = os.environ.get("NEO4J_PWD")
+    config = configparser.ConfigParser()
+    config.read(os.path.join(directory, 'properties.ini'))
+    uri = config.get('neo4j', 'neo4j_uri')
+    dbname = config.get('neo4j', 'neo4j_database')
+    username = config.get('neo4j', 'neo4j_username')
+    pwd = config.get('neo4j', 'neo4j_password')
     driver = GraphDatabase.driver(uri, auth=(username, pwd))
     return Database(driver, dbname)
 
@@ -76,7 +82,7 @@ class Database:
             except Exception as error:
                 self.logger.error("Could not create index %r. %r", index_name, error)
 
-    def run_query(self, query, params: dict = None):
+    def run_query(self, query, **params):
         """
         Run query with parameter dict in the format {'rows': []}. Each row is a dict of prop_name-value pairs.
         e.g. for $dict = {'rows':[{'id': '123a', 'name':'abc'}, {'id':'456', 'name': 'xyz'}]}, the id_name should be 'id',
@@ -87,12 +93,12 @@ class Database:
         """
         with self.driver.session(database=self.dbname) as session:
             try:
-                result = session.run(query, params).consume()
+                result = session.run(query, **params).consume()
                 logging.info(result.counters)
             except Neo4jError as ex:
                 self.logger.error(ex.message)
 
-    def get_data(self, query:str, params: dict = {}) -> pd.DataFrame:
+    def get_data(self, query:str, **params) -> pd.DataFrame:
         """
         Run query to get data as dataframe
         :param query: the query with parameter $dict (see query_builder.py)
@@ -100,7 +106,7 @@ class Database:
         :return: dataframe for the result
         """
         with self.driver.session(database=self.dbname) as session:
-            results = session.run(query, params)
+            results = session.run(query, **params)
             # df = pd.DataFrame([dict(record) for record in results])
             df = pd.DataFrame(results.values(), columns=results.keys())
         return df
@@ -114,9 +120,8 @@ class Database:
         :return: ResultSummary.counters. If return_node_count=True, also return node_count.
         """
         with self.driver.session(database=self.dbname) as session:
-            rows_dict = {'rows': data_rows}
             node_count = 0
-            result = session.run(query, dict=rows_dict)
+            result = session.run(query, rows=data_rows)
             if return_node_count:
                 record = result.single()
                 if record:
@@ -129,7 +134,7 @@ class Database:
 
             return info.counters
 
-    def load_data_from_dataframe(self, data_frame: pd.DataFrame, query: str, chunksize=None):
+    def load_data_from_dataframe(self, query: str, data_frame: pd.DataFrame, chunksize=None):
         """
         Run query by passing dataframe
         :param data_frame: the dataframe to load
@@ -141,53 +146,47 @@ class Database:
             if chunksize:
                 chunks = [data_frame[i:i + chunksize] for i in range(0, data_frame.shape[0], chunksize)]
                 for chunk in chunks:
-                    rows_dict = {'rows': chunk.fillna(value="").to_dict('records')}
-                    session.run(query, dict=rows_dict)
+                    rows = chunk.fillna(value="").to_dict('records')
+                    session.run(query, rows = rows)
                 self.logger.info("Rows processed:" + str(len(data_frame)))
             else:
-                rows_dict = {'rows': data_frame.fillna(value="").to_dict('records')}
-                result = session.run(query, dict=rows_dict).consume()
+                rows = data_frame.fillna(value="").to_dict('records')
+                result = session.run(query, rows=rows).consume()
                 self.logger.info(result.counters)
 
-    def load_csv_file(self, data_file: str, col_names: list, query: str, skip_lines=0, separator='\t',
-                      chunk_size=2000, apply_str_columns=[]):
+    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:[]=None, usecols = None,
+                      skiprows=None, chunksize=None, dtype=None):
         """
         load csv file to neo4j database
         :param data_file: path to the file
-        :param col_names: file headers (match database properties)
+        :param colnames: file headers (match database properties)
         :param query:  the query with $dict parameter (see query_builder.py)
-        :param skip_lines: number of rows skipped for reading
-        :param separator: csv file delimiter
-        :param chunk_size: number of rows to read for each chunk
-        :param apply_str_columns: columns to convert values to str, e.g. gene_id, tax_id
-        :return:
+        :param skiprows: number of rows skipped for reading
+        :param sep: csv file delimiter
+        :param chunksize: number of rows to read for each chunk
+        :param dtype: pandas parameter, eg. converting column values to str, {PROP_ID: str}
+        :return: number of items loaded
         """
-        # converters = {}
-        # f = lambda x: str(x)
-        # if apply_str_columns:
-        #     for col in apply_str_columns:
-        #         converters[col] = f
-        dtype_map = {}
-        if apply_str_columns:
-            for col in apply_str_columns:
-                dtype_map[col] = str
-        data_chunk = pd.read_csv(data_file, sep=separator, header=None, names=col_names, chunksize=chunk_size,
-                                 dtype=dtype_map, skiprows=skip_lines, index_col=False,
-                                 low_memory=False, engine='c', na_filter=False)
+        data_chunk = pd.read_csv(data_file, sep=sep, header=header, names=colnames, usecols=usecols,
+                                 chunksize=chunksize, dtype=dtype, skiprows=skiprows, index_col=False)
         count = 0
         self.logger.info("Load file: " + data_file)
-        self.logger.debug("Query: " + query)
+        self.logger.info("Query: " + query)
         with self.driver.session(database=self.dbname) as session:
-            if not chunk_size:
+            if not chunksize:
                 df = data_chunk
-                rows_dict = {'Rows': df.fillna(value="").to_dict('records')}
-                result = session.run(query, dict=rows_dict).consume()
+                if usecols:
+                    df = df.drop_duplicates()
+                data_rows = df.fillna(value="").to_dict('records')
+                result = session.run(query, rows=data_rows).consume()
                 self.logger.info(result.counters)
             else:
-                for i, rows in enumerate(data_chunk):
-                    count = count + len(rows)
-                    rows_dict = {'rows': rows.fillna(value="").to_dict('records')}
-                    result = session.run(query, dict=rows_dict).consume()
+                for i, chunk in enumerate(data_chunk):
+                    if usecols:
+                        chunk = chunk.drop_duplicates()
+                    count = count + len(chunk)
+                    data_rows = chunk.fillna(value="").to_dict('records')
+                    result = session.run(query, rows=data_rows).consume()
                     # self.logger.info(result.counters)
                 self.logger.info("Rows processed: " + str(count))
 
