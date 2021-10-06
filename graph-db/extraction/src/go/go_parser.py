@@ -1,11 +1,10 @@
 from common.graph_models import *
-from common.constants import *
 from common.obo_parser import OboParser
 from common.base_parser import BaseParser
 from common.database import *
-from common.graph_models import NodeData
-from common.query_builder import *
 import logging
+import pandas as pd
+
 
 attribute_map = {
             'id': (PROP_ID, 'str'),
@@ -26,61 +25,45 @@ relationship_map = {
 }
 
 NODE_ATTRS = [PROP_ID, PROP_NAME, PROP_DESCRIPTION, PROP_ALT_ID, PROP_OBSOLETE, PROP_DATA_SOURCE]
+GO_FILE = 'go-data.tsv'
+GO_RELATIONSHIP = 'go-relationship.tsv'
 
 
 class GoOboParser(OboParser, BaseParser):
-    def __init__(self, basedir=None):
-        BaseParser.__init__(self, 'go', basedir)
+    def __init__(self, prefix: str, basedir=None):
+        BaseParser.__init__(self, prefix, 'go', basedir)
         OboParser.__init__(self, attribute_map, relationship_map, NODE_GO, PROP_ID)
+
         self.id_prefix = 'GO:'
-        self.logger = logging.getLogger(__name__)
 
-    def create_indexes(self, database: Database):
-        database.create_constraint(NODE_GO, PROP_ID, 'constraint_go_id')
-        database.create_index(NODE_GO, PROP_NAME, 'index_go_name')
-        database.create_constraint(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name')
-
-    def parse_obo_file(self)->[NodeData]:
-        self.logger.info("Parsing go.obo")
-        go_file = os.path.join(self.download_dir, 'go.obo')
-        nodes = self.parse_file(go_file)
+    def parse_obo_and_write_data_files(self):
+        logging.info('Parsing go.obo')
+        nodes = self.parse_file(os.path.join(self.download_dir, 'go.obo'))
         # need to remove prefix 'GO:' from id
         for node in nodes:
-            node.update_attribut(PROP_ID, node.get_attribute(PROP_ID).replace(self.id_prefix, ''))
+            node.update_attribute(PROP_ID, node.get_attribute(PROP_ID).replace(self.id_prefix, ''))
             node.update_attribute(PROP_DATA_SOURCE, DB_GO)
-        self.logger.info(f"Total go nodes: {len(nodes)}")
-        return nodes
+        logging.info(f'Total go nodes: {len(nodes)}')
 
-    def load_data_to_neo4j(self, database: Database):
-        nodes = self.parse_obo_file()
-        if not nodes:
-            return
-        
-        self.create_indexes(database)
+        go_df = pd.DataFrame([node.to_dict() for node in nodes])
+        go_df.fillna('', inplace=True)
+        go_df.to_csv(os.path.join(self.output_dir, self.file_prefix + GO_FILE), sep='\t', index=False)
 
-        self.logger.info("Add nodes to " + NODE_GO)
-        node_dict = dict()
-        for node in nodes:
-            node_label = node.get_attribute('namespace')
-            if node_label not in node_dict:
-                node_dict[node_label] = []
-            node_dict[node_label].append(node.to_dict())
-        for label in node_dict.keys():
-            query = get_update_nodes_query(NODE_GO, PROP_ID, NODE_ATTRS, [label.title().replace('_', '')])
-            database.load_data_from_rows(query, node_dict[label])
-
-        self.load_synonyms(database, nodes, NODE_GO, PROP_ID)
-        self.load_edges(database, nodes, NODE_GO, PROP_ID)
+        go_rel_df = pd.DataFrame([{
+            'relationship': edge.label,
+            'from_id': edge.source.attributes['eid'],
+            'to_id': edge.dest.attributes['eid']} for node in nodes for edge in node.edges])
+        go_rel_df.fillna('', inplace=True)
+        go_rel_df.to_csv(os.path.join(self.output_dir, self.file_prefix + GO_RELATIONSHIP), sep='\t', index=False)
 
 
-def main():
-    parser = GoOboParser()
-    database = get_database()
-    parser.load_data_to_neo4j(database)
-    database.close()
+def main(args):
+    parser = GoOboParser(args.prefix)
+    parser.parse_obo_and_write_data_files()
+
+    for filename in [GO_FILE, GO_RELATIONSHIP]:
+        parser.upload_azure_file(filename, args.prefix)
 
 
 if __name__ == "__main__":
     main()
-
-

@@ -8,12 +8,12 @@ custom_template = 'custom_change_set.template'
 changelog_template = 'changelog.template'
 
 CUSTOM_PARAMS = """
-neo4jHost="${neo4jHost}"
-neo4jCredentials="${neo4jCredentials}"
-neo4jDatabase="${neo4jDatabase}"
-azureStorageName="${azureStorageName}"
-azureStorageKey="${azureStorageKey}"
-azureSaveFileDir="${azureSaveFileDir}"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      azureSaveFileDir="${azureSaveFileDir}"
 """
 
 
