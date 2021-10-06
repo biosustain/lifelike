@@ -12,7 +12,7 @@
 `lifelike-graph`
 - this folder contains migration for the current PROD graph (starting at whatever state on 9/10/2021).
 
-`new-graph`
+`new-lifelike-graph`
 - this folder contains migration to create a **new** graph. Run these migrations first, then run the ones in `lifelike-graph`.
 
 `small-test-graph`
