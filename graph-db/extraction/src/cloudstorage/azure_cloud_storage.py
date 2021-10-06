@@ -77,5 +77,5 @@ class AzureCloudStorage(CloudStorage):
         with open(zipfilepath, 'rb') as zipfile:
             self.provider.upload_file(zipfile, content_settings=ContentSettings(content_md5=checksum))
 
-        self._delete_local_file(filepath)
+        # self._delete_local_file(filepath)
         self._delete_local_file(zipfilepath)
