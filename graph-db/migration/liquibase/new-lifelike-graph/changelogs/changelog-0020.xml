@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="KEGG data initial load 10052021" author="Binh Vu">
+  <changeSet id="LL-3213 GO data constraints on date 10052021" author="Binh Vu">
     <comment>Create constraints and indexes for GO nodes</comment>
     <sql>
     CREATE CONSTRAINT constraint_go_id IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
