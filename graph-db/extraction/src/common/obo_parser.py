@@ -1,14 +1,11 @@
 from common.graph_models import *
-from common.constants import *
-from common.database import Database
-from common.query_builder import *
-from common.base_parser import BaseParser
 import logging
 import gzip
 import re
+from typing import List
 
 
-class OboParser(object):
+class OboParser:
     """
     Base parser to parse obo format files.
     """
@@ -20,15 +17,15 @@ class OboParser(object):
         self.rel_names = set()
         self.id_prefix = ''
 
-    def parse_file(self, file_path)->[NodeData]:
+    def parse_file(self, file_path) -> List[NodeData]:
         with open(file_path, 'r', encoding="ISO-8859-1") as file_data:
             return self._map_nodes(file_data)
 
-    def parse_zip_file(self, zip_file_path)->[NodeData]:
+    def parse_zip_file(self, zip_file_path) -> List[NodeData]:
         with gzip.open(zip_file_path, 'rt') as file_data:
             return self._map_nodes(file_data)
 
-    def _map_nodes(self, file_data)->[NodeData]:
+    def _map_nodes(self, file_data) -> List[NodeData]:
         nodes = list()
         for line in file_data:
             if line.strip().startswith('[Term]'):
@@ -89,54 +86,3 @@ class OboParser(object):
         if self.id_prefix != '' and attr_val.startswith(self.id_prefix):
             attr_val = attr_val.replace(self.id_prefix, '')
         return attr_val.strip()
-
-
-    @classmethod
-    def load_nodes(cls, database: Database, nodes:[], db_node_label, entity_node_label, id_name, node_attributes:[]):
-        if not nodes:
-            return
-        node_rows = [node.to_dict() for node in nodes]
-        query = get_create_nodes_query(db_node_label, id_name, node_attributes, [entity_node_label])
-        logging.debug(query)
-        database.load_data_from_rows(query, node_rows)
-
-    @classmethod
-    def update_nodes(cls, database: Database, nodes:[], node_label, id_name, node_attributes: []):
-        if not nodes:
-            return
-        node_rows = [node.to_dict() for node in nodes]
-        query = get_update_nodes_query(node_label, id_name, node_attributes)
-        database.load_data_from_rows(query, node_rows)
-
-    @classmethod
-    def load_synonyms(cls, database: Database, nodes: [], node_label, node_id_name):
-        entity2synonym_list = []
-        for node in nodes:
-            synonyms = node.get_synonym_set()
-            id = node.get_attribute(node_id_name)
-            for syn in synonyms:
-                entity2synonym_list.append({node_id_name: id, PROP_NAME: syn})
-        if not entity2synonym_list:
-            return
-        logging.info(f'Add {node_label} synonyms')
-        query = get_create_synonym_relationships_query(node_label, node_id_name, node_id_name, PROP_NAME)
-        logging.debug(query)
-        database.load_data_from_rows(query, entity2synonym_list)
-
-    @classmethod
-    def load_edges(cls, database: Database, nodes:[], node_label, node_id_name):
-        entity2entity_dict = dict()
-        for node in nodes:
-            for edge in node.edges:
-                from_id = edge.source.get_attribute(edge.source.id_attr)
-                to_id = edge.dest.get_attribute(edge.dest.id_attr)
-                rel = edge.label
-                if rel not in entity2entity_dict:
-                    entity2entity_dict[rel] = []
-                entity2entity_dict[rel].append({'from_id': from_id, 'to_id': to_id})
-        if not entity2entity_dict:
-            return
-        for rel in entity2entity_dict.keys():
-            logging.info("Relationship: " + rel)
-            query = get_create_relationships_query(node_label, node_id_name, 'from_id', node_label, node_id_name, 'to_id', rel)
-            database.load_data_from_rows(query, entity2entity_dict[rel])
