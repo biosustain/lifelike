@@ -18,7 +18,6 @@ class KeggChangeLog(ChangeLog):
         self.change_sets = []
 
     def create_change_logs(self, initial_load=False):
-        self.change_sets = []
         if initial_load:
             self.add_index_change_set()
         self.load_gene_nodes()

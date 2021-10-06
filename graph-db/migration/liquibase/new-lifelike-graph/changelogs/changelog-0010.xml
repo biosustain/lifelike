@@ -27,10 +27,10 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MERGE (n:db_CHEBI {eid: row.eid[0]})
-      ON CREATE SET n:Chemical, n.name = row.name[0], n.definition = row.definition[0],
-        n.inchi = row.inchi[0], n.inchi_key = row.inchi_key[0], n.smiles = row.smiles[0],
-        n.alt_id = row.alt_id[0], n.data_source = row.data_source[0]
+      MERGE (n:db_CHEBI {eid: row.eid})
+      ON CREATE SET n:Chemical, n.name = row.name, n.definition = row.definition,
+        n.inchi = row.inchi, n.inchi_key = row.inchi_key, n.smiles = row.smiles,
+        n.alt_id = row.alt_id, n.data_source = row.data_source
       "
       fileName="jira-LL-3198-chebi-data.zip"
       startAt="1"
@@ -49,8 +49,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MERGE (a:Synonym {name: row.name[0]}) SET a.lowercase_name = toLower(row.name[0])
-      WITH row, a MATCH (b:db_CHEBI {eid: row.eid[0]})
+      MERGE (a:Synonym {name: row.name}) SET a.lowercase_name = toLower(row.name)
+      WITH row, a MATCH (b:db_CHEBI {eid: row.eid})
       MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="jira-LL-3198-chebi-data.zip"
@@ -70,8 +70,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -91,8 +91,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_CONJUGATE_BASE_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_BASE_OF]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_CONJUGATE_BASE_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_BASE_OF]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -112,8 +112,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -133,8 +133,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAS_ROLE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_ROLE]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'HAS_ROLE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_ROLE]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -154,8 +154,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAS_PARENT_HYDRIDE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PARENT_HYDRIDE]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'HAS_PARENT_HYDRIDE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PARENT_HYDRIDE]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -175,8 +175,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_ENANTIOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_ENANTIOMER_OF]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_ENANTIOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_ENANTIOMER_OF]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -196,8 +196,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'HAS_FUNCTIONAL_PARENT' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_FUNCTIONAL_PARENT]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'HAS_FUNCTIONAL_PARENT' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_FUNCTIONAL_PARENT]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -217,8 +217,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_CONJUGATE_ACID_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_ACID_OF]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_CONJUGATE_ACID_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_ACID_OF]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -238,8 +238,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_TAUTOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_TAUTOMER_OF]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_TAUTOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_TAUTOMER_OF]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
@@ -259,8 +259,8 @@
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id[0]}), (b:db_CHEBI {eid: row.to_id[0]})
-      FOREACH (item IN CASE WHEN row.relationship[0] = 'IS_SUBSTITUENT_GROUP_FROM' THEN [1] ELSE [] END | MERGE (a)-[r:IS_SUBSTITUENT_GROUP_FROM]->(b))
+      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+      FOREACH (item IN CASE WHEN row.relationship = 'IS_SUBSTITUENT_GROUP_FROM' THEN [1] ELSE [] END | MERGE (a)-[r:IS_SUBSTITUENT_GROUP_FROM]->(b))
       RETURN COUNT(*)
       "
       fileName="jira-LL-3198-chebi-relationship-data.zip"
