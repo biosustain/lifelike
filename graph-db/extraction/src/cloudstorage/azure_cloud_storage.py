@@ -41,7 +41,8 @@ class AzureCloudStorage(CloudStorage):
             permission=AccountSasPermissions(write=True),
             share_name='knowledge-graph',
             file_path=['migration', zipfilename],
-            expiry=datetime.utcnow() + timedelta(hours=1)
+            # set to 3 hours, hopefully enough time for large files
+            expiry=datetime.utcnow() + timedelta(hours=3)
         )
 
     @staticmethod
