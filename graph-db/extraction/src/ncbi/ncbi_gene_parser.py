@@ -85,8 +85,7 @@ def main(args):
     parser = GeneParser(args.prefix)
     parser.parse_and_write_data_files()
 
-    # still need to upload this file, other two already done
-    for filename in [NCBI_GENE_FILE]:  # [NCBI_GENE_GO_FILE, NCBI_GENE_SYNONYM_FILE]:
+    for filename in [NCBI_GENE_FILE, NCBI_GENE_GO_FILE, NCBI_GENE_SYNONYM_FILE]:
         parser.upload_azure_file(filename, args.prefix)
 
 

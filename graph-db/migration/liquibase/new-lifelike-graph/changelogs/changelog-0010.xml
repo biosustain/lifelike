@@ -40,7 +40,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-synonyms" author="Binh Vu">
@@ -61,7 +61,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-is-a" author="Binh Vu">
@@ -82,7 +82,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-base" author="Binh Vu">
@@ -103,7 +103,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-part" author="Binh Vu">
@@ -124,7 +124,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-role" author="Binh Vu">
@@ -145,7 +145,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-parent" author="Binh Vu">
@@ -166,7 +166,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-enantiomer-of" author="Binh Vu">
@@ -187,7 +187,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-functional-parent" author="Binh Vu">
@@ -208,7 +208,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-acid" author="Binh Vu">
@@ -229,7 +229,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-tautomer" author="Binh Vu">
@@ -250,7 +250,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-substituent-group" author="Binh Vu">
@@ -271,6 +271,6 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 </databaseChangeLog>

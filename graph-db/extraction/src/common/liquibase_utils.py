@@ -16,7 +16,7 @@ CUSTOM_PARAMS = """
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
+      localSaveFileDir="${localSaveFileDir}"
 """
 
 

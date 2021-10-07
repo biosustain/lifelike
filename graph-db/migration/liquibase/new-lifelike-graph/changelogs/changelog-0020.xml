@@ -35,8 +35,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -61,8 +60,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -87,8 +85,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -112,8 +109,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -137,8 +133,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -162,8 +157,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -187,8 +181,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -212,8 +205,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -237,8 +229,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -262,8 +253,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -287,8 +277,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -312,8 +301,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -337,8 +325,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 
@@ -362,8 +349,7 @@ RETURN COUNT(*)
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
-
+      localSaveFileDir="${localSaveFileDir}"
     />
   </changeSet>
 </databaseChangeLog>
