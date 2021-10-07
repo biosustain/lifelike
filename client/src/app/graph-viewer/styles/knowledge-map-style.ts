@@ -136,7 +136,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       // Override icon for link types
       if (d.label === 'link') {
-        const links: Source[] | Hyperlink[] = [
+        const links: (Source | Hyperlink)[] = [
           ...(d.data && d.data.sources ? d.data.sources : []),
           ...(d.data && d.data.hyperlinks ? d.data.hyperlinks : []),
         ];
