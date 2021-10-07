@@ -1,8 +1,9 @@
 import * as d3Sankey from 'd3-sankey-circular';
 
 import { representativePositiveNumber } from '../utils';
-import { DirectedTraversal, ltr } from '../../services/directed-traversal';
+import { DirectedTraversal } from '../../services/directed-traversal';
 import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
+import { SankeyData, SankeyLink, SankeyNode } from '../interfaces';
 
 export const fixedValue = value => ({links}) => {
   links.forEach(l => {
@@ -76,39 +77,108 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
   };
 };
 
-export const inputCount = ({links, nodes, _inNodes, _outNodes}: any) => {
+export const inputCount = ({links, nodes, _inNodes, _outNodes}: SankeyData) => {
+  // initially links does not carry values but we need to init it
   links.forEach(l => {
-    l._value = 1;
+    l._value = 0;
   });
   // @ts-ignore
   const layout = new CustomisedSankeyLayoutService();
+  // don't calculate whole layout, only things needed to get nodes depths
   layout.computeNodeLinks({nodes, links});
   layout.identifyCircles({nodes, links});
   layout.computeNodeValues({nodes, links});
   layout.computeNodeDepths({nodes, links});
+  layout.computeNodeLayers({nodes});
+  // traverse from side with less nodes
   const dt = new DirectedTraversal([_inNodes, _outNodes]);
+  // traverse starting from leaves nodes
   dt.reverse();
+  // for checks
+  const maxExpectedValue = dt.startNodes.length;
+  // iterate nodes leaves first
   const sortedNodes = [...nodes].sort(dt.depthSorter());
   sortedNodes.forEach(n => {
     if (dt.startNodes.includes(n.id)) {
-      n._value = 1;
+      n._fixedValue = 1;
     } else {
-      n._value = 0;
+      n._fixedValue = 0;
     }
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
     const minPrev = Math.min(...prevLinks.map(({_value}) => _value));
-    n._value = prevLinks.reduce((a, l) => a + (l._circular ? minPrev : l._value), n._value || 0);
-    const outFrac = n._value / nextLinks.length;
+    n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
+    console.assert(n._fixedValue <= maxExpectedValue);
+    const outFrac = n._fixedValue / nextLinks.length;
     nextLinks.forEach(l => {
-      if (l._circular) {
-        const circularPrevLinks = dt.prevLinks(dt.nextNode(l));
-        const minCircularPrev = Math.min(...circularPrevLinks.map(({_value}) => _value));
-
-        l._multiple_values = dt.direction === ltr ? [outFrac, minCircularPrev] : [minCircularPrev, outFrac];
-      } else {
+      // do fist calculation ignoring circular link values
+      if (!l._circular) {
         l._value = outFrac;
       }
+    });
+  });
+  // estimate circular link values based on trace information (LL-3704)
+  // make lists of links passing each immediate space between node layers
+  const linkLayers = new Map<number, SankeyLink[]>();
+  links.forEach(link => {
+    const sourceLayer = (link._source as SankeyNode)._layer;
+    const targetLayer = (link._target as SankeyNode)._layer;
+    const minLayer = Math.min(sourceLayer, targetLayer);
+    const maxLayer = Math.max(sourceLayer, targetLayer);
+    for (let layer = minLayer; layer < maxLayer; layer++) {
+      let traceLayerLinks: SankeyLink[] = linkLayers.get(layer);
+      if (!traceLayerLinks) {
+        traceLayerLinks = [];
+        linkLayers.set(layer, traceLayerLinks);
+      }
+      traceLayerLinks.push(link);
+    }
+  });
+  links.filter(({_circular}) => _circular).forEach(link => {
+    const sourceLayer = (link._source as SankeyNode)._layer;
+    const targetLayer = (link._target as SankeyNode)._layer;
+    const minLayer = Math.min(sourceLayer, targetLayer);
+    const maxLayer = Math.max(sourceLayer, targetLayer);
+    for (let layer = minLayer; layer < maxLayer; layer++) {
+      const [traceLayerLinksCircular, traceLayerLinksNormalValue] = linkLayers.get(layer).reduce(
+        ([circular, normalValue], l) => {
+          if (l._trace === link._trace) {
+            if (l._circular) {
+              circular.push(l);
+            } else {
+              normalValue += l._value;
+            }
+          }
+          return [circular, normalValue];
+        },
+        [[], 0]
+      );
+      // each trace should flow only value of one so abs(sum(link values) - sum(circular values)) = 1
+      // yet it remains an estimate cause we do not know which circular link contribution to sum
+      // ass a good estimate assuming that each circular link contributes equal factor of sum
+      // might want to revisit it later
+      const circularValueEstimate = Math.abs(traceLayerLinksNormalValue - 1) / traceLayerLinksCircular.length;
+      console.assert(circularValueEstimate <= maxExpectedValue);
+      traceLayerLinksCircular.forEach(l => {
+        l._value = circularValueEstimate;
+      });
+    }
+  });
+  // propagate changes
+  sortedNodes.forEach(n => {
+    if (dt.startNodes.includes(n.id)) {
+      n._fixedValue = 1;
+    } else {
+      n._fixedValue = 0;
+    }
+    const prevLinks = dt.prevLinks(n);
+    const nextLinks = dt.nextLinks(n);
+    const nextNonCircularLinks = nextLinks.filter(({_circular}) => !_circular);
+    const nextCircularLinksSum = nextLinks.filter(({_circular}) => _circular).reduce((acc, l) => acc + l._value, 0);
+    n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
+    const outFrac = (n._fixedValue - nextCircularLinksSum) / nextNonCircularLinks.length;
+    nextNonCircularLinks.forEach(l => {
+      l._value = outFrac;
     });
   });
 

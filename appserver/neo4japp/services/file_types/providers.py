@@ -420,9 +420,9 @@ def create_default_node(node):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': '\n'.join(textwrap.TextWrapper(
+        'label': formal_label('\n'.join(textwrap.TextWrapper(
             width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-            replace_whitespace=False).wrap(node['display_name'])),
+            replace_whitespace=False).wrap(node['display_name']))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{node['data']['x'] / SCALING_FACTOR},"
@@ -688,7 +688,7 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
-        'label': edge['label'],
+        'label': formal_label(edge['label']),
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
@@ -701,6 +701,23 @@ def create_edge(edge, node_hash_type_dict):
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
         'URL': url
     }
+
+
+def formal_label(label):
+    """
+    Graphviz crashes if the last non-whitespace character of a label is backslash -> \
+    see https://sbrgsoftware.atlassian.net/browse/LL-3671
+    This function doubles last backslash (to escape it) and removes whitespaces from the end
+    :params:
+    :param label: string to be processed
+    :returns: stripped label string
+    """
+    if not label or label.isspace():
+        return label
+    label = label.strip()
+    if label[-1] == '\\' and label[-2] != '\\':
+        label += '\\'
+    return label
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -790,7 +807,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-            file.filename,
+            formal_label(file.filename),
             # New lines are not permitted in the comment - they will crash the export.
             # Replace them with spaces until we find different solution
             comment=file.description.replace('\n', ' ') if file.description else None,

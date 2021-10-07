@@ -546,18 +546,12 @@ class FileHierarchyView(FilesystemBaseView):
             ).to_dict()
         )
 
-        EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
-        filters = [
-            Files.recycling_date.is_(None)
-        ]
+        filters = [Files.recycling_date.is_(None)]
 
         if params['directories_only']:
             filters.append(Files.mime_type == DirectoryTypeProvider.MIME_TYPE)
 
-        hierarchy = self.get_nondeleted_recycled_files(
-            and_(*filters),
-            attr_excl=EXCLUDE_FIELDS
-        )
+        hierarchy = self.get_nondeleted_recycled_files(and_(*filters))
 
         root = {}  # type: ignore
         curr_dir = root
@@ -572,34 +566,26 @@ class FileHierarchyView(FilesystemBaseView):
                     curr_dir = curr_dir[id]
 
         def generate_node_tree(id, children):
-            file = db.session.query(
-                Files
-            ).options(
-                defer('annotations'),
-                defer('enrichment_annotations')
-            ).get(id)
+            file = db.session.query(Files).get(id)
             filename_path = file.filename_path
-            if children is None:
-                return {
-                    'data': file,
-                    'level': len(filename_path.split('/')) - 2
-                }
+            ordered_children = []
 
             # Unfortunately, Python doesn't seem to have a built-in for sorting strings the same
             # way Postgres sorts them with collation. Ideally, we would create our own sorting
             # function that would do this. This temporary solution of querying the children,
             # sorting them, and then ordering our data based on that order will work, but it will
             # also be relatively slow.
-            ordered_children = [
-                (child_id, children[child_id])
-                for child_id, in db.session.query(
-                    Files.id
-                ).filter(
-                    Files.id.in_(c_id for c_id in children)
-                ).order_by(
-                    Files.filename
-                )
-            ]
+            if children:
+                ordered_children = [
+                    (child_id, children[child_id])
+                    for child_id, in db.session.query(
+                        Files.id
+                    ).filter(
+                        Files.id.in_(c_id for c_id in children)
+                    ).order_by(
+                        Files.filename
+                    )
+                ]
 
             return {
                 'data': file,

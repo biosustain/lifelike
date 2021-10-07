@@ -3,14 +3,22 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { SankeyAdvancedOptions, ValueGenerator, SankeyData, SankeyTraceNetwork, SankeyLink, SankeyNode } from '../components/interfaces';
+import {
+  SankeyAdvancedOptions,
+  ValueGenerator,
+  SankeyData,
+  SankeyTraceNetwork,
+  SankeyLink,
+  SankeyNode,
+  SankeyPathReport,
+  SankeyPathReportEntity
+} from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
 import prescalers from '../components/algorithms/prescalers';
 import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../components/color-palette';
 import { uuidv4 } from '../../shared/utils';
 import { isPositiveNumber } from '../components/utils';
-import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 
 
 export const LINK_VALUE = {
@@ -60,8 +68,8 @@ export class SankeyControllerService {
         {
           description: PREDEFINED_VALUE.fixed_height,
           callback: () => {
-          this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
-          this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
+            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
+            this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
           }
         },
         {
@@ -201,7 +209,7 @@ export class SankeyControllerService {
   /**
    * Helper to create Map for fast lookup
    */
-  getNodeById<T extends {id: number}>(nodes: T[]) {
+  getNodeById<T extends { id: number }>(nodes: T[]) {
     // todo: find the way to declare it only once
     // tslint:disable-next-line
     const id = ({id}, i?, nodes?) => id;
@@ -227,6 +235,84 @@ export class SankeyControllerService {
         return o;
       }, new Set<SankeyNode>())
     ];
+  }
+
+  getPathReports() {
+    const {nodes, links} = this.allData;
+    const pathReports: SankeyPathReport = {};
+    this.allData.graph.trace_networks.forEach(traceNetwork => {
+      pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
+        const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
+        const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
+        // @ts-ignore
+        const layout = new SankeyLayoutService();
+        layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
+        const source = traceNodes.find(n => n.id === trace.source);
+        const target = traceNodes.find(n => n.id === trace.target);
+
+        const report: SankeyPathReportEntity[] = [];
+        const traversed = new WeakSet();
+
+        function traverse(node, row = 1, column = 1) {
+          if (node !== target) {
+            report.push({
+              row,
+              column,
+              label: node.label,
+              type: 'node'
+            });
+            column++;
+            report.push({
+              row,
+              column,
+              label: ' | ',
+              type: 'spacer'
+            });
+            column++;
+            node._sourceLinks.forEach(sl => {
+              if (traversed.has(sl)) {
+                report.push({
+                  row,
+                  column,
+                  label: `Circular link: ${sl.label}`,
+                  type: 'link'
+                });
+                row++;
+              } else {
+                traversed.add(sl);
+                report.push({
+                  row,
+                  column,
+                  label: sl.label,
+                  type: 'link'
+                });
+                column++;
+                report.push({
+                  row,
+                  column,
+                  label: ' | ',
+                  type: 'spacer'
+                });
+                column++;
+                report.push({
+                  row,
+                  column,
+                  label: sl._target.label,
+                  type: 'node'
+                });
+                row = traverse(sl._target, row + 1, column);
+              }
+            });
+          }
+          return row;
+        }
+
+        traverse(source);
+
+        return report;
+      });
+    });
+    return pathReports;
   }
 
   /**
@@ -400,6 +486,7 @@ export class SankeyControllerService {
     this.extractPredefinedValueProperties(graph);
     this.selectNetworkTrace(this.networkTraces[0]);
   }
+
   // endregion
 
   resetController() {
