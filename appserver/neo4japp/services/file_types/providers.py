@@ -416,7 +416,7 @@ def create_default_node(node):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': strip_label('\n'.join(textwrap.TextWrapper(
+        'label': formal_label('\n'.join(textwrap.TextWrapper(
             width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
             replace_whitespace=False).wrap(node['display_name']))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
@@ -667,7 +667,7 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
-        'label': strip_label(edge['label']),
+        'label': formal_label(edge['label']),
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
@@ -682,7 +682,7 @@ def create_edge(edge, node_hash_type_dict):
     }
 
 
-def strip_label(label):
+def formal_label(label):
     """
     Graphviz crashes if the last non-whitespace character of a label is backslash -> \
     see https://sbrgsoftware.atlassian.net/browse/LL-3671
@@ -754,7 +754,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                strip_label(file.filename),
+                formal_label(file.filename),
                 # New lines are not permitted in the comment - they will crash the export.
                 # Replace them with spaces until we find different solution
                 comment=file.description.replace('\n', ' ') if file.description else None,
