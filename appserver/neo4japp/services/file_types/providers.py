@@ -483,8 +483,6 @@ def get_link_icon_type(node):
     :returns: the correct label for the icon and a corresponding URL - if valid
     """
     data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-    label = 'link'
-    url = None
     for link in data:
         if ENRICHMENT_TABLE_RE.match(link['url']):
             return 'enrichment_table', link['url']
@@ -508,9 +506,8 @@ def get_link_icon_type(node):
             return 'project', link['url']
         # We do not return on email, as email icon has lower precedence.
         elif MAIL_RE.match(link['url']):
-            label = 'email'
-            url = link['url']
-    return label, url
+            return 'email', link['url']
+    return 'link', None
 
 
 def create_icon_node(node, params):
