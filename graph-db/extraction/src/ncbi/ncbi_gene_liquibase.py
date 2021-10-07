@@ -103,7 +103,7 @@ class NcbiGeneChangeLog(ChangeLog):
         return queries
 
     def add_index_change_set(self):
-        id = f'load NCBI data constraints on date {self.date_tag}'
+        id = f'load NCBI gene constraints on date {self.date_tag}'
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = 'Create constraints and indexes for NCBI gene nodes'
@@ -116,5 +116,4 @@ class NcbiGeneChangeLog(ChangeLog):
 if __name__ == '__main__':
     task = NcbiGeneChangeLog('Binh Vu', 'LL-3211')
     task.create_change_logs(True)
-    # NEEDS TO GO AFTER TAXONOMY because of self.load_ncbi_gene_taxonomy_rels
     task.generate_liquibase_changelog_file('ncbi_gene_changelog.xml', directory)

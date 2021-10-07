@@ -40,7 +40,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology" author="Binh Vu">
@@ -60,7 +60,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genes" author="Binh Vu">
@@ -80,7 +80,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-gene-ncbi-gene-kegg-relationship" author="Binh Vu">
@@ -100,7 +100,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-gene-kegg-orthology-relationship" author="Binh Vu">
@@ -120,7 +120,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology-pathway-relationship" author="Binh Vu">
@@ -140,7 +140,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway" author="Binh Vu">
@@ -162,7 +162,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway-relationship" author="Binh Vu">
@@ -182,6 +182,6 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 </databaseChangeLog>
