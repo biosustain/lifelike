@@ -3,8 +3,11 @@ import io
 import json
 import math
 import re
+import shutil
 import typing
 import zipfile
+import uuid
+
 from base64 import b64encode
 
 from io import BufferedIOBase
@@ -72,7 +75,8 @@ from neo4japp.constants import (
     RELATION_NODES,
     DETAIL_TEXT_LIMIT,
     DEFAULT_IMAGE_NODE_WIDTH,
-    DEFAULT_IMAGE_NODE_HEIGHT
+    DEFAULT_IMAGE_NODE_HEIGHT,
+    TEMP_PATH
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -383,15 +387,26 @@ class BiocTypeProvider(BaseFileTypeProvider):
             raise ValueError()
 
 
-def substitute_svg_images(map_content: io.BytesIO):
-    """ Match every link inside SVG file and replace it with raw PNG data
+def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfile.ZipFile,
+                          folder_name: str):
+    """ Match every link inside SVG file and replace it with raw PNG data of icons or images from
+    zip file. This has to be done after the graphviz call, as base64 PNG data is often longer than
+    graphviz max length limit (~16k chars)
     params:
     :param map_content: bytes of the exported map
+    :param images: list containing names of the images to embed
+    :param zip_file: zip containing images
+    :param folder_name: uuid of a temporary folder containing the images
+    :returns: a modified svg file containing embedded images
     """
     icon_data = get_icon_strings()
-    output = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], map_content.read()
-                           .decode(BYTE_ENCODING))
-    return io.BytesIO(bytes(output, BYTE_ENCODING))
+    text_content = map_content.read().decode(BYTE_ENCODING)
+    text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+    for image in images:
+        text_content = text_content.replace(
+            TEMP_PATH + folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+                zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
+    return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
 def get_icon_strings():
@@ -762,7 +777,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                             # Will throw KeyError exception is image is not present
                             im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
                             # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
-                            if imghdr.what(None, im) is not 'png':
+                            if imghdr.what(None, im) != 'png':
                                 raise ValueError
                 except KeyError:
                     raise ValueError
@@ -795,12 +810,16 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
+        folder_name = str(uuid.uuid4())
+        while os.path.isdir(TEMP_PATH + folder_name):
+            folder_name = str(uuid.uuid4())
+        os.mkdir(TEMP_PATH + folder_name)
+
         zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
             raise ValidationError
-
         graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
@@ -817,6 +836,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         node_hash_type_dict = {}
         x_values, y_values = [], []
+        images = []
 
         for node in json_graph['nodes']:
             if self_contained_export:
@@ -830,13 +850,15 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             if node['label'] == 'image':
                 try:
-                    im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+                    image_name = node.get('image_id') + '.png'
+                    images.append(image_name)
+                    im = zip_file.read("".join(['images/', image_name]))
+                    file_path = "".join([TEMP_PATH, folder_name, '/',  image_name])
+                    f = open(file_path, "wb")
+                    f.write(im)
+                    f.close()
                     params = create_image_node(node, params)
-                    # if format == 'svg':
-                    #     params['image'] = 'data:image/png;base64,' + b64encode(im)\
-                    #         .decode(BYTE_ENCODING)
-                    # else:
-                    params['image'] = f'{ASSETS_PATH}placeholder.png'
+                    params['image'] = file_path
                 except KeyError:
                     raise ValidationError
 
@@ -878,7 +900,9 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = io.BytesIO(graph.pipe())
 
         if format == 'svg':
-            content = substitute_svg_images(content)
+            content = substitute_svg_images(content, images, zip_file, folder_name)
+
+        shutil.rmtree(TEMP_PATH + folder_name)
 
         return FileExport(
             content=content,
