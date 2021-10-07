@@ -132,3 +132,14 @@ export interface SelectionEntity {
   type: string;
   entity: SankeyLink | SankeyNode | SankeyTrace;
 }
+
+export interface SankeyPathReportEntity {
+  label: string;
+  row: number;
+  column: number;
+  type: 'node' | 'link' | 'spacer';
+}
+
+export interface SankeyPathReport {
+  [networkTrace: string]: SankeyPathReportEntity[][];
+}

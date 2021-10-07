@@ -13,10 +13,7 @@ import { SankeyManyToManyLink } from '../interfaces';
 @Component({
   selector: 'app-sankey-many-to-many',
   templateUrl: './sankey.component.svg',
-  styleUrls: [
-    '../../../sankey-many-to-many-viewer/components/sankey/sankey.component.scss',
-    './sankey.component.scss'
-  ],
+  styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class SankeyManyToManyComponent extends SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
@@ -90,7 +87,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   async pathMouseOver(element, data) {
     this.highlightLink(element);
-    this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
+    // this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
   }
 
   async pathMouseOut(_element, _data) {
@@ -180,7 +177,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   async nodeMouseOver(element, data) {
     this.highlightNode(element);
-    this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
+    // this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
   }
 
   async nodeMouseOut(element, _data) {

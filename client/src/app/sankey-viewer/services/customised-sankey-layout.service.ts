@@ -22,6 +22,9 @@ const groupByTraceGroupWithAccumulation = () => {
   };
 };
 
+// https://sbrgsoftware.atlassian.net/browse/LL-3732
+const DEFAULT_FONT_SIZE = 12 * 1.60;
+
 @Injectable()
 // @ts-ignore
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
@@ -238,7 +241,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         }
     } = this;
     // noinspection JSUnusedLocalSymbols
-    return (d?, i?, n?) => 12 * fontSizeScale;
+    return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
   }
 
   /**
