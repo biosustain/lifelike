@@ -299,7 +299,10 @@ class FileListSchema(ResultListSchema):
 
 
 class FileNode(CamelCaseSchema):
-    data = fields.Nested(FileSchema)
+    data = fields.Nested(
+        FileSchema,
+        only=(
+            'hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename'))
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 

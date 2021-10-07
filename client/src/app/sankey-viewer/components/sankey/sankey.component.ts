@@ -17,11 +17,12 @@ import * as d3 from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import * as aligns from './aligin';
-import { createResizeObserver } from './utils';
-import { representativePositiveNumber } from '../utils';
-import { SankeyLayoutService } from './sankey-layout.service';
 import { SankeyData, SankeyNode } from '../interfaces';
+import { representativePositiveNumber } from '../utils';
+import * as aligns from './aligin';
+import { SankeyLayoutService } from './sankey-layout.service';
+import { createResizeObserver } from './utils';
+
 
 
 @Component({
@@ -137,31 +138,29 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
-    let nodes;
-    let links;
+    const nodes = this.selectedNodes;
+    const links = this.selectedLinks;
+
     if (selectedNodes) {
-      nodes = selectedNodes.currentValue;
       if (nodes.size) {
         this.selectNodes(nodes);
       } else {
         this.deselectNodes();
       }
-    } else {
-      nodes = this.selectedNodes;
     }
+
     if (selectedLinks) {
-      links = selectedLinks.currentValue;
       if (links.size) {
         this.selectLinks(links);
       } else {
         this.deselectLinks();
       }
-    } else {
-      links = this.selectedLinks;
     }
-    if (selectedNodes || selectedLinks) {
-      this.selectTraces({links, nodes});
+
+    if (selectedLinks || selectedNodes) {
+      this.calculateAndApplyTransitiveConnections(nodes, links);
     }
+
     if (searchedEntities) {
       const entities = searchedEntities.currentValue;
       if (entities.size) {
@@ -231,27 +230,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get sankeySelection() {
     return d3.select(this.svg && this.svg.nativeElement);
   }
-
-  deselectNodes() {
-    this.nodeSelection
-      .attr('selected', undefined);
-  }
-
-  deselectLinks() {
-    this.linkSelection
-      .attr('selected', undefined);
-  }
-
-  getSelectedTraces(selection) {
-    const {links = this.selectedLinks, nodes = this.selectedNodes} = selection;
-    const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
-        linksAccumulator.concat(_sourceLinks, _targetLinks)
-      , []
-    );
-    return new Set(nodesLinks.concat([...links]).map(link => link._trace)) as Set<object>;
-  }
-
   // endregion
 
   // region Graph sizing
@@ -341,24 +319,52 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.nodeClicked.emit(data);
   }
 
+  /**
+   * Callback that dims any nodes/links not connected through the hovered path.
+   * @param element the svg element being hovered over
+   * @param data object representing the link data
+   */
   async pathMouseOver(element, data) {
-    this.highlightTraces(new Set([data._trace]));
-  }
+    const nodeGroup = new Set<number>(data._trace.node_paths.reduce((acc: number[], curr: number[]) => acc.concat(curr), []));
+    const traces = new Set<any>([data._trace]);
 
-  async pathMouseOut(element, _data) {
-    this.unhighlightLinks();
-  }
-
-  async nodeMouseOver(element, data) {
-    this.highlightNode(element);
-    const nodeGroup = SankeyComponent.nodeGroupAccessor(data);
     this.highlightNodeGroup(nodeGroup);
-    const traces = new Set([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
     this.highlightTraces(traces);
   }
 
-  async nodeMouseOut(element, _data) {
-    this.unhighlightNode(element);
+  /**
+   * Callback that undims all nodes/links.
+   * @param element the svg element being hovered over
+   * @param data object representing the link data
+   */
+  async pathMouseOut(element, data) {
+    this.unhighlightNodes();
+    this.unhighlightLinks();
+  }
+
+  /**
+   * Callback that dims any nodes/links not connected through the hovered node.
+   * styling on the hovered node.
+   * @param element the svg element being hovered over
+   * @param data object representing the node data
+   */
+  async nodeMouseOver(element, data) {
+    const traces = new Set<any>([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
+    const nodeGroup = this.calculateNodeGroupFromTraces(traces);
+
+    this.applyNodeHover(element);
+    this.highlightNodeGroup(nodeGroup);
+    this.highlightTraces(traces);
+  }
+
+  /**
+   * Callback that undims all nodes/links. Also unsets hover styling on the hovered node.
+   * @param element the svg element being hovered over
+   * @param data object representing the node data
+   */
+  async nodeMouseOut(element, data) {
+    this.unapplyNodeHover(element);
+    this.unhighlightNodes();
     this.unhighlightLinks();
   }
 
@@ -445,23 +451,68 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   // region Select
-  selectTraces(selection) {
-    const selectedTraces = this.getSelectedTraces(selection);
-    this.assignAttrAndRaise(this.linkSelection, 'selectedTrace', ({_trace}) => selectedTraces.has(_trace));
-  }
-
+  /**
+   * Adds the `selected` property to the given input nodes.
+   * @param nodes set of node data objects to use for selection
+   */
   selectNodes(nodes: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
     this.nodeSelection
       .attr('selected', n => nodes.has(n));
   }
 
+  /**
+   * Adds the `selected` property to the given input links.
+   * @param links set of link data objects to use for selection
+   */
   selectLinks(links: Set<object>) {
     // tslint:disable-next-line:no-unused-expression
     this.linkSelection
       .attr('selected', l => links.has(l));
   }
 
+  /**
+   * Removes the `selected` property from all nodes on the canvas.
+   */
+   deselectNodes() {
+    this.nodeSelection
+      .attr('selected', undefined);
+  }
+
+  /**
+   * Removes the `selected` property from all links on the canvas.
+   */
+  deselectLinks() {
+    this.linkSelection
+      .attr('selected', undefined);
+  }
+
+  /**
+   * Given the set of selected nodes and links, calculcates the connected nodes/links and applies the `transitively-selected` attribute to
+   * them.
+   * @param nodes the full set of currently selected nodes
+   * @param links the full set of currently selected links
+   */
+   calculateAndApplyTransitiveConnections(nodes: Set<object>, links: Set<object>) {
+    if (nodes.size + links.size === 0) {
+      this.nodeSelection
+        .attr('transitively-selected', undefined);
+      this.linkSelection
+        .attr('transitively-selected', undefined);
+      return;
+    }
+
+    const traces = new Set<any>();
+    links.forEach((link: any) => traces.add(link._trace));
+    nodes.forEach((data: any) => [].concat(data._sourceLinks, data._targetLinks).forEach(link => traces.add(link._trace)));
+    const nodeGroup = this.calculateNodeGroupFromTraces(traces);
+
+
+    this.nodeSelection
+      .attr('transitively-selected', ({id}) => nodeGroup.has(id));
+    this.linkSelection
+      .attr('transitively-selected', ({_trace}) => traces.has(_trace));
+  }
   // endregion
 
   // region Search
@@ -569,16 +620,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   highlightNodeGroup(group) {
     this.nodeSelection
-      .attr('highlighted', node => SankeyComponent.nodeGroupAccessor(node) === group);
+      .attr('highlighted', ({id}) => group.has(id));
   }
 
-  highlightNode(element) {
+  unhighlightNodes() {
+    this.nodeSelection
+      .attr('highlighted', undefined);
+  }
+  // endregion
+
+  applyNodeHover(element) {
     const {
       nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
     } = this.sankey;
     const selection = d3.select(element)
       .raise()
-      .attr('highlighted', true)
       .select('g')
       .call(textGroup => {
         textGroup
@@ -603,11 +659,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     );
   }
 
-  unhighlightNode(element) {
+  unapplyNodeHover(element) {
     const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
-
-    this.nodeSelection
-      .attr('highlighted', false);
 
     const selection = d3.select(element);
     selection.select('text')
@@ -797,6 +850,27 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
               .text(nodeLabelShort);
           });
       });
+  }
+
+  // endregion
+
+  // region Helpers
+
+  /**
+   * Given a set of traces, returns a set of all nodes within those traces.
+   * @param traces a set of trace objects
+   * @returns a set of node ids representing all nodes in the given traces
+   */
+   calculateNodeGroupFromTraces(traces: Set<any>) {
+    const nodeGroup = new Set<number>();
+    traces.forEach(
+      trace => trace.node_paths.forEach(
+        path => path.forEach(
+          nodeId => nodeGroup.add(nodeId)
+        )
+      )
+    );
+    return nodeGroup;
   }
 
   // endregion

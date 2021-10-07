@@ -12,29 +12,30 @@
                            [showObjectMenu]="false"
         >
         </app-module-header>
-        <div class="module-body space-cards">
-            <app-group
-                    *ngFor="let d of data | keyvalue: originalOrder; let i = index"
-                    [title]="groups[i]"
-                    [data]="d.value"
-            >
-
-            </app-group>
-            <div class="card">
-                <div class="card-header">Significance legend
+        <div class="module-body flex-fill overflow-auto">
+            <div class="space-cards">
+                <app-group
+                        *ngFor="let d of data | keyvalue: originalOrder; let i = index"
+                        [title]="groups[i]"
+                        [data]="d.value"
+                >
+                </app-group>
+                <div class="card">
+                    <div class="card-header">Significance legend
+                    </div>
+                    <dl class="card-body legend">
+                        <dt>' '</dt>
+                        <dd><i>q-value</i> <= 1</dd>
+                        <dt>.</dt>
+                        <dd><i>q-value</i> <= 0.1</dd>
+                        <dt>*</dt>
+                        <dd><i>q-value</i> <= 0.05</dd>
+                        <dt>**</dt>
+                        <dd><i>q-value</i> <= 0.01</dd>
+                        <dt>***</dt>
+                        <dd><i>q-value</i> <= 0.001</dd>
+                    </dl>
                 </div>
-                <dl class="card-body legend">
-                    <dt>' '</dt>
-                    <dd><i>q-value</i> <= 1</dd>
-                    <dt>.</dt>
-                    <dd><i>q-value</i> <= 0.1</dd>
-                    <dt>*</dt>
-                    <dd><i>q-value</i> <= 0.05</dd>
-                    <dt>**</dt>
-                    <dd><i>q-value</i> <= 0.01</dd>
-                    <dt>***</dt>
-                    <dd><i>q-value</i> <= 0.001</dd>
-                </dl>
             </div>
         </div>
     </ng-container>

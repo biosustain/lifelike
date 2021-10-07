@@ -21,6 +21,7 @@ import { SankeyControllerService } from '../services/sankey-controller.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
 import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
+import { PathReportComponent } from './path-report/path-report.component';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -152,10 +153,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   open(content) {
-    this.modalService.open(content, {
+    const modalRef = this.modalService.open(content, {
       ariaLabelledBy: 'modal-basic-title', windowClass: 'adaptive-modal', size: 'xl'
-    }).result
+    });
+    modalRef.result
       .then(_ => _, _ => _);
+    return modalRef;
+  }
+
+  openPathReport() {
+    const modalRef = this.open(PathReportComponent);
+    modalRef.componentInstance.pathReport = this.sankeyController.getPathReports();
   }
 
   resetView() {

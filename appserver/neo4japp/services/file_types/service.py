@@ -6,7 +6,7 @@ import typing
 import magic
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.models import Files
+from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 
 
