@@ -1,5 +1,5 @@
 import {
-  DETAIL_NODE_LABELS,
+  DETAIL_NODE_LABELS, Hyperlink, Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -136,14 +136,14 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       // Override icon for link types
       if (d.label === 'link') {
-        const links: string[] = [
-          ...(d.data && d.data.sources ? d.data.sources.map(item => item.url || '') : []),
-          ...(d.data && d.data.hyperlinks ? d.data.hyperlinks.map(item => item.url || '') : []),
+        const links: Source[] | Hyperlink[] = [
+          ...(d.data && d.data.sources ? d.data.sources : []),
+          ...(d.data && d.data.hyperlinks ? d.data.hyperlinks : []),
         ];
 
         for (const link of links) {
           try {
-            const url = new URL(link, window.location.href);
+            const url = new URL(link.url, window.location.href);
             if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
               iconCode = '\uf15b';
               break;
@@ -158,12 +158,24 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
               iconCode = '\uf15b';
+              if (!link.domain) {
+                break;
+              }
+              const domain = link.domain.trim();
+              if (domain.endsWith('.docx') || domain.endsWith('.doc')) {
+                iconCode = '\uf0ce';
+              } else if (domain.endsWith('.xlsx') || domain.endsWith('xls')) {
+                iconCode = '';
+              } else if (domain.endsWith('pptx') || domain.endsWith('ppt')) {
+                iconCode = '';
+              }
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
               iconCode = '\uf5fd';
               break;
             } else if (url.protocol.match(/^mailto:$/i)) {
               iconCode = '\uf0e0';
+              break;
             }
           } catch (e) {
           }
