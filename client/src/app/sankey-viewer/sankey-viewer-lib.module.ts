@@ -23,11 +23,13 @@ import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-pro
 import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
+import { PathReportComponent } from './components/path-report/path-report.component';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
-    SankeyAdvancedPanelComponent
+    SankeyAdvancedPanelComponent,
+    PathReportComponent
   ],
   imports: [
     CommonModule,
