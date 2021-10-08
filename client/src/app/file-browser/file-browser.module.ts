@@ -46,6 +46,8 @@ import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
 import { ObjectViewerComponent } from './components/object-viewer.component';
+import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
+import { RecentFilesService } from './services/recent-files.service';
 
 @NgModule({
   declarations: [
@@ -55,6 +57,7 @@ import { ObjectViewerComponent } from './components/object-viewer.component';
     BrowserComponent,
     BrowserContextComponent,
     BrowserCommunityListComponent,
+    BrowserRecentListComponent,
     BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
