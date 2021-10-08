@@ -95,12 +95,26 @@ export enum FAClass {
 export enum Unicodes {
   Directory = '\uf07b',
   Map = '\uf542',
-// Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
-// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
-// other unicode values, they WILL NOT work.
-  Graph = '\ue000',
   EnrichmentTable = '\uf0ce',
   Pdf = '\uf1c1',
   BioC = '\uf1c1',
+  Mail = '\uf0e0',
+  Project = '\uf5fd',
   Default = '\uf15b',
+  // Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
+// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
+// other unicode values, they WILL NOT work.
+  Graph = '\ue000',
+  Excel = '\ue001',
+  Word = '\ue002',
+  PowerPoint = '\ue003',
 }
+// Colors used to render microsoft icons - they should not change
+export enum MicrosoftColors {
+  Excel = '#2e7d32',
+  Word = '#0d47a1',
+  PowerPoint = '#e64a19'
+}
+
+// We need to specify different font family for custom icons (see comment about graph unicode above)
+export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint];
