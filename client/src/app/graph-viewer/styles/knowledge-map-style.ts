@@ -31,7 +31,7 @@ import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-
 import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
-import {Unicodes} from '../../shared/constants';
+import {FA_CUSTOM_ICONS, MicrosoftColors, Unicodes} from '../../shared/constants';
 
 /**
  * Implements the style used on the Knowledge Graph.
@@ -133,6 +133,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       // ---------------------------------
       // Generic icon node + Note
       // ---------------------------------
+      let microsoftColor: string;
 
       // Override icon for link types
       if (d.label === 'link') {
@@ -145,46 +146,51 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           try {
             const url = new URL(link.url, window.location.href);
             if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
-              iconCode = '\uf15b';
+              iconCode = Unicodes.BioC;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
-              iconCode = '\uf0ce';
+              iconCode = Unicodes.EnrichmentTable;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
-              iconCode = '\uf542';
+              iconCode = Unicodes.Map;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//)) {
-              iconCode = '\ue000';
+              iconCode = Unicodes.Graph;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
-              iconCode = '\uf15b';
-              if (!link.domain) {
-                break;
-              }
-              const domain = link.domain.trim();
-              if (domain.endsWith('.docx') || domain.endsWith('.doc')) {
-                iconCode = '\uf0ce';
-              } else if (domain.endsWith('.xlsx') || domain.endsWith('xls')) {
-                iconCode = '';
-              } else if (domain.endsWith('pptx') || domain.endsWith('ppt')) {
-                iconCode = '';
-              }
+              iconCode = Unicodes.Default;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
-              iconCode = '\uf5fd';
+              iconCode = Unicodes.Project;
               break;
             } else if (url.protocol.match(/^mailto:$/i)) {
-              iconCode = '\uf0e0';
+              iconCode = Unicodes.Mail;
               break;
+            } else if (url.pathname.match(/^\/files\//)) {
+              const domain = link.domain.trim();
+              if (domain.endsWith('.docx') || domain.endsWith('.doc')) {
+                iconCode = Unicodes.Word;
+                microsoftColor = MicrosoftColors.Word;
+                break;
+              } else if (domain.endsWith('.xlsx') || domain.endsWith('xls')) {
+                iconCode = Unicodes.Excel;
+                microsoftColor = MicrosoftColors.Excel;
+                break;
+              } else if (domain.endsWith('pptx') || domain.endsWith('ppt')) {
+                iconCode = Unicodes.PowerPoint;
+                microsoftColor = MicrosoftColors.PowerPoint;
+                break;
+              }
             }
           } catch (e) {
           }
         }
       }
-
-      const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
+      // Does not change the color of Excel/Word/PowerPoint icons
+      const iconLabelColor = microsoftColor ? microsoftColor : nullCoalesce(d.icon ? d.icon.color : null, textColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
-      const fontAwesomeFont = iconCode === Unicodes.Graph ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+      // Change font family to custom kit if icon is customly added
+      const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, fontAwesomeFont);
       const iconFont = `${iconSize}px ${iconFontFace}`;
 
