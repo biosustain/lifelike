@@ -1,6 +1,9 @@
+import os
+import logging
+import sys
+
 from mako.template import Template
 from common.utils import *
-import os
 
 template_dir = os.path.join(get_data_dir(), 'templates')
 sql_template = 'sql_change_set.template'
@@ -13,7 +16,7 @@ CUSTOM_PARAMS = """
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"
+      localSaveFileDir="${localSaveFileDir}"
 """
 
 
@@ -37,6 +40,25 @@ class ChangeLog:
         self.author = author
         self.id_prefix = change_id_prefix
         self.file_prefix = f'jira-{change_id_prefix}-'
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        _handler = logging.StreamHandler(stream=sys.stdout)
+        self.logger.addHandler(_handler)
+
+    def generate_liquibase_changelog_file(self, outfile, directory):
+        if not self.change_sets:
+            self.logger.error('Need to call create_change_logs first')
+            return
+        template = get_changelog_template()
+        changes = []
+        for cs in self.change_sets:
+            s = cs.create_changelog_str()
+            self.logger.info(s)
+            changes.append(s)
+        change_str = '\n\n'.join(changes)
+        with open(os.path.join(directory, outfile), 'w') as f:
+            f.write(template.render(change_sets_str=change_str))
 
 
 class ChangeSet:

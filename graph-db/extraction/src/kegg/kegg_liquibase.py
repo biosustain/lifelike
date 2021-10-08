@@ -29,20 +29,6 @@ class KeggChangeLog(ChangeLog):
         self.load_ko2pathway_rels()
         self.load_genome2pathway_rels()
 
-    def generate_liquibase_changelog_file(self, outfile):
-        if not self.change_sets:
-            print('need to call create_change_logs first')
-            return
-        template = get_changelog_template()
-        changes = []
-        for cs in self.change_sets:
-            s = cs.create_changelog_str()
-            print(s)
-            changes.append(s)
-        change_str = '\n\n'.join(changes)
-        with open(os.path.join(directory, outfile), 'w') as f:
-            f.write(template.render(change_sets_str=change_str))
-
     def create_indexes(self):
         queries = []
         queries.append(get_create_constraint_query(NODE_KEGG, PROP_ID, "constraint_kegg_id") + ';')
@@ -138,4 +124,4 @@ class KeggChangeLog(ChangeLog):
 if __name__ == '__main__':
     task = KeggChangeLog('rcai', 'LL-1234')
     task.create_change_logs(True)
-    task.generate_liquibase_changelog_file('kegg_changelog.xml')
+    task.generate_liquibase_changelog_file('kegg_changelog.xml', directory)

@@ -127,7 +127,7 @@ def get_create_relationships_query(
     :param rel_properties: relationship properties
     """
     rows = list()
-    rows.append("UNWIND $rows as row")
+    rows.append("UNWIND $rows AS row")
     rows.append("MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
         node1_label, node1_id, node1_col, node2_label, node2_id, node2_col))
     if foreach:
@@ -150,7 +150,7 @@ def get_create_synonym_relationships_query(
     node_label:str,
     node_id:str,
     node_id_col:str,
-    synonym_col,
+    synonym_col: str,
     rel_properties=[],
     return_node_count: bool=False
 ):
@@ -166,8 +166,8 @@ def get_create_synonym_relationships_query(
     :return: cypher query with parameter $dict
     """
     query_rows = list()
-    query_rows.append("UNWIND $rows as row")
-    query_rows.append("MERGE (a:Synonym {name: row.%s}) set a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
+    query_rows.append("UNWIND $rows AS row")
+    query_rows.append("MERGE (a:Synonym {name: row.%s}) SET a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
     query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col))
     query_rows.append("MERGE (b)-[r:HAS_SYNONYM]->(a)")
     prop_sets = []
