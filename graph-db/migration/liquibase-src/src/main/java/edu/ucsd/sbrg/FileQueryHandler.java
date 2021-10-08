@@ -40,7 +40,7 @@ import java.util.Scanner;
  *       neo4jDatabase="${neo4jDatabase}"
  *       azureStorageName="${azureStorageName}"
  *       azureStorageKey="${azureStorageKey}"
- *       azureSaveFileDir="${azureSaveFileDir}"/>
+ *       localSaveFileDir="${localSaveFileDir}"/>
  * </changeSet>
  *
  * query: the cypher query to be executed.
@@ -62,7 +62,7 @@ public class FileQueryHandler implements CustomTaskChange {
     private String neo4jDatabase;
     private String azureStorageName;
     private String azureStorageKey;
-    private String azureSaveFileDir;
+    private String localSaveFileDir;
 
     public FileQueryHandler() { }
 
@@ -138,18 +138,18 @@ public class FileQueryHandler implements CustomTaskChange {
         this.azureStorageKey = azureStorageKey;
     }
 
-    public String getAzureSaveFileDir() {
-        return this.azureSaveFileDir;
+    public String getLocalSaveFileDir() {
+        return this.localSaveFileDir;
     }
 
-    public void setAzureSaveFileDir(String azureSaveFileDir) {
-        this.azureSaveFileDir = azureSaveFileDir;
+    public void setLocalSaveFileDir(String localSaveFileDir) {
+        this.localSaveFileDir = localSaveFileDir;
     }
 
     @Override
     public void execute(Database database) throws CustomChangeException {
         AzureCloudStorage cloudStorage = new AzureCloudStorage(this.getAzureStorageName(), this.getAzureStorageKey());
-        FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.getFileName(), this.getAzureSaveFileDir());
+        FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.getFileName(), this.getLocalSaveFileDir());
         Neo4jGraph graph = new Neo4jGraph(this.getNeo4jHost(), this.getNeo4jCredentials(), this.getNeo4jDatabase());
 
         List<String[]> content = new ArrayList<>();
@@ -161,7 +161,7 @@ public class FileQueryHandler implements CustomTaskChange {
         try {
             if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
                 logger.info("Downloading file " + this.getFileName() + " from Azure Cloud.");
-                cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getAzureSaveFileDir());
+                cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getLocalSaveFileDir());
             }
 //            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
