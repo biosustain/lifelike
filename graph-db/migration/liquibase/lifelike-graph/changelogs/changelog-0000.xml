@@ -33,7 +33,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-compound" author="Binh Vu">
@@ -59,7 +59,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-chemical" author="Binh Vu">
@@ -85,7 +85,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
@@ -122,7 +122,7 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      azureSaveFileDir="${azureSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-gene" author="Binh Vu">

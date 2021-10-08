@@ -1,6 +1,4 @@
 import os
-import logging
-import sys
 from datetime import datetime
 
 from common.constants import *
@@ -21,10 +19,6 @@ class GoChangeLog(ChangeLog):
         super().__init__(author, change_id_prefix)
         self.date_tag = datetime.today().strftime('%m%d%Y')
         self.change_sets = []
-        self.logger = logging.getLogger('go.go_liquibase')
-        self.logger.setLevel(logging.INFO)
-        _handler = logging.StreamHandler(stream=sys.stdout)
-        self.logger.addHandler(_handler)
 
     def create_change_logs(self, initial_load=False):
         if initial_load:
@@ -32,20 +26,6 @@ class GoChangeLog(ChangeLog):
         self.load_go_nodes()
         self.load_gosynonym_rels()
         self.load_gospecific_rels()
-
-    def generate_liquibase_changelog_file(self, outfile):
-        if not self.change_sets:
-            self.logger.error('Need to call create_change_logs first')
-            return
-        template = get_changelog_template()
-        changes = []
-        for cs in self.change_sets:
-            s = cs.create_changelog_str()
-            self.logger.info(s)
-            changes.append(s)
-        change_str = '\n\n'.join(changes)
-        with open(os.path.join(directory, outfile), 'w') as f:
-            f.write(template.render(change_sets_str=change_str))
 
     def load_go_nodes(self):
         for ns in NAMESPACES:
@@ -85,7 +65,9 @@ class GoChangeLog(ChangeLog):
         return queries
 
     def add_index_change_set(self):
-        id = 'KEGG data initial load ' + self.date_tag
+        id = f'GO data constraints on date {self.date_tag}'
+        if self.id_prefix:
+            id = f'{self.id_prefix} {id}'
         comment = "Create constraints and indexes for GO nodes"
         queries = self.create_indexes()
         query_str = '\n'.join(queries)
@@ -96,4 +78,4 @@ class GoChangeLog(ChangeLog):
 if __name__ == '__main__':
     task = GoChangeLog('Binh Vu', 'LL-3213')
     task.create_change_logs(True)
-    task.generate_liquibase_changelog_file('go_changelog.xml')
+    task.generate_liquibase_changelog_file('go_changelog.xml', directory)
