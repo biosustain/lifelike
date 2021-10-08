@@ -186,8 +186,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           }
         }
       }
-      // Does not change the color of Excel/Word/PowerPoint icons
-      const iconLabelColor = microsoftColor ? microsoftColor : nullCoalesce(d.icon ? d.icon.color : null, textColor);
+      let iconTextColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
+      if (microsoftColor && styleData.fillColor === null) {
+        iconTextColor = microsoftColor;
+      }
+      const iconLabelColor = nullCoalesce(microsoftColor, iconTextColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
       // Change font family to custom kit if icon is customly added
       const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
@@ -206,7 +209,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         maxWidth: this.maxIconNodeWidthIfUnsized,
         text: d.display_name,
         font: labelFont,
-        fillStyle: iconLabelColor,
+        fillStyle: iconTextColor,
         horizontalAlign: TextAlignment.Center,
       });
 
