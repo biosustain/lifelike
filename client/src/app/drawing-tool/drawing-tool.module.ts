@@ -56,7 +56,6 @@ import { MapImageProviderService } from './services/map-image-provider.service';
       useClass: GraphEntityDataProvider,
       multi: true,
     },
-    // CopyPasteMapsService, // TODO: figure out where this comes from
     MapImageProviderService,
   ],
   exports: [

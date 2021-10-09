@@ -27,7 +27,6 @@ import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
 import { MimeTypes } from '../../shared/constants';
 
-export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 export const MAP_SHORTHAND = 'map';
 
 @Injectable()

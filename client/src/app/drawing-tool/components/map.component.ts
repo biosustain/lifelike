@@ -36,7 +36,7 @@ import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resourc
 import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-import { MAP_MIMETYPE } from '../providers/map.type-provider';
+import { MimeTypes } from '../../shared/constants';
 
 @Component({
   selector: 'app-map',
@@ -121,7 +121,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   ngAfterViewInit() {
     Promise.resolve().then(() => {
-      // const style = new KnowledgeMapStyle();
       const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService)); // from below
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
@@ -204,25 +203,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       }
     });
 
-    /**
-     * at this point `graphRepr` has the JSON version of the map as a string,
-     * `imageBlobs` has all images in the map as blobs, and `imageIds` has all images' Ids
-     * for all index `i`, `imageBlobs[i]` should correspond to `imageIds[i]` (just like in save)
-     */
-
-    /**
-     * working stuff
-     *    open the map in new link, click edit
-     *    open map from workbench
-     *    in a new window, try to open map thumbnail, close it and open thumbnail again
-     * not working
-     *    refresh the map anytime after it's opened
-     *    open the map in a new tab (share -> link -> put link in new tab)
-     *    in a new window, try to open map thumbnail
-     * The idea is to request re-render after all images are completely loaded in
-     */
-
-    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MAP_MIMETYPE })).pipe(
+    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({ label: 'Parse map data' }),
     ).subscribe(
@@ -256,8 +237,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    // Unlikely but it can be destroyed before first render, for instance in case of error
-    // (before ngAfterViewInit)
     const { historyChangesSubscription, unsavedChangesSubscription } = this;
     if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
     if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
