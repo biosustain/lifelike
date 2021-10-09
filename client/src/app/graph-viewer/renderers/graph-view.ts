@@ -367,6 +367,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
   }
 
+    /**
+     * Invalidate any cache entries for the given edge. If changes are made
+     * that might affect how the edge is rendered, this method must be called.
+     * @param d the edge
+     */
   invalidateEdge(d: UniversalGraphEdge): void {
   }
 

@@ -56,7 +56,6 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
-const IMAGE = '#fedcba';
 
 const annotationTypes: AnnotationStyle[] = [
   {
