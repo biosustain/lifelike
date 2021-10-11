@@ -99,38 +99,23 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
     // graph has no images
     if (imageNodeObservables.length === 0) {
-      zip.generateAsync({ type: 'blob' }).then((content) => {
-        this.filesystemService.save([this.locator], { contentValue: content })
-          .pipe(this.errorHandler.create({label: 'Update map'}))
-          .subscribe(() => {
-            this.unsavedChanges$.next(false);
-            this.emitModuleProperties(); // TODO: what does this do?
-            this.snackBar.open('Map saved.', null, {
-              duration: 2000,
-            });
-          });
+      combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
+        for (let i = 0; i < imageIds.length; i++) {
+          imgs.file(imageIds[i] + '.png', imageBlobs[i]);
+        }
       });
-      return; // terminate function so we don't move on to "with image" part
     }
-    // has images, wait for all image observables to emit value, then save blobs
-    combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
-      for (let i = 0; i < imageIds.length; i++) {
-        imgs.file(imageIds[i] + '.png', imageBlobs[i]);
-      }
-      zip.generateAsync({ type: 'blob' })
-        .then((content) => {
-          // saveAs(content, 'map.zip'); // uncomment this line to download and verify that the generated zip file is correct
-          this.filesystemService.save([this.locator], { contentValue: content })
-            .pipe(this.errorHandler.create({label: 'Update map'}))
-            .subscribe(() => {
-              this.unsavedChanges$.next(false);
-              this.emitModuleProperties();
-              this.snackBar.open('Map saved.', null, {
-                duration: 2000,
-              });
-            });
+    zip.generateAsync({ type: 'blob' }).then((content) => {
+      this.filesystemService.save([this.locator], { contentValue: content })
+        .pipe(this.errorHandler.create({label: 'Update map'}))
+        .subscribe(() => {
+          this.unsavedChanges$.next(false);
+          this.emitModuleProperties(); // TODO: what does this do?
+          this.snackBar.open('Map saved.', null, {
+            duration: 2000,
+          });
         });
-      });
+    });
   }
 
   openCloneDialog() {
