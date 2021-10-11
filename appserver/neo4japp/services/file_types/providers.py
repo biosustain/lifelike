@@ -512,11 +512,11 @@ def get_link_icon_type(node):
             domain = link.get('domain', "").strip()
             if domain:
                 # Do not return url, as we are not creating links to files that we not create on LL
-                if domain.endswith('docx') or domain.endswith('doc'):
+                if domain.endswith('.docx') or domain.endswith('.doc'):
                     return 'ms-word', None
-                elif domain.endswith('pptx') or domain.endswith('ppt'):
+                elif domain.endswith('.pptx') or domain.endswith('.ppt'):
                     return 'ms-powerpoint', None
-                elif domain.endswith('xlsx') or domain.endswith('xls'):
+                elif domain.endswith('.xlsx') or domain.endswith('.xls'):
                     return 'ms-excel', None
     return 'link', None
 
