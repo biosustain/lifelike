@@ -106,7 +106,7 @@ RETURN COUNT(*)
     <sql>
     
         CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI) WHERE exists(n.locus_tag) AND n.locus_tag <> '' AND n.locus_tag <> n.name RETURN n',
+        'MATCH (n:Gene:db_NCBI) WHERE exists(n.locus_tag) AND n.locus_tag &lt;> '' AND n.locus_tag &lt;> n.name RETURN n',
         'MERGE (s:Synonym {name:n.locus_tag}) SET s.lowercase_name = toLower(n.locus_tag) MERGE (n)-[:HAS_SYNONYM]->(s)',
         {batchSize:10000})
         
