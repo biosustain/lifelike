@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 
-import { SankeyTraceNetwork, SankeyLink } from '../../sankey-viewer/components/interfaces';
-import { SankeyControllerService, PREDEFINED_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
-import { SankeyManyToManyAdvancedOptions } from '../components/interfaces';
+import { flatMap, groupBy, extend, merge } from 'lodash-es';
+
+import { SankeyTraceNetwork, SankeyLink, ValueGenerator } from '../../sankey-viewer/components/interfaces';
+import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
+import { SankeyManyToManyAdvancedOptions, SankeyManyToManyLink } from '../components/interfaces';
+import * as linkValues from '../components/algorithms/linkValues';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -14,63 +17,53 @@ import { SankeyManyToManyAdvancedOptions } from '../components/interfaces';
 // @ts-ignore
 export class SankeyManyToManyControllerService extends SankeyControllerService {
   get defaultOptions(): SankeyManyToManyAdvancedOptions {
-    return Object.assign(super.defaultOptions, {
+    return merge(super.defaultOptions, {
       highlightCircular: true,
       nodeHeight: {
-        min: {
-          enabled: false,
-          value: 0
-        },
         max: {
           enabled: true,
-          ratio: 10
+          ratio: 2
         }
+      },
+      linkValueGenerators: {
+        input_count: {
+          description: LINK_VALUE.input_count,
+          preprocessing: linkValues.inputCount,
+          disabled: () => false
+        } as ValueGenerator
       }
     });
   }
 
   // Trace logic
   /**
-   * Extract links which relates to certain trace network and
-   * assign _color property based on their trace.
-   * Also creates duplicates if given link is used in multiple traces.
+   * Extract links which relates to certain trace network.
    */
   getNetworkTraceLinks(
     networkTrace: SankeyTraceNetwork,
     links: Array<SankeyLink>
-  ) {
-    const traceBasedLinkSplitMap = new Map();
-    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
-      return o.concat(
-        trace.edges.map(linkIdx => {
-          const originLink = links[linkIdx];
-          const link = {
-            ...originLink,
-            _trace: trace
-          };
-          link._id += trace.group;
-          let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
-          if (!adjacentLinks) {
-            adjacentLinks = [];
-            traceBasedLinkSplitMap.set(originLink, adjacentLinks);
-          }
-          adjacentLinks.push(link);
-          return link;
-        })
-      );
-    }, []);
-    for (const adjacentLinkGroup of traceBasedLinkSplitMap.values()) {
-      const adjacentLinkGroupLength = adjacentLinkGroup.length;
-      // normalise only if multiple (skip /1)
-      if (adjacentLinkGroupLength) {
-        adjacentLinkGroup.forEach(l => {
-          l._adjacent_divider = adjacentLinkGroupLength;
-        });
-      }
-    }
-    return networkTraceLinks;
+  ): SankeyManyToManyLink[] {
+    const traceLink = flatMap(networkTrace.traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
+    const linkIdxToTraceLink = groupBy(traceLink, 'linkIdx');
+    return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => ({
+      ...links[linkIdx],
+      _traces: wrappedTraces.map(({trace}) => trace)
+    }));
   }
 
+  /**
+   * Given nodes and links find all traces which they are relating to.
+   */
+  getRelatedTraces({nodes, links}) {
+    // check nodes links for traces which are coming in and out
+    const nodesLinks = [...nodes].reduce(
+      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
+        linksAccumulator.concat(_sourceLinks, _targetLinks)
+      , []
+    );
+    // add links traces and reduce to unique values
+    return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<GraphTrace>;
+  }
 
   getNetworkTraceDefaultSizing(networkTrace) {
     let {default_sizing} = networkTrace;

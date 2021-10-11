@@ -48,7 +48,10 @@ import { ButtonWithSelectableTextComponent } from './button-with-selectable-text
     SharedModule,
   ],
   exports: [
-    SankeyDetailsPanelComponent
+    SankeyDetailsPanelComponent,
+    SankeyNodeDetailsComponent,
+    SankeyTraceDetailsComponent,
+    ButtonWithSelectableTextComponent
   ],
 })
 export class SankeyDetailsPanelModule {

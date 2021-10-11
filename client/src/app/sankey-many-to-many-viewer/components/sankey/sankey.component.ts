@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input, ElementRef } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import * as d3 from 'd3';
 
@@ -6,6 +7,8 @@ import { SankeyNode, SankeyLink } from 'app/sankey-viewer/components/interfaces'
 import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
 import { SankeyComponent } from 'app/sankey-viewer/components/sankey/sankey.component';
 import { uuidv4 } from 'app/shared/utils';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
 
 import { SankeyManyToManyLink } from '../interfaces';
 
@@ -18,6 +21,20 @@ import { SankeyManyToManyLink } from '../interfaces';
 })
 export class SankeyManyToManyComponent extends SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() highlightCircular;
+
+  constructor(
+    readonly clipboard: ClipboardService,
+    readonly snackBar: MatSnackBar,
+    readonly sankey: SankeyLayoutService,
+    readonly wrapper: ElementRef
+  ) {
+    super(clipboard, snackBar, sankey, wrapper);
+    Object.assign(sankey, {
+      linkSort: (a, b) =>
+        (b._source.index - a._source.index) ||
+        (b._target.index - a._target.index)
+    });
+  }
 
   // region Life cycle
   ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {

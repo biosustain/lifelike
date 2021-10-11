@@ -11,19 +11,6 @@ import { SankeyControllerService } from '../../sankey-viewer/services/sankey-con
 import { DirectedTraversal } from '../../sankey-viewer/services/directed-traversal';
 import { SankeyManyToManyLink } from '../components/interfaces';
 
-const groupByTraceGroupWithAccumulation = () => {
-  const traceGroupOrder = new Set();
-  return links => {
-    links.forEach(({_trace}) => {
-      traceGroupOrder.add(_trace.group);
-    });
-    const groups = [...traceGroupOrder];
-    return links.sort((a, b) =>
-      (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group))
-    );
-  };
-};
-
 @Injectable()
 // @ts-ignore
 export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLayoutService {
@@ -247,18 +234,15 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
     };
   }
 
-  get fontSize() {
-    const {
-      sankeyController:
-        {
-          options:
-            {
-              fontSizeScale
-            }
-        }
-    } = this;
-    // noinspection JSUnusedLocalSymbols
-    return (d?, i?, n?) => 12 * fontSizeScale;
+  get nodeColor() {
+    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      // if it is only one then color node
+      if (difference.size === 1) {
+        return _color;
+      }
+    };
   }
 
   /**
@@ -320,7 +304,6 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
     // decide on direction
     const dt = new DirectedTraversal([firstColumn, lastColumn]);
     // order next related nodes in order this group first appeared
-    const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
     const visited = new Set();
     let order = 0;
     const traceOrder = new Set();
@@ -336,23 +319,16 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
         }
         visited.add(node);
         node._order = order++;
-        const links = sortByTrace(dt.nextLinks(node));
+        const links = dt.nextLinks(node);
         relayoutLinks(links);
       });
     // traverse tree of connections
     relayoutNodes(dt.startNodes);
 
-    const traces = [...traceOrder];
-    const groups = [...traces.map(({group}) => group)];
-
     this.linkSort = (a, b) => (
       // sort by order given in tree traversal
       (a._source._order - b._source._order) ||
-      (a._target._order - b._target._order) ||
-      // if links connects same nodes sort them by group
-      (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group)) ||
-      // each group sort by trace
-      (traces.indexOf(a._trace) - traces.indexOf(b._trace))
+      (a._target._order - b._target._order)
     );
 
     columns.forEach(nodes => {
