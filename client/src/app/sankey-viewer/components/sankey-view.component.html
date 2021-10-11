@@ -26,11 +26,11 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body p-0 pb-1">
                             <ng-container
                                     *ngIf="isArray(allData.graph.log); else justText">
 
-                                <ul class="list-group list-group-flush cancel-out-card-padding">
+                                <ul class="list-group list-group-flush">
                                     <li *ngFor="let log of allData.graph.log"
                                         class="list-group-item"
                                     >{{ log }}</li>

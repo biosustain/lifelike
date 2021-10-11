@@ -39,7 +39,7 @@
             </ngb-panel>
             <ngb-panel cardClass="filled-card" title="Labels">
                 <ng-template ngbPanelContent>
-                    <ul class="list-group list-group-flush cancel-out-card-padding">
+                    <ul class="list-group list-group-flush">
                         <li *ngFor="let label of entity.labels"
                             class="list-group-item"
                         >{{ label }}</li>
@@ -48,7 +48,7 @@
             </ngb-panel>
             <ngb-panel cardClass="filled-card" title="Properties">
                 <ng-template ngbPanelContent>
-                    <ul class="list-group list-group-flush cancel-out-card-padding">
+                    <ul class="list-group list-group-flush">
                         <li *ngFor="let property of options.nodeValueAccessors"
                             [ngClass]="{
                                 'list-group-item': true,
