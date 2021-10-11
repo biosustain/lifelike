@@ -160,7 +160,7 @@ public class FileQueryHandler implements CustomTaskChange {
         String[] header = null;
         try {
             if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
-                System.out.println("Downloading file " + this.getFileName() + " from Azure Cloud.");
+                logger.info("Downloading file " + this.getFileName() + " from Azure Cloud.");
                 cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getLocalSaveFileDir());
             }
 //            content = fileExtract.getFileContent();
@@ -169,7 +169,7 @@ public class FileQueryHandler implements CustomTaskChange {
             sc.useDelimiter(fileExtract.getDelimiter());
             while (sc.hasNextLine()) {
                 String currentLine = sc.nextLine();
-                System.out.println("Read line '" + currentLine + "' from file.");
+                logger.debug("Read line '" + currentLine + "' from file.");
                 if (header == null) {
                     header = currentLine.split(fileExtract.getDelimiter(), -1);
                     skipCount++;
@@ -185,7 +185,7 @@ public class FileQueryHandler implements CustomTaskChange {
                                 String output = "Encountered error! Set startAt to line " +
                                         (processed + 1) + " (last value processed in file: " + lastProcessedLine +
                                         ") to pick up where left off.";
-                                System.out.println(output);
+                                logger.error(output);
                                 throw new CustomChangeException();
                             }
                             processed += content.size();
@@ -214,7 +214,7 @@ public class FileQueryHandler implements CustomTaskChange {
                     String output = "Encountered error! Set startAt to line " +
                             (processed + 1) + " (last value processed in file: " + lastProcessedLine +
                             ") to pick up where left off.";
-                    System.out.println(output);
+                    logger.error(output);
                     throw new CustomChangeException();
                 }
             }
