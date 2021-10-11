@@ -172,11 +172,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
                 iconCode = Unicodes.Word;
                 microsoftColor = MicrosoftColors.Word;
                 break;
-              } else if (domain.endsWith('.xlsx') || domain.endsWith('xls')) {
+              } else if (domain.endsWith('.xlsx') || domain.endsWith('.xls')) {
                 iconCode = Unicodes.Excel;
                 microsoftColor = MicrosoftColors.Excel;
                 break;
-              } else if (domain.endsWith('pptx') || domain.endsWith('ppt')) {
+              } else if (domain.endsWith('.pptx') || domain.endsWith('.ppt')) {
                 iconCode = Unicodes.PowerPoint;
                 microsoftColor = MicrosoftColors.PowerPoint;
                 break;
