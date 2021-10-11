@@ -62,7 +62,7 @@ class ChangeLog:
 
 
 class ChangeSet:
-    def __init__(self, id, author, comment, cypher):
+    def __init__(self, id, author: str, comment: str, cypher: str):
         self.id = id
         self.author = author
         self.comment = comment
@@ -70,6 +70,8 @@ class ChangeSet:
 
     def create_changelog_str(self):
         template = get_template(sql_template)
+        # liquibase doesn't like the `<` character
+        self.cypher = self.cypher.replace('<', '&lt;')
         return template.render(change_id=self.id, author=self.author, change_comment=self.comment, cypher_query=self.cypher)
 
 
