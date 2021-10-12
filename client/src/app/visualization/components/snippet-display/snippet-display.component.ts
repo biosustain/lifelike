@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,28 +20,17 @@ import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/gen
     templateUrl: './snippet-display.component.html',
     styleUrls: ['./snippet-display.component.scss']
 })
-export class SnippetDisplayComponent implements OnDestroy {
+export class SnippetDisplayComponent implements OnChanges, OnDestroy {
     @Output() requestNewPageEmitter: EventEmitter<
       NewClusterSnippetsPageRequest |
       NewEdgeSnippetsPageRequest |
       NewNodePairSnippetsPageRequest
     >;
-    @Input() set isNewEntity(isNewEntity: boolean) {
-        // An update to isNewEntity indicates that new data was requested -- either for a new entity
-        // or for the first time for an existing one -- so set dataLoaded to false until snippetData is updated.
-        this.dataLoaded = false;
-        this.initNewEntity = isNewEntity;
-    }
+    @Input() isNewEntity: boolean;
     @Input() totalResults: number;
-    @Input() set snippetData(snippetData: SidenavSnippetData[]) {
-        this.snippets = snippetData;
-        this.dataLoaded = true;
-        this.loadingDataSource.next(true);
-    }
+    @Input() snippetData: SidenavSnippetData[];
     @Input() queryData: EdgeConnectionData | DuplicateEdgeConnectionData[];
     @Input() legend: Map<string, string[]>;
-
-    snippets: SidenavSnippetData[];
 
     initNewEntity: boolean;
 
@@ -86,6 +75,20 @@ export class SnippetDisplayComponent implements OnDestroy {
                 this.initPages();
             }
         });
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+      if (changes.hasOwnProperty('isNewEntity')) {
+        // An update to isNewEntity indicates that new data was requested -- either for a new entity
+        // or for the first time for an existing one -- so set dataLoaded to false until snippetData is updated.
+        this.dataLoaded = false;
+        this.initNewEntity = changes.isNewEntity.currentValue;
+      }
+
+      if (changes.hasOwnProperty('snippetData')) {
+        this.dataLoaded = true;
+        this.loadingDataSource.next(true);
+      }
     }
 
     ngOnDestroy() {
