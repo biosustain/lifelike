@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 curl -O https://zenodo.org/record/3459420/files/part-i-chemical-disease-path-theme-distributions.txt.gz?download=1
 curl -O https://zenodo.org/record/3459420/files/part-i-chemical-gene-path-theme-distributions.txt.gz?download=1
 curl -O https://zenodo.org/record/3459420/files/part-i-gene-disease-path-theme-distributions.txt.gz?download=1
