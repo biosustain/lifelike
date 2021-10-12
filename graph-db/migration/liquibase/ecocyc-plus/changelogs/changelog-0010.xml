@@ -5,10 +5,10 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3702 cut string rels with threshold" author="rcai">
-    <comment>Remove ecocyc-plus string relationships with 0.4 threshold. After the update, create ecocyc-plus-10012021.dump file</comment>
+  <changeSet id="remove TYPE_OF rel" author="rcai">
+    <comment>Remove TYPE_OF relationships, then create ecocyc-plus-10062021.dump file</comment>
     <sql>
-    match(n:Gene)-[r]-(:Gene) where r.score &lt; 0.4 delete r;
+    match (n)-[r:TYPE_OF]->() delete r
     </sql>
   </changeSet>
 </databaseChangeLog>
