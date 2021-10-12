@@ -187,7 +187,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         }
       }
       let iconTextColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
-      if (microsoftColor && styleData.fillColor === null) {
+      if (microsoftColor && !styleData.fillColor) {
         iconTextColor = microsoftColor;
       }
       const iconLabelColor = nullCoalesce(microsoftColor, iconTextColor);
