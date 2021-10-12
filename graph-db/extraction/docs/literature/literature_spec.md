@@ -3,8 +3,8 @@
 - paper: https://zenodo.org/record/3459420#.XfAH6JNKiBu
 - download the files to folder $BASE_DATA_DIR/download/textmining/. Make sure to get the latest version (Sept 24, 2019).   
 
-Download all the part-i-*.txt.gz and part-ii-*-with-themes.txt.gz files
-    ```
+Download all the part-i-*.txt.gz and part-ii-*-with-themes.txt.gz files    
+``` 
     curl -O https://zenodo.org/record/3459420/files/part-i-chemical-disease-path-theme-distributions.txt.gz?download=1
     
     curl -O https://zenodo.org/record/3459420/files/part-i-chemical-gene-path-theme-distributions.txt.gz?download=1
@@ -20,7 +20,8 @@ Download all the part-i-*.txt.gz and part-ii-*-with-themes.txt.gz files
     curl -O https://zenodo.org/record/3459420/files/part-ii-dependency-paths-gene-disease-sorted-with-themes.txt.gz?download=1
     
     curl -O https://zenodo.org/record/3459420/files/part-ii-dependency-paths-gene-gene-sorted-with-themes.txt.gz?download=1
-    ```
+    
+```
 
 ## db_Literature Schema
 
