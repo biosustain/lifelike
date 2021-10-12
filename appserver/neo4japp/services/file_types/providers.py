@@ -505,7 +505,6 @@ def get_link_icon_type(node):
             return 'document', None
         elif PROJECTS_RE.match(link['url']):
             return 'project', link['url']
-        # We do not return on email, as email icon has lower precedence.
         elif MAIL_RE.match(link['url']):
             return 'email', link['url']
         elif ANY_FILE_RE.match(link['url']):
@@ -562,6 +561,10 @@ def create_icon_node(node, params):
         label, link = get_link_icon_type(node)
         # Save the link for later usage
         node['link'] = link
+        # If label is microsoft icon, we set default text color to its color for consistent look
+        if label.startswith('ms-'):
+            default_icon_color = ANNOTATION_STYLES_DICT.get('ms-icons', {}).get(
+                label, default_icon_color)
 
     icon_params['image'] = (
         f'{ASSETS_PATH}{label}.png'
