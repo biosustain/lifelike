@@ -37,7 +37,7 @@ export function left(node) {
 }
 
 export function right(node, n) {
-  return n - 1 - node._height;
+  return n - 1 - node._reversedDepth;
 }
 
 export function justify(node, n) {
