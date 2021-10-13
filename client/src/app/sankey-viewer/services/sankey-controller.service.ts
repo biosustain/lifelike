@@ -53,8 +53,8 @@ export class SankeyControllerService {
     return {
       nodeHeight: {
         min: {
-          enabled: false,
-          value: 0
+          enabled: true,
+          value: 1
         },
         max: {
           enabled: false,
