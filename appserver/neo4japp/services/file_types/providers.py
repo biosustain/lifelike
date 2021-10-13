@@ -396,7 +396,8 @@ def get_icon_strings():
     if ICON_DATA:
         return ICON_DATA
     else:
-        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note']:
+        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
+                    'ms-word', 'ms-excel', 'ms-powerpoint']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
                                                            + b64encode(file.read())\
@@ -483,8 +484,6 @@ def get_link_icon_type(node):
     :returns: the correct label for the icon and a corresponding URL - if valid
     """
     data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-    label = 'link'
-    url = None
     for link in data:
         if ENRICHMENT_TABLE_RE.match(link['url']):
             return 'enrichment_table', link['url']
@@ -506,11 +505,19 @@ def get_link_icon_type(node):
             return 'document', None
         elif PROJECTS_RE.match(link['url']):
             return 'project', link['url']
-        # We do not return on email, as email icon has lower precedence.
         elif MAIL_RE.match(link['url']):
-            label = 'email'
-            url = link['url']
-    return label, url
+            return 'email', link['url']
+        elif ANY_FILE_RE.match(link['url']):
+            domain = link.get('domain', "").strip()
+            if domain:
+                # Do not return url, as we are not creating links to files that we not create on LL
+                if domain.endswith('.docx') or domain.endswith('.doc'):
+                    return 'ms-word', None
+                elif domain.endswith('.pptx') or domain.endswith('.ppt'):
+                    return 'ms-powerpoint', None
+                elif domain.endswith('.xlsx') or domain.endswith('.xls'):
+                    return 'ms-excel', None
+    return 'link', None
 
 
 def create_icon_node(node, params):
@@ -554,13 +561,19 @@ def create_icon_node(node, params):
         label, link = get_link_icon_type(node)
         # Save the link for later usage
         node['link'] = link
+        # If label is microsoft icon, we set default text color to its color for consistent look
+        if label.startswith('ms-'):
+            default_icon_color = ANNOTATION_STYLES_DICT.get('ms-icons', {}).get(
+                label, default_icon_color)
 
     icon_params['image'] = (
         f'{ASSETS_PATH}{label}.png'
     )
-    # We are setting the icon color by using 'inverse' icon images and colorful background
-    icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
-    icon_params['style'] = 'filled'
+    if label[:2] != 'ms':
+        # We are setting the icon color by using 'inverse' icon images and colorful background
+        # But not for microsoft icons, as those are always in the same color
+        icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
+        icon_params['style'] = 'filled'
     icon_params['shape'] = 'box'
     icon_params['height'] = ICON_SIZE
     icon_params['width'] = ICON_SIZE
