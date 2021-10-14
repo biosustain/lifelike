@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Observable, Subscription, combineLatest } from 'rxjs';
+import { Observable, Subscription, combineLatest, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import JSZip from 'jszip';
@@ -78,8 +78,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   save() {
     const zip = new JSZip();
     const imgs = zip.folder('images');
-    const imageIds: string[] = [];
-    const imageNodeObservables: Observable<Blob>[] = [];
+    const imageIds: string[] = ['dummy'];
+    // Add a signel dummy observable to always fire the subscription below
+    const imageNodeObservables: Observable<Blob>[] = [of(new Blob())];
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image
         imageIds.push(node.image_id);
@@ -97,25 +98,24 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      *     functions like `combineLatest`
      */
     zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
-    // graph has no images
-    if (imageNodeObservables.length === 0) {
-      combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
-        for (let i = 0; i < imageIds.length; i++) {
-          imgs.file(imageIds[i] + '.png', imageBlobs[i]);
-        }
-      });
-    }
-    zip.generateAsync({ type: 'blob' }).then((content) => {
-      this.filesystemService.save([this.locator], { contentValue: content })
-        .pipe(this.errorHandler.create({label: 'Update map'}))
-        .subscribe(() => {
-          this.unsavedChanges$.next(false);
-          this.emitModuleProperties(); // TODO: what does this do?
-          this.snackBar.open('Map saved.', null, {
-            duration: 2000,
+    combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
+      // We start as 1, due to the dummy observable
+      for (let i = 1; i < imageIds.length; i++) {
+        imgs.file(imageIds[i] + '.png', imageBlobs[i]);
+      }
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        this.filesystemService.save([this.locator], { contentValue: content })
+          .pipe(this.errorHandler.create({label: 'Update map'}))
+          .subscribe(() => {
+            this.unsavedChanges$.next(false);
+            this.emitModuleProperties(); // TODO: what does this do?
+            this.snackBar.open('Map saved.', null, {
+              duration: 2000,
+            });
           });
-        });
+      });
     });
+
   }
 
   openCloneDialog() {
