@@ -171,19 +171,23 @@ class LiteratureDataParser(BaseParser):
 
     def parse_dependency_files(self):
         """
-        Process all dependency file (without theme), write into parsed folder.
+        Process all dependency file (with theme), write into parsed folder.
 
-        2021-03-22 14:20:47,929 processing /Users/rcai/data/download/literature/part-ii-dependency-paths-chemical-disease-sorted.txt.gz
-        2021-03-22 14:28:00,054 file rows processed: 15645444, cleaned file row:12881577
-        2021-03-22 14:28:00,057 processing /Users/rcai/data/download/literature/part-ii-dependency-paths-chemical-gene-sorted.txt.gz
-        2021-03-22 14:32:44,133 file rows processed: 9525647, cleaned file row:7958425
-        2021-03-22 14:32:44,135 processing /Users/rcai/data/download/literature/part-ii-dependency-paths-gene-disease-sorted.txt.gz
-        2021-03-22 14:40:00,986 file rows processed: 12792758, cleaned file row:12808885
-        2021-03-22 14:40:00,990 processing /Users/rcai/data/download/literature/part-ii-dependency-paths-gene-gene-sorted.txt.gz
-        2021-03-22 15:00:54,747 file rows processed: 34089578, cleaned file row:25333884
-        2021-03-22 15:00:54,752 literature genes:150380
-        2021-03-22 15:00:54,752 literature diseases:8586
-        2021-03-22 15:00:54,752 literature chemicals:66178
+        part-ii-dependency-paths-chemical-disease-sorted.txt.gz
+        file rows processed: 15645444, cleaned file row:12881577
+
+        part-ii-dependency-paths-chemical-gene-sorted.txt.gz
+        file rows processed: 9525647, cleaned file row:7958425
+
+        part-ii-dependency-paths-gene-disease-sorted.txt.gz
+        file rows processed: 12792758, cleaned file row:12808885
+
+        part-ii-dependency-paths-gene-gene-sorted.txt.gz
+        file rows processed: 34089578, cleaned file row:25333884
+
+        literature genes:150380
+        literature diseases:8586
+        literature chemicals:66178
         :return:
         """
         snippet_file = open(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), 'w')
