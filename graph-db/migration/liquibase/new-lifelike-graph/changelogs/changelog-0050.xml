@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10142021" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
+        ON CREATE SET n1:db_Literature:LiteratureChemical, n2:db_Literature:LiteratureDisease
+        WITH n1, n2, row
+        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        ON CREATE
+        SET a:db_Literature,
+            a.entry1_type = 'Chemical',
+            a.entry2_type = 'Disease',
+            a.description = row.description,
+            a.type = row.theme,
+            a.data_source = 'Literature'
+        MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
+        MERGE (n1)-[:HAS_ASSOCIATION]->(a)
+        MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Chemical2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 10142021" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
+        ON CREATE SET n1:db_Literature:LiteratureChemical, n2:db_Literature:LiteratureGene
+        WITH n1, n2, row
+        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        ON CREATE
+        SET a:db_Literature,
+            a.entry1_type = 'Chemical',
+            a.entry2_type = 'Gene',
+            a.description = row.description,
+            a.type = row.theme,
+            a.data_source = 'Literature'
+        MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
+        MERGE (n1)-[:HAS_ASSOCIATION]->(a)
+        MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Chemical2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 10142021" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
+        ON CREATE SET n1:db_Literature:LiteratureGene, n2:db_Literature:LiteratureDisease
+        WITH n1, n2, row
+        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        ON CREATE
+        SET a:db_Literature,
+            a.entry1_type = 'Gene',
+            a.entry2_type = 'Disease',
+            a.description = row.description,
+            a.type = row.theme,
+            a.data_source = 'Literature'
+        MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
+        MERGE (n1)-[:HAS_ASSOCIATION]->(a)
+        MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Gene2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 10142021" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
+        ON CREATE SET n1:db_Literature:LiteratureGene, n2:db_Literature:LiteratureGene
+        WITH n1, n2, row
+        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        ON CREATE
+        SET a:db_Literature,
+            a.entry1_type = 'Gene',
+            a.entry2_type = 'Gene',
+            a.description = row.description,
+            a.type = row.theme,
+            a.data_source = 'Literature'
+        MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
+        MERGE (n1)-[:HAS_ASSOCIATION]->(a)
+        MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Gene2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 10142021" author="Binh Vu">
+    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh)</comment>
+    <sql>
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS 'MESH:' RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_MESH:Chemical {eid:split(n.eid, ':')[1]})',
+        {batchSize:10000});
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS 'CHEBI:' RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_CHEBI:Chemical {eid:split(n.eid, ':')[1]})',
+        {batchSize:10000});
+        
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 10142021" author="Binh Vu">
+    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id)</comment>
+    <sql>
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS 'MESH:' RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(d:db_MESH:Disease {eid:split(n.eid, ':')[1]})',
+        {batchSize:10000});
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS 'MESH:' RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(d:Disease {eid:n.eid})',
+        {batchSize:10000});
+        
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 10142021" author="Binh Vu">
+    <comment>LiteratureGene should be MAPPED_TO Gene nodes</comment>
+    <sql>
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature:LiteratureGene) RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(g:db_NCBI:Gene {eid:n.eid})',
+        {batchSize:10000});
+        
+    </sql>
+  </changeSet>
+</databaseChangeLog>
