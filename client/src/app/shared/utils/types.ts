@@ -34,3 +34,22 @@ export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
+export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> {
+  getSet(key, value) {
+    if (this.has(key)) {
+      return super.get(key);
+    }
+    super.set(key, value);
+    return value;
+  }
+}
+
+export class ExtendedMap<K, V> extends Map<K, V> {
+  getSet(key, value) {
+    if (this.has(key)) {
+      return super.get(key);
+    }
+    super.set(key, value);
+    return value;
+  }
+}

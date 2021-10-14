@@ -5,7 +5,7 @@ import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angula
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ApiService } from 'app/shared/services/api.service';
@@ -37,11 +37,12 @@ import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ObjectLock } from '../models/object-lock';
+import { RecentFilesService } from './recent-files.service';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
  */
-@Injectable()
+@Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
@@ -52,7 +53,8 @@ export class FilesystemService {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly http: HttpClient,
-              protected readonly apiService: ApiService) {
+              protected readonly apiService: ApiService,
+              protected readonly recentFilesService: RecentFilesService) {
     this.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
@@ -102,12 +104,13 @@ export class FilesystemService {
     );
   }
 
-  get(hashId: string): Observable<FilesystemObject> {
+  get(hashId: string, updateRecent = true): Observable<FilesystemObject> {
     return this.http.get<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => new FilesystemObject().update(data.result)),
+      tap(fileObj => updateRecent && this.recentFilesService.addToList(fileObj)),
     );
   }
 
@@ -161,6 +164,7 @@ export class FilesystemService {
         }
         return ret;
       }),
+      tap(ret => this.recentFilesService.updateFileObjects(ret))
     );
   }
 
@@ -179,6 +183,9 @@ export class FilesystemService {
         responseType: 'json',
       },
     ).pipe(
+      tap(data =>
+        hashIds.forEach(hashId => this.recentFilesService.deleteFromList({hashId} as FilesystemObjectData))
+      ),
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
         for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
@@ -189,6 +196,7 @@ export class FilesystemService {
         }
         return ret;
       }),
+      tap(ret => this.recentFilesService.updateFileObjects(ret))
     );
   }
 

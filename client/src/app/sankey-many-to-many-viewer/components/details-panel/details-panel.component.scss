@@ -2,7 +2,9 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
-app-sankey-details-panel {
+app-sankey-many-to-many-details-panel {
+  background-color: red !important;
+
   // The little dot next to each entity type indicating the color
   .entity-type-legend {
     display: inline-block;

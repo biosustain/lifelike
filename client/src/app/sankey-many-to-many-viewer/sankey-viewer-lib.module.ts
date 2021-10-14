@@ -22,7 +22,7 @@ import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-pro
 import { SankeyManyToManyModule } from './components/sankey/sankey.module';
 import { SankeyManyToManyViewComponent } from './components/sankey-view.component';
 import { SankeyManyToManyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelModule } from '../sankey-viewer/components/details-panel/sankey-details-panel.module';
+import { SankeyManyToManyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
 
 @NgModule({
   declarations: [
@@ -47,7 +47,7 @@ import { SankeyDetailsPanelModule } from '../sankey-viewer/components/details-pa
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeyManyToManyModule,
-    SankeyDetailsPanelModule
+    SankeyManyToManyDetailsPanelModule
   ],
   entryComponents: [],
   providers: [{

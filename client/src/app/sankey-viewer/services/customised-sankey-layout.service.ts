@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
+import { first, last } from 'lodash-es';
 
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
@@ -35,11 +36,101 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     super(truncatePipe);
   }
 
+  get linkPath() {
+    const {
+      calculateLinkPathParams,
+      composeLinkPath,
+      sankeyController:
+        {
+          options:
+            {
+              normalizeLinks
+            }
+        }
+    } = this;
+    return link => {
+      link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
+      return composeLinkPath(link._calculated_params);
+    };
+  }
+
+  get nodeLabelShort() {
+    const {
+      sankeyController:
+        {
+          options:
+            {
+              labelEllipsis: {
+                value,
+                enabled
+              }
+            }
+        },
+      nodeLabel,
+      truncatePipe: {transform}
+    } = this;
+    if (enabled) {
+      return n => transform(nodeLabel(n), value);
+    } else {
+      return n => nodeLabel(n);
+    }
+  }
+
+  get nodeLabelShouldBeShorted() {
+    const {
+      sankeyController:
+        {
+          options:
+            {
+              labelEllipsis: {
+                value,
+                enabled
+              }
+            }
+        },
+      nodeLabel
+    } = this;
+    if (enabled) {
+      return n => nodeLabel(n).length > value;
+    } else {
+      return _ => false;
+    }
+  }
+
+  get nodeColor() {
+    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      // if it is only one then color node
+      if (difference.size === 1) {
+        return difference.values().next().value._trace._color;
+      } else {
+        return _color;
+      }
+    };
+  }
+
+  get fontSize() {
+    const {
+      sankeyController:
+        {
+          options:
+            {
+              fontSizeScale
+            }
+        }
+    } = this;
+    // noinspection JSUnusedLocalSymbols
+    return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
+  }
+
 
   normalizeLinks = false;
 
   columns;
   columnsWithLinkPlaceholders;
+
+  ky; // y scaling factor (_value * ky = height)
 
   calculateLinkPathParams(link, normalize = true) {
     const {_source, _target, _multiple_values} = link;
@@ -156,94 +247,6 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     );
   }
 
-  get linkPath() {
-    const {
-      calculateLinkPathParams,
-      composeLinkPath,
-      sankeyController:
-        {
-          options:
-            {
-              normalizeLinks
-            }
-        }
-    } = this;
-    return link => {
-      link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
-      return composeLinkPath(link._calculated_params);
-    };
-  }
-
-  get nodeLabelShort() {
-    const {
-      sankeyController:
-        {
-          options:
-            {
-              labelEllipsis: {
-                value,
-                enabled
-              }
-            }
-        },
-      nodeLabel,
-      truncatePipe: {transform}
-    } = this;
-    if (enabled) {
-      return n => transform(nodeLabel(n), value);
-    } else {
-      return n => nodeLabel(n);
-    }
-  }
-
-  get nodeLabelShouldBeShorted() {
-    const {
-      sankeyController:
-        {
-          options:
-            {
-              labelEllipsis: {
-                value,
-                enabled
-              }
-            }
-        },
-      nodeLabel
-    } = this;
-    if (enabled) {
-      return n => nodeLabel(n).length > value;
-    } else {
-      return _ => false;
-    }
-  }
-
-  get nodeColor() {
-    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
-      // check if any trace is finishing or starting here
-      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
-      // if it is only one then color node
-      if (difference.size === 1) {
-        return difference.values().next().value._trace._color;
-      } else {
-        return _color;
-      }
-    };
-  }
-
-  get fontSize() {
-    const {
-      sankeyController:
-        {
-          options:
-            {
-              fontSizeScale
-            }
-        }
-    } = this;
-    // noinspection JSUnusedLocalSymbols
-    return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
-  }
-
   /**
    * Adjust Y scale factor based on columns and min/max node height
    */
@@ -269,39 +272,109 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         }
       }
     }
-    if (nodeHeight.min.enabled) {
-      const minCurrentHeight = min(nodes, n =>
-        value(n) || Infinity // ignore zeros
-      ) * ky;
-      if (nodeHeight.min.value) {
-        const minScaling = nodeHeight.min.value / minCurrentHeight;
-        if (minScaling > 1) {
-          scale *= minScaling;
-        }
-      }
-    }
     return ky * scale;
   }
 
-  // @ts-ignore
   /**
-   * Calculate nodes position by traversing it from side with less nodes as a tree
-   * iteratively figuring order of the nodes
+   * Iterate over nodes and recursively reiterate on the ones they are connecting to.
+   * @param nodes - set of nodes to start iteration with
+   * @param nextNodeProperty - property of link pointing to next node (_source, _target)
+   * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  initializeNodeBreadths(graph) {
-    const {columns} = this;
-    const ky = this.getYScaleFactor(graph.nodes);
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+    const n = nodes.length;
+    let current = new Set<SankeyNode>(nodes);
+    let next = new Set<SankeyNode>();
+    let x = 0;
+    while (current.size) {
+      for (const node of current) {
+        yield [node, x];
+        for (const link of node[nextLinksProperty]) {
+          if (!link._circular) {
+            next.add(link[nextNodeProperty] as SankeyNode);
+          }
+        }
+      }
+      if (++x > n) {
+        throw new Error('Unaddressed circular link');
+      }
+      current = next;
+      next = new Set();
+    }
+  };
+
+
+  /**
+   * Same as parent method just ignoring circular links
+   */
+  computeNodeHeights({nodes}: SankeyData) {
+    const {
+      ky,
+      sankeyController:
+        {
+          options:
+            {
+              nodeHeight
+            }
+        }, value
+    } = this;
+    for (const node of nodes) {
+      if (nodeHeight.min.enabled && nodeHeight.min.value) {
+        node._height = Math.max(value(node) * ky, nodeHeight.min.value);
+      } else {
+        node._height = value(node) * ky;
+      }
+    }
+  }
+
+  layoutNodesWithinColumns(columns) {
+    const {ky} = this;
 
     // noinspection JSUnusedLocalSymbols
     const [[_marginLeft, marginTop]] = this.extent;
     // noinspection JSUnusedLocalSymbols
     const [_width, height] = this.size;
 
-    const firstColumn = columns[0];
-    const lastColumn = columns[columns.length - 1];
+    columns.forEach(nodes => {
+      const {length} = nodes;
+      const nodesHeight = sum(nodes, ({_height}) => _height);
+      // do we want space above and below nodes or should it fill column till the edges?
+      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
+      const freeSpace = height - nodesHeight;
+      const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
+      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
+      // nodes are placed in order from tree traversal
+      nodes.sort((a, b) => a._order - b._order).forEach(node => {
+        const nodeHeight = node._height;
+        node._y0 = y;
+        node._y1 = y + nodeHeight;
+        y += nodeHeight + spacerSize;
+
+        // apply the y scale on links
+        for (const link of node._sourceLinks) {
+          link._width = link._value * ky;
+        }
+      });
+      for (const {_sourceLinks, _targetLinks} of nodes) {
+        _sourceLinks.sort(this.linkSort);
+        _targetLinks.sort(this.linkSort);
+      }
+      // todo: replace with
+      // this.reorderLinks(nodes);
+    });
+  }
+
+  /**
+   * Similar to parent method however we are not having graph relaxation
+   * node order is calculated by tree structure and this decision is final
+   * It calculate nodes position by traversing it from side with less nodes as a tree
+   * iteratively figuring order of the nodes.
+   */
+  computeNodeBreadths(graph) {
+    const {columns} = this;
 
     // decide on direction
-    const dt = new DirectedTraversal([firstColumn, lastColumn]);
+    const dt = new DirectedTraversal([first(columns), last(columns)]);
     // order next related nodes in order this group first appeared
     const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
     const visited = new Set();
@@ -338,99 +411,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       (traces.indexOf(a._trace) - traces.indexOf(b._trace))
     );
 
-    columns.forEach(nodes => {
-      const {length} = nodes;
-      const nodesHeight = sum(nodes, ({_value}) => _value) * ky;
-      // do we want space above and below nodes or should it fill column till the edges?
-      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
-      const freeSpace = height - nodesHeight;
-      const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
-      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
-      // nodes are placed in order from tree traversal
-      nodes.sort((a, b) => a._order - b._order).forEach(node => {
-        const nodeHeight = node._value * ky;
-        node._y0 = y;
-        node._y1 = y + nodeHeight;
-        y += nodeHeight + spacerSize;
-
-        // apply the y scale on links
-        for (const link of node._sourceLinks) {
-          link._width = link._value * ky;
-        }
-      });
-      for (const {_sourceLinks, _targetLinks} of nodes) {
-        _sourceLinks.sort(this.linkSort);
-        _targetLinks.sort(this.linkSort);
-      }
-      // todo: replace with
-      // this.reorderLinks(nodes);
-    });
-  }
-
-  /**
-   * Same as parent method just ignoring circular links
-   * (circular links does not change min node depth)
-   */
-  computeNodeDepths({nodes}: SankeyData) {
-    const n = nodes.length;
-    let current = new Set<SankeyNode>(nodes);
-    let next = new Set<SankeyNode>();
-    let x = 0;
-    while (current.size) {
-      for (const node of current) {
-        node._depth = x;
-        for (const {_target, _circular} of node._sourceLinks) {
-          if (!_circular) {
-            next.add(_target as SankeyNode);
-          }
-        }
-      }
-      if (++x > n) {
-        throw new Error('Unaddressed circular link');
-      }
-      current = next;
-      next = new Set();
-    }
-  }
-
-  /**
-   * Same as parent method just ignoring circular links
-   */
-  computeNodeHeights({nodes}: SankeyData) {
-    const n = nodes.length;
-    let current = new Set(nodes);
-    let next = new Set<SankeyNode>();
-    let x = 0;
-    while (current.size) {
-      for (const node of current) {
-        // noinspection JSSuspiciousNameCombination
-        node._height = x;
-        for (const {_source, _circular} of node._targetLinks) {
-          if (!_circular) {
-            next.add(_source as SankeyNode);
-          }
-        }
-      }
-      if (++x > n) {
-        throw new Error('Unaddressed circular link');
-      }
-      current = next;
-      next = new Set();
-    }
-  }
-
-  /**
-   *  Similar to parent method however we are not having graph relaxation
-   *  node order is calculated by tree structure and this decision is final
-   *  additionally this method adds placeholders for links spawning through multiple layers
-   *  this approach reduces overlays in more complex graphs
-   */
-  computeNodeBreadths(graph) {
-    const {dy, y1, y0} = this;
-    this.columns = this.computeNodeLayers(graph);
-    this.createVirtualNodes(graph);
-    this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
-    this.initializeNodeBreadths(graph);
+    this.layoutNodesWithinColumns(columns);
   }
 
   /**
@@ -445,6 +426,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
    * column place placeholder node with height of this link.
    * For best results this method places only one node with summed for all links going from the
    * same source to same target node.
+   * This approach reduces overlays in more complex graphs
    */
   createVirtualNodes(graph) {
     this.columnsWithLinkPlaceholders = this.getColumnsCopy();
@@ -489,6 +471,17 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     graph.nodes = graph._nodes;
   }
 
+  // @ts-ignore
+  computeNodeLayers(graph) {
+    this.columns = super.computeNodeLayers(graph);
+  }
+
+  setLayoutParams(graph) {
+    const {dy, y1, y0} = this;
+    this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
+    this.ky = this.getYScaleFactor(graph.nodes);
+  }
+
   /**
    * Calculate layout and address possible circular links
    */
@@ -505,6 +498,10 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
     //     - x0, x1: the x coordinates, as is relates to visual position from left to right
     this.computeNodeDepths(graph);
+    this.computeNodeReversedDepths(graph);
+    this.computeNodeLayers(graph);
+    this.createVirtualNodes(graph);
+    this.setLayoutParams(graph);
     this.computeNodeHeights(graph);
     // Calculate the nodes' and links' vertical position within their respective column
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's

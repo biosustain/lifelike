@@ -1,4 +1,4 @@
-<div *ngIf="dataLoaded && snippets && legend; else loadingSpinner">
+<div *ngIf="dataLoaded && snippetData && legend; else loadingSpinner">
   <div id="num-snippets-container" class="row align-items-center mb-2">
     <div class="col">
       <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
@@ -19,7 +19,7 @@
       </div>
     </div>
   </div>
-  <div class="snippet-result" *ngFor="let result of snippets">
+  <div class="snippet-result" *ngFor="let result of snippetData">
     <app-node-relationship
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"

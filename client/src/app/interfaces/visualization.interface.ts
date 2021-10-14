@@ -15,9 +15,9 @@ export interface AssociationSnippet {
 }
 
 export enum AssociatedType {
-  GENE = 'Gene',
-  CHEMICAL = 'Chemical',
-  DISEASE = 'Disease'
+  LITERATURE_GENE = 'LiteratureGene',
+  LITERATURE_CHEMICAL = 'LiteratureChemical',
+  LITERATURE_DISEASE = 'LiteratureDisease'
 }
 
 export interface AssociatedTypeEntry {
