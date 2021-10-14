@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 
 from pandas.core.common import SettingWithCopyWarning
-
 from common.base_parser import BaseParser
 from common.constants import *
 
@@ -211,8 +210,6 @@ class LiteratureDataParser(BaseParser):
         with open(os.path.join(self.parsed_dir, self.file_prefix + 'gene.tsv'), 'w') as f:
             f.writelines([s + '\n' for s in self.literature_genes])
 
-    # TODO: how does this file connect to the assoc_theme.tsv files?
-    # there's no column to reference between them
     def parse_path2theme_file(self, entry1_type, entry2_type):
         file = self.get_path2theme_datafile_name(entry1_type, entry2_type)
         df = pd.read_csv(file, sep='\t', index_col='path')
@@ -240,28 +237,40 @@ class LiteratureDataParser(BaseParser):
         df_path2theme.reset_index(inplace=True)
         return df_path2theme
 
-    def get_query(self, entry1_type, entry2_type):
-        entry1_label = entry1_type
-        entry2_label = entry2_type
-        if entry2_type == NODE_DISEASE:
-            entry2_label = NODE_MESH
-
-        # TODO: update query - it's out-of-date
+    @staticmethod
+    def get_create_literature_query(entry1_type, entry2_type):
         query = """
-        UNWIND $rows as row
-        MATCH (n1:%s {id:row.entry1_id}), (n2:%s {id:row.entry2_id})
-        WITH n1, n2, row 
-        MERGE (a:Association {entry1_id: row.entry1_id, entry2_id:row.entry2_id, description:'unclassified'})
-            ON CREATE SET a:db_Literature, n1:db_Literature, n2:db_Literature, a.entity1_type = %s, a.entity2_type = %s
-        MERGE (n1)-[r:ASSOCATED {description:'unclassified'}]->(n2)
+        UNWIND $rows AS row
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
+        ON CREATE SET n1:db_Literature:%s, n2:db_Literature:%s
+        WITH n1, n2, row
+        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        ON CREATE
+        SET a:db_Literature,
+            a.entry1_type = '%s',
+            a.entry2_type = '%s',
+            a.description = row.description,
+            a.type = row.theme,
+            a.data_source = 'Literature'
+        MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
-        MERGE (s:Snippet {pmid:row.pmid, sentence_num: row.sentence_num}) 
-            ON CREATE SET s:db_Literature, s.sentence = row.sentence
-        MERGE (s)-[p:PREDICTS]->(a) ON CREATE SET p.entry1_name=row.entry1_name, p.entry2_name = row.entry2_name
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
         MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
         MERGE (s)-[:IN_PUB]->(pub)
-        """ % (entry1_label, entry2_label)
+        """ % (f'Literature{entry1_type}', f'Literature{entry2_type}', entry1_type, entry2_type)
         return query
 
     def clean_gene_column(self, df, column_name):
@@ -287,12 +296,14 @@ class LiteratureDataParser(BaseParser):
         logging.info('done')
 
     def parse_and_write_data_files(self):
-        """
-        snippet_id  pmid  entry1_id   entry2_id   entry1_name entry2_name sentence
-        """
         df = pd.read_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), sep='\t')
 
-        for filename in [ZENODO_CHEMICAL2DISEASE_FILE, ZENODO_CHEMICAL2GENE_FILE, ZENODO_GENE2DISEASE_FILE, ZENODO_GENE2GENE_FILE]:
+        for filename, (entity1_type, entity2_type) in [
+            (ZENODO_CHEMICAL2DISEASE_FILE, (NODE_CHEMICAL, NODE_DISEASE)),
+            (ZENODO_CHEMICAL2GENE_FILE, (NODE_CHEMICAL, NODE_GENE)),
+            (ZENODO_GENE2DISEASE_FILE, (NODE_GENE, NODE_DISEASE)),
+            (ZENODO_GENE2GENE_FILE, (NODE_GENE, NODE_GENE))
+        ]:
             file_df = pd.read_csv(os.path.join(self.parsed_dir, filename), sep='\t')
             file_df['sentence'] = file_df.snippet_id.map(df.set_index('id')['sentence'].to_dict())
             file_df['pmid'] = file_df.snippet_id.map(df.set_index('id')['pmid'].to_dict())
@@ -300,11 +311,42 @@ class LiteratureDataParser(BaseParser):
             # put pmid column first
             cols = cols[-1:] + cols[:-1]
             reordered_df = file_df[cols]
-            reordered_df.to_csv(os.path.join(self.output_dir, self.file_prefix + filename), index=False, sep='\t', chunksize=50000)
+
+            path_df = self.parse_path2theme_file(entity1_type, entity2_type)
+            reordered_df2 = reordered_df.copy(deep=True)
+            """
+            The path_df has lower case paths, need to lower in order to merge.
+
+            A few users have mentioned that the dependency paths in the "part-i" files are all lowercase text,
+            whereas those in the "part-ii" files maintain the case of the original sentence.
+            This complicates mapping between the two sets of files.
+
+            We kept the part-ii files in the same case as the original sentence to facilitate downstream
+            debugging - it's easier to tell which words in a particular sentence are contributing to the
+            dependency path if their original case is maintained. When working with the part-ii "with-themes" files,
+            if you simply convert the dependency path to lowercase, it is guaranteed to match to one of the
+            paths in the corresponding part-i file and you'll be able to get the theme scores.
+
+            ref: https://zenodo.org/record/3459420
+            """
+            reordered_df2.path = reordered_df2.path.str.lower()
+            # do a left-join
+            reordered_df3 = reordered_df2.merge(path_df, how='left', left_on='path', right_on='path')
+            del reordered_df2
+            # revert the path column back to original casing
+            reordered_df3['path'] = reordered_df3.snippet_id.map(reordered_df.set_index('snippet_id')['path'].to_dict())
+            reordered_df3.to_csv(os.path.join(self.output_dir, self.file_prefix + filename), index=False, sep='\t', chunksize=50000)
 
 
-if __name__ == '__main__':
-    parser = LiteratureDataParser('LL-3782')
+def main(args):
+    parser = LiteratureDataParser(args.prefix)
     parser.parse_dependency_files()
     parser.clean_snippets()
     parser.parse_and_write_data_files()
+
+    for filename in [ZENODO_CHEMICAL2DISEASE_FILE, ZENODO_CHEMICAL2GENE_FILE, ZENODO_GENE2DISEASE_FILE, ZENODO_GENE2GENE_FILE]:
+        parser.upload_azure_file(filename, args.prefix)
+
+
+if __name__ == '__main__':
+    main()
