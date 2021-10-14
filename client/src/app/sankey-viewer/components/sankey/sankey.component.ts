@@ -325,11 +325,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data object representing the link data
    */
   async pathMouseOver(element, data) {
-    const nodeGroup = new Set<number>(data._trace.node_paths.reduce((acc: number[], curr: number[]) => acc.concat(curr), []));
-    const traces = new Set<any>([data._trace]);
-
-    this.highlightNodeGroup(nodeGroup);
-    this.highlightTraces(traces);
+    // temporary disabled as of LL-3726
+    // const nodeGroup = new Set<number>(data._trace.node_paths.reduce((acc: number[], curr: number[]) => acc.concat(curr), []));
+    // const traces = new Set<any>([data._trace]);
+    //
+    // this.highlightNodeGroup(nodeGroup);
+    // this.highlightTraces(traces);
   }
 
   /**
@@ -338,8 +339,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data object representing the link data
    */
   async pathMouseOut(element, data) {
-    this.unhighlightNodes();
-    this.unhighlightLinks();
+    // temporary disabled as of LL-3726
+    // this.unhighlightNodes();
+    // this.unhighlightLinks();
   }
 
   /**
@@ -349,12 +351,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data object representing the node data
    */
   async nodeMouseOver(element, data) {
-    const traces = new Set<any>([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
-    const nodeGroup = this.calculateNodeGroupFromTraces(traces);
-
     this.applyNodeHover(element);
-    this.highlightNodeGroup(nodeGroup);
-    this.highlightTraces(traces);
+
+    // temporary disabled as of LL-3726
+    // const traces = new Set<any>([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
+    // const nodeGroup = this.calculateNodeGroupFromTraces(traces);
+    // this.highlightNodeGroup(nodeGroup);
+    // this.highlightTraces(traces);
   }
 
   /**
@@ -364,8 +367,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   async nodeMouseOut(element, data) {
     this.unapplyNodeHover(element);
-    this.unhighlightNodes();
-    this.unhighlightLinks();
+
+    // temporary disabled as of LL-3726
+    // this.unhighlightNodes();
+    // this.unhighlightLinks();
   }
 
   scaleZoom(scaleBy) {

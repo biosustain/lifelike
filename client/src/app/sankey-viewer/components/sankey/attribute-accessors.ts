@@ -43,7 +43,7 @@ export class AttributeAccessors {
   }
 
   get value() {
-    return ({_value}) => _value;
+    return ({_value = 0}) => _value;
   }
 
   get linkPath() {
