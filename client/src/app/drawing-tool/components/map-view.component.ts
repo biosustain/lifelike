@@ -79,7 +79,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     const zip = new JSZip();
     const imgs = zip.folder('images');
     const imageIds: string[] = ['dummy'];
-    // Add a signel dummy observable to always fire the subscription below
+    // Add a dummy observable to always fire the subscription below
     const imageNodeObservables: Observable<Blob>[] = [of(new Blob())];
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image
