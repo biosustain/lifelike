@@ -285,15 +285,33 @@ export class SankeyLayoutService extends AttributeAccessors {
    * - depth:  the depth in the graph
    */
   computeNodeDepths({nodes}: SankeyData) {
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_target', '_sourceLinks')) {
+      node._depth = x;
+    }
+  }
+
+  computeNodeReversedDepths({nodes}: SankeyData) {
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_source', '_targetLinks')) {
+      node._reversedDepth = x;
+    }
+  }
+
+  /**
+   * Iterate over nodes and recursively reiterate on the ones they are connecting to.
+   * @param nodes - set of nodes to start iteration with
+   * @param nextNodeProperty - property of link pointing to next node (_source, _target)
+   * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
+   */
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
     let x = 0;
     while (current.size) {
       for (const node of current) {
-        node._depth = x;
-        for (const {_target} of node._sourceLinks) {
-          next.add(_target as SankeyNode);
+        yield [node, x];
+        for (const link of node[nextLinksProperty]) {
+            next.add(link[nextNodeProperty] as SankeyNode);
         }
       }
       if (++x > n) {
@@ -302,28 +320,7 @@ export class SankeyLayoutService extends AttributeAccessors {
       current = next;
       next = new Set();
     }
-  }
-
-  computeNodeHeights({nodes}: SankeyData) {
-    const n = nodes.length;
-    let current = new Set(nodes);
-    let next = new Set<SankeyNode>();
-    let x = 0;
-    while (current.size) {
-      for (const node of current) {
-        // noinspection JSSuspiciousNameCombination
-        node._height = x;
-        for (const {_source} of node._targetLinks) {
-          next.add(_source as SankeyNode);
-        }
-      }
-      if (++x > n) {
-        throw new Error('circular link');
-      }
-      current = next;
-      next = new Set();
-    }
-  }
+  };
 
   /**
    * Calculate into which layer node has to be placed and assign x coordinates of this layer
@@ -588,7 +585,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     //     Sets the nodes':
     //     - depth:  the depth in the graph
     this.computeNodeDepths(graph);
-    this.computeNodeHeights(graph);
+    this.computeNodeReversedDepths(graph);
     // Calculate the nodes' and links' vertical position within their respective column
     //     Also readjusts sankeyCircular size if circular links are needed, and node x's
     //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right

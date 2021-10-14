@@ -35,23 +35,25 @@
                     </ng-template>
                 </ngb-panel>
             </ng-template>
-            <ngb-panel *ngIf="entity._trace" cardClass="filled-card" title="Trace">
+            <ngb-panel *ngIf="entity._traces" cardClass="filled-card" title="Traces">
                 <ng-template ngbPanelContent>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex flex-wrap justify-content-between">
-                            <b>Source</b>
-                            {{ getNodeById(entity._trace.source).description }}
-                        </li>
-                        <li class="list-group-item d-flex flex-wrap justify-content-between">
-                            <b>Target</b>
-                            {{ getNodeById(entity._trace.target).description }}
-                        </li>
-                        <li class="list-group-item d-flex flex-wrap justify-content-between">
-                            <b>Group</b>
-                            {{ entity._trace.group }}
-                        </li>
-                        <li class="list-group-item" *ngIf="entity._trace.detail_edges">
-                            <button (click)="openTraceView(entity._trace)" class="btn btn-outline-primary">
+                        <li class="list-group-item d-flex flex-wrap justify-content-between trace" *ngFor="let trace of
+                        entity._traces">
+                            <div class="property">
+                                <span>Source</span>
+                                <span>{{ getNodeById(trace.source).description }}</span>
+                            </div>
+                            <div class="property">
+                                <span>Target</span>
+                                <span>{{ getNodeById(trace.target).description }}</span>
+                            </div>
+                            <div class="property">
+                                <span>Group</span>
+                                <span>{{ trace.group }}</span>
+                            </div>
+                            <button *ngIf="trace.detail_edges" (click)="openTraceView(trace)"
+                                    class="btn btn-block btn-outline-primary">
                                 Show detailed network
                             </button>
                         </li>

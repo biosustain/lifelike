@@ -81,6 +81,7 @@ export interface SankeyNode extends GraphNode {
   _x0?: number;
   _x1?: number;
   _depth?: number;
+  _reversedDepth?: number;
   _height?: number;
   _value?: number;
   _fixedValue?: number;
