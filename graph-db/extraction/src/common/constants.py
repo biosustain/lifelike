@@ -174,6 +174,7 @@ PROP_PI = 'pi'
 PROP_POS_LEFT = 'left_end_position'
 PROP_POS_RIGHT = 'right_end_position'
 PROP_POS_1 = 'pos_1'  # for promoter, transcription start pos
+PROP_PUBLICATION_ID = 'pmid'
 PROP_RANK = 'rank'
 PROP_REF_ID = 'reference_id'
 PROP_REGULONDB_ID = 'regulondb_id'
