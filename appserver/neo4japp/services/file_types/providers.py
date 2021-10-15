@@ -479,7 +479,8 @@ def create_detail_node(node, params):
     params['style'] += ',filled'
     detail_text = node['data'].get('detail', '')
     if detail_text:
-        # Use regex to split, otherwise \n )text, not new lines) are matched as well
+        # Split lines to inspect their length and replace them with '\l' later
+        # Use regex to split, otherwise \n (text, not new lines) are matched as well
         lines = re.split("\n", detail_text)
         # Escape the characters and break lines longer than max line width
         lines = map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
