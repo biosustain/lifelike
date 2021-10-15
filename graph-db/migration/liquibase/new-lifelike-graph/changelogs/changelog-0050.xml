@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10152021" author="Binh Vu">
     <comment>
         
     </comment>
@@ -14,10 +14,10 @@
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
-        ON CREATE SET n1:db_Literature:LiteratureChemical, n2:db_Literature:LiteratureDisease
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
+        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
         WITH n1, n2, row
-        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
         SET a:db_Literature,
             a.entry1_type = 'Chemical',
@@ -58,7 +58,7 @@
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 10152021" author="Binh Vu">
     <comment>
         
     </comment>
@@ -67,10 +67,10 @@
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
-        ON CREATE SET n1:db_Literature:LiteratureChemical, n2:db_Literature:LiteratureGene
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
+        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
         WITH n1, n2, row
-        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
         SET a:db_Literature,
             a.entry1_type = 'Chemical',
@@ -111,7 +111,7 @@
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 10152021" author="Binh Vu">
     <comment>
         
     </comment>
@@ -120,10 +120,10 @@
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
-        ON CREATE SET n1:db_Literature:LiteratureGene, n2:db_Literature:LiteratureDisease
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
+        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
         WITH n1, n2, row
-        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
         SET a:db_Literature,
             a.entry1_type = 'Gene',
@@ -164,7 +164,7 @@
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 10152021" author="Binh Vu">
     <comment>
         
     </comment>
@@ -173,10 +173,10 @@
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
-        ON CREATE SET n1:db_Literature:LiteratureGene, n2:db_Literature:LiteratureGene
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
+        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
         WITH n1, n2, row
-        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
         SET a:db_Literature,
             a.entry1_type = 'Gene',
@@ -217,7 +217,7 @@
     />
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 10152021" author="Binh Vu">
     <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh)</comment>
     <sql>
     
@@ -233,7 +233,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 10152021" author="Binh Vu">
     <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id)</comment>
     <sql>
     
@@ -249,7 +249,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 10142021" author="Binh Vu">
+  <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 10152021" author="Binh Vu">
     <comment>LiteratureGene should be MAPPED_TO Gene nodes</comment>
     <sql>
     

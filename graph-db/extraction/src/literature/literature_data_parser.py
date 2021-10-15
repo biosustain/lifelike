@@ -245,10 +245,10 @@ class LiteratureDataParser(BaseParser):
     def get_create_literature_query(entry1_type, entry2_type):
         query = """
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}), (n2:LiteratureEntity {id:row.entry2_id})
-        ON CREATE SET n1:db_Literature:%s, n2:db_Literature:%s
+        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:%s
+        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:%s
         WITH n1, n2, row
-        MERGE (a:Association {eid:row.entry1_id-row.entry2_id-row.theme})
+        MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
         SET a:db_Literature,
             a.entry1_type = '%s',
@@ -274,7 +274,12 @@ class LiteratureDataParser(BaseParser):
             i.raw_score = row.score
         MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
         MERGE (s)-[:IN_PUB]->(pub)
-        """ % (f'Literature{entry1_type}', f'Literature{entry2_type}', entry1_type, entry2_type)
+        """ % (
+            f'Literature{entry1_type}',
+            f'Literature{entry2_type}',
+            entry1_type,
+            entry2_type
+        )
         return query
 
     def clean_gene_column(self, df, column_name):
