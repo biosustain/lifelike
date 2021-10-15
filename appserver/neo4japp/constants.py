@@ -66,6 +66,7 @@ class LogEventType(Enum):
     FILESYSTEM = 'filesystem'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
+    MAP_EXPORT_FAILURE = 'map-export-failure'
     RESET_PASSWORD = 'reset_password'
     SENTRY_HANDLED = 'handled_exception'
     SENTRY_UNHANDLED = 'unhandled_exception'

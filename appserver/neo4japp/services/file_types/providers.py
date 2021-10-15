@@ -17,6 +17,7 @@ import textwrap
 import graphviz
 import requests
 import svg_stack
+from flask import current_app
 
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -34,6 +35,7 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -76,7 +78,8 @@ from neo4japp.constants import (
     DETAIL_TEXT_LIMIT,
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
-    TEMP_PATH
+    TEMP_PATH,
+    LogEventType
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -828,11 +831,24 @@ class MapTypeProvider(BaseFileTypeProvider):
             folder_name = str(uuid.uuid4())
         os.mkdir(TEMP_PATH + folder_name)
 
-        zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
         try:
+            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
-            raise ValidationError
+            current_app.logger.info(
+                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!.',
+                extra=EventLog(
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+            )
+            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+        except zipfile.BadZipFile:
+            current_app.logger.info(
+                f'Invalid map file: {file.hash_id} File is a bad zipfile.',
+                extra=EventLog(
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+            )
+            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+
         graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
@@ -873,7 +889,14 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params = create_image_node(node, params)
                     params['image'] = file_path
                 except KeyError:
-                    raise ValidationError
+                    name = node.get('image_id') + '.png'
+                    current_app.logger.info(
+                        f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
+                        extra=EventLog(
+                            event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                    )
+                    raise ValidationError(
+                        f"Cannot retrieve image: {name} - file might be corrupted")
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
