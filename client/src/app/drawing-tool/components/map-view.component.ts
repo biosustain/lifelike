@@ -2,10 +2,11 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Observable, Subscription, combineLatest, of } from 'rxjs';
+import {Observable, Subscription, forkJoin} from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import JSZip from 'jszip';
+import {defaultIfEmpty} from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -78,9 +79,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   save() {
     const zip = new JSZip();
     const imgs = zip.folder('images');
-    const imageIds: string[] = ['dummy'];
+    const imageIds: string[] = [];
     // Add a dummy observable to always fire the subscription below
-    const imageNodeObservables: Observable<Blob>[] = [of(new Blob())];
+    const imageNodeObservables: Observable<Blob>[] = [];
     for (const node of this.graphCanvas.getGraph().nodes) {
       if (node.image_id !== undefined) { // is image
         imageIds.push(node.image_id);
@@ -98,9 +99,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      *     functions like `combineLatest`
      */
     zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
-    combineLatest(imageNodeObservables).subscribe((imageBlobs: Blob[]) => {
-      // We start as 1, due to the dummy observable
-      for (let i = 1; i < imageIds.length; i++) {
+    // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
+    forkJoin(imageNodeObservables).pipe(defaultIfEmpty(null)).subscribe((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
         imgs.file(imageIds[i] + '.png', imageBlobs[i]);
       }
       zip.generateAsync({ type: 'blob' }).then((content) => {
