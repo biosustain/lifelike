@@ -417,7 +417,7 @@ def create_default_node(node):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': formal_label('\n'.join(textwrap.TextWrapper(
+        'label': re.escape('\n'.join(textwrap.TextWrapper(
             width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
             replace_whitespace=False).wrap(node['display_name']))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
@@ -443,28 +443,55 @@ def create_default_node(node):
     }
 
 
+def handle_new_lines_in_detail_text(line, node_data):
+    # We are splitting the text over new lines, as otherwise, the re.escape would escape the
+    # new lines as well
+    lines = line.splitlines()
+    # Escape all the chars that might cause problems with export
+    # see https://sbrgsoftware.atlassian.net/browse/LL-3387 for details on problems
+    # Join over a new line to preserve text formatting
+    detail_text = '\n'.join(lines)
+    if node_data.get('sources'):
+        # Check if the node was dragged from the pdf - if so, it will have a source link
+        if any(DOCUMENT_RE.match(src.get('url')) for src in node_data.get('sources')):
+            detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+    detail_text = r'\l'.join(
+        textwrap.TextWrapper(
+            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
+            replace_whitespace=False).wrap(detail_text)) + r'\l'
+    return detail_text
+
+
 def create_detail_node(node, params):
     """
     Add parameters specific to the nodes which has a 'show detail text instead of a label'
     property. Due to the copyright, we limit the text in detail nodes dragged from the pdfs to 250
-    characters - see https://sbrgsoftware.atlassian.net/browse/LL-3387
+    characters - see https://sbrgsoftware.atlassian.net/browse/LL-3387 for details on problems.
+    Due to the fact, that new lines can be present in the detail text (and need to be replaced with
+    slash + l (which cant be written here due to the pep8 check) to align the text to the left, we
+    need to be careful while escaping the text
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
     :returns: modified params dict
+    TODO: Mimic the text metric and text breaking from the drawing-tool
     """
     params['style'] += ',filled'
-    detail_text = node['data'].get('detail', ' ')
-    if node['data'].get('sources'):
-        # Check if the node was dragged from the pdf - if so, it will have a source link
-        if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
-            detail_text = detail_text[:DETAIL_TEXT_LIMIT]
-    params['label'] = '\n'.join(
-        textwrap.TextWrapper(
-            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-            replace_whitespace=False).wrap(detail_text)) + '\n'
-    # Align the text to the left with Graphviz custom escape sequence '\l'
-    params['label'] = params['label'].replace('\n', r'\l')
+    detail_text = node['data'].get('detail', '')
+    if detail_text:
+        # Use regex to split, otherwise \n )text, not new lines) are matched as well
+        lines = re.split("\n", detail_text)
+        # Escape the characters and break lines longer than max line width
+        lines = map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
+                                                                ).wrap(re.escape(x))), lines)
+        # '\l' is graphviz special new line, which placed at the end of the line will align it
+        # to the left - we use that instead of \n (and add one at the end to align last line)
+        detail_text = r"\l".join(lines) + r'\l'
+        if node['data'].get('sources'):
+            # Check if the node was dragged from the pdf - if so, it will have a source link
+            if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
+                detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+    params['label'] = detail_text
     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                      {'bgcolor': 'black'}
                                                      ).get('bgcolor')
@@ -531,7 +558,7 @@ def create_icon_node(node, params):
               itself
     """
     style = node.get('style', {})
-    label = node['label']
+    label = re.escape(node['label'])
     # remove border around icon label
     params['penwidth'] = '0.0'
     # Calculate the distance between icon and the label center
@@ -680,7 +707,7 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
-        'label': formal_label(edge['label']),
+        'label': re.escape(edge['label']),
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
@@ -693,23 +720,6 @@ def create_edge(edge, node_hash_type_dict):
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
         'URL': url
     }
-
-
-def formal_label(label):
-    """
-    Graphviz crashes if the last non-whitespace character of a label is backslash -> \
-    see https://sbrgsoftware.atlassian.net/browse/LL-3671
-    This function doubles last backslash (to escape it) and removes whitespaces from the end
-    :params:
-    :param label: string to be processed
-    :returns: stripped label string
-    """
-    if not label or label.isspace():
-        return label
-    label = label.strip()
-    if label[-1] == '\\' and label[-2] != '\\':
-        label += '\\'
-    return label
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -767,7 +777,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                formal_label(file.filename),
+                re.escape(file.filename),
                 # New lines are not permitted in the comment - they will crash the export.
                 # Replace them with spaces until we find different solution
                 comment=file.description.replace('\n', ' ') if file.description else None,
