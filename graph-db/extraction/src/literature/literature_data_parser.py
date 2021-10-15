@@ -245,8 +245,8 @@ class LiteratureDataParser(BaseParser):
     def get_create_literature_query(entry1_type, entry2_type):
         query = """
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:%s
-        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:%s
+        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:%s
+        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:%s
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -259,12 +259,26 @@ class LiteratureDataParser(BaseParser):
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        """ % (
+            f'Literature{entry1_type}',
+            f'Literature{entry2_type}',
+            entry1_type,
+            entry2_type
+        )
+        return query
+
+    @staticmethod
+    def get_create_literature_snippet_pub_query():
+        query = """
+        UNWIND $rows AS row
         MERGE (s:Snippet {eid:row.snippet_id})
         ON CREATE
         SET s:db_Literature,
             s.pmid = row.pmid,
             s.sentence = row.sentence,
             s.data_source = 'Literature'
+        WITH s, row
+        MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         MERGE (s)-[i:INDICATES]->(a)
         ON CREATE
         SET i.entry1_text = row.entry1_name,
@@ -274,12 +288,7 @@ class LiteratureDataParser(BaseParser):
             i.raw_score = row.score
         MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
         MERGE (s)-[:IN_PUB]->(pub)
-        """ % (
-            f'Literature{entry1_type}',
-            f'Literature{entry2_type}',
-            entry1_type,
-            entry2_type
-        )
+        """
         return query
 
     def clean_gene_column(self, df, column_name):
