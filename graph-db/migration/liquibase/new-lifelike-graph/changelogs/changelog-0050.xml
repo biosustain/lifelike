@@ -5,6 +5,18 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
+  <changeSet id="LL-3782 load Zenodo literature constraints on date 10152021" author="Binh Vu">
+    <comment>Create constraints and indexes for Zenodo literature</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_association_id IF NOT EXISTS ON (n:Association) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_snippet_id IF NOT EXISTS ON (n:Snippet) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_literatureentity_id IF NOT EXISTS ON (n:LiteratureEntity) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_literaturedisease_id IF NOT EXISTS ON (n:LiteratureDisease) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_literaturechemical_id IF NOT EXISTS ON (n:LiteratureChemical) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGene) ASSERT n.eid IS UNIQUE;
+    </sql>
+  </changeSet>
+
   <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10152021" author="Binh Vu">
     <comment>
         
