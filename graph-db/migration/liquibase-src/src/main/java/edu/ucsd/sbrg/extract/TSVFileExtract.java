@@ -14,6 +14,7 @@ public class TSVFileExtract extends FileExtract {
         this.fileExtension = fileExtension;
         this.fileName = fileName;
         this.filePath = fileDir + "/" + fileName.substring(0, fileName.lastIndexOf(".")) + fileExtension;
+        System.out.println("Processing file: " + this.filePath);
     }
 
     @Override
