@@ -14,6 +14,7 @@ CREATE CONSTRAINT constraint_literatureentity_id IF NOT EXISTS ON (n:LiteratureE
 CREATE CONSTRAINT constraint_literaturedisease_id IF NOT EXISTS ON (n:LiteratureDisease) ASSERT n.eid IS UNIQUE;
 CREATE CONSTRAINT constraint_literaturechemical_id IF NOT EXISTS ON (n:LiteratureChemical) ASSERT n.eid IS UNIQUE;
 CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGene) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) ASSERT n.pmid IS UNIQUE;
     </sql>
   </changeSet>
 
@@ -26,8 +27,8 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
-        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
+        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
+        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -40,21 +41,6 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
-        MERGE (s:Snippet {eid:row.snippet_id})
-        ON CREATE
-        SET s:db_Literature,
-            s.pmid = row.pmid,
-            s.sentence = row.sentence,
-            s.data_source = 'Literature'
-        MERGE (s)-[i:INDICATES]->(a)
-        ON CREATE
-        SET i.entry1_text = row.entry1_name,
-            i.entry2_text = row.entry2_name,
-            i.normalized_score = row.relscore,
-            i.path = row.path,
-            i.raw_score = row.score
-        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
-        MERGE (s)-[:IN_PUB]->(pub)
         
       "
       fileName="jira-LL-3782-Chemical2Disease_assoc_theme.zip"
@@ -79,8 +65,8 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
-        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
+        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
+        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -93,21 +79,6 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
-        MERGE (s:Snippet {eid:row.snippet_id})
-        ON CREATE
-        SET s:db_Literature,
-            s.pmid = row.pmid,
-            s.sentence = row.sentence,
-            s.data_source = 'Literature'
-        MERGE (s)-[i:INDICATES]->(a)
-        ON CREATE
-        SET i.entry1_text = row.entry1_name,
-            i.entry2_text = row.entry2_name,
-            i.normalized_score = row.relscore,
-            i.path = row.path,
-            i.raw_score = row.score
-        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
-        MERGE (s)-[:IN_PUB]->(pub)
         
       "
       fileName="jira-LL-3782-Chemical2Gene_assoc_theme.zip"
@@ -132,8 +103,8 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
-        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
+        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
+        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -146,21 +117,6 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
-        MERGE (s:Snippet {eid:row.snippet_id})
-        ON CREATE
-        SET s:db_Literature,
-            s.pmid = row.pmid,
-            s.sentence = row.sentence,
-            s.data_source = 'Literature'
-        MERGE (s)-[i:INDICATES]->(a)
-        ON CREATE
-        SET i.entry1_text = row.entry1_name,
-            i.entry2_text = row.entry2_name,
-            i.normalized_score = row.relscore,
-            i.path = row.path,
-            i.raw_score = row.score
-        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
-        MERGE (s)-[:IN_PUB]->(pub)
         
       "
       fileName="jira-LL-3782-Gene2Disease_assoc_theme.zip"
@@ -185,8 +141,8 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {id:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
-        MERGE (n2:LiteratureEntity {id:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
+        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
+        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -199,12 +155,161 @@ CREATE CONSTRAINT constraint_literaturegene_id IF NOT EXISTS ON (n:LiteratureGen
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        
+      "
+      fileName="jira-LL-3782-Gene2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Disease on date 10152021" author="Binh Vu">
+    <comment>
+        Link snippets for Chemical-Disease to publication
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
         MERGE (s:Snippet {eid:row.snippet_id})
         ON CREATE
         SET s:db_Literature,
             s.pmid = row.pmid,
             s.sentence = row.sentence,
             s.data_source = 'Literature'
+        WITH s, row
+        MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Chemical2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Gene on date 10152021" author="Binh Vu">
+    <comment>
+        Link snippets for Chemical-Gene to publication
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        WITH s, row
+        MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Chemical2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Disease on date 10152021" author="Binh Vu">
+    <comment>
+        Link snippets for Gene-Disease to publication
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        WITH s, row
+        MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
+        MERGE (s)-[i:INDICATES]->(a)
+        ON CREATE
+        SET i.entry1_text = row.entry1_name,
+            i.entry2_text = row.entry2_name,
+            i.normalized_score = row.relscore,
+            i.path = row.path,
+            i.raw_score = row.score
+        MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
+        MERGE (s)-[:IN_PUB]->(pub)
+        
+      "
+      fileName="jira-LL-3782-Gene2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Gene on date 10152021" author="Binh Vu">
+    <comment>
+        Link snippets for Gene-Gene to publication
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MERGE (s:Snippet {eid:row.snippet_id})
+        ON CREATE
+        SET s:db_Literature,
+            s.pmid = row.pmid,
+            s.sentence = row.sentence,
+            s.data_source = 'Literature'
+        WITH s, row
+        MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         MERGE (s)-[i:INDICATES]->(a)
         ON CREATE
         SET i.entry1_text = row.entry1_name,
