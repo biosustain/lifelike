@@ -3,6 +3,7 @@ from datetime import datetime
 
 from common.constants import *
 from common.liquibase_utils import *
+from common.query_builder import get_create_constraint_query
 from literature.literature_data_parser import (
     LiteratureDataParser,
     ZENODO_CHEMICAL2DISEASE_FILE,
@@ -21,7 +22,9 @@ class LiteratureChangeLog(ChangeLog):
         self.date_tag = datetime.today().strftime('%m%d%Y')
         self.change_sets = []
 
-    def create_change_logs(self):
+    def create_change_logs(self, initial_load=False):
+        if initial_load:
+            self.add_index_change_set()
         self.load_literature_model()
         self.load_literature_chemical_mapped_rels()
         self.load_literature_disease_mapped_rels()
@@ -92,8 +95,28 @@ class LiteratureChangeLog(ChangeLog):
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
 
+    def create_indexes(self):
+        queries = []
+        queries.append(get_create_constraint_query(NODE_ASSOCIATION, PROP_ID, 'constraint_association_id') + ';')
+        queries.append(get_create_constraint_query(NODE_SNIPPET, PROP_ID, 'constraint_snippet_id') + ';')
+        queries.append(get_create_constraint_query(NODE_LITERATURE_ENTITY, PROP_ID, 'constraint_literatureentity_id') + ';')
+        queries.append(get_create_constraint_query(NODE_LITERATURE_DISEASE, PROP_ID, 'constraint_literaturedisease_id') + ';')
+        queries.append(get_create_constraint_query(NODE_LITERATURE_CHEMICAL, PROP_ID, 'constraint_literaturechemical_id') + ';')
+        queries.append(get_create_constraint_query(NODE_LITERATURE_GENE, PROP_ID, 'constraint_literaturegene_id') + ';')
+        return queries
+
+    def add_index_change_set(self):
+        id = f'load Zenodo literature constraints on date {self.date_tag}'
+        if self.id_prefix:
+            id = f'{self.id_prefix} {id}'
+        comment = 'Create constraints and indexes for Zenodo literature'
+        queries = self.create_indexes()
+        query_str = '\n'.join(queries)
+        changeset = ChangeSet(id, self.author, comment, query_str)
+        self.change_sets.append(changeset)
+
 
 if __name__ == '__main__':
     task = LiteratureChangeLog('Binh Vu', 'LL-3782')
-    task.create_change_logs()
+    task.create_change_logs(True)
     task.generate_liquibase_changelog_file('literature_changelog.xml', directory)
