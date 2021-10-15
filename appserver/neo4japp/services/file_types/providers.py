@@ -443,25 +443,6 @@ def create_default_node(node):
     }
 
 
-def handle_new_lines_in_detail_text(line, node_data):
-    # We are splitting the text over new lines, as otherwise, the re.escape would escape the
-    # new lines as well
-    lines = line.splitlines()
-    # Escape all the chars that might cause problems with export
-    # see https://sbrgsoftware.atlassian.net/browse/LL-3387 for details on problems
-    # Join over a new line to preserve text formatting
-    detail_text = '\n'.join(lines)
-    if node_data.get('sources'):
-        # Check if the node was dragged from the pdf - if so, it will have a source link
-        if any(DOCUMENT_RE.match(src.get('url')) for src in node_data.get('sources')):
-            detail_text = detail_text[:DETAIL_TEXT_LIMIT]
-    detail_text = r'\l'.join(
-        textwrap.TextWrapper(
-            width=min(15 + len(detail_text) // 3, MAX_LINE_WIDTH),
-            replace_whitespace=False).wrap(detail_text)) + r'\l'
-    return detail_text
-
-
 def create_detail_node(node, params):
     """
     Add parameters specific to the nodes which has a 'show detail text instead of a label'
