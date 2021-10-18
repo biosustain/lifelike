@@ -7,6 +7,7 @@ import {
 
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -70,15 +71,16 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.filename = '';
           object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
-          return this.objectCreationService.openCreateDialog(object, {
-            title: 'New Map',
-            request: {
-              contentValue: new Blob([JSON.stringify({
-                edges: [],
-                nodes: [],
-              } as UniversalGraph)]),
-            },
-            ...(options.createDialog || {}),
+          const zip = new JSZip();
+          zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
+          return zip.generateAsync({ type: 'blob' }).then((content) => {
+            return this.objectCreationService.openCreateDialog(object, {
+              title: 'New Map',
+              request: {
+                contentValue: content
+              },
+              ...(options.createDialog || {}),
+            });
           });
         },
       },
@@ -108,7 +110,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename + '.llmap.json');
+            return new File([blob], object.filename + '.llmap.zip');
           }),
         );
       },

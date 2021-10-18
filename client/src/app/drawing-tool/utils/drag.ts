@@ -6,7 +6,7 @@ import { UniversalGraphNode } from '../services/interfaces';
 import { PlacedNode } from '../../graph-viewer/styles/styles';
 import { KnowledgeMapStyle } from '../../graph-viewer/styles/knowledge-map-style';
 
-const style = new KnowledgeMapStyle();
+const style = new KnowledgeMapStyle(null);
 
 export function createNodeDragImage(d: UniversalGraphNode): DragImage {
   const canvas = document.createElement('canvas');
