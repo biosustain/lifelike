@@ -2,9 +2,11 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription } from 'rxjs';
+import {Observable, Subscription, forkJoin} from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
+import JSZip from 'jszip';
+import {defaultIfEmpty} from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -19,7 +21,7 @@ import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
-import { MimeTypes } from '../../shared/constants';
+import { MapImageProviderService } from '../services/map-image-provider.service';
 
 @Component({
   selector: 'app-map-view',
@@ -46,9 +48,11 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               workspaceManager: WorkspaceManager,
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
-              protected readonly progressDialog: ProgressDialog) {
+              mapImageProviderService: MapImageProviderService,
+              public readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
-      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService);
+      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
+      mapImageProviderService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -73,22 +77,46 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
-    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
-      type: MimeTypes.Map,
+    const zip = new JSZip();
+    const imgs = zip.folder('images');
+    const imageIds: string[] = [];
+    // Add a dummy observable to always fire the subscription below
+    const imageNodeObservables: Observable<Blob>[] = [];
+    for (const node of this.graphCanvas.getGraph().nodes) {
+      if (node.image_id !== undefined) { // is image
+        imageIds.push(node.image_id);
+        imageNodeObservables.push(this.mapImageProviderService.getBlob(node.image_id));
+      }
+    }
+    /**
+     * here we have an array of observables, they might emit value at any time
+     * so we use `combineLatest` to grab all of the values emitted by these observables
+     * in the callback function, `imageBlobs` is an array of blobs emitted
+     *     by these observables
+     * and they are in the SAME order as the imageNodeObservables, which is why iterating
+     *     through 2 arrays could work
+     * a better way might be to use HashMap (`Map` in typescript) but maps don't have
+     *     functions like `combineLatest`
+     */
+    zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
+    // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
+    forkJoin(imageNodeObservables).pipe(defaultIfEmpty(null)).subscribe((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
+        imgs.file(imageIds[i] + '.png', imageBlobs[i]);
+      }
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        this.filesystemService.save([this.locator], { contentValue: content })
+          .pipe(this.errorHandler.create({label: 'Update map'}))
+          .subscribe(() => {
+            this.unsavedChanges$.next(false);
+            this.emitModuleProperties(); // TODO: what does this do?
+            this.snackBar.open('Map saved.', null, {
+              duration: 2000,
+            });
+          });
+      });
     });
 
-    // Push to backend to save
-    this.filesystemService.save([this.locator], {
-      contentValue,
-    })
-      .pipe(this.errorHandler.create({label: 'Update map'}))
-      .subscribe(() => {
-        this.unsavedChanges$.next(false);
-        this.emitModuleProperties();
-        this.snackBar.open('Map saved.', null, {
-          duration: 2000,
-        });
-      });
   }
 
   openCloneDialog() {
