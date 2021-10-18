@@ -12,6 +12,7 @@ import textwrap
 import graphviz
 import requests
 import svg_stack
+from graphviz import escape
 
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -417,7 +418,7 @@ def create_default_node(node):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': re.escape('\n'.join(textwrap.TextWrapper(
+        'label': escape('\n'.join(textwrap.TextWrapper(
             width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
             replace_whitespace=False).wrap(node['display_name']))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
@@ -465,7 +466,7 @@ def create_detail_node(node, params):
         lines = re.split("\n", detail_text)
         # Escape the characters and break lines longer than max line width
         lines = map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
-                                                                ).wrap(re.escape(x))), lines)
+                                                                ).wrap(escape(x))), lines)
         # '\l' is graphviz special new line, which placed at the end of the line will align it
         # to the left - we use that instead of \n (and add one at the end to align last line)
         detail_text = r"\l".join(lines) + r'\l'
@@ -540,7 +541,7 @@ def create_icon_node(node, params):
               itself
     """
     style = node.get('style', {})
-    label = re.escape(node['label'])
+    label = escape(node['label'])
     # remove border around icon label
     params['penwidth'] = '0.0'
     # Calculate the distance between icon and the label center
@@ -689,7 +690,7 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
-        'label': re.escape(edge['label']),
+        'label': escape(edge['label']),
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
@@ -759,7 +760,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                re.escape(file.filename),
+                escape(file.filename),
                 # New lines are not permitted in the comment - they will crash the export.
                 # Replace them with spaces until we find different solution
                 comment=file.description.replace('\n', ' ') if file.description else None,
