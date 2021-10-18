@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import JSZip from 'jszip';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -25,15 +26,17 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
+import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 
+import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
-import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
-import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
+import { MapImageProviderService } from '../services/map-image-provider.service';
+import { MimeTypes } from '../../shared/constants';
 
 @Component({
   selector: 'app-map',
@@ -80,6 +83,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
+    readonly mapImageProviderService: MapImageProviderService,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -117,7 +121,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   ngAfterViewInit() {
     Promise.resolve().then(() => {
-      const style = new KnowledgeMapStyle();
+      const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService)); // from below
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
         edgeRenderStyle: style,
@@ -165,7 +169,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return path === 'edit';
   }
 
-  private initializeMap() {
+  private async initializeMap() {
     if (!this.map || !this.contentValue) {
       return;
     }
@@ -176,34 +180,63 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     this.emitModuleProperties();
+    const imageIds: string[] = [];
+    const imageProms: Promise<Blob>[] = [];
+    const graphRepr: string = await JSZip.loadAsync(this.contentValue).then((zip: JSZip) => {
+      const unzipped = zip.files['graph.json'].async('text').then((text: string) => {
+        // text is whatever content in `graph.json`
+        return text;
+      });
+      // while we are still in the unzipped callback, retrieve images
+      const imageFolder = zip.folder('images');
+      imageFolder.forEach(async (f) => {
+        imageIds.push(f.substring(0, f.indexOf('.')));
+        imageProms.push(imageFolder.file(f).async('blob')); // pushes Promise<Blob>
+      });
+      return unzipped;
+    });
 
-    this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
-      mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create({label: 'Parse map data'}),
-    ).subscribe(graph => {
-      this.graphCanvas.setGraph(graph);
-      this.graphCanvas.zoomToFit(0);
-
-      if (this.highlightTerms != null && this.highlightTerms.length) {
-        this.graphCanvas.highlighting.replace(
-          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-        );
+    // wait for all Promises to resolve to Blobs containing images on the graph
+    Promise.all(imageProms).then((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
+        this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
       }
-    }, e => {
-      // Data is corrupt
-      // TODO: Prevent the user from editing or something so the user doesnt lose data?
-    }));
+    });
+
+    this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create({ label: 'Parse map data' }),
+    ).subscribe(
+      graph => {
+        this.graphCanvas.setGraph(graph);
+        for (const node of this.graphCanvas.getGraph().nodes) {
+          if (node.image_id !== undefined) {
+            // put image nodes back into renderTree, doesn't seem to make a difference though
+            this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
+          }
+        }
+        this.graphCanvas.zoomToFit(0);
+
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, { keepSearchSpecialChars: true, wholeWord: true }),
+          );
+        }
+      },
+      e => {
+        console.error(e);
+        // Data is corrupt
+        // TODO: Prevent the user from editing or something so the user doesnt lose data?
+      }
+    ));
   }
 
   registerGraphBehaviors() {
-    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
+    this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
   }
 
   ngOnDestroy() {
-    // Unlikely but it can be destroyed before first render, for instance in case of error
-    // (before ngAfterViewInit)
     const { historyChangesSubscription, unsavedChangesSubscription } = this;
     if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
     if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }

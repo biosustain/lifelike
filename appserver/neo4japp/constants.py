@@ -66,6 +66,7 @@ class LogEventType(Enum):
     FILESYSTEM = 'filesystem'
     KNOWLEDGE_GRAPH = 'knowledge_graph'
     LAST_ACTIVE = 'last_active'
+    MAP_EXPORT_FAILURE = 'map-export-failure'
     RESET_PASSWORD = 'reset_password'
     SENTRY_HANDLED = 'handled_exception'
     SENTRY_UNHANDLED = 'unhandled_exception'
@@ -382,6 +383,8 @@ VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN
 NAME_LABEL_FONT_AVERAGE_WIDTH = 18
 NAME_LABEL_PADDING_MULTIPLIER = 7
 FILENAME_LABEL_FONT_SIZE = 40.0
+DEFAULT_IMAGE_NODE_WIDTH = 120
+DEFAULT_IMAGE_NODE_HEIGHT = 120
 
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
@@ -439,3 +442,4 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
+TEMP_PATH = '/tmp/'
