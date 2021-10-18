@@ -43,7 +43,7 @@ blocked_file_exts = [
         ('sample.json', 'application/json'),
         ('sample.zip', 'application/zip'),
         ('sample.html', 'text/html'),
-        ('covid_19_vaccine.llmap.json', 'vnd.***ARANGO_DB_NAME***.document/map'),
+        ('covid_19_vaccine.llmap.zip', 'vnd.***ARANGO_DB_NAME***.document/map'),
     ],
     ids=lambda x: x[1],
 )

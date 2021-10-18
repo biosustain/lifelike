@@ -5,6 +5,7 @@ import json
 import re
 import typing
 import urllib.request
+import zipfile
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
@@ -1152,7 +1153,11 @@ class FileExportView(FilesystemBaseView):
 
     def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
         current_user = g.current_user
-        json_graph = json.loads(file.content.raw_file)
+        zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+        try:
+            json_graph = json.loads(zip_file.read('graph.json'))
+        except KeyError:
+            raise ValidationError
         for node in json_graph['nodes']:
             data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
             for link in data:
