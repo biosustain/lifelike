@@ -17,13 +17,14 @@ import { compileFind, FindOptions } from 'app/shared/utils/find';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
+import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { BehaviorList } from './behaviors';
+import { RenderTree } from './render-tree';
 
 /**
  * A rendered view of a graph.
  */
-export abstract class GraphView implements GraphActionReceiver {
+export abstract class GraphView<BT extends Behavior> implements GraphActionReceiver {
   /**
    * Set to false when the component is destroyed so we can stop rendering.
    */
@@ -65,6 +66,8 @@ export abstract class GraphView implements GraphActionReceiver {
    * Marks that changes to the view were made so we need to re-render.
    */
   protected renderingRequested = false;
+
+  abstract renderTree: RenderTree;
 
   /**
    * Indicates where a mouse button is currently down.
@@ -116,7 +119,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Holds currently active behaviors. Behaviors provide UI for the graph.
    */
-  readonly behaviors = new BehaviorList<any>([
+  readonly behaviors = new BehaviorList<BT>([
     'isPointIntersectingNode',
     'isPointIntersectingEdge',
     'isBBoxEnclosingNode',
@@ -290,7 +293,6 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
-    this.requestRender();
   }
 
   /**
@@ -364,26 +366,12 @@ export abstract class GraphView implements GraphActionReceiver {
       }
     }
   }
-
-  /**
-   * Invalidate any cache entries for the given edge. If changes are made
-   * that might affect how the edge is rendered, this method must be called.
-   * @param d the edge
-   */
+    /**
+     * Invalidate any cache entries for the given edge. If changes are made
+     * that might affect how the edge is rendered, this method must be called.
+     * @param d the edge
+     */
   invalidateEdge(d: UniversalGraphEdge): void {
-  }
-
-  /**
-   * Invalidate any cache entries for the given entity. Helper method
-   * that calls the correct invalidation method.
-   * @param entity the entity
-   */
-  invalidateEntity(entity: GraphEntity): void {
-    if (entity.type === GraphEntityType.Node) {
-      this.invalidateNode(entity.entity as UniversalGraphNode);
-    } else if (entity.type === GraphEntityType.Edge) {
-      this.invalidateEdge(entity.entity as UniversalGraphEdge);
-    }
   }
 
   /**
@@ -840,10 +828,7 @@ export abstract class GraphView implements GraphActionReceiver {
     const length = actions.length;
     try {
       for (const action of actions) {
-        // We have unsaved changes
-        // this.saveState = false;  // TODO: remove this
-
-        // Drop all changes after this one
+        // We have unsaved changes, drop all changes after this one
         this.history = this.history.slice(0, this.nextHistoryIndex);
         this.history.push(action);
         this.nextHistoryIndex++;
@@ -944,14 +929,14 @@ export abstract class GraphView implements GraphActionReceiver {
         name: 'Bands',
         color: '#740CAA',
         leaves: [],
-        groups: [],
+        // groups: [],
         padding: 10,
       },
       {
         name: 'Things',
         color: '#0CAA70',
         leaves: [],
-        groups: [],
+        // groups: [],
         padding: 10,
       },
     ];

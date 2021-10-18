@@ -267,6 +267,9 @@
           "hash": {
             "$ref": "#/definitions/hash"
           },
+          "image_id": {
+            "type": "string"
+          },
           "label": {
             "type": "string",
             "minLength": 1,
