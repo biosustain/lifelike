@@ -19,6 +19,7 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
 import { GraphEntityDataProvider } from './providers/data-transfer-data/graph-entity-data.provider';
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
+import { MapImageProviderService } from './services/map-image-provider.service';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edi
       useClass: GraphEntityDataProvider,
       multi: true,
     },
+    MapImageProviderService,
   ],
   exports: [
     RouterModule,

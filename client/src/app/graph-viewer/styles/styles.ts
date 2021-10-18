@@ -48,6 +48,10 @@ export interface PlacementOptions {
   highlighted;
 }
 
+export interface PlacedObjectRenderer {
+  enqueueRender(object: PlacedObject);
+}
+
 // Placed objects (instantiated by styles)
 // ---------------------------------
 
@@ -56,11 +60,25 @@ export interface PlacementOptions {
  *
  * See {@link PlacedNode} and {@link PlacedEdge}.
  */
-export interface PlacedObject {
+export abstract class PlacedObject {
+  private placedObjectRenderer: PlacedObjectRenderer;
+  protected children: PlacedObject[] = [];
+
+  /**
+   * Binds an object to a context.
+   * @param renderer the renderer
+   */
+  bind(renderer: PlacedObjectRenderer) {
+    this.placedObjectRenderer = renderer;
+    for (const child of this.children) {
+      child.bind(renderer);
+    }
+  }
+
   /**
    * Get the bounding box.
    */
-  getBoundingBox(): {
+  abstract getBoundingBox(): {
     minX: number,
     minY: number,
     maxX: number,
@@ -72,7 +90,7 @@ export interface PlacedObject {
    * @param x the X coordinate to check
    * @param y the Y coordinate to check
    */
-  isPointIntersecting(x: number, y: number): boolean;
+  abstract isPointIntersecting(x: number, y: number): boolean;
 
   /**
    * Check to see if the given bbox encloses the object.
@@ -81,19 +99,54 @@ export interface PlacedObject {
    * @param x1 bottom right
    * @param y1 bottom right
    */
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean;
+  abstract isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean;
 
   /**
    * Render the object on the canvas.
    * @param transform the zoom and pan transform
    */
-  draw(transform: any): void;
+  abstract draw(transform: any): void;
+
+  /**
+   * Called after the object has been bound to a renderer.
+   */
+  objectDidBind(): void {
+  }
+
+  /**
+   * Called before the object is unbound.
+   */
+  objectWillUnbind(): void {
+  }
+
+  /**
+   * Called to see if the object should be re-rendered.
+   */
+  shouldObjectRender(): boolean {
+    for (const child of this.children) {
+      if (child.shouldObjectRender()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Force this object to be re-rendered at some point.
+   */
+  forceRender(): void {
+    if (this.placedObjectRenderer) {
+      this.placedObjectRenderer.enqueueRender(this);
+    } else {
+      throw new Error('this placed object is not bound yet');
+    }
+  }
 }
 
 /**
  * A placed node.
  */
-export interface PlacedNode extends PlacedObject {
+export abstract class PlacedNode extends PlacedObject {
   resizable: boolean;
 
   /**
@@ -104,23 +157,23 @@ export interface PlacedNode extends PlacedObject {
    * @param lineOriginY the line's origin Y
    * @return [x, y]
    */
-  lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[];
+  abstract lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[];
 }
 
 /**
  * A placed edge.
  */
-export interface PlacedEdge extends PlacedObject {
+export abstract class PlacedEdge extends PlacedObject {
   /**
    * Get the shortest distance (unsquared) between the given point and this object.
    * @param x the X coordinate to check
    * @param y the Y coordinate to check
    */
-  getPointDistanceUnsq(x: number, y: number): number;
+  abstract getPointDistanceUnsq(x: number, y: number): number;
 
   /**
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */
-  drawLayer2(transform: any): void;
+  abstract drawLayer2(transform: any): void;
 }

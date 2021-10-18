@@ -1,8 +1,13 @@
+import imghdr
 import io
 import json
 import math
 import re
+import shutil
 import typing
+import zipfile
+import uuid
+
 from base64 import b64encode
 
 from io import BufferedIOBase
@@ -12,6 +17,7 @@ import textwrap
 import graphviz
 import requests
 import svg_stack
+from flask import current_app
 
 from pdfminer import high_level
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -29,6 +35,7 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -68,7 +75,11 @@ from neo4japp.constants import (
     ASSETS_PATH,
     ICON_NODES,
     RELATION_NODES,
-    DETAIL_TEXT_LIMIT
+    DETAIL_TEXT_LIMIT,
+    DEFAULT_IMAGE_NODE_WIDTH,
+    DEFAULT_IMAGE_NODE_HEIGHT,
+    TEMP_PATH,
+    LogEventType
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -106,20 +117,20 @@ def is_valid_doi(doi):
 # Has a good breakdown of the DOI specifications,
 # in case need to play around with the regex in the future
 doi_re = re.compile(
-        # match label pointing that it is DOI
-        rb'(doi[\W]*)?'
-        # match url to doi.org
-        # doi might contain subdomain or 'www' etc.
-        rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
-        # match folder (10) and register name
-        rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
-        # try match commonly used DOI format
-        rb'([-A-z0-9]*)'
-        # match up to first space (values after # are ~ignored anyway)
-        rb'([^ \n\f#]*)'
-        # match up to 20 characters in the same line (values after # are ~ignored anyway)
-        rb'([^\n\f#]{0,20})',
-        flags=re.IGNORECASE
+    # match label pointing that it is DOI
+    rb'(doi[\W]*)?'
+    # match url to doi.org
+    # doi might contain subdomain or 'www' etc.
+    rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+    # match folder (10) and register name
+    rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+    # try match commonly used DOI format
+    rb'([-A-z0-9]*)'
+    # match up to first space (values after # are ~ignored anyway)
+    rb'([^ \n\f#]*)'
+    # match up to 20 characters in the same line (values after # are ~ignored anyway)
+    rb'([^\n\f#]{0,20})',
+    flags=re.IGNORECASE
 )  # noqa
 protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -160,18 +171,18 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # if contains escape patterns try substitute them
                 if common_escape_patterns_re.search(match.group()):
                     doi = _search_doi_in(
-                            common_escape_patterns_re.sub(
-                                    b'', match.group()
-                            )
+                        common_escape_patterns_re.sub(
+                            b'', match.group()
+                        )
                     )
                     if is_valid_doi(doi):
                         return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
                     doi = _search_doi_in(
-                            dash_types_re.sub(
-                                    b'-', match.group()
-                            )
+                        dash_types_re.sub(
+                            b'-', match.group()
+                        )
                     )
                     if is_valid_doi(doi):
                         return doi
@@ -181,7 +192,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
+                            reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
                         )
@@ -197,7 +208,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                                reversedDOIEnding, 1)
+                            reversedDOIEnding, 1)
                         doi = (
                                 url + folderRegistrant + reversedDOIEnding[::-1]
                         )
@@ -217,9 +228,9 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
-                                # new input = match + 50 chars after new line
-                                match.group() +
-                                content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                            # new input = match + 50 chars after new line
+                            match.group() +
+                            content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -298,20 +309,20 @@ class PDFTypeProvider(BaseFileTypeProvider):
     # Has a good breakdown of the DOI specifications,
     # in case need to play around with the regex in the future
     doi_re = re.compile(
-            # match label pointing that it is DOI
-            rb'(doi[\W]*)?'
-            # match url to doi.org
-            # doi might contain subdomain or 'www' etc.
-            rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
-            # match folder (10) and register name
-            rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
-            # try match commonly used DOI format
-            rb'([-A-z0-9]*)'
-            # match up to first space (values after # are ~ignored anyway)
-            rb'([^ \n\f#]*)'
-            # match up to 20 characters in the same line (values after # are ~ignored anyway)
-            rb'([^\n\f#]{0,20})',
-            flags=re.IGNORECASE
+        # match label pointing that it is DOI
+        rb'(doi[\W]*)?'
+        # match url to doi.org
+        # doi might contain subdomain or 'www' etc.
+        rb'((?:https?:\/\/)(?:[-A-z0-9]*\.)*doi\.org\/)?'
+        # match folder (10) and register name
+        rb'(10\.[0-9]{3,}(?:[\.][0-9]+)*\/)'
+        # try match commonly used DOI format
+        rb'([-A-z0-9]*)'
+        # match up to first space (values after # are ~ignored anyway)
+        rb'([^ \n\f#]*)'
+        # match up to 20 characters in the same line (values after # are ~ignored anyway)
+        rb'([^\n\f#]{0,20})',
+        flags=re.IGNORECASE
     )  # noqa
     protocol_re = re.compile(r'https?:\/\/')
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -379,15 +390,26 @@ class BiocTypeProvider(BaseFileTypeProvider):
             raise ValueError()
 
 
-def substitute_svg_images(map_content: io.BytesIO):
-    """ Match every link inside SVG file and replace it with raw PNG data
+def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfile.ZipFile,
+                          folder_name: str):
+    """ Match every link inside SVG file and replace it with raw PNG data of icons or images from
+    zip file. This has to be done after the graphviz call, as base64 PNG data is often longer than
+    graphviz max length limit (~16k chars)
     params:
     :param map_content: bytes of the exported map
+    :param images: list containing names of the images to embed
+    :param zip_file: zip containing images
+    :param folder_name: uuid of a temporary folder containing the images
+    :returns: a modified svg file containing embedded images
     """
     icon_data = get_icon_strings()
-    output = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], map_content.read()
-                           .decode(BYTE_ENCODING))
-    return io.BytesIO(bytes(output, BYTE_ENCODING))
+    text_content = map_content.read().decode(BYTE_ENCODING)
+    text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+    for image in images:
+        text_content = text_content.replace(
+            TEMP_PATH + folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+                zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
+    return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
 def get_icon_strings():
@@ -400,7 +422,7 @@ def get_icon_strings():
                     'ms-word', 'ms-excel', 'ms-powerpoint']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
-                                                           + b64encode(file.read())\
+                                                       + b64encode(file.read()) \
                                                            .decode(BYTE_ENCODING)
         return ICON_DATA
 
@@ -441,6 +463,23 @@ def create_default_node(node):
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
         if style.get('lineType') != 'none' else '0.0'
     }
+
+
+def create_image_node(node, params):
+    """
+    Add parameters specific to the image label.
+
+    :params:
+    :param node: dict containing the node data
+    :param params: dict containing baseline parameters
+    :returns: modified params
+    """
+    params['penwidth'] = '0.0'
+    params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
+    params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
+    params['fixedsize'] = 'true'
+    params['imagescale'] = 'both'
+    return params
 
 
 def create_detail_node(node, params):
@@ -541,9 +580,9 @@ def create_icon_node(node, params):
 
     # Move the label below to make space for the icon node
     params['pos'] = (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
-        )
+        f"{node['data']['x'] / SCALING_FACTOR},"
+        f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
+    )
 
     # Create a separate node which will hold the image
     icon_params = {
@@ -731,8 +770,35 @@ class MapTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        graph = json.loads(buffer.read())
-        validate_map(graph)
+        """
+        Validates whether the uploaded file is a Lifelike map - a zip containing graph.json file
+        describing the map and optionally, folder with the images. If there are any images specified
+        in the json graph, their presence and accordance to the png standard is verified.
+        :params:
+        :param buffer: buffer containing the bytes of the file that has to be tested
+        :raises ValueError: if the file is not a proper map file
+        """
+        zipped_map = buffer.read()
+        try:
+            with zipfile.ZipFile(io.BytesIO(zipped_map)) as zip_file:
+                # Test zip returns the name of the first invalid file inside the archive; if any
+                if zip_file.testzip():
+                    raise ValueError
+
+                try:
+                    json_graph = json.loads(zip_file.read('graph.json'))
+                    validate_map(json_graph)
+                    for node in json_graph['nodes']:
+                        if node.get('image_id'):
+                            # Will throw KeyError exception is image is not present
+                            im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+                            # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
+                            if imghdr.what(None, im) != 'png':
+                                raise ValueError
+                except KeyError:
+                    raise ValueError
+        except zipfile.BadZipFile:
+            raise ValueError
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
@@ -760,23 +826,46 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
-        json_graph = json.loads(file.content.raw_file)
+        folder_name = str(uuid.uuid4())
+        while os.path.isdir(TEMP_PATH + folder_name):
+            folder_name = str(uuid.uuid4())
+        os.mkdir(TEMP_PATH + folder_name)
+
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+            json_graph = json.loads(zip_file.read('graph.json'))
+        except KeyError:
+            current_app.logger.info(
+                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!.',
+                extra=EventLog(
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+            )
+            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+        except zipfile.BadZipFile:
+            current_app.logger.info(
+                f'Invalid map file: {file.hash_id} File is a bad zipfile.',
+                extra=EventLog(
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+            )
+            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+
         graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
 
         if format == 'png':
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                formal_label(file.filename),
-                # New lines are not permitted in the comment - they will crash the export.
-                # Replace them with spaces until we find different solution
-                comment=file.description.replace('\n', ' ') if file.description else None,
-                engine='neato',
-                graph_attr=graph_attr,
-                format=format)
+            formal_label(file.filename),
+            # New lines are not permitted in the comment - they will crash the export.
+            # Replace them with spaces until we find different solution
+            comment=file.description.replace('\n', ' ') if file.description else None,
+            engine='neato',
+            graph_attr=graph_attr,
+            format=format)
 
         node_hash_type_dict = {}
         x_values, y_values = [], []
+        images = []
 
         for node in json_graph['nodes']:
             if self_contained_export:
@@ -787,6 +876,27 @@ class MapTypeProvider(BaseFileTypeProvider):
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
             params = create_default_node(node)
+
+            if node['label'] == 'image':
+                try:
+                    image_name = node.get('image_id') + '.png'
+                    images.append(image_name)
+                    im = zip_file.read("".join(['images/', image_name]))
+                    file_path = "".join([TEMP_PATH, folder_name, '/',  image_name])
+                    f = open(file_path, "wb")
+                    f.write(im)
+                    f.close()
+                    params = create_image_node(node, params)
+                    params['image'] = file_path
+                except KeyError:
+                    name = node.get('image_id') + '.png'
+                    current_app.logger.info(
+                        f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
+                        extra=EventLog(
+                            event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                    )
+                    raise ValidationError(
+                        f"Cannot retrieve image: {name} - file might be corrupted")
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
@@ -826,12 +936,14 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = io.BytesIO(graph.pipe())
 
         if format == 'svg':
-            content = substitute_svg_images(content)
+            content = substitute_svg_images(content, images, zip_file, folder_name)
+
+        shutil.rmtree(TEMP_PATH + folder_name)
 
         return FileExport(
-                content=content,
-                mime_type=extension_mime_types[ext],
-                filename=f"{file.filename}{ext}"
+            content=content,
+            mime_type=extension_mime_types[ext],
+            filename=f"{file.filename}{ext}"
         )
 
     def merge(self, files: list, requested_format: str, links=None):
@@ -1082,8 +1194,8 @@ def get_content_offsets(file):
             # indicates due to the addition of the icon node
             y_values[-1] -= BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
                 node['display_name']) // 3, MAX_LINE_WIDTH)) \
-                * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-                (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
+                            * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
+                            (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
     x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
         MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
