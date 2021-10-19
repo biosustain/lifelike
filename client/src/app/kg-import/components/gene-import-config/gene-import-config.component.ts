@@ -1,11 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 
-import { isNullOrUndefined } from 'util';
 
 import { SheetNameAndColumnNames } from 'app/interfaces';
 import { GeneMatchingPropertyType, RelationshipDirection } from 'app/interfaces/kg-import.interface';
 import { getRandomColor } from 'app/shared/utils';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
   selector: 'app-gene-import-config',

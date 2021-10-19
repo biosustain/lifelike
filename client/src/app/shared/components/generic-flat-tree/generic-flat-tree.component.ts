@@ -1,11 +1,11 @@
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Input, OnDestroy, Directive, Component } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 
 import { Subscription } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 
 import {TreeNode, FlatNode} from 'app/shared/schemas/common';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   protected _treeData: TreeNode<T>[] = [];

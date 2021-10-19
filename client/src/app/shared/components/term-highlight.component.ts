@@ -1,9 +1,9 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { escape, escapeRegExp } from 'lodash-es';
-import { isNullOrUndefined } from 'util';
 
 import { FindOptions } from 'app/shared/utils/find';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
   selector: 'app-term-highlight',

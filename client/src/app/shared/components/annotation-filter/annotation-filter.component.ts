@@ -4,7 +4,6 @@ import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } fr
 import { uniqueId } from 'lodash-es';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import {
   AnnotationFilterEntity,
@@ -13,6 +12,7 @@ import {
   DefaultOrderByOptions,
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
 
 @Component({

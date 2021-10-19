@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
 
 import { Options } from 'vis-network';
-import { isNullOrUndefined } from 'util';
 
 import { GraphData } from 'app/interfaces/vis-js.interface';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 export enum DisplayType {
   NETWORK = 'network',

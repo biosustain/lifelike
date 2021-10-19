@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Pipe({
   name: 'projectTitleAcronym'
