@@ -1,6 +1,7 @@
 import { escapeRegExp } from 'lodash-es';
 
-import { DirectoryObject } from '../../interfaces/projects.interface';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+
 import { FilesystemObject } from '../models/filesystem-object';
 
 export function getObjectCommands(object: DirectoryObject) {

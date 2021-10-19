@@ -1,4 +1,4 @@
-import { SankeyAdvancedOptions, SankeyLink, SankeyNode, SankeyData, SankeyTrace } from '../../sankey-viewer/components/interfaces';
+import { SankeyAdvancedOptions, SankeyLink, SankeyNode, SankeyData, SankeyTrace } from 'app/sankey-viewer/components/interfaces';
 
 export interface SankeyManyToManyAdvancedOptions extends SankeyAdvancedOptions {
   highlightCircular: boolean;

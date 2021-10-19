@@ -23,6 +23,7 @@ import { SEARCH_LINKS } from 'app/shared/links';
 import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import {toValidLink} from 'app/shared/utils/browser';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -32,7 +33,6 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
 import { PDFSource, PDFProgressData } from './pdf-viewer/interfaces';
-import {toValidLink} from '../shared/utils/browser';
 
 declare var jQuery: any;
 

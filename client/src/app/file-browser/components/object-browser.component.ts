@@ -12,12 +12,12 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ProjectsService } from '../services/projects.service';
 import {
   CreateActionOptions,

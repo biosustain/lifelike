@@ -4,8 +4,8 @@ import { of } from 'rxjs';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ModelList } from 'app/shared/models';
+import { AppUser } from 'app/interfaces';
 
-import { AppUser } from '../../interfaces';
 import { ObjectVersionData } from '../schema';
 import { FilesystemObject } from './filesystem-object';
 

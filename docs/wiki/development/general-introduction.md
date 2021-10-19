@@ -165,7 +165,7 @@ Many client linting problems can be fixed in automated manner by running:
 
 ```
 cd client 
-yarn tslint --fix -c tslint.json 'src/**/*.ts'
+yarn lint --fix
 ```
 
 ## Continued Reading

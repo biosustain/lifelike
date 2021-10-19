@@ -13,14 +13,14 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { getObjectLabel } from 'app/file-browser/utils/objects';
+import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MapComponent } from './map.component';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject} from '../../file-browser/models/filesystem-object';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { getObjectLabel } from '../../file-browser/utils/objects';
-import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 
 @Component({

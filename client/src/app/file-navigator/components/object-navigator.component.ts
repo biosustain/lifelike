@@ -13,8 +13,7 @@ import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-
-import { MimeTypes } from '../../shared/constants';
+import { MimeTypes } from 'app/shared/constants';
 
 
 @Component({

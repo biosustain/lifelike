@@ -8,12 +8,12 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 
 import { ProjectsService } from './projects.service';
 import { ProjectImpl } from '../models/filesystem-object';
 import { ProjectEditDialogComponent, ProjectEditDialogValue } from '../components/dialog/project-edit-dialog.component';
 import { ProjectCreateRequest } from '../schema';
-import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProjectCollaboratorsDialogComponent } from '../components/dialog/project-collaborators-dialog.component';
 
 @Injectable()
