@@ -18,9 +18,9 @@ import {
   SingleResult,
 } from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
 
 import { FilesystemObject } from '../models/filesystem-object';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   BulkObjectUpdateRequest,
   FileAnnotationHistoryResponse,

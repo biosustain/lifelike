@@ -4,13 +4,14 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { openDownloadForBlob } from 'app/shared/utils/files';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { openDownloadForBlob } from '../../shared/utils/files';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-object-viewer',

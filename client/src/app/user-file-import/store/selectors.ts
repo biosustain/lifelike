@@ -4,8 +4,9 @@ import {
     MemoizedSelector,
 } from '@ngrx/store';
 
+import { FileNameAndSheets, NodeMappingHelper } from 'app/interfaces/user-file-import.interface';
+
 import { State } from './state';
-import { FileNameAndSheets, NodeMappingHelper } from '../../interfaces/user-file-import.interface';
 
 export const userFileImportState: MemoizedSelector<object, State> = createFeatureSelector<State>('user-file-import');
 

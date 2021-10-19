@@ -1,12 +1,12 @@
 import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
-
 import {
   AddedAnnotationExclusion,
   Annotation,
   AnnotationChangeExclusionMeta,
   Meta,
-} from '../pdf-viewer/annotation-type';
-import { AppUser, OrganismAutocomplete } from '../interfaces';
+} from 'app/pdf-viewer/annotation-type';
+import { AppUser, OrganismAutocomplete } from 'app/interfaces';
+
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================

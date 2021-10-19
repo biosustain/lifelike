@@ -1,7 +1,7 @@
 /**
  * Keeps track of a set of behaviors and provides methods to call them.
  */
-import { GraphEntity } from '../../drawing-tool/services/interfaces';
+import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 export class BehaviorList<T extends Behavior> {
   private behaviorsMap: Map<string, {

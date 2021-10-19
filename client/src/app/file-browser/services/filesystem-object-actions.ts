@@ -14,10 +14,10 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ResultMapping } from 'app/shared/schemas/common';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';

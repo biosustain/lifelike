@@ -11,10 +11,10 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ResultMapping } from 'app/shared/schemas/common';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 
 import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
-import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,

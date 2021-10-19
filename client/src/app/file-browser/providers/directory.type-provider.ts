@@ -9,6 +9,7 @@ import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import { RankedItem } from 'app/shared/schemas/common';
+import { MimeTypes } from 'app/shared/constants';
 
 import {
   AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
@@ -19,7 +20,6 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { DirectoryPreviewComponent } from '../components/directory-preview.component';
 import { ObjectCreationService } from '../services/object-creation.service';
-import { MimeTypes } from '../../shared/constants';
 
 export const DIRECTORY_SHORTHAND = 'directory';
 

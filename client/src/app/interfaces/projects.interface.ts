@@ -1,6 +1,7 @@
-import { Directory, Project } from '../file-browser/services/project-space.service';
+import { Directory, Project } from 'app/file-browser/services/project-space.service';
+import { KnowledgeMap } from 'app/drawing-tool/services/interfaces';
+
 import { PdfFile } from './pdf-files.interface';
-import { KnowledgeMap } from '../drawing-tool/services/interfaces';
 import { User } from './auth.interface';
 
 export interface DirectoryContent {

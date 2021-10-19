@@ -6,11 +6,11 @@ import { map } from 'rxjs/operators';
 import {
   AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
   Exporter,
-} from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { SearchType } from '../../search/shared';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { MimeTypes } from '../../shared/constants';
+} from 'app/file-browser/services/object-type.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { SearchType } from 'app/search/shared';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { MimeTypes } from 'app/shared/constants';
 
 @Injectable()
 export class PdfTypeProvider extends AbstractObjectTypeProvider {

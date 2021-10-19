@@ -15,8 +15,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { TraceViewComponent } from './components/trace-view.component';
 import { TraceDetailsComponent } from './components/trace-details.component';
 

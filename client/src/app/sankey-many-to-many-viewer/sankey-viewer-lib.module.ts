@@ -15,10 +15,10 @@ import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { TYPE_PROVIDER } from 'app/file-browser/services/object-type.service';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
+import { GraphTypeProvider } from 'app/shared/providers/graph-type/graph-type-provider.service';
 
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
-import { GraphTypeProvider } from '../shared/providers/graph-type/graph-type-provider.service';
 import { SankeyManyToManyModule } from './components/sankey/sankey.module';
 import { SankeyManyToManyViewComponent } from './components/sankey-view.component';
 import { SankeyManyToManyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';

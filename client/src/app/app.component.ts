@@ -13,8 +13,7 @@ import { AuthenticationService } from 'app/auth/services/authentication.service'
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
 import { AppUser } from 'app/interfaces';
-
-import { AppVersionDialogComponent } from './app-version-dialog.component';
+import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 
 /**
  * Root of the application that creates the left menu and the content section.

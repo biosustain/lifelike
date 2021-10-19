@@ -9,8 +9,8 @@ import {
     Neo4jNodeMapping,
     NodeMappingHelper,
 } from 'app/interfaces/user-file-import.interface';
+import { State } from 'app/root-store';
 
-import { State } from '../../root-store';
 import { UserFileImportSelectors as selectors } from '../store';
 import { saveNodeMapping } from '../store/actions';
 

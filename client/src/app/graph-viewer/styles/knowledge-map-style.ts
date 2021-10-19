@@ -18,6 +18,8 @@ import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-e
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
+import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
+import {FA_CUSTOM_ICONS, MicrosoftColors, Unicodes} from 'app/shared/constants';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
@@ -27,13 +29,11 @@ import { CrossAxisLineHead } from '../utils/canvas/line-heads/cross-axis';
 import { EmptyLineHead } from '../utils/canvas/line-heads/empty';
 import { CompoundLineHead } from '../utils/canvas/line-heads/compound';
 import { RectangleHead } from '../utils/canvas/line-heads/rectangle';
-import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-head-types';
 import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
 import { ResourceManager } from '../utils/resource/resource-manager';
 import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
-import {FA_CUSTOM_ICONS, MicrosoftColors, Unicodes} from '../../shared/constants';
 
 
 /**
