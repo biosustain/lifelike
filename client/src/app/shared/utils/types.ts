@@ -1,3 +1,7 @@
+export function isNullOrUndefined(value: any) {
+  return value === null || value === undefined;
+}
+
 // TODO: Replace it with the null coalescing operator when we get it
 export function nullCoalesce(...items) {
   for (const item of items) {

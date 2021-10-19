@@ -18,7 +18,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escapeRegExp } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -29,6 +28,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';

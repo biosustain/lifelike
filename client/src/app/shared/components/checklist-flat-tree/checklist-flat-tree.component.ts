@@ -1,10 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Input, OnDestroy, Directive } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 
 import { Subject, Subscription } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree.component';
 

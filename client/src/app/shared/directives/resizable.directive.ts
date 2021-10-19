@@ -2,7 +2,8 @@ import { Directive, ElementRef, Input, OnInit } from '@angular/core';
 
 import * as $ from 'jquery';
 import 'jqueryui';
-import { isNullOrUndefined } from 'util';
+
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Directive({
   selector: '[appResizable]'

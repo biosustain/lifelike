@@ -5,7 +5,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten } from 'lodash-es';
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -30,6 +29,7 @@ import {
   getChoicesFromQuery,
   serializePaginatedParams,
 } from 'app/shared/utils/params';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';

@@ -1,9 +1,8 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
-import { isNullOrUndefined } from 'util';
 
-import { RecursivePartial } from 'app/shared/utils/types';
+import { isNullOrUndefined, RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 

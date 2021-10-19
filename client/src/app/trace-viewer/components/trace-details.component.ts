@@ -1,9 +1,10 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
+
 import { Options } from 'vis-network';
 
 import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
 

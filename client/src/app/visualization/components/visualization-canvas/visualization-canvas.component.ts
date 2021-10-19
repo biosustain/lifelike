@@ -10,7 +10,6 @@ import {
 import { Options } from '@popperjs/core';
 import { Subject, Subscription } from 'rxjs';
 import { skip, first } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 import { DataSet } from 'vis-data';
 import { Network, IdType } from 'vis-network';
 
@@ -51,6 +50,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 

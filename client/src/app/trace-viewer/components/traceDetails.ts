@@ -1,7 +1,6 @@
-import { isNullOrUndefined } from 'util';
-
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { TraceNode, TraceData } from './interfaces';
 
