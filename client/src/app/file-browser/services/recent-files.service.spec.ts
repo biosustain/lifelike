@@ -3,14 +3,14 @@ import { TestBed, async } from '@angular/core/testing';
 import { Observable, of } from 'rxjs';
 
 import { mockStorage } from 'app/shared/mocks/storage.spec';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MockErrorHandler } from 'app/shared/mocks/error-handler.spec';
+import { uuidv4 } from 'app/shared/utils';
+import { MimeTypes } from 'app/shared/constants';
 
 import { FilesystemService } from './filesystem.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { RecentFilesService } from './recent-files.service';
-import { MockErrorHandler } from '../../shared/mocks/error-handler.spec';
-import { uuidv4 } from '../../shared/utils';
 import { FilesystemObject } from '../models/filesystem-object';
-import { MimeTypes } from '../../shared/constants';
 
 describe('RecentFileService', () => {
   beforeEach(async(() => {

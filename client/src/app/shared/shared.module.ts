@@ -13,6 +13,8 @@ import { RouterModule } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
+import { LinksPanelComponent } from 'app/drawing-tool/components/links-panel.component';
+
 import { AngularSplitModule } from 'angular-split';
 import { AngularMaterialModule } from './angular-material.module';
 import { HighlightSnippetComponent } from './components/highlight-snippet.component';
@@ -65,7 +67,6 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
-import { LinksPanelComponent } from '../drawing-tool/components/links-panel.component';
 import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
 import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';

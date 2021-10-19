@@ -1,4 +1,5 @@
-import { AppUser } from '../../interfaces';
+import { AppUser } from 'app/interfaces';
+
 import { CollaboratorData } from '../schema';
 
 export class Collaborator {

@@ -8,8 +8,8 @@ import { map, mergeMap } from 'rxjs/operators';
 import { ApiService } from 'app/shared/services/api.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 

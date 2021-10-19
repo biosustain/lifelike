@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { AuthenticationService } from '../../auth/services/authentication.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 /**
  * @deprecated Angular makes inheritance very difficult so use ApiService (see FilesystemService)

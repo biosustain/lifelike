@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { AppUser } from '../../interfaces';
+import { AppUser } from 'app/interfaces';
 
 @Component({
   selector: 'app-user',

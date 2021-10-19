@@ -5,8 +5,8 @@ import { MatSelectChange } from '@angular/material/select';
 import { Store } from '@ngrx/store';
 
 import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
+import { State } from 'app/root-store';
 
-import { State } from '../../root-store';
 import { getNodeProperties } from '../store/actions';
 
 @Component({

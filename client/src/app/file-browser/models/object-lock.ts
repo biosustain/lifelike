@@ -1,7 +1,7 @@
 import { RecursivePartial } from 'app/shared/utils/types';
+import { AppUser } from 'app/interfaces';
 
 import { ObjectLockData } from '../schema';
-import { AppUser } from '../../interfaces';
 
 export class ObjectLock {
   user: AppUser;

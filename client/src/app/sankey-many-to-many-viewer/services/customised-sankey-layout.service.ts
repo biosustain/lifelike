@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 
 import { first, last } from 'lodash-es';
 
-import { TruncatePipe } from '../../shared/pipes';
-import { symmetricDifference } from '../../sankey-viewer/components/sankey/utils';
-import { SankeyNode } from '../../sankey-viewer/components/interfaces';
-import { CustomisedSankeyLayoutService } from '../../sankey-viewer/services/customised-sankey-layout.service';
-import { SankeyControllerService } from '../../sankey-viewer/services/sankey-controller.service';
-import { DirectedTraversal } from '../../sankey-viewer/services/directed-traversal';
+import { TruncatePipe } from 'app/shared/pipes';
+import { symmetricDifference } from 'app/sankey-viewer/components/sankey/utils';
+import { SankeyNode } from 'app/sankey-viewer/components/interfaces';
+import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+import { DirectedTraversal } from 'app/sankey-viewer/services/directed-traversal';
+
 import { SankeyManyToManyLink } from '../components/interfaces';
 
 @Injectable()

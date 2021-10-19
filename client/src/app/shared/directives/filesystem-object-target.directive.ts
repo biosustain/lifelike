@@ -15,16 +15,15 @@ import { finalize, tap } from 'rxjs/operators';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { MessageType } from '../../interfaces/message-dialog.interface';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData
-} from '../../file-browser/providers/data-transfer-data/filesystem-object-data.provider';
+} from 'app/file-browser/providers/data-transfer-data/filesystem-object-data.provider';
 
 @Directive({
   selector: '[appFSObjectTarget]',

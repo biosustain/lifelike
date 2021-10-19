@@ -4,9 +4,8 @@ import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '
 import { Options } from 'vis-network';
 
 import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { networkEdgeSmoothers } from 'app/shared/components/vis-js-network/vis-js-network.constants';
 import { isNullOrUndefined } from 'app/shared/utils/types';
-
-import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
 
 @Component({
   selector: 'app-trace-details',

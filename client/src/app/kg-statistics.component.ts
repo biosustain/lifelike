@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ChartOptions, ChartDataSets } from 'chart.js';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
-import { BackgroundTask } from './shared/rxjs/background-task';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 interface StatisticsDataResponse {
   [domain: string]: {

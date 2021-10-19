@@ -4,13 +4,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject } from 'rxjs';
 
-import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
-import { AppUser, UserUpdateRequest } from '../../interfaces';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { AccountService } from '../../users/services/account.service';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { AppUser, UserUpdateRequest } from 'app/interfaces';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { AccountService } from 'app/users/services/account.service';
 
 
 @Component({

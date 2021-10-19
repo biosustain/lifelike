@@ -13,25 +13,24 @@ import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
-
-import { KgStatisticsComponent } from './kg-statistics.component';
-import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
-import { WorkspaceComponent } from './workspace.component';
-import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
-import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
-import { MapViewComponent } from './drawing-tool/components/map-view.component';
-import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
-import { BrowserComponent } from './file-browser/components/browser/browser.component';
-import { ContentSearchComponent } from './search/components/content-search.component';
-import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
-import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
-import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
-import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
-import { BiocViewComponent } from './bioc-viewer/components/bioc-view.component';
-import { ObjectViewerComponent } from './file-browser/components/object-viewer.component';
-import { SankeyViewComponent } from './sankey-viewer/components/sankey-view.component';
-import { TraceViewComponent } from './trace-viewer/components/trace-view.component';
-import { SankeyManyToManyViewComponent } from './sankey-many-to-many-viewer/components/sankey-view.component';
+import { KgStatisticsComponent } from 'app/kg-statistics.component';
+import { TermsOfServiceComponent } from 'app/users/components/terms-of-service.component';
+import { WorkspaceComponent } from 'app/workspace.component';
+import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.guard';
+import { MapEditorComponent } from 'app/drawing-tool/components/map-editor/map-editor.component';
+import { MapViewComponent } from 'app/drawing-tool/components/map-view.component';
+import { CommunityBrowserComponent } from 'app/file-browser/components/community-browser.component';
+import { BrowserComponent } from 'app/file-browser/components/browser/browser.component';
+import { ContentSearchComponent } from 'app/search/components/content-search.component';
+import { ObjectNavigatorComponent } from 'app/file-navigator/components/object-navigator.component';
+import { ShortestPathComponent } from 'app/shortest-path/containers/shortest-path.component';
+import {EnrichmentTableViewerComponent} from 'app/enrichment/components/table/enrichment-table-viewer.component';
+import {EnrichmentVisualisationViewerComponent} from 'app/enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
+import { ObjectViewerComponent } from 'app/file-browser/components/object-viewer.component';
+import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.component';
+import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.component';
+import { SankeyManyToManyViewComponent } from 'app/sankey-many-to-many-viewer/components/sankey-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
