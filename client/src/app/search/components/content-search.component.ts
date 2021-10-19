@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flatten } from 'lodash-es';
+import { flatten, uniqBy } from 'lodash-es';
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
 
@@ -86,7 +86,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
               protected readonly objectTypeService: ObjectTypeService) {
     super(route, workspaceManager);
     objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
-      this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
+      this.searchTypes = uniqBy(flatten(providers.map(provider => provider.getSearchTypes())), 'id');
       this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
     });
   }
