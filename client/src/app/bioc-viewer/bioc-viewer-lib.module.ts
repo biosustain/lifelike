@@ -15,9 +15,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { TYPE_PROVIDER } from 'app/file-browser/services/object-type.service';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { BiocViewComponent } from './components/bioc-view.component';
 import { BiocTypeProvider } from './providers/bioc-type-provider';
 import { InfonsComponent } from './components/infons/infons.component';

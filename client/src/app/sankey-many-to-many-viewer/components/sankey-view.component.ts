@@ -4,12 +4,12 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
+import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.component';
 
 import { CustomisedSankeyManyToManyLayoutService } from '../services/customised-sankey-layout.service';
-import { SankeyLayoutService } from '../../sankey-viewer/components/sankey/sankey-layout.service';
 import { SankeyManyToManyControllerService } from '../services/sankey-controller.service';
-import { SankeyControllerService } from '../../sankey-viewer/services/sankey-controller.service';
-import { SankeyViewComponent } from '../../sankey-viewer/components/sankey-view.component';
 import { SankeyManyToManySelection } from './interfaces';
 
 @Component({

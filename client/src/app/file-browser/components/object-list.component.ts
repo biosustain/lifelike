@@ -12,14 +12,14 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { nullCoalesce } from 'app/shared/utils/types';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { openDownloadForBlob } from 'app/shared/utils/files';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { DirectoryObject } from '../../interfaces/projects.interface';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { openDownloadForBlob } from '../../shared/utils/files';
 
 @Component({
   selector: 'app-object-list',

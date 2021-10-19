@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-import { GraphEntity, UniversalGraphEntity } from '../../drawing-tool/services/interfaces';
+import { GraphEntity, UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
 
 /**
  * Manages a list of entities that will be invalidated when the set of

@@ -11,14 +11,14 @@ import { catchError } from 'rxjs/operators';
 
 import { State } from 'app/root-store';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { AccountService } from 'app/users/services/account.service';
 
 import { AuthActions } from '../store';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
-import { AccountService } from '../../users/services/account.service';
 
 @Component({
   selector: 'app-login',

@@ -4,9 +4,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { AppComponent } from './app.component';
-import { RootStoreModule } from './root-store';
-import { SharedModule } from './shared/shared.module';
+import { AppComponent } from 'app/app.component';
+import { RootStoreModule } from 'app/root-store';
+import { SharedModule } from 'app/shared/shared.module';
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;

@@ -13,9 +13,10 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
+import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
+import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
+
 import { SplitComponent } from 'angular-split';
-import { CopyLinkDialogComponent } from './shared/components/dialog/copy-link-dialog.component';
 
 @Component({
   selector: 'app-workspace',

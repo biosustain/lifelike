@@ -9,7 +9,6 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
-
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
@@ -17,22 +16,23 @@ import {
   CreateDialogAction,
   Exporter,
   PreviewOptions,
-} from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import { SearchType } from '../../search/shared';
+} from 'app/file-browser/services/object-type.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
+import { SearchType } from 'app/search/shared';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectContentSource, ObjectCreateRequest } from 'app/file-browser/schema';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { EnrichmentTable } from '../models/enrichment-table';
 import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
 } from '../components/table/dialog/enrichment-table-edit-dialog.component';
-import { ObjectContentSource, ObjectCreateRequest } from '../../file-browser/schema';
-import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 

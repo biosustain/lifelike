@@ -15,15 +15,15 @@ import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { TYPE_PROVIDER } from 'app/file-browser/services/object-type.service';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 import { FileViewComponent } from './components/file-view.component';
-import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { PdfTypeProvider } from './providers/pdf-type-provider';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 
 @NgModule({
   declarations: [

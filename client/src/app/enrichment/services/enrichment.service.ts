@@ -3,9 +3,9 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap, shareReplay, map } from 'rxjs/operators';
 
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { BulkObjectUpdateRequest } from '../../file-browser/schema';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { BulkObjectUpdateRequest } from 'app/file-browser/schema';
 
 const openEnrichmentFiles = new Map();
 

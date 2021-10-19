@@ -32,11 +32,11 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
+import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
+import { MimeTypes } from 'app/shared/constants';
 
-import { CopyKeyboardShortcutBehavior } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-import { MimeTypes } from '../../shared/constants';
 
 @Component({
   selector: 'app-map',

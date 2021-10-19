@@ -11,10 +11,10 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
+import { TruncatePipe } from 'app/shared/pipes';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { getTraceDetailsGraph } from './traceDetails';
-import { TruncatePipe } from '../../shared/pipes';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { TraceNode } from './interfaces';
 
 @Component({

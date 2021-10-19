@@ -20,9 +20,8 @@ import {
   ResultList,
   StandardRequestOptions,
 } from 'app/shared/schemas/common';
-
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
 @Component({
     selector: 'app-annotations-table',

@@ -8,7 +8,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 
-import { Container } from './shared/workspace-manager';
+import { Container } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-workspace-outlet',
