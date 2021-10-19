@@ -52,9 +52,18 @@ app-sankey-many-to-many {
             }
           }
 
-          &[selected=true], &[highlighted=true] {
+          &:hover, &[selected=true], &[highlighted=true], &[transitively-selected=true] {
             & > rect {
               opacity: 100% !important;
+            }
+          }
+
+          &:hover, &[selected=true], &[highlighted=true] {
+            & > rect {
+              opacity: 100% !important;
+              stroke: yellow;
+              stroke-width: 3;
+              stroke-opacity: 1;
             }
           }
 
@@ -144,12 +153,18 @@ app-sankey-many-to-many {
           stroke-dasharray: 4 4;
         }
 
-        &[highlighted=false], &[selected=false] {
+        &[highlighted=false], &[selected=false], &[transitively-selected=false] {
           @include link-color($inactive-colour);
         }
 
-        &[highlighted=true], &[selected=true] {
+        &[highlighted=true] {
           @include link-color($link-color);
+        }
+
+        &:hover, &[transitively-selected=true], &[selected=true], &[highlighted=true] {
+          stroke: yellow;
+          stroke-width: 3;
+          stroke-opacity: 1;
         }
 
         &[highlighted=left] {
@@ -171,15 +186,15 @@ app-sankey-many-to-many {
           }
         }
 
-        &[selected=left] {
+        &[transitively-selected=left] {
           @include link-color($link-left-color);
         }
 
-        &[selected=right] {
+        &[transitively-selected=right] {
           @include link-color($link-right-color);
         }
 
-        &[selected=multiple] {
+        &[transitively-selected=multiple] {
           @include link-color($link-multi-color);
         }
 

@@ -10,7 +10,7 @@ import { uuidv4 } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
 
-import { SankeyManyToManyLink } from '../interfaces';
+import { SankeyManyToManyLink, SankeyManyToManyNode } from '../interfaces';
 
 
 @Component({
@@ -36,8 +36,10 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
     });
   }
 
+  @Input() selected: undefined | SankeyManyToManyLink | SankeyManyToManyNode;
+
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -47,26 +49,26 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
         this.sankey.align = aligns[align];
       }
     }
+
     if (data && this.svg) {
       // using this.data instead of current value so we use copy made by setter
       this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
-    if (selectedLinks) {
-      const links = selectedLinks.currentValue;
-      if (links.size) {
-        this.selectLinks(links);
-      } else {
+
+    if (selected) {
+      const {node, link} = selected.currentValue;
+      if (node) {
         this.deselectLinks();
+        this.selectNode(node);
+        this.calculateAndApplyTransitiveConnections(node);
       }
-    }
-    if (selectedNodes) {
-      const nodes = selectedNodes.currentValue;
-      if (nodes.size) {
-        this.selectNodes(nodes);
-      } else {
+      if (link) {
         this.deselectNodes();
+        this.selectLink(link);
+        this.calculateAndApplyTransitiveConnections(link);
       }
     }
+
     if (searchedEntities) {
       const entities = searchedEntities.currentValue;
       if (entities.size) {
@@ -92,6 +94,22 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   // endregion
 
+  /**
+   * Given the set of selected nodes and links, calculates the connected nodes/links and applies the `transitively-selected` attribute to
+   * them.
+   * @param entity current selection
+   */
+  calculateAndApplyTransitiveConnections(entity) {
+    if (!entity) {
+      this.nodeSelection
+        .attr('transitively-selected', undefined);
+      this.linkSelection
+        .attr('transitively-selected', undefined);
+    } else {
+      this.assignAttrToRelativeLinksAndNodes(entity, 'transitively-selected');
+    }
+  }
+
   deselectNodes() {
     this.nodeSelection
       .attr('selected', undefined);
@@ -104,7 +122,6 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   async pathMouseOver(element, data) {
     this.highlightLink(element);
-    // this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
   }
 
   async pathMouseOut(_element, _data) {
@@ -194,7 +211,6 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   async nodeMouseOver(element, data) {
     this.highlightNode(element);
-    // this.assignAttrToRelativeLinksAndNodes(data, 'highlighted');
   }
 
   async nodeMouseOut(element, _data) {
@@ -205,14 +221,12 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   // region Select
 
-  selectNodes(selectedNodes: Set<SankeyNode>) {
-    const data = selectedNodes.values().next().value;
-    this.assignAttrToRelativeLinksAndNodes(data, 'selected');
+  selectNode(selectedNode) {
+    this.assignAttrAndRaise(this.nodeSelection, 'selected', n => n === selectedNode);
   }
 
-  selectLinks(selectedLinks: Set<object>) {
-    const data = selectedLinks.values().next().value;
-    this.assignAttrToRelativeLinksAndNodes(data, 'selected');
+  selectLink(selectedLink) {
+    this.assignAttrAndRaise(this.linkSelection, 'selected', n => n === selectedLink);
   }
 
   // endregion

@@ -3,6 +3,7 @@ app-sankey {
   $link-dimmed-opacity: .1;
   $link-stroke-opacity: .2;
   $link-selected-stroke-opacity: .85;
+  $link-selected-stroke-width: 3;
 
   $node-opacity: .9;
   $node-dimmed-opacity: .1;
@@ -53,15 +54,16 @@ app-sankey {
 
           &[highlighted=true], &[transitively-selected=true] {
             & > rect {
-                opacity: $node-opacity;
+              opacity: $node-opacity;
             }
           }
 
-          &[selected=true] {
+          &:hover, &[selected=true] {
             & > rect {
               opacity: $node-opacity;
-              stroke-opacity: $node-selected-stroke-opacity;
               stroke-width: $node-selected-stroke-width;
+              stroke: yellow;
+              stroke-opacity: 1;
             }
           }
 
@@ -136,9 +138,11 @@ app-sankey {
             opacity: $link-opacity;
           }
 
-          &[selected=true] {
+          &:hover, &[selected=true] {
             opacity: $link-opacity;
-            stroke-opacity: $link-selected-stroke-opacity;
+            stroke-width: $link-selected-stroke-width;
+            stroke: yellow;
+            stroke-opacity: 1;
           }
 
           &[searched=true] {
