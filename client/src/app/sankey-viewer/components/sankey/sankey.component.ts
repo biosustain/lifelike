@@ -17,7 +17,7 @@ import * as d3 from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import { SankeyData, SankeyNode } from '../interfaces';
+import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
 import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
@@ -325,6 +325,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data object representing the link data
    */
   async pathMouseOver(element, data) {
+    d3.select(element)
+      .raise();
+
     // temporary disabled as of LL-3726
     // const nodeGroup = new Set<number>(data._trace.node_paths.reduce((acc: number[], curr: number[]) => acc.concat(curr), []));
     // const traces = new Set<any>([data._trace]);

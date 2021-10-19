@@ -161,8 +161,7 @@
                                      [nodeAlign]="nodeAlign"
                                      [data]="dataToRender | async"
                                      [normalizeLinks]="options.normalizeLinks"
-                                     [selectedLinks]="selectedLinks | async"
-                                     [selectedNodes]="selectedNodes | async"
+                                     [selected]="selection | async"
                                      [searchedEntities]="entitySearchList"
                                      [focusedNode]="searchFocus">
             </app-sankey-many-to-many>

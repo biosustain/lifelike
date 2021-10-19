@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { flatMap, groupBy, extend, merge } from 'lodash-es';
+import { flatMap, groupBy, merge } from 'lodash-es';
 
 import { SankeyTraceNetwork, SankeyLink, ValueGenerator } from '../../sankey-viewer/components/interfaces';
 import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE } from '../../sankey-viewer/services/sankey-controller.service';
