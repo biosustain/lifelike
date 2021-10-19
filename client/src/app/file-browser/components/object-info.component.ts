@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { FindOptions } from 'app/shared/utils/find';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 import { FilesystemObject } from '../models/filesystem-object';
-import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
   selector: 'app-object-info',

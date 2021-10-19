@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+
 import { parseURLToDomainName } from '../utils/browser';
 
 @Component({

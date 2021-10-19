@@ -11,8 +11,7 @@ import {
   Exporter,
 } from 'app/file-browser/services/object-type.service';
 import { SearchType } from 'app/search/shared';
-
-import { MimeTypes } from '../../shared/constants';
+import { MimeTypes } from 'app/shared/constants';
 
 
 export const BIOC_SHORTHAND = 'BioC';

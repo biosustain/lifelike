@@ -1,13 +1,12 @@
 import { Component, Input } from '@angular/core';
 
-
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
 import { PUBMEDURL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { getQueryParams } from 'app/search/utils/search';
 import { isNullOrUndefined } from 'app/shared/utils/types';
 
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { getLink } from '../utils/records';
 import { GraphSearchParameters } from '../graph-search';
 

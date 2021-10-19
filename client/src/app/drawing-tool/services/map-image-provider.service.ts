@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, from } from 'rxjs';
 
-import { ResourceProvider } from '../../graph-viewer/utils/resource/resource-manager';
+import { ResourceProvider } from 'app/graph-viewer/utils/resource/resource-manager';
 
 @Injectable()
 export class MapImageProviderService implements ResourceProvider<string, CanvasImageSource> {

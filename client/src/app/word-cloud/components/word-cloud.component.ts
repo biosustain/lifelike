@@ -9,11 +9,11 @@ import * as cloud from 'd3.layout.cloud';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { NodeLegend } from 'app/interfaces';
 
 import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { NodeLegend } from '../../interfaces';
 
 @Component({
   selector: 'app-word-cloud',

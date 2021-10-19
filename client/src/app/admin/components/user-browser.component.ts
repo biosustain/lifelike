@@ -12,12 +12,12 @@ import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { AuthActions, AuthSelectors } from 'app/auth/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { UserCreateDialogComponent } from './user-create-dialog.component';
-import { Progress } from '../../interfaces/common-dialog.interface';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
-import { AuthActions, AuthSelectors } from '../../auth/store';
-import { State } from '../../***ARANGO_USERNAME***-store';
 import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 
 

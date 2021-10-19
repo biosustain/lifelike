@@ -8,9 +8,9 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { AnnotationType } from 'app/shared/constants';
+import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
 import { Annotation } from '../annotation-type';
-import { Hyperlink } from '../../drawing-tool/services/interfaces';
 
 @Component({
   selector: 'app-annotation-panel',

@@ -9,16 +9,16 @@ import { select, Store } from '@ngrx/store';
 import { AppUser, PrivateAppUser, UserUpdateRequest } from 'app/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ResultList } from 'app/shared/schemas/common';
+import { userUpdated } from 'app/auth/store/actions';
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthActions, AuthSelectors } from 'app/auth/store';
 
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { AccountService } from '../services/account.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { ResultList } from '../../shared/schemas/common';
-import { userUpdated } from '../../auth/store/actions';
-import { State } from '../../***ARANGO_USERNAME***-store';
-import { AuthActions, AuthSelectors } from '../../auth/store';
 
 
 @Component({

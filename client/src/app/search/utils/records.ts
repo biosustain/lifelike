@@ -1,4 +1,4 @@
-import { FTSQueryRecord } from '../../interfaces';
+import { FTSQueryRecord } from 'app/interfaces';
 
 const DOMAINS_URL = {
   CHEBI: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',

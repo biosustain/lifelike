@@ -10,8 +10,8 @@ import {
     NodeMappingHelper,
     Neo4jColumnMapping,
 } from 'app/interfaces/user-file-import.interface';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
-import { State } from '../../***ARANGO_USERNAME***-store';
 import { UserFileImportSelectors as selectors } from '../store';
 import { uploadNodeMapping } from '../store/actions';
 

@@ -4,10 +4,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { AppUser } from 'app/interfaces';
+
 import { ApiService } from './api.service';
 import { ResultList } from '../schemas/common';
 import { ModelList } from '../models';
-import { AppUser } from '../../interfaces';
 import { AccountSearchRequest } from '../schema/accounts';
 
 @Injectable()

@@ -3,11 +3,12 @@ import { Injectable } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { first, last } from 'lodash-es';
 
+import { TruncatePipe } from 'app/shared/pipes';
+
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
 import { SankeyNode, SankeyData } from '../components/interfaces';
-import { TruncatePipe } from '../../shared/pipes';
 import { SankeyControllerService } from './sankey-controller.service';
 
 const groupByTraceGroupWithAccumulation = () => {

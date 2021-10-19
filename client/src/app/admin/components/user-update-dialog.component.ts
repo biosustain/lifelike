@@ -9,8 +9,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-
-import { AppUser, UserUpdateRequest } from '../../interfaces';
+import { AppUser, UserUpdateRequest } from 'app/interfaces';
 
 @Component({
   selector: 'app-user-update-dialog',

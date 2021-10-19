@@ -6,8 +6,11 @@ import { map } from 'rxjs/operators';
 
 import { ApiService } from 'app/shared/services/api.service';
 import { ResultList, ResultMapping } from 'app/shared/schemas/common';
+import { Annotation } from 'app/pdf-viewer/annotation-type';
+import {
+  SortingAlgorithmId
+} from 'app/word-cloud/sorting/sorting-algorithms';
 
-import { Annotation } from '../../pdf-viewer/annotation-type';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
@@ -16,9 +19,6 @@ import {
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
 } from '../schema';
-import {
-  SortingAlgorithmId
-} from '../../word-cloud/sorting/sorting-algorithms';
 
 @Injectable()
 export class AnnotationsService {

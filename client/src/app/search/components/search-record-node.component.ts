@@ -4,11 +4,11 @@ import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
 import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
+import { parseURLToDomainName } from 'app/shared/utils/browser';
 
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
-import { parseURLToDomainName } from '../../shared/utils/browser';
 
 @Component({
   selector: 'app-search-record-node',
