@@ -1,5 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
 
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import { ModuleAwareComponent } from 'app/shared/modules';
 
 import { CustomisedSankeyManyToManyLayoutService } from '../services/customised-sankey-layout.service';
@@ -7,6 +10,7 @@ import { SankeyLayoutService } from '../../sankey-viewer/components/sankey/sanke
 import { SankeyManyToManyControllerService } from '../services/sankey-controller.service';
 import { SankeyControllerService } from '../../sankey-viewer/services/sankey-controller.service';
 import { SankeyViewComponent } from '../../sankey-viewer/components/sankey-view.component';
+import { SankeyManyToManySelection } from './interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -27,6 +31,32 @@ import { SankeyViewComponent } from '../../sankey-viewer/components/sankey-view.
   ]
 })
 export class SankeyManyToManyViewComponent extends SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
+
+  // @ts-ignore
+  selection: BehaviorSubject<SankeyManyToManySelection>;
+
+  initSelection() {
+    this.selection = new BehaviorSubject(undefined);
+    this.selectionWithTraces = this.selection.pipe(
+      map((currentSelection) => {
+        if (!currentSelection) {
+          return [];
+        }
+        const {node, link} = (currentSelection as any);
+        const traces = [
+          ...this.sankeyController.getRelatedTraces({
+            nodes: node ? [node] : [],
+            links: link ? [link] : []
+          })
+        ].map(trace => ({
+          trace
+        } as SankeyManyToManySelection));
+        return [currentSelection].concat(traces);
+      })
+    );
+    this.selection.subscribe(selection => this.detailsPanel = !!selection);
+  }
+
   emitModuleProperties() {
     super.emitModuleProperties();
   }
@@ -35,22 +65,14 @@ export class SankeyManyToManyViewComponent extends SankeyViewComponent implement
     super.ngOnDestroy();
   }
 
+
   toggleSelect(entity, type) {
-    let currentSelection = this.selection.value;
-    const idxOfSelectedLink = currentSelection.findIndex(
-      d => d.type === type && d.entity === entity
-    );
-
-    if (idxOfSelectedLink !== -1) {
-      currentSelection.splice(idxOfSelectedLink, 1);
+    if (this.selection.value && (this.selection.value[type] === entity)) {
+      this.selection.next(undefined);
     } else {
-      currentSelection = currentSelection.filter(s => s.type !== type);
-      currentSelection.push({
-        type,
-        entity
-      });
+      this.selection.next({
+        [type]: entity
+      } as SankeyManyToManySelection);
     }
-
-    this.selection.next(currentSelection);
   }
 }

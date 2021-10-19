@@ -1,4 +1,4 @@
-import { SankeyAdvancedOptions, SankeyLink, SankeyNode, SankeyData } from '../../sankey-viewer/components/interfaces';
+import { SankeyAdvancedOptions, SankeyLink, SankeyNode, SankeyData, SankeyTrace } from '../../sankey-viewer/components/interfaces';
 
 export interface SankeyManyToManyAdvancedOptions extends SankeyAdvancedOptions {
   highlightCircular: boolean;
@@ -19,3 +19,11 @@ export interface SankeyManyToManyData extends SankeyData {
   links: SankeyManyToManyLink[];
   nodes: SankeyManyToManyNode[];
 }
+
+export type SankeyManyToManySelection = {
+  node: SankeyManyToManyNode
+} | {
+  link: SankeyManyToManyLink
+} | {
+  trace: SankeyTrace
+};
