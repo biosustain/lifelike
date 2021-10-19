@@ -1,8 +1,7 @@
 import { Component, Input } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
-
 import { SheetNameAndColumnNames, SheetRowPreview } from 'app/interfaces';
+import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
     selector: 'app-worksheet-preview',

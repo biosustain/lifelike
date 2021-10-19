@@ -10,10 +10,9 @@ import {
 } from '@angular/core';
 
 import { cloneDeep, startCase } from 'lodash-es';
-import { isNullOrUndefined } from 'util';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
-import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
+import { isNullOrUndefined, nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
