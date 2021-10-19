@@ -1,4 +1,4 @@
-import { Hyperlink } from '../drawing-tool/services/interfaces';
+import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
 export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([
   {

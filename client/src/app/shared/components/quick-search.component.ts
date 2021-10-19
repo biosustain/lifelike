@@ -2,7 +2,8 @@ import { Component, Input, OnChanges } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
 
-import { Hyperlink } from '../../drawing-tool/services/interfaces';
+import { Hyperlink } from 'app/drawing-tool/services/interfaces';
+
 import { SEARCH_LINKS } from '../links';
 
 @Component({

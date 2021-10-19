@@ -11,16 +11,16 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { tokenizeQuery, FindOptions, compileFind } from 'app/shared/utils/find';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { SankeyManyToManyAdvancedOptions } from 'app/sankey-many-to-many-viewer/components/interfaces';
 
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
-import { tokenizeQuery, FindOptions, compileFind } from '../../shared/utils/find';
 import { isNodeMatching, isLinkMatching } from './search-match';
 import { SankeyControllerService } from '../services/sankey-controller.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { SelectionEntity } from './interfaces';
-import { SankeyManyToManyAdvancedOptions } from '../../sankey-many-to-many-viewer/components/interfaces';
 import { PathReportComponent } from './path-report/path-report.component';
 
 @Component({

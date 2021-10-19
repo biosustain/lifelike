@@ -4,11 +4,12 @@ import { zip, Observable, BehaviorSubject, of, ReplaySubject } from 'rxjs';
 import { catchError, distinctUntilChanged, tap } from 'rxjs/operators';
 import { isEqual, remove } from 'lodash-es';
 
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 import { FilesystemObject } from '../models/filesystem-object';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { FilesystemService } from './filesystem.service';
 import { FilesystemObjectData } from '../schema';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 export class RecentFileHashesService implements OnDestroy {
   static readonly RECENT_KEY = '***ARANGO_DB_NAME***_workspace_recentList';

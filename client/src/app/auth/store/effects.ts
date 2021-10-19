@@ -20,14 +20,14 @@ import {
   TermsOfServiceDialogComponent,
 } from 'app/users/components/terms-of-service-dialog.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
+import { TERMS_OF_SERVICE } from 'app/users/components/terms-of-service-text.component';
+import { ChangePasswordDialogComponent } from 'app/users/components/change-password-dialog.component';
 
 import { AuthenticationService } from '../services/authentication.service';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
-import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
 import { successPasswordUpdate } from './actions';
-import { ChangePasswordDialogComponent } from '../../users/components/change-password-dialog.component';
 
 @Injectable()
 export class AuthEffects {

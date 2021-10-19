@@ -18,11 +18,10 @@ import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { Location, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
-
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 
 
 @Component({

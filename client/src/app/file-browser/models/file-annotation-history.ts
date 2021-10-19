@@ -2,6 +2,8 @@ import { startCase } from 'lodash-es';
 
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ModelList } from 'app/shared/models';
+import { AnnotationChangeExclusionMeta, Meta } from 'app/pdf-viewer/annotation-type';
+import { AppUser } from 'app/interfaces';
 
 import {
   AnnotationChangeData,
@@ -10,8 +12,6 @@ import {
   FileAnnotationChangeData,
   FileAnnotationHistoryResponse,
 } from '../schema';
-import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
-import { AppUser } from '../../interfaces';
 
 class AnnotationChange {
   action: 'added' | 'removed';

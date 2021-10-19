@@ -1,4 +1,4 @@
-import { FileNameAndSheets, NodeMappingHelper } from '../../interfaces/user-file-import.interface';
+import { FileNameAndSheets, NodeMappingHelper } from 'app/interfaces/user-file-import.interface';
 
 export interface State {
     fileNameAndSheets: FileNameAndSheets;

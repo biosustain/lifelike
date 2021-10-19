@@ -14,10 +14,10 @@ import {
 import { openPotentialInternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { Hyperlink, Source } from '../services/interfaces';
 import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Component({
   selector: 'app-links-panel',

@@ -4,8 +4,7 @@ import { isNullOrUndefined } from 'util';
 import { Options } from 'vis-network';
 
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-
-import { networkEdgeSmoothers } from '../../shared/components/vis-js-network/vis-js-network.constants';
+import { networkEdgeSmoothers } from 'app/shared/components/vis-js-network/vis-js-network.constants';
 
 @Component({
   selector: 'app-trace-details',

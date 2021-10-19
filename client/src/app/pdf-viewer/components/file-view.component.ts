@@ -20,9 +20,13 @@ import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   AddedAnnotationExclusion,
   Annotation,
@@ -34,10 +38,6 @@ import {
   AnnotationHighlightResult,
   PdfViewerLibComponent,
 } from '../pdf-viewer-lib.component';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
 class DummyFile implements PdfFile {
   constructor(

@@ -6,16 +6,15 @@ import { tap } from 'rxjs/operators';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
-import { FilesystemObject} from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-list';
+import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import {
   CreateActionOptions,
   ObjectTypeService,
-} from '../../file-browser/services/object-type.service';
-import {MimeTypes} from '../../shared/constants';
+} from 'app/file-browser/services/object-type.service';
+import {MimeTypes} from 'app/shared/constants';
 
 @Component({
   selector: 'app-associated-maps',

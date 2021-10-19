@@ -24,8 +24,7 @@
     "import-blacklist": [
       true,
       [
-        "rxjs/Rx",
-        "^(../){3,}"
+        "rxjs/Rx"
       ]
     ],
     "interface-name": false,
@@ -69,6 +68,7 @@
       "as-needed"
     ],
     "object-literal-sort-keys": false,
+    "no-relative-import-of-***ARANGO_USERNAME***": true,
     "ordered-imports": [
       true,
       {
@@ -124,6 +124,7 @@
     ]
   },
   "rulesDirectory": [
-    "codelyzer"
+    "codelyzer",
+    "./tslint"
   ]
 }

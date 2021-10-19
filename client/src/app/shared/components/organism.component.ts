@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { OrganismAutocomplete } from '../../interfaces';
+import { OrganismAutocomplete } from 'app/interfaces';
 
 @Component({
   selector: 'app-organism',
