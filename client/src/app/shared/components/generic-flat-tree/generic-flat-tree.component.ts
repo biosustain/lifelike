@@ -2,10 +2,10 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Input, OnDestroy } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 
+import { isNil } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
 import {TreeNode, FlatNode} from 'app/shared/schemas/common';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   protected _treeData: TreeNode<T>[] = [];
@@ -53,7 +53,7 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
 
   getChildren = (node: TreeNode<T>): TreeNode<T>[] => node.children;
 
-  hasNoContent = (_: number, node: FlatNode<T>) => isNullOrUndefined(node.data);
+  hasNoContent = (_: number, node: FlatNode<T>) => isNil(node.data);
 
   getLevel = (node: FlatNode<T>) => node.level;
 

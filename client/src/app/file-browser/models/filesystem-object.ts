@@ -1,3 +1,4 @@
+import { isNil } from 'lodash-es';
 import moment from 'moment';
 
 import {
@@ -15,7 +16,7 @@ import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
-import { isNullOrUndefined, nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
+import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
@@ -492,7 +493,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
         let fragment = '';
-        if (!isNullOrUndefined(meta)) {
+        if (!isNil(meta)) {
           fragment = '#' + [
             `id=${encodeURIComponent(meta.id)}`,
             `text=${encodeURIComponent(meta.allText)}`,

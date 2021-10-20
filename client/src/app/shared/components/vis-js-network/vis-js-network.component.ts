@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, Input, ContentChild, Output, EventEmitter } from '@angular/core';
 
 
+import { isNil } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { DataSet } from 'vis-data/dist/umd';
@@ -9,7 +10,6 @@ import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-networ
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { isNodeMatching } from 'app/sankey-viewer/components/search-match';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
 import { FindOptions, compileFind, tokenizeQuery } from '../../utils/find';
@@ -24,10 +24,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
   @Input() set config(config: Options) {
     this.networkConfig = config;
 
-    if (!isNullOrUndefined(config.physics)) {
+    if (!isNil(config.physics)) {
       this.currentSolver = config.physics.solver || networkSolvers.BARNES_HUT;
 
-      if (!isNullOrUndefined(config.physics[this.currentSolver])) {
+      if (!isNil(config.physics[this.currentSolver])) {
         this.currentCentralGravity = config.physics[this.currentSolver].centralGravity;
       } else {
         this.currentCentralGravity = 0.1;
@@ -41,11 +41,11 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
     // `config.edges.smooth` can be of either type boolean or type object. Here we're just checking that it is an object before trying to
     // access its properties.
-    if (!isNullOrUndefined(config.edges.smooth) && typeof config.edges.smooth === 'object') {
+    if (!isNil(config.edges.smooth) && typeof config.edges.smooth === 'object') {
       this.currentSmooth = config.edges.smooth.type || networkEdgeSmoothers.DYNAMIC;
     }
 
-    if (!isNullOrUndefined(this.networkGraph)) {
+    if (!isNil(this.networkGraph)) {
       this.createNetwork();
     }
   }
@@ -53,7 +53,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   @Input() set data(data: GraphData) {
     this.networkData.nodes.update(data.nodes);
     this.networkData.edges.update(data.edges);
-    if (!isNullOrUndefined(this.networkGraph)) {
+    if (!isNil(this.networkGraph)) {
       this.setNetworkData();
     }
   }
@@ -277,7 +277,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       centralGravity: this.currentCentralGravity,
     };
 
-    if (!isNullOrUndefined(this.networkConfig.physics[this.currentSolver])) {
+    if (!isNil(this.networkConfig.physics[this.currentSolver])) {
       this.networkConfig.physics[this.currentSolver] = {
         ...this.networkConfig.physics[this.currentSolver],
         ...solver

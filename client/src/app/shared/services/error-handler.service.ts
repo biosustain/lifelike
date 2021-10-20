@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 
+import { isNil } from 'lodash-es';
 import { EMPTY, Observable, of, pipe, throwError } from 'rxjs';
 import { catchError, first, map, mergeMap } from 'rxjs/operators';
 import { UnaryFunction } from 'rxjs/internal/types';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { MessageDialog } from './message-dialog.service';
 import { UserError } from '../exceptions';
@@ -162,7 +162,7 @@ export class ErrorHandler {
 
   createCallback<T>(logInfo?: ErrorLogMeta): (e: any) => void {
     return error => {
-      if (isNullOrUndefined(logInfo)) {
+      if (isNil(logInfo)) {
         this.showError(error);
       } else {
         this.showError(error, logInfo);
@@ -172,7 +172,7 @@ export class ErrorHandler {
 
   create<T>(logInfo?: ErrorLogMeta): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
-      if (isNullOrUndefined(logInfo)) {
+      if (isNil(logInfo)) {
         this.showError(error);
       } else {
         this.showError(error, logInfo);

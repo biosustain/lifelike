@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isNil } from 'lodash-es';
 
-import { isNullOrUndefined, RecursivePartial } from 'app/shared/utils/types';
+import { RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -58,7 +58,7 @@ export class EdgeFormComponent implements AfterViewInit {
   }
 
   get hyperlinks() {
-    return isNullOrUndefined(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
+    return isNil(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
   // tslint:disable-next-line: adjacent-overload-signatures
@@ -128,7 +128,7 @@ export class EdgeFormComponent implements AfterViewInit {
    * Create a blank hyperlink template to add to model
    */
   addHyperlink() {
-    if (isNullOrUndefined(this.edge.data.hyperlinks)) {
+    if (isNil(this.edge.data.hyperlinks)) {
       this.edge.data.hyperlinks = [];
     }
 

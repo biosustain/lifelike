@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 
+import { isNil } from 'lodash-es';
+
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
 import { PUBMEDURL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { getQueryParams } from 'app/search/utils/search';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { getLink } from '../utils/records';
 import { GraphSearchParameters } from '../graph-search';
@@ -62,13 +63,13 @@ export class SearchRecordRelationshipsComponent {
   }
 
   setChemicalDataStrings(chemical: GraphNode) {
-    this.chemicalDisplayName = isNullOrUndefined(chemical.displayName) ? '' : chemical.displayName;
-    this.chemicalLabel = isNullOrUndefined(chemical.label) ? '' : chemical.label;
+    this.chemicalDisplayName = isNil(chemical.displayName) ? '' : chemical.displayName;
+    this.chemicalLabel = isNil(chemical.label) ? '' : chemical.label;
   }
 
   setDiseaseDataStrings(disease: GraphNode) {
-    this.diseaseDisplayName = isNullOrUndefined(disease.displayName) ? '' : disease.displayName;
-    this.diseaseLabel = isNullOrUndefined(disease.label) ? '' : disease.label;
+    this.diseaseDisplayName = isNil(disease.displayName) ? '' : disease.displayName;
+    this.diseaseLabel = isNil(disease.label) ? '' : disease.label;
   }
 
   dragStarted(event: DragEvent) {
