@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -191,9 +190,8 @@ public class FileQueryHandler implements CustomTaskChange {
                             processed += content.size();
                             lastProcessedLine = Arrays.toString(content.get(content.size() - 1));
                             content.clear();
-                        } else {
-                            content.add(currentLine.split(fileExtract.getDelimiter(), -1));
                         }
+                        content.add(currentLine.split(fileExtract.getDelimiter(), -1));
                     }
                 }
             }

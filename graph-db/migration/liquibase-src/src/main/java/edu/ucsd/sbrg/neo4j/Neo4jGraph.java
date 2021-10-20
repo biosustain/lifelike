@@ -55,6 +55,10 @@ public class Neo4jGraph {
 
     public Driver getDriver() { return this.driver; }
 
+    public Session getSession() {
+        return this.driver.session(SessionConfig.forDatabase(databaseName));
+    }
+
     private Collection<List<String[]>> partitionData(List<String[]> data, int chunkSize) {
         logger.info("Partitioning data into " + chunkSize + " chunk size.");
         AtomicInteger counter = new AtomicInteger();
