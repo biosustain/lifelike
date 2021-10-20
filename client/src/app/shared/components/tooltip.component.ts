@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, AfterViewInit } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
 
-import { isNullOrUndefined } from 'app/shared/utils/types';
+import { isNil } from 'app/shared/utils/types';
 
 import { uuidv4 } from '../utils';
 
@@ -33,7 +33,7 @@ export class TooltipComponent implements AfterViewInit, OnDestroy {
 
     ngOnDestroy() {
         // Popper could be undefined if component view is not initialized before being destroyed
-        if (!isNullOrUndefined(this.popper)) {
+        if (!isNil(this.popper)) {
             this.popper.destroy();
         }
     }

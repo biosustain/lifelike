@@ -1,11 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 
+import { isNil } from 'lodash-es';
 
 import { SheetNameAndColumnNames } from 'app/interfaces';
 import { GeneMatchingPropertyType, RelationshipDirection } from 'app/interfaces/kg-import.interface';
 import { getRandomColor } from 'app/shared/utils';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
   selector: 'app-gene-import-config',
@@ -16,7 +16,7 @@ export class GeneImportConfigComponent {
     @Output() relationshipsChanged: EventEmitter<FormGroup[]>;
     @Output() relationshipFormValidityChanged: EventEmitter<boolean>;
     @Input() set worksheetData(worksheetData: SheetNameAndColumnNames) {
-        if (!isNullOrUndefined(worksheetData)) {
+        if (!isNil(worksheetData)) {
             this.resetForm();
 
             worksheetData.sheetColumnNames.forEach((column, index) => {

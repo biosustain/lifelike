@@ -7,6 +7,7 @@ import {
     AfterViewInit,
 } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { Options } from '@popperjs/core';
 import { Subject, Subscription } from 'rxjs';
 import { skip, first } from 'rxjs/operators';
@@ -50,7 +51,6 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
@@ -73,7 +73,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Input() edges: DataSet<any, any>;
     @Input() set expandNodeResult(result: ExpandNodeResult) {
         try {
-            if (!isNullOrUndefined(result)) {
+            if (!isNil(result)) {
                 const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
                 let newClusterCount = 0;
                 edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
@@ -147,12 +147,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         }
     }
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
-        if (!isNullOrUndefined(result)) {
+        if (!isNil(result)) {
             try {
                 const toNode = this.nodes.get(result.snippetData.toNodeId) as VisNode;
                 const fromNode = this.nodes.get(result.snippetData.fromNodeId) as VisNode;
 
-                if (isNullOrUndefined(toNode) || isNullOrUndefined(fromNode)) {
+                if (isNil(toNode) || isNil(fromNode)) {
                     throw Error('One or more returned nodes do not exist on the network!');
                 }
 
@@ -181,13 +181,13 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         }
     }
     @Input() set getClusterSnippetsResult(result: GetClusterSnippetsResult) {
-        if (!isNullOrUndefined(result)) {
+        if (!isNil(result)) {
             try {
                 const data = result.snippetData.map(snippetResult => {
                     const toNode = this.nodes.get(snippetResult.toNodeId) as VisNode;
                     const fromNode = this.nodes.get(snippetResult.fromNodeId) as VisNode;
 
-                    if (isNullOrUndefined(toNode) || isNullOrUndefined(fromNode)) {
+                    if (isNil(toNode) || isNil(fromNode)) {
                         throw Error('One or more returned nodes do not exist on the network!');
                     }
 
@@ -299,7 +299,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
     updateSettings(event: SettingsFormValues) {
         // First time we get the settings form values we do a full copy (these are the default values)
-        if (isNullOrUndefined(this.settingsFormValues)) {
+        if (isNil(this.settingsFormValues)) {
             this.settingsFormValues = event;
         } else {
             // On subsequent emissions, we only update a property if it is valid
@@ -493,7 +493,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     }
                 }
 
-                if (!isNullOrUndefined(labels.get(label))) {
+                if (!isNil(labels.get(label))) {
                     // Either `TO` or `FROM` is already in the direction list for this label, so check to see which one we need to add
                     const shouldAddTo = (selectedNode === to && !labels.get(label).includes(Direction.TO));
                     const shouldAddFrom = (selectedNode === from && !labels.get(label).includes(Direction.FROM));
@@ -681,7 +681,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         const duplicateNode = this.nodes.get(duplicateNodeId) as DuplicateVisNode;
 
         // If the original node is not currently drawn on the canvas, redraw it.
-        if (isNullOrUndefined(this.nodes.get(duplicateNode.duplicateOf))) {
+        if (isNil(this.nodes.get(duplicateNode.duplicateOf))) {
             this.nodes.update(this.createOriginalNodeFromDuplicate(duplicateNode));
         }
 
@@ -708,7 +708,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         nodesInCluster.forEach(duplicateNodeId => {
             const duplicateNode = this.nodes.get(duplicateNodeId) as DuplicateVisNode;
             // If the original node is not currently drawn on the canvas, redraw it
-            if (isNullOrUndefined(this.nodes.get(duplicateNode.duplicateOf))) {
+            if (isNil(this.nodes.get(duplicateNode.duplicateOf))) {
                 nodesToAdd.push(this.createOriginalNodeFromDuplicate(duplicateNode));
             }
 
@@ -1050,7 +1050,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
                 if (connectedNode.primaryLabel === AssociatedType[type] && !connectedNodeIds.has(knowledgeGraphId)) {
                   connectedNodeIds.add(knowledgeGraphId);
-                  if (!isNullOrUndefined(connectedNode.duplicateOf)) {
+                  if (!isNil(connectedNode.duplicateOf)) {
                     connectedNodes.push(this.createOriginalNodeFromDuplicate(connectedNode));
                   } else {
                     connectedNodes.push(connectedNode);

@@ -9,10 +9,10 @@ import {
   HostListener,
 } from '@angular/core';
 
-import { cloneDeep, startCase } from 'lodash-es';
+import { cloneDeep, isNil, startCase } from 'lodash-es';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
-import { isNullOrUndefined, nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
+import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -103,7 +103,7 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   get hyperlinks() {
-    return isNullOrUndefined(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
+    return isNil(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
   }
 
   // tslint:disable-next-line: adjacent-overload-signatures
@@ -234,7 +234,7 @@ export class NodeFormComponent implements AfterViewInit {
    * Create a blank hyperlink template to add to model
    */
   addHyperlink() {
-    if (isNullOrUndefined(this.node.data.hyperlinks)) {
+    if (isNil(this.node.data.hyperlinks)) {
       this.node.data.hyperlinks = [];
     }
 
