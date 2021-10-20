@@ -1,6 +1,7 @@
+import { isNil } from 'lodash-es';
+
 import { GraphData } from 'app/interfaces/vis-js.interface';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 import { TraceNode, TraceData } from './interfaces';
 
@@ -106,7 +107,7 @@ export const getTraceDetailsGraph = (trace: TraceData) => {
       const style = annotationTypesMap.get(label.toLowerCase());
       return {
         ...n,
-        color: isNullOrUndefined(style) ? '#000' : style.color
+        color: isNil(style) ? '#000' : style.color
       };
     })
   } as GraphData;

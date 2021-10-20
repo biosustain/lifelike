@@ -1,12 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+import { isNil } from 'lodash-es';
 import { Observable, of, timer, Subscription } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 import { JWTTokenResponse } from 'app/interfaces';
-import { isNullOrUndefined } from 'app/shared/utils/types';
-
 
 
 @Injectable({providedIn: 'root'})
@@ -105,7 +104,7 @@ export class AuthenticationService implements OnDestroy {
     const authId = JSON.parse(localStorage.getItem('authId'));
 
     if (
-      isNullOrUndefined(authId)
+      isNil(authId)
     ) { return; }
 
     return authId;

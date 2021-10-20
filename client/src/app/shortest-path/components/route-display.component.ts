@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { Options } from 'vis-network';
 
 import { GraphData } from 'app/interfaces/vis-js.interface';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 export enum DisplayType {
   NETWORK = 'network',
@@ -180,7 +180,7 @@ export class RouteDisplayComponent {
    */
   setupLegend(nodes: any) {
     nodes.forEach((node) => {
-      if (!isNullOrUndefined(node.databaseLabel)) {
+      if (!isNil(node.databaseLabel)) {
         if (!this.legend.has(node.databaseLabel)) {
           this.legend.set(node.databaseLabel, [node.color.border, node.color.background]);
         }

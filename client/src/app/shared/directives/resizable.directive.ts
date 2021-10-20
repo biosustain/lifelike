@@ -2,8 +2,8 @@ import { Directive, ElementRef, Input, OnInit } from '@angular/core';
 
 import * as $ from 'jquery';
 import 'jqueryui';
+import { isNil } from 'lodash-es';
 
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Directive({
   selector: '[appResizable]'
@@ -19,7 +19,7 @@ export class ResizableDirective  implements OnInit {
   }
 
   ngOnInit() {
-    if (isNullOrUndefined(
+    if (isNil(
       this.el.nativeElement
     )) {
       return;

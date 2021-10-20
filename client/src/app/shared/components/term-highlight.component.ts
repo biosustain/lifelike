@@ -1,9 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
-import { escape, escapeRegExp } from 'lodash-es';
+import { escape, escapeRegExp, isNil } from 'lodash-es';
 
 import { FindOptions } from 'app/shared/utils/find';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
   selector: 'app-term-highlight',
@@ -17,7 +16,7 @@ export class TermHighlightComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if ('highlightTerms' in changes || 'text' in changes) {
-      if (!isNullOrUndefined(this.text) && !isNullOrUndefined(this.highlightTerms) && this.highlightTerms.length > 0) {
+      if (!isNil(this.text) && !isNil(this.highlightTerms) && this.highlightTerms.length > 0) {
         const phrasePatterns = this.highlightTerms.map(
           phrase => escapeRegExp(phrase)
             .replace(/ +/g, ' +')

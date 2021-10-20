@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 
+import { isNil } from 'lodash-es';
+
 import { SheetNameAndColumnNames, SheetRowPreview } from 'app/interfaces';
-import { isNullOrUndefined } from 'app/shared/utils/types';
 
 @Component({
     selector: 'app-worksheet-preview',
@@ -10,7 +11,7 @@ import { isNullOrUndefined } from 'app/shared/utils/types';
 })
 export class WorksheetPreviewComponent {
     @Input() set worksheetData(worksheetData: SheetNameAndColumnNames) {
-        if (!isNullOrUndefined(worksheetData)) {
+        if (!isNil(worksheetData)) {
             this.preview = worksheetData.sheetPreview;
             this.headers = worksheetData.sheetColumnNames.map(column => {
                 // There should be exactly one key (column name) per element in the sheetColumnNames property
