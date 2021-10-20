@@ -329,6 +329,8 @@ class LiteratureDataParser(BaseParser):
             """
             The path_df has lower case paths, need to lower in order to merge.
 
+            Quote from ref: https://zenodo.org/record/3459420
+
             A few users have mentioned that the dependency paths in the "part-i" files are all lowercase text,
             whereas those in the "part-ii" files maintain the case of the original sentence.
             This complicates mapping between the two sets of files.
@@ -338,8 +340,6 @@ class LiteratureDataParser(BaseParser):
             dependency path if their original case is maintained. When working with the part-ii "with-themes" files,
             if you simply convert the dependency path to lowercase, it is guaranteed to match to one of the
             paths in the corresponding part-i file and you'll be able to get the theme scores.
-
-            ref: https://zenodo.org/record/3459420
             """
             reordered_df2['PATH'] = reordered_df2.path
             reordered_df2.path = reordered_df2.path.str.lower()
