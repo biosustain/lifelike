@@ -16,7 +16,7 @@ import java.util.*;
 
 /**
  * Depends on Zenodo literature data being in the graph.
- * See: lifelike-graph/changelogs/changelog-0050.xml
+ * See: lifelike-graph/changelogs/changelog-0020.xml
  */
 public class ZenodoNeo4jTest {
     private Neo4jGraph graph;
@@ -178,6 +178,126 @@ public class ZenodoNeo4jTest {
         String fileName = "jira-LL-3782-Chemical2Gene_assoc_theme.tsv";
         String filePath = this.saveDir + "/" + fileName;
         final String ENTITY_ONE_TYPE = "Chemical";
+        final String ENTITY_TWO_TYPE = "Gene";
+
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new IOException("File " + fileName + " does not exist!");
+        }
+
+        FileInputStream input = new FileInputStream(filePath);
+        Scanner sc = new Scanner(input);
+        sc.useDelimiter(TSV_DELIMITER);
+        String[] header = null;
+        Session session = graph.getSession();
+        List<Map<String, String>> content = new ArrayList<>();
+
+        while (sc.hasNextLine()) {
+            String currentLine = sc.nextLine();
+            if (header == null) {
+                header = currentLine.split(TSV_DELIMITER, -1);
+            } else {
+                String[] line = currentLine.split(TSV_DELIMITER, -1);
+
+                String snippetId = line[1];
+                String sentence = line[6];
+                String entityOneText = line[4];
+                String entityTwoText = line[5];
+                String snippetTheme = line[8];
+                String description = line[11];
+                String path = line[7];
+                String normalizedScore = line[10];
+                String rawScore = line[9];
+                String associationId = line[2] + "-" + line[3] + "-" + snippetTheme;
+
+                Map<String, String> block = new HashMap<>();
+                block.put("snippetId", snippetId);
+                block.put("associationId", associationId);
+                block.put("sentence", sentence);
+                block.put("entityOneText", entityOneText);
+                block.put("entityTwoText", entityTwoText);
+                block.put("snippetTheme", snippetTheme);
+                block.put("description", description);
+                block.put("path", path);
+                block.put("normalizedScore", normalizedScore);
+                block.put("rawScore", rawScore);
+                block.put("entityOneType", ENTITY_ONE_TYPE);
+                block.put("entityTwoType", ENTITY_TWO_TYPE);
+
+                if ((content.size() > 0 && (content.size() % (CHUNK_SIZE * 4) == 0))) {
+                    validate(session, CYPHER, content);
+                    content.clear();
+                }
+                content.add(block);
+            }
+        }
+        session.close();
+    }
+
+    @Test
+    public void testGeneToDiseaseLiterature() throws IOException {
+        String fileName = "jira-LL-3782-Gene2Disease_assoc_theme.tsv";
+        String filePath = this.saveDir + "/" + fileName;
+        final String ENTITY_ONE_TYPE = "Gene";
+        final String ENTITY_TWO_TYPE = "Disease";
+
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new IOException("File " + fileName + " does not exist!");
+        }
+
+        FileInputStream input = new FileInputStream(filePath);
+        Scanner sc = new Scanner(input);
+        sc.useDelimiter(TSV_DELIMITER);
+        String[] header = null;
+        Session session = graph.getSession();
+        List<Map<String, String>> content = new ArrayList<>();
+
+        while (sc.hasNextLine()) {
+            String currentLine = sc.nextLine();
+            if (header == null) {
+                header = currentLine.split(TSV_DELIMITER, -1);
+            } else {
+                String[] line = currentLine.split(TSV_DELIMITER, -1);
+
+                String snippetId = line[1];
+                String sentence = line[6];
+                String entityOneText = line[4];
+                String entityTwoText = line[5];
+                String snippetTheme = line[8];
+                String description = line[11];
+                String path = line[7];
+                String normalizedScore = line[10];
+                String rawScore = line[9];
+                String associationId = line[2] + "-" + line[3] + "-" + snippetTheme;
+
+                Map<String, String> block = new HashMap<>();
+                block.put("snippetId", snippetId);
+                block.put("associationId", associationId);
+                block.put("sentence", sentence);
+                block.put("entityOneText", entityOneText);
+                block.put("entityTwoText", entityTwoText);
+                block.put("snippetTheme", snippetTheme);
+                block.put("description", description);
+                block.put("path", path);
+                block.put("normalizedScore", normalizedScore);
+                block.put("rawScore", rawScore);
+                block.put("entityOneType", ENTITY_ONE_TYPE);
+                block.put("entityTwoType", ENTITY_TWO_TYPE);
+
+                if ((content.size() > 0 && (content.size() % (CHUNK_SIZE * 4) == 0))) {
+                    validate(session, CYPHER, content);
+                    content.clear();
+                }
+                content.add(block);
+            }
+        }
+        session.close();
+    }
+
+    @Test
+    public void testGeneToGeneLiterature() throws IOException {
+        String fileName = "jira-LL-3782-Gene2Gene_assoc_theme.tsv";
+        String filePath = this.saveDir + "/" + fileName;
+        final String ENTITY_ONE_TYPE = "Gene";
         final String ENTITY_TWO_TYPE = "Gene";
 
         if (!Files.exists(Paths.get(filePath))) {
