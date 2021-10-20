@@ -4,6 +4,15 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from 'app/file-browser/components/dialog/object-edit-dialog.component';
+import { getObjectLabel } from 'app/file-browser/utils/objects';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -11,15 +20,6 @@ import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 
-import { FilesystemObject } from '../models/filesystem-object';
-import { CreateDialogOptions } from './object-creation.service';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../components/dialog/object-edit-dialog.component';
-import { getObjectLabel } from '../utils/objects';
-import { AnnotationsService } from './annotations.service';
-import { FilesystemService } from './filesystem.service';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -172,69 +172,4 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
     return of([]);
   }
 
-}
-
-/**
- * A generic file type provider that is returned when we don't know what type of object
- * it is or we don't support it.
- */
-@Injectable()
-export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
-  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-              protected readonly filesystemService: FilesystemService) {
-    super(abstractObjectTypeProviderHelper);
-  }
-
-  handles(object: FilesystemObject): boolean {
-    return true;
-  }
-
-  getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([{
-      name: 'Download',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          map(blob => {
-            return new File([blob], object.filename);
-          }),
-        );
-      },
-    }]);
-  }
-}
-
-/**
- * The object type service returns object type providers for given objects.
- */
-@Injectable()
-export class ObjectTypeService {
-  constructor(protected readonly injector: Injector,
-              private readonly defaultProvider: DefaultObjectTypeProvider) {
-  }
-
-  /**
-   * Get the provider for the given file.
-   * @param object the object
-   * @return  a provider, which may be the default one
-   */
-  get(object: FilesystemObject): Observable<ObjectTypeProvider> {
-    const providers = this.injector.get(TYPE_PROVIDER);
-    for (const provider of providers) {
-      if (provider.handles(object)) {
-        return of(provider);
-      }
-    }
-    return of(this.defaultProvider);
-  }
-
-  /**
-   * Load all providers.
-   */
-  all(): Observable<ObjectTypeProvider[]> {
-    return of(this.injector.get(TYPE_PROVIDER));
-  }
-
-  getDefault(): Observable<ObjectTypeProvider> {
-    return of(this.defaultProvider);
-  }
 }

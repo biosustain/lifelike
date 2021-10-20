@@ -7,6 +7,7 @@ import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { clone } from 'lodash-es';
 
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
@@ -31,7 +32,6 @@ import {
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
-import { ObjectTypeService } from './object-type.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
