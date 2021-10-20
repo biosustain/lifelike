@@ -437,12 +437,14 @@ def create_default_node(node):
     :return: baseline dict with Graphviz paramaters
     """
     style = node.get('style', {})
+    # Ensure that display name is of type string, as it can be None
+    display_name = node['display_name'] or ""
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': escape('\n'.join(textwrap.TextWrapper(
-            width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-            replace_whitespace=False).wrap(node['display_name']))),
+            width=min(10 + len(display_name) // 4, MAX_LINE_WIDTH),
+            replace_whitespace=False).wrap(display_name))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{node['data']['x'] / SCALING_FACTOR},"
