@@ -1,6 +1,6 @@
 import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector,} from '@angular/core';
 
-import {Observable, of, pipe} from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
@@ -113,15 +113,18 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
           return this.filesystemService.getContent(object.hashId).pipe(
           mapBlobToJson<UniversalGraph>(),
-          map(graph => {
-            const blob = new Blob([
+          map(promise => {
+            return from(promise.then(graph => {
+              const blob = new Blob([
               graph.nodes.filter(node => node.label === type.toLowerCase()).map(node => node.display_name).join('\r\n')
             ], {
               type: 'text/plain',
             });
-            return new File([blob], object.filename + ` (${type}s).txt`);
+              return new File([blob], object.filename + ` (${type}s).txt`);
+            }));
+
           }),
-        );
+          );
       },
     })))]);
   }
