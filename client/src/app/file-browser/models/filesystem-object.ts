@@ -22,7 +22,7 @@ import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData,
-} from '../providers/data-transfer-data/filesystem-object-data.provider';
+} from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
 import {createDragImage} from '../utils/drag';

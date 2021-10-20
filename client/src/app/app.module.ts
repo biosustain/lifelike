@@ -35,6 +35,7 @@ import { BiocViewerLibModule } from 'app/bioc-viewer/bioc-viewer-lib.module';
 import { SankeyViewerLibModule } from 'app/sankey-viewer/sankey-viewer-lib.module';
 import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/sankey-viewer-lib.module';
+import { FileTypesModule } from 'app/file-types/file-types.module';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/
     AuthModule,
     SharedModule,
     AppRoutingModule,
+    FileTypesModule,
     UserFileImportModule,
     FileBrowserModule,
     VisualizationModule,
