@@ -8,6 +8,10 @@ import {
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { DirectoryPreviewComponent } from 'app/file-browser/components/directory-preview.component';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MimeTypes } from 'app/shared/constants';
 
@@ -15,11 +19,8 @@ import {
   AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction, PreviewOptions,
-} from '../services/object-type.service';
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilesystemService } from '../services/filesystem.service';
-import { DirectoryPreviewComponent } from '../components/directory-preview.component';
-import { ObjectCreationService } from '../services/object-creation.service';
+} from './base-object.type-provider';
+
 
 export const DIRECTORY_SHORTHAND = 'directory';
 

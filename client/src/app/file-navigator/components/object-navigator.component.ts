@@ -5,7 +5,7 @@ import { escapeRegExp } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
-import { ENRICHMENT_TABLE_MIMETYPE } from 'app/enrichment/providers/enrichment-table.type-provider';
+import { ENRICHMENT_TABLE_MIMETYPE } from 'app/file-types/providers/enrichment-table.type-provider';
 import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';

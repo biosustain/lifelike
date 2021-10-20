@@ -8,10 +8,8 @@ import { mergeMap, tap } from 'rxjs/operators';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  ObjectTypeProvider,
-  ObjectTypeService,
-} from 'app/file-browser/services/object-type.service';
+import { ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
@@ -85,7 +83,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
               protected readonly objectTypeService: ObjectTypeService) {
     super(route, workspaceManager);
     objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
-      this.searchTypes = uniqBy(flatten(providers.map(provider => provider.getSearchTypes())), 'id');
+      this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
       this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
     });
   }

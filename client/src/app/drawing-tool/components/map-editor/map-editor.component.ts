@@ -37,7 +37,7 @@ import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
-import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
+import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
 
 @Component({
