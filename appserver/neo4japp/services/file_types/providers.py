@@ -729,6 +729,8 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
+        # Pristine edges have 'label: null' - so we have to check them as escaping None type gives
+        # error. Do not use .get() with default, as the key exist - it's the content that is missing
         'label': escape(edge['label']) if edge['label'] else "",
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
