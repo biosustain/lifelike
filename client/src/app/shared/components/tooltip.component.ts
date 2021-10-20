@@ -1,8 +1,9 @@
 import { Component, Input, OnDestroy, AfterViewInit } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
 
-import { isNil } from 'app/shared/utils/types';
+
 
 import { uuidv4 } from '../utils';
 
