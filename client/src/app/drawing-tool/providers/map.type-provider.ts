@@ -1,33 +1,27 @@
-import {
-  ComponentFactory,
-  ComponentFactoryResolver,
-  Injectable,
-  Injector,
-} from '@angular/core';
+import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector,} from '@angular/core';
 
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import {Observable, of, pipe} from 'rxjs';
+import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
+import {FilesystemObject} from 'app/file-browser/models/filesystem-object';
+import {FilesystemService} from 'app/file-browser/services/filesystem.service';
+import {ObjectCreationService} from 'app/file-browser/services/object-creation.service';
 import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
   PreviewOptions,
 } from 'app/file-browser/services/object-type.service';
-import { SearchType } from 'app/search/shared';
-import { RankedItem } from 'app/shared/schemas/common';
-import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { MimeTypes } from 'app/shared/constants';
+import {SearchType} from 'app/search/shared';
+import {RankedItem} from 'app/shared/schemas/common';
+import {mapBlobToJson} from 'app/shared/utils/files';
+import {MimeTypes} from 'app/shared/constants';
 
-import { MapComponent } from '../components/map.component';
-import { UniversalGraph } from '../services/interfaces';
-
-export const MAP_SHORTHAND = 'map';
+import {MapComponent} from '../components/map.component';
+import {UniversalGraph} from '../services/interfaces';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
@@ -110,16 +104,15 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename + '.llmap.zip');
+            return new File([blob], object.filename + '.map');
           }),
         );
       },
     }, ...(['Gene', 'Chemical'].map(type => ({
       name: `${type} List`,
       export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson<UniversalGraph>(),
+          return this.filesystemService.getContent(object.hashId).pipe(
+          mapBlobToJson<UniversalGraph>(),
           map(graph => {
             const blob = new Blob([
               graph.nodes.filter(node => node.label === type.toLowerCase()).map(node => node.display_name).join('\r\n')
