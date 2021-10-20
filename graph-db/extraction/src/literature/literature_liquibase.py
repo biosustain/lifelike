@@ -41,7 +41,7 @@ class LiteratureChangeLog(ChangeLog):
             id = f'Zenodo literature data {entity1_type}-{entity2_type} on date {self.date_tag}'
             if self.id_prefix:
                 id = f'{self.id_prefix} {id}'
-            comment = ''
+            comment = f'Split creation of {entity1_type}-{entity2_type} nodes and assocation from snippet creation; seem to be faster instead of one giant cypher'
             query = LiteratureDataParser.get_create_literature_query(entity1_type, entity2_type)
             changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{filename}')
             self.change_sets.append(changeset)
@@ -56,7 +56,8 @@ class LiteratureChangeLog(ChangeLog):
             id = f'Zenodo literature snippet data {entity1_type}-{entity2_type} on date {self.date_tag}'
             if self.id_prefix:
                 id = f'{self.id_prefix} {id}'
-            comment = f'Link snippets for {entity1_type}-{entity2_type} to publication'
+            comment = f'Link snippets for {entity1_type}-{entity2_type} to publication. \nNeed to include properties in INDICATES relationship merge ' \
+                'to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.'
             query = LiteratureDataParser.get_create_literature_snippet_pub_query()
             changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{filename}')
             self.change_sets.append(changeset)
@@ -68,12 +69,12 @@ class LiteratureChangeLog(ChangeLog):
         comment = 'LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh)'
         query = """
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS 'MESH:' RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(c:db_MESH:Chemical {eid:split(n.eid, ':')[1]})',
+        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "MESH:" RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_MESH:Chemical {eid:split(n.eid, ":")[1]})',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS 'CHEBI:' RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(c:db_CHEBI:Chemical {eid:split(n.eid, ':')[1]})',
+        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "CHEBI:" RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_CHEBI:Chemical {eid:split(n.eid, ":")[1]})',
         {batchSize:10000});
         """
         changeset = ChangeSet(id, self.author, comment, query)
@@ -86,11 +87,11 @@ class LiteratureChangeLog(ChangeLog):
         comment = 'LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id)'
         query = """
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS 'MESH:' RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(d:db_MESH:Disease {eid:split(n.eid, ':')[1]})',
+        'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS "MESH:" RETURN n',
+        'MERGE (n)-[:MAPPED_TO]->(d:db_MESH:Disease {eid:split(n.eid, ":")[1]})',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS 'MESH:' RETURN n',
+        'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS "MESH:" RETURN n',
         'MERGE (n)-[:MAPPED_TO]->(d:Disease {eid:n.eid})',
         {batchSize:10000});
         """

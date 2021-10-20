@@ -279,13 +279,7 @@ class LiteratureDataParser(BaseParser):
             s.data_source = 'Literature'
         WITH s, row
         MATCH (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
-        MERGE (s)-[i:INDICATES]->(a)
-        ON CREATE
-        SET i.entry1_text = row.entry1_name,
-            i.entry2_text = row.entry2_name,
-            i.normalized_score = row.relscore,
-            i.path = row.path,
-            i.raw_score = row.score
+        MERGE (s)-[i:INDICATES {normalized_score:toFloat(row.relscore), raw_score:toFloat(row.score), entry1_text:row.entry1_name, entry2_text:row.entry2_name, path:row.path}]->(a)
         MERGE (pub:Publication {pmid:row.pmid}) SET pub:db_Literature
         MERGE (s)-[:IN_PUB]->(pub)
         """
@@ -347,12 +341,16 @@ class LiteratureDataParser(BaseParser):
 
             ref: https://zenodo.org/record/3459420
             """
+            reordered_df2['PATH'] = reordered_df2.path
             reordered_df2.path = reordered_df2.path.str.lower()
             # do a left-join
             reordered_df3 = reordered_df2.merge(path_df, how='left', left_on='path', right_on='path')
             del reordered_df2
             # revert the path column back to original casing
-            reordered_df3['path'] = reordered_df3.snippet_id.map(reordered_df.set_index('snippet_id')['path'].to_dict())
+            reordered_df3.drop(columns=['path'], inplace=True)
+            reordered_df3.rename(columns={'PATH': 'path'}, inplace=True)
+            reordered_df3.dropna(inplace=True)
+            reordered_df3.drop_duplicates(inplace=True)
             reordered_df3.to_csv(os.path.join(self.output_dir, self.file_prefix + filename), index=False, sep='\t', chunksize=50000)
 
 
