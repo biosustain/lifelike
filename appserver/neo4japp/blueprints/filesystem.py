@@ -1132,10 +1132,7 @@ class MapContentView(FilesystemBaseView):
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
             json_graph = zip_file.read('graph.json')
-        except KeyError:
-            raise ValidationError(
-                'Cannot retrieve contents of the file - it might be corrupted')
-        except zipfile.BadZipFile:
+        except (KeyError, zipfile.BadZipFile):
             raise ValidationError(
                 'Cannot retrieve contents of the file - it might be corrupted')
         etag = hashlib.sha256(json_graph).hexdigest()
