@@ -122,6 +122,6 @@ class KeggChangeLog(ChangeLog):
 
 
 if __name__ == '__main__':
-    task = KeggChangeLog('rcai', 'LL-1234')
+    task = KeggChangeLog('robin cai', 'LL-1234')
     task.create_change_logs(True)
     task.generate_liquibase_changelog_file('kegg_changelog.xml', directory)
