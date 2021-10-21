@@ -110,7 +110,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename + '.llmap.zip');
+            return new File([blob], object.filename + '.map');
           }),
         );
       },
