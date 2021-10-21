@@ -105,6 +105,6 @@ if __name__ == '__main__':
     cypher = 'match(n:Gene)-[r]-(:Gene) where r.score < 0.4 delete r;'
     comment = 'Remove ecocyc-plus string relationships with 0.4 threshold. After the update, create ecocyc-plus-10012021.dump file'
     outfile = os.path.join('../../../migration/liquibase/ecocyc-plus/ecocyc-plus changelog-0010.xml')
-    generate_sql_changelog_file('LL-3702 cut string rels with threshold', 'rcai',
+    generate_sql_changelog_file('LL-3702 cut string rels with threshold', 'robin cai',
                                 comment,
                                 cypher, outfile)

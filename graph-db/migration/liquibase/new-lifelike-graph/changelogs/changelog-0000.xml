@@ -19,7 +19,7 @@
       CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
       CREATE CONSTRAINT constraint_genome_id IF NOT EXISTS ON (n:Genome) ASSERT n.eid IS UNIQUE;
       CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
-      CREATE INDEX index_pathway_name IF NOT EXISTS FOR (n:Pathway) ON (n.name)
+      CREATE INDEX index_pathway_name IF NOT EXISTS FOR (n:Pathway) ON (n.name);
     </sql>
   </changeSet>
 
