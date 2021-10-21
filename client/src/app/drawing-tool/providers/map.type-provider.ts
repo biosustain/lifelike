@@ -111,7 +111,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     },  ...(['Gene', 'Chemical'].map(type => ({
       name: `${type} List`,
       export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
+        return this.filesystemService.getMapContent(object.hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson<UniversalGraph>(),
           map(graph => {
