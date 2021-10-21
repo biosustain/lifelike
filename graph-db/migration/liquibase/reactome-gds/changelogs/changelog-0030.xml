@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="rename name properties to match with other databases" author="rcai">
+  <changeSet id="rename name properties to match with other databases" author="robin cai">
     <comment>rename name to synonyms, commonName to name</comment>
     <sql>
     match(n:PhysicalEntity) where not exists(n.synonyms) set n.synonyms = n.name, n.name=n.commonName remove n.commonName;

@@ -7,14 +7,14 @@
   <!--
     Refactor 'translocate' and 'transport' reactions with EntitySet in both input and output
   -->
-  <changeSet id="Removed referredTo relationships" author="rcai">
+  <changeSet id="Removed referredTo relationships" author="robin cai">
     <comment></comment>
     <sql>
     match (n)-[r:inferredTo]->(m) delete r;
     </sql>
   </changeSet>
 
-  <changeSet id="Mark reaction nodes to refactor" author="rcai">
+  <changeSet id="Mark reaction nodes to refactor" author="robin cai">
     <comment></comment>
     <sql>
     match(n:ReactionLikeEvent {category: 'transition'}) where (n.displayName contains 'transport') or (n.displayName contains 'translocate')
@@ -23,7 +23,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="change Event dbId and stId as index" author="rcai">
+  <changeSet id="change Event dbId and stId as index" author="robin cai">
     <comment>
     Drop constraints and create indexes instead
     With unique constraints for dbId and stId, cloning nodes would fail.
@@ -40,7 +40,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="Clone reactions and add input-output relationships" author="rcai">
+  <changeSet id="Clone reactions and add input-output relationships" author="robin cai">
     <comment></comment>
     <sql>
     match(n:ReactionLikeEvent {refactorStatus: 'refactored'})
@@ -54,7 +54,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="add regulates relationships to newly created nodes" author="rcai">
+  <changeSet id="add regulates relationships to newly created nodes" author="robin cai">
     <comment></comment>
     <sql>
     match(n:ReactionLikeEvent {refactorStatus: 'refactored'})-[:regulates]-(r)
@@ -63,7 +63,7 @@
     </sql>
   </changeSet>
 
-  <changeSet id="add catalyzes relationships to newly created nodes" author="rcai">
+  <changeSet id="add catalyzes relationships to newly created nodes" author="robin cai">
     <comment></comment>
     <sql>
     match(n:ReactionLikeEvent {refactorStatus: 'refactored'})-[:catalyzes]-(c)
