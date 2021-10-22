@@ -2,7 +2,6 @@ import csv, logging, gzip, sys
 from common.constants import *
 from common.base_parser import BaseParser
 from common.database import *
-from ncbi.ncbi_gene_parser import GeneParser
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
@@ -19,6 +18,9 @@ class StringProtein:
         self.tax_id = ''
 
 class StringParser(BaseParser):
+    """
+    The parser was from old code, and was not tested recently.  Also the data loading code should be separated into separate file.
+    """
     def __init__(self, base_dir=None):
         BaseParser.__init__(self, DB_STRING.lower())
 
@@ -134,18 +136,18 @@ class StringParser(BaseParser):
         logging.info("load STRING protein info")
         file = os.path.join(self.output_dir, 'string.tsv')
         headers = [PROP_ID, PROP_NAME, 'protein_size', 'annotation', 'tax_id', 'refseq']
-        query = self.get_update_nodes_query(NODE_STRING, PROP_ID, headers, NODE_PROTEIN)
+        query = get_create_update_nodes_query(NODE_STRING, PROP_ID, headers, [NODE_PROTEIN])
         database.load_csv_file(file, headers, query,  0, '\t', 2000,  [PROP_ID, 'tax_id'])
 
         # add name as synonym
         logging.info('Add STRING synonyms')
-        query = self.get_create_nodes_relationships_query(NODE_SYNONYM, PROP_NAME, PROP_NAME, NODE_STRING, PROP_ID, PROP_ID, REL_SYNONYM, False)
+        query = get_create_synonym_relationships_query(NODE_STRING, PROP_ID, PROP_ID, PROP_NAME)
         database.load_csv_file(file, headers, query, 0, '\t', 2000, [PROP_ID])
 
         logging.info('add STRING - NCBI Gene link')
         file = os.path.join(self.output_dir, 'string2gene.tsv')
         headers = [PROP_ID, 'gene_id']
-        query = self.get_create_relationships_query(NODE_STRING, PROP_ID, PROP_ID, NODE_GENE, PROP_ID, 'gene_id', REL_GENE)
+        query = get_create_relationships_query(NODE_STRING, PROP_ID, PROP_ID, NODE_GO, PROP_ID, 'gene_id', REL_GENE)
         database.load_csv_file(file, headers, query, 0, '\t', 2000, ['gene_id'])
 
 
