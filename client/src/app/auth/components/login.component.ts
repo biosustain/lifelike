@@ -85,7 +85,7 @@ export class LoginComponent {
         }, () => {
           progressDialogRef.close();
           this.snackBar.open(
-            `Unable to reset the password due to the error.\n
+            `Unable to reset the password.\n
             Please try again or contact the administration if the issue persist.`,
             'close',
             {duration: 5000},

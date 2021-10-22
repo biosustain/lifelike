@@ -11,6 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
+from neo4japp.exceptions import RecordNotFound
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
@@ -256,7 +257,7 @@ def reset_password(email: str):
             extra=EventLog(
                 event_type=LogEventType.RESET_PASSWORD.value).to_dict()
         )
-        return jsonify(dict(result='')), 204
+        raise RecordNotFound()
 
     current_app.logger.info(
         f'User: {target.username} password reset.',
