@@ -152,30 +152,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
   }
 
-  initialiseSelection() {
-    this.selection = new BehaviorSubject([]);
-    this.selectionWithTraces = this.selection.pipe(
-      map((currentSelection) => {
-        const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
-        const links = currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity);
-        const traces = [
-          ...this.sankeyController.getRelatedTraces({nodes, links})
-        ].map(entity => ({
-          type: 'trace',
-          entity
-        } as SelectionEntity));
-        return [...currentSelection].reverse().concat(traces);
-      })
-    );
-    this.selectedNodes = this.selection.pipe(map(currentSelection => {
-      return new Set(currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity));
-    }));
-    this.selectedLinks = this.selection.pipe(map(currentSelection => {
-      return new Set(currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity));
-    }));
-    this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
-  }
-
   selectNetworkTrace(trace) {
     this.sankeyController.selectNetworkTrace(trace);
     this.sankeyController.applyOptions();
