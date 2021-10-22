@@ -781,27 +781,27 @@ class MapTypeProvider(BaseFileTypeProvider):
                 # Test zip returns the name of the first invalid file inside the archive; if any
                 if zip_file.testzip():
                     raise ValueError
-
-                try:
-                    json_graph = json.loads(zip_file.read('graph.json'))
-                    validate_map(json_graph)
-                    for node in json_graph['nodes']:
-                        if node.get('image_id'):
-                            # Will throw KeyError exception is image is not present
-                            im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
-                            # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
-                            im_format = imghdr.what(None, im)
-                            if im_format != 'png':
-                                raise ValidationError(
-                                    f'We are sorry! {im_format} is not supported as image format'
-                                    f'\nPlease use png.')
-                except KeyError:
-                    raise ValueError
-        except zipfile.BadZipFile:
+                json_graph = json.loads(zip_file.read('graph.json'))
+                validate_map(json_graph)
+                for node in json_graph['nodes']:
+                    if node.get('image_id'):
+                        # Will throw KeyError exception is image is not present
+                        im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+                        # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
+                        im_format = imghdr.what(None, im)
+                        # This will not cause problems while checking for the file mime type, as it
+                        # requires several other checks which indicates map format to be true
+                        if im_format != 'png':
+                            raise ValidationError(
+                                f'We are sorry! {im_format} is not supported as image format'
+                                f'\nPlease use png.')
+        except (zipfile.BadZipFile, KeyError):
             raise ValueError
 
     def to_indexable_content(self, buffer: BufferedIOBase):
-        content_json = json.load(buffer)
+        zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
+        content_json = json.loads(zip_file.read('graph.json'))
+
         content = io.StringIO()
         string_list = []
 
