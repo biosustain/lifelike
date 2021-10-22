@@ -790,8 +790,11 @@ class MapTypeProvider(BaseFileTypeProvider):
                             # Will throw KeyError exception is image is not present
                             im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
                             # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
-                            if imghdr.what(None, im) != 'png':
-                                raise ValueError
+                            im_format = imghdr.what(None, im)
+                            if im_format != 'png':
+                                raise ValidationError(
+                                    f'We are sorry! {im_format} is not supported as image format'
+                                    f'\nPlease use png.')
                 except KeyError:
                     raise ValueError
         except zipfile.BadZipFile:
