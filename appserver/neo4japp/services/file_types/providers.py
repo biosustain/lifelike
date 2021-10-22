@@ -833,7 +833,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
             current_app.logger.info(
-                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!.',
+                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )
