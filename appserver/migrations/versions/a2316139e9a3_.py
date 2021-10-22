@@ -85,13 +85,21 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         files_to_update = []
         for id, content in chunk:
-            zip_bytes = BytesIO()
-            with zipfile.ZipFile(zip_bytes, 'x') as zip_file:
-                zip_file.writestr('graph.json', content)
-            new_bytes = zip_bytes.getvalue()
-            new_hash = hashlib.sha256(new_bytes).digest()
-            files_to_update.append({'id': id, 'raw_file': new_bytes,
-                                    'checksum_sha256': new_hash})
+            # because 5a16c1f00f2e already ran, we need to check if it's a zipfile
+            # if not then make it one
+            zip_bytes = BytesIO(content)
+            try:
+                with zipfile.ZipFile(zip_bytes, 'r') as zip_check:
+                    zip_check.read()
+            except zipfile.BadZipFile:
+                # wasn't a zip, so make it a zip
+                zip_bytes2 = BytesIO()
+                with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
+                    zip_file.writestr('graph.json', content)
+                new_bytes = zip_bytes2.getvalue()
+                new_hash = hashlib.sha256(new_bytes).digest()
+                files_to_update.append({'id': id, 'raw_file': new_bytes,
+                                        'checksum_sha256': new_hash})
         try:
             session.bulk_update_mappings(FileContent, files_to_update)
             session.commit()
