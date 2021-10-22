@@ -78,7 +78,8 @@ export class LoginComponent {
         .subscribe(() => {
           progressDialogRef.close();
           this.snackBar.open(
-            `Email sent. Please check your inbox.`,
+            `An email has been sent with instructions to reset your password.\n
+            If you do not receive the email after some time, please contact the administraction for help.`,
             'close',
             {duration: 5000},
           );
