@@ -17,6 +17,9 @@ app-sankey-many-to-many {
   $node-right-color: hsl(120, $node-saturation, $node-lightness);
   $node-multi-color: hsl(180, $node-saturation, $node-lightness);
 
+  $active-opacity: 1;
+  $inactive-opacity: .1;
+
   $search-color: red;
 
   @mixin link-color($color) {
@@ -48,13 +51,21 @@ app-sankey-many-to-many {
         g {
           &[highlighted=false], &[selected=false] {
             & > rect {
-              opacity: .1;
+              opacity: $inactive-opacity;
+            }
+
+            text {
+              opacity: $inactive-opacity;
             }
           }
 
           &:hover, &[selected=true], &[highlighted=true], &[transitively-selected=true] {
             & > rect {
               opacity: 100% !important;
+            }
+
+            text {
+              opacity: $active-opacity;
             }
           }
 
@@ -155,7 +166,7 @@ app-sankey-many-to-many {
 
         &[highlighted=false], &[selected=false], &[transitively-selected=false] {
           @include link-color($inactive-colour);
-          opacity: .1;
+          opacity: $inactive-opacity;
         }
 
         &[highlighted=true] {
