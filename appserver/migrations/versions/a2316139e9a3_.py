@@ -90,7 +90,7 @@ def data_upgrades():
             zip_bytes = BytesIO(content)
             try:
                 with zipfile.ZipFile(zip_bytes, 'r') as zip_check:
-                    zip_check.read()
+                    zip_check.read('graph.json')
             except zipfile.BadZipFile:
                 # wasn't a zip, so make it a zip
                 zip_bytes2 = BytesIO()
