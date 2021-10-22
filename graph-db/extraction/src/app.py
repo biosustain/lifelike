@@ -14,6 +14,7 @@ import mesh.add_disease_synonyms_by_pruning_disease as add_disease_synonyms_by_p
 import mesh.mesh_annotations as mesh_annotations
 import ncbi.ncbi_gene_parser as ncbi_gene_parser
 import ncbi.ncbi_taxonomy_parser as ncbi_taxonomy_parser
+import literature.literature_data_parser as literature_data_parser
 import regulondb.regulondb_parser as regulondb_parser
 import uniprot.uniprot_parser as uniprot_parser
 
@@ -32,6 +33,7 @@ DOMAIN_PARSERS = {
     'ncbi-taxonomy': ncbi_taxonomy_parser,
     'regulondb': regulondb_parser,
     'uniprot': uniprot_parser,
+    'zenodo-literature': literature_data_parser
 }
 
 
@@ -72,6 +74,7 @@ def parse_args(argv):
     subparser.add_parser('ncbi-taxonomy')
     subparser.add_parser('regulondb')
     subparser.add_parser('uniprot')
+    subparser.add_parser('zenodo-literature')
 
     return parser.parse_args(argv)
 

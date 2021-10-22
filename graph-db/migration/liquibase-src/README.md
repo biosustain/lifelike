@@ -112,7 +112,9 @@ NOTE: If you do not have `mvn` command, run `brew install maven`.
 
 ```bash
 cd migration/liquibase-src
-mvn package
+# we skip the unit tests because those require connection to the graph
+# so these should be ran before first
+mvn package -DskipTests
 cp target/lifelike-liquibase-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/libexec/lib/
 ```
 
