@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, 
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import * as d3 from 'd3';
+import { isNil } from 'lodash-es';
 
 import { SankeyNode, SankeyLink } from 'app/sankey-viewer/components/interfaces';
 import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
@@ -56,16 +57,22 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
     }
 
     if (selected) {
-      const {node, link} = selected.currentValue;
-      if (node) {
-        this.deselectLinks();
-        this.selectNode(node);
-        this.calculateAndApplyTransitiveConnections(node);
-      }
-      if (link) {
+      if (isNil(selected.currentValue)) {
         this.deselectNodes();
-        this.selectLink(link);
-        this.calculateAndApplyTransitiveConnections(link);
+        this.deselectLinks();
+        this.calculateAndApplyTransitiveConnections(null);
+      } else {
+        const {node, link} = selected.currentValue;
+        if (node) {
+          this.deselectLinks();
+          this.selectNode(node);
+          this.calculateAndApplyTransitiveConnections(node);
+        }
+        if (link) {
+          this.deselectNodes();
+          this.selectLink(link);
+          this.calculateAndApplyTransitiveConnections(link);
+        }
       }
     }
 
