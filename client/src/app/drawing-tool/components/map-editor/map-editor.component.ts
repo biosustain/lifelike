@@ -10,7 +10,7 @@ import {
 
 import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
+import { auditTime, catchError, finalize, mergeMap, switchMap } from 'rxjs/operators';
 
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
@@ -192,19 +192,23 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   restore(version: ObjectVersion) {
-    readBlobAsBuffer(version.contentValue).pipe(
-      mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create({label: 'Restore map from backup'}),
-    ).subscribe(graph => {
-      this.graphCanvas.execute(new KnowledgeMapRestore(
-        `Restore map to '${version.hashId}'`,
-        this.graphCanvas,
-        graph,
-        cloneDeep(this.graphCanvas.getGraph()),
-      ));
-    }, e => {
-      // Data is corrupt
-      // TODO: Prevent the user from editing or something so the user doesnt lose data?
+    this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
+      await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
+        readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
+          mapBufferToJson<UniversalGraph>(),
+          this.errorHandler.create({label: 'Restore map from backup'}),
+        ).subscribe(graph => {
+          this.graphCanvas.execute(new KnowledgeMapRestore(
+            `Restore map to '${version.hashId}'`,
+            this.graphCanvas,
+            graph,
+            cloneDeep(this.graphCanvas.getGraph()),
+          ));
+        }, e => {
+          // Data is corrupt
+          // TODO: Prevent the user from editing or something so the user doesnt lose data?
+        });
+      });
     });
   }
 
