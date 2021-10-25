@@ -14,6 +14,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { ObjectTypeService } from 'app/file-browser/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -40,6 +41,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   returnUrl: string;
 
   constructor(filesystemService: FilesystemService,
+              objectTypeService: ObjectTypeService,
               snackBar: MatSnackBar,
               modalService: NgbModal,
               messageDialog: MessageDialog,
@@ -52,7 +54,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               public readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
-      mapImageProviderService);
+      mapImageProviderService, objectTypeService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

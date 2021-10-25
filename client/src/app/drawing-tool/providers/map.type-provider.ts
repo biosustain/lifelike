@@ -1,6 +1,6 @@
 import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
 
-import {Observable, of} from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
@@ -15,13 +15,15 @@ import {
   Exporter,
   PreviewOptions,
 } from 'app/file-browser/services/object-type.service';
-import {SearchType} from 'app/search/shared';
-import {RankedItem} from 'app/shared/schemas/common';
-import {mapBlobToBuffer, mapBufferToJson} from 'app/shared/utils/files';
-import {MimeTypes} from 'app/shared/constants';
+import { SearchType } from 'app/search/shared';
+import { RankedItem } from 'app/shared/schemas/common';
+import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
+import { MimeTypes } from 'app/shared/constants';
 
-import {MapComponent} from '../components/map.component';
-import {UniversalGraph} from '../services/interfaces';
+import { MapComponent } from '../components/map.component';
+import { UniversalGraph } from '../services/interfaces';
+import { MapImageProviderService } from '../services/map-image-provider.service';
+
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
@@ -30,12 +32,39 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
               protected readonly filesystemService: FilesystemService,
               protected readonly injector: Injector,
               protected readonly objectCreationService: ObjectCreationService,
-              protected readonly componentFactoryResolver: ComponentFactoryResolver) {
+              protected readonly componentFactoryResolver: ComponentFactoryResolver,
+              protected readonly mapImageProviderService: MapImageProviderService) {
     super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
     return object.mimeType === MimeTypes.Map;
+  }
+
+  unzipContent(contentValue: Blob) {
+    const imageIds: string[] = [];
+    const imageProms: Promise<Blob>[] = [];
+    const graphRepr = (async () => await JSZip.loadAsync(contentValue).then((zip: JSZip) => {
+      const unzipped = zip.files['graph.json'].async('text').then((text: string) => {
+        // text is whatever content in `graph.json`
+        return text;
+      });
+      // while we are still in the unzipped callback, retrieve images
+      const imageFolder = zip.folder('images');
+      imageFolder.forEach(async (f) => {
+        imageIds.push(f.substring(0, f.indexOf('.')));
+        imageProms.push(imageFolder.file(f).async('blob')); // pushes Promise<Blob>
+      });
+      return unzipped;
+    }))();
+
+    // wait for all Promises to resolve to Blobs containing images on the graph
+    (async () => await Promise.all(imageProms).then((imageBlobs: Blob[]) => {
+      for (let i = 0; i < imageIds.length; i++) {
+        this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
+      }
+    }))();
+    return from(graphRepr);
   }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,

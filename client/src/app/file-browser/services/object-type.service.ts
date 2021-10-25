@@ -99,6 +99,11 @@ export interface ObjectTypeProvider {
    */
   getExporters(object: FilesystemObject): Observable<Exporter[]>;
 
+  /**
+   * Unzip content (currently only maps).
+   */
+  unzipContent(zipped: Blob): Observable<string>;
+
 }
 
 /**
@@ -172,6 +177,9 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
     return of([]);
   }
 
+  unzipContent(zipped: Blob): Observable<string> {
+    return of('');
+  }
 }
 
 /**
