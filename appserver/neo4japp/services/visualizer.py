@@ -576,7 +576,7 @@ class VisualizerService(KgService):
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
                     COUNT(s) AS snippet_count,
-                    collect({
+                    collect(DISTINCT {
                         snippet: {
                             id: s.eid,
                             data: {
@@ -609,7 +609,7 @@ class VisualizerService(KgService):
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) AS references, from_id, to_id, description
                 """,
