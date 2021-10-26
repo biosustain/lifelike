@@ -54,7 +54,7 @@ def get_create_update_nodes_query(
     update_properties: list,
     additional_labels=[],
     datasource=None,
-    original_entity_type=None,
+    original_entity_types=[],
     namespace_label: str = ''
 ):
     """
@@ -65,7 +65,7 @@ def get_create_update_nodes_query(
     :param update_properties: node property names to be updated
     :param additional_labels: other node labels if exists
     :param datasource: e.g. KEGG, NCBI Gene
-    :param original_entity_type: e.g. Gene, Protein, Chemical, Disease
+    :param original_entity_types: e.g. [Gene, Protein, Chemical, Disease]
     :param namespace_label: some datasouce, e.g GO, can have a different label for each namespace
     """
     query_rows = list()
@@ -81,8 +81,11 @@ def get_create_update_nodes_query(
             prop_sets += props
         if datasource:
             prop_sets.append(f"n.data_source='{datasource}'")
-        if original_entity_type:
-            prop_sets.append(f"n.original_entity_type='{original_entity_type}'")
+        if original_entity_types:
+            if type(original_entity_types) != list:
+                raise ValueError('Invalid argument for original_entity_type')
+            original_types = '|'.join(original_entity_types)
+            prop_sets.append(f"n.original_entity_types=split('{original_types}', '|')")
         if len(prop_sets) > 0:
             query_rows.append('SET ' + ','.join(prop_sets))
         if namespace_label:
