@@ -11,7 +11,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
-from neo4japp.exceptions import RecordNotFound
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
@@ -252,12 +251,15 @@ def reset_password(email: str):
     try:
         target = AppUser.query.filter_by(email=email).one()
     except NoResultFound:
-        current_app.logger.info(
+        current_app.logger.error(
             f'Invalid email: {email} provided in password reset request.',
             extra=EventLog(
                 event_type=LogEventType.RESET_PASSWORD.value).to_dict()
         )
-        raise RecordNotFound()
+        raise ServerException(
+            title='Failed to authenticate',
+            message=f'A problem occurred validating email {email} for password reset.'
+        )
 
     current_app.logger.info(
         f'User: {target.username} password reset.',
