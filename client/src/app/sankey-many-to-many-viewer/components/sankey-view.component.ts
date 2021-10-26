@@ -10,7 +10,7 @@ import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.co
 
 import { CustomisedSankeyManyToManyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyManyToManyControllerService } from '../services/sankey-controller.service';
-import { SankeyManyToManySelection } from './interfaces';
+import { SankeyManyToManySelection, SankeyManyToManyState } from './interfaces';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -59,6 +59,10 @@ export class SankeyManyToManyViewComponent extends SankeyViewComponent implement
 
   emitModuleProperties() {
     super.emitModuleProperties();
+  }
+
+  get state() {
+    return this.sankeyController.state as SankeyManyToManyState;
   }
 
   ngOnDestroy() {

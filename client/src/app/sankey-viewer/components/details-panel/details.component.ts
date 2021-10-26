@@ -3,9 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 
+import { SankeyNode } from 'app/shared-sankey/interfaces';
+
 import { parseForRendering } from '../utils';
 import { SankeyControllerService } from '../../services/sankey-controller.service';
-import { SankeyNode } from '../interfaces';
 
 
 @Component({
@@ -38,6 +39,10 @@ export class SankeyDetailsComponent {
 
   get options() {
     return this.sankeyController.options;
+  }
+
+  get state() {
+    return this.sankeyController.state;
   }
 
   getNodeById(nodeId) {
