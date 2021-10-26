@@ -75,4 +75,16 @@ export class SankeyManyToManyViewComponent extends SankeyViewComponent implement
       } as SankeyManyToManySelection);
     }
   }
+
+  resetSelection() {
+    const data = this.sankeyController.dataToRender.value;
+    this.selection.next(undefined);
+    data.nodes.forEach(n => {
+      delete n._selected;
+    });
+    data.links.forEach(l => {
+      delete l._selected;
+    });
+  }
+
 }
