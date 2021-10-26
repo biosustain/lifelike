@@ -3,7 +3,7 @@ import { isDevMode } from '@angular/core';
 
 import { cubehelix } from 'd3';
 
-import { ArrayWithDefault, Palette } from './interfaces';
+import { Palette } from 'app/shared-sankey/interfaces';
 
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;
@@ -111,22 +111,28 @@ export const expandingColorPalletGenerator = (
   });
 };
 
-export const linkPalettes: ArrayWithDefault<Palette> = [
-  {
-    name: 'Hue palette',
+export enum LINK_PALETTE_ID {
+  hue_palette = 'Hue palette',
+  adaptive_hue_sat_lgh = 'Adaptive hue, saturation, lightness',
+  predefined_palette = 'Predefined palette'
+}
+
+export type LINK_PALETTES = { [paletteId in LINK_PALETTE_ID]: Palette };
+
+export const linkPalettes: LINK_PALETTES = {
+  [LINK_PALETTE_ID.hue_palette]: {
+    name: LINK_PALETTE_ID.hue_palette,
     palette: colorPaletteGenerator
   },
-  {
-    name: 'Adaptive hue, saturation, lightness',
+  [LINK_PALETTE_ID.adaptive_hue_sat_lgh]: {
+    name: LINK_PALETTE_ID.adaptive_hue_sat_lgh,
     palette: expandingColorPalletGenerator
   },
-  {
-    name: 'Predefined palette',
+  [LINK_PALETTE_ID.predefined_palette]: {
+    name: LINK_PALETTE_ID.predefined_palette,
     palette: predefinedColorPaletteGenerator
   }
-];
-
-linkPalettes.default = linkPalettes[0];
+};
 
 export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
   const uniq = arr instanceof Set ? arr : new Set(arr);
