@@ -44,27 +44,23 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   unzipContent(contentValue: Blob) {
     const imageIds: string[] = [];
     const imageProms: Promise<Blob>[] = [];
-    const graphRepr = (async () => await JSZip.loadAsync(contentValue).then((zip: JSZip) => {
-      const unzipped = zip.files['graph.json'].async('text').then((text: string) => {
-        // text is whatever content in `graph.json`
-        return text;
+    return from((async () => {
+      const unzipped = await JSZip.loadAsync(contentValue).then(zip => {
+        const imageFolder = zip.folder('images');
+        imageFolder.forEach(f => {
+          imageIds.push(f.substring(0, f.indexOf('.')));
+          imageProms.push(imageFolder.file(f).async('blob'));
+        });
+        return zip.files['graph.json'].async('text').then(text => text);
       });
-      // while we are still in the unzipped callback, retrieve images
-      const imageFolder = zip.folder('images');
-      imageFolder.forEach(async (f) => {
-        imageIds.push(f.substring(0, f.indexOf('.')));
-        imageProms.push(imageFolder.file(f).async('blob')); // pushes Promise<Blob>
+
+      await Promise.all(imageProms).then((imageBlobs: Blob[]) => {
+        for (let i = 0; i < imageIds.length; i++) {
+          this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
+        }
       });
       return unzipped;
-    }))();
-
-    // wait for all Promises to resolve to Blobs containing images on the graph
-    (async () => await Promise.all(imageProms).then((imageBlobs: Blob[]) => {
-      for (let i = 0; i < imageIds.length; i++) {
-        this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
-      }
-    }))();
-    return from(graphRepr);
+    })());
   }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
