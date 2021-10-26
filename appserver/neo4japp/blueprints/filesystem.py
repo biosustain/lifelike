@@ -15,12 +15,12 @@ from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import defer, raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from sqlalchemy.sql.expression import text
 from webargs.flaskparser import use_args
 
-from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE
+from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE, FILE_MIME_TYPE_MAP
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import LogEventType
 from neo4japp.database import db, get_file_type_service, get_authorization_service
@@ -66,7 +66,6 @@ from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
 from neo4japp.utils.logger import UserEventLog
-from neo4japp.services.file_types.service import GenericFileTypeProvider
 from neo4japp.services.file_types.providers import BiocTypeProvider
 import os
 
@@ -1116,6 +1115,37 @@ class FileContentView(FilesystemBaseView):
         )
 
 
+class MapContentView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id: str):
+        """Fetch a content (graph.json) from a map."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        if file.mime_type != FILE_MIME_TYPE_MAP:
+            raise ValidationError(f'Cannot retrieve map content from file with mime type: '
+                                  f'{file.mime_type}')
+
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+            json_graph = zip_file.read('graph.json')
+        except (KeyError, zipfile.BadZipFile):
+            raise ValidationError(
+                'Cannot retrieve contents of the file - it might be corrupted')
+        etag = hashlib.sha256(json_graph).hexdigest()
+
+        return make_cacheable_file_response(
+                request,
+                json_graph,
+                etag=etag,
+                filename=file.filename,
+                mime_type=file.mime_type
+        )
+
+
 class FileExportView(FilesystemBaseView):
     decorators = [auth.login_required]
     # Move that to constants if accepted
@@ -1520,6 +1550,8 @@ bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
                 view_func=FileContentView.as_view('file_content'))
+bp.add_url_rule('objects/<string:hash_id>/map-content',
+                view_func=MapContentView.as_view('map_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))
 bp.add_url_rule('objects/<string:hash_id>/backup', view_func=FileBackupView.as_view('file_backup'))
 bp.add_url_rule('objects/<string:hash_id>/backup/content',

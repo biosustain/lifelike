@@ -1,12 +1,7 @@
-import {
-  ComponentFactory,
-  ComponentFactoryResolver,
-  Injectable,
-  Injector,
-} from '@angular/core';
+import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
 
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import {Observable, of} from 'rxjs';
+import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { MapComponent } from 'app/drawing-tool/components/map.component';
@@ -15,7 +10,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
@@ -26,8 +22,6 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 
-
-export const MAP_SHORTHAND = 'map';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
@@ -110,14 +104,14 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename + '.llmap.zip');
+            return new File([blob], object.filename + '.map');
           }),
         );
       },
-    }, ...(['Gene', 'Chemical'].map(type => ({
+    },  ...(['Gene', 'Chemical'].map(type => ({
       name: `${type} List`,
       export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
+        return this.filesystemService.getMapContent(object.hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson<UniversalGraph>(),
           map(graph => {
@@ -132,5 +126,4 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       },
     })))]);
   }
-
 }

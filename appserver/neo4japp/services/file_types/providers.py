@@ -437,12 +437,14 @@ def create_default_node(node):
     :return: baseline dict with Graphviz paramaters
     """
     style = node.get('style', {})
+    # Ensure that display name is of type string, as it can be None
+    display_name = node['display_name'] or ""
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': escape('\n'.join(textwrap.TextWrapper(
-            width=min(10 + len(node['display_name']) // 4, MAX_LINE_WIDTH),
-            replace_whitespace=False).wrap(node['display_name']))),
+            width=min(10 + len(display_name) // 4, MAX_LINE_WIDTH),
+            replace_whitespace=False).wrap(display_name))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{node['data']['x'] / SCALING_FACTOR},"
@@ -729,7 +731,9 @@ def create_edge(edge, node_hash_type_dict):
     return {
         'tail_name': edge['from'],
         'head_name': edge['to'],
-        'label': escape(edge['label']),
+        # Pristine edges have 'label: null' - so we have to check them as escaping None type gives
+        # error. Do not use .get() with default, as the key exist - it's the content that is missing
+        'label': escape(edge['label']) if edge['label'] else "",
         'dir': 'both',
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
@@ -777,24 +781,19 @@ class MapTypeProvider(BaseFileTypeProvider):
                 # Test zip returns the name of the first invalid file inside the archive; if any
                 if zip_file.testzip():
                     raise ValueError
-
-                try:
-                    json_graph = json.loads(zip_file.read('graph.json'))
-                    validate_map(json_graph)
-                    for node in json_graph['nodes']:
-                        if node.get('image_id'):
-                            # Will throw KeyError exception is image is not present
-                            im = zip_file.read("".join(['images/', node.get('image_id'), '.png']))
-                            # Weird imghdr syntax, see https://docs.python.org/2/library/imghdr.html
-                            if imghdr.what(None, im) != 'png':
-                                raise ValueError
-                except KeyError:
-                    raise ValueError
-        except zipfile.BadZipFile:
+                json_graph = json.loads(zip_file.read('graph.json'))
+                validate_map(json_graph)
+                for node in json_graph['nodes']:
+                    if node.get('image_id'):
+                        zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+        except (zipfile.BadZipFile, KeyError):
             raise ValueError
 
     def to_indexable_content(self, buffer: BufferedIOBase):
-        content_json = json.load(buffer)
+        # Do not catch exceptions here - there are handled in elastic_service.py
+        zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
+        content_json = json.loads(zip_file.read('graph.json'))
+
         content = io.StringIO()
         string_list = []
 
@@ -829,7 +828,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
             current_app.logger.info(
-                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!.',
+                f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )

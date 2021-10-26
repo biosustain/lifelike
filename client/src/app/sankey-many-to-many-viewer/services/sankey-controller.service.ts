@@ -4,6 +4,7 @@ import { flatMap, groupBy, merge } from 'lodash-es';
 
 import { SankeyTraceNetwork, SankeyLink, ValueGenerator } from 'app/sankey-viewer/components/interfaces';
 import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE } from 'app/sankey-viewer/services/sankey-controller.service';
+import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 
 import { SankeyManyToManyAdvancedOptions, SankeyManyToManyLink } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
@@ -20,7 +21,13 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
   get defaultOptions(): SankeyManyToManyAdvancedOptions {
     return merge(super.defaultOptions, {
       highlightCircular: true,
+      colorLinkByType: false,
+      colorLinkTypes: EdgeColorCodes,
       nodeHeight: {
+        min: {
+          enabled: true,
+          value: 4
+        },
         max: {
           enabled: true,
           ratio: 2
@@ -35,6 +42,8 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
       }
     });
   }
+
+  options: SankeyManyToManyAdvancedOptions;
 
   // Trace logic
   /**
@@ -79,11 +88,26 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
       .find(({description}) => description === default_sizing);
   }
 
+  colorLinkByType(links) {
+    links.forEach(link => {
+      const {label} = link;
+      if (label) {
+        const color = EdgeColorCodes[label.toLowerCase()];
+        if (color) {
+          link._color = color;
+        }
+      }
+    });
+  }
+
   applyOptions() {
-    const {selectedNetworkTrace} = this;
+    const {selectedNetworkTrace, options: {colorLinkByType}} = this;
     const {links, nodes, graph: {node_sets}} = this.allData;
     const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
     const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+    if (colorLinkByType) {
+      this.colorLinkByType(networkTraceLinks);
+    }
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
     this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';

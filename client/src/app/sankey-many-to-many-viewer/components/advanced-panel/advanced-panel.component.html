@@ -1,4 +1,14 @@
 <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
+    <input [(ngModel)]="options.colorLinkByType" (ngModelChange)="update()"
+           ngbButton
+           type="checkbox">
+    Color link by type
+    <ul class="color-link-legend">
+        <li *ngFor="let typemap of options.colorLinkTypes | keyvalue"
+            [attr.data-type]="typemap.key.toLowerCase()">{{typemap.key}}</li>
+    </ul>
+</label>
+<label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
     <input [(ngModel)]="options.highlightCircular" (ngModelChange)="update()"
            ngbButton
            type="checkbox">
