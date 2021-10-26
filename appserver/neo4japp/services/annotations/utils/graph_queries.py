@@ -289,8 +289,8 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
 
     query_label = node_labels[entity_type]
     return f"""
-    OPTIONAL MATCH (n:db_Lifelike:{query_label})-[:HAS_SYNONYM]->(s)
-    WHERE n.name = $common_name AND n.entity_type = $entity_type
+    OPTIONAL MATCH (n:db_Lifelike:{query_label})-[r:HAS_SYNONYM]->(s)
+    WHERE n.name = $common_name AND r.entity_type = $entity_type
     RETURN n IS NOT NULL AS node_exist,
         $synonym IN collect(s.name) OR
         CASE WHEN
@@ -414,24 +414,20 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     # so no need to add a :Master Gene label
 
     return """
-    MERGE (n:db_Lifelike {name: $common_name, entity_type: $entity_type})
+    MERGE (n:db_Lifelike {name: $common_name})
     ON CREATE
     SET n.eid = $entity_id,
         n:GlobalInclusion:replace_with_param,
         n.data_source = $data_source,
-        n.name = $common_name,
-        n.entity_type = $entity_type,
-        n.hyperlinks = $hyperlinks,
-        n.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        n.user = $user
+        n.name = $common_name
     WITH n
     MERGE (s:Synonym {name: $synonym})
     SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
     MERGE (n)-[r:HAS_SYNONYM]->(s)
     ON CREATE
-    SET r.inclusion_date = n.inclusion_date,
+    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
         r.global_inclusion = true,
-        r.user = n.user,
+        r.user = $user,
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlinks = $hyperlinks
