@@ -67,6 +67,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   protected readonly subscriptions = new Subscription();
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
+  providerSubscription$ = new Subscription();
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
@@ -183,7 +184,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     this.emitModuleProperties();
-    this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
+    this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
         this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
           mapBufferToJson<UniversalGraph>(),
@@ -226,6 +227,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
     this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
+    this.providerSubscription$.unsubscribe();
   }
 
   emitModuleProperties() {

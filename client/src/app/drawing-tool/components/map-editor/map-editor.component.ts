@@ -71,6 +71,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   dropTargeted = false;
 
+  providerSubscription$ = new Subscription();
+
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
@@ -115,6 +117,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   ngOnDestroy() {
     super.ngOnDestroy();
+    this.providerSubscription$.unsubscribe();
     this.autoSaveSubscription.unsubscribe();
 
     this.clearLockInterval();
@@ -192,7 +195,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   restore(version: ObjectVersion) {
-    this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
+    this.providerSubscription$ = this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
         readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
           mapBufferToJson<UniversalGraph>(),
