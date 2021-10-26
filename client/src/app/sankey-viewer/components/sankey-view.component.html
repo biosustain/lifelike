@@ -76,12 +76,15 @@
                     </ng-template>
                 </button>
             </ng-container>
-            <button (click)="resetView()" class="btn btn-secondary mx-1" container="body"
+            <button (click)="resetView()" class="btn btn-secondary" container="body"
                     ngbTooltip="Reset the view" placement="bottom"
                     type="button">
                 <i class="fas fa-sync"></i>
             </button>
-            <div class="btn-group d-inline-block mr-auto" ngbDropdown title="Select view">
+            <div [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+                 class="d-inline-block"
+                 ngbDropdown
+                 title="Select view">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                     Default View
                 </button>
@@ -98,7 +101,7 @@
                     </button>
                 </div>
             </div>
-            <div class="btn-group btn-group-toggle mx-auto">
+            <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
                         type="button">
@@ -115,7 +118,8 @@
                     <i class="fas fa-search-minus"></i>
                 </button>
             </div>
-            <div class="btn-group btn-group-toggle ml-auto">
+            <div class="btn-group-toggle flex-wrap" [ngClass.gt-sm]="'btn-group ml-auto'"
+                 [ngStyle.lt-md]="'display: contents'">
                 <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
                     <button class="btn btn-primary" ngbDropdownToggle>
                         <ng-container
@@ -143,7 +147,7 @@
                                 ngbDropdownItem>{{predefinedValueAccessor.description}}</button>
                     </div>
                 </div>
-                <label class="btn-primary" ngbButtonLabel>
+                <label class="btn-primary flex-grow-0" ngbButtonLabel>
                     <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
                 </label>
                 <div class="btn-group btn-group-toggle">
