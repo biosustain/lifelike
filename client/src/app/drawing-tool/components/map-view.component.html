@@ -12,7 +12,7 @@
                 <app-object-menu [object]="map" [forEditing]="false"
                                  [showOpen]="false" [showDelete]="false">
                 </app-object-menu>
-        <div class="btn-group ml-2 mr-auto">
+        <div class="btn-group ml-1 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"
                     [appLink]="['/projects', map?.project.name, 'maps', map?.hashId, 'edit']">
