@@ -2,6 +2,8 @@ import { SankeyAdvancedOptions, SankeyLink, SankeyNode, SankeyData, SankeyTrace 
 
 export interface SankeyManyToManyAdvancedOptions extends SankeyAdvancedOptions {
   highlightCircular: boolean;
+  colorLinkByType: boolean;
+  colorLinkTypes: { [type: string]: string };
 }
 
 export interface SankeyManyToManyLink extends SankeyLink {
