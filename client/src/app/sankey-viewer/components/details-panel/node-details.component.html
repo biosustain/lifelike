@@ -29,11 +29,21 @@
             </ngb-panel>
             <ngb-panel *ngIf="entity.stId" [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <a [href]="'https://reactome.org/content/detail/' + entity.stId"
+                    <a [href]="reactomeLink(entity.stId)"
                        class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                        target="_blank">
                         <span>Reactome</span>
                         {{ entity.stId }}
+                    </a>
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel *ngIf="entity.biocyc_id" [disabled]="true">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <a [href]="biocycLink(entity.biocyc_id)"
+                       class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                       target="_blank">
+                        <span>BioCyc</span>
+                        {{ entity.biocyc_id }}
                     </a>
                 </ng-template>
             </ngb-panel>

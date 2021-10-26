@@ -123,6 +123,23 @@ export class FilesystemService {
     );
   }
 
+  /**
+   * Gets the 'graph.json' file from the zipped map - without the images. Since the unzipping
+   * produces a promise, getting a file and unzipping it in client produces a promise that is
+   * dependant on observable - making things harder to process and not aligning with the other file types
+   * @param hashId - hashID of a map we want to retrieve
+   * @returns Observable of a json file as a Blob.
+   * @raises ValidationError - when a file is not a map or file content is corrupted
+   */
+  getMapContent(hashId: string): Observable<Blob> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/map-content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      }
+    );
+  }
+
   // TODO: Deprecate after LL-3006
   getAllEnrichmentTables() {
     return this.http.get<{result: string[]}>(

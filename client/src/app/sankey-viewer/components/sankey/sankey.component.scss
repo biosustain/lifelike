@@ -50,10 +50,18 @@ app-sankey {
             & > rect {
               opacity: $node-dimmed-opacity;
             }
+
+            text {
+              opacity: $node-dimmed-opacity;
+            }
           }
 
           &[highlighted=true], &[transitively-selected=true] {
             & > rect {
+              opacity: $node-opacity;
+            }
+
+            text {
               opacity: $node-opacity;
             }
           }
