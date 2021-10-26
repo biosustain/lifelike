@@ -4,10 +4,10 @@ import { first, last } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { symmetricDifference } from 'app/sankey-viewer/components/sankey/utils';
-import { SankeyNode } from 'app/sankey-viewer/components/interfaces';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import { DirectedTraversal } from 'app/sankey-viewer/services/directed-traversal';
+import { SankeyNode } from 'app/shared-sankey/interfaces';
 
 import { SankeyManyToManyLink } from '../components/interfaces';
 
@@ -89,11 +89,6 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
     // traverse tree of connections
     relayoutNodes(dt.startNodes);
 
-    this.linkSort = (a, b) => (
-      // sort by order given in tree traversal
-      (a._source._order - b._source._order) ||
-      (a._target._order - b._target._order)
-    );
 
     this.layoutNodesWithinColumns(columns);
   }

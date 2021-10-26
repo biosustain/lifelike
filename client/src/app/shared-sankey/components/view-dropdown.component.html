@@ -1,0 +1,29 @@
+<div class="btn-group d-inline-block mr-auto" ngbDropdown title="Select view">
+    <button class="btn btn-secondary" ngbDropdownToggle>
+        {{activeViewName || activeViewBaseName}}
+    </button>
+    <!-- add class dropdown-menu to avoid relayout -->
+    <div ngbDropdownMenu class="dropdown-menu">
+        <button ngbDropdownItem
+                (click)="openBaseView('sankey')">
+            Default View
+        </button>
+        <button ngbDropdownItem
+                (click)="openBaseView('sankey-many-to-many')">
+            Trace View
+        </button>
+        <div class="dropdown-divider"></div>
+        <button ngbDropdownItem [disabled]="!object?.isEditable"
+                (click)="saveView()">
+            Save view
+        </button>
+        <div class="dropdown-divider" *ngIf="views?.length"></div>
+        <button ngbDropdownItem *ngFor="let view of views | keyvalue" (click)="setViewFromName(view.key)">
+            {{ view.key }} <i [ngClass]="{
+                        'fa fa-trash': true,
+                        'disabled': !object?.isEditable
+                        }"
+                              (click)="deleteViews()"></i>
+        </button>
+    </div>
+</div>
