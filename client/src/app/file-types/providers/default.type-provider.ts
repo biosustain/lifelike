@@ -3,47 +3,36 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
-  Exporter,
-} from 'app/file-browser/services/object-type.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { SearchType } from 'app/search/shared';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { MimeTypes } from 'app/shared/constants';
 
+import { AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper, Exporter } from './base-object.type-provider';
+
+/**
+ * A generic file type provider that is returned when we don't know what type of object
+ * it is or we don't support it.
+ */
 @Injectable()
-export class PdfTypeProvider extends AbstractObjectTypeProvider {
-
+export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
   constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
               protected readonly filesystemService: FilesystemService) {
     super(abstractObjectTypeProviderHelper);
   }
 
-
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === 'application/pdf';
-  }
-
-  getSearchTypes(): SearchType[] {
-    return [
-      Object.freeze({id: MimeTypes.Pdf, shorthand: PDF_SHORTHAND, name: 'Documents'}),
-    ];
+    return true;
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
-      name: 'PDF',
+      name: 'Download',
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename.endsWith('.pdf') ? object.filename : object.filename + '.pdf');
+            return new File([blob], object.filename);
           }),
         );
       },
     }]);
   }
-
 }
-
-export const PDF_SHORTHAND = 'pdf';
