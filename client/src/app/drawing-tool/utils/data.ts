@@ -1,16 +1,16 @@
-import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { DataTransferData } from 'app/shared/services/data-transfer-data.service';
 
+import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
 import {
   GraphEntity,
   GraphEntityType,
   UniversalGraphEdge,
   UniversalGraphNode,
 } from '../services/interfaces';
-import { GRAPH_ENTITY_TOKEN } from '../providers/data-transfer-data/graph-entity-data.provider';
 
 export function extractGraphEntityActions(items: DataTransferData<any>[], origin: { x: number, y: number }) {
   let entities: GraphEntity[] = [];

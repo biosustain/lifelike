@@ -8,10 +8,10 @@ import {
     AfterViewInit,
 } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { createPopper, Instance } from '@popperjs/core';
 import { Subscription } from 'rxjs';
 import { first, filter } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 import { IdType } from 'vis-network';
 
 import { VisNode } from 'app/interfaces/neo4j.interface';
@@ -20,8 +20,8 @@ import {
   Direction,
   GroupRequest,
 } from 'app/interfaces/visualization.interface';
-import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip.component';
+import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 
@@ -134,7 +134,7 @@ export class ContextMenuComponent extends TooltipComponent implements AfterViewI
         tooltip.style.display = 'block';
         this.subMenuClass = this.DEFAULT_STYLE;
 
-        if (!isNullOrUndefined(popper)) {
+        if (!isNil(popper)) {
             popper.destroy();
             popper = null;
         }

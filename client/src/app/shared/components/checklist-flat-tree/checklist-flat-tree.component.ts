@@ -1,8 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Input, OnDestroy, Directive } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { Subject, Subscription } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
@@ -13,7 +13,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   @Input() set resetTree(resetSubject: Subject<boolean>) {
     this.completeResetTreeSubject();
     this._resetTree = resetSubject;
-    if (!isNullOrUndefined(this._resetTree)) {
+    if (!isNil(this._resetTree)) {
       this._resetTree.subscribe(() => this.reset());
     }
   }
@@ -21,7 +21,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
   @Input() set initiallyCheckedNodesFilterFn(filterFn: (t: FlatNode<T>) => boolean) {
     this._initiallyCheckedNodesFilterFn = filterFn;
-    if (!isNullOrUndefined(this.treeData)) {
+    if (!isNil(this.treeData)) {
       this.checklistInit(this.flatNodes.filter(this._initiallyCheckedNodesFilterFn));
     }
   }
@@ -52,7 +52,7 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
   }
 
   completeResetTreeSubject() {
-    if (!isNullOrUndefined(this._resetTree)) {
+    if (!isNil(this._resetTree)) {
       this._resetTree.complete();
     }
   }

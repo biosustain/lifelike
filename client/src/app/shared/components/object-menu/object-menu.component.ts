@@ -21,7 +21,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
-import { Exporter, ObjectTypeProvider, ObjectTypeService } from 'app/file-browser/services/object-type.service';
+import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 
 @Component({
   selector: 'app-object-menu',
