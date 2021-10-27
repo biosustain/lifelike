@@ -1,15 +1,14 @@
 import * as d3Sankey from 'd3-sankey';
 
 import { TruncatePipe } from 'app/shared/pipes';
-
-import { SankeyNode } from '../interfaces';
+import { SankeyNode } from 'app/shared-sankey/interfaces';
 
 export class AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
   }
 
   get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
-    return ({id}) => id;
+    return ({_id}) => _id;
   }
 
   get nodeLabel() {

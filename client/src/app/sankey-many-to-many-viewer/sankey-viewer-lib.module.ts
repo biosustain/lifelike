@@ -16,6 +16,7 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
+import { SharedSankeyModule } from 'app/shared-sankey/shared-sankey.module';
 
 import { SankeyManyToManyModule } from './components/sankey/sankey.module';
 import { SankeyManyToManyViewComponent } from './components/sankey-view.component';
@@ -45,7 +46,8 @@ import { SankeyManyToManyDetailsPanelModule } from './components/details-panel/s
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeyManyToManyModule,
-    SankeyManyToManyDetailsPanelModule
+    SankeyManyToManyDetailsPanelModule,
+    SharedSankeyModule
   ],
   exports: [
     SankeyManyToManyViewComponent

@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 
-import { SelectionEntity } from '../interfaces';
+import { SelectionEntity } from 'app/shared-sankey/interfaces';
 
 @Component({
   selector: 'app-sankey-details-panel',

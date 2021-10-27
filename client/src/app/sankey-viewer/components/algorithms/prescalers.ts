@@ -1,50 +1,57 @@
-import { Prescaler, ArrayWithDefault } from '../interfaces';
+import { Prescaler } from 'app/shared-sankey/interfaces';
 
-const prescalers: ArrayWithDefault<Prescaler> = [
-  {
-    name: 'None',
+export enum PRESCALER_ID {
+  none = 'None',
+  ln = 'ln',
+  log2 = 'log2',
+  log10 = 'log10',
+  sqrt = 'sqrt',
+  cbrt = 'cbrt',
+  one_by_x = '1/x',
+  arctan = 'arctan'
+}
+
+export type PRESCALERS = { [prescalerId in PRESCALER_ID]: Prescaler };
+
+export const prescalers: PRESCALERS = {
+  [PRESCALER_ID.none]: {
+    name: PRESCALER_ID.none,
     description: 'No transformation',
     fn: (v: number) => v
   },
-  {
-    name: 'ln',
+  [PRESCALER_ID.ln]: {
+    name: PRESCALER_ID.ln,
     description: 'Natural logarithm',
     fn: Math.log
   },
-  {
-    name: 'log2',
+  [PRESCALER_ID.log2]: {
+    name: PRESCALER_ID.log2,
     description: 'Base-2 logarithm',
     fn: v => Math.log2(v + 1)
   },
-  {
-    name: 'log10',
+  [PRESCALER_ID.log10]: {
+    name: PRESCALER_ID.log10,
     description: 'Base-10 logarithm',
     fn: v => Math.log10(v + 1)
   },
-  {
-    name: 'sqrt',
+  [PRESCALER_ID.sqrt]: {
+    name: PRESCALER_ID.sqrt,
     description: 'Square ***ARANGO_USERNAME***',
     fn: Math.sqrt
   },
-  {
-    name: 'cbrt',
+  [PRESCALER_ID.cbrt]: {
+    name: PRESCALER_ID.cbrt,
     description: 'Cube ***ARANGO_USERNAME***',
     fn: Math.cbrt
   },
-  {
-    name: '1/x',
+  [PRESCALER_ID.one_by_x]: {
+    name: PRESCALER_ID.one_by_x,
     description: 'Value multiplicative inverse',
     fn: v => 1 / v
   },
-  {
-    name: 'arctan',
+  [PRESCALER_ID.arctan]: {
+    name: PRESCALER_ID.arctan,
     description: 'Arctangent',
     fn: Math.atan
   }
-];
-
-prescalers.default = prescalers[0];
-
-export default prescalers;
-
-
+};

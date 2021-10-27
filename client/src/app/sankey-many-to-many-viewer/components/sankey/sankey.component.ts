@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import * as d3 from 'd3';
 import { isNil } from 'lodash-es';
 
-import { SankeyNode, SankeyLink } from 'app/sankey-viewer/components/interfaces';
+import { SankeyNode, SankeyLink } from 'app/shared-sankey/interfaces';
 import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
 import { SankeyComponent } from 'app/sankey-viewer/components/sankey/sankey.component';
 import { uuidv4 } from 'app/shared/utils';
@@ -22,20 +22,6 @@ import { SankeyManyToManyLink, SankeyManyToManyNode } from '../interfaces';
 })
 export class SankeyManyToManyComponent extends SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() highlightCircular;
-
-  constructor(
-    readonly clipboard: ClipboardService,
-    readonly snackBar: MatSnackBar,
-    readonly sankey: SankeyLayoutService,
-    readonly wrapper: ElementRef
-  ) {
-    super(clipboard, snackBar, sankey, wrapper);
-    Object.assign(sankey, {
-      linkSort: (a, b) =>
-        (b._source.index - a._source.index) ||
-        (b._target.index - a._target.index)
-    });
-  }
 
   @Input() selected: undefined | SankeyManyToManyLink | SankeyManyToManyNode;
 
@@ -137,7 +123,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   }
 
   getConnectedNodesAndLinks(data: SankeyNode | SankeyLink) {
-    const traversalId = (data as SankeyNode).id || uuidv4();
+    const traversalId = (data as SankeyNode)._id || uuidv4();
     const leftNode = (data as SankeyLink)._source || data;
     const rightNode = (data as SankeyLink)._target || data;
     const {highlightCircular} = this;
