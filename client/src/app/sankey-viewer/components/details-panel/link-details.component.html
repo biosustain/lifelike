@@ -61,15 +61,15 @@
             <ngb-panel cardClass="filled-card" title="Properties">
                 <ng-template ngbPanelContent>
                     <ul class="list-group list-group-flush">
-                        <li *ngFor="let property of options.linkValueAccessors"
+                        <li *ngFor="let property of options.linkValueAccessors | keyvalue"
                             [ngClass]="{
                                 'list-group-item': true,
                                  'd-flex': true,
                                  'flex-wrap': true,
                                  'justify-content-between': true,
-                                active: property === options.selectedLinkValueAccessor
+                                active: property.key === state.linkValueAccessorId
                               }"
-                        ><b>{{ property.description }}</b>{{parseProperty(entity[property.description])}}
+                        ><b>{{ property.value.description }}</b>{{parseProperty(entity[property.value.description])}}
                         </li>
                         <li *ngIf="entity._folded"
                             class="list-group-item d-flex justify-content-between"

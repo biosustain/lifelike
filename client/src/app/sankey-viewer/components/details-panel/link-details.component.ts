@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 
+import { SankeyLink } from 'app/shared-sankey/interfaces';
+
 import { SankeyDetailsComponent } from './details.component';
-import { SankeyLink } from '../interfaces';
 
 @Component({
   selector: 'app-sankey-link-details',

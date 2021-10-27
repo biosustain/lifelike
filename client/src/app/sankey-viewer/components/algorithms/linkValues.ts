@@ -24,7 +24,7 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
   });
   nodes.forEach(n => n.fixedValue = n._fixedValue);
   d3Sankey.sankeyCircular()
-    .nodeId(n => n.id)
+    .nodeId(n => n._id)
     .nodePadding(1)
     .nodePaddingRatio(0.5)
     .nodeAlign(d3Sankey.sankeyRight)
