@@ -57,6 +57,9 @@
                         </div>
                     </ng-template>
                 </button>
+                <button (click)="openPathReport()" ngbDropdownItem>
+                    Open path report
+                </button>
                 <button (click)="open(fileStructureOverview)" ngbDropdownItem>
                     Open structure overview
                     <ng-template #fileStructureOverview let-modal>
@@ -78,26 +81,13 @@
                     type="button">
                 <i class="fas fa-sync"></i>
             </button>
-            <div [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+            <app-sankey-view-dropdown
+                    [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
                  class="d-inline-block"
-                 ngbDropdown
-                 title="Select view">
-                <button class="btn btn-secondary" ngbDropdownToggle>
-                    Trace View
-                </button>
-                <!-- add class dropdown-menu to avoid relayout -->
-                <div ngbDropdownMenu class="dropdown-menu">
-                    <button ngbDropdownItem
-                            [appLink]="['/projects', object?.project.name, 'sankey', object?.hashId]">
-                        Default View
-                    </button>
-                    <button ngbDropdownItem
-                            [disabled]="true"
-                            [appLink]="['/projects', object?.project.name, 'sankey-many-to-many', object?.hashId]">
-                        Trace View
-                    </button>
-                </div>
-            </div>
+                    [object]="object"
+                    [(activeViewName)]="activeViewName"
+                    (viewDataChanged)="saveFile()"
+            ></app-sankey-view-dropdown>
             <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
@@ -126,21 +116,21 @@
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
                     <div ngbDropdownMenu class="dropdown-menu">
-                        <button (click)="selectNetworkTrace(trace)" *ngFor="let trace of networkTraces"
+                        <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces; let i = index"
                                 ngbDropdownItem>{{trace.description}}</button>
                     </div>
                 </div>
                 <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
                     <button class="btn btn-primary" ngbDropdownToggle>
-                        {{ options.selectedPredefinedValueAccessor?.description !== 'None' ?
-                        options.selectedPredefinedValueAccessor.description :
+                        {{ predefinedValueAccessor?.description !== 'None' ?
+                        predefinedValueAccessor.description :
                         'Select Predefined Value Accessor' }}
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
                     <div ngbDropdownMenu class="dropdown-menu">
-                        <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor)"
-                                *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors"
-                                ngbDropdownItem>{{predefinedValueAccessor.description}}</button>
+                        <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
+                                *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors | keyvalue"
+                                ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
                     </div>
                 </div>
                 <label class="btn-primary flex-grow-0" ngbButtonLabel>
@@ -161,10 +151,10 @@
                                      (linkClicked)="selectLink($event)"
                                      (nodeClicked)="selectNode($event)"
                                      (backgroundClicked)="closeDetailsPanel()"
-                                     [highlightCircular]="options.highlightCircular"
+                                     [highlightCircular]="state.highlightCircular"
                                      [nodeAlign]="nodeAlign"
                                      [data]="dataToRender | async"
-                                     [normalizeLinks]="options.normalizeLinks"
+                                     [normalizeLinks]="state.normalizeLinks"
                                      [selected]="selection | async"
                                      [searchedEntities]="entitySearchList"
                                      [focusedNode]="searchFocus">
