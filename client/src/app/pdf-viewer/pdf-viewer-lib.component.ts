@@ -14,16 +14,15 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, uniqueId } from 'lodash-es';
+import { escape, isNil, uniqueId } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { toValidLink } from 'app/shared/utils/browser';
 import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
 import { openModal } from 'app/shared/utils/modals';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import {toValidLink} from 'app/shared/utils/browser';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -330,7 +329,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
 
     // Do NOT attempt to draw an annotation if the corresponding page has yet to be rendered! (It will get drawn on-demand)
-    if (!isNullOrUndefined(this.pageRef[pageNum])) {
+    if (!isNil(this.pageRef[pageNum])) {
       const pdfPageView = this.pageRef[pageNum];
       const viewPort: PageViewport = pdfPageView.viewport;
       const elementRefs = [];
@@ -440,7 +439,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
-    
+
     let htmlLinks = '<div>';
 
     // source links if any
@@ -833,7 +832,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
               <button
                 style="background: none; border: none;"
                 onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()"
-              >Create Annotation</button> | 
+              >Create Annotation</button> |
               <button
                 style="background: none; border: none;"
                 onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()"

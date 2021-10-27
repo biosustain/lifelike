@@ -7,6 +7,8 @@ import { from, Observable, Subscription, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map } from 'rxjs/operators';
 
+import { CreateActionOptions, CreateDialogAction } from 'app/file-types/providers/base-object.type-provider';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ModuleProperties } from 'app/shared/modules';
@@ -19,11 +21,6 @@ import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { ProjectsService } from '../services/projects.service';
-import {
-  CreateActionOptions,
-  CreateDialogAction,
-  ObjectTypeService,
-} from '../services/object-type.service';
 
 @Component({
   selector: 'app-object-browser',

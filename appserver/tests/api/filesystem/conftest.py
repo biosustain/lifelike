@@ -59,7 +59,7 @@ def project(
     return project
 
 
-ParameterizedAppUser = namedtuple('UserParam', (
+ParameterizedAppUser = namedtuple('ParameterizedAppUser', (
     'app_roles',
     'project_roles',
 ), defaults=([], []))
@@ -102,7 +102,7 @@ def user_with_project_roles(
     return user
 
 
-ParameterizedFile = namedtuple('FilesParam', (
+ParameterizedFile = namedtuple('ParameterizedFile', (
     'public', 'in_folder', 'user_roles_for_folder', 'user_roles_for_file',
     'recycled', 'folder_recycled', 'deleted', 'folder_deleted',
 ), defaults=(False, False, [], [], False, False, False, False))

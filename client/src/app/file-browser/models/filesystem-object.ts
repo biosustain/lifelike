@@ -1,5 +1,5 @@
+import { isNil } from 'lodash-es';
 import moment from 'moment';
-import { isNullOrUndefined } from 'util';
 
 import {
   KnowledgeMap,
@@ -13,16 +13,16 @@ import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
 import { CollectionModel } from 'app/shared/utils/collection-model';
+import { DragImage } from 'app/shared/utils/drag';
 import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
-import { MimeTypes, Unicodes, FAClass} from 'app/shared/constants';
-import {DragImage} from 'app/shared/utils/drag';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData,
-} from '../providers/data-transfer-data/filesystem-object-data.provider';
+} from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
 import {createDragImage} from '../utils/drag';
@@ -493,7 +493,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
         let fragment = '';
-        if (!isNullOrUndefined(meta)) {
+        if (!isNil(meta)) {
           fragment = '#' + [
             `id=${encodeURIComponent(meta.id)}`,
             `text=${encodeURIComponent(meta.allText)}`,

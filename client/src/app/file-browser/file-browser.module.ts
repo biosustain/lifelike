@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 
+import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { SharedModule } from 'app/shared/shared.module';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 
@@ -29,13 +31,6 @@ import {
 } from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
-import {
-  AbstractObjectTypeProviderHelper,
-  DefaultObjectTypeProvider,
-  ObjectTypeService,
-  TYPE_PROVIDER,
-} from './services/object-type.service';
-import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
 import { ProjectActions } from './services/project-actions';
 import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
@@ -44,10 +39,9 @@ import { ObjectAnnotationHistoryComponent } from './components/object-annotation
 import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
-import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
+import { FilesystemObjectDataProvider } from './providers/filesystem-object-data.provider';
 import { ObjectViewerComponent } from './components/object-viewer.component';
 import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
-import { RecentFilesService } from './services/recent-files.service';
 
 @NgModule({
   declarations: [
@@ -120,13 +114,7 @@ import { RecentFilesService } from './services/recent-files.service';
     ProjectActions,
     ObjectCreationService,
     ObjectTypeService,
-    DefaultObjectTypeProvider,
     AbstractObjectTypeProviderHelper,
-    {
-      provide: TYPE_PROVIDER,
-      useClass: DirectoryTypeProvider,
-      multi: true,
-    },
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: FilesystemObjectDataProvider,

@@ -4,11 +4,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 
-import { RankedItem } from 'app/shared/schemas/common';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { openModal } from 'app/shared/utils/modals';
+import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
+import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
+import { EnrichmentTable } from 'app/enrichment/models/enrichment-table';
+import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue,
+} from 'app/enrichment/components/table/dialog/enrichment-table-edit-dialog.component';
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
@@ -16,7 +19,7 @@ import {
   CreateDialogAction,
   Exporter,
   PreviewOptions,
-} from 'app/file-browser/services/object-type.service';
+} from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import { SearchType } from 'app/search/shared';
@@ -24,15 +27,12 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectContentSource, ObjectCreateRequest } from 'app/file-browser/schema';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { RankedItem } from 'app/shared/schemas/common';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { openModal } from 'app/shared/utils/modals';
 
-import { EnrichmentDocument } from '../models/enrichment-document';
-import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { EnrichmentTable } from '../models/enrichment-table';
-import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from '../components/table/dialog/enrichment-table-edit-dialog.component';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
