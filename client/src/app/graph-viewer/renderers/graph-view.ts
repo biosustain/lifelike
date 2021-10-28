@@ -219,10 +219,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // TODO: Make a regex that matches all the formats that have associatedMaps search
-    const myRe = /d(b+)d/g;
+    const myRe = /^\/projects\/([^\/]+)\/enrichment-table\//;
     // Filter in links that point to desired files
     return links.filter((source) => {
-      return myRe.test(source.url);
+      return true;
+      // return myRe.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
       return source.url.split('/').pop();
@@ -302,8 +303,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getChangeInLinked() {
     return {
-      linkedFilesAdded: this.newlyLinkedDocuments,
-      linkedFilesDeleted: this.deletedLinkedDocuments,
+      linkedFilesAdded: Array.from(this.newlyLinkedDocuments),
+      linkedFilesDeleted: Array.from(this.deletedLinkedDocuments),
     };
   }
 
