@@ -6,7 +6,7 @@ import { Group, Link } from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
-  GraphEntityType,
+  GraphEntityType, Hyperlink, Source,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
@@ -58,6 +58,21 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * values are passed to the automatic layout routines .
    */
   readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
+
+  /**
+   * Stores the hashes of newly linked documents
+   */
+  newlyLinkedDocuments: string[] = [];
+
+  /**
+   * Stores the hashes of destroyed documents
+   */
+  deletedLinkedDocuments: string[] = [];
+
+  /**
+   * Stores the counters for linked documents
+   */
+  linkedDocuments = {};
 
   // Graph states
   // ---------------------------------
@@ -198,6 +213,45 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
+  // TODO: Move
+  /**
+   * Get all the linked files
+   */
+  getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
+    // TODO: Make a regex that matches all the formats that have associatedMaps search
+    const myRe = /d(b+)d/g;
+    // Filter in links that point to desired files
+    return links.filter((source) => {
+      return myRe.test(source.url);
+    // Return hashId of those files (last element of the url address)
+    }).map(source => {
+      return source.url.split('/').pop();
+    });
+  }
+
+  addToReferenceCounter(hashes: string[], checkMode: number) {
+    hashes.forEach(linkedHash => {
+      if (linkedHash in this.linkedDocuments) {
+        this.linkedDocuments[linkedHash] = 0;
+      }
+      // checkMode: 1 for adding, -1 for deleting
+      this.linkedDocuments[linkedHash] += checkMode;
+    });
+  }
+
+  checkForReferences(node: UniversalGraphNode, checkMode: number) {
+    // TODO: Definitely optimize this
+    // NOTE: Should I check only sources?
+    if (node.data) {
+      if (node.data.hyperlinks) {
+        this.addToReferenceCounter(this.getLinkedHashes(node.data.hyperlinks), checkMode);
+      }
+      if (node.data.sources) {
+        this.addToReferenceCounter(this.getLinkedHashes(node.data.sources), checkMode);
+      }
+    }
+  }
+
   /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
@@ -206,6 +260,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
+
+    this.nodes.forEach(node => this.checkForReferences(node, referenceCheckingMode.nodeAdded));
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
@@ -229,6 +285,16 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Return changes in linked elements
+   */
+  getChangeInLinked() {
+    return {
+      deleted: this.deletedLinkedDocuments,
+      added: this.newlyLinkedDocuments,
+    };
+  }
+
+  /**
    * Add the given node to the graph.
    * @param node the node
    */
@@ -237,6 +303,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       throw new Error('trying to add a node that already is in the node list is bad');
     }
     this.nodes.push(node);
+    this.checkForReferences(node, referenceCheckingMode.nodeAdded);
     this.nodeHashMap.set(node.hash, node);
     this.requestRender();
   }
@@ -272,6 +339,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }
     }
 
+    this.checkForReferences(node, referenceCheckingMode.nodeDeleted);
     this.nodeHashMap.delete(node.hash);
     this.invalidateNode(node);
 
@@ -1008,4 +1076,9 @@ interface GraphLayoutGroup extends Group {
   name: string;
   color: string;
   leaves?: GraphLayoutNode[];
+}
+
+enum referenceCheckingMode {
+  nodeAdded = 1,
+  nodeDeleted = -1,
 }
