@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { flatMap, groupBy, merge, intersection } from 'lodash-es';
+import { flatMap, groupBy, merge } from 'lodash-es';
 
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink } from 'app/shared-sankey/interfaces';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 
-import { SankeyManyToManyLink, SankeyManyToManyState, SankeyManyToManyOptions, SankeyManyToManyNode } from '../components/interfaces';
+import { SankeyManyToManyLink, SankeyManyToManyState, SankeyManyToManyOptions } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
-import { nodeColors, NodePosition } from '../utils/nodeColors';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -35,8 +34,8 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
           ratio: 2
         }
       },
-      linkValueGenerators: {
-        [LINK_VALUE_GENERATOR.input_count]: {
+      [LINK_VALUE_GENERATOR.input_count]: {
+        input_count: {
           description: LINK_VALUE_GENERATOR.input_count,
           preprocessing: linkValues.inputCount,
           disabled: () => false
@@ -91,48 +90,9 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
         const color = EdgeColorCodes[label.toLowerCase()];
         if (color) {
           link._color = color;
-        } else {
-          console.warn(`There is no color mapping for label: ${label}`);
         }
       }
     });
-  }
-
-  get sourcesIds() {
-    return this.allData.graph.node_sets[
-      this.selectedNetworkTrace.sources
-      ];
-  }
-
-  get targetsIds() {
-    return this.allData.graph.node_sets[
-      this.selectedNetworkTrace.targets
-      ];
-  }
-
-  /**
-   * Color nodes if they are in source or target set.
-   */
-  // @ts-ignore
-  colorNodes(nodes, sourcesIds: number[], targetsIds: number[]) {
-    nodes.forEach(node => node._color = undefined);
-    const nodeById = new Map<number, SankeyManyToManyNode>(nodes.map(node => [node.id, node]));
-    const mapNodePositionToColor = (ids: number[], position: NodePosition) =>
-      ids.forEach(id => {
-        const node = nodeById.get(id);
-        if (node) {
-          node._color = nodeColors.get(position);
-        } else {
-          console.warn(`Id ${id} could not be mapped to node - inconsistent file`);
-        }
-      });
-    mapNodePositionToColor(sourcesIds, NodePosition.left);
-    mapNodePositionToColor(targetsIds, NodePosition.right);
-    const reusedIds = intersection(sourcesIds, targetsIds);
-    if (reusedIds.length) {
-      console.warn('Nodes set to be both in and out', reusedIds);
-      mapNodePositionToColor(reusedIds, NodePosition.multi);
-    }
   }
 
   computeData() {
@@ -145,7 +105,6 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
     }
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
-    this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
     this.state.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
     return this.linkGraph({
       nodes: networkTraceNodes,

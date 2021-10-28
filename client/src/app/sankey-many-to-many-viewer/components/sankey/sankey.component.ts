@@ -299,4 +299,16 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   }
 
   // endregion
+
+  updateDOM(graph) {
+    const {
+      sankey: {
+        // @ts-ignore
+        nodeGraphRelativePosition
+      }
+    } = this;
+    super.updateDOM(graph);
+    this.nodeSelection
+      .attr('graphRelativePosition', nodeGraphRelativePosition);
+  }
 }

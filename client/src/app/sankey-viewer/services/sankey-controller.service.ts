@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
-import { merge, omit, transform, cloneDeepWith, clone } from 'lodash-es';
+import { transform, cloneDeepWith, clone } from 'lodash-es';
 
 import { uuidv4 } from 'app/shared/utils';
 import {
@@ -582,15 +582,7 @@ export class SankeyControllerService {
     const preprocessedNodes = this.nodeValueAccessor.preprocessing(data) || {};
     const preprocessedLinks = this.linkValueAccessor.preprocessing(data) || {};
 
-    Object.assign(
-      data,
-      preprocessedLinks,
-      preprocessedNodes,
-      merge(
-        omit(preprocessedLinks, ['nodes', 'links']),
-        omit(preprocessedNodes, ['nodes', 'links'])
-      )
-    );
+    Object.assign(data, preprocessedLinks, preprocessedNodes);
 
     const prescaler = this.prescaler.fn;
 
