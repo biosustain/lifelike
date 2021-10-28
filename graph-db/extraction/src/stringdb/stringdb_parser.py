@@ -2,7 +2,9 @@ import os
 import csv
 import gzip
 import logging
+
 from common.base_parser import BaseParser
+from common.constants import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
@@ -72,7 +74,7 @@ class StringParser(BaseParser):
         proteins = self.parse_protein_info()
         with open(os.path.join(self.output_dir, self.file_prefix + 'string.tsv'), 'w') as f:
             # cols: id, name, protein_size, annotation
-            f.write('\t'.join(['protein_id', 'protein_name', 'protein_size', 'annotation', 'tax_id', 'refseq']) + '\n')
+            f.write('\t'.join([PROP_ID, PROP_NAME, 'protein_size', 'annotation', 'tax_id', 'refseq']) + '\n')
             for protein in proteins:
                 f.write('\t'.join([protein.id, protein.name, protein.protein_size, protein.annotation, protein.tax_id, protein.refseq]) + '\n')
         logging.info('total strings: ' + str(len(proteins)))

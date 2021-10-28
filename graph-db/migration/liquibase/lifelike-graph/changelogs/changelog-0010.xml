@@ -10,7 +10,9 @@
       The Zenodo literature data are wrong, need to delete them to re-seed.
     </comment>
     <sql>
-      MATCH (n:db_Literature) DETACH DELETE n;
+      CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature) RETURN n',
+        'DETACH DELETE n', {batchSize:5000})
     </sql>
   </changeSet>
 </databaseChangeLog>
