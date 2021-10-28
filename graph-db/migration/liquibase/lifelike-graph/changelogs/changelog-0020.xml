@@ -20,15 +20,18 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
 
   <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10192021" author="Binh Vu">
     <comment>
-        Split creation of Chemical-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher
+        Split creation of Chemical-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
+Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate; Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
-        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureChemical' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureChemical)
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureDisease' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureDisease)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -58,15 +61,18 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
 
   <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 10192021" author="Binh Vu">
     <comment>
-        Split creation of Chemical-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher
+        Split creation of Chemical-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
+Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureChemical
-        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureChemical' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureChemical)
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureGene)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -96,15 +102,18 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
 
   <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 10192021" author="Binh Vu">
     <comment>
-        Split creation of Gene-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher
+        Split creation of Gene-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
+Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
-        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureDisease
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureGene)
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureDisease' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureDisease)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -134,15 +143,18 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
 
   <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 10192021" author="Binh Vu">
     <comment>
-        Split creation of Gene-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher
+        Split creation of Gene-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
+Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:LiteratureGene
-        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:LiteratureGene
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureGene)
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureGene)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -315,28 +327,30 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 10192021" author="Binh Vu">
-    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh)</comment>
+    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh);
+Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(c:db_MESH:Chemical {eid:split(n.eid, ":")[1]})',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_MESH {eid:split(n.eid, ":")[1]}) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "CHEBI:" RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(c:db_CHEBI:Chemical {eid:split(n.eid, ":")[1]})',
+        'MERGE (n)-[:MAPPED_TO]->(c:db_CHEBI {eid:split(n.eid, ":")[1]}) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
         {batchSize:10000});
         
     </sql>
   </changeSet>
 
   <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 10192021" author="Binh Vu">
-    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id)</comment>
+    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id);
+Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (n)-[:MAPPED_TO]->(d:db_MESH:Disease {eid:split(n.eid, ":")[1]})',
+        'MERGE (n)-[:MAPPED_TO]->(d:db_MESH {eid:split(n.eid, ":")[1]}) FOREACH (item IN CASE WHEN NOT "Disease" IN labels(d) THEN [1] ELSE [] END | SET d:Disease)',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS "MESH:" RETURN n',
