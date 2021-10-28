@@ -3,21 +3,21 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
-  Exporter,
-} from 'app/file-browser/services/object-type.service';
+  Exporter
+} from 'app/file-types/providers/base-object.type-provider';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SearchType } from 'app/search/shared';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { MimeTypes } from 'app/shared/constants';
 
 
-export const BIOC_SHORTHAND = 'BioC';
+export const GRAPH_SHORTHAND = 'Graph';
 
 @Injectable()
-export class BiocTypeProvider extends AbstractObjectTypeProvider {
+export class GraphTypeProvider extends AbstractObjectTypeProvider {
 
   constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
               protected readonly filesystemService: FilesystemService) {
@@ -26,26 +26,25 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
 
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === MimeTypes.BioC;
+    return object.mimeType === MimeTypes.Graph;
   }
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: MimeTypes.BioC, shorthand: BIOC_SHORTHAND, name: BIOC_SHORTHAND}),
+      Object.freeze({id: MimeTypes.Graph, shorthand: GRAPH_SHORTHAND, name: 'Graph'}),
     ];
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
-      name: 'BioC',
+      name: 'Graph',
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
           map(blob => {
-            return new File([blob], object.filename.endsWith('.json') ? object.filename : object.filename + '.json');
+            return new File([blob], object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph');
           }),
         );
       },
     }]);
   }
-
 }

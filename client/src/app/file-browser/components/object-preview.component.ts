@@ -13,11 +13,11 @@ import {
 import { BehaviorSubject, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
-import { ObjectTypeService } from '../services/object-type.service';
 
 @Component({
   selector: 'app-object-preview',

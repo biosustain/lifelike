@@ -15,9 +15,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
-import { TYPE_PROVIDER } from 'app/file-browser/services/object-type.service';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { GraphTypeProvider } from 'app/shared/providers/graph-type/graph-type-provider.service';
+import { SharedSankeyModule } from 'app/shared-sankey/shared-sankey.module';
 
 import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyModule } from './components/sankey/sankey.module';
@@ -49,14 +48,9 @@ import { PathReportComponent } from './components/path-report/path-report.compon
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeyModule,
-    SankeyDetailsPanelModule
+    SankeyDetailsPanelModule,
+    SharedSankeyModule
   ],
-  entryComponents: [],
-  providers: [{
-    provide: TYPE_PROVIDER,
-    useClass: GraphTypeProvider,
-    multi: true,
-  }],
   exports: [
     SankeyViewComponent
   ],

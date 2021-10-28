@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
+import { isNil } from 'lodash-es';
 
 @Pipe({
   name: 'projectTitleAcronym'
@@ -8,7 +8,7 @@ import { isNullOrUndefined } from 'util';
 export class ProjectTitleAcronymPipe implements PipeTransform {
 
   transform(value: string, ...args: any[]): any {
-    if (isNullOrUndefined(value)) { return ''; }
+    if (isNil(value)) { return ''; }
 
     const acronymLength = args.length ? args[0] : 2;
 

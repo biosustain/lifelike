@@ -1,9 +1,11 @@
 import { Component, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { combineLatest, Subscription, BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY } from 'rxjs';
+import { map, delay, catchError } from 'rxjs/operators';
+import { isNull, compact } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -14,14 +16,16 @@ import { SessionStorageService } from 'app/shared/services/session-storage.servi
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { tokenizeQuery, FindOptions, compileFind } from 'app/shared/utils/find';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { SankeyManyToManyAdvancedOptions } from 'app/sankey-many-to-many-viewer/components/interfaces';
+import { MimeTypes } from 'app/shared/constants';
+import { SelectionManyToManyEntity } from 'app/sankey-many-to-many-viewer/components/interfaces';
+import { SankeyOptions, SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam } from 'app/shared-sankey/interfaces';
 
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { isNodeMatching, isLinkMatching } from './search-match';
 import { SankeyControllerService } from '../services/sankey-controller.service';
-import { SelectionEntity } from './interfaces';
 import { PathReportComponent } from './path-report/path-report.component';
+
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -41,6 +45,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
     readonly modalService: NgbModal,
+    readonly snackBar: MatSnackBar,
     protected readonly workSpaceManager: WorkspaceManager,
     readonly router: Router,
     readonly sessionStorage: SessionStorageService,
@@ -67,7 +72,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.openSankeySub = this.loadTask.results$.subscribe(({
                                                              result: [object, content],
                                                            }) => {
-      this.sankeyController.load(content);
+      this.sankeyController.load(content, () => {
+        this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
+      });
       this.object = object;
       this.emitModuleProperties();
 
@@ -83,7 +90,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get options() {
-    return this.sankeyController.options as SankeyManyToManyAdvancedOptions;
+    return this.sankeyController.options as SankeyOptions;
+  }
+
+  get state() {
+    return this.sankeyController.state as SankeyState;
   }
 
   get dataToRender() {
@@ -91,20 +102,25 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   get nodeAlign() {
-    return this.sankeyController.nodeAlign;
+    return this.sankeyController.state.nodeAlign;
   }
 
   get networkTraces() {
-    return this.sankeyController.networkTraces;
+    return this.sankeyController.options.networkTraces;
   }
 
   get selectedNetworkTrace() {
     return this.sankeyController.selectedNetworkTrace;
   }
 
+
+  get predefinedValueAccessor() {
+    return this.sankeyController.predefinedValueAccessor;
+  }
+
   paramsSubscription: Subscription;
   returnUrl: string;
-  selection: BehaviorSubject<Array<SelectionEntity>>;
+  selection: BehaviorSubject<Array<SelectionManyToManyEntity>>;
   selectionWithTraces;
   loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
@@ -127,34 +143,62 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   entitySearchListIdx = -1;
   searchFocus = undefined;
 
+  private preselectedNetworkTraceIdx;
+  activeViewName: string;
+
   initSelection() {
     this.selection = new BehaviorSubject([]);
     this.selectionWithTraces = this.selection.pipe(
       map((currentSelection) => {
-        console.log(currentSelection);
-        const nodes = currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity);
-        const links = currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity);
+        const nodes = compact(currentSelection.map(e => e[SelectionType.node]));
+        const links = compact(currentSelection.map(e => e[SelectionType.link]));
         const traces = [
           ...this.sankeyController.getRelatedTraces({nodes, links})
-        ].map(entity => ({
-          type: 'trace',
-          entity
-        } as SelectionEntity));
+        ].map(trace => ({[SelectionType.trace]: trace} as SelectionEntity));
         return [...currentSelection].reverse().concat(traces);
       })
     );
     this.selectedNodes = this.selection.pipe(map(currentSelection => {
-      return new Set(currentSelection.filter(({type}) => type === 'node').map(({entity}) => entity));
+      return new Set(compact(currentSelection.map(e => e[SelectionType.node])));
     }));
     this.selectedLinks = this.selection.pipe(map(currentSelection => {
-      return new Set(currentSelection.filter(({type}) => type === 'link').map(({entity}) => entity));
+      return new Set(compact(currentSelection.map(e => e[SelectionType.link])));
     }));
     this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
   }
 
-  selectNetworkTrace(trace) {
-    this.sankeyController.selectNetworkTrace(trace);
-    this.sankeyController.applyOptions();
+  saveFile() {
+    const contentValue = new Blob(
+      [JSON.stringify(
+        this.sankeyController.allData
+      )],
+      {type: MimeTypes.Graph});
+    this.filesystemService.save(
+      [this.object.hashId],
+      {contentValue}
+    )
+      .pipe(
+        delay(1000),
+        catchError((err) => {
+          console.log(err);
+          this.snackBar.open('Error saving view.', null, {
+            duration: 2000,
+          });
+          return EMPTY;
+        })
+      ).subscribe(() => {
+      this.emitModuleProperties();
+      this.snackBar.open('View saved.', null, {
+        duration: 2000,
+      });
+    });
+    console.log('view saved');
+  }
+
+  selectNetworkTrace(networkTraceIdx) {
+    this.sankeyController.state.networkTraceIdx = networkTraceIdx;
+    this.sankeyController.setPredefinedValueAccessor();
+    this.sankeyController.applyState();
   }
 
   open(content) {
@@ -164,6 +208,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     modalRef.result
       .then(_ => _, _ => _);
     return modalRef;
+  }
+
+  parseUrlFragment(fragment: string) {
+    const params = new URLSearchParams(fragment);
+    this.preselectedNetworkTraceIdx = parseInt(params.get(SankeyURLLoadParam.NETWORK_TRACE_IDX), 10) || 0;
+    this.activeViewName = params.get(SankeyURLLoadParam.VIEW_NAME);
   }
 
   openPathReport() {
@@ -232,6 +282,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       const linkedFileId = this.route.snapshot.params.file_id;
       this.openSankey(linkedFileId);
     }
+
+    // Check if the component was loaded with additional params
+    const fragment = this.route.snapshot.fragment;
+    if (!isNull(fragment)) {
+      this.parseUrlFragment(fragment);
+    }
   }
 
   requestRefresh() {
@@ -278,30 +334,29 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   // region Selection
-  toggleSelect(entity, type) {
+  toggleSelect(entity, type: SelectionType) {
     const currentSelection = this.selection.value;
     const idxOfSelectedLink = currentSelection.findIndex(
-      d => d.type === type && d.entity === entity
+      d => d[type] === entity
     );
 
     if (idxOfSelectedLink !== -1) {
       currentSelection.splice(idxOfSelectedLink, 1);
     } else {
       currentSelection.push({
-        type,
-        entity
-      });
+        [type]: entity
+      } as SelectionEntity);
     }
 
     this.selection.next(currentSelection);
   }
 
   selectNode(node) {
-    this.toggleSelect(node, 'node');
+    this.toggleSelect(node, SelectionType.node);
   }
 
   selectLink(link) {
-    this.toggleSelect(link, 'link');
+    this.toggleSelect(link, SelectionType.link);
   }
 
   resetSelection() {
@@ -317,10 +372,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   // endregion
 
-  selectPredefinedValueAccessor(accessor) {
-    this.sankeyController.options.selectedPredefinedValueAccessor = accessor;
-    accessor.callback();
-    this.sankeyController.applyOptions();
+  selectPredefinedValueAccessor(predefinedValueAccessorId) {
+    this.sankeyController.state.predefinedValueAccessorId = predefinedValueAccessorId;
+    this.sankeyController.predefinedValueAccessor.callback();
+    this.sankeyController.applyState();
   }
 
   // region Search

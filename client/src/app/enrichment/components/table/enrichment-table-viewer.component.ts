@@ -15,10 +15,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escapeRegExp } from 'lodash-es';
+import { escapeRegExp, isNil } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -143,7 +142,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
             this.findController.start();
           }, 0);
         // Only reset the findController target when the table is reset
-        } else if (isNullOrUndefined(this.findTarget.first)) {
+        } else if (isNil(this.findTarget.first)) {
           this.findController.target = null;
           setTimeout(() => {
             this.findController.stop();
@@ -155,7 +154,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   ngOnDestroy() {
     cancelAnimationFrame(this.tickAnimationFrameId);
-    if (!isNullOrUndefined(this.findTargetChangesSub)) {
+    if (!isNil(this.findTargetChangesSub)) {
       this.findTargetChangesSub.unsubscribe();
     }
     // Give the findController a chance to teardown any listeners/callbacks/subscriptions etc.

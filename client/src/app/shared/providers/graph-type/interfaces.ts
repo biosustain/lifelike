@@ -21,6 +21,7 @@ interface GraphNode {
   startCoordinate?: number;
   endCoordinate?: number;
   isChimeric?: boolean;
+  biocyc_id?: string;
 
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
@@ -90,6 +91,7 @@ interface GraphTraceNetwork {
   sources: string;
   targets: string;
   description: string;
+  name?: string;
   traces: Array<GraphTrace>;
 
   method?: string;
@@ -121,7 +123,6 @@ interface GraphFile {
 
   nodes: Array<GraphNode>;
   links: Array<GraphLink>;
-
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
 }

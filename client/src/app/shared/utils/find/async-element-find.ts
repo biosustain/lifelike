@@ -1,5 +1,5 @@
-import { escapeRegExp } from 'lodash-es';
-import { isNullOrUndefined } from 'util';
+import { escapeRegExp, isNil } from 'lodash-es';
+
 
 import {
   NodeTextRange,
@@ -191,7 +191,7 @@ class AsyncElementTextFinder {
     protected readonly callback: (matches: NodeTextRange[]) => void,
     private generator?: (***ARANGO_USERNAME***: Node, query: string) => IterableIterator<NodeTextRange | undefined>
   ) {
-    if (isNullOrUndefined(this.generator)) {
+    if (isNil(this.generator)) {
       this.generator = this.defaultGenerator;
     }
   }

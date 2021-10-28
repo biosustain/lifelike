@@ -6,8 +6,8 @@ import {
   DataTransferToken,
 } from 'app/shared/services/data-transfer-data.service';
 
-import { FilesystemObject } from '../../models/filesystem-object';
-import { FilePrivileges } from '../../models/privileges';
+import { FilesystemObject } from '../models/filesystem-object';
+import { FilePrivileges } from '../models/privileges';
 
 export const FILESYSTEM_OBJECT_TRANSFER_TOKEN = new DataTransferToken<FilesystemObject[]>('filesystemObjectTransfer');
 export const FILESYSTEM_OBJECT_TRANSFER_TYPE = 'vnd.***ARANGO_DB_NAME***.transfer/filesystem-object';

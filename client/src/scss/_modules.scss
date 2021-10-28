@@ -17,6 +17,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  row-gap: $spacer * .25;
+  column-gap: $spacer * .25;
 }
 
 .module-title-bar-back {
