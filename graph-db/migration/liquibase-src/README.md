@@ -3,8 +3,7 @@ This is a JAVA maven project, so you will need some sort of IDE so the project c
 
 IntelliJ: https://www.jetbrains.com/idea/ (Download community version)
 
-Once repo is cloned, open IntelliJ and go to File > New > Project from existing sources (select **liquibase-src** folder)
-- Follow the setup wizard
+Once repo is cloned, open IntelliJ and go to File > Open (select **liquibase-src** folder)
 
 If you want to add new dependencies, you will need to update the `pom.xml` file, then right-click the file, go to Maven (bottom) > Reload Project.
 - To update the `pom.xml` file, go to the maven repository listing to find the dependencies you want: https://mvnrepository.com/
