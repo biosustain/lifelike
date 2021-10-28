@@ -14,21 +14,21 @@
                          [showRestore]="true" (objectRestore)="restore($event)"
                          (objectUpdate)="emitModuleProperties()">
         </app-object-menu>
-        <div *ngIf="unsavedChanges$.value" class="ml-1">
+        <div *ngIf="unsavedChanges$.value">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
                   <i class="fa fa-pencil-alt"></i>
                 </span>
         </div>
 
-        <div class="btn-group ml-2">
+        <div class="btn-group ml-1">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Save" placement="bottom" container="body" (click)="save()">
                 <i class="fa fa-fw fa-save"></i>
             </button>
         </div>
 
-        <div class="btn-group px-2 mx-auto">
+        <div class="btn-group px-1 mx-auto">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Undo" placement="bottom" container="body"
                     (click)="undo()"
@@ -43,7 +43,7 @@
             </button>
         </div>
 
-        <div class="btn-group pr-2 mx-auto">
+        <div class="btn-group pr-1 mx-auto">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"
                     (click)="zoomToFit()">

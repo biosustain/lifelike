@@ -1,9 +1,9 @@
 import { partition, sumBy, mean } from 'lodash-es';
 
 import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
+import { SankeyLink, SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
 
 import { DirectedTraversal } from '../../services/directed-traversal';
-import { SankeyLink, SankeyNode, SankeyData } from '../interfaces';
 import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
 
 export const calculateInputCountSkippingCircularLinks = (
@@ -41,6 +41,7 @@ export const initInputCountCalculation = (layout, data: SankeyData) => {
   layout.identifyCircles(data);
   layout.computeNodeValues(data);
   layout.computeNodeDepths(data);
+  layout.computeNodeReversedDepths(data);
   layout.computeNodeLayers(data);
   // traverse from side with less nodes
   const dt = new DirectedTraversal([data._inNodes, data._outNodes]);

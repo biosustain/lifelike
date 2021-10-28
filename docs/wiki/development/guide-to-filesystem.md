@@ -119,7 +119,7 @@ not completely and therefore a solution is needed at some point.
 
 ## Creating File Types
 
-Creating new file types involves implementing new file type providers in both 
+Creating new file types involves implementing new file type providers in both
 AppServer and the client.
 
 You will need to determine a mime type for your file type, and if you are creating a new one
@@ -215,7 +215,7 @@ Implementing a new file type in the client involves:
 #### Provider Implementation
 
 Your provider must implement the `ObjectTypeProvider` class and then you should
-override as many relevant methods as possible. See the JSDoc comments on that interface 
+override as many relevant methods as possible. See the JSDoc comments on that interface
 for more information. It's also recommended that you extend the `AbstractObjectTypeProvider`
 base class to make implementing the provider easier.
 
@@ -275,7 +275,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
 
 #### Provider Registration
 
-You will want to register your provider in Angular's DI on a module:
+You will want to register your provider in in the `FileTypesModule`:
 
 ```ts
 import { TYPE_PROVIDER } from './services/object-type.service';
@@ -284,12 +284,13 @@ import { TYPE_PROVIDER } from './services/object-type.service';
   providers: [
     {
       provide: TYPE_PROVIDER,
-      useClass: MapTypeProvider,
+      useClass: ExampleTypeProvider,
       multi: true,
     },
+    // ...
   ],
 })
-export class ExamlpleModule {
+export class FileTypesModule {
 }
 ```
 
@@ -316,7 +317,7 @@ class FilesystemObject {
     // TODO: Move this method to ObjectTypeProvider
     return this.isFile;
   }
-  
+
   get isDeletable() {
     // TODO: Move this method to ObjectTypeProvider
     return true;

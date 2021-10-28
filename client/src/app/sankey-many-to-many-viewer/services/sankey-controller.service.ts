@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, merge } from 'lodash-es';
 
-import { SankeyTraceNetwork, SankeyLink, ValueGenerator } from 'app/sankey-viewer/components/interfaces';
-import { SankeyControllerService, PREDEFINED_VALUE, LINK_VALUE } from 'app/sankey-viewer/services/sankey-controller.service';
+import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink } from 'app/shared-sankey/interfaces';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 
-import { SankeyManyToManyAdvancedOptions, SankeyManyToManyLink } from '../components/interfaces';
+import { SankeyManyToManyLink, SankeyManyToManyState, SankeyManyToManyOptions } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 
 /**
@@ -17,24 +18,40 @@ import * as linkValues from '../components/algorithms/linkValues';
 @Injectable()
 // @ts-ignore
 export class SankeyManyToManyControllerService extends SankeyControllerService {
-  get defaultOptions(): SankeyManyToManyAdvancedOptions {
-    return merge(super.defaultOptions, {
+  viewBase = 'sankey-many-to-many';
+
+  get defaultState(): SankeyManyToManyState {
+    return merge(super.defaultState, {
       highlightCircular: true,
+      colorLinkByType: false,
       nodeHeight: {
+        min: {
+          enabled: true,
+          value: 4
+        },
         max: {
           enabled: true,
           ratio: 2
         }
       },
-      linkValueGenerators: {
+      [LINK_VALUE_GENERATOR.input_count]: {
         input_count: {
-          description: LINK_VALUE.input_count,
+          description: LINK_VALUE_GENERATOR.input_count,
           preprocessing: linkValues.inputCount,
           disabled: () => false
         } as ValueGenerator
       }
     });
   }
+
+  get defaultOptions(): SankeyManyToManyOptions {
+    return merge(super.defaultOptions, {
+      colorLinkTypes: EdgeColorCodes
+    });
+  }
+
+  options: SankeyManyToManyOptions;
+  state: SankeyManyToManyState;
 
   // Trace logic
   /**
@@ -66,33 +83,33 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
     return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<GraphTrace>;
   }
 
-  getNetworkTraceDefaultSizing(networkTrace) {
-    let {default_sizing} = networkTrace;
-    if (!default_sizing) {
-      if (this.oneToMany) {
-        default_sizing = PREDEFINED_VALUE.input_count;
-      } else {
-        default_sizing = PREDEFINED_VALUE.fixed_height;
+  colorLinkByType(links) {
+    links.forEach(link => {
+      const {label} = link;
+      if (label) {
+        const color = EdgeColorCodes[label.toLowerCase()];
+        if (color) {
+          link._color = color;
+        }
       }
-    }
-    return this.options.predefinedValueAccessors
-      .find(({description}) => description === default_sizing);
+    });
   }
 
-  applyOptions() {
-    const {selectedNetworkTrace} = this;
+  computeData() {
+    const {selectedNetworkTrace, state: {colorLinkByType}} = this;
     const {links, nodes, graph: {node_sets}} = this.allData;
     const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
     const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+    if (colorLinkByType) {
+      this.colorLinkByType(networkTraceLinks);
+    }
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
-    this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
-    this.dataToRender.next(
-      this.linkGraph({
-        nodes: networkTraceNodes,
-        links: networkTraceLinks,
-        _inNodes, _outNodes
-      })
-    );
+    this.state.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
+    return this.linkGraph({
+      nodes: networkTraceNodes,
+      links: networkTraceLinks,
+      _inNodes, _outNodes
+    });
   }
 }

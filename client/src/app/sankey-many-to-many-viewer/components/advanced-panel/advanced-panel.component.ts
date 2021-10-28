@@ -1,9 +1,9 @@
 import { Component, } from '@angular/core';
 
 import { uuidv4 } from 'app/shared/utils';
-import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+import { SankeyControllerService, customisedMultiValueAccessorId } from 'app/sankey-viewer/services/sankey-controller.service';
 
-import { SankeyManyToManyAdvancedOptions } from '../interfaces';
+import { SankeyManyToManyState, SankeyManyToManyOptions } from '../interfaces';
 
 
 @Component({
@@ -20,20 +20,22 @@ export class SankeyManyToManyAdvancedPanelComponent {
     this.uuid = uuidv4();
   }
 
-  get options(): SankeyManyToManyAdvancedOptions {
+  get options(): SankeyManyToManyOptions {
     // @ts-ignore
     return this.sankeyController.options;
   }
 
+  get state(): SankeyManyToManyState {
+    // @ts-ignore
+    return this.sankeyController.state;
+  }
+
   update() {
-    this.sankeyController.applyOptions();
+    this.sankeyController.applyState();
   }
 
   customSizingUpdate() {
-    this.options.selectedPredefinedValueAccessor = {
-      description: 'Customised',
-      callback: () => {}
-    };
+    this.state.predefinedValueAccessorId = customisedMultiValueAccessorId;
     this.update();
   }
 }

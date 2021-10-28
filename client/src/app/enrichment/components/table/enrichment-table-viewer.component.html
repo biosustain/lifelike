@@ -16,7 +16,7 @@
                                    [showRestore]="true" (objectRestore)="restore($event)"
                                    (objectUpdate)="objectUpdate()">
                   </app-object-menu>
-            <div *ngIf="queuedChanges$.value" class="ml-1">
+            <div *ngIf="queuedChanges$.value">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
                   <i class="fa fa-pencil-alt"></i>
@@ -32,7 +32,7 @@
               </button>
             </div> -->
 
-            <div class="btn-group mx-2">
+            <div class="btn-group mx-1">
                 <button class="btn btn-secondary"
                         (click)="openEnrichmentTableEditDialog(result.object.value, result.document)"
                         [disabled]="!result.document || !result.object.value.privileges.writable">

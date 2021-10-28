@@ -1,41 +1,45 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
+import { transform, cloneDeepWith, clone } from 'lodash-es';
 
 import { uuidv4 } from 'app/shared/utils';
-
-import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import {
-  SankeyAdvancedOptions,
+  SankeyOptions,
   ValueGenerator,
   SankeyData,
   SankeyTraceNetwork,
   SankeyLink,
   SankeyNode,
   SankeyPathReport,
-  SankeyPathReportEntity
-} from '../components/interfaces';
+  SankeyPathReportEntity,
+  SankeyId,
+  SankeyState,
+  LINK_VALUE_GENERATOR,
+  NODE_VALUE_GENERATOR,
+  PREDEFINED_VALUE
+} from 'app/shared-sankey/interfaces';
+
+import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import * as linkValues from '../components/algorithms/linkValues';
 import * as nodeValues from '../components/algorithms/nodeValues';
-import prescalers from '../components/algorithms/prescalers';
-import { linkPalettes, createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../components/color-palette';
+import { prescalers, PRESCALER_ID } from '../components/algorithms/prescalers';
+import {
+  linkPalettes,
+  createMapToColor,
+  DEFAULT_ALPHA,
+  DEFAULT_SATURATION,
+  christianColors,
+  LINK_PALETTE_ID
+} from '../components/color-palette';
 import { isPositiveNumber } from '../components/utils';
 
+export const customisedMultiValueAccessorId = 'Customised';
 
-export const LINK_VALUE = {
-  fixedValue0: 'Fixed Value = 0',
-  fixedValue1: 'Fixed Value = 1',
-  input_count: 'Input count',
-  fraction_of_fixed_node_value: 'Fraction of fixed node value',
-};
-export const NODE_VALUE = {
-  none: 'None',
-  fixedValue1: 'Fixed Value = 1'
-};
-export const PREDEFINED_VALUE = {
-  fixed_height: 'Fixed height',
-  input_count: LINK_VALUE.input_count
-};
+export const customisedMultiValueAccessor = {
+  description: customisedMultiValueAccessorId
+} as ValueGenerator;
+
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -48,10 +52,76 @@ export const PREDEFINED_VALUE = {
 export class SankeyControllerService {
   constructor() {
     this.resetOptions();
+    this.resetState();
   }
 
-  get defaultOptions(): SankeyAdvancedOptions {
+  viewBase = 'sankey';
+
+  get defaultOptions(): SankeyOptions {
     return {
+      networkTraces: [],
+      linkValueAccessors: {},
+      nodeValueAccessors: {},
+      predefinedValueAccessors: {
+        [PREDEFINED_VALUE.fixed_height]: {
+          description: PREDEFINED_VALUE.fixed_height,
+          callback: () => {
+            this.state.linkValueAccessorId = LINK_VALUE_GENERATOR.fixedValue1;
+            this.state.nodeValueAccessorId = NODE_VALUE_GENERATOR.none;
+          }
+        },
+        [PREDEFINED_VALUE.input_count]: {
+          description: PREDEFINED_VALUE.input_count,
+          callback: () => {
+            this.state.linkValueAccessorId = LINK_VALUE_GENERATOR.input_count;
+            this.state.nodeValueAccessorId = NODE_VALUE_GENERATOR.none;
+          }
+        }
+      },
+      linkValueGenerators: {
+        [LINK_VALUE_GENERATOR.input_count]: {
+          description: LINK_VALUE_GENERATOR.input_count,
+          preprocessing: linkValues.inputCount,
+          disabled: () => false
+        } as ValueGenerator,
+        [LINK_VALUE_GENERATOR.fixedValue0]: {
+          description: LINK_VALUE_GENERATOR.fixedValue0,
+          preprocessing: linkValues.fixedValue(0),
+          disabled: () => false
+        } as ValueGenerator,
+        [LINK_VALUE_GENERATOR.fixedValue1]: {
+          description: LINK_VALUE_GENERATOR.fixedValue1,
+          preprocessing: linkValues.fixedValue(1),
+          disabled: () => false
+        } as ValueGenerator,
+        [LINK_VALUE_GENERATOR.fraction_of_fixed_node_value]: {
+          description: LINK_VALUE_GENERATOR.fraction_of_fixed_node_value,
+          disabled: () => this.state.nodeValueAccessorId === NODE_VALUE_GENERATOR.none,
+          requires: ({node}) => node.fixedValue,
+          preprocessing: linkValues.fractionOfFixedNodeValue
+        } as ValueGenerator
+      },
+      nodeValueGenerators: {
+        [NODE_VALUE_GENERATOR.none]: {
+          description: NODE_VALUE_GENERATOR.none,
+          preprocessing: nodeValues.noneNodeValue,
+          disabled: () => false
+        } as ValueGenerator,
+        [NODE_VALUE_GENERATOR.fixedValue1]: {
+          description: NODE_VALUE_GENERATOR.fixedValue1,
+          preprocessing: nodeValues.fixedValue(1),
+          disabled: () => false
+        } as ValueGenerator
+      },
+      prescalers,
+      linkPalettes
+    };
+  }
+
+  get defaultState(): SankeyState {
+    return {
+      nodeAlign: undefined,
+      networkTraceIdx: 0,
       nodeHeight: {
         min: {
           enabled: true,
@@ -63,65 +133,11 @@ export class SankeyControllerService {
         }
       },
       normalizeLinks: false,
-      linkValueAccessors: [],
-      nodeValueAccessors: [],
-      predefinedValueAccessors: [
-        {
-          description: PREDEFINED_VALUE.fixed_height,
-          callback: () => {
-            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue1;
-            this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-          }
-        },
-        {
-          description: PREDEFINED_VALUE.input_count,
-          callback: () => {
-            this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.input_count;
-            this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.none;
-          }
-        }],
-      linkValueGenerators: {
-        input_count: {
-          description: LINK_VALUE.input_count,
-          preprocessing: linkValues.inputCount,
-          disabled: () => false
-        } as ValueGenerator,
-        fixedValue0: {
-          description: LINK_VALUE.fixedValue0,
-          preprocessing: linkValues.fixedValue(0),
-          disabled: () => false
-        } as ValueGenerator,
-        fixedValue1: {
-          description: LINK_VALUE.fixedValue1,
-          preprocessing: linkValues.fixedValue(1),
-          disabled: () => false
-        } as ValueGenerator,
-        fraction_of_fixed_node_value: {
-          description: LINK_VALUE.fraction_of_fixed_node_value,
-          disabled: () => this.options.selectedNodeValueAccessor === this.options.nodeValueGenerators.none,
-          requires: ({node}) => node.fixedValue,
-          preprocessing: linkValues.fractionOfFixedNodeValue
-        } as ValueGenerator
-      },
-      nodeValueGenerators: {
-        none: {
-          description: NODE_VALUE.none,
-          preprocessing: nodeValues.noneNodeValue,
-          disabled: () => false
-        } as ValueGenerator,
-        fixedValue1: {
-          description: NODE_VALUE.fixedValue1,
-          preprocessing: nodeValues.fixedValue(1),
-          disabled: () => false
-        } as ValueGenerator
-      },
-      selectedLinkValueAccessor: undefined,
-      selectedNodeValueAccessor: undefined,
-      selectedPredefinedValueAccessor: undefined,
-      prescalers,
-      selectedPrescaler: prescalers.default,
-      linkPalettes,
-      selectedLinkPalette: linkPalettes.default,
+      linkValueAccessorId: undefined,
+      nodeValueAccessorId: undefined,
+      predefinedValueAccessorId: undefined,
+      prescalerId: PRESCALER_ID.none,
+      linkPaletteId: LINK_PALETTE_ID.hue_palette,
       labelEllipsis: {
         enabled: true,
         value: SankeyLayoutService.labelEllipsis
@@ -132,15 +148,47 @@ export class SankeyControllerService {
 
   allData: SankeyData;
   dataToRender = new BehaviorSubject(undefined);
-  networkTraces;
 
-  options: SankeyAdvancedOptions;
+  options: SankeyOptions;
+  state: SankeyState;
 
-  nodeAlign;
+  get nodeValueAccessor() {
+    return (
+      this.options.nodeValueGenerators[this.state.nodeValueAccessorId] ||
+      this.options.nodeValueAccessors[this.state.nodeValueAccessorId]
+    );
+  }
 
-  private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node']);
+  get linkValueAccessor() {
+    return (
+      this.options.linkValueGenerators[this.state.linkValueAccessorId] ||
+      this.options.linkValueAccessors[this.state.linkValueAccessorId]
+    );
+  }
 
-  selectedNetworkTrace;
+  get predefinedValueAccessor() {
+    const {state: {predefinedValueAccessorId}} = this;
+    if (predefinedValueAccessorId === customisedMultiValueAccessorId) {
+      return customisedMultiValueAccessor;
+    }
+    return this.options.predefinedValueAccessors[this.state.predefinedValueAccessorId];
+  }
+
+  get prescaler() {
+    return this.options.prescalers[this.state.prescalerId];
+  }
+
+  get palette() {
+    return this.options.linkPalettes[this.state.linkPaletteId];
+  }
+
+  private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
+
+  get selectedNetworkTrace() {
+    return this.options.networkTraces[
+      this.state.networkTraceIdx
+    ];
+  }
 
   get oneToMany() {
     const {graph: {node_sets}} = this.allData;
@@ -152,10 +200,14 @@ export class SankeyControllerService {
 
   resetOptions() {
     this.options = this.defaultOptions;
-    this.options.selectedLinkValueAccessor = this.options.linkValueGenerators.fixedValue0;
-    this.options.selectedNodeValueAccessor = this.options.nodeValueGenerators.fixedValue1;
-    this.options.selectedPredefinedValueAccessor = this.options.predefinedValueAccessors[0];
-    this.options.selectedLinkPalette = this.options.linkPalettes.default;
+  }
+
+  resetState() {
+    this.state = this.defaultState;
+    this.state.linkValueAccessorId = LINK_VALUE_GENERATOR.fixedValue0;
+    this.state.nodeValueAccessorId = NODE_VALUE_GENERATOR.fixedValue1;
+    this.state.predefinedValueAccessorId = PREDEFINED_VALUE.fixed_height;
+    this.state.linkPaletteId = LINK_PALETTE_ID.hue_palette;
   }
 
   // Trace logic
@@ -163,10 +215,11 @@ export class SankeyControllerService {
    * Extract links which relates to certain trace network and
    * assign _color property based on their trace.
    * Also creates duplicates if given link is used in multiple traces.
+   * Should return copy of link Objects (do not mutate links!)
    */
   getAndColorNetworkTraceLinks(
     networkTrace: SankeyTraceNetwork,
-    links: Array<SankeyLink>,
+    links: ReadonlyArray<Readonly<SankeyLink>>,
     colorMap?
   ) {
     const traceBasedLinkSplitMap = new Map();
@@ -182,9 +235,10 @@ export class SankeyControllerService {
           const link = {
             ...originLink,
             _color: color,
-            _trace: trace
+            _trace: trace,
+            _order: -trace.group,
+            _id: `${originLink._id}_${trace.group}`
           };
-          link._id += trace.group;
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
             adjacentLinks = [];
@@ -210,26 +264,30 @@ export class SankeyControllerService {
   /**
    * Helper to create Map for fast lookup
    */
-  getNodeById<T extends { id: number }>(nodes: T[]) {
+  getNodeById<T extends { _id: SankeyId }>(nodes: T[]) {
     // todo: find the way to declare it only once
     // tslint:disable-next-line
-    const id = ({id}, i?, nodes?) => id;
+    const id = ({_id}, i?, nodes?) => _id;
     return new Map<number, T>(nodes.map((d, i) => [id(d, i, nodes), d]));
   }
 
   /**
    * Given links find all nodes they are connecting to and replace id ref with objects
+   * Should return copy of nodes Objects (do not mutate nodes!)
    */
-  getNetworkTraceNodes(networkTraceLinks, nodes) {
-    const nodeById = this.getNodeById(nodes);
+  getNetworkTraceNodes(
+    networkTraceLinks,
+    nodes: ReadonlyArray<Readonly<GraphNode>>
+  ) {
+    const nodeById = this.getNodeById(nodes.map(n => clone(n) as SankeyNode));
     return [
       ...networkTraceLinks.reduce((o, link) => {
         let {_source = link.source, _target = link.target} = link;
         if (typeof _source !== 'object') {
-          _source = SankeyLayoutService.find(nodeById, _source);
+          _source = SankeyLayoutService.find(nodeById, String(_source));
         }
         if (typeof _target !== 'object') {
-          _target = SankeyLayoutService.find(nodeById, _target);
+          _target = SankeyLayoutService.find(nodeById, String(_target));
         }
         o.add(_source);
         o.add(_target);
@@ -239,17 +297,17 @@ export class SankeyControllerService {
   }
 
   getPathReports() {
-    const {nodes, links} = this.allData;
+    const {nodes, links, graph} = this.allData;
     const pathReports: SankeyPathReport = {};
-    this.allData.graph.trace_networks.forEach(traceNetwork => {
+    graph.trace_networks.forEach(traceNetwork => {
       pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
         const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
         const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
         // @ts-ignore
         const layout = new SankeyLayoutService();
         layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
-        const source = traceNodes.find(n => n.id === trace.source);
-        const target = traceNodes.find(n => n.id === trace.target);
+        const source = traceNodes.find(n => n._id === String(trace.source));
+        const target = traceNodes.find(n => n._id === String(trace.target));
 
         const report: SankeyPathReportEntity[] = [];
         const traversed = new WeakSet();
@@ -355,31 +413,23 @@ export class SankeyControllerService {
 
 
   getNetworkTraceDefaultSizing(networkTrace) {
-    let {default_sizing} = networkTrace;
-    if (!default_sizing) {
-      if (this.oneToMany) {
-        default_sizing = PREDEFINED_VALUE.input_count;
-      } else {
-        default_sizing = PREDEFINED_VALUE.fixed_height;
-      }
-    }
-    return this.options.predefinedValueAccessors
-      .find(({description}) => description === default_sizing);
+    return networkTrace.default_sizing || (
+      this.oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height
+    );
   }
 
-  selectNetworkTrace(networkTrace) {
-    this.selectedNetworkTrace = networkTrace;
-    const predefinedValueAccessor = this.getNetworkTraceDefaultSizing(networkTrace);
-    if (predefinedValueAccessor) {
-      this.options.selectedPredefinedValueAccessor = predefinedValueAccessor;
-      predefinedValueAccessor.callback();
+  setPredefinedValueAccessor() {
+    const predefinedValueAccessorId = this.getNetworkTraceDefaultSizing(this.selectedNetworkTrace);
+    if (predefinedValueAccessorId) {
+      this.state.predefinedValueAccessorId = predefinedValueAccessorId;
+      this.predefinedValueAccessor.callback();
     }
   }
 
-  applyOptions() {
+  computeData() {
     const {selectedNetworkTrace} = this;
     const {links, nodes, graph: {node_sets}} = this.allData;
-    const {palette} = this.options.selectedLinkPalette;
+    const {palette: {palette}} = this;
     const traceColorPaletteMap = createMapToColor(
       selectedNetworkTrace.traces.map(({group}) => group),
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
@@ -387,105 +437,111 @@ export class SankeyControllerService {
     );
     const networkTraceLinks = this.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
     const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-    this.colorNodes(nodes);
+    this.colorNodes(networkTraceNodes);
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
-    this.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
+    this.state.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
+    return this.linkGraph({
+      nodes: networkTraceNodes,
+      links: networkTraceLinks,
+      _inNodes, _outNodes
+    });
+  }
+
+  applyState() {
     this.dataToRender.next(
-      this.linkGraph({
-        nodes: networkTraceNodes,
-        links: networkTraceLinks,
-        _inNodes, _outNodes
-      })
+      this.computeData()
     );
   }
 
   // region Extract options
   private extractLinkValueProperties([link = {}]) {
     // extract all numeric properties
-    this.options.linkValueAccessors = Object.entries(link).reduce((o, [k, v]) => {
-      if (this.excludedProperties.has(k)) {
-        return o;
+    Object.entries(link).forEach(([k, v]) => {
+      if (!this.excludedProperties.has(k)) {
+        if (isPositiveNumber(v)) {
+          this.options.linkValueAccessors[k] = {
+            description: k,
+            preprocessing: linkValues.byProperty(k),
+            postprocessing: ({links}) => {
+              links.forEach(l => {
+                l._value /= (l._adjacent_divider || 1);
+                // take max for layer calculation
+              });
+              return {
+                _sets: {
+                  link: {
+                    _value: true
+                  }
+                }
+              };
+            }
+          };
+        } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
+          this.options.linkValueAccessors[k] = {
+            description: k,
+            preprocessing: linkValues.byArrayProperty(k),
+            postprocessing: ({links}) => {
+              links.forEach(l => {
+                l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1)) as [number, number];
+                // take max for layer calculation
+              });
+              return {
+                _sets: {
+                  link: {
+                    _multiple_values: true
+                  }
+                }
+              };
+            }
+          };
+        }
       }
-      if (isPositiveNumber(v)) {
-        o.push({
-          description: k,
-          preprocessing: linkValues.byProperty(k),
-          postprocessing: ({links}) => {
-            links.forEach(l => {
-              l._value /= (l._adjacent_divider || 1);
-              // take max for layer calculation
-            });
-          }
-        });
-      } else if (Array.isArray(v) && v.length === 2 && isPositiveNumber(v[0]) && isPositiveNumber(v[1])) {
-        o.push({
-          description: k,
-          preprocessing: linkValues.byArrayProperty(k),
-          postprocessing: ({links}) => {
-            links.forEach(l => {
-              l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1));
-              // take max for layer calculation
-            });
-          }
-        });
-      }
-      return o;
-    }, []);
+    });
   }
 
   private extractNodeValueProperties([node = {}]) {
     // extract all numeric properties
-    this.options.nodeValueAccessors = Object.entries(node).reduce((o, [k, v]) => {
-      if (this.excludedProperties.has(k)) {
-        return o;
-      }
-      if (isPositiveNumber(v)) {
-        o.push({
+    Object.entries(node).forEach(([k, v]) => {
+      if (isPositiveNumber(v) && !this.excludedProperties.has(k)) {
+        this.options.nodeValueAccessors[k] = {
           description: k,
           preprocessing: nodeValues.byProperty(k)
-        });
+        };
       }
-      return o;
-    }, []);
+    });
   }
 
   private extractPredefinedValueProperties({sizing = {}}: { sizing: GraphPredefinedSizing }) {
-    this.options.predefinedValueAccessors = this.options.predefinedValueAccessors.concat(
-      Object.entries(sizing).map(([name, {node_sizing, link_sizing}]) => ({
+    const {options: {predefinedValueAccessors}} = this;
+    Object.entries(sizing).forEach(([name, {node_sizing, link_sizing}]) => {
+      predefinedValueAccessors[name] = {
         description: name,
         callback: () => {
-          const {options} = this;
           const {
-            nodeValueAccessors,
-            nodeValueGenerators,
-            linkValueAccessors,
-            linkValueGenerators
-          } = options;
+            state
+          } = this;
           if (node_sizing) {
-            options.selectedNodeValueAccessor = nodeValueAccessors.find(
-              ({description}) => description === node_sizing
-            );
+            state.nodeValueAccessorId = node_sizing;
           } else {
-            options.selectedNodeValueAccessor = nodeValueGenerators[0];
+            state.nodeValueAccessorId = NODE_VALUE_GENERATOR.none;
           }
           if (link_sizing) {
-            options.selectedLinkValueAccessor = linkValueAccessors.find(
-              ({description}) => description === link_sizing
-            );
+            state.linkValueAccessorId = link_sizing;
           } else {
-            options.selectedLinkValueAccessor = linkValueGenerators.fraction_of_fixed_node_value;
+            state.linkValueAccessorId = LINK_VALUE_GENERATOR.fraction_of_fixed_node_value;
           }
         }
-      })));
+      };
+    });
   }
 
   private extractOptionsFromGraph({links, graph, nodes}) {
-    this.networkTraces = graph.trace_networks;
+    this.options.networkTraces = graph.trace_networks;
     this.extractLinkValueProperties(links);
     this.extractNodeValueProperties(nodes);
     this.extractPredefinedValueProperties(graph);
-    this.selectNetworkTrace(this.networkTraces[0]);
+    this.setPredefinedValueAccessor();
   }
 
   // endregion
@@ -494,31 +550,41 @@ export class SankeyControllerService {
     this.load(this.allData);
   }
 
-  load(content) {
-    this.allData = content as SankeyData;
-    this.resetOptions();
-    this.extractOptionsFromGraph(content);
-    this.applyFilter();
+  preprocessData(content: SankeyData) {
+    content.nodes.forEach(n => {
+      n._id = String(n.id);
+    });
+    content.links.forEach((l, index) => {
+      l._id = String(index);
+    });
+    this.allData = transform(content, (result, value, key) => {
+      // only views are editable
+      if (key === '_views') {
+        result[key] = value;
+      } else {
+        result[key] = cloneDeepWith(value, Object.freeze);
+      }
+    }, {}) as SankeyData;
   }
 
-  private applyFilter() {
-    if (this.selectedNetworkTrace) {
-      this.applyOptions();
-    } else {
-      this.dataToRender.next(this.allData);
+  load(content, updateOptions?) {
+    this.preprocessData(content);
+    this.resetOptions();
+    this.resetState();
+    this.extractOptionsFromGraph(content);
+    if (updateOptions) {
+      updateOptions();
     }
+    this.applyState();
   }
 
   linkGraph(data) {
-    data.links.forEach(l => {
-      l.id = uuidv4();
-    });
-    const preprocessedNodes = this.options.selectedNodeValueAccessor.preprocessing(data) || {};
-    const preprocessedLinks = this.options.selectedLinkValueAccessor.preprocessing(data) || {};
+    const preprocessedNodes = this.nodeValueAccessor.preprocessing(data) || {};
+    const preprocessedLinks = this.linkValueAccessor.preprocessing(data) || {};
 
     Object.assign(data, preprocessedLinks, preprocessedNodes);
 
-    const prescaler = this.options.selectedPrescaler.fn;
+    const prescaler = this.prescaler.fn;
 
     let minValue = data.nodes.reduce((m, n) => {
       if (n._fixedValue !== undefined) {
@@ -535,11 +601,15 @@ export class SankeyControllerService {
       }
       return Math.min(m, l._value);
     }, minValue);
-    if (this.options.selectedNodeValueAccessor.postprocessing) {
-      Object.assign(data, this.options.selectedNodeValueAccessor.postprocessing(data) || {});
+
+    const {
+      nodeValueAccessor, linkValueAccessor
+    } = this;
+    if (nodeValueAccessor.postprocessing) {
+      Object.assign(data, nodeValueAccessor.postprocessing(data) || {});
     }
-    if (this.options.selectedLinkValueAccessor.postprocessing) {
-      Object.assign(data, this.options.selectedLinkValueAccessor.postprocessing(data) || {});
+    if (linkValueAccessor.postprocessing) {
+      Object.assign(data, linkValueAccessor.postprocessing(data) || {});
     }
     if (minValue < 0) {
       data.nodes.forEach(n => {

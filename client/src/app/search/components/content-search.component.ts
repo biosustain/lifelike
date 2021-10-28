@@ -2,17 +2,14 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flatten } from 'lodash-es';
+import { flatten, isNil, uniqBy } from 'lodash-es';
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  ObjectTypeProvider,
-  ObjectTypeService,
-} from 'app/file-browser/services/object-type.service';
+import { ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
@@ -66,7 +63,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   queryString = '';
 
   get emptyParams(): boolean {
-    if (isNullOrUndefined(this.params)) {
+    if (isNil(this.params)) {
       return true;
     }
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
@@ -205,7 +202,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         ...this.serializeParams({
           ...this.getDefaultParams(),
           // If normal search, only use the 'q' form value; Ignore any advanced params we arrived at the page with
-          q: isNullOrUndefined(form.q) ? '' : form.q,
+          q: isNil(form.q) ? '' : form.q,
         }, true),
         t: new Date().getTime(),
       },
@@ -363,7 +360,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     modalRef.result
       // Synonym search was submitted
       .then((expressionsToAdd: string[]) => {
-        this.queryString = ((isNullOrUndefined(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')).trim();
+        this.queryString = ((isNil(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')).trim();
       })
       // Synonym search dialog was dismissed or rejected
       .catch(() => {
