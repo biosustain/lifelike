@@ -16,13 +16,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import * as d3 from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { SankeyData, SankeyNode } from 'app/shared-sankey/interfaces';
 
-import { SankeyData, SankeyNode, SankeyLink } from '../interfaces';
 import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
 import { createResizeObserver } from './utils';
-
 
 
 @Component({
@@ -41,10 +40,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     Object.assign(sankey, {
       py: 10, // nodePadding
       dx: 10, // nodeWidth
-      linkSort: (a, b) =>
-        (b._source.index - a._source.index) ||
-        (b._target.index - a._target.index) ||
-        (b._trace.group - a._trace.group)
     });
 
     this.linkClick = this.linkClick.bind(this);
@@ -230,6 +225,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   get sankeySelection() {
     return d3.select(this.svg && this.svg.nativeElement);
   }
+
   // endregion
 
   // region Graph sizing
@@ -252,6 +248,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
+
   // endregion
 
   // region Events
@@ -482,7 +479,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   /**
    * Removes the `selected` property from all nodes on the canvas.
    */
-   deselectNodes() {
+  deselectNodes() {
     this.nodeSelection
       .attr('selected', undefined);
   }
@@ -501,7 +498,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param nodes the full set of currently selected nodes
    * @param links the full set of currently selected links
    */
-   calculateAndApplyTransitiveConnections(nodes: Set<object>, links: Set<object>) {
+  calculateAndApplyTransitiveConnections(nodes: Set<object>, links: Set<object>) {
     if (nodes.size + links.size === 0) {
       this.nodeSelection
         .attr('transitively-selected', undefined);
@@ -521,6 +518,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.linkSelection
       .attr('transitively-selected', ({_trace}) => traces.has(_trace));
   }
+
   // endregion
 
   // region Search
@@ -635,6 +633,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.nodeSelection
       .attr('highlighted', undefined);
   }
+
   // endregion
 
   applyNodeHover(element) {
@@ -683,7 +682,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       // });
       .text(nodeLabelShort);
 
-    // resize shadow back to shorter test when it is ussed as search result
+    // resize shadow back to shorter test when it is used as search result
     if (searchedEntities.size) {
       // postpone so the size is known
       requestAnimationFrame(_ =>
@@ -702,7 +701,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   updateLayout(data) {
     return new Promise(resolve => {
-        this.sankey.calcLayout(data);
+        if (!data._precomputedLayout) {
+          this.sankey.calcLayout(data);
+        }
         resolve(data);
       }
     );
@@ -869,7 +870,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param traces a set of trace objects
    * @returns a set of node ids representing all nodes in the given traces
    */
-   calculateNodeGroupFromTraces(traces: Set<any>) {
+  calculateNodeGroupFromTraces(traces: Set<any>) {
     const nodeGroup = new Set<number>();
     traces.forEach(
       trace => trace.node_paths.forEach(

@@ -1,10 +1,9 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 
-import { uniqueId } from 'lodash-es';
+import { isNil, uniqueId } from 'lodash-es';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 
 import {
   AnnotationFilterEntity,
@@ -491,7 +490,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
         // Need to remove the 'badMinMax' property entirely from the errors object; as long as the property exists, the error is assumed to
         // exist
-        if (!isNullOrUndefined(minFreqControlErrors)) {
+        if (!isNil(minFreqControlErrors)) {
           delete minFreqControlErrors.badMinMax;
 
           // If there are no more properties in the errors object, we need to set errors to null in order for it to be recognized as valid
@@ -502,7 +501,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
         }
 
         // Do the same for the max frequency control
-        if (!isNullOrUndefined(maxFreqControlErrors)) {
+        if (!isNil(maxFreqControlErrors)) {
           delete maxFreqControlErrors.badMinMax;
 
           if (Object.keys(maxFreqControlErrors).length === 0) {

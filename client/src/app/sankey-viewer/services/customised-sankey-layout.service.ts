@@ -4,11 +4,11 @@ import { max, min, sum } from 'd3-array';
 import { first, last } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
+import { SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
 
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
-import { SankeyNode, SankeyData } from '../components/interfaces';
 import { SankeyControllerService } from './sankey-controller.service';
 
 const groupByTraceGroupWithAccumulation = () => {
@@ -43,7 +43,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       composeLinkPath,
       sankeyController:
         {
-          options:
+          state:
             {
               normalizeLinks
             }
@@ -59,7 +59,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {
       sankeyController:
         {
-          options:
+          state:
             {
               labelEllipsis: {
                 value,
@@ -81,7 +81,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {
       sankeyController:
         {
-          options:
+          state:
             {
               labelEllipsis: {
                 value,
@@ -115,7 +115,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {
       sankeyController:
         {
-          options:
+          state:
             {
               fontSizeScale
             }
@@ -255,7 +255,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const {
       y1, y0, py, dx, sankeyController:
         {
-          options:
+          state:
             {
               nodeHeight
             }
@@ -275,6 +275,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     }
     return ky * scale;
   }
+
+  linkSort = (a, b) => (
+    // sort by order given in tree traversal
+    (a._source._order - b._source._order) ||
+    (a._target._order - b._target._order) ||
+    (a._order - b._order)
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -313,7 +320,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       ky,
       sankeyController:
         {
-          options:
+          state:
             {
               nodeHeight
             }
@@ -402,15 +409,15 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     const traces = [...traceOrder];
     const groups = [...traces.map(({group}) => group)];
 
-    this.linkSort = (a, b) => (
-      // sort by order given in tree traversal
-      (a._source._order - b._source._order) ||
-      (a._target._order - b._target._order) ||
-      // if links connects same nodes sort them by group
-      (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group)) ||
-      // each group sort by trace
-      (traces.indexOf(a._trace) - traces.indexOf(b._trace))
-    );
+    const tracesLength = traces.length;
+    graph.links.forEach(link => {
+      link._order = sum([
+        // save order by group
+        groups.indexOf(link._trace.group),
+        // top up with fraction to order by trace
+        traces.indexOf(link._trace) / tracesLength
+      ]);
+    });
 
     this.layoutNodesWithinColumns(columns);
   }

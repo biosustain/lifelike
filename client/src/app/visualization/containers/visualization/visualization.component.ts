@@ -2,10 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { isArray, isNil } from 'lodash-es';
 import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { DataSet } from 'vis-data';
-import { isArray, isNullOrUndefined } from 'util';
 
 import {
   ExpandNodeRequest,
@@ -108,7 +108,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         if (typeof resp === 'boolean') {
           // We don't currently need to do anything if the request was for node data
           return;
-        } else if (!isNullOrUndefined(resp.error)) {
+        } else if (!isNil(resp.error)) {
           // Response was an error
           this.getSnippetsError = resp;
           this.getClusterSnippetsResult = null;

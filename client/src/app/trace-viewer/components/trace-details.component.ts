@@ -1,6 +1,7 @@
 import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, } from '@angular/core';
 
-import { isNullOrUndefined } from 'util';
+
+import { isNil } from 'lodash-es';
 import { Options } from 'vis-network';
 
 import { annotationTypesMap } from 'app/shared/annotation-styles';
@@ -73,9 +74,9 @@ export class TraceDetailsComponent implements OnChanges {
   ngOnChanges({data}: SimpleChanges) {
     if (data.currentValue) {
       data.currentValue.nodes.forEach((node) => {
-        if (!isNullOrUndefined(node.type)) {
+        if (!isNil(node.type)) {
           const style = annotationTypesMap.get(node.type.toLowerCase());
-          this.legend.set(node.type, isNullOrUndefined(style) ? ['#000', '#000'] : [style.color, style.color]);
+          this.legend.set(node.type, isNil(style) ? ['#000', '#000'] : [style.color, style.color]);
         }
       });
     }

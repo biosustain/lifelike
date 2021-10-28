@@ -4,25 +4,24 @@ import {from, Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
-import {FilesystemObject} from 'app/file-browser/models/filesystem-object';
-import {FilesystemService} from 'app/file-browser/services/filesystem.service';
-import {ObjectCreationService} from 'app/file-browser/services/object-creation.service';
+import { MapComponent } from 'app/drawing-tool/components/map.component';
+import { UniversalGraph } from 'app/drawing-tool/services/interfaces';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
-  PreviewOptions,
-} from 'app/file-browser/services/object-type.service';
+  PreviewOptions
+} from 'app/file-types/providers/base-object.type-provider';
 import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
-
-import { MapComponent } from '../components/map.component';
-import { UniversalGraph } from '../services/interfaces';
-import { MapImageProviderService } from '../services/map-image-provider.service';
+import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 
 
 @Injectable()

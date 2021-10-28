@@ -23,7 +23,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
   FilesystemObjectTransferData
-} from 'app/file-browser/providers/data-transfer-data/filesystem-object-data.provider';
+} from 'app/file-browser/providers/filesystem-object-data.provider';
 
 @Directive({
   selector: '[appFSObjectTarget]',
