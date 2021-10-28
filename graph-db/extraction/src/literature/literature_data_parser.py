@@ -245,8 +245,10 @@ class LiteratureDataParser(BaseParser):
     def get_create_literature_query(entry1_type, entry2_type):
         query = """
         UNWIND $rows AS row
-        MERGE (n1:LiteratureEntity {eid:row.entry1_id}) ON CREATE SET n1:db_Literature:%s
-        MERGE (n2:LiteratureEntity {eid:row.entry2_id}) ON CREATE SET n2:db_Literature:%s
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        FOREACH (item IN CASE WHEN NOT '%s' IN labels(n1) THEN [1] ELSE [] END | SET n1:%s)
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        FOREACH (item IN CASE WHEN NOT '%s' IN labels(n2) THEN [1] ELSE [] END | SET n2:%s)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
         ON CREATE
@@ -261,6 +263,8 @@ class LiteratureDataParser(BaseParser):
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
         """ % (
             f'Literature{entry1_type}',
+            f'Literature{entry1_type}',
+            f'Literature{entry2_type}',
             f'Literature{entry2_type}',
             entry1_type,
             entry2_type

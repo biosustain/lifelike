@@ -16,6 +16,7 @@ import ncbi.ncbi_gene_parser as ncbi_gene_parser
 import ncbi.ncbi_taxonomy_parser as ncbi_taxonomy_parser
 import literature.literature_data_parser as literature_data_parser
 import regulondb.regulondb_parser as regulondb_parser
+import stringdb.stringdb_parser as stringdb_parser
 import uniprot.uniprot_parser as uniprot_parser
 
 _LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
@@ -32,6 +33,7 @@ DOMAIN_PARSERS = {
     'ncbi-gene': ncbi_gene_parser,
     'ncbi-taxonomy': ncbi_taxonomy_parser,
     'regulondb': regulondb_parser,
+    'stringdb': stringdb_parser,
     'uniprot': uniprot_parser,
     'zenodo-literature': literature_data_parser
 }
@@ -73,6 +75,7 @@ def parse_args(argv):
     subparser.add_parser('ncbi-gene')
     subparser.add_parser('ncbi-taxonomy')
     subparser.add_parser('regulondb')
+    subparser.add_parser('stringdb')
     subparser.add_parser('uniprot')
     subparser.add_parser('zenodo-literature')
 
