@@ -302,8 +302,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getChangeInLinked() {
     return {
-      deleted: this.deletedLinkedDocuments,
-      added: this.newlyLinkedDocuments,
+      linkedFilesAdded: this.newlyLinkedDocuments,
+      linkedFilesDeleted: this.deletedLinkedDocuments,
     };
   }
 
