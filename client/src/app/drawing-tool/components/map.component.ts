@@ -15,7 +15,6 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import JSZip from 'jszip';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -26,7 +25,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import { ObjectTypeService } from 'app/file-browser/services/object-type.service';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -38,7 +37,6 @@ import { MimeTypes } from 'app/shared/constants';
 
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
-import { MapTypeProvider } from '../providers/map.type-provider';
 
 @Component({
   selector: 'app-map',

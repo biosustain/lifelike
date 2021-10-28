@@ -14,7 +14,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { ObjectTypeService } from 'app/file-browser/services/object-type.service';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
