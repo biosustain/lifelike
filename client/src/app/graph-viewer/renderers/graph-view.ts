@@ -62,12 +62,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Stores the hashes of newly linked documents
    */
-  newlyLinkedDocuments: string[] = [];
+  newlyLinkedDocuments: Set<string> = new Set();
 
   /**
    * Stores the hashes of destroyed documents
    */
-  deletedLinkedDocuments: string[] = [];
+  deletedLinkedDocuments: Set<string> = new Set();
 
   /**
    * Stores the counters for linked documents
@@ -229,10 +229,23 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     });
   }
 
+  addToDeletedOrCreated(to: Set<string>, from: Set<string>, hash: string) {
+    to.add(hash);
+    // If has was deleted and re-added (or the other way around)
+    if (from.has(hash)) {
+      from.delete(hash);
+    }
+  }
+
   addToReferenceCounter(hashes: string[], checkMode: number) {
     hashes.forEach(linkedHash => {
       if (linkedHash in this.linkedDocuments) {
         this.linkedDocuments[linkedHash] = 0;
+        if (checkMode === referenceCheckingMode.nodeAdded) {
+          this.addToDeletedOrCreated(this.newlyLinkedDocuments, this.deletedLinkedDocuments, linkedHash);
+        } else {
+          this.addToDeletedOrCreated(this.deletedLinkedDocuments, this.newlyLinkedDocuments, linkedHash);
+        }
       }
       // checkMode: 1 for adding, -1 for deleting
       this.linkedDocuments[linkedHash] += checkMode;
