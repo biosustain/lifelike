@@ -311,7 +311,7 @@ def test_using_wildcard_in_phrase_does_not_work(
     [
         (
             'p q',
-            'p AND q',
+            'p and q',
         ),
         (
             'p AND q',
@@ -323,12 +323,12 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
         (
             'p q or r',
-            'p or q AND r',
+            'p and q or r',
 
         ),
         (
             'p or q r',
-            'p or q AND r',
+            'p or q and r',
         ),
         (
             '"p AND q"',
@@ -336,7 +336,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
         (
             '"p AND q" r',
-            '"p AND q" AND r',
+            '"p AND q" and r',
         ),
         (
             '"p AND q" AND r',
@@ -348,23 +348,23 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
         (
             'r "p AND q" t',
-            'r AND "p AND q" AND t',
+            'r and "p AND q" and t',
         ),
         (
             'r "p AND q" m or n',
-            'r AND "p AND q" AND m or n',
+            'r and "p AND q" and m or n',
         ),
         (
             '("p AND q" r) (m or n)',
-            '("p AND q" AND r) AND (m or n)',
+            '("p AND q" and r) and (m or n)',
         ),
         (
             '(r AND "p AND q") (m or n)',
-            '(r AND "p AND q") AND (m or n)',
+            '(r AND "p AND q") and (m or n)',
         ),
         (
             '("p or q" or r) or (m n)',
-            '("p or q" or r) or (m AND n)',
+            '("p or q" or r) or (m and n)',
         ),
         (
             '(r or "p or q") or (m AND n)',
@@ -372,15 +372,15 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
         (
             '(r "p AND q" m) or n',
-            '(r AND "p AND q" AND m) or n',
+            '(r and "p AND q" and m) or n',
         ),
         (
             '(("p AND q" r s) or (t u v)) w',
-            '(("p AND q" AND r AND s) or (t AND u AND v)) AND w',
+            '(("p AND q" and r and s) or (t and u and v)) and w',
         ),
         (
             'p not q',
-            'p AND not q',
+            'p and not q',
         ),
         (
             'p AND not q',
@@ -388,7 +388,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
         (
             'not p q',
-            'not p AND q',
+            'not p and q',
         ),
         (
             'not p AND q',
@@ -424,7 +424,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
     ],
 )
-def test_preprocess_query(
+def test_pre_process_query(
     elastic_service,
     test,
     expected
