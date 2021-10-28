@@ -15,8 +15,7 @@ from uniprot.uniprot_parser import (
     UNIPROT_2_GENE,
     UNIPROT_2_GO,
     UNIPROT_SYNONYM,
-    UNIPROT_SYNONYM_DERIVED,
-    UniprotParser
+    UNIPROT_SYNONYM_DERIVED
 )
 
 # reference to this directory
