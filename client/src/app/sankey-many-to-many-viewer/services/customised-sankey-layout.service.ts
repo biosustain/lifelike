@@ -21,9 +21,38 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
     super(truncatePipe, sankeyController);
   }
 
+  get nodeGraphRelativePosition() {
+    return (node: SankeyManyToManyLink) => {
+      const {_sourceLinks, _targetLinks, _graphRelativePosition} = node;
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+
+      let graphRelativePosition;
+      for (const [_trace, link] of difference) {
+        let newGraphRelativePosition;
+        if (link._source === node) {
+          newGraphRelativePosition = 'left';
+        } else if (link._target === node) {
+          newGraphRelativePosition = 'right';
+        }
+        if (!graphRelativePosition) {
+          graphRelativePosition = newGraphRelativePosition;
+        } else if (newGraphRelativePosition !== graphRelativePosition) {
+          return 'multiple';
+        }
+      }
+      return graphRelativePosition || _graphRelativePosition;
+    };
+  }
+
   get nodeColor() {
-    return ({_color}: SankeyNode) => {
-      return _color;
+    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      // if it is only one then color node
+      if (difference.size === 1) {
+        return _color;
+      }
     };
   }
 

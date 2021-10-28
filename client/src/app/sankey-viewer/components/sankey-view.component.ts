@@ -199,7 +199,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeyController.state.networkTraceIdx = networkTraceIdx;
     this.sankeyController.setPredefinedValueAccessor();
     this.sankeyController.applyState();
-    this.resetSelection();
   }
 
   open(content) {
@@ -224,7 +223,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   resetView() {
     this.sankeyController.resetController();
-    this.sankey.resetZoom();
   }
 
   // region Zoom
@@ -362,7 +360,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   resetSelection() {
+    const data = this.sankeyController.dataToRender.value;
     this.selection.next([]);
+    data.nodes.forEach(n => {
+      delete n._selected;
+    });
+    data.links.forEach(l => {
+      delete l._selected;
+    });
   }
 
   // endregion
