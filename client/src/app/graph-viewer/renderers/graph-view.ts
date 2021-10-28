@@ -219,13 +219,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // TODO: Make a regex that matches all the formats that have associatedMaps search
-    const myRe = /^\/projects\/([^\/]+)\/enrichment-table\//;
+    const myRe = /^\/projects\/([^\/]+)\/(enrichment-table|files)\//;
     // Filter in links that point to desired files
     return links.filter((source) => {
-      return true;
-      // return myRe.test(source.url);
+      // return true;
+      return myRe.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
+      // const myvar = source.url.split('/').pop();
       return source.url.split('/').pop();
     });
   }
@@ -240,13 +241,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   addToReferenceCounter(hashes: string[], checkMode: number) {
     hashes.forEach(linkedHash => {
-      if (linkedHash in this.linkedDocuments) {
+      if (!this.linkedDocuments.hasOwnProperty(linkedHash)) {
         this.linkedDocuments[linkedHash] = 0;
-        if (checkMode === referenceCheckingMode.nodeAdded) {
-          this.addToDeletedOrCreated(this.newlyLinkedDocuments, this.deletedLinkedDocuments, linkedHash);
-        } else {
-          this.addToDeletedOrCreated(this.deletedLinkedDocuments, this.newlyLinkedDocuments, linkedHash);
-        }
       }
       // checkMode: 1 for adding, -1 for deleting
       this.linkedDocuments[linkedHash] += checkMode;
@@ -266,16 +262,34 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
   }
 
+  addToChangesSet(hash: string, checkMode: number) {
+    if (!this.linkedDocuments.hasOwnProperty(hash)) {
+      this.linkedDocuments[hash] = 0;
+      if (checkMode === referenceCheckingMode.nodeAdded) {
+        this.addToDeletedOrCreated(this.newlyLinkedDocuments, this.deletedLinkedDocuments, hash);
+      } else {
+        this.addToDeletedOrCreated(this.deletedLinkedDocuments, this.newlyLinkedDocuments, hash);
+      }
+    }
+    // checkMode: 1 for adding, -1 for deleting
+    this.linkedDocuments[hash] += checkMode;
+
+
+  }
+
   /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
+  // NOTE: This is actually called twice when opening a map - is this anticipated?
   setGraph(graph: UniversalGraph): void {
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
     this.nodes.forEach(node => this.checkForReferences(node, referenceCheckingMode.nodeAdded));
+
+    console.log(this.linkedDocuments);
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
@@ -299,6 +313,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Reset the change sets on succesful save
+   */
+  resetLinkedChanges() {
+    this.newlyLinkedDocuments.clear();
+    this.deletedLinkedDocuments.clear();
+  }
+
+  /**
    * Return changes in linked elements
    */
   getChangeInLinked() {
@@ -317,7 +339,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       throw new Error('trying to add a node that already is in the node list is bad');
     }
     this.nodes.push(node);
-    this.checkForReferences(node, referenceCheckingMode.nodeAdded);
+    // this.addToChangesSet(node, referenceCheckingMode.nodeAdded);
     this.nodeHashMap.set(node.hash, node);
     this.requestRender();
   }
@@ -353,7 +375,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }
     }
 
-    this.checkForReferences(node, referenceCheckingMode.nodeDeleted);
+    // this.addToChangesSet(node, referenceCheckingMode.nodeDeleted);
     this.nodeHashMap.delete(node.hash);
     this.invalidateNode(node);
 
