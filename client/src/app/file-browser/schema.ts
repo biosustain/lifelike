@@ -150,6 +150,8 @@ export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
   public?: boolean;
   fallbackOrganism?: OrganismAutocomplete;
   annotationConfigs?: AnnotationConfigurations;
+  linkedFilesAdded?: Set<string>;
+  linkedFilesDeleted?: Set<string>;
 }
 
 /**

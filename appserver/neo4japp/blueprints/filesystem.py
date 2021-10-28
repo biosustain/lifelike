@@ -839,6 +839,13 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
+        if params.params.get('linked_files_added'):
+            print(params.get('linked_files_added'))
+            del params['linked_files_added']
+        if params.params.get('linked_files_deleted'):
+            print(params.get('linked_files_deleted'))
+            del params['linked_files_deleted']
+
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
         return self.get_bulk_file_response(targets['hash_ids'], current_user,
