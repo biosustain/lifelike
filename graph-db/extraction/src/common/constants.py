@@ -1,5 +1,3 @@
-import os
-
 """NODES"""
 NODE_ANATOMY = 'Anatomy'
 NODE_ASSOCIATION = 'Association'
