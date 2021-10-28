@@ -32,6 +32,7 @@ def query_filter_pdf():
         {'terms': {'type': ['pdf']}},
     ]
 
+
 @pytest.fixture(scope='function')
 def query_filter_map_and_pdf():
     return [
@@ -112,7 +113,7 @@ def test_should_not_get_results_from_empty_db(
     text_field_boosts,
     return_fields
 ):
-    res, _= elastic_service.search(
+    res, _ = elastic_service.search(
         index_id=FILE_INDEX_ID,
         user_search_query='BOLA3',
         offset=0,
@@ -400,10 +401,30 @@ def test_using_wildcard_in_phrase_does_not_work(
         (
             'not p or q',
             'not p or q',
-        )
+        ),
+        (
+            '"(p and q)"',
+            '"(p and q)"',
+        ),
+        (
+            '"(p and q"',
+            '"(p and q"',
+        ),
+        (
+            '"p and q)"',
+            '"p and q)"',
+        ),
+        (
+            '"((p and q))"',
+            '"((p and q))"',
+        ),
+        (
+            '"p and q))"',
+            '"p and q))"',
+        ),
     ],
 )
-def test_user_query_parser(
+def test_preprocess_query(
     elastic_service,
     test,
     expected
@@ -715,7 +736,7 @@ def test_user_query_parser(
         ),
         (
             'dog or cat',
-           {
+            {
                 'bool': {
                     'should': [
                         {
@@ -1934,6 +1955,48 @@ def test_user_query_parser(
                 }
             }
         ),
+        (
+            '"(dog and cat)"',
+            {
+                'multi_match': {
+                    'query': '(dog and cat)',
+                    'type': 'phrase',
+                    'fields': [
+                        'description^1',
+                        'data.content^1',
+                        'filename^3',
+                    ]
+                }
+            },
+        ),
+        (
+            '"(dog and cat"',
+            {
+                'multi_match': {
+                    'query': '(dog and cat',
+                    'type': 'phrase',
+                    'fields': [
+                        'description^1',
+                        'data.content^1',
+                        'filename^3',
+                    ]
+                }
+            },
+        ),
+        (
+            '"dog and cat)"',
+            {
+                'multi_match': {
+                    'query': 'dog and cat)',
+                    'type': 'phrase',
+                    'fields': [
+                        'description^1',
+                        'data.content^1',
+                        'filename^3',
+                    ]
+                }
+            },
+        ),
     ],
 )
 def test_user_query_parser(
@@ -2061,3 +2124,45 @@ def test_strip_unmatched_parens(
 ):
     res = elastic_service._strip_unmatched_parens(test)
     assert res == expected
+
+
+@pytest.mark.parametrize(
+    'test, expected',
+    [
+        (
+            '"(p and q"',
+            ['(p and q']
+        ),
+        (
+            'cat or not (dog AND mouse)',
+            ['cat', 'dog', 'mouse']
+        ),
+        (
+            '(cat or "dog or mouse") "AND fish"',
+            ['cat', 'dog or mouse', 'AND fish']
+        ),
+        (
+            'epinephrine benzene-1,2-diol;hydrochloride',
+            ['epinephrine', 'benzene-1,2-diol;hydrochloride']
+        ),
+        (
+            '"epinephrine benzene-1,2-diol;hydrochloride"',
+            ['epinephrine benzene-1,2-diol;hydrochloride']
+        ),
+        (
+            '"epinephrine benzene-1,2-diol;hydrochloride',
+            ['epinephrine', 'benzene-1,2-diol;hydrochloride']
+        ),
+        (
+            'co*id benzene-1,2-diol;hydrochloride',
+            ['co*id', 'benzene-1,2-diol;hydrochloride']
+        ),
+    ]
+)
+def test_get_words_phrases_and_wildcards(
+    elastic_service,
+    test,
+    expected
+):
+    res = elastic_service._get_words_phrases_and_wildcards(test)
+    assert set(res) == set(expected)
