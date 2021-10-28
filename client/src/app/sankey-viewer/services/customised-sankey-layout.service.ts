@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last } from 'lodash-es';
+import { first, last, some, values } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
@@ -132,6 +132,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   columnsWithLinkPlaceholders;
 
   ky; // y scaling factor (_value * ky = height)
+  oy; // y offset
 
   calculateLinkPathParams(link, normalize = true) {
     const {_source, _target, _multiple_values} = link;
@@ -248,32 +249,121 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     );
   }
 
+  minFactorValueScale(nodeHeight, nodes) {
+    if (nodeHeight.min.enabled && nodeHeight.min.value) {
+      const {value} = this;
+      const minCurrentHeight = min(nodes, n =>
+        value(n) || Infinity // ignore zeros
+      );
+      return nodeHeight.min.value / minCurrentHeight;
+    }
+  }
+
+  maxFactorValueScale(nodeHeight, nodes) {
+    if (nodeHeight.max.enabled && nodeHeight.max.ratio) {
+      const {value, dx} = this;
+      const maxCurrentHeight = max(nodes, value);
+      return dx * nodeHeight.max.ratio / maxCurrentHeight;
+    }
+  }
+
+  scaleWithOffset(nodeHeight, nodes) {
+    const {value, dx} = this;
+    const minValue = min(nodes, n =>
+      value(n) || Infinity // ignore zeros
+    );
+    const maxValue = max(nodes, value);
+    const scaleBasedOnTallestColumn = this.scaleBasedOnTallestColumn();
+    let minHeight = minValue * scaleBasedOnTallestColumn;
+    // either maxValue or scaleBasedOnTallestColumn can equal to 0, then set max height to whole
+    let maxHeight = maxValue * scaleBasedOnTallestColumn || minHeight + 1;
+    if (nodeHeight.max.enabled && nodeHeight.max.ratio) {
+      const newMaxHeight = Math.min(
+        dx * nodeHeight.max.ratio,
+        maxHeight
+      );
+      // scale down min height as well if not set
+      const maxHeightChangeRatio = newMaxHeight / maxHeight;
+      minHeight *= maxHeightChangeRatio;
+
+      maxHeight = newMaxHeight;
+    }
+    if (nodeHeight.min.enabled && nodeHeight.min.value) {
+      minHeight = Math.max(
+        nodeHeight.min.value,
+        minHeight
+      );
+    }
+    console.assert(maxHeight > minHeight, `Wrong presets trying to set min node height to ${minHeight} and max to ${maxHeight}`);
+    let ky = (minHeight - maxHeight) / (minValue - maxValue);
+    let oy = ky * maxValue - maxHeight;
+    if (oy < 0 || ky <= 0) {
+      console.warn(`Conflict in offset scale values - min/max lead to scale inversion.`);
+      ky = this.scaleWithFactor(nodeHeight, nodes);
+      oy = 0;
+    }
+    return {ky, oy};
+  }
+
+  scaleWithFactor(nodeHeight, nodes) {
+    const ky = this.scaleBasedOnTallestColumn();
+    let minFactor = this.minFactorValueScale(nodeHeight, nodes);
+    let maxFactor = this.maxFactorValueScale(nodeHeight, nodes);
+    if (minFactor && !isFinite(minFactor)) {
+      console.warn(`Scale values are infinite (${minFactor}) which prevents scaling.`);
+      minFactor = undefined;
+    }
+    if (maxFactor && !isFinite(maxFactor)) {
+      console.warn(`Scale values are infinite (${maxFactor}) which prevents scaling.`);
+      maxFactor = undefined;
+    }
+    if (!minFactor && !maxFactor) {
+      return ky;
+    }
+    if (minFactor && maxFactor && minFactor >= maxFactor) {
+      console.warn(`There is no scale meeting given criteria, interpolate min/max presets.`);
+      return (minFactor + maxFactor) / 2;
+    }
+    // if minFactor scales up
+    if (minFactor > ky) {
+      return minFactor;
+    }
+    // if maxFactor scales down
+    if (maxFactor < ky) {
+      return maxFactor;
+    }
+    return ky;
+  }
+
+  scaleBasedOnTallestColumn() {
+    const {
+      y1, y0, py, value, columnsWithLinkPlaceholders: columns
+    } = this;
+    return min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
+  }
+
   /**
    * Adjust Y scale factor based on columns and min/max node height
    */
-  getYScaleFactor(nodes) {
+  setYScale(graph) {
+    const {nodes, _sets} = graph;
     const {
-      y1, y0, py, dx, sankeyController:
+      sankeyController:
         {
           state:
             {
               nodeHeight
             }
-        }, value, columnsWithLinkPlaceholders: columns
-    } = this;
-    // normal calculation based on tallest column
-    const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
-    let scale = 1;
-    if (nodeHeight.max.enabled) {
-      const maxCurrentHeight = max(nodes, value) * ky;
-      if (nodeHeight.max.ratio) {
-        const maxScaling = dx * nodeHeight.max.ratio / maxCurrentHeight;
-        if (maxScaling < 1) {
-          scale *= maxScaling;
         }
-      }
+    } = this;
+    if (some(values(_sets.node)) && some(values(_sets.link))) {
+      this.ky = this.scaleWithFactor(nodeHeight, nodes);
+      this.oy = 0;
+    } else {
+      const scale = this.scaleWithOffset(nodeHeight, nodes);
+      this.ky = scale.ky;
+      this.oy = scale.oy;
     }
-    return ky * scale;
   }
 
   linkSort = (a, b) => (
@@ -317,38 +407,37 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
    */
   computeNodeHeights({nodes}: SankeyData) {
     const {
-      ky,
-      sankeyController:
-        {
-          state:
-            {
-              nodeHeight
-            }
-        }, value
+      ky, oy, value
     } = this;
     for (const node of nodes) {
-      if (nodeHeight.min.enabled && nodeHeight.min.value) {
-        node._height = Math.max(value(node) * ky, nodeHeight.min.value);
-      } else {
-        node._height = value(node) * ky;
-      }
+      node._height = value(node) * ky - oy;
     }
   }
 
   layoutNodesWithinColumns(columns) {
-    const {ky} = this;
+    const {ky, oy, py} = this;
 
     // noinspection JSUnusedLocalSymbols
     const [[_marginLeft, marginTop]] = this.extent;
     // noinspection JSUnusedLocalSymbols
     const [_width, height] = this.size;
 
-    columns.forEach(nodes => {
-      const {length} = nodes;
-      const nodesHeight = sum(nodes, ({_height}) => _height);
+    const columnNodesHeight = columns.map(nodes => sum(nodes, ({_height}) => _height) as number);
+    const columnMinSpacers = columnNodes => (columnNodes.length - 1) * py;
+    const tallestColumnMinHeight = max(
+      columnNodesHeight.map((nodesHeight, columnIdx) =>
+        nodesHeight + columnMinSpacers(columns[columnIdx])
+      )
+    );
+
+    const sankeyHeight = Math.max(height, tallestColumnMinHeight);
+
+    columns.forEach((nodes, columnIdx) => {
+      const nodesHeight = columnNodesHeight[columnIdx];
       // do we want space above and below nodes or should it fill column till the edges?
-      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
-      const freeSpace = height - nodesHeight;
+      const {length} = nodes;
+      const additionalSpacers = length === 1 || ((nodesHeight / sankeyHeight) < 0.75);
+      const freeSpace = sankeyHeight - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
       let y = additionalSpacers ? spacerSize + marginTop : marginTop;
       // nodes are placed in order from tree traversal
@@ -360,7 +449,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
         // apply the y scale on links
         for (const link of node._sourceLinks) {
-          link._width = link._value * ky;
+          link._width = link._value * ky - oy;
         }
       });
       for (const {_sourceLinks, _targetLinks} of nodes) {
@@ -487,7 +576,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   setLayoutParams(graph) {
     const {dy, y1, y0} = this;
     this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
-    this.ky = this.getYScaleFactor(graph.nodes);
+    this.setYScale(graph);
   }
 
   /**
