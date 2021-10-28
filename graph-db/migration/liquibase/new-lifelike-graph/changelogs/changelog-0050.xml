@@ -119,11 +119,10 @@ SET r.type=row.type
     <comment>Create a synonym relationships for Protein id and name</comment>
     <sql>
     
-        MATCH (n:db_UniProt)
-        MERGE (s1:Synonym {name:n.name})
-        MERGE(s2:Synonym {name:n.eid})
-        MERGE (n)-[:HAS_SYNONYM]->(s1)
-        MERGE (n)-[:HAS_SYNONYM]->(s2)
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_UniProt) RETURN n',
+        'MERGE (s1:Synonym {name:n.name}) MERGE (s2:Synonym {name:n.eid}) MERGE (n)-[:HAS_SYNONYM]->(s1) MERGE (n)-[:HAS_SYNONYM]->(s2)',
+        {batchSize:5000})
         
     </sql>
   </changeSet>
@@ -156,7 +155,9 @@ MERGE (a)-[r:GO_LINK]->(b)
     <comment>Create a synonym relationship for Protein and Taxonomy</comment>
     <sql>
     
-        MATCH (n:db_UniProt), (t:Taxonomy {id: n.tax_id}) MERGE (n)-[:HAS_TAXONOMY]->(t)
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_UniProt), (t:Taxonomy {id: n.tax_id}) RETURN n,t',
+        'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
         
     </sql>
   </changeSet>

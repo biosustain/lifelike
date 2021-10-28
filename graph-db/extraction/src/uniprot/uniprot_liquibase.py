@@ -73,11 +73,10 @@ class UniprotChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'Create a synonym relationships for Protein id and name'
         query = """
-        MATCH (n:%s)
-        MERGE (s1:Synonym {name:n.name})
-        MERGE(s2:Synonym {name:n.eid})
-        MERGE (n)-[:HAS_SYNONYM]->(s1)
-        MERGE (n)-[:HAS_SYNONYM]->(s2)
+        CALL apoc.periodic.iterate(
+        'MATCH (n:%s) RETURN n',
+        'MERGE (s1:Synonym {name:n.name}) MERGE (s2:Synonym {name:n.eid}) MERGE (n)-[:HAS_SYNONYM]->(s1) MERGE (n)-[:HAS_SYNONYM]->(s2)',
+        {batchSize:5000})
         """ % (NODE_UNIPROT)
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -97,7 +96,9 @@ class UniprotChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'Create a synonym relationship for Protein and Taxonomy'
         query = """
-        MATCH (n:%s), (t:%s {id: n.tax_id}) MERGE (n)-[:%s]->(t)
+        CALL apoc.periodic.iterate(
+        'MATCH (n:%s), (t:%s {id: n.tax_id}) RETURN n,t',
+        'MERGE (n)-[:%s]->(t)', {batchSize:5000})
         """ % (NODE_UNIPROT, NODE_TAXONOMY, REL_TAXONOMY)
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
