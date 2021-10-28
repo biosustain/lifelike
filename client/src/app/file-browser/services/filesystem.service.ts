@@ -165,6 +165,7 @@ export class FilesystemService {
   save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
+    console.log(changes);
     return this.http.patch<ResultMapping<FilesystemObjectData>>(
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,

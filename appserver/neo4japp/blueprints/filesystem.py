@@ -838,11 +838,10 @@ class FileListView(FilesystemBaseView):
               locations=['json', 'form', 'files', 'mixed_form_json'])
     def patch(self, targets, params):
         """File update endpoint."""
-
-        if params.params.get('linked_files_added'):
+        if params.get('linked_files_added'):
             print(params.get('linked_files_added'))
             del params['linked_files_added']
-        if params.params.get('linked_files_deleted'):
+        if params.get('linked_files_deleted'):
             print(params.get('linked_files_deleted'))
             del params['linked_files_deleted']
 
