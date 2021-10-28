@@ -178,7 +178,7 @@
         "id": 8,
         "hash_id":  "02nszmnHJzTtRpF2cpg5VX",
         "filename": "Sample Enrichment Table",
-        "mime_type": "vnd.lifelike.document/vnd.lifelike.document/enrichment-table",
+        "mime_type": "vnd.lifelike.document/enrichment-table",
         "description": "Sample file to demonstrate enrichment tables",
         "parent_id": 1,
         "user_id": 1,
