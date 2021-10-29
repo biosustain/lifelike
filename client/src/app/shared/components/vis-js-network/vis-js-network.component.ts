@@ -326,9 +326,9 @@ export class VisJsNetworkComponent implements AfterViewInit {
           wholeWord: false,
         });
 
-      // Set the index to -1, since we call `findNext` immediately after this function is called and want the index to be 0
-      this.currentSearchIndex = -1;
+      this.currentSearchIndex = 0;
       this.networkData.nodes.update(this.searchResults.map(({id}) => this.highlightNode(id)));
+      this.focusNode(this.searchResults[this.currentSearchIndex].id);
     } else {
       this.searchResults = [];
     }
