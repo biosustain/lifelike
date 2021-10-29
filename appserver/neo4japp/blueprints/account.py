@@ -251,12 +251,15 @@ def reset_password(email: str):
     try:
         target = AppUser.query.filter_by(email=email).one()
     except NoResultFound:
-        current_app.logger.info(
+        current_app.logger.error(
             f'Invalid email: {email} provided in password reset request.',
             extra=EventLog(
                 event_type=LogEventType.RESET_PASSWORD.value).to_dict()
         )
-        return jsonify(dict(result='')), 204
+        raise ServerException(
+            title='Failed to authenticate',
+            message=f'A problem occurred validating email {email} for password reset.'
+        )
 
     current_app.logger.info(
         f'User: {target.username} password reset.',
