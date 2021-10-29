@@ -1,3 +1,7 @@
+export type RecursivePartial<T> = {
+    [P in keyof T]?: RecursivePartial<T[P]>;
+};
+
 export interface TreeNode<T> {
   data: T;
   level: number;

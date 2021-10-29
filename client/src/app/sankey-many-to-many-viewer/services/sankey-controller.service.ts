@@ -5,8 +5,15 @@ import { flatMap, groupBy, merge, intersection } from 'lodash-es';
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink } from 'app/shared-sankey/interfaces';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
+import { RecursivePartial } from 'app/shared/schemas/common';
 
-import { SankeyManyToManyLink, SankeyManyToManyState, SankeyManyToManyOptions, SankeyManyToManyNode } from '../components/interfaces';
+import {
+  SankeyManyToManyLink,
+  SankeyManyToManyState,
+  SankeyManyToManyOptions,
+  SankeyManyToManyNode,
+  SankeyManyToManyOptionsExtend, SankeyManyToManyStateExtend
+} from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 
@@ -21,6 +28,7 @@ import { nodeColors, NodePosition } from '../utils/nodeColors';
 export class SankeyManyToManyControllerService extends SankeyControllerService {
   viewBase = 'sankey-many-to-many';
 
+  // @ts-ignore
   get defaultState(): SankeyManyToManyState {
     return merge(super.defaultState, {
       highlightCircular: true,
@@ -34,7 +42,13 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
           enabled: true,
           ratio: 2
         }
-      },
+      }
+    } as SankeyManyToManyStateExtend & RecursivePartial<SankeyManyToManyState>);
+  }
+
+  get defaultOptions(): SankeyManyToManyOptions {
+    return merge(super.defaultOptions, {
+      colorLinkTypes: EdgeColorCodes,
       linkValueGenerators: {
         [LINK_VALUE_GENERATOR.input_count]: {
           description: LINK_VALUE_GENERATOR.input_count,
@@ -42,16 +56,12 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
           disabled: () => false
         } as ValueGenerator
       }
-    });
+    } as SankeyManyToManyOptionsExtend & RecursivePartial<SankeyManyToManyOptions>);
   }
 
-  get defaultOptions(): SankeyManyToManyOptions {
-    return merge(super.defaultOptions, {
-      colorLinkTypes: EdgeColorCodes
-    });
-  }
-
+  // @ts-ignore
   options: SankeyManyToManyOptions;
+  // @ts-ignore
   state: SankeyManyToManyState;
 
   // Trace logic
