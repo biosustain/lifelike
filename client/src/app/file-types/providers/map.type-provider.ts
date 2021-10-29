@@ -1,6 +1,6 @@
 import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
 
-import {Observable, of} from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import JSZip from 'jszip';
 
@@ -15,12 +15,13 @@ import {
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
-  PreviewOptions,
+  PreviewOptions
 } from 'app/file-types/providers/base-object.type-provider';
 import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
+import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 
 
 @Injectable()
@@ -30,12 +31,35 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
               protected readonly filesystemService: FilesystemService,
               protected readonly injector: Injector,
               protected readonly objectCreationService: ObjectCreationService,
-              protected readonly componentFactoryResolver: ComponentFactoryResolver) {
+              protected readonly componentFactoryResolver: ComponentFactoryResolver,
+              protected readonly mapImageProviderService: MapImageProviderService) {
     super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
     return object.mimeType === MimeTypes.Map;
+  }
+
+  unzipContent(contentValue: Blob) {
+    const imageIds: string[] = [];
+    const imageProms: Promise<Blob>[] = [];
+    return from((async () => {
+      const unzipped = await JSZip.loadAsync(contentValue).then(zip => {
+        const imageFolder = zip.folder('images');
+        imageFolder.forEach(f => {
+          imageIds.push(f.substring(0, f.indexOf('.')));
+          imageProms.push(imageFolder.file(f).async('blob'));
+        });
+        return zip.files['graph.json'].async('text').then(text => text);
+      });
+
+      await Promise.all(imageProms).then((imageBlobs: Blob[]) => {
+        for (let i = 0; i < imageIds.length; i++) {
+          this.mapImageProviderService.setMemoryImage(imageIds[i], URL.createObjectURL(imageBlobs[i]));
+        }
+      });
+      return unzipped;
+    })());
   }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
