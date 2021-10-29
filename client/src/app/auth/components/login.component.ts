@@ -78,14 +78,15 @@ export class LoginComponent {
         .subscribe(() => {
           progressDialogRef.close();
           this.snackBar.open(
-            `Email sent. Please check your inbox.`,
+            `An email has been sent with instructions to reset your password.\n
+            If you do not receive the email after some time, please contact the administraction for help.`,
             'close',
             {duration: 5000},
           );
         }, () => {
           progressDialogRef.close();
           this.snackBar.open(
-            `Unable to reset the password due to the error.\n
+            `Unable to reset the password.\n
             Please try again or contact the administration if the issue persist.`,
             'close',
             {duration: 5000},
