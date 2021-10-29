@@ -214,7 +214,7 @@ class VisualizerService(KgService):
         direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
         counts = self.graph.read_transaction(
-            self.get_snippet_count_from_edges,
+            self.get_snippet_count_from_edges_query,
             from_ids,
             to_ids,
             description
@@ -247,7 +247,7 @@ class VisualizerService(KgService):
 
         data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
         count_results = self.graph.read_transaction(
-            self.get_snippet_count_from_edges,
+            self.get_snippet_count_from_edges_query,
             from_ids,
             to_ids,
             description
@@ -316,7 +316,7 @@ class VisualizerService(KgService):
 
         data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
         count_results = self.graph.read_transaction(
-            self.get_snippet_count_from_edges,
+            self.get_snippet_count_from_edges_query,
             from_ids,
             to_ids,
             description
@@ -479,8 +479,16 @@ class VisualizerService(KgService):
                     a AS association,
                     t.name AS name,
                     ID(t) AS node_id
-                MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-                RETURN name, node_id, COUNT(s) AS snippet_count
+                MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                RETURN
+                    name,
+                    node_id,
+                    count(DISTINCT {{
+                        snippet_id: s.eid,
+                        association_id: association.eid,
+                        entry1_text: r.entry1_text,
+                        entry2_text: r.entry2_text
+                    }}) AS snippet_count
                 ORDER BY snippet_count DESC
                 """,
                 source_node=source_node, associated_nodes=associated_nodes
@@ -511,8 +519,8 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    COUNT(s) AS snippet_count,
-                    collect(distinct {
+                    count(s) AS snippet_count,
+                    collect(DISTINCT {
                         snippet: {
                             id: s.eid,
                             data: {
@@ -575,7 +583,7 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    COUNT(s) AS snippet_count,
+                    count(s) AS snippet_count,
                     collect(DISTINCT {
                         snippet: {
                             id: s.eid,
@@ -595,6 +603,9 @@ class VisualizerService(KgService):
                                 pmid: p.pmid,
                                 pub_year: p.pub_year
                             }
+                        },
+                        association: {
+                            id: association.eid
                         }
                     }) AS references,
                     max(p.pub_year) AS max_pub_year,
@@ -633,13 +644,18 @@ class VisualizerService(KgService):
                 a AS association,
                 ID(f) AS from_id,
                 ID(t) AS to_id
-            MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            RETURN COUNT(s) AS snippet_count
+            MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN count(DISTINCT {
+                snippet_id: s.eid,
+                association_id: association.eid,
+                entry1_text: r.entry1_text,
+                entry2_text: r.entry2_text
+            }) AS snippet_count
             """,
             from_id=from_id, to_id=to_id
         ).single()
 
-    def get_snippet_count_from_edges(
+    def get_snippet_count_from_edges_query(
         self,
         tx: Neo4jTx,
         from_ids: List[int],
@@ -660,9 +676,13 @@ class VisualizerService(KgService):
                     ID(t) AS to_id,
                     labels(f) AS from_labels,
                     labels(t) AS to_labels
-                OPTIONAL MATCH (association)<-[:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                OPTIONAL MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(DISTINCT s) AS snippet_count,
+                    count(DISTINCT {
+                        id: s.eid,
+                        entry1_text: r.entry1_text,
+                        entry2_text: r.entry2_text
+                    }) AS snippet_count,
                     max(p.pub_year) AS max_pub_year,
                     from_id,
                     to_id,
