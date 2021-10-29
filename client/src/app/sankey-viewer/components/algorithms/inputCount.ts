@@ -12,23 +12,17 @@ export const calculateInputCountSkippingCircularLinks = (
   maxExpectedValue: number,
   nextLinkValue: (nodeValue: number, nextLinks) => number
 ) => {
-  const nodeById = new Map(sortedNodes.map(n => [n.id, n]));
-  dt.startNodes.forEach(id => {
-    if (!nodeById.has(id)) {
-      console.warn(`Id ${id} could not be mapped to node`);
-    }
-  });
   sortedNodes.forEach(n => {
     if (dt.startNodes.includes(n.id)) {
-      n._value = 1;
+      n._fixedValue = 1;
     } else {
-      n._value = 0;
+      n._fixedValue = 0;
     }
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
-    n._value = prevLinks.reduce((a, l) => a + l._value, n._value || 0);
-    console.assert(n._value <= maxExpectedValue);
-    const outFrac = nextLinkValue(n._value, nextLinks);
+    n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
+    console.assert(n._fixedValue <= maxExpectedValue);
+    const outFrac = nextLinkValue(n._fixedValue, nextLinks);
     nextLinks.forEach(l => {
       // skip setting circular values
       if (!l._circular) {
