@@ -9,14 +9,18 @@ import {
   SankeyOptions
 } from 'app/shared-sankey/interfaces';
 
-export interface SankeyManyToManyState extends SankeyState {
+export interface SankeyManyToManyStateExtend {
   highlightCircular: boolean;
   colorLinkByType: boolean;
 }
 
-export interface SankeyManyToManyOptions extends SankeyOptions {
+export type SankeyManyToManyState = SankeyState & SankeyManyToManyStateExtend;
+
+export interface SankeyManyToManyOptionsExtend {
   colorLinkTypes: { [type: string]: string };
 }
+
+export type SankeyManyToManyOptions = SankeyOptions & SankeyManyToManyOptionsExtend;
 
 export interface SankeyManyToManyLink extends SankeyLink {
   _graphRelativePosition?: 'left' | 'right' | 'multiple';
