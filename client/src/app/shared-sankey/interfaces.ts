@@ -215,9 +215,10 @@ export interface SankeyURLLoadParams {
 
 // region Selection
 export enum SelectionType {
-  link,
-  node,
-  trace
+  // assign values to use in template
+  link = 'link',
+  node = 'node',
+  trace = 'trace'
 }
 
 export type SelectionEntity = {
