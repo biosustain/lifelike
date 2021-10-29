@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone } from 'lodash-es';
 
-import { uuidv4 } from 'app/shared/utils';
 import {
   SankeyOptions,
   ValueGenerator,
