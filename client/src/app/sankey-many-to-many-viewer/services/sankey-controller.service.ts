@@ -12,7 +12,8 @@ import {
   SankeyManyToManyState,
   SankeyManyToManyOptions,
   SankeyManyToManyNode,
-  SankeyManyToManyOptionsExtend, SankeyManyToManyStateExtend
+  SankeyManyToManyOptionsExtend,
+  SankeyManyToManyStateExtend
 } from '../components/interfaces';
 import * as linkValues from '../components/algorithms/linkValues';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
@@ -50,8 +51,7 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
     return merge(super.defaultOptions, {
       colorLinkTypes: EdgeColorCodes,
       linkValueGenerators: {
-      [LINK_VALUE_GENERATOR.input_count]: {
-        input_count: {
+        [LINK_VALUE_GENERATOR.input_count]: {
           description: LINK_VALUE_GENERATOR.input_count,
           preprocessing: linkValues.inputCount,
           disabled: () => false
