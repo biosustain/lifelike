@@ -50,7 +50,8 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
     return merge(super.defaultOptions, {
       colorLinkTypes: EdgeColorCodes,
       linkValueGenerators: {
-        [LINK_VALUE_GENERATOR.input_count]: {
+      [LINK_VALUE_GENERATOR.input_count]: {
+        input_count: {
           description: LINK_VALUE_GENERATOR.input_count,
           preprocessing: linkValues.inputCount,
           disabled: () => false
