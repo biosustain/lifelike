@@ -1,4 +1,6 @@
 app-sankey-many-to-many {
+  @import "../../utils/nodeColors";
+
   $darken-link-stroke: 5%;
   $link-lightness: 65%;
   $link-saturation: 30%;
@@ -7,15 +9,6 @@ app-sankey-many-to-many {
   $link-left-color: hsl(240, $link-saturation, $link-lightness);
   $link-right-color: hsl(120, $link-saturation, $link-lightness);
   $link-multi-color: hsl(180, $link-saturation, $link-lightness);
-
-  $darken-node-stroke: 100%;
-  $node-lightness: 60%;
-  $node-saturation: 40%;
-  $node-color: hsl(0, 0, $node-lightness);
-  $node-border-colour: darken($node-color, $darken-node-stroke);
-  $node-left-color: hsl(240, $node-saturation, $node-lightness);
-  $node-right-color: hsl(120, $node-saturation, $node-lightness);
-  $node-multi-color: hsl(180, $node-saturation, $node-lightness);
 
   $active-opacity: 1;
   $inactive-opacity: .1;
@@ -78,21 +71,11 @@ app-sankey-many-to-many {
             }
           }
 
-          &[graphRelativePosition=left] {
-            & > rect {
-              fill: $node-left-color;
-            }
-          }
-
-          &[graphRelativePosition=right] {
-            & > rect {
-              fill: $node-right-color;
-            }
-          }
-
-          &[graphRelativePosition=multiple] {
-            & > rect {
-              fill: $node-multi-color;
+          @each $position, $color in $node-colors {
+            &[graphRelativePosition=#{$position}] {
+              & > rect {
+                fill: $color;
+              }
             }
           }
 
@@ -105,7 +88,7 @@ app-sankey-many-to-many {
 
           &[highlighted=left] {
             & > rect {
-              fill: $node-left-color;
+              fill: map-get($node-colors, left);
             }
           }
 
