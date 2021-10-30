@@ -60,19 +60,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   /**
-   * Stores the hashes of newly linked documents
-   */
-  newlyLinkedDocuments: Set<string> = new Set();
-
-  /**
-   * Stores the hashes of destroyed documents
-   */
-  deletedLinkedDocuments: Set<string> = new Set();
-
-  /**
    * Stores the counters for linked documents
    */
-  linkedDocuments = {};
+  linkedDocuments: Set<string> = new Set();
 
   // Graph states
   // ---------------------------------
@@ -231,50 +221,18 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     });
   }
 
-  addToDeletedOrCreated(to: Set<string>, from: Set<string>, hash: string) {
-    to.add(hash);
-    // If has was deleted and re-added (or the other way around)
-    if (from.has(hash)) {
-      from.delete(hash);
-    }
-  }
 
-  addToReferenceCounter(hashes: string[], checkMode: number) {
-    hashes.forEach(linkedHash => {
-      if (!this.linkedDocuments.hasOwnProperty(linkedHash)) {
-        this.linkedDocuments[linkedHash] = 0;
-      }
-      // checkMode: 1 for adding, -1 for deleting
-      this.linkedDocuments[linkedHash] += checkMode;
-    });
-  }
-
-  checkForReferences(node: UniversalGraphNode, checkMode: number) {
+  storeLinkedDocuments(node: UniversalGraphEntity, set: Set<string>) {
     // TODO: Definitely optimize this
     // NOTE: Should I check only sources?
     if (node.data) {
       if (node.data.hyperlinks) {
-        this.addToReferenceCounter(this.getLinkedHashes(node.data.hyperlinks), checkMode);
+        this.getLinkedHashes(node.data.hyperlinks).forEach(val => set.add(val));
       }
       if (node.data.sources) {
-        this.addToReferenceCounter(this.getLinkedHashes(node.data.sources), checkMode);
+        this.getLinkedHashes(node.data.sources).forEach(val => set.add(val));
       }
     }
-  }
-
-  addToChangesSet(hash: string, checkMode: number) {
-    if (!this.linkedDocuments.hasOwnProperty(hash)) {
-      this.linkedDocuments[hash] = 0;
-      if (checkMode === referenceCheckingMode.nodeAdded) {
-        this.addToDeletedOrCreated(this.newlyLinkedDocuments, this.deletedLinkedDocuments, hash);
-      } else {
-        this.addToDeletedOrCreated(this.deletedLinkedDocuments, this.newlyLinkedDocuments, hash);
-      }
-    }
-    // checkMode: 1 for adding, -1 for deleting
-    this.linkedDocuments[hash] += checkMode;
-
-
   }
 
   /**
@@ -287,7 +245,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
-    this.nodes.forEach(node => this.checkForReferences(node, referenceCheckingMode.nodeAdded));
+    this.nodes.forEach(node => this.storeLinkedDocuments(node, this.linkedDocuments));
+    this.edges.forEach(edge => this.storeLinkedDocuments(edge, this.linkedDocuments));
 
     console.log(this.linkedDocuments);
 
@@ -313,20 +272,33 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Returns items that are present in the first set but not in the second.
+   * Weirdly, there is no native JS function for that
+   * @param first - set to filter
+   * @param second - set to look for occurrences
+   */
+  setOutersect<T>(first: Set<T>, second: Set<T>): Set<T> {
+    return new Set([...first].filter(item => !second.has(item)));
+  }
+
+  /**
    * Reset the change sets on succesful save
    */
-  resetLinkedChanges() {
-    this.newlyLinkedDocuments.clear();
-    this.deletedLinkedDocuments.clear();
+  resetLinkedChanges(set: Set<string>) {
+    this.linkedDocuments = set;
   }
 
   /**
    * Return changes in linked elements
    */
   getChangeInLinked() {
+    const currentlyLinked = new Set<string>();
+    this.nodes.forEach(node => this.storeLinkedDocuments(node, currentlyLinked));
+    this.edges.forEach(edge => this.storeLinkedDocuments(edge, currentlyLinked));
     return {
-      linkedFilesAdded: Array.from(this.newlyLinkedDocuments),
-      linkedFilesDeleted: Array.from(this.deletedLinkedDocuments),
+      linkedFilesAdded: Array.from(this.setOutersect(currentlyLinked, this.linkedDocuments)),
+      linkedFilesDeleted: Array.from(this.setOutersect(this.linkedDocuments, currentlyLinked)),
+      currentlyLinked
     };
   }
 
@@ -339,7 +311,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       throw new Error('trying to add a node that already is in the node list is bad');
     }
     this.nodes.push(node);
-    // this.addToChangesSet(node, referenceCheckingMode.nodeAdded);
     this.nodeHashMap.set(node.hash, node);
     this.requestRender();
   }
@@ -375,7 +346,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }
     }
 
-    // this.addToChangesSet(node, referenceCheckingMode.nodeDeleted);
     this.nodeHashMap.delete(node.hash);
     this.invalidateNode(node);
 
