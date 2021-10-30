@@ -851,13 +851,18 @@ class FileListView(FilesystemBaseView):
         deleted_files = self.get_nondeleted_recycled_files(Files.hash_id
                                                            .in_(linked_files_deleted))
 
-        to_add = [MapLinks(map_id, file_id) for file_id in added_files]
-        to_remove = [MapLinks(map_id, file_id) for file_id in deleted_files]
+        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
+        # to_remove = [MapLinks(map_id, file_id) for file_id in deleted_files]
 
         # TODO: Ensure that this is correct
         try:
-            MapLinks.insert().values(to_add)
-            MapLinks.query.filter_by(map_id=map_id, linked_id=to_remove).delete()
+            for add in to_add:
+                db.session.add(add)
+            # db.session.execute(MapLinks.delete()
+            #                    .where(map_id=map_id, linked_id=to_remove))
+            # MapLinks.insert().values(to_add)
+            # MapLinks.query.filter_by(map_id=map_id, linked_id=to_remove).delete()
+            db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
@@ -985,102 +990,16 @@ class FileSearchView(FilesystemBaseView):
                                                      lazy_load_content=True)
             self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
-            # Don't support pagination yet
-            limit = 5
-            offset = 0
+            # TODO: Sort?
+            query = db.session.query(MapLinks.map_id) \
+                .filter(MapLinks.linked_id == file.id)
 
-            # TODO: Improve the performance of this query
-            # Getting the roots and then parsing the JSON is not efficient
+            result = query.paginate(pagination['page'], pagination['limit'])
 
-            base_query = f"""
-                WITH RECURSIVE _roots AS (
-                    SELECT
-                        file.id AS file_id
-                        , file.parent_id
-                        , project.id AS project_id
-                        , file.id AS root_id
-                        , 0 AS level
-                    FROM files file
-                    LEFT JOIN projects project on project.root_id = file.id
-                    WHERE
-                        file.parent_id IS NULL
+            # Now we get the full file information for this slice of the results
+            files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
+            total = len(files)
 
-                    UNION ALL
-
-                    SELECT
-                        child.id AS file_id
-                        , child.parent_id
-                        , parent.project_id
-                        , parent.root_id
-                        , parent.level + 1 AS level
-                    FROM _roots parent
-                    INNER JOIN files child ON child.parent_id = parent.file_id
-                )
-                , _maps AS (
-                    SELECT
-                        file.id AS file_id
-                        , convert_from(content.raw_file, 'UTF-8')::jsonb AS parsed_content
-                    FROM files file
-                    INNER JOIN files_content content ON content.id = file.content_id
-                    WHERE
-                        file.mime_type = 'vnd.lifelike.document/map'
-                        AND file.deletion_date IS NULL
-                        AND file.recycling_date IS NULL
-                )
-                SELECT
-                    DISTINCT
-                    {'{select}'}
-                FROM (
-                    SELECT
-                        map.file_id
-                        , data
-                    FROM _maps map
-                    CROSS JOIN jsonb_to_recordset(jsonb_extract_path(map.parsed_content, 'nodes'))
-                        AS data(data JSONB)
-                    UNION ALL
-                    SELECT
-                        map.file_id
-                        , data
-                    FROM _maps map
-                    CROSS JOIN jsonb_to_recordset(jsonb_extract_path(map.parsed_content, 'edges'))
-                        AS data(data JSONB)
-                ) data
-                CROSS JOIN jsonb_to_recordset(jsonb_extract_path(data.data, 'sources'))
-                    AS source(url VARCHAR)
-                INNER JOIN files file ON file.id = data.file_id
-                INNER JOIN _roots root ON root.file_id = file.id
-                INNER JOIN projects project ON project.id = root.project_id
-                LEFT JOIN projects_collaborator_role pcr ON pcr.projects_id = project.id
-                LEFT JOIN app_role on pcr.app_role_id = app_role.id
-                LEFT JOIN appuser role_user on pcr.appuser_id = role_user.id
-                WHERE
-                    (
-                        url ~ :url_1
-                        OR url ~ :url_2
-                    )
-                    AND (
-                        file.public = true OR (
-                            app_role.name IN ('project-read', 'project-write', 'project-admin')
-                            AND role_user.id = :user_id
-                        )
-                    )
-            """
-
-            count_query = base_query.format(select='COUNT(*) AS count')
-            query = f"""
-                {base_query.format(select='file.id')}
-                LIMIT {int(limit)} OFFSET {int(offset)}
-            """
-
-            params = {
-                'url_1': f'/projects/(?:[^/]+)/[^/]+/{re.escape(hash_id)}(?:#.*)?',
-                'url_2': f'/dt/pdf/{re.escape(hash_id)}(?:#.*)?',
-                'user_id': g.current_user.id,
-            }
-            results = db.session.execute(query, params).fetchall()
-
-            total = len(results)
-            files = self.get_nondeleted_recycled_files(Files.id.in_([row[0] for row in results]))
         else:
             raise NotImplementedError()
 
