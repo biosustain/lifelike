@@ -50,6 +50,12 @@ file_collaborator_role = db.Table(
              postgresql_where=text('deletion_date IS NULL')),
 )
 
+map_links = db.Table(
+    'map_links',
+    db.Column('map_id', db.Integer(), db.ForeignKey('files.id'), nullable=False),
+    db.Column('linked_id', db.Integer(), db.ForeignKey('files.id'), nullable=False)
+)
+
 
 class FileContent(RDBMSBase):
     __tablename__ = 'files_content'
