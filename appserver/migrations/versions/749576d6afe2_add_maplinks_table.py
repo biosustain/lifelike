@@ -1,8 +1,8 @@
 """Add MapLinks table
 
-Revision ID: 523b050717a6
+Revision ID: 749576d6afe2
 Revises: 8f6d4eef042d
-Create Date: 2021-10-30 13:00:02.666168
+Create Date: 2021-10-30 14:21:27.076408
 
 """
 import json
@@ -13,16 +13,16 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import table, column, and_
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
-from constants import FILE_MIME_TYPE_MAP
+from neo4japp.constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
 from neo4japp.models.files import MapLinks
 
-
 # revision identifiers, used by Alembic.
-revision = '523b050717a6'
+
+
+revision = '749576d6afe2'
 down_revision = '8f6d4eef042d'
 branch_labels = None
 depends_on = None
@@ -36,7 +36,8 @@ def upgrade():
                     sa.ForeignKeyConstraint(['linked_id'], ['files.id'],
                                             name=op.f('fk_map_links_linked_id_files')),
                     sa.ForeignKeyConstraint(['map_id'], ['files.id'],
-                                            name=op.f('fk_map_links_map_id_files'))
+                                            name=op.f('fk_map_links_map_id_files')),
+                    sa.PrimaryKeyConstraint('map_id', name=op.f('pk_map_links'))
                     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
