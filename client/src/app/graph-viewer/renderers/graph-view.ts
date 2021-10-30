@@ -212,27 +212,29 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     const myRe = /^\/projects\/([^\/]+)\/(enrichment-table|files)\//;
     // Filter in links that point to desired files
     return links.filter((source) => {
-      // return true;
       return myRe.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
-      // const myvar = source.url.split('/').pop();
       return source.url.split('/').pop();
     });
   }
 
-
-  storeLinkedDocuments(node: UniversalGraphEntity, set: Set<string>) {
-    // TODO: Definitely optimize this
+  checkEntityForLinked(node: UniversalGraphEntity): Set<string> {
     // NOTE: Should I check only sources?
     if (node.data) {
-      if (node.data.hyperlinks) {
-        this.getLinkedHashes(node.data.hyperlinks).forEach(val => set.add(val));
-      }
-      if (node.data.sources) {
-        this.getLinkedHashes(node.data.sources).forEach(val => set.add(val));
-      }
+      const linkedInHyperlinks = node.data.hyperlinks ? this.getLinkedHashes(node.data.hyperlinks) : [];
+      const linkedInSources = node.data.sources ? this.getLinkedHashes(node.data.sources) : [];
+      return new Set(linkedInHyperlinks.concat(linkedInSources));
     }
+    return new Set();
+  }
+
+  getHashesOfLinked(): Set<string> {
+    const set = new Set<string>();
+    // Note: Should I check only nodes?
+    this.nodes.forEach(node => this.checkEntityForLinked(node).forEach(val => set.add(val)));
+    this.edges.forEach(edge => this.checkEntityForLinked(edge).forEach(val => set.add(val)));
+    return set;
   }
 
   /**
@@ -245,9 +247,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
-    this.nodes.forEach(node => this.storeLinkedDocuments(node, this.linkedDocuments));
-    this.edges.forEach(edge => this.storeLinkedDocuments(edge, this.linkedDocuments));
-
+    this.linkedDocuments = this.getHashesOfLinked();
     console.log(this.linkedDocuments);
 
     // We need O(1) lookup of nodes
@@ -292,9 +292,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Return changes in linked elements
    */
   getChangeInLinked() {
-    const currentlyLinked = new Set<string>();
-    this.nodes.forEach(node => this.storeLinkedDocuments(node, currentlyLinked));
-    this.edges.forEach(edge => this.storeLinkedDocuments(edge, currentlyLinked));
+    const currentlyLinked = this.getHashesOfLinked();
     return {
       linkedFilesAdded: Array.from(this.setOutersect(currentlyLinked, this.linkedDocuments)),
       linkedFilesDeleted: Array.from(this.setOutersect(this.linkedDocuments, currentlyLinked)),
