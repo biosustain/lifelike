@@ -24,11 +24,11 @@
   <div class="input-group-append" id="decrement-btn">
     <button class="btn btn-secondary" type="button" (click)="previous.emit(this.resultIndex - 1)"
             [disabled]="disabled || resultCount == 0" ngbTooltip="Previous result" container="body">
-      <i class="fa fa-fw fa-chevron-up"></i>
+      <i class="fa fa-fw fa-chevron-down"></i>
     </button>
     <button class="btn btn-secondary" type="button" (click)="next.emit(this.resultIndex + 1)"
             [disabled]="disabled || resultCount == 0" ngbTooltip="Next result" container="body">
-      <i class="fa fa-fw fa-chevron-down"></i>
+      <i class="fa fa-fw fa-chevron-up"></i>
     </button>
   </div>
 </div>
