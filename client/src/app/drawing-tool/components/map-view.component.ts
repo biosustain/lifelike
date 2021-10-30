@@ -99,7 +99,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      *     functions like `combineLatest`
      */
     zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
-    const linkedFilesChanges = this.graphCanvas.getChangeInLinked();
+    const {currentlyLinked, ...linkedFilesChanges} = this.graphCanvas.getChangeInLinked();
     // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
     forkJoin(imageNodeObservables).pipe(defaultIfEmpty(null)).subscribe((imageBlobs: Blob[]) => {
       for (let i = 0; i < imageIds.length; i++) {
@@ -110,7 +110,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
           .pipe(this.errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
             this.unsavedChanges$.next(false);
-            this.graphCanvas.resetLinkedChanges();
+            this.graphCanvas.resetLinkedChanges(currentlyLinked);
             this.emitModuleProperties(); // TODO: what does this do?
             this.snackBar.open('Map saved.', null, {
               duration: 2000,
