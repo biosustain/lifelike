@@ -15,9 +15,12 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 
+from filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
-from neo4japp.models.files import MapLinks
+from neo4japp.models.files import MapLinks, Files
+
+# from neo4japp.blueprints.filesystem.FilesystemBaseView import get_nondeleted_recycled_files
 
 # revision identifiers, used by Alembic.
 
@@ -97,11 +100,11 @@ def data_upgrades():
                         for link in links:
                             if regex.match(link.get('url', "")):
                                 hash_id = link.url.split('/')[-1]
-                                # files = get_nondeleted_recycled_files(
-                                #     Files.hash_id.in_([hash_id]),
-                                #     require_hash_ids=require_hash_ids)
-                                # TODO: Get file id by hash_id
-                                entries_to_add.append({'map_id': map_id, 'linked_id': hash_id})
+                                # TODO: This probably need to be refactored
+                                file = FilesystemBaseView.get_nondeleted_recycled_file(
+                                    FilesystemBaseView(),
+                                    Files.hash_id == hash_id)
+                                entries_to_add.append({'map_id': map_id, 'linked_id': file.id})
             except (KeyError, zipfile.BadZipfile):
                 pass
 
