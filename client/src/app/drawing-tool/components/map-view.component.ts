@@ -112,7 +112,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
           .pipe(this.errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
             this.unsavedChanges$.next(false);
-            this.graphCanvas.resetLinkedChanges(currentlyLinked);
+            this.graphCanvas.updateLinkedChanges(currentlyLinked);
             this.emitModuleProperties(); // TODO: what does this do?
             this.snackBar.open('Map saved.', null, {
               duration: 2000,
