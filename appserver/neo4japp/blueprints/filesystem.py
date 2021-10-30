@@ -852,17 +852,13 @@ class FileListView(FilesystemBaseView):
                                                            .in_(linked_files_deleted))
 
         to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
-        # to_remove = [MapLinks(map_id, file_id) for file_id in deleted_files]
+        to_remove = [file.id for file in deleted_files]
 
-        # TODO: Ensure that this is correct
         try:
-            for add in to_add:
-                db.session.add(add)
-            # db.session.execute(MapLinks.delete()
-            #                    .where(map_id=map_id, linked_id=to_remove))
-            # MapLinks.insert().values(to_add)
-            # MapLinks.query.filter_by(map_id=map_id, linked_id=to_remove).delete()
-            db.session.commit()
+            db.session.add_all(to_add)
+            db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
+                                              MapLinks.linked_id.in_(to_remove)
+                                              ).delete(synchronize_session=False)
         except SQLAlchemyError:
             db.session.rollback()
             raise
