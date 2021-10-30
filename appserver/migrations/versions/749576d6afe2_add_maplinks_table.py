@@ -15,7 +15,7 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 
-from filesystem import FilesystemBaseView
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
 from neo4japp.models.files import MapLinks, Files
