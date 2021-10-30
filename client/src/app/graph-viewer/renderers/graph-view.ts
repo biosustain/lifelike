@@ -14,6 +14,8 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
+import {setOutersect} from 'app/shared/utils';
+import {associatedMapsRegex} from 'app/shared/constants';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -210,11 +212,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @returns: list of hashes found in the links
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
-    // TODO: Make a regex that matches all the formats that have associatedMaps search
-    const myRe = /^\/projects\/([^\/]+)\/(enrichment-table|files)\//;
     // Filter in links that point to desired files
     return links.filter((source) => {
-      return myRe.test(source.url);
+      return associatedMapsRegex.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
       return source.url.split('/').pop();
@@ -281,16 +281,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Returns items that are present in the first set but not in the second.
-   * Weirdly, there is no native JS function for that
-   * @param first - set to filter
-   * @param second - set to look for occurrences
-   */
-  setOutersect<T>(first: Set<T>, second: Set<T>): Set<T> {
-    return new Set([...first].filter(item => !second.has(item)));
-  }
-
-  /**
    * Update the linked documents on successful save
    */
   updateLinkedChanges(set: Set<string>) {
@@ -303,8 +293,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   getChangeInLinked() {
     const currentlyLinked = this.getHashesOfLinked();
     return {
-      linkedFilesAdded: Array.from(this.setOutersect(currentlyLinked, this.linkedDocuments)),
-      linkedFilesDeleted: Array.from(this.setOutersect(this.linkedDocuments, currentlyLinked)),
+      linkedFilesAdded: Array.from(setOutersect(currentlyLinked, this.linkedDocuments)),
+      linkedFilesDeleted: Array.from(setOutersect(this.linkedDocuments, currentlyLinked)),
       currentlyLinked
     };
   }
