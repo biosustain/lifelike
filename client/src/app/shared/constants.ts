@@ -118,3 +118,6 @@ export enum MicrosoftColors {
 
 // We need to specify different font family for custom icons (see comment about graph unicode above)
 export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint];
+
+// Regex used to check if a map link is pointing to a file that can be looking for associated maps
+export const associatedMapsRegex = /^\/projects\/([^\/]+)\/(enrichment-table|files)\//;
