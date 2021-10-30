@@ -842,26 +842,26 @@ class FileListView(FilesystemBaseView):
         linked_files_added = params.pop('linked_files_added', [])
         linked_files_deleted = params.pop('linked_files_deleted', [])
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+        if linked_files_added or linked_files_deleted:
+            files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+            # TODO: Fix this after consultation
+            map_id = files[0].id
+            added_files = self.get_nondeleted_recycled_files(Files.hash_id
+                                                             .in_(linked_files_added))
+            deleted_files = self.get_nondeleted_recycled_files(Files.hash_id
+                                                               .in_(linked_files_deleted))
 
-        # TODO: Fix this after consultation
-        map_id = files[0].id
-        added_files = self.get_nondeleted_recycled_files(Files.hash_id
-                                                         .in_(linked_files_added))
-        deleted_files = self.get_nondeleted_recycled_files(Files.hash_id
-                                                           .in_(linked_files_deleted))
+            to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
+            to_remove = [file.id for file in deleted_files]
 
-        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
-        to_remove = [file.id for file in deleted_files]
-
-        try:
-            db.session.add_all(to_add)
-            db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                              MapLinks.linked_id.in_(to_remove)
-                                              ).delete(synchronize_session=False)
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+            try:
+                db.session.add_all(to_add)
+                db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
+                                                  MapLinks.linked_id.in_(to_remove)
+                                                  ).delete(synchronize_session=False)
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
 
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
