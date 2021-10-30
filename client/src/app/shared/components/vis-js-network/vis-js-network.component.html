@@ -10,7 +10,6 @@
       <div class="d-block h-100 ml-2 pointer-events-on">
         <app-search-control
           [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
-          (enterPress)="findNext()"
           [resultIndex]="currentSearchIndex"
           [resultCount]="searchResults.length"
           (previous)="findPrevious()" (next)="findNext()">
