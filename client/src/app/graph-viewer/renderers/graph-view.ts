@@ -205,7 +205,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   // TODO: Move
   /**
-   * Get all the linked files
+   * Iterate through the link nodes of the GraphEntity and return hashes to linked documents/ET
+   * @params links: list to check
+   * @returns: list of hashes found in the links
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // TODO: Make a regex that matches all the formats that have associatedMaps search
@@ -219,16 +221,23 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     });
   }
 
-  checkEntityForLinked(node: UniversalGraphEntity): Set<string> {
+  /**
+   * Check the Entity for links to internal files
+   * @param entity: UniversalGraphEntity that we are checking
+   */
+  checkEntityForLinked(entity: UniversalGraphEntity): Set<string> {
     // NOTE: Should I check only sources?
-    if (node.data) {
-      const linkedInHyperlinks = node.data.hyperlinks ? this.getLinkedHashes(node.data.hyperlinks) : [];
-      const linkedInSources = node.data.sources ? this.getLinkedHashes(node.data.sources) : [];
+    if (entity.data) {
+      const linkedInHyperlinks = entity.data.hyperlinks ? this.getLinkedHashes(entity.data.hyperlinks) : [];
+      const linkedInSources = entity.data.sources ? this.getLinkedHashes(entity.data.sources) : [];
       return new Set(linkedInHyperlinks.concat(linkedInSources));
     }
     return new Set();
   }
 
+  /**
+   * Check the entire graph for any linked documents/enrichment tables and return a set of their hashes
+   */
   getHashesOfLinked(): Set<string> {
     const set = new Set<string>();
     // Note: Should I check only nodes?
@@ -282,14 +291,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Reset the change sets on succesful save
+   * Update the linked documents on successful save
    */
-  resetLinkedChanges(set: Set<string>) {
+  updateLinkedChanges(set: Set<string>) {
     this.linkedDocuments = set;
   }
 
   /**
-   * Return changes in linked elements
+   * Return changes in linked elements - as well as current state (used later in {@link updateLinkedChanges})
    */
   getChangeInLinked() {
     const currentlyLinked = this.getHashesOfLinked();
