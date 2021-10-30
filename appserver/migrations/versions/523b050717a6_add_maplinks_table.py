@@ -18,7 +18,8 @@ from sqlalchemy.orm import Session
 
 from constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
-from neo4japp.models.files import map_links
+from neo4japp.models.files import MapLinks
+
 
 # revision identifiers, used by Alembic.
 revision = '523b050717a6'
@@ -104,7 +105,7 @@ def data_upgrades():
                 pass
 
         try:
-            map_links.insert().values(entries_to_add)
+            MapLinks.insert().values(entries_to_add)
             session.commit()
         except Exception:
             pass

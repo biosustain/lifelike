@@ -14,7 +14,7 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from sqlalchemy.sql.expression import text
@@ -33,7 +33,7 @@ from neo4japp.models import (
     FileVersion,
     FileBackup
 )
-from neo4japp.models.files import FileLock, FileAnnotationsVersion
+from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks
 from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
@@ -838,12 +838,29 @@ class FileListView(FilesystemBaseView):
               locations=['json', 'form', 'files', 'mixed_form_json'])
     def patch(self, targets, params):
         """File update endpoint."""
-        if params.get('linked_files_added'):
-            print(params.get('linked_files_added'))
-            del params['linked_files_added']
-        if params.get('linked_files_deleted'):
-            print(params.get('linked_files_deleted'))
-            del params['linked_files_deleted']
+
+        linked_files_added = params.pop('linked_files_added', [])
+        linked_files_deleted = params.pop('linked_files_deleted', [])
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+
+        # TODO: Fix this after consultation
+        map_id = files[0].id
+        added_files = self.get_nondeleted_recycled_files(Files.hash_id
+                                                         .in_(linked_files_added))
+        deleted_files = self.get_nondeleted_recycled_files(Files.hash_id
+                                                           .in_(linked_files_deleted))
+
+        to_add = [MapLinks(map_id, file_id) for file_id in added_files]
+        to_remove = [MapLinks(map_id, file_id) for file_id in deleted_files]
+
+        # TODO: Ensure that this is correct
+        try:
+            MapLinks.insert().values(to_add)
+            MapLinks.query.filter_by(map_id=map_id, linked_id=to_remove).delete()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
 
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
