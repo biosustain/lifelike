@@ -842,6 +842,9 @@ class FileListView(FilesystemBaseView):
         linked_files_added = params.pop('linked_files_added', [])
         linked_files_deleted = params.pop('linked_files_deleted', [])
 
+        to_add, to_remove = [], []
+        map_id = None
+
         if linked_files_added or linked_files_deleted:
             files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
             # TODO: Fix this after consultation
@@ -854,19 +857,20 @@ class FileListView(FilesystemBaseView):
             to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
             to_remove = [file.id for file in deleted_files]
 
-            try:
-                db.session.add_all(to_add)
-                db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                                  MapLinks.linked_id.in_(to_remove)
-                                                  ).delete(synchronize_session=False)
-            except SQLAlchemyError:
-                db.session.rollback()
-                raise
-
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
-        return self.get_bulk_file_response(targets['hash_ids'], current_user,
-                                           missing_hash_ids=missing_hash_ids)
+        response = self.get_bulk_file_response(targets['hash_ids'], current_user,
+                                               missing_hash_ids=missing_hash_ids)
+        # Add changes to the MapLinks after then response generation, as it might raise exceptions
+        try:
+            db.session.add_all(to_add)
+            db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
+                                              MapLinks.linked_id.in_(to_remove)
+                                              ).delete(synchronize_session=False)
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+        return response
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
