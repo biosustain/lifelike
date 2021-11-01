@@ -239,6 +239,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         height: nullCoalesce(d.data.height, 100),
         imageManager: this.imageManager,
         imageId: d.image_id,
+        stroke: this.createLine(
+          nullCoalesce(styleData.lineType, 'blank'),
+          nullCoalesce(styleData.lineWidthScale, 1),
+          strokeColor,
+        )
       });
 
     } else {
