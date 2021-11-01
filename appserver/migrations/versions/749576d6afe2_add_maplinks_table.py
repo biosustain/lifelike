@@ -16,11 +16,9 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 
-from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
 from neo4japp.models.files import MapLinks, Files
-
 
 # revision identifiers, used by Alembic.
 revision = '749576d6afe2'
@@ -90,10 +88,9 @@ def data_upgrades():
                                 hash_id = link['url'].split('/')[-1]
                                 # TODO: This does not work here
                                 #  find other way to get id from hash_id
-                                file = FilesystemBaseView.get_nondeleted_recycled_file(
-                                    FilesystemBaseView(),
-                                    Files.hash_id == hash_id)
-                                entries_to_add.append(MapLinks(map_id=map_id, linked_id=file.id))
+                                file_id = session.query(Files).filter(
+                                    Files.hash_id == hash_id).one()
+                                entries_to_add.append(MapLinks(map_id=map_id, linked_id=file_id))
             except (KeyError, zipfile.BadZipfile):
                 pass
 
