@@ -8,6 +8,7 @@ Create Date: 2021-10-30 14:21:27.076408
 import json
 import re
 import zipfile
+from io import BytesIO
 
 from alembic import context
 from alembic import op
@@ -78,7 +79,7 @@ def data_upgrades():
         entries_to_add = []
         for map_id, content in chunk:
             try:
-                with zipfile.ZipFile(content, 'rb') as zip_file:
+                with zipfile.ZipFile(BytesIO(content), 'r') as zip_file:
                     json_graph = json.loads(zip_file.read('graph.json'))
                     entities = json_graph.get('nodes', []) + json_graph.get('edges', [])
                     for entity in entities:
@@ -86,17 +87,18 @@ def data_upgrades():
                                 (entity.get('data', {}).get('hyperlinks') or [])
                         for link in links:
                             if regex.match(link.get('url', "")):
-                                hash_id = link.url.split('/')[-1]
-                                # TODO: This probably need to be refactored
+                                hash_id = link['url'].split('/')[-1]
+                                # TODO: This does not work here
+                                #  find other way to get id from hash_id
                                 file = FilesystemBaseView.get_nondeleted_recycled_file(
                                     FilesystemBaseView(),
                                     Files.hash_id == hash_id)
-                                entries_to_add.append({'map_id': map_id, 'linked_id': file.id})
+                                entries_to_add.append(MapLinks(map_id=map_id, linked_id=file.id))
             except (KeyError, zipfile.BadZipfile):
                 pass
 
         try:
-            MapLinks.insert().values(entries_to_add)
+            session.add_all(entries_to_add)
             session.commit()
         except Exception:
             pass
