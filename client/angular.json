@@ -161,6 +161,39 @@
                   "maximumError": "15kb"
                 }
               ]
+            },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/scss/_vertical-menu.scss",
+                  "with": "src/scss/_vertical-menu.demo.scss"
+                },
+                {
+                  "replace": "src/scss/bootstrap.scss",
+                  "with": "src/scss/bootstrap.demo.scss"
+                }
+              ],
+              "optimization": false,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "27mb",
+                  "maximumError": "30mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "15kb"
+                }
+              ]
             }
           }
         },
@@ -178,6 +211,9 @@
             },
             "qa": {
               "browserTarget": "client:build:qa"
+            },
+            "demo": {
+              "browserTarget": "client:build:demo"
             }
           }
         },
@@ -234,6 +270,9 @@
             },
             "qa": {
               "devServerTarget": "client:serve:qa"
+            },
+            "demo": {
+              "devServerTarget": "client:serve:demo"
             }
           }
         }
