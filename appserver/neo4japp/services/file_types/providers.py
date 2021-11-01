@@ -143,6 +143,7 @@ SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
+BIOC_RE = re.compile(r'^ */projects/.+/bioc/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
@@ -536,6 +537,7 @@ def get_link_icon_type(node):
     """
     data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
     for link in data:
+        # TODO: This is getting bigger and bigger - refactor this for some clarity
         if ENRICHMENT_TABLE_RE.match(link['url']):
             return 'enrichment_table', link['url']
         elif SANKEY_RE.match(link['url']):
@@ -556,6 +558,8 @@ def get_link_icon_type(node):
             return 'document', None
         elif PROJECTS_RE.match(link['url']):
             return 'project', link['url']
+        elif BIOC_RE.match(link['url']):
+            return 'bioc', link['url']
         elif MAIL_RE.match(link['url']):
             return 'email', link['url']
         elif ANY_FILE_RE.match(link['url']):

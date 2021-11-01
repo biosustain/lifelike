@@ -97,7 +97,7 @@ export enum Unicodes {
   Map = '\uf542',
   EnrichmentTable = '\uf0ce',
   Pdf = '\uf1c1',
-  BioC = '\uf1c1',
+  BioC = '\uf15b',
   Mail = '\uf0e0',
   Project = '\uf5fd',
   Default = '\uf15b',
