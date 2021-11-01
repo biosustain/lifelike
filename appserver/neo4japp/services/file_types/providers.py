@@ -1,4 +1,3 @@
-import imghdr
 import io
 import json
 import math
@@ -80,7 +79,8 @@ from neo4japp.constants import (
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
     TEMP_PATH,
-    LogEventType
+    LogEventType,
+    IMAGE_BORDER_SCALE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -477,11 +477,17 @@ def create_image_node(node, params):
     :param params: dict containing baseline parameters
     :returns: modified params
     """
-    params['penwidth'] = '0.0'
+    style = node.get('style', {})
+    print(style)
+    params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
+        if style.get('lineType') != 'none' else '0.0'
     params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
     params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
+    params['shape'] = 'box'
+    params['style'] = 'bold'
+    params['color'] = style.get('strokeColor') or 'white'
     return params
 
 
