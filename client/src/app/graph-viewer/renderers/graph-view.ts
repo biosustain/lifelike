@@ -250,13 +250,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
-  // NOTE: This is actually called twice when opening a map - is this anticipated?
+  // NOTE: This is actually called twice when opening a map in read-only mode - is this anticipated?
   setGraph(graph: UniversalGraph): void {
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
-
-    this.linkedDocuments = this.getHashesOfLinked();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
@@ -276,25 +274,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     return {
       nodes: this.nodes,
       edges: this.edges,
-    };
-  }
-
-  /**
-   * Update the linked documents on successful save
-   */
-  updateLinkedChanges(set: Set<string>) {
-    this.linkedDocuments = set;
-  }
-
-  /**
-   * Return changes in linked elements - as well as current state (used later in {@link updateLinkedChanges})
-   */
-  getChangeInLinked() {
-    const currentlyLinked = this.getHashesOfLinked();
-    return {
-      linkedFilesAdded: Array.from(setOutersect(currentlyLinked, this.linkedDocuments)),
-      linkedFilesDeleted: Array.from(setOutersect(this.linkedDocuments, currentlyLinked)),
-      currentlyLinked
     };
   }
 

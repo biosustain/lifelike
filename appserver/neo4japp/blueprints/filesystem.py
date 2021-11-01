@@ -12,7 +12,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc, or_, not_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
@@ -839,23 +839,19 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
-        linked_files_added = params.pop('linked_files_added', [])
-        linked_files_deleted = params.pop('linked_files_deleted', [])
+        linked_files = params.pop('hashes_of_linked', [])
 
-        to_add, to_remove = [], []
-        map_id = None
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+        # TODO: Fix this after consultation
+        map_id = files[0].id
 
-        if linked_files_added or linked_files_deleted:
-            files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
-            # TODO: Fix this after consultation
-            map_id = files[0].id
-            added_files = self.get_nondeleted_recycled_files(Files.hash_id
-                                                             .in_(linked_files_added))
-            deleted_files = self.get_nondeleted_recycled_files(Files.hash_id
-                                                               .in_(linked_files_deleted))
+        new_ids = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
 
-            to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in added_files]
-            to_remove = [file.id for file in deleted_files]
+        # Possibly could be optimized with some get_or_create or insert_if_not_exist
+        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_ids if
+                  db.session.query(MapLinks).filter_by(MapLinks.map_id == map_id,
+                                                       MapLinks.linked_id == file.id
+                                                       ).one_or_none()]
 
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
@@ -863,9 +859,10 @@ class FileListView(FilesystemBaseView):
                                                missing_hash_ids=missing_hash_ids)
         # Add changes to the MapLinks after then response generation, as it might raise exceptions
         try:
-            db.session.add_all(to_add)
+            if to_add:
+                db.session.add_all(to_add)
             db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                              MapLinks.linked_id.in_(to_remove)
+                                              MapLinks.linked_id.not_in_(new_ids)
                                               ).delete(synchronize_session=False)
         except SQLAlchemyError:
             db.session.rollback()
