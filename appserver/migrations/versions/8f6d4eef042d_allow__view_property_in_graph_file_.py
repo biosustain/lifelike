@@ -79,7 +79,8 @@ def drop_view_property():
                                 checksum_sha256=checksum_sha256
                         )
                 )
-                session.commit()
+                session.flush()
+    session.commit()
 
 
 def upgrade():
