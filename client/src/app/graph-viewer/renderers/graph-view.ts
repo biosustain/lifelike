@@ -257,7 +257,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.edges = [...graph.edges];
 
     this.linkedDocuments = this.getHashesOfLinked();
-    console.log(this.linkedDocuments);
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
