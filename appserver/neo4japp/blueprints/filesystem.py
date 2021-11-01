@@ -845,12 +845,13 @@ class FileListView(FilesystemBaseView):
         # TODO: Fix this after consultation
         map_id = files[0].id
 
-        new_ids = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
+        new_files = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
+
+        new_ids = [file.id for file in new_files]
 
         # Possibly could be optimized with some get_or_create or insert_if_not_exist
-        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_ids if
-                  db.session.query(MapLinks).filter_by(MapLinks.map_id == map_id,
-                                                       MapLinks.linked_id == file.id
+        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
+                  db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
                                                        ).one_or_none()]
 
         current_user = g.current_user
@@ -862,8 +863,9 @@ class FileListView(FilesystemBaseView):
             if to_add:
                 db.session.add_all(to_add)
             db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                              MapLinks.linked_id.not_in_(new_ids)
+                                              MapLinks.linked_id.notin_(new_ids)
                                               ).delete(synchronize_session=False)
+            db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
