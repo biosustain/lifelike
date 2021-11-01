@@ -104,8 +104,7 @@ export interface FilesystemObjectData {
 
 interface ContentValue {
   contentValue: Blob;
-  linkedFilesAdded?: string[];
-  linkedFilesDeleted?: string[];
+  hashesOfLinked?: string[];
 }
 
 interface ContentUrl {
