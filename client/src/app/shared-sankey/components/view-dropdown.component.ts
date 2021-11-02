@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
-import { transform, pick, omitBy, isNil, mapValues, isObject } from 'lodash-es';
+import { transform, pick, omitBy, isNil, mapValues, isObject, size } from 'lodash-es';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
@@ -9,6 +10,7 @@ import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/custom
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { SankeyView, SankeyNode, SankeyLink, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyURLLoadParams } from '../interfaces';
+import { SankeyViewConfirmComponent } from './view-confirm.component';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -32,8 +34,10 @@ export class SankeyViewDropdownComponent implements OnChanges {
 
   constructor(
     readonly workspaceManager: WorkspaceManager,
-    readonly sankeyController: SankeyControllerService
-  ) {}
+    readonly sankeyController: SankeyControllerService,
+    private modalService: NgbModal
+  ) {
+  }
 
   get stateFragment() {
     return new URLSearchParams(
@@ -62,6 +66,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
       return 'Trace View';
     }
   }
+
   @Input() activeViewName: string;
   @Output() activeViewNameChange = new EventEmitter<string>();
 
@@ -89,6 +94,17 @@ export class SankeyViewDropdownComponent implements OnChanges {
     '_width',
     '_order'
   ];
+
+
+  confirm({header, body}) {
+    const modal = this.modalService.open(
+      SankeyViewConfirmComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    modal.componentInstance.header = header;
+    modal.componentInstance.body = body;
+    return modal.result;
+  }
 
   ngOnChanges({activeViewName}: SimpleChanges) {
     if (activeViewName) {
@@ -184,8 +200,30 @@ export class SankeyViewDropdownComponent implements OnChanges {
     this.viewDataChanged.emit();
   }
 
+  confirmSaveView() {
+    if (size(this.views)) {
+      this.confirm({
+        header: 'Confirm overwrite',
+        body: 'Saving this view will overwrite existing view. Would you like to continue?'
+      }).then(() => {
+        this.saveView();
+      });
+    } else {
+      this.saveView();
+    }
+  }
+
   deleteViews() {
     delete this.sankeyController.allData._views;
     this.viewDataChanged.emit();
+  }
+
+  confirmDeleteViews() {
+    this.confirm({
+      header: 'Confirm delete',
+      body: 'Are you sure you wan to delete the view?'
+    }).then(() => {
+      this.deleteViews();
+    });
   }
 }
