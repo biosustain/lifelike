@@ -168,6 +168,10 @@
                   "replace": "src/scss/_vertical-menu.scss",
                   "with": "src/scss/_vertical-menu.demo.scss"
                 },
+                {
+                  "replace": "src/scss/bootstrap.scss",
+                  "with": "src/scss/bootstrap.demo.scss"
+                }
               ]
             }
           }
