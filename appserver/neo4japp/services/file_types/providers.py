@@ -148,6 +148,7 @@ ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # looking like /projects/Example or /projects/COVID-19
 PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
 ICON_DATA: dict = {}
+PDF_PAD = 1.0
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -478,14 +479,13 @@ def create_image_node(node, params):
     :returns: modified params
     """
     style = node.get('style', {})
-    print(style)
     params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
         if style.get('lineType') != 'none' else '0.0'
     params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
     params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
-    params['shape'] = 'box'
+    params['shape'] = 'rect'
     params['style'] = 'bold'
     params['color'] = style.get('strokeColor') or 'white'
     return params
@@ -847,7 +847,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             )
             raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
 
-        graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
+        graph_attr = [('margin', f'{PDF_MARGIN}'), ('outputorder', 'nodesfirst'),
+                      ('pad', f'{PDF_PAD}')]
 
         if format == 'png':
             graph_attr.append(('dpi', '100'))
