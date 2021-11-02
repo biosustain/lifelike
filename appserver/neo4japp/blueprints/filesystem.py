@@ -839,6 +839,9 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
+        current_user = g.current_user
+        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
+
         linked_files = params.pop('hashes_of_linked', [])
 
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
@@ -859,12 +862,11 @@ class FileListView(FilesystemBaseView):
                           db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
                                                                ).one_or_none()]
 
-        current_user = g.current_user
-        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
         response = self.get_bulk_file_response(targets['hash_ids'], current_user,
                                                missing_hash_ids=missing_hash_ids)
         # Add changes to the MapLinks after then response generation, as it might raise exceptions
         try:
+            pass
             if to_add:
                 db.session.add_all(to_add)
             if map_id:
@@ -872,6 +874,7 @@ class FileListView(FilesystemBaseView):
                                                                  MapLinks.linked_id.notin_(new_ids)
                                                                  ).delete(synchronize_session=False)
                 if to_add or delete_count:
+                    pass
                     db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
