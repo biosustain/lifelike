@@ -106,27 +106,6 @@
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.staging.scss"
                 }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "15kb"
-                }
               ]
             },
             "qa": {
@@ -138,27 +117,6 @@
                 {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.qa.scss"
-                }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "15kb"
                 }
               ]
             },
@@ -186,13 +144,13 @@
               "browserTarget": "client:build:production"
             },
             "staging": {
-              "browserTarget": "client:build:staging"
+              "browserTarget": "client:build:production,staging"
             },
             "qa": {
-              "browserTarget": "client:build:qa"
+              "browserTarget": "client:build:production,qa"
             },
             "demo": {
-              "browserTarget": "client:build:staging,demo"
+              "browserTarget": "client:build:production,demo"
             }
           }
         },
@@ -245,13 +203,13 @@
               "devServerTarget": "client:serve:production"
             },
             "staging": {
-              "devServerTarget": "client:serve:staging"
+              "devServerTarget": "client:serve:production,staging"
             },
             "qa": {
-              "devServerTarget": "client:serve:qa"
+              "devServerTarget": "client:serve:production,qa"
             },
             "demo": {
-              "devServerTarget": "client:serve:staging,demo"
+              "devServerTarget": "client:serve:production,demo"
             }
           }
         }
