@@ -272,7 +272,7 @@
               "devServerTarget": "client:serve:qa"
             },
             "demo": {
-              "devServerTarget": "client:serve:demo"
+              "devServerTarget": "client:serve:staging,demo"
             }
           }
         }
