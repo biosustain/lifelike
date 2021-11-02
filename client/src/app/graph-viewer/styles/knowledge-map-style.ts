@@ -164,7 +164,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
               iconCode = Unicodes.Graph;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
-              iconCode = Unicodes.Default;
+              iconCode = Unicodes.Pdf;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
               iconCode = Unicodes.Project;
