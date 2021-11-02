@@ -246,9 +246,9 @@ class LiteratureDataParser(BaseParser):
     def get_create_literature_query(entry1_type, entry2_type):
         query = """
         UNWIND $rows AS row
-        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name,"\\b") | apoc.text.capitalize(toLower(c))],"")})
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name," ") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT '%s' IN labels(n1) THEN [1] ELSE [] END | SET n1:%s)
-        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name,"\\b") | apoc.text.capitalize(toLower(c))],"")})
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name," ") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT '%s' IN labels(n2) THEN [1] ELSE [] END | SET n2:%s)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
