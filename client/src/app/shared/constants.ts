@@ -88,7 +88,7 @@ export enum FAClass {
   Graph = 'fak fa-diagram-sankey-solid',
   EnrichmentTable = 'fa fa-table',
   Pdf = 'fa fa-file-pdf',
-  BioC = 'fa fa-file-pdf',
+  BioC = 'fa fa-file',
   Default = 'fa fa-file',
 }
 
