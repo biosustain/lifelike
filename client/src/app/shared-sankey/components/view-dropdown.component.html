@@ -14,7 +14,7 @@
         </button>
         <div class="dropdown-divider"></div>
         <button ngbDropdownItem [disabled]="!object?.isEditable"
-                (click)="saveView()">
+                (click)="confirmSaveView()">
             Save view
         </button>
         <div class="dropdown-divider" *ngIf="views?.length"></div>
@@ -23,7 +23,7 @@
                         'fa fa-trash': true,
                         'disabled': !object?.isEditable
                         }"
-                              (click)="deleteViews()"></i>
+                              (click)="confirmDeleteViews()"></i>
         </button>
     </div>
 </div>
