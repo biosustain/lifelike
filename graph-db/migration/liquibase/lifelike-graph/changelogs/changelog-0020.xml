@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3782 load Zenodo literature constraints on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 load Zenodo literature constraints on date 11012021" author="Binh Vu">
     <comment>Create constraints and indexes for Zenodo literature</comment>
     <sql>
     CREATE CONSTRAINT constraint_association_id IF NOT EXISTS ON (n:Association) ASSERT n.eid IS UNIQUE;
@@ -18,19 +18,20 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 11012021" author="Binh Vu">
     <comment>
-        Split creation of Chemical-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
-Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate; Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
+        Split creation of Chemical-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
+The display_name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
+Need to also consider the fact the property could be at risk for being outdated.
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureChemical' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureChemical)
-        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureDisease' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureDisease)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
@@ -59,19 +60,20 @@ Need to use foreach because if some entities can have two entity type so the on 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 11012021" author="Binh Vu">
     <comment>
-        Split creation of Chemical-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
-Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
+        Split creation of Chemical-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
+The display_name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
+Need to also consider the fact the property could be at risk for being outdated.
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureChemical' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureChemical)
-        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureGene)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
@@ -100,19 +102,20 @@ Need to use foreach because if some entities can have two entity type so the on 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 11012021" author="Binh Vu">
     <comment>
-        Split creation of Gene-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
-Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
+        Split creation of Gene-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
+The display_name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
+Need to also consider the fact the property could be at risk for being outdated.
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureGene)
-        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureDisease' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureDisease)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
@@ -141,19 +144,20 @@ Need to use foreach because if some entities can have two entity type so the on 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 11012021" author="Binh Vu">
     <comment>
-        Split creation of Gene-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher;
-Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate
+        Split creation of Gene-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
+The display_name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
+Need to also consider the fact the property could be at risk for being outdated.
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       
         UNWIND $rows AS row
-        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
+        MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id, display_name:apoc.text.join([c in apoc.text.split(row.entry1_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n1) THEN [1] ELSE [] END | SET n1:LiteratureGene)
-        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id})
+        MERGE (n2:db_Literature:LiteratureEntity {eid:row.entry2_id, display_name:apoc.text.join([c in apoc.text.split(row.entry2_name,"\b") | apoc.text.capitalize(toLower(c))],"")})
         FOREACH (item IN CASE WHEN NOT 'LiteratureGene' IN labels(n2) THEN [1] ELSE [] END | SET n2:LiteratureGene)
         WITH n1, n2, row
         MERGE (a:Association {eid:row.entry1_id + '-' + row.entry2_id + '-' + row.theme})
@@ -182,7 +186,7 @@ Need to use foreach because if some entities can have two entity type so the on 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Disease on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Disease on date 11012021" author="Binh Vu">
     <comment>
         Link snippets for Chemical-Disease to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -218,7 +222,7 @@ Need to include properties in INDICATES relationship merge to be unique because 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Gene on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Gene on date 11012021" author="Binh Vu">
     <comment>
         Link snippets for Chemical-Gene to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -254,7 +258,7 @@ Need to include properties in INDICATES relationship merge to be unique because 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Disease on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Disease on date 11012021" author="Binh Vu">
     <comment>
         Link snippets for Gene-Disease to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -290,7 +294,7 @@ Need to include properties in INDICATES relationship merge to be unique because 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Gene on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 Zenodo literature snippet data Gene-Gene on date 11012021" author="Binh Vu">
     <comment>
         Link snippets for Gene-Gene to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -326,9 +330,8 @@ Need to include properties in INDICATES relationship merge to be unique because 
     />
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 10192021" author="Binh Vu">
-    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh);
-Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
+  <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 11012021" author="Binh Vu">
+    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
@@ -343,9 +346,8 @@ Need to use foreach because if label is included in the merge, it will create tw
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 10192021" author="Binh Vu">
-    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id);
-Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
+  <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 11012021" author="Binh Vu">
+    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
@@ -360,7 +362,7 @@ Need to use foreach because if label is included in the merge, it will create tw
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 10192021" author="Binh Vu">
+  <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 11012021" author="Binh Vu">
     <comment>LiteratureGene should be MAPPED_TO Gene nodes</comment>
     <sql>
     
