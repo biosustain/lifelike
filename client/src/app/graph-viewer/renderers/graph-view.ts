@@ -14,7 +14,6 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
-import {setOutersect} from 'app/shared/utils';
 import {associatedMapsRegex} from 'app/shared/constants';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
