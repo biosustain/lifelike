@@ -99,10 +99,6 @@
             "staging": {
               "fileReplacements": [
                 {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.staging.scss"
-                },
-                {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.staging.scss"
                 }
@@ -111,10 +107,6 @@
             "qa": {
               "fileReplacements": [
                 {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.qa.scss"
-                },
-                {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.qa.scss"
                 }
@@ -122,10 +114,6 @@
             },
             "demo": {
               "fileReplacements": [
-                {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.demo.scss"
-                },
                 {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.demo.scss"
