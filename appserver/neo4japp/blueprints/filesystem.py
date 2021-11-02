@@ -865,7 +865,7 @@ class FileListView(FilesystemBaseView):
             db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
                                               MapLinks.linked_id.notin_(new_ids)
                                               ).delete(synchronize_session=False)
-            db.session.commit()
+            # db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
