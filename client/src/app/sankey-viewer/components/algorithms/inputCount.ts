@@ -1,7 +1,7 @@
 import { partition, sumBy, mean } from 'lodash-es';
 
 import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
+import { SankeyLink, SankeyNode, SankeyData, SankeyTrace } from 'app/shared-sankey/interfaces';
 
 import { DirectedTraversal } from '../../services/directed-traversal';
 import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
@@ -117,7 +117,7 @@ export const inputCount = (data: SankeyData) => {
   linkLayers.forEach(layer => {
     const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
     const circularTraces = new Set(circularLinks.map(({_trace}) => _trace));
-    const traceCircularEstimation = new WeakMap<GraphTrace, number>();
+    const traceCircularEstimation = new WeakMap<SankeyTrace, number>();
     for (const circularTrace of circularTraces) {
       const traceNormalLinks = normalLinks.filter(({_trace}) => _trace === circularTrace);
       const traceCircularLinks = circularLinks.filter(({_trace}) => _trace === circularTrace);

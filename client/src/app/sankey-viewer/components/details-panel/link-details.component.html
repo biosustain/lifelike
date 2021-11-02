@@ -48,7 +48,7 @@
                         </li>
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Group</b>
-                            {{ entity._trace.group }}
+                            {{ entity._trace._group }}
                         </li>
                         <li class="list-group-item" *ngIf="entity._trace.detail_edges">
                             <button (click)="openTraceView(entity._trace)" class="btn btn-outline-primary">

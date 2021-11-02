@@ -5,6 +5,7 @@ import {
   calculateInputCountSkippingCircularLinksB,
   calculateInputCountSkippingCircularLinksA, initInputCountCalculation, getLinkLayers
 } from 'app/sankey-viewer/components/algorithms/inputCount';
+import { SankeyTrace } from 'app/shared-sankey/interfaces';
 
 import { CustomisedSankeyManyToManyLayoutService } from '../../services/customised-sankey-layout.service';
 import { SankeyManyToManyLink, SankeyManyToManyData } from '../interfaces';
@@ -24,7 +25,7 @@ export const inputCount = (data: SankeyManyToManyData) => {
   linkLayers.forEach(layer => {
     const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
     const circularTraces = new Set(flatMap(circularLinks, ({_traces}) => _traces));
-    const traceCircularEstimation = new WeakMap<GraphTrace, number>();
+    const traceCircularEstimation = new WeakMap<SankeyTrace, number>();
     for (const circularTrace of circularTraces) {
       const traceNormalLinks = normalLinks.filter(({_traces}) => _traces.includes(circularTrace));
       const traceCircularLinks = circularLinks.filter(({_traces}) => _traces.includes(circularTrace));
