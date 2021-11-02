@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
-import { merge, omit, transform, cloneDeepWith, clone } from 'lodash-es';
+import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
 import {
   SankeyOptions,
@@ -186,7 +186,7 @@ export class SankeyControllerService {
   get selectedNetworkTrace() {
     return this.options.networkTraces[
       this.state.networkTraceIdx
-    ];
+      ];
   }
 
   get oneToMany() {
@@ -223,10 +223,10 @@ export class SankeyControllerService {
   ) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ? colorMap : new Map(
-      networkTrace.traces.map(({group}) => [group, christianColors[group]])
+      networkTrace.traces.map(({_group}) => [_group, christianColors[_group]])
     );
     const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
-      const color = traceGroupColorMap.get(trace.group);
+      const color = traceGroupColorMap.get(trace._group);
       trace._color = color;
       return o.concat(
         trace.edges.map(linkIdx => {
@@ -235,8 +235,8 @@ export class SankeyControllerService {
             ...originLink,
             _color: color,
             _trace: trace,
-            _order: -trace.group,
-            _id: `${originLink._id}_${trace.group}`
+            _order: -trace._group,
+            _id: `${originLink._id}_${trace._group}`
           };
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
@@ -430,7 +430,7 @@ export class SankeyControllerService {
     const {links, nodes, graph: {node_sets}} = this.allData;
     const {palette: {palette}} = this;
     const traceColorPaletteMap = createMapToColor(
-      selectedNetworkTrace.traces.map(({group}) => group),
+      selectedNetworkTrace.traces.map(({_group}) => _group),
       {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
       palette
     );
@@ -555,6 +555,15 @@ export class SankeyControllerService {
     });
     content.links.forEach((l, index) => {
       l._id = String(index);
+    });
+    content.graph.trace_networks.forEach(tn => {
+      let maxVal = max(tn.traces.map(({group}) => isNil(group) ? -1 : group));
+      if (!isFinite(maxVal)) {
+        maxVal = Math.random();
+      }
+      tn.traces.forEach(tr => {
+        tr._group = (isNil(tr.group) || tr.group === -1) ? ++maxVal : tr.group;
+      });
     });
     this.allData = transform(content, (result, value, key) => {
       // only views are editable
