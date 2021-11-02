@@ -221,12 +221,3 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
   }));
 }
 
-/**
- * Returns items that are present in the first set but not in the second.
- * Weirdly, there is no native JS function for that
- * @param first - set to filter
- * @param second - set to look for occurrences
- */
-export function setOutersect<T>(first: Set<T>, second: Set<T>): Set<T> {
-    return new Set([...first].filter(item => !second.has(item)));
-}
