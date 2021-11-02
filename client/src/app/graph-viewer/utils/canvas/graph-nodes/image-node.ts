@@ -56,8 +56,8 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
         this.stroke.setContext(ctx);
         const lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
         this.ctx.rect(
-          this.nodeX,
-          this.nodeY,
+          this.nodeX - lineWidth / 2.0,
+          this.nodeY - lineWidth / 2.0,
           this.nodeWidth + lineWidth / 2.0,
           this.nodeHeight + lineWidth / 2.0
         );
