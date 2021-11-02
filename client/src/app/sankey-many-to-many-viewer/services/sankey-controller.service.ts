@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, merge, intersection } from 'lodash-es';
 
-import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink } from 'app/shared-sankey/interfaces';
+import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, SankeyTrace } from 'app/shared-sankey/interfaces';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { RecursivePartial } from 'app/shared/schemas/common';
@@ -92,7 +92,7 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
       , []
     );
     // add links traces and reduce to unique values
-    return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<GraphTrace>;
+    return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<SankeyTrace>;
   }
 
   colorLinkByType(links) {
