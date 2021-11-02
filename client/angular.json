@@ -213,7 +213,7 @@
               "browserTarget": "client:build:qa"
             },
             "demo": {
-              "browserTarget": "client:build:demo"
+              "browserTarget": "client:build:staging,demo"
             }
           }
         },
