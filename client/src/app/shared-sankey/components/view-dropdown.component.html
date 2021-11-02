@@ -6,11 +6,11 @@
     <div ngbDropdownMenu class="dropdown-menu">
         <button ngbDropdownItem
                 (click)="openBaseView('sankey')">
-            Default View
+            Multi-Lane View
         </button>
         <button ngbDropdownItem
                 (click)="openBaseView('sankey-many-to-many')">
-            Trace View
+            Single-Lane View
         </button>
         <div class="dropdown-divider"></div>
         <button ngbDropdownItem [disabled]="!object?.isEditable"
