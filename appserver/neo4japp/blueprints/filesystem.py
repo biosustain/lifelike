@@ -842,17 +842,22 @@ class FileListView(FilesystemBaseView):
         linked_files = params.pop('hashes_of_linked', [])
 
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
-        # TODO: Fix this after consultation
-        map_id = files[0].id
 
-        new_files = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
+        map_id = None
+        to_add, new_ids = [], []
+        if files:
+            file = files[0]
+            if file.mime_type == FILE_MIME_TYPE_MAP:
+                map_id = file.id
 
-        new_ids = [file.id for file in new_files]
+                new_files = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
 
-        # Possibly could be optimized with some get_or_create or insert_if_not_exist
-        to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
-                  db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
-                                                       ).one_or_none()]
+                new_ids = [file.id for file in new_files]
+
+                # Possibly could be optimized with some get_or_create or insert_if_not_exist
+                to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
+                          db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
+                                                               ).one_or_none()]
 
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
@@ -862,11 +867,12 @@ class FileListView(FilesystemBaseView):
         try:
             if to_add:
                 db.session.add_all(to_add)
-            delete_count = db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                                             MapLinks.linked_id.notin_(new_ids)
-                                                             ).delete(synchronize_session=False)
-            if to_add or delete_count:
-                db.session.commit()
+            if map_id:
+                delete_count = db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
+                                                                 MapLinks.linked_id.notin_(new_ids)
+                                                                 ).delete(synchronize_session=False)
+                if to_add or delete_count:
+                    db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
