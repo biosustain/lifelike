@@ -25,7 +25,7 @@ export type SankeyManyToManyOptions = SankeyOptions & SankeyManyToManyOptionsExt
 export interface SankeyManyToManyLink extends SankeyLink {
   _graphRelativePosition?: 'left' | 'right' | 'multiple';
   _visited?: string | number;
-  _traces?: GraphTrace[];
+  _traces?: SankeyTrace[];
 }
 
 export interface SankeyManyToManyNode extends SankeyNode {
