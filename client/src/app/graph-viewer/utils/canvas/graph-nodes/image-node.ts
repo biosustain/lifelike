@@ -48,25 +48,29 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   draw(transform: any): void {
     const zoomResetScale = 1 / transform.scale(1).k;
     this.ctx.save();
-    this.ctx.rect(
+    if (this.image) {
+      this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);
+      const ctx = this.ctx;
+
+      if (this.stroke) {
+        this.stroke.setContext(ctx);
+        const lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
+        this.ctx.rect(
+          this.nodeX,
+          this.nodeY,
+          this.nodeWidth + lineWidth / 2.0,
+          this.nodeHeight + lineWidth / 2.0
+        );
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      }
+    } else {
+      this.ctx.rect(
         this.nodeX,
         this.nodeY,
         this.nodeWidth,
         this.nodeHeight
       );
-    if (this.image) {
-      this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);
-      const ctx = this.ctx;
-      // console.log(ctx);
-
-      if (this.stroke) {
-        // console.log('stroke!');
-        this.stroke.setContext(ctx);
-        ctx.lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
-        ctx.stroke();
-      }
-    } else {
-
       this.ctx.lineWidth = zoomResetScale;
       this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
       this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
