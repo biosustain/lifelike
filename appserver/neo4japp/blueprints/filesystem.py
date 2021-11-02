@@ -839,6 +839,7 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
+        # do NOT write any code before those two lines - it will cause some unit tests to fail
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
 
