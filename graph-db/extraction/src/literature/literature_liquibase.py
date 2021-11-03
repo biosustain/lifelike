@@ -43,7 +43,7 @@ class LiteratureChangeLog(ChangeLog):
                 id = f'{self.id_prefix} {id}'
             comment = f'Split creation of {entity1_type}-{entity2_type} nodes and assocation from snippet creation; seem to be faster instead of one giant cypher' \
                 '. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.\n' \
-                'The display_name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is' \
+                'The name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is' \
                 ' available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.\n' \
                 'Need to also consider the fact the property could be at risk for being outdated.'
             query = LiteratureDataParser.get_create_literature_query(entity1_type, entity2_type)
