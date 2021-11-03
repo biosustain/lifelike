@@ -147,7 +147,7 @@
                 </div>
             </div>
         </app-module-header>
-        <div class="relative w-100 h-100">
+        <div class="relative w-100 h-100 overflow-hidden">
             <app-sankey #sankey
                         *ngIf="dataToRender | async"
                         (linkClicked)="selectLink($event)"
