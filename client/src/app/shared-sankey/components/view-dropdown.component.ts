@@ -60,10 +60,10 @@ export class SankeyViewDropdownComponent implements OnChanges {
 
   get activeViewBaseName() {
     if (this.activeViewBase === 'sankey') {
-      return 'Default View';
+      return 'Multi-Lane View';
     }
     if (this.activeViewBase === 'sankey-many-to-many') {
-      return 'Trace View';
+      return 'Single-Lane View';
     }
   }
 
