@@ -9,7 +9,8 @@ import {
   Output,
   ViewEncapsulation,
   SimpleChanges,
-  OnChanges
+  OnChanges,
+  NgZone
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -17,12 +18,11 @@ import * as d3 from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SankeyData, SankeyNode } from 'app/shared-sankey/interfaces';
+import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 
 import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
-import { createResizeObserver } from './utils';
-
 
 @Component({
   selector: 'app-sankey',
@@ -35,7 +35,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
     readonly sankey: SankeyLayoutService,
-    readonly wrapper: ElementRef
+    readonly wrapper: ElementRef,
+    private zone: NgZone
   ) {
     Object.assign(sankey, {
       py: 10, // nodePadding
@@ -192,13 +193,23 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
     });
 
-    // resize and listen to future resize events
-    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.wrapper.nativeElement);
+    this.attachResizeObserver();
+  }
+
+  attachResizeObserver() {
+    this.zone.runOutsideAngular(() =>
+      // resize and listen to future resize events
+      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement).subscribe(({width, height}) =>
+        this.zone.run(() => this.onResize(width, height))
+      )
+    );
   }
 
   ngOnDestroy() {
-    this.resizeObserver.disconnect();
-    delete this.resizeObserver;
+    if (this.resizeObserver) {
+      this.resizeObserver.unsubscribe();
+      delete this.resizeObserver;
+    }
   }
 
   // endregion
