@@ -6,8 +6,8 @@ app-sankey-many-to-many {
   $link-saturation: 30%;
   $link-color: hsl(0, 0, $link-lightness);
   $inactive-colour: lighten($link-color, 25%);
-  $link-left-color: hsl(240, $link-saturation, $link-lightness);
-  $link-right-color: hsl(120, $link-saturation, $link-lightness);
+  $link-left-color: rgb(163, 200, 219);
+  $link-right-color: rgb(255, 226, 149);
   $link-multi-color: hsl(180, $link-saturation, $link-lightness);
 
   $active-opacity: 1;
