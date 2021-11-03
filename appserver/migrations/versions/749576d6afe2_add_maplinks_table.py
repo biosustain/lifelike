@@ -29,13 +29,14 @@ depends_on = None
 
 def upgrade():
     op.create_table('map_links',
+                    sa.Column('entry_id', sa.Integer(), nullable=False, autoincrement=True),
                     sa.Column('map_id', sa.Integer(), nullable=False),
                     sa.Column('linked_id', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(['linked_id'], ['files.id'],
                                             name=op.f('fk_map_links_linked_id_files')),
                     sa.ForeignKeyConstraint(['map_id'], ['files.id'],
                                             name=op.f('fk_map_links_map_id_files')),
-                    sa.PrimaryKeyConstraint('map_id', name=op.f('pk_map_links'))
+                    sa.PrimaryKeyConstraint('entry_id', name=op.f('pk_map_links'))
                     )
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -43,6 +44,7 @@ def upgrade():
 
 def downgrade():
     op.drop_table('map_links')
+    pass
 
 
 def data_upgrades():
@@ -64,7 +66,7 @@ def data_upgrades():
     )
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
+        t_files.c.id,
         t_files_content.c.raw_file
     ]).where(
         and_(
@@ -72,34 +74,34 @@ def data_upgrades():
             t_files.c.content_id == t_files_content.c.id
         )
     ))
-
-    for chunk in window_chunk(files, 25):
-        entries_to_add = []
-        for map_id, content in chunk:
-            try:
-                with zipfile.ZipFile(BytesIO(content), 'r') as zip_file:
-                    json_graph = json.loads(zip_file.read('graph.json'))
-                    entities = json_graph.get('nodes', []) + json_graph.get('edges', [])
-                    for entity in entities:
-                        links = (entity.get('data', {}).get('sources') or []) + \
-                                (entity.get('data', {}).get('hyperlinks') or [])
-                        for link in links:
-                            if regex.match(link.get('url', "")):
-                                hash_id = link['url'].split('/')[-1]
-                                # TODO: This does not work here
-                                #  find other way to get id from hash_id
-                                file_id = session.query(Files).filter(
-                                    Files.hash_id == hash_id).one()
-                                entries_to_add.append(MapLinks(map_id=map_id, linked_id=file_id))
-            except (KeyError, zipfile.BadZipfile):
-                pass
-
+    # For some reason this gives me an error
+    # for chunk in window_chunk(files, 25):
+    entries_to_add = []
+    for map_id, content in files:
         try:
-            session.add_all(entries_to_add)
-            session.commit()
-        except Exception:
+            with zipfile.ZipFile(BytesIO(content), 'r') as zip_file:
+                json_graph = json.loads(zip_file.read('graph.json'))
+                entities = json_graph.get('nodes', []) + json_graph.get('edges', [])
+                for entity in entities:
+                    links = (entity.get('data', {}).get('sources') or []) + \
+                            (entity.get('data', {}).get('hyperlinks') or [])
+                    for link in links:
+                        if regex.match(link.get('url', "")):
+                            hash_id = link['url'].split('/')[-1]
+                            file = session.query(Files).filter(
+                                Files.hash_id == hash_id).one_or_none()
+                            if file:
+                                if file.id:
+                                    entries_to_add.append(MapLinks(map_id=map_id,
+                                                                   linked_id=file.id))
+        except (KeyError, zipfile.BadZipfile):
             pass
-    pass
+
+    try:
+        session.add_all(entries_to_add)
+        session.commit()
+    except Exception:
+        pass
 
 
 def data_downgrades():

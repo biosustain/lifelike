@@ -53,7 +53,8 @@ file_collaborator_role = db.Table(
 
 class MapLinks(RDBMSBase):
     __tablename__ = 'map_links'
-    map_id = db.Column(db.Integer(), db.ForeignKey('files.id'), primary_key=True, nullable=False)
+    entry_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    map_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
     linked_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
 
 
