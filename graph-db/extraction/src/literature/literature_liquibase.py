@@ -75,11 +75,11 @@ class LiteratureChangeLog(ChangeLog):
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "MESH:" RETURN n',
         'MERGE (c:db_MESH {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
-        {batchSize:10000});
+        {batchSize:10000, parallel:true});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "CHEBI:" RETURN n',
         'MERGE (c:db_CHEBI {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
-        {batchSize:10000});
+        {batchSize:10000, parallel:true});
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -93,11 +93,11 @@ class LiteratureChangeLog(ChangeLog):
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS "MESH:" RETURN n',
         'MERGE (d:db_MESH {eid:split(n.eid, ":")[1]}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d) FOREACH (item IN CASE WHEN NOT "Disease" IN labels(d) THEN [1] ELSE [] END | SET d:Disease)',
-        {batchSize:10000});
+        {batchSize:10000, parallel:true});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS "MESH:" RETURN n',
         'MERGE (d:Disease {eid:n.eid}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d)',
-        {batchSize:10000});
+        {batchSize:10000, parallel:true});
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -111,7 +111,7 @@ class LiteratureChangeLog(ChangeLog):
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureGene) RETURN n',
         'MERGE (g:db_NCBI:Gene {eid:n.eid}) WITH g,n MERGE (n)-[:MAPPED_TO]->(g)',
-        {batchSize:10000});
+        {batchSize:10000, parallel:true});
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
