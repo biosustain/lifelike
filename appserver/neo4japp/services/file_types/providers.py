@@ -486,7 +486,7 @@ def create_image_node(node, params):
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
     params['shape'] = 'rect'
-    params['style'] = 'bold'
+    params['style'] = 'bold,' + BORDER_STYLES_DICT.get(style.get('lineType'), '')
     params['color'] = style.get('strokeColor') or 'white'
     return params
 
