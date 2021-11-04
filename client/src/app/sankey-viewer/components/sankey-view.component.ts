@@ -74,7 +74,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                            }) => {
       this.sankeyController.load(content, () => {
         this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
-        this.setDefaultViewBase(content);
+        if (isNil(this.preselectedViewBase)) {
+          this.setDefaultViewBase(content);
+        }
       });
       this.object = object;
       this.emitModuleProperties();
@@ -148,13 +150,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   preselectedViewBase: string;
 
   setDefaultViewBase(content) {
-    if (isNil(this.preselectedViewBase)) {
-      const {selectedNetworkTrace} = this;
-      const {graph: {node_sets}} = content;
-      const _inNodes = node_sets[selectedNetworkTrace.sources];
-      const _outNodes = node_sets[selectedNetworkTrace.targets];
-      this.preselectedViewBase = (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
-    }
+    const {selectedNetworkTrace} = this;
+    const {graph: {node_sets}} = content;
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
+    this.preselectedViewBase = (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
   }
 
   initSelection() {
@@ -207,6 +207,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNetworkTrace(networkTraceIdx) {
     this.sankeyController.state.networkTraceIdx = networkTraceIdx;
+    this.setDefaultViewBase(this.sankeyController.allData);
     this.sankeyController.setPredefinedValueAccessor();
     this.sankeyController.applyState();
     this.resetSelection();
