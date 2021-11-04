@@ -99,9 +99,9 @@ export class SankeyViewDropdownComponent implements OnChanges {
   }
 
   ngOnChanges({preselectedViewBase, activeViewName}: SimpleChanges) {
-    if (activeViewName) {
-      if (!isNil(activeViewName.currentValue)) {
-        this.setViewFromName(activeViewName.currentValue);
+    if (activeViewName || preselectedViewBase) {
+      if (!isNil(this.activeViewName)) {
+        this.setViewFromName(this.activeViewName);
       } else if (!isNil(this.preselectedViewBase)) {
         this.changeViewBaseIfNeeded(this.preselectedViewBase);
       }
