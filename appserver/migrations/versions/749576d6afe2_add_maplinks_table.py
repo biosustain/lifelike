@@ -44,7 +44,6 @@ def upgrade():
 
 def downgrade():
     op.drop_table('map_links')
-    pass
 
 
 def data_upgrades():
@@ -98,7 +97,7 @@ def data_upgrades():
             pass
 
     try:
-        session.add_all(entries_to_add)
+        session.bulk_save_objects(entries_to_add)
         session.commit()
     except Exception:
         pass
