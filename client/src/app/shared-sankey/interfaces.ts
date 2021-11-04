@@ -1,5 +1,6 @@
 import { PRESCALERS } from 'app/sankey-viewer/components/algorithms/prescalers';
 import { LINK_PALETTES } from 'app/sankey-viewer/components/color-palette';
+import { RecursivePartial } from 'app/shared/schemas/common';
 
 // region UI options
 export interface ValueAccessor {
@@ -187,6 +188,8 @@ export interface SankeyView {
   links: SankeyLinksOverwrites;
 }
 
+export type SankeyApplicableView  = RecursivePartial<SankeyView> & Pick<SankeyView, 'base'>;
+
 export interface SankeyViews {
   [viewName: string]: SankeyView;
 }
@@ -206,12 +209,14 @@ export interface SankeyData extends GraphFile {
 
 export enum SankeyURLLoadParam {
   NETWORK_TRACE_IDX = 'network_trace',
-  VIEW_NAME = 'view_name'
+  VIEW_NAME = 'view',
+  BASE_VIEW_NAME = 'base_view'
 }
 
 export interface SankeyURLLoadParams {
   [SankeyURLLoadParam.NETWORK_TRACE_IDX]: number;
   [SankeyURLLoadParam.VIEW_NAME]?: string;
+  [SankeyURLLoadParam.BASE_VIEW_NAME]?: string;
 }
 
 // region Selection

@@ -9,7 +9,16 @@ import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { SankeyView, SankeyNode, SankeyLink, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyURLLoadParams } from '../interfaces';
+import {
+  SankeyView,
+  SankeyNode,
+  SankeyLink,
+  SankeyNodesOverwrites,
+  SankeyLinksOverwrites,
+  SankeyURLLoadParams,
+  SankeyURLLoadParam,
+  SankeyApplicableView
+} from '../interfaces';
 import { SankeyViewConfirmComponent } from './view-confirm.component';
 
 @Component({
@@ -28,30 +37,11 @@ export class SankeyViewDropdownComponent implements OnChanges {
     return views;
   }
 
-  get activeView() {
-    return this.views[this.activeViewName];
-  }
-
   constructor(
     readonly workspaceManager: WorkspaceManager,
     readonly sankeyController: SankeyControllerService,
     private modalService: NgbModal
   ) {
-  }
-
-  get stateFragment() {
-    return new URLSearchParams(
-      mapValues(
-        omitBy(
-          {
-            network_trace: this.sankeyController.state.networkTraceIdx,
-            view_name: this.activeViewName
-          },
-          isNil
-        ),
-        String
-      )
-    ).toString();
   }
 
   get activeViewBase() {
@@ -69,6 +59,8 @@ export class SankeyViewDropdownComponent implements OnChanges {
 
   @Input() activeViewName: string;
   @Output() activeViewNameChange = new EventEmitter<string>();
+
+  @Input() preselectedViewBase: string;
 
   @Input() object: FilesystemObject;
   @Output() viewDataChanged = new EventEmitter();
@@ -106,9 +98,13 @@ export class SankeyViewDropdownComponent implements OnChanges {
     return modal.result;
   }
 
-  ngOnChanges({activeViewName}: SimpleChanges) {
+  ngOnChanges({preselectedViewBase, activeViewName}: SimpleChanges) {
     if (activeViewName) {
-      this.setViewFromName(activeViewName.currentValue);
+      if (!isNil(activeViewName.currentValue)) {
+        this.setViewFromName(activeViewName.currentValue);
+      } else if (!isNil(this.preselectedViewBase)) {
+        this.changeViewBaseIfNeeded(this.preselectedViewBase);
+      }
     }
   }
 
@@ -122,17 +118,21 @@ export class SankeyViewDropdownComponent implements OnChanges {
     } as SankeyView;
   }
 
-  applyView(viewName, view) {
-    if (this.activeViewBase !== view.base) {
-      this.openBaseView(view.base, {
-        view_name: viewName
-      });
-    } else {
-      mergeDeep(this.sankeyController.state, view.state);
+  changeViewBaseIfNeeded(base, params?): boolean {
+    if (this.activeViewBase !== base) {
+      this.openBaseView(base);
+      return true;
+    }
+  }
+
+  applyView(view: SankeyApplicableView) {
+    if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: this.activeViewName})) {
+      const {state = {}, nodes = {}, links = {}} = view;
+      mergeDeep(this.sankeyController.state, state);
       const graph = this.sankeyController.computeData();
       graph._precomputedLayout = true;
-      this.applyPropertyObject(view.nodes, graph.nodes);
-      this.applyPropertyObject(view.links, graph.links);
+      this.applyPropertyObject(nodes, graph.nodes);
+      this.applyPropertyObject(links, graph.links);
       // @ts-ignore
       const layout = new CustomisedSankeyLayoutService();
       layout.computeNodeLinks(graph);
@@ -170,11 +170,11 @@ export class SankeyViewDropdownComponent implements OnChanges {
     });
   }
 
-  setViewFromName(viewName) {
+  setViewFromName(viewName: string) {
     const view = this.views[viewName];
     if (view) {
       this.activeViewNameChange.emit(viewName);
-      this.applyView(viewName, view);
+      this.applyView(view);
     } else {
       console.warn(`View ${viewName} has not been found in file.`);
     }
@@ -185,7 +185,8 @@ export class SankeyViewDropdownComponent implements OnChanges {
     return this.workspaceManager.navigateByUrl({
       url: `/projects/${object.project.name}/${baseView}/${object.hashId}#${
         this.objectToFragment({
-          network_trace: this.sankeyController.state.networkTraceIdx,
+          [SankeyURLLoadParam.NETWORK_TRACE_IDX]: this.sankeyController.state.networkTraceIdx,
+          [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
           ...params
         } as SankeyURLLoadParams)
       }`
