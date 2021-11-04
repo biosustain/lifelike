@@ -787,8 +787,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
     // Divide the nodes into two arrays - images, and regular (non-image) nodes.
-    const [images, nonImages] = this.nodes.reduce((
-      [image, nonImage], node) => (node.label === 'image' ? [[...image, node], nonImage] : [image, [...nonImage, node]]), [[], []]);
+    const [images, nonImages] = partition(this.nodes, ['label', 'image']);
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
