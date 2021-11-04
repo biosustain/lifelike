@@ -184,7 +184,7 @@ public class FileQueryHandler implements CustomTaskChange {
                                 String output = "Encountered error! Set startAt to line " +
                                         (processed + 1) + " (last value processed in file: " + lastProcessedLine +
                                         ") to pick up where left off.";
-                                logger.error(output);
+                                System.out.println(output);
                                 throw new CustomChangeException();
                             }
                             processed += content.size();

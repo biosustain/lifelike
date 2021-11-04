@@ -75,7 +75,7 @@ public class Neo4jGraph {
         Collection<List<String[]>> chunkedData = this.partitionData(data, chunkSize);
         List<List<Map<String, String>>> chunkedCypherParams = new ArrayList<>();
 
-        logger.info("Creating chunks of cypher parameters.");
+        System.out.println("Creating chunks of cypher parameters.");
         chunkedData.forEach(contentChunk -> {
             logger.info("New cypher parameters chunk");
             List<Map<String, String>> cypherParamsChunk = new ArrayList<>();
@@ -92,7 +92,7 @@ public class Neo4jGraph {
                     // delete the last comma
                     sb.deleteCharAt(sb.length() - 1);
                     sb.append("}");
-                    logger.info(sb.toString());
+                    System.out.println(sb);
                 } catch (IndexOutOfBoundsException e) {
                     throw new IndexOutOfBoundsException();
                 }
@@ -102,7 +102,7 @@ public class Neo4jGraph {
         });
 
         Session session = this.driver.session(SessionConfig.forDatabase(databaseName));
-        logger.info("Executing cypher query: " + query);
+        System.out.println("Executing cypher query: " + query);
         chunkedCypherParams.forEach(paramChunk -> {
             session.writeTransaction(tx -> tx.run(query, parameters("rows", paramChunk)));
         });
