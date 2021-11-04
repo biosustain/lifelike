@@ -1,3 +1,4 @@
+from typing import List
 import click
 import copy
 import hashlib
@@ -7,6 +8,7 @@ import json
 import logging
 import math
 import os
+import re
 import sentry_sdk
 import uuid
 
@@ -18,7 +20,7 @@ from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from sqlalchemy.exc import IntegrityError
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT, LogEventType
+from neo4japp.constants import ANNOTATION_STYLES_DICT, FILE_MIME_TYPE_MAP, LogEventType
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
@@ -771,3 +773,104 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
             parent_id,
             json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8')
         )
+
+@app.cli.command('find-broken-map-links')
+def find_broken_map_links():
+    print('Starting find_broken_map_links')
+    all_maps = db.session.query(
+        Files.id,
+        FileContent.raw_file,
+    ).join(
+        Files,
+        and_(
+            Files.content_id == FileContent.id,
+            Files.mime_type == FILE_MIME_TYPE_MAP
+        )
+    ).yield_per(100)
+
+    print('Got all_maps results...')
+
+    new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
+    hash_id_to_file_list_pairs = dict()
+    def add_links(potential_links: List[str], files_id: int):
+        for link in potential_links:
+            link_search = re.search(new_link_re, link)
+            if link_search is not None:
+                hash_id = link_search.group(1)
+                with open('hash_id_list.txt', 'a') as hash_id_list_fp:
+                    hash_id_list_fp.write(f'{hash_id}\n')
+                if hash_id in hash_id_to_file_list_pairs:
+                    if files_id in hash_id_to_file_list_pairs[hash_id]:
+                        hash_id_to_file_list_pairs[hash_id][files_id].append(link)
+                    else:
+                        hash_id_to_file_list_pairs[hash_id][files_id] = [link]
+                else:
+                    hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
+
+    for files_id, raw_file in all_maps:
+        # buffer = io.BytesIO(raw_file)
+        # zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
+        # map_json = json.loads(zip_file.read('graph.json'))
+        map_json = json.loads(raw_file.decode('utf-8'))
+
+        for node in map_json['nodes']:
+            potential_links = [source['url'] for source in node['data'].get('sources', [])]
+            add_links(potential_links, files_id)
+
+        for edge in map_json['edges']:
+            if 'data' in edge:
+                potential_links = [source['url'] for source in edge['data'].get('sources', [])]
+                add_links(potential_links, files_id)
+
+    # import pdb
+    # pdb.set_trace()
+
+    print('Added potential links...')
+
+    files_that_exist = db.session.query(
+        Files.hash_id,
+    ).filter(
+        Files.hash_id.in_([hash_id for hash_id in hash_id_to_file_list_pairs.keys()])
+    ).yield_per(100)
+
+    print('Got files_that_exist results...')
+
+    for hash_id, in files_that_exist:
+        hash_id_to_file_list_pairs.pop(hash_id)
+
+    # pdb.set_trace()
+
+    print('Removed files that exist from hash_id_to_file_list_pairs...')
+
+    # flattened_files = []
+    # for file_to_links_map in hash_id_to_file_list_pairs.values():
+    #     for file_id in file_to_links_map.keys():
+    #         flattened_files.append(file_id)
+
+    # files_with_links_that_dont_exist = db.session.query(
+    #     Files.id,
+    # ).filter(
+    #     Files.id.in_(flattened_files)
+    # ).yield_per(100)
+
+    # print('Got files_with_links_that_dont_exist results...')
+
+    with open('file_ids.csv', 'w') as file_id_outfile:
+        file_id_outfile.write('link\thash_id\tfile_id\tfilename')
+        for hash_id, file_to_links_map in hash_id_to_file_list_pairs.items():
+            for file_id, link_list in file_to_links_map.items():
+                file = db.session.query(Files).filter_by(id=file_id).one()
+                for link in link_list:
+                    file_id_outfile.write(f'{link}\t{hash_id}\t{file_id}\t{file.filename}\n')
+            # files_with_links_that_dont_exist = db.session.query(
+            #     Files,
+            # ).filter(
+            #     Files.id.in_(file_to_links_map.keys())
+            # ).yield_per(100)
+
+            # for file in files_with_links_that_dont_exist:
+            #     for link_list in file_to_links_map.values():
+            #         for link in link_list:
+            #             file_id_outfile.write(f'{link}\t{file.id}\t{file.filename}\n')
+
+    print('Done.')
