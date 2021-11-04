@@ -861,21 +861,19 @@ class FileListView(FilesystemBaseView):
                 # Possibly could be optimized with some get_or_create or insert_if_not_exist
                 to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
                           db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
-                                                               ).one_or_none()]
+                                                               ).scalar()]
 
         response = self.get_bulk_file_response(targets['hash_ids'], current_user,
                                                missing_hash_ids=missing_hash_ids)
         # Add changes to the MapLinks after then response generation, as it might raise exceptions
         try:
-            pass
             if to_add:
-                db.session.add_all(to_add)
+                db.session.bulk_save_objects(to_add)
             if map_id:
                 delete_count = db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
                                                                  MapLinks.linked_id.notin_(new_ids)
                                                                  ).delete(synchronize_session=False)
                 if to_add or delete_count:
-                    pass
                     db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
