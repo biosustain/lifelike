@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+import _ from 'lodash';
 
 import {
   GraphEntity,
@@ -786,12 +787,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    */
   * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
-
+    // Divide the nodes into two arrays - images, and regular (non-image) nodes.
+    const [images, nonImages] = _.partition(this.nodes, node => {
+      return node.label === 'image';
+    });
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
+    // We want to render images first, so we could place other nodes on top and prevent them from covering edges
+    yield* this.drawNodes(ctx, images);
     yield* this.drawEdges(ctx);
-    yield* this.drawNodes(ctx);
+    yield* this.drawNodes(ctx, nonImages);
     yield* this.drawHighlightBackground(ctx);
     yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawSearchFocusBackground(ctx);
@@ -909,8 +915,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawNodes(ctx: CanvasRenderingContext2D) {
-    for (const d of this.nodes) {
+  private* drawNodes(ctx: CanvasRenderingContext2D, nodes: UniversalGraphNode[]) {
+    for (const d of nodes) {
       yield null;
       ctx.beginPath();
       this.placeNode(d).draw(this.transform);
