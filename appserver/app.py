@@ -797,8 +797,6 @@ def find_broken_map_links():
             link_search = re.search(new_link_re, link)
             if link_search is not None:
                 hash_id = link_search.group(1)
-                with open('hash_id_list.txt', 'a') as hash_id_list_fp:
-                    hash_id_list_fp.write(f'{hash_id}\n')
                 if hash_id in hash_id_to_file_list_pairs:
                     if files_id in hash_id_to_file_list_pairs[hash_id]:
                         hash_id_to_file_list_pairs[hash_id][files_id].append(link)
@@ -808,9 +806,6 @@ def find_broken_map_links():
                     hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
 
     for files_id, raw_file in all_maps:
-        # buffer = io.BytesIO(raw_file)
-        # zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
-        # map_json = json.loads(zip_file.read('graph.json'))
         map_json = json.loads(raw_file.decode('utf-8'))
 
         for node in map_json['nodes']:
@@ -821,9 +816,6 @@ def find_broken_map_links():
             if 'data' in edge:
                 potential_links = [source['url'] for source in edge['data'].get('sources', [])]
                 add_links(potential_links, files_id)
-
-    # import pdb
-    # pdb.set_trace()
 
     print('Added potential links...')
 
@@ -838,22 +830,11 @@ def find_broken_map_links():
     for hash_id, in files_that_exist:
         hash_id_to_file_list_pairs.pop(hash_id)
 
-    # pdb.set_trace()
-
     print('Removed files that exist from hash_id_to_file_list_pairs...')
 
-    # flattened_files = []
-    # for file_to_links_map in hash_id_to_file_list_pairs.values():
-    #     for file_id in file_to_links_map.keys():
-    #         flattened_files.append(file_id)
-
-    # files_with_links_that_dont_exist = db.session.query(
-    #     Files.id,
-    # ).filter(
-    #     Files.id.in_(flattened_files)
-    # ).yield_per(100)
-
-    # print('Got files_with_links_that_dont_exist results...')
+    with open('hash_id_list.txt', 'w') as hash_id_list_outfile:
+        for hash_id in hash_id_to_file_list_pairs.keys():
+            hash_id_list_outfile.write(f'{hash_id}\n')
 
     with open('file_ids.csv', 'w') as file_id_outfile:
         file_id_outfile.write('link\thash_id\tfile_id\tfilename')
@@ -862,15 +843,5 @@ def find_broken_map_links():
                 file = db.session.query(Files).filter_by(id=file_id).one()
                 for link in link_list:
                     file_id_outfile.write(f'{link}\t{hash_id}\t{file_id}\t{file.filename}\n')
-            # files_with_links_that_dont_exist = db.session.query(
-            #     Files,
-            # ).filter(
-            #     Files.id.in_(file_to_links_map.keys())
-            # ).yield_per(100)
-
-            # for file in files_with_links_that_dont_exist:
-            #     for link_list in file_to_links_map.values():
-            #         for link in link_list:
-            #             file_id_outfile.write(f'{link}\t{file.id}\t{file.filename}\n')
 
     print('Done.')
