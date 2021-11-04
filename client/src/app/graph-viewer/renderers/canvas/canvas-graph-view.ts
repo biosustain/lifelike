@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import _ from 'lodash';
+import { partition } from 'lodash-es';
 
 import {
   GraphEntity,
@@ -788,7 +788,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
     // Divide the nodes into two arrays - images, and regular (non-image) nodes.
-    const [images, nonImages] = _.partition(this.nodes, node => {
+    const [images, nonImages] = partition(this.nodes, node => {
       return node.label === 'image';
     });
     yield* this.drawTouchPosition(ctx);
