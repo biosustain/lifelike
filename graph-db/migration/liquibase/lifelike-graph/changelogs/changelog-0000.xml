@@ -21,9 +21,11 @@
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (n:db_MESH) WHERE n.eid = row.entity_id
-      SET n.original_entity_types = split(row.entity_type, '|')
+      CALL apoc.periodic.iterate(
+        &quot;UNWIND $rows AS row MATCH (n:db_MESH) WHERE n.eid = row.entity_id RETURN n&quot;,
+        &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
+        {batchSize:500, parallel:true, params: {rows: $rows}}
+      )
       "
       fileName="jira-LL-3625-add-entity-type-array-mesh.zip"
       startAt="1"
@@ -47,9 +49,11 @@
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (n:Compound) WHERE n.eid = row.entity_id
-      SET n.original_entity_types = split(row.entity_type, '|')
+      CALL apoc.periodic.iterate(
+        &quot;UNWIND $rows AS row MATCH (n:Compound) WHERE n.eid = row.entity_id RETURN n&quot;,
+        &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
+        {batchSize:500, parallel:true, params: {rows: $rows}}
+      )
       "
       fileName="jira-LL-3625-add-entity-type-array-compound.zip"
       startAt="1"
@@ -73,9 +77,11 @@
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (n:Chemical) WHERE n.eid = row.entity_id
-      SET n.original_entity_types = split(row.entity_type, '|')
+      CALL apoc.periodic.iterate(
+        &quot;UNWIND $rows AS row MATCH (n:Chemical) WHERE n.eid = row.entity_id RETURN n&quot;,
+        &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
+        {batchSize:500, parallel:true, params: {rows: $rows}}
+      )
       "
       fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
       startAt="1"
@@ -110,9 +116,11 @@
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (n:Protein) WHERE n.eid = row.entity_id
-      SET n.original_entity_types = split(row.entity_type, '|')
+      CALL apoc.periodic.iterate(
+        &quot;UNWIND $rows AS row MATCH (n:Protein) WHERE n.eid = row.entity_id RETURN n&quot;,
+        &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
+        {batchSize:500, parallel:true, params: {rows: $rows}}
+      )
       "
       fileName="jira-LL-3625-add-entity-type-array-protein.zip"
       startAt="1"
