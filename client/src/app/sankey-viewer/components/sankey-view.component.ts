@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY } from 'rxjs';
 import { map, delay, catchError } from 'rxjs/operators';
-import { isNull, compact } from 'lodash-es';
+import { isNull, compact, isNil } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -74,6 +74,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                            }) => {
       this.sankeyController.load(content, () => {
         this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
+        this.setDefaultViewBase(content);
       });
       this.object = object;
       this.emitModuleProperties();
@@ -113,7 +114,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return this.sankeyController.selectedNetworkTrace;
   }
 
-
   get predefinedValueAccessor() {
     return this.sankeyController.predefinedValueAccessor;
   }
@@ -145,6 +145,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   private preselectedNetworkTraceIdx;
   activeViewName: string;
+  preselectedViewBase: string;
+
+  setDefaultViewBase(content) {
+    if (isNil(this.preselectedViewBase)) {
+      const {selectedNetworkTrace} = this;
+      const {graph: {node_sets}} = content;
+      const _inNodes = node_sets[selectedNetworkTrace.sources];
+      const _outNodes = node_sets[selectedNetworkTrace.targets];
+      this.preselectedViewBase = (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
+    }
+  }
 
   initSelection() {
     this.selection = new BehaviorSubject([]);
@@ -214,6 +225,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     const params = new URLSearchParams(fragment);
     this.preselectedNetworkTraceIdx = parseInt(params.get(SankeyURLLoadParam.NETWORK_TRACE_IDX), 10) || 0;
     this.activeViewName = params.get(SankeyURLLoadParam.VIEW_NAME);
+    this.preselectedViewBase = params.get(SankeyURLLoadParam.BASE_VIEW_NAME);
   }
 
   openPathReport() {
@@ -274,6 +286,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   loadFromUrl() {
+    // Check if the component was loaded with additional params
+    const fragment = this.route.snapshot.fragment;
+    if (!isNull(fragment)) {
+      this.parseUrlFragment(fragment);
+    }
+
     // Check if the component was loaded with a url to parse fileId
     // from
     if (this.route.snapshot.params.file_id) {
@@ -284,11 +302,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.openSankey(linkedFileId);
     }
 
-    // Check if the component was loaded with additional params
-    const fragment = this.route.snapshot.fragment;
-    if (!isNull(fragment)) {
-      this.parseUrlFragment(fragment);
-    }
   }
 
   requestRefresh() {
