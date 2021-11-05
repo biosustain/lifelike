@@ -56,6 +56,8 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
+const IMAGE = '#FFFFFF';
+
 
 const annotationTypes: AnnotationStyle[] = [
   {
@@ -201,15 +203,15 @@ const annotationTypes: AnnotationStyle[] = [
    * Bob: put this back when we know how to render images on canvas upon file change
    * see comments in node-form.component.html as well
    */
-  // {
-  //   label: 'image',
-  //   color: IMAGE,
-  //   style: {
-  //     border: IMAGE,
-  //     background: IMAGE,
-  //     color: '#000',
-  //   }
-  // },
+  {
+    label: 'image',
+    color: IMAGE,
+    style: {
+      border: IMAGE,
+      background: IMAGE,
+      color: '#000',
+    }
+  },
 ];
 
 const annotationTypesMap: Map<string, AnnotationStyle> = annotationTypes.reduce((map, item) => {

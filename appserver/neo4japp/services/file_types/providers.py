@@ -1,4 +1,3 @@
-import imghdr
 import io
 import json
 import math
@@ -80,7 +79,8 @@ from neo4japp.constants import (
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
     TEMP_PATH,
-    LogEventType
+    LogEventType,
+    IMAGE_BORDER_SCALE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -143,11 +143,13 @@ SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
+BIOC_RE = re.compile(r'^ */projects/.+/bioc/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
 PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
 ICON_DATA: dict = {}
+PDF_PAD = 1.0
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -477,11 +479,16 @@ def create_image_node(node, params):
     :param params: dict containing baseline parameters
     :returns: modified params
     """
-    params['penwidth'] = '0.0'
+    style = node.get('style', {})
+    params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
+        if style.get('lineType') != 'none' else '0.0'
     params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
     params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
+    params['shape'] = 'rect'
+    params['style'] = 'bold,' + BORDER_STYLES_DICT.get(style.get('lineType'), '')
+    params['color'] = style.get('strokeColor') or 'white'
     return params
 
 
@@ -536,6 +543,7 @@ def get_link_icon_type(node):
     """
     data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
     for link in data:
+        # TODO: This is getting bigger and bigger - refactor this for some clarity
         if ENRICHMENT_TABLE_RE.match(link['url']):
             return 'enrichment_table', link['url']
         elif SANKEY_RE.match(link['url']):
@@ -556,6 +564,8 @@ def get_link_icon_type(node):
             return 'document', None
         elif PROJECTS_RE.match(link['url']):
             return 'project', link['url']
+        elif BIOC_RE.match(link['url']):
+            return 'bioc', link['url']
         elif MAIL_RE.match(link['url']):
             return 'email', link['url']
         elif ANY_FILE_RE.match(link['url']):
@@ -841,7 +851,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             )
             raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
 
-        graph_attr = [('margin', str(PDF_MARGIN)), ('outputorder', 'nodesfirst')]
+        graph_attr = [('margin', f'{PDF_MARGIN}'), ('outputorder', 'nodesfirst'),
+                      ('pad', f'{PDF_PAD}')]
 
         if format == 'png':
             graph_attr.append(('dpi', '100'))
@@ -859,7 +870,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         x_values, y_values = [], []
         images = []
 
-        for node in json_graph['nodes']:
+        nodes = json_graph['nodes']
+        # Sort the images to the front of the list to ensure that they do not cover other nodes
+        nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
+
+        for node in nodes:
             if self_contained_export:
                 # Store the coordinates of each node as map name node is based on them
                 x_values.append(node['data']['x'])

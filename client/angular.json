@@ -99,99 +99,24 @@
             "staging": {
               "fileReplacements": [
                 {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.staging.scss"
-                },
-                {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.staging.scss"
-                }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "15kb"
                 }
               ]
             },
             "qa": {
               "fileReplacements": [
                 {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.qa.scss"
-                },
-                {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.qa.scss"
-                }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "15kb"
                 }
               ]
             },
             "demo": {
               "fileReplacements": [
                 {
-                  "replace": "src/scss/_vertical-menu.scss",
-                  "with": "src/scss/_vertical-menu.demo.scss"
-                },
-                {
                   "replace": "src/scss/bootstrap.scss",
                   "with": "src/scss/bootstrap.demo.scss"
-                }
-              ],
-              "optimization": false,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "15kb"
                 }
               ]
             }
@@ -207,13 +132,13 @@
               "browserTarget": "client:build:production"
             },
             "staging": {
-              "browserTarget": "client:build:staging"
+              "browserTarget": "client:build:production,staging"
             },
             "qa": {
-              "browserTarget": "client:build:qa"
+              "browserTarget": "client:build:production,qa"
             },
             "demo": {
-              "browserTarget": "client:build:demo"
+              "browserTarget": "client:build:production,demo"
             }
           }
         },
@@ -266,13 +191,13 @@
               "devServerTarget": "client:serve:production"
             },
             "staging": {
-              "devServerTarget": "client:serve:staging"
+              "devServerTarget": "client:serve:production,staging"
             },
             "qa": {
-              "devServerTarget": "client:serve:qa"
+              "devServerTarget": "client:serve:production,qa"
             },
             "demo": {
-              "devServerTarget": "client:serve:demo"
+              "devServerTarget": "client:serve:production,demo"
             }
           }
         }

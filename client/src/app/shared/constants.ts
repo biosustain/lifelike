@@ -88,7 +88,7 @@ export enum FAClass {
   Graph = 'fak fa-diagram-sankey-solid',
   EnrichmentTable = 'fa fa-table',
   Pdf = 'fa fa-file-pdf',
-  BioC = 'fa fa-file-pdf',
+  BioC = 'fa fa-file',
   Default = 'fa fa-file',
 }
 
@@ -97,7 +97,7 @@ export enum Unicodes {
   Map = '\uf542',
   EnrichmentTable = '\uf0ce',
   Pdf = '\uf1c1',
-  BioC = '\uf1c1',
+  BioC = '\uf15b',
   Mail = '\uf0e0',
   Project = '\uf5fd',
   Default = '\uf15b',

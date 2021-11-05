@@ -44,6 +44,7 @@ function deepCopy(data) {
   return JSON.parse(JSON.stringify(data)) as WordCloudFilterEntity[];
 }
 
+// todo: replace with { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 const createResizeObserver = (callback, container) => {
   const resize = throttled(async (width, height) => {
     const w = container.clientWidth;
