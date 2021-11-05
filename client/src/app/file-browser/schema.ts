@@ -104,6 +104,7 @@ export interface FilesystemObjectData {
 
 interface ContentValue {
   contentValue: Blob;
+  hashesOfLinked?: string[];
 }
 
 interface ContentUrl {
