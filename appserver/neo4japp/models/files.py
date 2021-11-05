@@ -51,6 +51,13 @@ file_collaborator_role = db.Table(
 )
 
 
+class MapLinks(RDBMSBase):
+    __tablename__ = 'map_links'
+    entry_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    map_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
+    linked_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
+
+
 class FileContent(RDBMSBase):
     __tablename__ = 'files_content'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -414,17 +421,18 @@ def file_update(mapper, connection, target: Files):
         files_to_update = [target.hash_id]
         if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
             family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(
-                        Files.recycling_date.is_(None)
-                    ),
-                    lazy_load_content=True
+                Files.id == target.id,
+                children_filter=and_(
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
             ).all()
             files_to_update = [member.hash_id for member in family]
 
         changes = get_model_changes(target)
         # Only delete a file when it changes from "not-deleted" to "deleted"
-        if 'deletion_date' in changes and changes['deletion_date'][0] is None and changes['deletion_date'][1] is not None:  # noqa
+        if 'deletion_date' in changes and changes['deletion_date'][0] is None and \
+                changes['deletion_date'][1] is not None:  # noqa
             current_app.logger.info(
                 f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
@@ -474,11 +482,11 @@ def file_delete(mapper, connection, target: Files):
         files_to_delete = [target.hash_id]
         if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
             family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(
-                        Files.recycling_date.is_(None)
-                    ),
-                    lazy_load_content=True
+                Files.id == target.id,
+                children_filter=and_(
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
             ).all()
             files_to_delete = [member.hash_id for member in family]
         current_app.logger.info(
