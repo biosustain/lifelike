@@ -86,6 +86,7 @@
                  class="d-inline-block"
                     [object]="object"
                     [(activeViewName)]="activeViewName"
+                    [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"
             ></app-sankey-view-dropdown>
             <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
@@ -117,7 +118,7 @@
                     <!-- add class dropdown-menu to avoid relayout -->
                     <div ngbDropdownMenu class="dropdown-menu">
                         <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces; let i = index"
-                                ngbDropdownItem>{{trace.description}}</button>
+                                ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
                     </div>
                 </div>
                 <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options">
