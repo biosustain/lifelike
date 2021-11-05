@@ -435,7 +435,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     let base = [`Type: ${an.meta.type}`];
     const idLink = SEARCH_LINKS.filter(link => link.domain == an.meta.idType)[0] || null;
     if (idLink !== null) {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(idLink.url.replace(/%s/, an.meta.id))}` : 'Id: None');
+      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: <a href=${escape(idLink.url.replace(/%s/, an.meta.id))} target="_blank">${escape(an.meta.id)}</a>` : 'Id: None');
     } else {
       base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
     }
