@@ -181,18 +181,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         delay(1000),
         catchError((err) => {
           console.log(err);
-          this.snackBar.open('Error saving view.', null, {
+          this.snackBar.open('Error saving file.', null, {
             duration: 2000,
           });
           return EMPTY;
         })
       ).subscribe(() => {
       this.emitModuleProperties();
-      this.snackBar.open('View saved.', null, {
+      this.snackBar.open('File has been updated.', null, {
         duration: 2000,
       });
     });
-    console.log('view saved');
   }
 
   selectNetworkTrace(networkTraceIdx) {

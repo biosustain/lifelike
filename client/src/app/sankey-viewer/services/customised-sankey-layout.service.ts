@@ -15,11 +15,11 @@ const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
   return links => {
     links.forEach(({_trace}) => {
-      traceGroupOrder.add(_trace.group);
+      traceGroupOrder.add(_trace._group);
     });
     const groups = [...traceGroupOrder];
     return links.sort((a, b) =>
-      (groups.indexOf(a._trace.group) - groups.indexOf(b._trace.group))
+      (groups.indexOf(a._trace._group) - groups.indexOf(b._trace._group))
     );
   };
 };
@@ -413,7 +413,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     graph.links.forEach(link => {
       link._order = sum([
         // save order by group
-        groups.indexOf(link._trace.group),
+        groups.indexOf(link._trace._group),
         // top up with fraction to order by trace
         traces.indexOf(link._trace) / tracesLength
       ]);

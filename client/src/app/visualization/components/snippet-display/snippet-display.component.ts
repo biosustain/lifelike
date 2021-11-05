@@ -56,7 +56,7 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
         this.maxPages = 1;
         this.requestNewPageEmitter = new EventEmitter<NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest>();
 
-        this.pageLimitList = [10, 25, 50];
+        this.pageLimitList = [10, 25, 50, 100];
         this.limitChanged = false;
 
         this.dataLoaded = false;
