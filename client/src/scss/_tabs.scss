@@ -6,10 +6,13 @@
 
   .nav {
     display: flex;
-    align-self: stretch;
-    align-items: stretch;
+    align-self: flex-end;
+    align-items: start;
+    flex-wrap: nowrap;
     min-width: 0;
     padding: 0.5rem 0.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
 
     .nav-item {
       margin-bottom: -1px;

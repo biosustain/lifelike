@@ -1,6 +1,6 @@
 <div class="h-100 w-100 d-flex overflow-hidden" #container>
   <ng-container *ngIf="(panes$ | async) as panes">
-    <div class="flex-fill">
+    <div class="flex-fill w-100">
       <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup #splitComponent
                 (dragEnd)="splitterDragEnded($event)">
         <as-split-area *ngFor="let pane of panes" [size]="pane.size">
@@ -11,7 +11,7 @@
                    [cdkDropListData]="pane">
                 <div class="nav-item d-flex text-truncate" [class.active]="pane.activeTab === tab"
                      *ngFor="let tab of pane.tabs; index as i"
-                     cdkDrag style="max-width: 250px; width: 30%"
+                     cdkDrag style="max-width: 250px; width: 30%; min-width: 15%"
                      appContextMenu>
                   <div class="nav-link d-flex text-truncate" [class.active]="pane.activeTab === tab"
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
@@ -56,7 +56,7 @@
                             container="body">
                       <i class="fa fa-fw fa-plus"></i>
                     </button>
-                    <div ngbDropdownMenu class="dropdown-menu">
+                    <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">
                       <button class="dropdown-item" (click)="addTab(pane, '/projects')">
                         File Browser
                       </button>

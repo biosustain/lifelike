@@ -142,7 +142,7 @@ export interface SankeyNode extends GraphNode {
 export interface SankeyLink extends GraphLink {
   l: number[];
   _id: SankeyId;
-  _trace?: GraphTrace;
+  _trace?: SankeyTrace;
   _source?: SankeyNode | string | number;
   _target?: SankeyNode | string | number;
   _sourceLinks?: SankeyLink[];
@@ -161,6 +161,7 @@ export interface SankeyLink extends GraphLink {
 
 export interface SankeyTrace extends GraphTrace {
   _color: string;
+  _group: GraphTrace['group'] | string;
 }
 
 export interface SankeyTraceNetwork extends GraphTraceNetwork {
