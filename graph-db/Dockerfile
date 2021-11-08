@@ -18,8 +18,9 @@ RUN cd liquibase-src && mvn clean package -DskipTests && echo "Done building jar
 
 USER $APPUSER
 
-# sleep for a bit to allow copying of the jar file
+# sleep for a bit to allow copying of the jar file (and liquibase migration xml)
 # to the host system (using ansible)
-# probably preferred way instead of the hassle
-# of git cloning, cause need ssh key and github account etc
+# run liquibase on host vm rather than container
+# easier for ansible to decrypt the liquibase properties
+# and update graph without resource constraints
 CMD sleep 30000
