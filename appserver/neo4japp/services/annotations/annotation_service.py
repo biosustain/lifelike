@@ -538,6 +538,7 @@ class AnnotationService:
             )
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
+            gene_primary_names.update(fallback_graph_results.primary_names)
 
         for entity_synonym, entity_datasource, entity_hyperlinks, token in entity_token_pairs:
             gene_id = None
