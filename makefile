@@ -56,7 +56,7 @@ clean-pyc:
 	find . -name '*.pyc' -delete
 
 clean-docker:
-	docker system prune -a --volumes
+	docker system prune -a --volumes --filter app=kg-prototypes
 
 clean: clean-docker clean-pyc
 	# Remove service account for Google Cloud
