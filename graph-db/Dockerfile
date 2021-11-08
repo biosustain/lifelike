@@ -23,4 +23,4 @@ USER $APPUSER
 # run liquibase on host vm rather than container
 # easier for ansible to decrypt the liquibase properties
 # and update graph without resource constraints
-CMD sleep 30000
+CMD sleep 300
