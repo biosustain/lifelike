@@ -17,7 +17,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
-import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { DatabaseLinks, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { toValidLink } from 'app/shared/utils/browser';
@@ -433,9 +433,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
-    const idLink = SEARCH_LINKS.filter(link => link.domain == an.meta.idType)[0] || null;
+    let idLink: DatabaseLinks = null;
+
+    if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
+      const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
+      idLink = source.links.filter(link => link.name === an.meta.idType)[0];
+    }
+
     if (idLink !== null) {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: <a href=${escape(idLink.url.replace(/%s/, an.meta.id))} target="_blank">${escape(an.meta.id)}</a>` : 'Id: None');
+      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${an.meta.id}`)} target="_blank">${escape(an.meta.id)}</a>` : 'Id: None');
     } else {
       base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
     }
