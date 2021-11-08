@@ -238,6 +238,7 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     annotation_configs = fields.Nested(AnnotationConfigurations)
     public = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
+    hashes_of_linked = fields.List(fields.String, required=False)
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):

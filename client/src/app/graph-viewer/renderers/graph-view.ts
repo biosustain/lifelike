@@ -6,7 +6,7 @@ import { Group, Link } from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
-  GraphEntityType,
+  GraphEntityType, Hyperlink, Source,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
@@ -14,6 +14,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
+import {associatedMapsRegex} from 'app/shared/constants';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -58,6 +59,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * values are passed to the automatic layout routines .
    */
   readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
+
+  /**
+   * Stores the counters for linked documents
+   */
+  linkedDocuments: Set<string> = new Set();
 
   // Graph states
   // ---------------------------------
@@ -198,10 +204,52 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
+  // TODO: Move
+  /**
+   * Iterate through the link nodes of the GraphEntity and return hashes to linked documents/ET
+   * @params links: list to check
+   * @returns: list of hashes found in the links
+   */
+  getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
+    // Filter in links that point to desired files
+    return links.filter((source) => {
+      return associatedMapsRegex.test(source.url);
+    // Return hashId of those files (last element of the url address)
+    }).map(source => {
+      return source.url.split('/').pop();
+    });
+  }
+
+  /**
+   * Check the Entity for links to internal files
+   * @param entity: UniversalGraphEntity that we are checking
+   */
+  checkEntityForLinked(entity: UniversalGraphEntity): Set<string> {
+    // NOTE: Should I check only sources?
+    if (entity.data) {
+      const linkedInHyperlinks = entity.data.hyperlinks ? this.getLinkedHashes(entity.data.hyperlinks) : [];
+      const linkedInSources = entity.data.sources ? this.getLinkedHashes(entity.data.sources) : [];
+      return new Set(linkedInHyperlinks.concat(linkedInSources));
+    }
+    return new Set();
+  }
+
+  /**
+   * Check the entire graph for any linked documents/enrichment tables and return a set of their hashes
+   */
+  getHashesOfLinked(): Set<string> {
+    const set = new Set<string>();
+    // Note: Should I check only nodes?
+    this.nodes.forEach(node => this.checkEntityForLinked(node).forEach(val => set.add(val)));
+    this.edges.forEach(edge => this.checkEntityForLinked(edge).forEach(val => set.add(val)));
+    return set;
+  }
+
   /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
+  // NOTE: This is actually called twice when opening a map in read-only mode - is this anticipated?
   setGraph(graph: UniversalGraph): void {
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
@@ -1008,4 +1056,9 @@ interface GraphLayoutGroup extends Group {
   name: string;
   color: string;
   leaves?: GraphLayoutNode[];
+}
+
+enum referenceCheckingMode {
+  nodeAdded = 1,
+  nodeDeleted = -1,
 }
