@@ -1,9 +1,13 @@
 FROM node:13.10.1 as base
+LABEL app=kg-prototypes
+
 # ========================================
 # Landing page
 # ========================================
 
 FROM base as landing
+LABEL app=kg-prototypes
+
 # Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
 RUN apt-get autoclean && \
     apt-get autoremove -y && \
@@ -29,6 +33,8 @@ RUN yarn build
 # Angular app
 # ========================================
 FROM base as build
+LABEL app=kg-prototypes
+
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb \
     && dpkg -i dumb-init_*.deb
@@ -60,6 +66,8 @@ RUN yarn install \
 COPY . $ANGULAR_DIR
 
 FROM build as compile
+LABEL app=kg-prototypes
+
 # ========================================
 # angular bundle compilation
 # ========================================
@@ -77,6 +85,7 @@ RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
 # ========================================
 # Set the nginx conf file to use
 FROM nginx:latest AS webserver
+LABEL app=kg-prototypes
 
 RUN apt-get update && \
     apt-get install vim net-tools -y && \
