@@ -29,6 +29,11 @@ services:
         networks:
             - backend
 
+    liquibase:
+        container_name: liquibase
+        user: ***ARANGO_USERNAME***
+        build: ./graph-db
+
     appserver:
         container_name: appserver
         build: ./appserver
