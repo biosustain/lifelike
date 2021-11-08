@@ -1,5 +1,4 @@
 FROM python:3.8.3-slim
-LABEL app=kg-prototypes
 
 ENV APP_USER lifelike
 ENV APP_HOME /home/$APP_USER
