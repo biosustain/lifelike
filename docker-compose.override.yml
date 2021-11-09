@@ -74,6 +74,7 @@ services:
             - DOMAIN=http://localhost:4200
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
             - ASSETS_FOLDER=/home/n4j/assets/
+            - JWT_SECRET_KEY=abc-def-ghi-jkl-mno-pqr-stu-vwx-yz0-123
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
@@ -111,6 +112,8 @@ services:
             - REDIS_PORT=6379
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
+            # Other
+            - JWT_SECRET_KEY=abc-def-ghi-jkl-mno-pqr-stu-vwx-yz0-123
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true

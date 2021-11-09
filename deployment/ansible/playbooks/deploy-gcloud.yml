@@ -89,6 +89,7 @@
       copy:
         content: |
           NLP_SECRET={{ NLP_SECRET }}
+          JWT_SECRET_KEY={{ JWT_SECRET_KEY }}
           GITHUB_COMMIT_TIMESTAMP={{ git_timestamp }}
           ELASTICSEARCH_HOSTS={{ ELASTICSEARCH_HOSTS }}
           ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}
