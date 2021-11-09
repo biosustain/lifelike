@@ -10,11 +10,12 @@
       tags: ["docker"]
 
   tasks:
-    - name: Install fail2ban
+    - name: Install utils
       apt:
         update_cache: yes
         pkg:
           - fail2ban
+          - openjdk-11-jdk
 
     - name: Create liquibase directory
       file:
@@ -30,10 +31,10 @@
         mode: 0755
         creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
 
-    - name: Add liquibase to PATH
-      shell: echo $PATH
-      environment:
-        PATH: "{{ LIQUIBASE_INSTALL_FOLDER }}:$PATH"
+    # - name: Add liquibase to PATH
+    #   shell: echo $PATH
+    #   environment:
+    #     PATH: "{{ LIQUIBASE_INSTALL_FOLDER }}:$PATH"
 
     - name: Download liquibase-neo4j jar
       get_url:
@@ -195,7 +196,7 @@
               docker cp liquibase:/home/neo4j/liquibase {{ deploy_dir }} && \
               mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
               cd {{ deploy_dir }}/liquibase && \
-              liquibase --log-level=info update"
+              /opt/liquibase/liquibase --log-level=info update"
       tags:
         - deploy
 
