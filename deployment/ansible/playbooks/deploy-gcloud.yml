@@ -10,11 +10,13 @@
       tags: ["docker"]
 
   tasks:
-    - name: Install fail2ban
+    - name: Install utilities
       apt:
         update_cache: yes
         pkg:
           - fail2ban
+          - gunzip
+          - tar
 
     - name: Create liquibase directory
       file:
