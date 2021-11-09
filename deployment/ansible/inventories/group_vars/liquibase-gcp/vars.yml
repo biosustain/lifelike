@@ -1,0 +1,23 @@
+server_name: staging.lifelike.bio
+app_environment: staging
+
+deploy_user: ansible
+deploy_group: ansible
+deploy_dir: /home/ansible
+
+lmdb_path: /home/ansible/lmdb
+
+nginx_image: nginx:1.19.1-alpine
+nginx_hostname: ng01
+nginx_conf_dir: /home/ansible/nginx
+
+certbot_image: certbot/certbot
+certbot_hostname: cb01
+certbot_conf_dir: /home/ansible/certbot
+certbot_email: e4sanchez@eng.ucsd.edu
+
+dh_param_dir: /home/ansible/dh-param
+
+elastic_file_content_index_id: file_staging
+
+container_registry: "gcr.io/able-goods-221820"
