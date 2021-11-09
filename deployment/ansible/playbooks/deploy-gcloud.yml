@@ -58,21 +58,21 @@
         name: "***ARANGO_DB_NAME***.azurecr.io/{{ item }}:{{ docker_img_hash }}"
         source: pull
       with_items:
-        - kg-appserver
-        - kg-webserver
-        - kg-cache-service
+        # - kg-appserver
+        # - kg-webserver
+        # - kg-cache-service
         - kg-liquibase
       tags:
         - deploy
 
-    - name: Pull PDFParser Docker Image
-      docker_image:
-        name: "***ARANGO_DB_NAME***.azurecr.io/{{ item }}:latest"
-        source: pull
-      with_items:
-        - kg-pdfparser
-      tags:
-        - deploy
+    # - name: Pull PDFParser Docker Image
+    #   docker_image:
+    #     name: "***ARANGO_DB_NAME***.azurecr.io/{{ item }}:latest"
+    #     source: pull
+    #   with_items:
+    #     - kg-pdfparser
+    #   tags:
+    #     - deploy
 
     - name: Copy docker-compose files
       copy:
