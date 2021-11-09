@@ -68,6 +68,8 @@ services:
             - SE_HOST=statistical-enrichment
             - SE_PORT=5010
             # Other
+            # IMPORTANT: This should be replaced as part of https://sbrgsoftware.atlassian.net/browse/LL-3358!
+            - NLP_SECRET=***NLP_SERVICE_SECRET***
             - DOMAIN=http://localhost:4200
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
             - ASSETS_FOLDER=/home/n4j/assets/

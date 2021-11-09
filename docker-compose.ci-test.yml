@@ -41,6 +41,8 @@ services:
             - REDIS_PASSWORD=password
             - REDIS_SSL=false
             - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+            # IMPORTANT: This should be replaced as part of https://sbrgsoftware.atlassian.net/browse/LL-3358!
+            - NLP_SECRET=***NLP_SERVICE_SECRET***
         networks:
             - frontend
             - backend

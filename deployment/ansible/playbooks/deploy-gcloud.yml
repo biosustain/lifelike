@@ -59,6 +59,7 @@
     - name: Create .env file
       copy:
         content: |
+          NLP_SECRET={{ NLP_SECRET }}
           GITHUB_COMMIT_TIMESTAMP={{ git_timestamp }}
           ELASTICSEARCH_HOSTS={{ ELASTICSEARCH_HOSTS }}
           ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}

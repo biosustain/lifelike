@@ -13,6 +13,8 @@ class Base():
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
 
+    NLP_SECRET = os.environ.get('NLP_SECRET', 'secret')
+
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
     POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
     POSTGRES_USER = os.environ.get('POSTGRES_USER')
