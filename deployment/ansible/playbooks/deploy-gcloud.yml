@@ -189,8 +189,8 @@
     - name: Run neo4j liquibase migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker cp appserver:/home/neo4j/liquibase-src/target/lifelike-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }} && \
-              docker cp appserver:/home/neo4j/liquibase {{ deploy_dir }} && \
+        cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/lifelike-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }} && \
+              docker cp liquibase:/home/neo4j/liquibase {{ deploy_dir }} && \
               mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
               cd {{ deploy_dir }}/liquibase && \
               liquibase --log-level=info update"
