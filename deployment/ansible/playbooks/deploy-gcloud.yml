@@ -23,7 +23,7 @@
         mode: 0755
 
     - name: Install liquibase
-      ansible.builtin.unarchive:
+      unarchive:
         src: https://github.com/liquibase/liquibase/releases/download/v{{ LIQUIBASE_VERSION }}/liquibase-{{ LIQUIBASE_VERSION }}.tar.gz
         dest: "{{ LIQUIBASE_INSTALL_FOLDER }}"
         remote_src: yes
@@ -31,6 +31,7 @@
         creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
 
     - name: Add liquibase to PATH
+      shell: echo $PATH
       environment:
         PATH: "{{ LIQUIBASE_INSTALL_FOLDER }}:$PATH"
 
