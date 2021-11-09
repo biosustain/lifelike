@@ -31,7 +31,8 @@
         creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
 
     - name: Add liquibase to PATH
-      raw: PATH={{ LIQUIBASE_INSTALL_FOLDER }}:$PATH
+      environment:
+        PATH: "{{ LIQUIBASE_INSTALL_FOLDER }}:$PATH"
 
     - name: Download liquibase-neo4j jar
       get_url:
