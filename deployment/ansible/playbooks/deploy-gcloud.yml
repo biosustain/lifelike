@@ -157,7 +157,7 @@
           # properties used as parameters by *Handler.java classes in liquibase changelog.xml
           parameter.neo4jHost=bolt://{{ NEO4J_HOST }}
           # separate credentials by comma; username first: <username>,<password>
-          parameter.neo4jCredentials={{ NEO4J_AUTH }}
+          parameter.neo4jCredentials={{ NEO4J_AUTH | replace("/", ",")}}
           parameter.neo4jDatabase={{ NEO4J_AUTH.split("/")[0] }}
           parameter.azureStorageName={{ AZURE_ACCOUNT_STORAGE_NAME }}
           parameter.azureStorageKey={{ AZURE_ACCOUNT_STORAGE_KEY }}
