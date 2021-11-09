@@ -76,6 +76,12 @@ services:
             - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
             - /proc:/hostfs/proc:ro
             - /:/hostfs:ro
+
+    liquibase:
+        container_name: liquibase
+        user: root
+        image: ${REGISTRY:-lifelike.azurecr.io}/kg-liquibase:${GITHUB_HASH:-latest}
+
 networks:
     frontend:
     backend:
