@@ -10,13 +10,11 @@
       tags: ["docker"]
 
   tasks:
-    - name: Install utilities
+    - name: Install fail2ban
       apt:
         update_cache: yes
         pkg:
           - fail2ban
-          - gunzip
-          - tar
 
     - name: Create liquibase directory
       file:
@@ -25,10 +23,10 @@
         mode: 0755
 
     - name: Install liquibase
-      unarchive:
+      ansible.builtin.unarchive:
         src: https://github.com/liquibase/liquibase/releases#:~:text=liquibase-{{ LIQUIBASE_VERSION }}.tar.gz
         dest: "{{ LIQUIBASE_INSTALL_FOLDER }}"
-        copy: no
+        remote_src: yes
         mode: 0755
         creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
 
