@@ -1,4 +1,4 @@
-name: GCP Staging Deployment
+name: GCP Liquibase Deployment
 
 on:
   workflow_dispatch:
