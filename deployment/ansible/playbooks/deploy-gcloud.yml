@@ -16,6 +16,23 @@
         pkg:
           - fail2ban
 
+    - name: Create liquibase directory
+      file:
+        name: "{{ LIQUIBASE_INSTALL_FOLDER }}"
+        state: directory
+        mode: 0755
+
+    - name: Install liquibase
+      unarchive:
+        src: https://github.com/liquibase/liquibase/releases#:~:text=liquibase-{{ LIQUIBASE_VERSION }}.tar.gz
+        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}"
+        copy: no
+        mode: 0755
+        creates: "{{ LIQUIBASE_INSTALL_FOLDER }}"/liquibase
+
+    - name: Add liquibase to PATH
+      raw: PATH={{ LIQUIBASE_INSTALL_FOLDER }}:$PATH
+
     - name: Log into Docker Registry
       docker_login:
         registry_url: ***ARANGO_DB_NAME***.azurecr.io
@@ -32,6 +49,7 @@
         - kg-appserver
         - kg-webserver
         - kg-cache-service
+        - kg-liquibase
       tags:
         - deploy
 
@@ -106,6 +124,37 @@
       tags:
         - deploy
 
+    - name: Creates liquibase data file directory
+      file:
+        path: "{{ deploy_dir }}/liquibase-data-files"
+        state: directory
+        mode: "774"
+        owner: "{{ deploy_user }}"
+
+    - name: Create liquibase.properties file
+      copy:
+        content: |
+          # properties used by liquibase command line
+          changeLogFile=***ARANGO_DB_NAME***-graph/changelog-master.xml
+          url=jdbc:neo4j:bolt://{{ NEO4J_HOST }}?database={{ NEO4J_AUTH.split("/")[0] }}
+          username={{ NEO4J_AUTH.split("/")[0] }}
+          password={{ NEO4J_AUTH.split("/")[1] }}
+          # properties used as parameters by *Handler.java classes in liquibase changelog.xml
+          parameter.neo4jHost=bolt://{{ NEO4J_HOST }}
+          # separate credentials by comma; username first: <username>,<password>
+          parameter.neo4jCredentials={{ NEO4J_AUTH }}
+          parameter.neo4jDatabase={{ NEO4J_AUTH.split("/")[0] }}
+          parameter.azureStorageName={{ AZURE_ACCOUNT_STORAGE_NAME }}
+          parameter.azureStorageKey={{ AZURE_ACCOUNT_STORAGE_KEY }}
+          parameter.localSaveFileDir={{ deploy_dir }}/liquibase-data-files
+          liquibase.hub.mode=off
+        dest: "{{ deploy_dir }}/liquibase.properties"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: u=rw,g=r,o=r
+      tags:
+        - deploy
+
     - name: Stop any previous containers
       shell:
         chdir: "{{ deploy_dir }}"
@@ -122,6 +171,17 @@
       shell:
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose up -d"
+      tags:
+        - deploy
+
+    - name: Run neo4j liquibase migration
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker cp appserver:/home/neo4j/liquibase-src/target/***ARANGO_DB_NAME***-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }} && \
+              docker cp appserver:/home/neo4j/liquibase {{ deploy_dir }} && \
+              mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
+              cd {{ deploy_dir }}/liquibase && \
+              liquibase --log-level=info update"
       tags:
         - deploy
 

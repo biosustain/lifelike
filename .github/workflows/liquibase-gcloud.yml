@@ -1,0 +1,79 @@
+name: GCP Staging Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - liquibase
+    branches:
+      # only trigger when branches match refs/heads/staging/
+      - "liquibase/**"
+
+jobs:
+  build:
+    name: Setup, Build, Publish
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      output1: ${{ steps.timestamp.outputs.commit_timestamp }}
+      output2: ${{ steps.commitcount.outputs.build_number }}
+      output3: ${{ steps.buildversion.outputs.build_version}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set git commit timestamp
+        id: timestamp
+        run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
+
+      - name: Set commit counts as build number
+        id: commitcount
+        run: echo ::set-output name=build_number::$(git rev-list --count HEAD)
+
+      # Uses the commit tag as the version
+      - name: Set build version
+        id: buildversion
+        run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
+
+      - name: Build liquibase image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: kg-liquibase
+          image_tag: ${{ github.sha }},latest
+          context: ./graph-db
+          dockerfile: ./Dockerfile
+
+  deploy:
+    name: Deploy
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy application
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: 'deployment/ansible'
+          playbook_file_path: 'playbooks/deploy-gcloud.yml'
+          inventory_file_path: 'inventories/hosts.yml'
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars webserver=liquibase-gcp
+            --extra-vars set_docker_img_hash=${{ github.sha }}
+            --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
+            --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
+            --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
+            --user ansible
+            --verbose
