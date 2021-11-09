@@ -58,21 +58,21 @@
         name: "lifelike.azurecr.io/{{ item }}:{{ docker_img_hash }}"
         source: pull
       with_items:
-        # - kg-appserver
-        # - kg-webserver
-        # - kg-cache-service
+        - kg-appserver
+        - kg-webserver
+        - kg-cache-service
         - kg-liquibase
       tags:
         - deploy
 
-    # - name: Pull PDFParser Docker Image
-    #   docker_image:
-    #     name: "lifelike.azurecr.io/{{ item }}:latest"
-    #     source: pull
-    #   with_items:
-    #     - kg-pdfparser
-    #   tags:
-    #     - deploy
+    - name: Pull PDFParser Docker Image
+      docker_image:
+        name: "lifelike.azurecr.io/{{ item }}:latest"
+        source: pull
+      with_items:
+        - kg-pdfparser
+      tags:
+        - deploy
 
     - name: Copy docker-compose files
       copy:
@@ -172,12 +172,12 @@
         chdir: "{{ deploy_dir }}"
         cmd: docker stop $(docker ps -aq)
 
-    # - name: Pull latest docker images (if any)
-    #   shell:
-    #     chdir: "{{ deploy_dir }}"
-    #     cmd: "docker-compose pull"
-    #   tags:
-    #     - deploy
+    - name: Pull latest docker images (if any)
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose pull"
+      tags:
+        - deploy
 
     - name: Start docker
       shell:
@@ -203,39 +203,39 @@
       tags:
         - deploy
 
-    # - name: Run the migration
-    #   shell:
-    #     chdir: "{{ deploy_dir }}"
-    #     cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
-    #   tags:
-    #     - deploy
+    - name: Run the migration
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
+      tags:
+        - deploy
 
-    # - name: Create LMDB directory
-    #   file:
-    #     path: "{{ deploy_dir }}/lmdb"
-    #     state: directory
-    #     mode: "774"
-    #     owner: "{{ deploy_user }}"
-    #     group: "1000" # We do this because of group permissions 1000 in Docker
+    - name: Create LMDB directory
+      file:
+        path: "{{ deploy_dir }}/lmdb"
+        state: directory
+        mode: "774"
+        owner: "{{ deploy_user }}"
+        group: "1000" # We do this because of group permissions 1000 in Docker
 
-    # - name: Create/Update LMDB database
-    #   shell:
-    #     chdir: "{{ deploy_dir }}"
-    #     cmd: "docker-compose exec -d -T appserver flask load-lmdb"
-    #   tags:
-    #     - deploy
+    - name: Create/Update LMDB database
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose exec -d -T appserver flask load-lmdb"
+      tags:
+        - deploy
 
-    # - name: Seed Elasticsearch
-    #   shell:
-    #     chdir: "{{ deploy_dir }}"
-    #     cmd: "docker-compose run -d -T appserver flask reset-elastic"
+    - name: Seed Elasticsearch
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose run -d -T appserver flask reset-elastic"
 
-    # - name: Seed Elasticsearch with Global Annotations
-    #   include_role:
-    #     name: global-annotation
-    #     apply:
-    #       tags:
-    #         - always
-    #   tags:
-    #     - annotation
-    #     - deploy
+    - name: Seed Elasticsearch with Global Annotations
+      include_role:
+        name: global-annotation
+        apply:
+          tags:
+            - always
+      tags:
+        - annotation
+        - deploy
