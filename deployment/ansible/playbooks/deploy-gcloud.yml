@@ -39,13 +39,13 @@
     - name: Download liquibase-neo4j jar
       get_url:
         url: https://github.com/liquibase/liquibase-neo4j/releases/download/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}.jar
-        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}.jar"
+        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/lib/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}.jar"
         mode: 0755
 
     - name: Download neo4j-jdbc jar
       get_url:
         url: https://github.com/neo4j-contrib/neo4j-jdbc/releases/download/{{ LIQUIBASE_NEO4J_JDBC_VERSION }}/neo4j-jdbc-driver-{{ LIQUIBASE_NEO4J_JDBC_VERSION }}.jar
-        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/neo4j-jdbc-driver-{{ LIQUIBASE_NEO4J_JDBC_VERSION }}.jar"
+        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/lib/neo4j-jdbc-driver-{{ LIQUIBASE_NEO4J_JDBC_VERSION }}.jar"
         mode: 0755
 
     - name: Log into Docker Registry
@@ -192,7 +192,7 @@
     - name: Run neo4j liquibase migration
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/***ARANGO_DB_NAME***-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }} && \
+        cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/***ARANGO_DB_NAME***-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }}/lib && \
               docker cp liquibase:/home/neo4j/liquibase {{ deploy_dir }} && \
               mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
               cd {{ deploy_dir }}/liquibase && \
