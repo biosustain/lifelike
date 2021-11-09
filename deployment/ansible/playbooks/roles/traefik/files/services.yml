@@ -68,24 +68,24 @@ http:
     ***ARANGO_DB_NAME***-qa-gcp-service:
       loadBalancer:
         servers:
-          - url: "http://10.128.15.243"
+          - url: "{{ qa_gcp_interal_server_url }}"
     ***ARANGO_DB_NAME***-staging-service:
       loadBalancer:
         servers:
-          - url: "http://10.128.15.207"
+          - url: "{{ staging_interal_server_url }}"
     ***ARANGO_DB_NAME***-prod-service:
       loadBalancer:
         servers:
-          - url: "http://10.128.15.235"
+          - url: "{{ prod_interal_server_url }}"
     ***ARANGO_DB_NAME***-elk-qa:
       loadBalancer:
         servers:
-          - url: "http://10.128.15.244"
+          - url: "{{ elk_interal_server_url }}"
     ***ARANGO_DB_NAME***-sandbox-service:
       loadBalancer:
         servers:
-          - url: "http://10.128.15.216"
+          - url: "{{ sandbox_interal_server_url }}"
     ***ARANGO_DB_NAME***-demo-service:
       loadBalancer:
         servers:
-          - url: "http://10.128.0.63"
+          - url: "{{ demo_interal_server_url }}"
