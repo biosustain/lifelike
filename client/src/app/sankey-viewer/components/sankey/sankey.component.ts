@@ -762,6 +762,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         nodeLabel,
         nodeLabelShort,
         linkColor,
+        linkBorder,
         linkPath,
         circular
       }
@@ -798,6 +799,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         exit => exit.remove()
       )
       .style('fill', linkColor)
+      .style('stroke', linkBorder)
       .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
