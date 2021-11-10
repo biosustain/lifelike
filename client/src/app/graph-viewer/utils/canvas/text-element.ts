@@ -26,7 +26,8 @@ interface TextboxOptions {
  */
 export class TextElement {
   readonly width: number | undefined;
-  readonly maxWidth: number | undefined;
+  // Removed the read-only due to dynamic change of the label width (equal to image width)
+  maxWidth: number | undefined;
   readonly height: number | undefined;
   readonly maxHeight: number | undefined;
   readonly maxLines: number | undefined;

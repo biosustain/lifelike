@@ -231,20 +231,30 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       // ---------------------------------
       // Image nodes
       // ---------------------------------
+        const width = nullCoalesce(d.data.width, 100);
+        const labelTextbox = new TextElement(ctx, {
+        // Max width of label is equal to the width of the image
+        maxWidth: width,
+        text: d.display_name,
+        font: labelFont,
+        fillStyle: nullCoalesce(d.style ? d.style.fillColor : null, textColor),
+        horizontalAlign: TextAlignment.Center,
+        });
 
-      return new ImageNode(ctx, {
-        x: d.data.x,
-        y: d.data.y,
-        width: nullCoalesce(d.data.width, 100),
-        height: nullCoalesce(d.data.height, 100),
-        imageManager: this.imageManager,
-        imageId: d.image_id,
-        stroke: this.createLine(
-          nullCoalesce(styleData.lineType, 'blank'),
-          nullCoalesce(styleData.lineWidthScale, 1),
-          strokeColor,
-        )
-      });
+        return new ImageNode(ctx, {
+          x: d.data.x,
+          y: d.data.y,
+          width,
+          height: nullCoalesce(d.data.height, 100),
+          imageManager: this.imageManager,
+          imageId: d.image_id,
+          stroke: this.createLine(
+            nullCoalesce(styleData.lineType, 'blank'),
+            nullCoalesce(styleData.lineWidthScale, 1),
+            strokeColor,
+          ),
+          textbox: labelTextbox
+        });
 
     } else {
       // ---------------------------------
