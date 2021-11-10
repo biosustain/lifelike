@@ -6,6 +6,7 @@ import {
   GraphEntityType,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
+import {nullCoalesce} from 'app/shared/utils/types';
 
 import {
   AbstractCanvasBehavior,
@@ -94,17 +95,18 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
   draw(ctx: CanvasRenderingContext2D, transform: any) {
     const placedNode = this.graphView.placeNode(this.target);
 
-    ctx.beginPath();
     for (const handle of Object.values(this.getHandleBoundingBoxes(placedNode))) {
       this.drawHandle(ctx, transform, handle);
     }
   }
 
-  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: T) {
+  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY, displayColor}: T) {
+    ctx.save();
+    ctx.beginPath();
     ctx.lineWidth = 1 / transform.scale(1).k;
     ctx.rect(minX, minY, maxX - minX, maxY - minY);
     if (document.activeElement === this.graphView.canvas) {
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = nullCoalesce(displayColor, '#000');
       ctx.strokeStyle = '#fff';
     } else {
       ctx.fillStyle = '#CCC';
@@ -112,6 +114,8 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     }
     ctx.fill();
     ctx.stroke();
+    ctx.restore();
+
   }
 
   abstract getHandleBoundingBoxes(placedNode: PlacedNode): T[];
@@ -131,4 +135,5 @@ export interface Handle {
   minY: number;
   maxX: number;
   maxY: number;
+  displayColor?: string;
 }
