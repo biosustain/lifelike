@@ -266,7 +266,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   closeDetailsPanel() {
     this.detailsPanel = false;
-    this.resetSelection();
+    // this.resetSelection();
   }
 
   closeAdvancedPanel() {
