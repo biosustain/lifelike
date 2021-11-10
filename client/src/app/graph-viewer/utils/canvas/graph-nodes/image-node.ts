@@ -29,7 +29,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   readonly IMAGE_STROKE_FACTOR = 2;
 
   private image: CanvasImageSource;
-  readonly LABEL_OFFSET = 35;
+  readonly LABEL_OFFSET = 25;
 
   constructor(ctx: CanvasRenderingContext2D, options: ImageNodeOptions) {
     super(ctx, options);
@@ -52,14 +52,13 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   draw(transform: any): void {
     const zoomResetScale = 1 / transform.scale(1).k;
     this.ctx.save();
-    let lineWidth = 0;
     if (this.image) {
       this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);
       const ctx = this.ctx;
 
       if (this.stroke) {
         this.stroke.setContext(ctx);
-        lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
+        const lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
         this.ctx.rect(
           this.nodeX - lineWidth / 2.0,
           this.nodeY - lineWidth / 2.0,
@@ -83,7 +82,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
       this.ctx.stroke();
     }
     this.textbox.maxWidth = this.width;
-    this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET * this.textbox.strokeWidth + lineWidth);
+    this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET + this.textbox.actualHeightWithInsets / 2.0);
     this.ctx.restore();
   }
 
