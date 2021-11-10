@@ -1,4 +1,5 @@
 import * as d3Sankey from 'd3-sankey';
+import {color} from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode } from 'app/shared-sankey/interfaces';
@@ -31,6 +32,10 @@ export class AttributeAccessors {
 
   get linkColor() {
     return ({_color}) => _color;
+  }
+
+  get linkBorder() {
+    return undefined;
   }
 
   get nodeTitle(): (node: SankeyNode) => string {
