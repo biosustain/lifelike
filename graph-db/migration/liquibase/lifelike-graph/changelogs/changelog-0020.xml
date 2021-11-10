@@ -5,6 +5,17 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
+  <changeSet id="LL-3782 delete all Zenodo related nodes" author="Binh Vu">
+    <comment>
+      The Zenodo literature data are wrong, need to delete them to re-seed.
+    </comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature) RETURN n',
+        'DETACH DELETE n', {batchSize:500, parallel:true})
+    </sql>
+  </changeSet>
+
   <changeSet id="LL-3782 load Zenodo literature constraints on date 11022021" author="Binh Vu">
     <comment>Create constraints and indexes for Zenodo literature</comment>
     <sql>
