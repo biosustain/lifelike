@@ -17,7 +17,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
-import { DatabaseLinks, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { toValidLink } from 'app/shared/utils/browser';
@@ -433,7 +433,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
-    let idLink: DatabaseLinks = null;
+    let idLink: DatabaseLink = null;
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
       const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
