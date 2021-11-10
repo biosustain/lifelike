@@ -198,7 +198,7 @@
               mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
               chown ansible:ansible -R {{ deploy_dir }}/liquibase && \
               cd {{ deploy_dir }}/liquibase && \
-              touch output.txt && \
+              touch output.txt && : > output.txt && \
               /opt/liquibase/liquibase --log-level=info update >> output.txt 2>&1"
       tags:
         - deploy
