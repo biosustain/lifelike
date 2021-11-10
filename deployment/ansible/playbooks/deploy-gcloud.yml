@@ -196,7 +196,7 @@
               chown ansible:ansible {{ LIQUIBASE_INSTALL_FOLDER }}/lib/*.jar && \
               docker cp liquibase:/home/neo4j/liquibase {{ deploy_dir }} && \
               mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
-              chown ansible:ansible -r {{ deploy_dir }}/liquibase && \
+              chown ansible:ansible -R {{ deploy_dir }}/liquibase && \
               cd {{ deploy_dir }}/liquibase && \
               /opt/liquibase/liquibase --log-level=info update"
       tags:
