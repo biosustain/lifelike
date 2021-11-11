@@ -251,7 +251,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           stroke: this.createLine(
             nullCoalesce(styleData.lineType, 'blank'),
             nullCoalesce(styleData.lineWidthScale, 1),
-            strokeColor,
+            nullCoalesce(styleData.strokeColor, 'white'),
           ),
           textbox: labelTextbox
         });
