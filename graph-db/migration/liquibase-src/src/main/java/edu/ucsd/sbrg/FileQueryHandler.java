@@ -161,6 +161,7 @@ public class FileQueryHandler implements CustomTaskChange {
             if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
                 System.out.println("Downloading file " + this.getFileName() + " from Azure Cloud.");
                 cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getLocalSaveFileDir());
+                System.out.println("Finished downloading file " + this.getFileName() + " from Azure Cloud.");
             }
 //            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
