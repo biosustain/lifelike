@@ -5,7 +5,8 @@ import re
 import shutil
 import typing
 import zipfile
-import uuid
+import timeflake
+
 
 from base64 import b64encode
 
@@ -473,23 +474,47 @@ def create_default_node(node):
 def create_image_node(node, params):
     """
     Add parameters specific to the image label.
+    If the label is present, returns parameters allowing to create it
 
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters
-    :returns: modified params
+    :returns: modified params and optionally, label params
     """
+    label_params = {}
     style = node.get('style', {})
+    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
     params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
         if style.get('lineType') != 'none' else '0.0'
-    params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
-    params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
+    params['width'] = f"{ width / SCALING_FACTOR}"
+    params['height'] = f"{height / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
     params['shape'] = 'rect'
     params['style'] = 'bold,' + BORDER_STYLES_DICT.get(style.get('lineType'), '')
     params['color'] = style.get('strokeColor') or 'white'
-    return params
+    params['label'] = ""
+    if node.get('display_name'):
+        label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+        # Try to match the front-end max width by assuming that average font width is equal to 50%%
+        # of the height - and adjusting the text to be roughly of the image width
+        label_params['label'] = escape('\n'.join(textwrap.TextWrapper(
+                            width=int(width / (label_font_size * 0.5)),
+                            replace_whitespace=False).wrap(node['display_name'] or "")))
+        label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
+                                                       label_params['label'].count('\n'))
+        label_params['pos'] = (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{(-node['data']['y'] + label_offset ) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
+        )
+        label_params['fontsize'] = f"{label_font_size}"
+        # No border
+        label_params['penwidth'] = '0.0'
+        label_params['fontcolor'] = style.get('fillColor') or 'black'
+        label_params['fontname'] = 'sans-serif'
+        label_params['name'] = node['hash'] + '_label'
+    return params, label_params
 
 
 def create_detail_node(node, params):
@@ -828,9 +853,9 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
-        folder_name = str(uuid.uuid4())
+        folder_name = str(timeflake.random().base62)
         while os.path.isdir(TEMP_PATH + folder_name):
-            folder_name = str(uuid.uuid4())
+            folder_name = str(timeflake.random().base62)
         os.mkdir(TEMP_PATH + folder_name)
 
         try:
@@ -893,8 +918,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
-                    params = create_image_node(node, params)
-                    params['image'] = file_path
                 except KeyError:
                     name = node.get('image_id') + '.png'
                     current_app.logger.info(
@@ -904,6 +927,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                     )
                     raise ValidationError(
                         f"Cannot retrieve image: {name} - file might be corrupted")
+                params, label_params = create_image_node(node, params)
+                if label_params:
+                    graph.node(**label_params)
+                params['image'] = file_path
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
