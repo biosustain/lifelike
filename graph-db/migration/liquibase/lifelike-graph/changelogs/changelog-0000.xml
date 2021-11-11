@@ -24,7 +24,7 @@
       CALL apoc.periodic.iterate(
         &quot;UNWIND $rows AS row MATCH (n:db_MESH) WHERE n.eid = row.entity_id RETURN n&quot;,
         &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
-        {batchSize:5000, parallel:true, params: {rows: $rows}}
+        {batchSize:5000, params: {rows: $rows}}
       )
       "
       fileName="jira-LL-3625-add-entity-type-array-mesh.zip"
@@ -52,7 +52,7 @@
       CALL apoc.periodic.iterate(
         &quot;UNWIND $rows AS row MATCH (n:Compound) WHERE n.eid = row.entity_id RETURN n&quot;,
         &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
-        {batchSize:5000, parallel:true, params: {rows: $rows}}
+        {batchSize:5000, params: {rows: $rows}}
       )
       "
       fileName="jira-LL-3625-add-entity-type-array-compound.zip"
@@ -80,7 +80,7 @@
       CALL apoc.periodic.iterate(
         &quot;UNWIND $rows AS row MATCH (n:Chemical) WHERE n.eid = row.entity_id RETURN n&quot;,
         &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
-        {batchSize:5000, parallel:true, params: {rows: $rows}}
+        {batchSize:5000, params: {rows: $rows}}
       )
       "
       fileName="jira-LL-3625-add-entity-type-array-chemical.zip"
@@ -119,7 +119,7 @@
       CALL apoc.periodic.iterate(
         &quot;UNWIND $rows AS row MATCH (n:Protein) WHERE n.eid = row.entity_id RETURN n&quot;,
         &quot;SET n.original_entity_types = split(row.entity_type, '|')&quot;,
-        {batchSize:5000, parallel:true, params: {rows: $rows}}
+        {batchSize:5000, params: {rows: $rows}}
       )
       "
       fileName="jira-LL-3625-add-entity-type-array-protein.zip"
@@ -145,7 +145,7 @@
       CALL apoc.periodic.iterate(
         "MATCH (n:Gene) RETURN n",
         "SET n.original_entity_types = ['Gene']",
-        {batchSize:10000, parallel:true}
+        {batchSize:10000}
       )
     </sql>
   </changeSet>
