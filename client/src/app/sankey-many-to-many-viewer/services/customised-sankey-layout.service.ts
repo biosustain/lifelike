@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core';
 
 import { first, last } from 'lodash-es';
+import {color} from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { symmetricDifference } from 'app/sankey-viewer/components/sankey/utils';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import { DirectedTraversal } from 'app/sankey-viewer/services/directed-traversal';
 import { SankeyNode } from 'app/shared-sankey/interfaces';
-
-import { SankeyManyToManyLink } from '../components/interfaces';
 
 @Injectable()
 // @ts-ignore
@@ -19,6 +17,10 @@ export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLay
     readonly sankeyController: SankeyControllerService
   ) {
     super(truncatePipe, sankeyController);
+  }
+
+  get linkBorder() {
+    return ({_color}) => _color ? color(_color).darker(0.5) : _color;
   }
 
   get nodeColor() {
