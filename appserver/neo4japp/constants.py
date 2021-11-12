@@ -443,4 +443,3 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
-TEMP_PATH = '/tmp/'
