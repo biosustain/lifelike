@@ -7,7 +7,6 @@ import typing
 import zipfile
 import timeflake
 
-
 from base64 import b64encode
 
 from io import BufferedIOBase
@@ -471,50 +470,63 @@ def create_default_node(node):
     }
 
 
+def create_image_label(node):
+    """
+    Creates a node acting as a label for the image
+    :params:
+    :param node: dict containing the node data
+    :returns: label params
+    """
+    style = node.get('style', {})
+    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
+    border_width = style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
+    # Try to match the front-end max width by assuming that average font width is equal to 50%%
+    # of the height - and adjusting the text to be roughly of the image width
+    label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    label = escape('\n'.join(textwrap.TextWrapper(
+        width=int(width / (label_font_size * 0.5)),
+        replace_whitespace=False).wrap(node['display_name'] or "")))
+    label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
+                                                   (1 + label.count('\n'))) - border_width
+    label_params = {
+        'label': label,
+        'pos': (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{(-node['data']['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
+        ),
+        'fontsize': f"{label_font_size}",
+        'penwidth': '0.0',
+        'fontcolor': style.get('fillColor') or 'black',
+        'fontname': 'sans-serif',
+        'name': node['hash'] + '_label'
+    }
+    return label_params
+
+
 def create_image_node(node, params):
     """
     Add parameters specific to the image label.
-    If the label is present, returns parameters allowing to create it
-
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters
-    :returns: modified params and optionally, label params
+    :returns: modified params
     """
-    label_params = {}
     style = node.get('style', {})
+    # Remove the label generated in 'create_default_node' - we will add it as separate node
+    params['label'] = ""
     height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
     width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
     params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
         if style.get('lineType') != 'none' else '0.0'
-    params['width'] = f"{ width / SCALING_FACTOR}"
+    params['width'] = f"{width / SCALING_FACTOR}"
     params['height'] = f"{height / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
     params['shape'] = 'rect'
     params['style'] = 'bold,' + BORDER_STYLES_DICT.get(style.get('lineType'), '')
     params['color'] = style.get('strokeColor') or 'white'
-    params['label'] = ""
-    if node.get('display_name'):
-        label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-        # Try to match the front-end max width by assuming that average font width is equal to 50%%
-        # of the height - and adjusting the text to be roughly of the image width
-        label_params['label'] = escape('\n'.join(textwrap.TextWrapper(
-                            width=int(width / (label_font_size * 0.5)),
-                            replace_whitespace=False).wrap(node['display_name'] or "")))
-        label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
-                                                       label_params['label'].count('\n'))
-        label_params['pos'] = (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{(-node['data']['y'] + label_offset ) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
-        )
-        label_params['fontsize'] = f"{label_font_size}"
-        # No border
-        label_params['penwidth'] = '0.0'
-        label_params['fontcolor'] = style.get('fillColor') or 'black'
-        label_params['fontname'] = 'sans-serif'
-        label_params['name'] = node['hash'] + '_label'
-    return params, label_params
+    return params
 
 
 def create_detail_node(node, params):
@@ -622,8 +634,7 @@ def create_icon_node(node, params):
     params['penwidth'] = '0.0'
     # Calculate the distance between icon and the label center
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
-        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-        (style.get('fontSizeScale', 1.0) - 1.0)
+        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
 
     # Move the label below to make space for the icon node
     params['pos'] = (
@@ -883,13 +894,13 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                escape(file.filename),
-                # New lines are not permitted in the comment - they will crash the export.
-                # Replace them with spaces until we find different solution
-                comment=file.description.replace('\n', ' ') if file.description else None,
-                engine='neato',
-                graph_attr=graph_attr,
-                format=format)
+            escape(file.filename),
+            # New lines are not permitted in the comment - they will crash the export.
+            # Replace them with spaces until we find different solution
+            comment=file.description.replace('\n', ' ') if file.description else None,
+            engine='neato',
+            graph_attr=graph_attr,
+            format=format)
 
         node_hash_type_dict = {}
         x_values, y_values = [], []
@@ -914,7 +925,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     image_name = node.get('image_id') + '.png'
                     images.append(image_name)
                     im = zip_file.read("".join(['images/', image_name]))
-                    file_path = "".join([TEMP_PATH, folder_name, '/',  image_name])
+                    file_path = "".join([TEMP_PATH, folder_name, '/', image_name])
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
@@ -927,9 +938,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     )
                     raise ValidationError(
                         f"Cannot retrieve image: {name} - file might be corrupted")
-                params, label_params = create_image_node(node, params)
-                if label_params:
-                    graph.node(**label_params)
+                params = create_image_node(node, params)
+                if node['display_name']:
+                    graph.node(**create_image_label(node))
                 params['image'] = file_path
 
             if node['label'] in ICON_NODES:
