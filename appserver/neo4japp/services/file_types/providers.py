@@ -487,7 +487,7 @@ def create_image_label(node):
         replace_whitespace=False).wrap(node['display_name'] or "")))
     label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
                                                    (1 + label.count('\n'))) - border_width
-    label_params = {
+    return {
         'label': label,
         'pos': (
             f"{node['data']['x'] / SCALING_FACTOR},"
@@ -499,7 +499,6 @@ def create_image_label(node):
         'fontname': 'sans-serif',
         'name': node['hash'] + '_label'
     }
-    return label_params
 
 
 def create_image_node(node, params):
@@ -921,7 +920,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     image_name = node.get('image_id') + '.png'
                     images.append(image_name)
                     im = zip_file.read("".join(['images/', image_name]))
-                    file_path = "".join([folder.name, '/', image_name])
+                    file_path = os.path.sep.join([folder.name, image_name])
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
