@@ -13,7 +13,6 @@
       CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature) RETURN n',
         'DETACH DELETE n', {batchSize:10000})
-      YIELD batches, total RETURN total
     </sql>
   </changeSet>
 
