@@ -151,7 +151,7 @@
                                      *ngIf="dataToRender | async"
                                      (linkClicked)="selectLink($event)"
                                      (nodeClicked)="selectNode($event)"
-                                     (backgroundClicked)="closeDetailsPanel()"
+                                     (backgroundClicked)="closeDetailsPanel();resetSelection()"
                                      [highlightCircular]="state.highlightCircular"
                                      [nodeAlign]="nodeAlign"
                                      [data]="dataToRender | async"
