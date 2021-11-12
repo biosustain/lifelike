@@ -7,4 +7,6 @@ public abstract class CloudStorage implements Storage {
     String connectionString;
 
     public abstract void writeToFile(ByteArrayOutputStream bao, String localSaveDir) throws IOException;
+
+    public abstract void extractFile(String localSaveDir, String filename) throws IOException;
 }
