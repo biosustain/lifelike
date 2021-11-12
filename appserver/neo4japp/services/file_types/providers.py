@@ -5,7 +5,7 @@ import re
 import shutil
 import typing
 import zipfile
-import timeflake
+import tempfile
 
 from base64 import b64encode
 
@@ -78,7 +78,6 @@ from neo4japp.constants import (
     DETAIL_TEXT_LIMIT,
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
-    TEMP_PATH,
     LogEventType,
     IMAGE_BORDER_SCALE
 )
@@ -410,7 +409,7 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
     for image in images:
         text_content = text_content.replace(
-            TEMP_PATH + folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+            folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
                 zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
@@ -864,10 +863,8 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
-        folder_name = str(timeflake.random().base62)
-        while os.path.isdir(TEMP_PATH + folder_name):
-            folder_name = str(timeflake.random().base62)
-        os.mkdir(TEMP_PATH + folder_name)
+        # This should handle the naming and removal of the temporary directory
+        folder = tempfile.TemporaryDirectory()
 
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
@@ -925,7 +922,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     image_name = node.get('image_id') + '.png'
                     images.append(image_name)
                     im = zip_file.read("".join(['images/', image_name]))
-                    file_path = "".join([TEMP_PATH, folder_name, '/', image_name])
+                    file_path = "".join([folder.name, '/', image_name])
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
@@ -981,9 +978,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = io.BytesIO(graph.pipe())
 
         if format == 'svg':
-            content = substitute_svg_images(content, images, zip_file, folder_name)
-
-        shutil.rmtree(TEMP_PATH + folder_name)
+            content = substitute_svg_images(content, images, zip_file, folder.name)
 
         return FileExport(
             content=content,
