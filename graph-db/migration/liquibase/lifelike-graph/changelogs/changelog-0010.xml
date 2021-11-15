@@ -9,11 +9,20 @@
     <comment>
       The Zenodo literature data are wrong, need to delete them to re-seed.
     </comment>
-    <sql>
-      CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature) RETURN n',
+    <customChange
+      class="edu.ucsd.sbrg.ConditionQueryHandler"
+      query="
+      
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature) RETURN n LIMIT 100000',
         'DETACH DELETE n', {batchSize:10000})
-    </sql>
+        
+      "
+      conditionQuery="MATCH (n:db_Literature) RETURN COUNT(n)"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+    />
   </changeSet>
 
   <changeSet id="LL-3782 load Zenodo literature constraints on date 11022021" author="Binh Vu">
