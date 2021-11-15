@@ -9,10 +9,17 @@ import {
   ViewContainerRef,
   NgZone,
   ChangeDetectorRef,
-  ApplicationRef
+  ApplicationRef,
+  OnDestroy,
+  OnInit,
+  AfterContentChecked,
+  HostListener
 } from '@angular/core';
 
 import { NgbTooltip, NgbTooltipConfig } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription } from 'rxjs';
+
+import { createResizeObservable } from '../rxjs/resize-observable';
 
 /**
  * Show tooltip only if text offloads
@@ -22,7 +29,7 @@ import { NgbTooltip, NgbTooltipConfig } from '@ng-bootstrap/ng-bootstrap';
   selector: '.text-truncate'
 })
 // @ts-ignore
-export class TextTruncateDirective extends NgbTooltip implements AfterViewInit {
+export class TextTruncateDirective extends NgbTooltip implements AfterViewInit, OnInit, OnDestroy, AfterContentChecked {
   constructor(
     protected _elementRef: ElementRef<HTMLElement>,
     protected _renderer: Renderer2,
@@ -48,12 +55,46 @@ export class TextTruncateDirective extends NgbTooltip implements AfterViewInit {
     );
   }
 
-  @Input() title: string;
+  resizeSubscription: Subscription;
+  container = 'body';
+
+  @Input() set title(title) {
+    this.ngbTooltip = title;
+  }
+
+  @Input() set titlePlacement(placement) {
+    this.placement = placement;
+  }
+
+  @Input() set titleContainer(container) {
+    this.container = container;
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
 
   ngAfterViewInit() {
-    const {nativeElement: {scrollWidth, offsetWidth}} = this._elementRef;
-    this.ngbTooltip = this.title || this._elementRef.nativeElement.innerText;
-    this.disableTooltip = scrollWidth <= offsetWidth;
-    this.container = 'body';
+    this.resizeSubscription = createResizeObservable(this._elementRef.nativeElement).subscribe(() => {
+      const {scrollWidth, offsetWidth} = this._elementRef.nativeElement;
+      this.disableTooltip = scrollWidth <= offsetWidth;
+    });
+  }
+
+  ngAfterContentChecked() {
+    this.ngbTooltip = super.ngbTooltip || (this._elementRef && this._elementRef.nativeElement.innerText) || undefined;
+  }
+
+  ngOnDestroy() {
+    if (this.resizeSubscription) {
+      this.resizeSubscription.unsubscribe();
+    }
+    super.ngOnDestroy();
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('scroll')
+  onScroll() {
+    this.close();
   }
 }
