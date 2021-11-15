@@ -14,7 +14,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, isNil, uniqueId } from 'lodash-es';
+import { escape, isNil, uniqueId, transform, flatMap } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -680,7 +680,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const clonedSelection = selection.getRangeAt(0).cloneContents();
 
       let rects = [];
-      const elements: any[] = Array.from(clonedSelection.children);
+      const elements: any[] = Array.from(clonedSelection.querySelectorAll(':not(.markedContent)'));
       elements.forEach((org_span: any) => {
         const span = org_span.cloneNode(true);
         const {transform} = span.style;
