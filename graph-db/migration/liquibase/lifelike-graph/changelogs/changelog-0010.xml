@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3782 delete all Zenodo related nodes" author="Binh Vu">
+  <!-- <changeSet id="LL-3782 delete all Zenodo related nodes" author="Binh Vu">
     <comment>
       The Zenodo literature data are wrong, need to delete them to re-seed.
     </comment>
@@ -14,7 +14,7 @@
         'MATCH (n:db_Literature) RETURN n',
         'DETACH DELETE n', {batchSize:10000})
     </sql>
-  </changeSet>
+  </changeSet> -->
 
   <changeSet id="LL-3782 load Zenodo literature constraints on date 11022021" author="Binh Vu">
     <comment>Create constraints and indexes for Zenodo literature</comment>
@@ -38,7 +38,9 @@ Need to also consider the fact the property could be at risk for being outdated.
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      
+        CALL apoc.periodic.iterate(
+        'MATCH (n:db_Literature) RETURN n',
+        'DETACH DELETE n', {batchSize:10000, parallel:true});
         UNWIND $rows AS row
         MERGE (n1:db_Literature:LiteratureEntity {eid:row.entry1_id})
             ON CREATE SET n1.name = apoc.text.join([c in apoc.text.split(row.entry1_name, ' ') | apoc.text.capitalize(toLower(c))], '')
@@ -57,7 +59,7 @@ Need to also consider the fact the property could be at risk for being outdated.
             a.data_source = 'Literature'
         MERGE (n1)-[:ASSOCIATED {description:row.description, type:row.theme}]->(n2)
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
-        MERGE (a)-[:HAS_ASSOCIATION]->(n2)
+        MERGE (a)-[:HAS_ASSOCIATION]->(n2);
         
       "
       fileName="jira-LL-3782-Chemical2Disease_assoc_theme.zip"
