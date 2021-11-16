@@ -12,24 +12,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
-import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
-import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { SharedSankeyModule } from 'app/shared-sankey/shared-sankey.module';
 
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyModule } from './components/sankey/sankey.module';
-import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
-import { PathReportComponent } from './components/path-report/path-report.component';
-import { SankeySearchPanelModule } from './components/search-panel/sankey-search-panel.module';
+import { SankeySearchPanelComponent } from './search-panel.component';
+import { SankeySearchComponent } from './details.component';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyAdvancedPanelComponent,
-    PathReportComponent
+    SankeySearchPanelComponent,
+    SankeySearchComponent,
   ],
   imports: [
     CommonModule,
@@ -46,16 +38,10 @@ import { SankeySearchPanelModule } from './components/search-panel/sankey-search
     MatButtonModule,
     MatRadioModule,
     SharedModule,
-    FileBrowserModule,
-    RouterModule.forRoot([]),
-    SankeyModule,
-    SankeyDetailsPanelModule,
-    SankeySearchPanelModule,
-    SharedSankeyModule
   ],
   exports: [
-    SankeyViewComponent
+    SankeySearchPanelComponent
   ],
 })
-export class SankeyViewerLibModule {
+export class SankeySearchPanelModule {
 }

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
+import { GraphPredefinedSizing, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 import {
   SankeyOptions,
   ValueGenerator,
@@ -575,7 +576,17 @@ export class SankeyControllerService {
     }, {}) as SankeyData;
   }
 
+  addIds(content) {
+    content.nodes.forEach(n => {
+      n._id = n.id;
+    });
+    content.links.forEach((l, i) => {
+      l._id = i;
+    });
+  }
+
   load(content, updateOptions?) {
+    this.addIds(content);
     this.preprocessData(content);
     this.resetOptions();
     this.resetState();
