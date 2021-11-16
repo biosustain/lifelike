@@ -434,6 +434,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
     let idLink: DatabaseLink = null;
+    const annoId = an.meta.id.indexOf(':') !== -1 ? an.meta.id.split(':')[1] : an.meta.id;
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
       const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
@@ -441,9 +442,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
 
     if (idLink !== null) {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${an.meta.id}`)} target="_blank">${escape(an.meta.id)}</a>` : 'Id: None');
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
     } else {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
     }
     base.push(an.meta.idType && an.meta.idType !== '' ? `Data Source: ${escape(an.meta.idType)}` : 'Data Source: None');
 
