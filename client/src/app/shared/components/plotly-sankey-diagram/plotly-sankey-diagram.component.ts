@@ -46,6 +46,7 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
     const links = d3
       .selectAll('path.sankey-link')
       .filter((d) => {
+        // @ts-ignore
         return d.link.source.index === nodeId || d.link.target.index === nodeId;
       });
 
@@ -53,25 +54,28 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
   }
 
   setupEvents() {
-    // Capture all "node" elements on the canvas and setup on-hover behavio
+    // Capture all "node" elements on the canvas and setup on-hover behavior
     const nodeBoxes = d3.selectAll('.node-capture');
     nodeBoxes.on('mouseover', (node) => {
       const incomingLinks = d3
         .selectAll('path.sankey-link')
         .filter((link) => {
+          // @ts-ignore
           return link.link.target.index === node.index;
         });
 
       const outgoingLinks = d3
         .selectAll('path.sankey-link')
         .filter((link) => {
+          // @ts-ignore
           return link.link.source.index === node.index;
         });
 
       this.styleLinks(incomingLinks, {fill: 'red'});
       this.styleLinks(outgoingLinks, {fill: '#0c8caa'});
     });
-    nodeBoxes.on('mouseout', (d) => {
+    nodeBoxes.on('mouseout', d => {
+      // @ts-ignore
       this.styleLinksConnectedToNode(d.index, {fill: 'black'});
     });
 
@@ -80,29 +84,32 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
     nodeLabels.on('mouseover', (node) => {
       const incomingLinks = d3
         .selectAll('path.sankey-link')
-        .filter((link) => {
+        .filter(link => {
+          // @ts-ignore
           return link.link.target.index === node.index;
         });
 
       const outgoingLinks = d3
         .selectAll('path.sankey-link')
-        .filter((link) => {
+        .filter(link => {
+          // @ts-ignore
           return link.link.source.index === node.index;
         });
 
       this.styleLinks(incomingLinks, {fill: 'red'});
       this.styleLinks(outgoingLinks, {fill: '#0c8caa'});
     });
-    nodeLabels.on('mouseout', (d) => {
+    nodeLabels.on('mouseout', d => {
+      // @ts-ignore
       this.styleLinksConnectedToNode(d.index, {fill: 'black'});
     });
 
     // Capture all "link" elements on the canvas and setup on-hover behavior
     const links = d3.selectAll('path.sankey-link');
-    links.on('mouseover', function(d) {
+    links.on('mouseover', function() {
       d3.select(this).style('fill', '#0c8caa');
     });
-    links.on('mouseout', function(d) {
+    links.on('mouseout', function() {
       d3.select(this).style('fill', 'black');
     });
   }

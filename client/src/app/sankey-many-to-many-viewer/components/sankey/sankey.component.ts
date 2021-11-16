@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input, ElementRef } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import * as d3 from 'd3';
-import { isNil } from 'lodash-es';
+import { select as d3_select } from 'd3-selection';
+import { isNil, compact } from 'lodash-es';
 
 import { SankeyNode, SankeyLink } from 'app/shared-sankey/interfaces';
 import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
@@ -64,9 +64,17 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
     if (searchedEntities) {
       const entities = searchedEntities.currentValue;
-      if (entities.size) {
-        this.searchNodes(entities);
-        this.searchLinks(entities);
+      if (entities.length) {
+        this.searchNodes(
+          new Set(
+            compact(entities.map(({nodeId}) => nodeId))
+          )
+        );
+        this.searchLinks(
+          new Set(
+            compact(entities.map(({linkId}) => linkId))
+          )
+        );
       } else {
         this.stopSearchNodes();
         this.stopSearchLinks();
@@ -75,15 +83,22 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
     if (focusedNode) {
       const {currentValue, previousValue} = focusedNode;
       if (previousValue) {
-        this.unFocusNode(previousValue);
-        this.unFocusLink(previousValue);
+        this.applyEntity(
+          previousValue,
+          this.unFocusNode,
+          this.unFocusLink
+        );
       }
       if (currentValue) {
-        this.focusNode(currentValue);
-        this.focusLink(currentValue);
+        this.applyEntity(
+          currentValue,
+          this.focusNode,
+          this.focusLink
+        );
       }
     }
   }
+
 
   // endregion
 
@@ -226,7 +241,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
 
   // region Highlight
   highlightLink(element) {
-    d3.select(element)
+    d3_select(element)
       .raise()
       .attr('highlighted', true);
   }
@@ -240,7 +255,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
     const {
       nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
     } = this.sankey;
-    const selection = d3.select(element)
+    const selection = d3_select(element)
       .raise()
       .attr('highlighted', true)
       .select('g')
@@ -275,7 +290,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   unhighlightNode(element) {
     const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
 
-    const selection = d3.select(element);
+    const selection = d3_select(element);
     selection.select('text')
       .filter(nodeLabelShouldBeShorted)
       // todo: reenable when performance improves
@@ -288,8 +303,8 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       // });
       .text(nodeLabelShort);
 
-    // resize shadow back to shorter test when it is ussed as search result
-    if (searchedEntities.size) {
+    // resize shadow back to shorter test when it is used as search result
+    if (searchedEntities.length) {
       // postpone so the size is known
       requestAnimationFrame(_ =>
         selection.select('g')

@@ -140,8 +140,10 @@
                 <div class="btn-group btn-group-toggle">
                     <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
                                         [resultIndex]="entitySearchListIdx"
-                                        [resultCount]="entitySearchList.size"
-                                        (previous)="previous()" (next)="next()">
+                                        [resultCount]="(entitySearchList | async).length"
+                                        (previous)="previous()" (next)="next()"
+                                        [searching]="searching"
+                    >
                     </app-search-control>
                 </div>
             </div>
@@ -157,7 +159,7 @@
                                      [data]="dataToRender | async"
                                      [normalizeLinks]="state.normalizeLinks"
                                      [selected]="selection | async"
-                                     [searchedEntities]="entitySearchList"
+                                     [searchedEntities]="entitySearchList | async"
                                      [focusedNode]="searchFocus">
             </app-sankey-many-to-many>
             <as-split [gutterSize]="5"
@@ -188,6 +190,33 @@
                             <app-sankey-many-to-many-details-panel *ngIf="selectionWithTraces | async"
                                                                    [details]="selectionWithTraces | async">
                             </app-sankey-many-to-many-details-panel>
+                        </div>
+                    </div>
+                </as-split-area>
+                <as-split-area [class]="[
+                                'as-split-area',
+                                searchPanel ? 'border' : 'as-hidden'
+                               ].join(' ')"
+                               [order]="1"
+                               [visible]="searchPanel"
+                               size="340">
+                    <div class="w-100 h-100 p-3 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center">
+                            Search results
+                            <button (click)="closeSearchPanel()"
+                                    class="btn btn-danger"
+                                    type="button"
+                                    title="Click to close the panel and clear selection">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow-1 pb-3">
+                            <app-sankey-search-panel
+                                    [entities]="entitySearchList | async"
+                                    [searchTerms]="searchTerms"
+                                    [(focusedIdx)]="entitySearchListIdx"
+                            >
+                            </app-sankey-search-panel>
                         </div>
                     </div>
                 </as-split-area>
