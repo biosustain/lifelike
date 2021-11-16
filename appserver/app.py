@@ -15,8 +15,9 @@ from flask import g, request
 
 from marshmallow.exceptions import ValidationError
 
+from collections import namedtuple
 from sqlalchemy import inspect, Table
-from sqlalchemy.sql.expression import and_, text, or_
+from sqlalchemy.sql.expression import and_, text
 from sqlalchemy.exc import IntegrityError
 
 from neo4japp.constants import (
@@ -232,64 +233,136 @@ def upload_lmdb():
     manager.upload_all(lmdb_dir_path)
 
 
+Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organism_id'])
+
+
 @app.cli.command('reannotate')
 # this is the log-in token, use postman to log in and copy the token it returned
-@click.argument('token')
-def reannotate_files(token):
+@click.argument('user')
+@click.argument('password')
+def reannotate_files(user, password):
+    from neo4japp.models import FileContent, FallbackOrganism
     from neo4japp.exceptions import AnnotationError
-    from multiprocessing import Process, Queue
+    from neo4japp.schemas.annotations import AnnotationConfigurations
+    from multiprocessing import Process, Queue, cpu_count
+    import time
 
-    NUM_PROCESSES = 2
-    task_queue = Queue()
-    running = {}
+    def get_token():
+        req = requests.post(
+            'http://localhost:5000/auth/login',
+            data=json.dumps({'email': user, 'password': password}),
+            headers={'Content-type': 'application/json'})
+        return json.loads(req.text)['accessToken']['token']
 
-    def do_work(hash_ids, configs, fallback_organism):
+    def do_work(token, hash_ids, configs, organism: Fallback):
         resp = requests.post(
             'http://localhost:5000/filesystem/annotations/generate',
             data=json.dumps({
                 'hashIds': hash_ids,
-                'organism': fallback_organism,
+                'organism': {
+                    'organism_name': organism.organism_name,
+                    'synonym': organism.organism_synonym,
+                    'tax_id': organism.organism_id
+                },
                 'annotationConfigs': configs
             }),
-            headers={'Content-type': 'application/json', 'secret': token})
+            headers={'Content-type': 'application/json', 'Authorization': f'Bearer {token}'})
+        print(f'Got response back for files {hash_ids}, status code is {resp.status_code}')
+        # if resp.status_code != 200:
+        #     raise AnnotationError(resp.text)
         resp.close()
+
+    print('Running reannotate command')
+
+    token = get_token()
+    curr_time = time.time()
+
+    # NUM_PROCESSES = 2
+    task_queue = Queue()
+    running = {}
 
     files = db.session.query(
         Files.id,
         Files.hash_id,
         Files.annotation_configs,
-        Files.fallback_organism
+        FallbackOrganism.organism_name,
+        FallbackOrganism.organism_synonym,
+        FallbackOrganism.organism_taxonomy_id
+    ).join(
+        FileContent,
+        FileContent.id == Files.content_id
+    ).join(
+        FallbackOrganism,
+        FallbackOrganism.id == Files.fallback_organism_id
     ).filter(
         and_(
             Files.mime_type.in_([FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]),
-            or_(
+            Files.deletion_date.is_(None),
+            and_(
                 Files.annotations.isnot(None),
                 Files.annotations != '[]'
             )
         )
     )
 
-    for fid, hash, anno_configs, anno_fallback in files:
-        task_queue.put((fid, hash, anno_configs, anno_fallback))
+    print(f'Total files: {files.count()}')
 
-    while True:
-        for i in range(NUM_PROCESSES):
-            file_id, hashes, configs, organism = task_queue.get()
-            # this is preferred over multiprocessing.pool(...)
-            # because it is guaranteed to be in a different process
-            p = Process(target=do_work, args=([hashes], configs, organism,))
-            p.daemon = True
-            p.start()
-            running[p.pid] = (file_id, p)
+    for fid, hash, configs, organism, organism_synonym, organism_id in files:
+        task_queue.put((
+            fid, hash,
+            json.loads(AnnotationConfigurations().dumps(configs)),
+            Fallback(organism, organism_synonym, organism_id)
+        ))
 
-        for k, v in running.items():
-            if not v[1].is_alive():
-                if v[1].exitcode:
-                    raise AnnotationError(f'File with id {v[0]} failed to annotate.')
-                running.pop(k)
+    print(f'Total tasks to do: {task_queue.qsize()}')
 
-        if len(running) == 0:
-            break
+    while task_queue.qsize() > 0:
+        if time.time() - curr_time > 180:
+            token = get_token()
+            curr_time = time.time()
+
+        file_id, hashes, configs, organism = task_queue.get()
+        do_work(token, [hashes], configs, organism)
+
+    # while True:
+    #     if time.time() - curr_time > 180:
+    #         token = get_token()
+    #         curr_time = time.time()
+
+    #     file_id, hashes, configs, organism = task_queue.get()
+    #     # this is preferred over multiprocessing.pool(...)
+    #     # because it is guaranteed to be in a different process
+    #     p = Process(target=do_work, args=(token, [hashes], configs, organism,))
+    #     p.daemon = True
+    #     p.start()
+    #     # print(f'Process {p.pid} started...')
+    #     running[p.pid] = (hashes, p)
+
+    #     if len(running) == 3:
+    #         while True:
+    #             for k in list(running):
+    #                 v = running[k]
+    #                 if not v[1].is_alive():
+    #                     # if v[1].exitcode:
+    #                     #     raise AnnotationError(f'File with hash_id {v[0]} failed to annotate.')  # noqa
+    #                     running.pop(k)
+
+    #             if len(running) == 0:
+    #                 break
+
+    #     if task_queue.qsize() == 0:
+    #         break
+
+    # while True:
+    #     for k in list(running):
+    #         v = running[k]
+    #         if not v[1].is_alive():
+    #             # if v[1].exitcode:
+    #             #     raise AnnotationError(f'File with hash_id {v[0]} failed to annotate.')
+    #             running.pop(k)
+
+    #     if len(running) == 0:
+    #         break
 
 
 def add_file(filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes):
