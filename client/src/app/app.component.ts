@@ -28,10 +28,11 @@ export class AppComponent {
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
+  standAloneFileUrlRegex = /^\/(projects|folders)\/([^\/]+)\//;
 
   constructor(
     private readonly store: Store<State>,
-    private readonly router: Router,
+    readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
     private readonly modalService: NgbModal,
