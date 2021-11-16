@@ -237,12 +237,11 @@ Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organis
 
 
 @app.cli.command('reannotate')
-# this is the log-in token, use postman to log in and copy the token it returned
-@click.argument('user')
+@click.argument('user')  # the user email
 @click.argument('password')
 def reannotate_files(user, password):
     from neo4japp.models import FileContent, FallbackOrganism
-    from neo4japp.exceptions import AnnotationError
+    # from neo4japp.exceptions import AnnotationError
     from neo4japp.schemas.annotations import AnnotationConfigurations
     from multiprocessing import Process, Queue, cpu_count
     import time
