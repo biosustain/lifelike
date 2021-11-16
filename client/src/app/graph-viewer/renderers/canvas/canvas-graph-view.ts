@@ -529,6 +529,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     // Calling transition() causes a delay even if duration = 0
     if (duration > 0) {
+      // @ts-ignore
       select = select.transition().duration(duration);
     }
 
@@ -566,6 +567,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     // Calling transition() causes a delay even if duration = 0
     if (duration > 0) {
+      // @ts-ignore
       select = select.transition().duration(duration);
     }
 
@@ -599,6 +601,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     // Calling transition() causes a delay even if duration = 0
     if (duration > 0) {
+      // @ts-ignore
       select = select.transition().duration(duration);
     }
 

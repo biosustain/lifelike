@@ -1,4 +1,4 @@
-interface GraphNode {
+export interface GraphNode {
   id: number;
   labels?: Array<string>;
   description?: string;
@@ -27,7 +27,7 @@ interface GraphNode {
   // [key: string]: any;
 }
 
-interface GraphLinkEdge {
+export interface GraphLinkEdge {
   types: Array<string>;
   nodes: Array<number>;
   left: boolean;
@@ -36,7 +36,7 @@ interface GraphLinkEdge {
   // [key: string]: any;
 }
 
-interface GraphLink {
+export interface GraphLink {
   description: string;
   source: number;
   target: number;
@@ -55,7 +55,7 @@ interface GraphLink {
   // [key: string]: any;
 }
 
-interface GraphSizingGroup {
+export interface GraphSizingGroup {
   link_sizing?: string;
   node_sizing?: string;
 
@@ -63,18 +63,18 @@ interface GraphSizingGroup {
   // [key: string]: any;
 }
 
-interface GraphPredefinedSizing {
+export interface GraphPredefinedSizing {
   [key: string]: GraphSizingGroup;
 }
 
-interface GraphDetailEdge {
+export interface GraphDetailEdge {
   type: string;
 
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
 }
 
-interface GraphTrace {
+export interface GraphTrace {
   node_paths: Array<Array<number>>;
   edges: Array<number>;
   source: number;
@@ -87,7 +87,7 @@ interface GraphTrace {
   // [key: string]: any;
 }
 
-interface GraphTraceNetwork {
+export interface GraphTraceNetwork {
   sources: string;
   targets: string;
   description: string;
@@ -100,11 +100,11 @@ interface GraphTraceNetwork {
   // [key: string]: any;
 }
 
-interface GraphNodeSets {
+export interface GraphNodeSets {
   [key: string]: Array<number>;
 }
 
-interface GraphGraph {
+export interface GraphGraph {
   node_sets: GraphNodeSets;
   description: string;
   trace_networks: Array<GraphTraceNetwork>;
@@ -116,7 +116,7 @@ interface GraphGraph {
   // [key: string]: any;
 }
 
-interface GraphFile {
+export interface GraphFile {
   directed: boolean;
   multigraph: boolean;
   graph: GraphGraph;
