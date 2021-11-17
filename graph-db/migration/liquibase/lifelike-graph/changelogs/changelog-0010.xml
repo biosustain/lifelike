@@ -14,7 +14,7 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature) RETURN n LIMIT 100000',
+        'MATCH (n:db_Literature) WHERE NOT &quot;Publication&quot; IN labels(n) AND NOT &quot;AssociationType&quot; IN labels(n) RETURN n LIMIT 100000',
         'DETACH DELETE n', {batchSize:10000})
         
       "
