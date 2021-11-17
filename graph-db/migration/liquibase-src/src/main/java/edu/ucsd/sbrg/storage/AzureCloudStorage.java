@@ -65,7 +65,7 @@ public class AzureCloudStorage extends CloudStorage {
         long totalFileSize = fileClient.getProperties().getContentLength();
         long remainingChunks = totalFileSize;
         long startPosition = 0;
-        String localZip = saveDir + fileName;
+        String localZip = saveDir + "/" + fileName;
         new File(localZip).createNewFile();
 
         do {
