@@ -1,5 +1,6 @@
 import { PRESCALERS } from 'app/sankey-viewer/components/algorithms/prescalers';
 import { LINK_PALETTES } from 'app/sankey-viewer/components/color-palette';
+import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
 
 // region UI options
@@ -114,7 +115,7 @@ export interface SankeyState {
 
 // region Graph as Sankey
 // Add properties used internally to compute layout
-export type SankeyId = string;
+export type SankeyId = string | number;
 
 export interface SankeyNode extends GraphNode {
   // Temp definitions to fix LL-3499
@@ -158,6 +159,7 @@ export interface SankeyLink extends GraphLink {
   _folded?: boolean;
   _value: number;
   _order?: number;
+  _color?: string;
 }
 
 export interface SankeyTrace extends GraphTrace {
