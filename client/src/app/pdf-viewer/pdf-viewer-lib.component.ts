@@ -431,6 +431,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return ENTITY_TYPE_MAP[an.meta.type].color;
   }
 
+  /**
+   * TODO: Make a reuseable function to create this tooltip to keep things consistent.
+   * Currently also used in AnnotationTagHandler.prepareTooltipContent()
+   *  - collapsing does not work there, maybe has to do with using Renderer2Factory and stopPropagation
+   * @param an
+   * @returns
+   */
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
     let idLink: DatabaseLink = null;
@@ -473,14 +480,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
     htmlLinks += `
       <div>
-        <a
-          class="pdf-tooltip-collapse-control collapsed"
+        <div
+          class="tooltip-collapse-control collapsed"
           role="button"
           data-toggle="collapse"
           data-target="#${searchLinkCollapseTargetId}"
           aria-expanded="false"
           aria-controls="${searchLinkCollapseTargetId}"
-        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
         <div class="collapse" id="${searchLinkCollapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
