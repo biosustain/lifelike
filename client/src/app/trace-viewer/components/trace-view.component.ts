@@ -13,6 +13,7 @@ import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { TruncatePipe } from 'app/shared/pipes';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';

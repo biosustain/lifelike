@@ -1,7 +1,7 @@
 // region Colors
 import { isDevMode } from '@angular/core';
 
-import { cubehelix } from 'd3';
+import { cubehelix } from 'd3-color';
 
 import { Palette } from 'app/shared-sankey/interfaces';
 
@@ -48,7 +48,7 @@ export const colorPaletteGenerator = (
     alpha = (_i, _n): number => DEFAULT_ALPHA
   } = {}
 ) => {
-  return i => cubehelix(
+  return (i: number) => cubehelix(
     360 * hue(i, size),
     2 * saturation(i, size),
     lightness(i, size),
