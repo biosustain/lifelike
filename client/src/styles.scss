@@ -45,6 +45,16 @@ router-outlet + * {
   white-space: pre-line !important;
 }
 
+.tooltip-collapse-control:after {
+  font-family: Fontawesome;
+  content: '\f077';
+  float: right;
+}
+
+.tooltip-collapse-control.collapsed:after {
+  content: '\f078';
+}
+
 .adaptive-modal {
   .modal-xl {
     max-width: 90vw;
