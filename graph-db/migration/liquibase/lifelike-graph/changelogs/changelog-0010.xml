@@ -18,7 +18,7 @@
         'DETACH DELETE n', {batchSize:10000})
         
       "
-      conditionQuery="MATCH (n:db_Literature) RETURN COUNT(n)"
+      conditionQuery="MATCH (n:db_Literature) WHERE NOT 'Publication' IN labels(n) AND NOT 'AssociationType' IN labels(n) RETURN COUNT(n)"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
