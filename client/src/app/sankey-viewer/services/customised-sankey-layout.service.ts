@@ -71,9 +71,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       truncatePipe: {transform}
     } = this;
     if (enabled) {
-      return n => transform(nodeLabel(n), value);
+      return (d, i?, n?) => transform(nodeLabel(d, i, n), value);
     } else {
-      return n => nodeLabel(n);
+      return (d, i?, n?) => nodeLabel(d, i, n);
     }
   }
 
@@ -92,9 +92,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       nodeLabel
     } = this;
     if (enabled) {
-      return n => nodeLabel(n).length > value;
+      return (d, i?, n?) => nodeLabel(d, i, n).length > value;
     } else {
-      return _ => false;
+      return () => false;
     }
   }
 
@@ -128,8 +128,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   normalizeLinks = false;
 
-  columns;
-  columnsWithLinkPlaceholders;
+  columns: SankeyNode[][] = [];
+  columnsWithLinkPlaceholders: SankeyNode[][] = [];
 
   ky; // y scaling factor (_value * ky = height)
 

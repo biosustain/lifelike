@@ -258,11 +258,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     });
   }
 
-  get sourceValue() {
+  get sourceValue(): (link: SankeyLink) => number {
     return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[0] : _value;
   }
 
-  get targetValue() {
+  get targetValue(): (link: SankeyLink) => number {
     return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[1] : _value;
   }
 
@@ -327,7 +327,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
-  computeNodeLayers({nodes}: SankeyData) {
+  computeNodeLayers({nodes}: SankeyData): SankeyNode[][] {
     const {x1, x0, dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
     const kx = (x1 - x0 - dx) / (x - 1);
@@ -354,7 +354,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   /**
    * Calculate Y scaling factor and initialise nodes height&position.
    */
-  initializeNodeBreadths(columns) {
+  initializeNodeBreadths(columns: SankeyNode[][]) {
     const {y1, y0, py, value} = this;
 
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
