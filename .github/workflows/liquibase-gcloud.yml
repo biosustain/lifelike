@@ -5,9 +5,6 @@ on:
   push:
     tags:
       - liquibase
-    branches:
-      # only trigger when branches match refs/heads/staging/
-      - "liquibase/**"
 
 jobs:
   build:
