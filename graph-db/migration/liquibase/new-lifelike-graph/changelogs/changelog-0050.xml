@@ -156,7 +156,7 @@ MERGE (a)-[r:GO_LINK]->(b)
     <sql>
     
         CALL apoc.periodic.iterate(
-        'MATCH (n:db_UniProt), (t:Taxonomy {id: n.tax_id}) RETURN n,t',
+        'MATCH (n:db_UniProt), (t:Taxonomy {eid: n.tax_id}) RETURN n,t',
         'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
         
     </sql>
