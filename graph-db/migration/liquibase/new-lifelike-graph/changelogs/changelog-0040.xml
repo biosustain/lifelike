@@ -118,7 +118,7 @@ RETURN COUNT(*)
     <sql>
     
         CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI), (t:Taxonomy {id:n.tax_id}) RETURN n, t',
+        'MATCH (n:Gene:db_NCBI), (t:Taxonomy {eid:n.tax_id}) RETURN n, t',
         'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
         
     </sql>
