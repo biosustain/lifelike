@@ -2,6 +2,7 @@ import lmdb
 
 from typing import Any, Dict
 from flask import current_app
+from lmdb import Environment
 
 from ..common import DatabaseConnection, TransactionContext
 
@@ -19,7 +20,7 @@ class LMDBConnection(DatabaseConnection):
     class _context(TransactionContext):
         def __init__(self, env, db):
             self.db = db
-            self.env = env
+            self.env: Environment = env
 
         def __enter__(self):
             self.session = self.env.begin(self.db)
@@ -44,7 +45,7 @@ class LMDBConnection(DatabaseConnection):
 
         dbpath = f'{self.dirpath}{self.configs[dbname]}'
         try:
-            env = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
+            env: Environment = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
         except Exception:
             current_app.logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
@@ -66,8 +67,11 @@ class LMDBConnection(DatabaseConnection):
             and the transaction and cursor will point to the wrong address in
             memory and retrieve whatever is there.
             """
-            db = env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
-            self.dbs[dbname] = db
+            if dbname not in self.dbs:
+                db = env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
+                self.dbs[dbname] = db
+            else:
+                db = self.dbs[dbname]
             return self._context(env, db)
         except Exception:
             current_app.logger.error(
