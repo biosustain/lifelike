@@ -15,6 +15,7 @@
         update_cache: yes
         pkg:
           - fail2ban
+          # for liquibase
           - openjdk-11-jdk
 
     - name: Create liquibase directory
@@ -30,11 +31,6 @@
         remote_src: yes
         mode: 0755
         creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
-
-    # - name: Add liquibase to PATH
-    #   shell: echo $PATH
-    #   environment:
-    #     PATH: "{{ LIQUIBASE_INSTALL_FOLDER }}:$PATH"
 
     - name: Download liquibase-neo4j jar
       get_url:
@@ -189,7 +185,7 @@
       tags:
         - deploy
 
-    - name: Run neo4j liquibase migration
+    - name: Run Neo4j liquibase migration
       shell:
         chdir: "{{ deploy_dir }}"
         cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/lifelike-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }}/lib && \
@@ -203,13 +199,20 @@
       tags:
         - deploy
 
+    - name: Clean up Neo4j liquibase files
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "rm -r {{ deploy_dir }}/liquibase-data-files/*"
+      tags:
+        - deploy
+
     - name: Prune unused images
       shell:
         "docker image prune -a -f"
       tags:
         - deploy
 
-    - name: Run the migration
+    - name: Run the PostgreSQL migration
       shell:
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
