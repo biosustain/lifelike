@@ -52,6 +52,7 @@ export class TextElement {
   readonly bottomInset = 0;
   readonly leftInset = 0;
   readonly rightInset = 0;
+  readonly hyphenWidth = this.ctx.measureText('-').width;
 
   /**
    * Create a new instance.
@@ -197,28 +198,54 @@ export class TextElement {
 
       blockLoop:
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        const tokens = blocks[blockIndex].split(/ +/g);
+        // TODO: check that
+        // @ts-ignore For some reason it does not recognise flat map
+        // Split on whitespace, unusual chars and word endings
+        const tokens = blocks[blockIndex].split(/(?<=\S)(?=\s)/gi).flatMap(tok => {
+            return tok.split(/(?<=[^\s\d\w]|[\\.,_-])|(?<=\w)(?=\W)/gi);
+        });
 
         for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
           const lineHorizontalOverflow = metrics.width > effectiveWidth;
 
           if (lineHorizontalOverflow) {
-            // If this line overflows, make sure to mark the box as overflowing and
-            // update the width of the box
-            boxHorizontalOverflow = true;
-            actualWidth = effectiveWidth;
-          } else if (metrics.width > actualWidth) {
-            // If the line isn't overflowing but this line's width is longer than the
-            // running actual width, update that
-            actualWidth = metrics.width;
-          }
-
-          lines.push({
+            // If we can split on the previous, try to break the words on syllables
+            const splitTokens = line.match(
+              /[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
+            for (const widthFitLine of this.getWidthFittedLines(splitTokens, effectiveWidth - this.hyphenWidth)) {
+              const stillOverflow = widthFitLine.metrics.width > effectiveWidth;
+              // If that did not help, we cannot do anything else
+              if (stillOverflow) {
+                // If this line overflows, make sure to mark the box as overflowing and
+                // update the width of the box
+                boxHorizontalOverflow = true;
+                actualWidth = effectiveWidth;
+              }
+              lines.push({
+                // Since we break the words, add hyphen.
+                text: widthFitLine.line + '-',
+                metrics: widthFitLine.metrics,
+                xOffset: 0,
+                horizontalOverflow: stillOverflow
+              });
+            }
+          } else {
+            lines.push({
             text: line,
             metrics,
             xOffset: 0, // We'll update later
             horizontalOverflow: lineHorizontalOverflow,
           });
+          }
+
+
+          if (metrics.width > actualWidth && !lineHorizontalOverflow) {
+            // If the line isn't overflowing but this line's width is longer than the
+            // running actual width, update that
+            actualWidth = metrics.width;
+          }
+
+
 
           // We've overflow the height if we add another line
           if ((remainingTokens || blockIndex < blocks.length - 1) && (
@@ -275,12 +302,12 @@ export class TextElement {
 
     let lineTokens = [tokens[0]];
     let line = tokens[0];
-    let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(' '));
+    let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(''));
 
     for (let i = 1; i < tokens.length; i++) {
       const token = tokens[i];
       lineTokens.push(token);
-      const lineTokensWithToken = lineTokens.join(' ');
+      const lineTokensWithToken = lineTokens.join('');
       lineTokens.pop();
       const metricsWithToken = this.ctx.measureText(lineTokensWithToken);
 
