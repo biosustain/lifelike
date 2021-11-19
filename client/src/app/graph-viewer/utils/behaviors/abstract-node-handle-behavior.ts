@@ -101,10 +101,8 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
   }
 
   drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY, displayColor}: T) {
-    ctx.save();
     ctx.beginPath();
     ctx.lineWidth = 1 / transform.scale(1).k;
-    ctx.rect(minX, minY, maxX - minX, maxY - minY);
     if (document.activeElement === this.graphView.canvas) {
       ctx.fillStyle = nullCoalesce(displayColor, '#000');
       ctx.strokeStyle = '#fff';
@@ -112,9 +110,8 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
       ctx.fillStyle = '#CCC';
       ctx.strokeStyle = '#999';
     }
-    ctx.fill();
+    ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
     ctx.stroke();
-    ctx.restore();
 
   }
 

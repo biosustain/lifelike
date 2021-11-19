@@ -4,6 +4,7 @@ import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-to
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import {handleBlue} from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -94,11 +95,40 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     const size = this.size * noZoomScale;
     const halfSize = size / 2;
     const handles = [
+      // Right - free scaling
+        {
+          execute: (target, originalSize, dragStartPosition, graphPosition) => {
+             target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x));
+             target.data.height = Math.abs(this.originalSize.height - (graphPosition.y - this.dragStartPosition.y));
+          },
+          minX: bbox.maxX - halfSize,
+          minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
+          maxX: bbox.maxX + halfSize,
+          maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
+          displayColor: handleBlue
+        },
+        // Left - free scaling
+        {
+          execute: (target, originalSize, dragStartPosition, graphPosition) => {
+          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x));
+          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y));
+          },
+          minX: bbox.minX - halfSize,
+          minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
+          maxX: bbox.minX + halfSize,
+          maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
+          displayColor: handleBlue
+
+        }
       // Top left
-      {
+    ];
+    const ratioFactor = 300;
+    if (placedNode.uniformlyResizable) {
+      handles.push({
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height - (graphPosition.y - this.dragStartPosition.y) * 2);
+          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          target.data.width = Math.abs(this.originalSize.width * ratio);
+          target.data.height = Math.abs(this.originalSize.height * ratio);
         },
         minX: bbox.minX - halfSize,
         minY: bbox.minY - halfSize,
@@ -109,8 +139,9 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Bottom left
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y) * 2);
+          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          target.data.width = Math.abs(this.originalSize.width * ratio);
+          target.data.height = Math.abs(this.originalSize.height * ratio);
         },
         minX: bbox.minX - halfSize,
         minY: bbox.maxY - halfSize,
@@ -121,8 +152,9 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Top right
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height - (graphPosition.y - this.dragStartPosition.y) * 2);
+          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          target.data.width = Math.abs(this.originalSize.width * ratio);
+          target.data.height = Math.abs(this.originalSize.height * ratio);
         },
         minX: bbox.maxX - halfSize,
         minY: bbox.minY - halfSize,
@@ -133,8 +165,9 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Bottom right
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y) * 2);
+          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          target.data.width = Math.abs(this.originalSize.width * ratio);
+          target.data.height = Math.abs(this.originalSize.height * ratio);
         },
         minX: bbox.maxX - halfSize,
         minY: bbox.maxY - halfSize,
@@ -142,54 +175,10 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         maxY: bbox.maxY + halfSize,
         displayColor: '#000000'
       },
-    ];
-    // TODO: Check if is image if we want this only for images
-    if (placedNode) {
-      handles.push(
-        // Right - uniform
-        {
-          execute: (target, originalSize, dragStartPosition, graphPosition) => {
-            const ratio = 1 + (graphPosition.x - this.dragStartPosition.x) / 100.0;
-            target.data.width = Math.abs(this.originalSize.width * ratio);
-            target.data.height = Math.abs(this.originalSize.height * ratio);
-          },
-          minX: bbox.maxX - halfSize,
-          minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
-          maxX: bbox.maxX + halfSize,
-          maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
-          displayColor: '#228c22'
-        });
-      handles.push(
-        // Left - uniform
-        {
-          execute: (target, originalSize, dragStartPosition, graphPosition) => {
-            const ratio = 1 + (this.dragStartPosition.x - graphPosition.x) / 100.0;
-            target.data.width = Math.abs(this.originalSize.width * ratio);
-            target.data.height = Math.abs(this.originalSize.height * ratio);
-          },
-          minX: bbox.minX - halfSize,
-          minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
-          maxX: bbox.minX + halfSize,
-          maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
-          displayColor: '#228c22'
-
-        });
-      // There is other handle on top, so bottom might be bad
-      // handles.push(
-      //   // Bottom - uniform
-      //   {
-      //     execute: (target, originalSize, dragStartPosition, graphPosition) => {
-      //       const ratio = 1 + (graphPosition.y - this.dragStartPosition.y) / 100.0;
-      //       target.data.width = Math.abs(this.originalSize.width * ratio);
-      //       target.data.height = Math.abs(this.originalSize.height * ratio);
-      //     },
-      //     minX: bbox.maxX - (bbox.maxX - bbox.minX) / 2.0 - halfSize,
-      //     minY: bbox.maxY - halfSize,
-      //     maxX: bbox.maxX - (bbox.maxX - bbox.minX) / 2.0 + halfSize,
-      //     maxY: bbox.maxY + halfSize,
-      //     displayColor: '#228c22'
-      //   });
+      );
     }
+
+
     return handles;
   }
 }
