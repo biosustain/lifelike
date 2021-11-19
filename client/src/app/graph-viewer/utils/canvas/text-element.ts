@@ -198,9 +198,6 @@ export class TextElement {
 
       blockLoop:
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        // TODO: check that
-        // @ts-ignore For some reason it does not recognise flat map
-        // Split on whitespace, unusual chars and word endings
         const tokens = blocks[blockIndex].split(/(?<=\S)(?=\s)/gi).flatMap(tok => {
             return tok.split(/(?<=[^\s\d\w]|[\\.,_-])|(?<=\w)(?=\W)/gi);
         });
