@@ -198,10 +198,8 @@ export class TextElement {
 
       blockLoop:
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        // @ts-ignore for some reason, the flat map as function by tslint is not recognised - even though it works
-        const tokens = blocks[blockIndex].split(/(?<=\S)(?=\s)/gi).flatMap(tok => {
-            return tok.split(/(?<=[^\s\d\w]|[\\.,_-])|(?<=\w)(?=\W)/gi);
-        });
+        // We break on whitespace, word endings and special chars `\.,_-`.
+        const tokens = blocks[blockIndex].split(/(?:(?<=\S)(?=\s))|(?<=[^\s\d\w]|[\\.,_-])|(?<=\w)(?=\W)/gi);
 
         for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
           const lineHorizontalOverflow = metrics.width > effectiveWidth;
