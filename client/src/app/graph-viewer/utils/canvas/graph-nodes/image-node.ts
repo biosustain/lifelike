@@ -17,6 +17,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
 
   resourceOwnerClass = 'image-node';
   readonly resizable = true;
+  readonly uniformlyResizable = true;
   readonly imageManager: ResourceManager<string, CanvasImageSource>;
   readonly imageId: string;
   protected readonly subscriptions = new Subscription();
