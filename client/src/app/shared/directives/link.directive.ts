@@ -87,7 +87,7 @@ export class AbstractLinkDirective {
       preferStartupPane: this.preferStartupPane,
       shouldReplaceTab: this.shouldReplaceTab,
       openParentFirst: attrBoolValue(this.openParentFirst),
-      parentAddress: this.getUrlTree(this.parentCommands)
+      parentAddress: this.router.createUrlTree(this.parentCommands)
     };
 
     this.workspaceManager.navigateByUrl({url: this.urlTree, extras});
@@ -95,18 +95,15 @@ export class AbstractLinkDirective {
     return false;
   }
 
-  getUrlTree(commands: any[]): UrlTree {
-        return this.router.createUrlTree(commands, {
+
+  get urlTree(): UrlTree {
+    return this.router.createUrlTree(this.commands, {
       relativeTo: this.route,
       queryParams: this.queryParams,
       fragment: this.fragment || '',
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
     });
-  }
-
-  get urlTree(): UrlTree {
-    return this.getUrlTree(this.commands);
   }
 
 }
