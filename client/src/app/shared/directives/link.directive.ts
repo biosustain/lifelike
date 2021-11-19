@@ -99,7 +99,7 @@ export class AbstractLinkDirective {
         return this.router.createUrlTree(commands, {
       relativeTo: this.route,
       queryParams: this.queryParams,
-      fragment: this.fragment,
+      fragment: this.fragment || '',
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
     });

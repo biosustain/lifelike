@@ -5,7 +5,8 @@
     <div class="d-flex flex-column">
       <!-- If a file is in standalone mode, workbench button opens it as tab -->
       <div *ngIf="router.url.match(standAloneFileUrlRegex); else goToWorkbench">
-        <a [appLink]="router.url.split('#')[0]" placement="right" ngbTooltip="Workbench" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+        <a [appLink]="router.url.split('#')[0]" placement="right" ngbTooltip="Workbench" [forceWorkbench]="true" [newTab]="true"
+           [fragment]="router.url.split('#')[1]" preferPane="left">
           <i class="far fa-window-restore"></i>
         </a>
       </div>
