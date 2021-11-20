@@ -35,7 +35,7 @@ export class AppComponent {
 
   constructor(
     private readonly store: Store<State>,
-    readonly router: Router,
+    private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
     private readonly modalService: NgbModal,
