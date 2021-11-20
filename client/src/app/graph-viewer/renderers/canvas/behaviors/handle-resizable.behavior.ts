@@ -107,7 +107,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
           minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
           maxX: bbox.maxX + halfSize,
           maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
-          displayColor: handleBlue
+          displayColor: '#000000'
         },
         // Left - free scaling
         {
@@ -119,7 +119,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
           minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
           maxX: bbox.minX + halfSize,
           maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
-          displayColor: handleBlue
+          displayColor: '#000000'
 
         }
       // Top left
@@ -135,7 +135,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         minY: bbox.minY - halfSize,
         maxX: bbox.minX + halfSize,
         maxY: bbox.minY + halfSize,
-        displayColor: '#000000'
+        displayColor: handleBlue
       },
       // Bottom left
       {
@@ -148,7 +148,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         minY: bbox.maxY - halfSize,
         maxX: bbox.minX + halfSize,
         maxY: bbox.maxY + halfSize,
-        displayColor: '#000000'
+        displayColor: handleBlue
       },
       // Top right
       {
@@ -161,7 +161,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         minY: bbox.minY - halfSize,
         maxX: bbox.maxX + halfSize,
         maxY: bbox.minY + halfSize,
-        displayColor: '#000000'
+        displayColor: handleBlue
       },
       // Bottom right
       {
@@ -174,7 +174,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         minY: bbox.maxY - halfSize,
         maxX: bbox.maxX + halfSize,
         maxY: bbox.maxY + halfSize,
-        displayColor: '#000000'
+        displayColor: handleBlue
       });
     }
     return handles;
