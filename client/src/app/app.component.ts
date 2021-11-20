@@ -28,7 +28,7 @@ export class AppComponent {
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
-  standAloneFileUrlRegex = /^\/(projects|folders)\/([^\/]+)\//;
+  inWorkspaceFileUrlRegex = /^\/workspace/local/;
 
   constructor(
     private readonly store: Store<State>,
