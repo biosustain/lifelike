@@ -44,6 +44,8 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
   private originalSize: { width: number, height: number } | undefined;
   private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
   private originalTarget: UniversalGraphNode;
+  private readonly RATIO_FACTOR = 300;
+
 
   constructor(graphView: CanvasGraphView,
               target: UniversalGraphNode,
@@ -122,11 +124,10 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         }
       // Top left
     ];
-    const ratioFactor = 300;
     if (placedNode.uniformlyResizable) {
       handles.push({
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / this.RATIO_FACTOR;
           target.data.width = Math.abs(this.originalSize.width * ratio);
           target.data.height = Math.abs(this.originalSize.height * ratio);
         },
@@ -139,7 +140,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Bottom left
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / this.RATIO_FACTOR;
           target.data.width = Math.abs(this.originalSize.width * ratio);
           target.data.height = Math.abs(this.originalSize.height * ratio);
         },
@@ -152,7 +153,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Top right
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / this.RATIO_FACTOR;
           target.data.width = Math.abs(this.originalSize.width * ratio);
           target.data.height = Math.abs(this.originalSize.height * ratio);
         },
@@ -165,7 +166,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Bottom right
       {
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / ratioFactor;
+          const ratio = 1 - (this.dragStartPosition.x - graphPosition.x) / this.RATIO_FACTOR;
           target.data.width = Math.abs(this.originalSize.width * ratio);
           target.data.height = Math.abs(this.originalSize.height * ratio);
         },
@@ -174,11 +175,8 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         maxX: bbox.maxX + halfSize,
         maxY: bbox.maxY + halfSize,
         displayColor: '#000000'
-      },
-      );
+      });
     }
-
-
     return handles;
   }
 }
