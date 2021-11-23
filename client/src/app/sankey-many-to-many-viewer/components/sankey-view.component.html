@@ -14,6 +14,7 @@
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
             </app-object-menu>
+            <app-warning-pill></app-warning-pill>
             <ng-container objectMenuAdditions>
                 <div class="dropdown-divider"></div>
                 <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
@@ -75,6 +76,21 @@
                         </div>
                     </ng-template>
                 </button>
+                <button (click)="open(warningList)" ngbDropdownItem>
+                    Warning List
+                    <ng-template #warningList let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Warnings</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-warning-list [showAll]="true" [dismissible]="false"></app-warning-list>
+                        </div>
+                    </ng-template>
+                </button>
             </ng-container>
             <button (click)="resetView()" class="btn btn-secondary" container="body"
                     ngbTooltip="Reset the view" placement="bottom"
@@ -83,12 +99,13 @@
             </button>
             <app-sankey-view-dropdown
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                 class="d-inline-block"
+                    class="d-inline-block"
                     [object]="object"
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"
-            ></app-sankey-view-dropdown>
+            >
+            </app-sankey-view-dropdown>
             <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
@@ -111,8 +128,7 @@
                 <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
                     <button class="btn btn-primary" ngbDropdownToggle>
                         <ng-container
-                                *ngIf="selectedNetworkTrace; else noSelectedTrace">{{
-                            selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
+                                *ngIf="selectedNetworkTrace; else noSelectedTrace">{{ selectedNetworkTrace?.name || selectedNetworkTrace?.description || 'Trace Description Unknown' }}</ng-container>
                         <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
@@ -167,7 +183,9 @@
                       unit="pixel"
                       class="overlaying-panel"
             >
-                <as-split-area [order]="0"></as-split-area>
+                <as-split-area [order]="0" class="p-4">
+<!--                    <app-warning-list></app-warning-list>-->
+                </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
                                 detailsPanel ? 'border' : 'as-hidden'

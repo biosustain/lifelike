@@ -76,7 +76,6 @@ export const getTraceDetailsGraph = (trace: TraceData) => {
   const traverseGraph = (node: TraceNode) => {
     if (!node._visited) {
       const nextPosition = sLayout.next().value;
-      // console.log(nextPosition);
       if (node._fromEdges.length <= 1 && node._toEdges.length <= 1) {
         Object.assign(node, nextPosition);
         // Object.assign(node, nextPosition, {fixed: {x: true, y: true}});

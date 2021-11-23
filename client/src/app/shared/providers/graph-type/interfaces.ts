@@ -96,6 +96,8 @@ export interface GraphTraceNetwork {
 
   method?: string;
 
+  default_sizing?: string;
+
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
 }
