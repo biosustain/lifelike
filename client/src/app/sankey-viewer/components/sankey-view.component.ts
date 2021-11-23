@@ -20,6 +20,7 @@ import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { MimeTypes } from 'app/shared/constants';
 import { SelectionManyToManyEntity } from 'app/sankey-many-to-many-viewer/components/interfaces';
 import { SankeyOptions, SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam } from 'app/shared-sankey/interfaces';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
@@ -38,6 +39,7 @@ import { SankeySearchService } from '../services/search.service';
       useExisting: CustomisedSankeyLayoutService
     },
     SankeyControllerService,
+    WarningControllerService,
     SankeySearchService
   ]
 })
@@ -54,6 +56,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     readonly sessionStorage: SessionStorageService,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly sankeyController: SankeyControllerService,
+    readonly warningController: WarningControllerService,
     readonly sankeySearch: SankeySearchService,
     private zone: NgZone
   ) {
@@ -87,12 +90,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.openSankeySub = this.loadTask.results$.subscribe(({
                                                              result: [object, content],
                                                            }) => {
-      this.sankeyController.load(content, () => {
-        this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
-        if (isNil(this.preselectedViewBase)) {
-          this.setDefaultViewBase(content);
-        }
-      });
+      if (this.sankeyController.sanityChecks(content)) {
+        this.sankeyController.load(content, () => {
+          this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
+          if (isNil(this.preselectedViewBase)) {
+            this.setDefaultViewBase(content);
+          }
+        });
+      }
       this.object = object;
       this.emitModuleProperties();
 
@@ -101,6 +106,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     });
 
     this.loadFromUrl();
+  }
+
+  get warnings() {
+    return this.warningController.warnings;
   }
 
   get allData() {
@@ -220,7 +229,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       .pipe(
         delay(1000),
         catchError((err) => {
-          console.log(err);
           this.snackBar.open('Error saving file.', null, {
             duration: 2000,
           });
@@ -422,7 +430,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeyController.applyState();
   }
 
-
+  // region Search
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms

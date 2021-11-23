@@ -40,5 +40,9 @@
   & > *:first-child {
     pointer-events: none;
     background: none;
+
+    & > * {
+      pointer-events: all;
+    }
   }
 }
