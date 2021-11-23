@@ -742,7 +742,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data graph declaration
    */
   updateLayout(data) {
-    console.log('update updateLayout');
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
           this.sankey.calcLayout(data);
@@ -753,7 +752,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   scaleLayout(data, changeRatio) {
-    console.log('update updateLayoutWidth', changeRatio);
     return new Promise(resolve => {
         this.sankey.rescaleNodePosition(data, changeRatio);
         resolve(data);
