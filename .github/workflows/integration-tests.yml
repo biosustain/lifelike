@@ -71,5 +71,5 @@ jobs:
                 cd client
                 yarn install
                 yarn build
-                yarn lint
+                yarn lint-ci
                 yarn test
