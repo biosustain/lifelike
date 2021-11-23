@@ -103,7 +103,7 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
         if (color) {
           link._color = color;
         } else {
-          console.warn(`There is no color mapping for label: ${label}`);
+          this.warningController.warn(`There is no color mapping for label: ${label}`);
         }
       }
     });
@@ -134,14 +134,14 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
         if (node) {
           node._color = nodeColors.get(position);
         } else {
-          console.warn(`Id ${id} could not be mapped to node - inconsistent file`);
+          this.warningController.warn(`Id ${id} could not be mapped to node - inconsistent file`, true);
         }
       });
     mapNodePositionToColor(sourcesIds, NodePosition.left);
     mapNodePositionToColor(targetsIds, NodePosition.right);
     const reusedIds = intersection(sourcesIds, targetsIds);
     if (reusedIds.length) {
-      console.warn('Nodes set to be both in and out', reusedIds);
+      this.warningController.warn(`Nodes set to be both in and out ${reusedIds}`);
       mapNodePositionToColor(reusedIds, NodePosition.multi);
     }
   }

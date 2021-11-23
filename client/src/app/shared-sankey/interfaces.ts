@@ -2,6 +2,7 @@ import { PRESCALERS } from 'app/sankey-viewer/components/algorithms/prescalers';
 import { LINK_PALETTES } from 'app/sankey-viewer/components/color-palette';
 import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 
 // region UI options
 export interface ValueAccessor {
@@ -13,10 +14,12 @@ export interface IntermediateProcessedData extends Partial<SankeyData> {
   _sets: object;
 }
 
+export type ValueProcessingStep = (this: SankeyControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
+
 export interface ValueGenerator extends ValueAccessor {
-  disabled?: () => boolean;
-  preprocessing: (v: SankeyData) => IntermediateProcessedData | undefined;
-  postprocessing?: (v: SankeyData) => IntermediateProcessedData | undefined;
+  disabled?: (this: SankeyControllerService) => boolean;
+  preprocessing: ValueProcessingStep;
+  postprocessing?: ValueProcessingStep;
 }
 
 export interface MultiValueAccessor extends ValueAccessor {
