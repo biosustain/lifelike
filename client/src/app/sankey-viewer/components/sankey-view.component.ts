@@ -62,7 +62,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
         auditTime(500)
       ).subscribe(matches => {
         this.zone.run(() =>
-          this.entitySearchList.next(matches)
+          this.entitySearchList.next(matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
         );
       })
     );
@@ -441,18 +441,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   search() {
-    this.searchPanel = true;
     this.searchTerms = tokenizeQuery(
       this.entitySearchTerm,
       {singleTerm: true}
     );
     this.entitySearchListIdx = -1;
     if (this.entitySearchTerm.length) {
+      this.searchPanel = true;
       this.findMatching(
         this.searchTerms,
         {wholeWord: false}
       );
     } else {
+      this.searchPanel = false;
       this.entitySearchList.next([]);
     }
   }

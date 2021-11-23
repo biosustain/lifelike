@@ -43,14 +43,19 @@ export function tokenizeQuery(s: string,
   }
 }
 
+export interface Matcher {
+  (s: string): boolean;
+
+  pattern: RegExp;
+  termPatterns: string[];
+}
+
 /**
  * Compile a function to match search terms within text.
  * @param terms the terms to match
  * @param options extra options
  */
-export function compileFind(terms: string[],
-                            options: FindOptions = {}):
-  (string) => boolean {
+export function compileFind(terms: string[], options: FindOptions = {}): Matcher {
   const wrapper = options.wholeWord ? '\\b' : '';
   let termPatterns;
 
@@ -69,7 +74,12 @@ export function compileFind(terms: string[],
   }
 
   const pattern = new RegExp(termPatterns.join('|'), 'i');
-  return s => pattern.test(s);
+  const matcher = pattern.test;
+  Object.assign(matcher, {
+    pattern,
+    termPatterns
+  });
+  return matcher as Matcher;
 }
 
 export interface TokenizationOptions {
