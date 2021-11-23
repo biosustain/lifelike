@@ -32,16 +32,6 @@
   border-top: 0;
 }
 
-.pdf-tooltip-collapse-control:after {
-  font-family: Fontawesome;
-  content: '\f077';
-  float: right;
-}
-
-.pdf-tooltip-collapse-control.collapsed:after {
-  content: '\f078';
-}
-
 .system-annotation {
   scroll-margin: 10rem;
   mix-blend-mode: multiply;

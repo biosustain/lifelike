@@ -7,12 +7,13 @@
     "dev-start": "ng serve --host=0.0.0.0 --disable-host-check --proxy-config=proxy.conf.json --source-map=true",
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
-    "lint": "tslint --project .",
+    "lint": "tslint --formatters-dir ./tslint --project . --format groupedStylish",
+    "lint-ci": "yarn lint --format groupedProse",
     "e2e": "ng e2e",
     "compileTsLintCustomisations": "tsc tslint/*.ts"
   },
   "lint-staged": {
-    "*.ts": "yarn lint --formatters-dir ./tslint --format grouped"
+    "*.ts": "yarn lint"
   },
   "private": true,
   "dependencies": {
