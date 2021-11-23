@@ -71,6 +71,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   resizeObserver: any;
   size;
   zoom;
+  zoomXFactor = 1;
   dragging = false;
 
   // shallow copy of input data
@@ -210,7 +211,19 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     // attach zoom behaviour
     const {g, zoom} = this;
     const zoomContainer = d3_select(g.nativeElement);
-    zoom.on('zoom', _ => zoomContainer.attr('transform', d3_event.transform));
+    let prevTransform = d3_zoomIdentity;
+    zoom.on('zoom', _ => {
+      const {transform, sourceEvent} = d3_event;
+      const shift = sourceEvent && sourceEvent.shiftKey;
+      if (shift) {
+        transform.y = prevTransform.y;
+        this.zoomXFactor *= transform.k / prevTransform.k;
+      }
+      zoomContainer.attr('transform',
+        `translate(${transform.x} ${transform.y}) scale(${transform.k * this.zoomXFactor} ${transform.k / this.zoomXFactor})`
+      );
+      prevTransform = transform;
+    });
 
     this.sankeySelection.on('click', () => {
       const e = d3_event;
@@ -277,8 +290,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('width', width)
       .attr('height', height)
       .call(
-        zoom
-          .extent([[0, 0], [width, height]])
+        zoom.extent([[0, 0], [width, height]])
         // .translateExtent([[0, 0], [width, height]])
       );
 
@@ -416,8 +428,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     // this.unhighlightLinks();
   }
 
-  scaleZoom(scaleBy) {
+  scaleZoom(scaleBy, scaleX = 1) {
     // @ts-ignore
+    this.zoomXFactor *= scaleX;
     this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
   }
 
@@ -425,6 +438,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   resetZoom() {
     // it is used by its parent
     this.sankeySelection.call(this.zoom.transform, d3_zoomIdentity);
+    this.zoomXFactor = 1;
   }
 
   // the function for moving the nodes

@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY } from 'rxjs';
 import { map, delay, catchError, auditTime } from 'rxjs/operators';
-import { isNull, compact, isNumber, isNil } from 'lodash-es';
+import { isNull, compact, isNil } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -286,15 +286,23 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  zoomIn() {
+  zoomIn(event) {
     if (this.sankey) {
-      this.sankey.scaleZoom(1.25);
+      if (event.shiftKey) {
+        this.sankey.scaleZoom(1, 1.25);
+      } else {
+        this.sankey.scaleZoom(1.25);
+      }
     }
   }
 
-  zoomOut() {
+  zoomOut(event) {
     if (this.sankey) {
-      this.sankey.scaleZoom(.8);
+      if (event.shiftKey) {
+        this.sankey.scaleZoom(1, .8);
+      } else {
+        this.sankey.scaleZoom(.8);
+      }
     }
   }
 
