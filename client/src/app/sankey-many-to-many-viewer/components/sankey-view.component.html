@@ -104,7 +104,8 @@
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"
-            ></app-sankey-view-dropdown>
+            >
+            </app-sankey-view-dropdown>
             <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
@@ -164,24 +165,25 @@
             </div>
         </app-module-header>
         <div class="relative w-100 h-100 overflow-hidden">
+            <app-sankey-many-to-many #sankey
+                                     *ngIf="dataToRender | async"
+                                     (linkClicked)="selectLink($event)"
+                                     (nodeClicked)="selectNode($event)"
+                                     (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                     [highlightCircular]="state.highlightCircular"
+                                     [nodeAlign]="nodeAlign"
+                                     [data]="dataToRender | async"
+                                     [normalizeLinks]="state.normalizeLinks"
+                                     [selected]="selection | async"
+                                     [searchedEntities]="entitySearchList | async"
+                                     [focusedNode]="searchFocus">
+            </app-sankey-many-to-many>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
+                      class="overlaying-panel"
             >
-                <as-split-area [order]="0">
-                    <app-sankey-many-to-many #sankey
-                                             *ngIf="dataToRender | async"
-                                             (linkClicked)="selectLink($event)"
-                                             (nodeClicked)="selectNode($event)"
-                                             (backgroundClicked)="closeDetailsPanel();resetSelection()"
-                                             [highlightCircular]="state.highlightCircular"
-                                             [nodeAlign]="nodeAlign"
-                                             [data]="dataToRender | async"
-                                             [normalizeLinks]="state.normalizeLinks"
-                                             [selected]="selection | async"
-                                             [searchedEntities]="entitySearchList | async"
-                                             [focusedNode]="searchFocus">
-                    </app-sankey-many-to-many>
+                <as-split-area [order]="0" class="p-4">
 <!--                    <app-warning-list></app-warning-list>-->
                 </as-split-area>
                 <as-split-area [class]="[
