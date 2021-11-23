@@ -127,9 +127,11 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     if (placedNode.uniformlyResizable) {
       handles.push({
         execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          const ratio = 1 +  (this.dragStartPosition.x - graphPosition.x) / this.RATIO_FACTOR;
-          target.data.width = Math.abs(this.originalSize.width * ratio);
-          target.data.height = Math.abs(this.originalSize.height * ratio);
+          const ratio = this.originalSize.width / this.originalSize.height;
+          const sizingVecLen = Math.hypot(this.dragStartPosition.x - graphPosition.x, (this.dragStartPosition.y - graphPosition.y);
+          const normY = Math.abs(sizingVecLen / Math.sqrt(ratio^2 + 1) );
+          target.data.width = 2 * normY * ratio;
+          target.data.height = 2 * normY;
         },
         minX: bbox.minX - halfSize,
         minY: bbox.minY - halfSize,
