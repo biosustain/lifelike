@@ -14,6 +14,7 @@
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
             </app-object-menu>
+            <app-warning-pill></app-warning-pill>
             <ng-container objectMenuAdditions>
                 <div class="dropdown-divider"></div>
                 <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
@@ -72,6 +73,21 @@
                         </div>
                         <div class="modal-body">
                             <app-object-explorer [dataSource]="allData"></app-object-explorer>
+                        </div>
+                    </ng-template>
+                </button>
+                <button (click)="open(warningList)" ngbDropdownItem>
+                    Warning List
+                    <ng-template #warningList let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Warnings</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-warning-list [showAll]="true" [dismissible]="false"></app-warning-list>
                         </div>
                     </ng-template>
                 </button>
@@ -170,6 +186,7 @@
                                 [focusedNode]="searchFocus">
 
                     </app-sankey>
+<!--                    <app-warning-list></app-warning-list>-->
                 </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
