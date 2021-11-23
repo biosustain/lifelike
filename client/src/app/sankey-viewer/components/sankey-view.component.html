@@ -83,7 +83,7 @@
             </button>
             <app-sankey-view-dropdown
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                 class="d-inline-block"
+                    class="d-inline-block"
                     [object]="object"
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
@@ -151,26 +151,26 @@
             </div>
         </app-module-header>
         <div class="relative w-100 h-100 overflow-hidden">
-            <app-sankey #sankey
-                        *ngIf="dataToRender | async"
-                        (linkClicked)="selectLink($event)"
-                        (nodeClicked)="selectNode($event)"
-                        (backgroundClicked)="closeDetailsPanel();resetSelection()"
-                        [nodeAlign]="nodeAlign"
-                        [data]="dataToRender | async"
-                        [normalizeLinks]="state.normalizeLinks"
-                        [selectedLinks]="selectedLinks | async"
-                        [selectedNodes]="selectedNodes | async"
-                        [searchedEntities]="entitySearchList | async"
-                        [focusedNode]="searchFocus">
-
-            </app-sankey>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
-                      class="overlaying-panel"
             >
-                <as-split-area [order]="0"></as-split-area>
+                <as-split-area [order]="0">
+                    <app-sankey #sankey
+                                *ngIf="dataToRender | async"
+                                (linkClicked)="selectLink($event)"
+                                (nodeClicked)="selectNode($event)"
+                                (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                [nodeAlign]="nodeAlign"
+                                [data]="dataToRender | async"
+                                [normalizeLinks]="state.normalizeLinks"
+                                [selectedLinks]="selectedLinks | async"
+                                [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList | async"
+                                [focusedNode]="searchFocus">
+
+                    </app-sankey>
+                </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
                                 detailsPanel ? 'border' : 'as-hidden'
