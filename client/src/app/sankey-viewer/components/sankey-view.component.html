@@ -167,26 +167,25 @@
             </div>
         </app-module-header>
         <div class="relative w-100 h-100 overflow-hidden">
-            <app-sankey #sankey
-                        *ngIf="dataToRender | async"
-                        (linkClicked)="selectLink($event)"
-                        (nodeClicked)="selectNode($event)"
-                        (backgroundClicked)="closeDetailsPanel();resetSelection()"
-                        [nodeAlign]="nodeAlign"
-                        [data]="dataToRender | async"
-                        [normalizeLinks]="state.normalizeLinks"
-                        [selectedLinks]="selectedLinks | async"
-                        [selectedNodes]="selectedNodes | async"
-                        [searchedEntities]="entitySearchList | async"
-                        [focusedNode]="searchFocus">
-
-            </app-sankey>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
-                      class="overlaying-panel"
             >
-                <as-split-area [order]="0" class="p-4">
+                <as-split-area [order]="0">
+                    <app-sankey #sankey
+                                *ngIf="dataToRender | async"
+                                (linkClicked)="selectLink($event)"
+                                (nodeClicked)="selectNode($event)"
+                                (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                [nodeAlign]="nodeAlign"
+                                [data]="dataToRender | async"
+                                [normalizeLinks]="state.normalizeLinks"
+                                [selectedLinks]="selectedLinks | async"
+                                [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList | async"
+                                [focusedNode]="searchFocus">
+
+                    </app-sankey>
 <!--                    <app-warning-list></app-warning-list>-->
                 </as-split-area>
                 <as-split-area [class]="[

@@ -73,13 +73,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.initSelection();
 
     this.loadTask = new BackgroundTask(hashId => {
-      return combineLatest(
+      return combineLatest([
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
-      );
+      ]);
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
