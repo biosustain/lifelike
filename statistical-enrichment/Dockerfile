@@ -1,4 +1,5 @@
 FROM python:3.8-buster
+LABEL app=kg-prototypes
 
 ENV _USER user
 ENV _HOME /home/$_USER
