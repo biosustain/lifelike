@@ -28,6 +28,10 @@ export class AppComponent {
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
+  standAloneFileUrlRegex = /^\/(projects|folders)\/([^\/]+)\//;
+  isStandaloneFileOpen: boolean;
+  mainUrl: string;
+  fragment: string;
 
   constructor(
     private readonly store: Store<State>,
@@ -54,6 +58,11 @@ export class AppComponent {
       if (event instanceof NavigationEnd) {
         const child = this.activatedRoute.firstChild;
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
+        this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
+        const urlParts = event.url.split('#', 2);
+        this.mainUrl = urlParts[0];
+        // Undefined if not present, but we default it in AppLink
+        this.fragment = urlParts[1];
       }
     });
 
