@@ -14,6 +14,7 @@
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
             </app-object-menu>
+            <app-warning-pill></app-warning-pill>
             <ng-container objectMenuAdditions>
                 <div class="dropdown-divider"></div>
                 <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
@@ -75,6 +76,21 @@
                         </div>
                     </ng-template>
                 </button>
+                <button (click)="open(warningList)" ngbDropdownItem>
+                    Warning List
+                    <ng-template #warningList let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Warnings</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-warning-list [showAll]="true" [dismissible]="false"></app-warning-list>
+                        </div>
+                    </ng-template>
+                </button>
             </ng-container>
             <button (click)="resetView()" class="btn btn-secondary" container="body"
                     ngbTooltip="Reset the view" placement="bottom"
@@ -83,9 +99,10 @@
             </button>
             <app-sankey-view-dropdown
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                 class="d-inline-block"
+                    class="d-inline-block"
                     [object]="object"
                     [(activeViewName)]="activeViewName"
+                    [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"
             >
             </app-sankey-view-dropdown>
@@ -141,33 +158,36 @@
                 <div class="btn-group btn-group-toggle">
                     <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
                                         [resultIndex]="entitySearchListIdx"
-                                        [resultCount]="entitySearchList.size"
-                                        (previous)="previous()" (next)="next()">
+                                        [resultCount]="(entitySearchList | async).length"
+                                        (previous)="previous()" (next)="next()"
+                                        [searching]="searching"
+                    >
                     </app-search-control>
                 </div>
             </div>
         </app-module-header>
         <div class="relative w-100 h-100 overflow-hidden">
-            <app-sankey #sankey
-                        *ngIf="dataToRender | async"
-                        (linkClicked)="selectLink($event)"
-                        (nodeClicked)="selectNode($event)"
-                        (backgroundClicked)="closeDetailsPanel()"
-                        [nodeAlign]="nodeAlign"
-                        [data]="dataToRender | async"
-                        [normalizeLinks]="state.normalizeLinks"
-                        [selectedLinks]="selectedLinks | async"
-                        [selectedNodes]="selectedNodes | async"
-                        [searchedEntities]="entitySearchList"
-                        [focusedNode]="searchFocus">
-
-            </app-sankey>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
-                      class="overlaying-panel"
             >
-                <as-split-area [order]="0"></as-split-area>
+                <as-split-area [order]="0">
+                    <app-sankey #sankey
+                                *ngIf="dataToRender | async"
+                                (linkClicked)="selectLink($event)"
+                                (nodeClicked)="selectNode($event)"
+                                (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                [nodeAlign]="nodeAlign"
+                                [data]="dataToRender | async"
+                                [normalizeLinks]="state.normalizeLinks"
+                                [selectedLinks]="selectedLinks | async"
+                                [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList | async"
+                                [focusedNode]="searchFocus">
+
+                    </app-sankey>
+<!--                    <app-warning-list></app-warning-list>-->
+                </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
                                 detailsPanel ? 'border' : 'as-hidden'
@@ -190,6 +210,33 @@
                             <app-sankey-details-panel *ngIf="selectionWithTraces | async"
                                                       [details]="selectionWithTraces | async">
                             </app-sankey-details-panel>
+                        </div>
+                    </div>
+                </as-split-area>
+                <as-split-area [class]="[
+                                'as-split-area',
+                                searchPanel ? 'border' : 'as-hidden'
+                               ].join(' ')"
+                               [order]="1"
+                               [visible]="searchPanel"
+                               size="340">
+                    <div class="w-100 h-100 p-3 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center">
+                            Search results
+                            <button (click)="closeSearchPanel()"
+                                    class="btn btn-danger"
+                                    type="button"
+                                    title="Click to close the panel and clear selection">
+                                <i class="fa fa-close"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow-1 pb-3">
+                            <app-sankey-search-panel
+                                    [entities]="entitySearchList | async"
+                                    [searchTerms]="searchTerms"
+                                    [(focusedIdx)]="entitySearchListIdx"
+                            >
+                            </app-sankey-search-panel>
                         </div>
                     </div>
                 </as-split-area>

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { SankeyLinkDetailsComponent } from 'app/sankey-viewer/components/details-panel/link-details.component';
 
@@ -9,11 +9,7 @@ import { SankeyManyToManyLink } from '../interfaces';
   templateUrl: './link-details.component.html',
   styleUrls: ['./link-details.component.scss']
 })
-export class SankeyManyToManyLinkDetailsComponent extends SankeyLinkDetailsComponent implements OnChanges {
+export class SankeyManyToManyLinkDetailsComponent extends SankeyLinkDetailsComponent {
   @Input() entity: SankeyManyToManyLink;
-
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
-  }
 }
 

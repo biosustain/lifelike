@@ -14,11 +14,14 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import * as d3 from 'd3';
+import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
+import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
+import { drag as d3_drag } from 'd3-drag';
+import { compact } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { SankeyData, SankeyNode } from 'app/shared-sankey/interfaces';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
+import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/shared-sankey/interfaces';
 
 import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
@@ -53,7 +56,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.attachLinkEvents = this.attachLinkEvents.bind(this);
     this.attachNodeEvents = this.attachNodeEvents.bind(this);
 
-    this.zoom = d3.zoom()
+    this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
   }
 
@@ -86,7 +89,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Input() normalizeLinks = true;
   @Input() selectedNodes = new Set<object>();
-  @Input() searchedEntities = new Set<object>();
+  @Input() searchedEntities = [];
   @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
@@ -104,7 +107,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     // @ts-ignore
     const [shadow, text] = this.children;
     const {x, y, width, height} = text.getBBox();
-    d3.select(shadow)
+    d3_select(shadow)
       .attr('x', x)
       .attr('y', y)
       .attr('width', width)
@@ -159,9 +162,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     if (searchedEntities) {
       const entities = searchedEntities.currentValue;
-      if (entities.size) {
-        this.searchNodes(entities);
-        this.searchLinks(entities);
+      if (entities.length) {
+        this.searchNodes(
+          new Set(
+            compact(entities.map(({nodeId}) => nodeId))
+          )
+        );
+        this.searchLinks(
+          new Set(
+            compact(entities.map(({linkId}) => linkId))
+          )
+        );
       } else {
         this.stopSearchNodes();
         this.stopSearchLinks();
@@ -170,24 +181,39 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     if (focusedNode) {
       const {currentValue, previousValue} = focusedNode;
       if (previousValue) {
-        this.unFocusNode(previousValue);
-        this.unFocusLink(previousValue);
+        this.applyEntity(
+          previousValue,
+          this.unFocusNode,
+          this.unFocusLink
+        );
       }
       if (currentValue) {
-        this.focusNode(currentValue);
-        this.focusLink(currentValue);
+        this.applyEntity(
+          currentValue,
+          this.focusNode,
+          this.focusLink
+        );
       }
+    }
+  }
+
+  applyEntity({nodeId, linkId}, nodeCallback, linkCallback) {
+    if (nodeId) {
+      nodeCallback.call(this, nodeId);
+    }
+    if (linkId) {
+      linkCallback.call(this, linkId);
     }
   }
 
   ngAfterViewInit() {
     // attach zoom behaviour
     const {g, zoom} = this;
-    const zoomContainer = d3.select(g.nativeElement);
-    zoom.on('zoom', _ => zoomContainer.attr('transform', d3.event.transform));
+    const zoomContainer = d3_select(g.nativeElement);
+    zoom.on('zoom', _ => zoomContainer.attr('transform', d3_event.transform));
 
     this.sankeySelection.on('click', () => {
-      const e = d3.event;
+      const e = d3_event;
       if (!e.target.__data__) {
         this.backgroundClicked.emit();
       }
@@ -199,9 +225,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   attachResizeObserver() {
     this.zone.runOutsideAngular(() =>
       // resize and listen to future resize events
-      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement).subscribe(({width, height}) =>
-        this.zone.run(() => this.onResize(width, height))
-      )
+      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
+        .subscribe(size =>
+          this.zone.run(() => this.onResize(size))
+        )
     );
   }
 
@@ -215,18 +242,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region D3Selection
-  get linkSelection() {
+  get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
     // returns empty selection if DOM struct was not initialised
-    return d3.select(this.links && this.links.nativeElement)
+    return d3_select(this.links && this.links.nativeElement)
       .selectAll(function() {
         // by default there is recursive match, not desired in here
         return this.children;
       });
   }
 
-  get nodeSelection() {
+  get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
     // returns empty selection if DOM struct was not initialised
-    return d3.select(this.nodes && this.nodes.nativeElement)
+    return d3_select(this.nodes && this.nodes.nativeElement)
       .selectAll(function() {
         // by default there is recursive match, not desired in here
         return this.children;
@@ -234,13 +261,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   get sankeySelection() {
-    return d3.select(this.svg && this.svg.nativeElement);
+    return d3_select(this.svg && this.svg.nativeElement);
   }
 
   // endregion
 
   // region Graph sizing
-  onResize(width, height) {
+  onResize({width, height}) {
     const {zoom, margin} = this;
     const extentX = width - margin.right;
     const extentY = height - margin.bottom;
@@ -255,9 +282,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
+    const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
     this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
+    const [innerWidth, innerHeight] = this.sankey.size;
 
-    return this.updateLayout(this.data).then(this.updateDOM.bind(this));
+    const parsedData = innerHeight / prevInnerHeight === 1 ?
+      this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
+      this.updateLayout(this.data);
+    return parsedData.then(data => this.updateDOM(data));
   }
 
   // endregion
@@ -289,15 +321,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         return nodeMouseOut(this, data);
       })
       .call(
-        d3.drag()
+        d3_drag()
           .on('start', function() {
             dx = 0;
             dy = 0;
-            d3.select(this).raise();
+            d3_select(this).raise();
           })
           .on('drag', function(d) {
-            dx += d3.event.dx;
-            dy += d3.event.dy;
+            dx += d3_event.dx;
+            dy += d3_event.dy;
             dragmove(this, d);
           })
           .on('end', function(d) {
@@ -333,7 +365,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param data object representing the link data
    */
   async pathMouseOver(element, data) {
-    d3.select(element)
+    d3_select(element)
       .raise();
 
     // temporary disabled as of LL-3726
@@ -392,7 +424,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // noinspection JSUnusedGlobalSymbols
   resetZoom() {
     // it is used by its parent
-    this.sankeySelection.call(this.zoom.transform, d3.zoomIdentity);
+    this.sankeySelection.call(this.zoom.transform, d3_zoomIdentity);
   }
 
   // the function for moving the nodes
@@ -405,25 +437,25 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const nodeWidth = d._x1 - d._x0;
     const nodeHeight = d._y1 - d._y0;
     const newPosition = {
-      _x0: d._x0 + d3.event.dx,
-      _x1: d._x0 + d3.event.dx + nodeWidth,
-      _y0: d._y0 + d3.event.dy,
-      _y1: d._y0 + d3.event.dy + nodeHeight
+      _x0: d._x0 + d3_event.dx,
+      _x1: d._x0 + d3_event.dx + nodeWidth,
+      _y0: d._y0 + d3_event.dy,
+      _y1: d._y0 + d3_event.dy + nodeHeight
     };
     Object.assign(d, newPosition);
-    d3.select(element)
+    d3_select(element)
       .raise()
       .attr('transform', `translate(${d._x0},${d._y0})`);
     const relatedLinksIds = d._sourceLinks.concat(d._targetLinks).map(id);
     this.linkSelection
-      .filter(link => relatedLinksIds.includes(id(link)))
+      .filter((...args) => relatedLinksIds.includes(id(...args)))
       .attr('d', linkPath);
     // todo: this re-layout technique for whatever reason does not work
     // clearTimeout(this.debounceDragRelayout);
     // this.debounceDragRelayout = setTimeout(() => {
     //   this.sankey.update(this._data);
     //   Object.assign(d, newPosition);
-    //   d3.select(this.links.nativeElement)
+    //   d3_select(this.links.nativeElement)
     //     .selectAll('path')
     //     .transition().duration(RELAYOUT_DURATION)
     //     .attrTween('d', link => {
@@ -438,7 +470,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     //       };
     //     });
     //
-    //   d3.select(this.nodes.nativeElement)
+    //   d3_select(this.nodes.nativeElement)
     //     .selectAll('g')
     //     .transition().duration(RELAYOUT_DURATION)
     //     .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`);
@@ -455,7 +487,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       // .each(function(s) {
       //   // use each so we search traces only once
       //   const selected = accessor(s);
-      //   const element = d3.select(this)
+      //   const element = d3_select(this)
       //     .attr(attr, selected);
       //   if (selected) {
       //     element.raise();
@@ -533,11 +565,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Search
-  searchNodes(nodes: Set<object>) {
+  searchNodes(nodeIdxs: Set<string | number>) {
     const selection = this.nodeSelection
-      .attr('searched', n => nodes.has(n))
-      .filter(n => nodes.has(n))
-      .raise()
+      .attr('searched', n => nodeIdxs.has(n._id))
+      .filter(n => nodeIdxs.has(n._id))
+      // .raise()
       .select('g');
 
     // postpone so the size is known
@@ -553,11 +585,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('searched', undefined);
   }
 
-  searchLinks(links: Set<object>) {
+  searchLinks(linkIdxs: Set<SankeyLink['_id']>) {
     this.linkSelection
-      .attr('searched', l => links.has(l))
-      .filter(l => links.has(l))
-      .raise();
+      .attr('searched', l => linkIdxs.has(l._id))
+      .filter(l => linkIdxs.has(l._id));
+    // .raise();
   }
 
   stopSearchLinks() {
@@ -569,11 +601,11 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Focus
-  focusNode(node: object) {
+  focusNode(nodeId: SankeyId) {
     const {nodeLabel} = this.sankey;
-    // tslint:disable-next-line:no-unused-expression
     const selection = this.nodeSelection
-      .filter(n => node === n)
+      // tslint:disable-next-line:triple-equals
+      .filter(({_id}) => _id == nodeId)
       .raise()
       .attr('focused', true)
       .select('g')
@@ -590,12 +622,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     );
   }
 
-  unFocusNode(node: object) {
+  unFocusNode(nodeId: SankeyNode['_id']) {
     const {nodeLabelShort} = this.sankey;
-    // tslint:disable-next-line:no-unused-expression
     const selection = this.nodeSelection
       .attr('focused', undefined)
-      .filter(n => node === n)
+      // tslint:disable-next-line:triple-equals
+      .filter(({_id}) => _id == nodeId)
       .select('g')
       .call(textGroup => {
         textGroup
@@ -610,15 +642,16 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     );
   }
 
-  focusLink(link: object) {
+  focusLink(linkId: SankeyId) {
     this.linkSelection
-      .filter(l => link === l)
+      // tslint:disable-next-line:triple-equals
+      .filter(({_id}) => _id == linkId)
       .raise()
       .attr('focused', true);
   }
 
   // noinspection JSUnusedLocalSymbols
-  unFocusLink(link: object) {
+  unFocusLink(linkId: SankeyId) {
     this.linkSelection
       .attr('focused', undefined);
   }
@@ -651,7 +684,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const {
       nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
     } = this.sankey;
-    const selection = d3.select(element)
+    const selection = d3_select(element)
       .raise()
       .select('g')
       .call(textGroup => {
@@ -680,7 +713,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   unapplyNodeHover(element) {
     const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
 
-    const selection = d3.select(element);
+    const selection = d3_select(element);
     selection.select('text')
       .filter(nodeLabelShouldBeShorted)
       // todo: reenable when performance improves
@@ -694,7 +727,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .text(nodeLabelShort);
 
     // resize shadow back to shorter test when it is used as search result
-    if (searchedEntities.size) {
+    if (searchedEntities.length) {
       // postpone so the size is known
       requestAnimationFrame(_ =>
         selection.select('g')
@@ -702,8 +735,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
     }
   }
-
-  // endregion
 
   /**
    * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
@@ -715,6 +746,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         if (!data._precomputedLayout) {
           this.sankey.calcLayout(data);
         }
+        resolve(data);
+      }
+    );
+  }
+
+  scaleLayout(data, changeRatio) {
+    return new Promise(resolve => {
+        this.sankey.rescaleNodePosition(data, changeRatio);
         resolve(data);
       }
     );
@@ -762,6 +801,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         nodeLabel,
         nodeLabelShort,
         linkColor,
+        linkBorder,
         linkPath,
         circular
       }
@@ -770,7 +810,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
 
     this.linkSelection
-      .data(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
+      .data<SankeyLink>(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
       .join(
         enter => enter
           .append('path')
@@ -797,7 +837,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           .attr('d', linkPath),
         exit => exit.remove()
       )
-      .style('fill', linkColor)
+      .style('fill', linkColor as any)
+      .style('stroke', linkBorder as any)
       .attr('thickness', d => d._width || 0)
       .call(join =>
         join.select('title')
@@ -805,7 +846,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
 
     this.nodeSelection
-      .data(
+      .data<SankeyNode>(
         graph.nodes.filter(
           // should no longer be an issue but leaving as sanity check
           // (if not satisfied visualisation brakes)
@@ -862,7 +903,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         updateNodeRect(
           joined
             .select('rect')
-            .style('fill', nodeColor)
+            .style('fill', nodeColor as d3_ValueFn<any, SankeyNode, string>)
         );
         joined.select('g')
           .call(textGroup => {

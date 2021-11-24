@@ -10,12 +10,12 @@
                 <div class="tile-deck tile-deck-sm">
                     <div *ngFor="let object of recentList" class="tile d-flex flex-column">
                         <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                            <a class="text-muted" [appLink]="object.getCommands()">
+                            <a class="text-muted" [appLink]="object.getCommands()" [newTab]="true">
                                 <i class="fa-2x {{ object.fontAwesomeIcon }}"></i>
                             </a>
                         </div>
                         <div class="text-truncate text-center">
-                            <a [appLink]="object.getCommands()" class="d-block text-truncate">
+                            <a [appLink]="object.getCommands()" [newTab]="true" class="d-block text-truncate">
                                 <strong>{{ object.filename }}</strong>
                             </a>
                         </div>
