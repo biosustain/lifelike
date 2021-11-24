@@ -7,6 +7,8 @@ import { ModuleAwareComponent } from 'app/shared/modules';
 import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.component';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { SankeySearchService } from 'app/sankey-viewer/services/search.service';
 
 import { CustomisedSankeyManyToManyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyManyToManyControllerService } from '../services/sankey-controller.service';
@@ -27,7 +29,9 @@ import { SankeyManyToManySelection, SankeyManyToManyState } from './interfaces';
     SankeyManyToManyControllerService, {
       provide: SankeyControllerService,
       useExisting: SankeyManyToManyControllerService
-    }
+    },
+    WarningControllerService,
+    SankeySearchService
   ]
 })
 export class SankeyManyToManyViewComponent extends SankeyViewComponent implements OnDestroy, ModuleAwareComponent {

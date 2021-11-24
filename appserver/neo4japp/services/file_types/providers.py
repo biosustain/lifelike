@@ -870,7 +870,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         x_values, y_values = [], []
         images = []
 
-        for node in json_graph['nodes']:
+        nodes = json_graph['nodes']
+        # Sort the images to the front of the list to ensure that they do not cover other nodes
+        nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
+
+        for node in nodes:
             if self_contained_export:
                 # Store the coordinates of each node as map name node is based on them
                 x_values.append(node['data']['x'])

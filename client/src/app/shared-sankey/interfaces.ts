@@ -1,5 +1,8 @@
 import { PRESCALERS } from 'app/sankey-viewer/components/algorithms/prescalers';
 import { LINK_PALETTES } from 'app/sankey-viewer/components/color-palette';
+import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { RecursivePartial } from 'app/shared/schemas/common';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 
 // region UI options
 export interface ValueAccessor {
@@ -11,10 +14,12 @@ export interface IntermediateProcessedData extends Partial<SankeyData> {
   _sets: object;
 }
 
+export type ValueProcessingStep = (this: SankeyControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
+
 export interface ValueGenerator extends ValueAccessor {
-  disabled?: () => boolean;
-  preprocessing: (v: SankeyData) => IntermediateProcessedData | undefined;
-  postprocessing?: (v: SankeyData) => IntermediateProcessedData | undefined;
+  disabled?: (this: SankeyControllerService) => boolean;
+  preprocessing: ValueProcessingStep;
+  postprocessing?: ValueProcessingStep;
 }
 
 export interface MultiValueAccessor extends ValueAccessor {
@@ -113,7 +118,7 @@ export interface SankeyState {
 
 // region Graph as Sankey
 // Add properties used internally to compute layout
-export type SankeyId = string;
+export type SankeyId = string | number;
 
 export interface SankeyNode extends GraphNode {
   // Temp definitions to fix LL-3499
@@ -157,6 +162,7 @@ export interface SankeyLink extends GraphLink {
   _folded?: boolean;
   _value: number;
   _order?: number;
+  _color?: string;
 }
 
 export interface SankeyTrace extends GraphTrace {
@@ -187,6 +193,8 @@ export interface SankeyView {
   links: SankeyLinksOverwrites;
 }
 
+export type SankeyApplicableView  = RecursivePartial<SankeyView> & Pick<SankeyView, 'base'>;
+
 export interface SankeyViews {
   [viewName: string]: SankeyView;
 }
@@ -206,12 +214,14 @@ export interface SankeyData extends GraphFile {
 
 export enum SankeyURLLoadParam {
   NETWORK_TRACE_IDX = 'network_trace',
-  VIEW_NAME = 'view_name'
+  VIEW_NAME = 'view',
+  BASE_VIEW_NAME = 'base_view'
 }
 
 export interface SankeyURLLoadParams {
   [SankeyURLLoadParam.NETWORK_TRACE_IDX]: number;
   [SankeyURLLoadParam.VIEW_NAME]?: string;
+  [SankeyURLLoadParam.BASE_VIEW_NAME]?: string;
 }
 
 // region Selection

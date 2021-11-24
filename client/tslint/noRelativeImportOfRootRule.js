@@ -37,7 +37,7 @@ var Rule = /** @class */ (function (_super) {
         return this.applyWithFunction(sourceFile, walk);
     };
     Rule.metadata = {
-        description: 'Dissallow passing through ***ARANGO_USERNAME*** of module with relative imports',
+        description: 'Disallow passing through ***ARANGO_USERNAME*** of module with relative imports',
         options: [],
         optionsDescription: '',
         rationale: Lint.Utils.dedent(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n            It is easier to read `import foo from 'app/baz';` than resoning on where\n            `import foo from '../../../baz';` is pointing to.\n        "], ["\n            It is easier to read \\`import foo from 'app/baz';\\` than resoning on where\n            \\`import foo from '../../../baz';\\` is pointing to.\n        "]))),
