@@ -838,18 +838,19 @@ def find_broken_map_links():
             hash_id_list_outfile.write(f'{hash_id}\n')
 
     with open('file_ids.csv', 'w') as file_id_outfile:
-        file_id_outfile.write('link\thash_id\tfile_id\tfilename')
+        file_id_outfile.write('link\thash_id\tfile_id')
         for hash_id, file_to_links_map in hash_id_to_file_list_pairs.items():
             for file_id, link_list in file_to_links_map.items():
-                file = db.session.query(Files).filter_by(id=file_id).one()
                 for link in link_list:
-                    file_id_outfile.write(f'{file_id}\n')
+                    file_id_outfile.write(f'{link}\t{hash_id}\t{file_id}\n')
 
     print('Done.')
 
 
 @app.cli.command('fix-broken-map-links')
 def fix_broken_map_links():
+    # NOTE: These collections will need to be changed if this issue ever happens again!
+
     HASH_CONVERSION_MAP = {
         'de68d1e1-3994-4c7a-af7a-3789716e79ff': '6a843f71-b695-47ac-a6f9-9b8472952949',
         '3fff7f88-75ee-441a-819b-ba2366a1ac62': '986bf4e8-8a20-4626-b48b-b0be2b6b2e06',
