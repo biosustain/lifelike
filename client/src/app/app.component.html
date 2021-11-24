@@ -3,9 +3,18 @@
   <div class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0">
     <!-- Top buttons -->
     <div class="d-flex flex-column">
-      <a routerLink="/workspaces/local" placement="right" ngbTooltip="Workbench">
-        <i class="far fa-window-restore"></i>
-      </a>
+      <!-- If a file is in standalone mode, workbench button opens it as tab -->
+      <ng-container *ngIf="isStandaloneFileOpen; else goToWorkbench">
+        <a [appLink]="mainUrl" placement="right" ngbTooltip="Workbench" [forceWorkbench]="true" [newTab]="true"
+           [fragment]="fragment" preferPane="left">
+          <i class="far fa-window-restore"></i>
+        </a>
+      </ng-container>
+      <ng-template #goToWorkbench>
+        <a routerLink="/workspaces/local" placement="right" ngbTooltip="Workbench">
+          <i class="far fa-window-restore"></i>
+        </a>
+      </ng-template>
       <a appLink="/projects" placement="right" ngbTooltip="File Browser" [forceWorkbench]="true" [newTab]="true" preferPane="left">
         <i class="fa fa-folder"></i>
       </a>
