@@ -791,6 +791,7 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
             json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8')
         )
 
+
 @app.cli.command('find-broken-map-links')
 def find_broken_map_links():
     print('Starting find_broken_map_links')
@@ -809,6 +810,7 @@ def find_broken_map_links():
 
     new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
     hash_id_to_file_list_pairs = dict()
+
     def add_links(potential_links: List[str], files_id: int):
         for link in potential_links:
             link_search = re.search(new_link_re, link)
@@ -921,8 +923,14 @@ def fix_broken_map_links():
                 if link_search is not None:
                     hash_id = link_search.group(1)
                     if hash_id in HASH_CONVERSION_MAP:
-                        print(f'\tFound hash_id {hash_id} in file #{fcid}, replacing with {HASH_CONVERSION_MAP[hash_id]}')
-                        source['url'] = source['url'].replace(hash_id, HASH_CONVERSION_MAP[hash_id])
+                        print(
+                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
+                            f'{HASH_CONVERSION_MAP[hash_id]}'
+                        )
+                        source['url'] = source['url'].replace(
+                            hash_id,
+                            HASH_CONVERSION_MAP[hash_id]
+                        )
 
         for edge in map_json['edges']:
             if 'data' in edge:
@@ -931,8 +939,14 @@ def fix_broken_map_links():
                     if link_search is not None:
                         hash_id = link_search.group(1)
                         if hash_id in HASH_CONVERSION_MAP:
-                            print(f'\tFound hash_id {hash_id} in file #{fcid}, replacing with {HASH_CONVERSION_MAP[hash_id]}')
-                            source['url'] = source['url'].replace(hash_id, HASH_CONVERSION_MAP[hash_id])
+                            print(
+                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
+                                f'{HASH_CONVERSION_MAP[hash_id]}'
+                            )
+                            source['url'] = source['url'].replace(
+                                hash_id,
+                                HASH_CONVERSION_MAP[hash_id]
+                            )
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
         new_hash = hashlib.sha256(byte_graph).digest()
@@ -943,5 +957,6 @@ def fix_broken_map_links():
     try:
         db.session.bulk_update_mappings(FileContent, need_to_update)
         db.session.commit()
-    except:
+    except Exception:
+        db.session.rollback()
         raise
