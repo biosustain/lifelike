@@ -23,6 +23,7 @@ import { SankeyModule } from './components/sankey/sankey.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
 import { PathReportComponent } from './components/path-report/path-report.component';
+import { SankeySearchPanelModule } from './components/search-panel/sankey-search-panel.module';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { PathReportComponent } from './components/path-report/path-report.compon
     RouterModule.forRoot([]),
     SankeyModule,
     SankeyDetailsPanelModule,
+    SankeySearchPanelModule,
     SharedSankeyModule
   ],
   exports: [

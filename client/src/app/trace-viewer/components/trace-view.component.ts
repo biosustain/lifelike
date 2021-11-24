@@ -1,4 +1,4 @@
-import { Component, EventEmitter, isDevMode, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
@@ -13,6 +13,8 @@ import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { TruncatePipe } from 'app/shared/pipes';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
@@ -22,7 +24,8 @@ import { TraceNode } from './interfaces';
   templateUrl: './trace-view.component.html',
   styleUrls: ['./trace-view.component.scss'],
   providers: [
-    TruncatePipe
+    TruncatePipe,
+    WarningControllerService
   ]
 })
 export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
@@ -44,7 +47,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    protected readonly truncatePipe: TruncatePipe
+    protected readonly truncatePipe: TruncatePipe,
+    protected readonly warningController: WarningControllerService
   ) {
     const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;
@@ -131,9 +135,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       if (node) {
         const label = node.label;
         const labelShort = truncate(label, 20);
-        if (isDevMode() && !label) {
-          console.error(`Node ${node.id} has no label property.`, node);
-        }
+        this.warningController.assert(label, `Node ${node.id} has no label property.`);
         return {
           ...node,
           label: labelShort,
@@ -142,7 +144,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
           title: label
         } as TraceNode;
       } else {
-        console.error(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
+        this.warningController.warn(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
         return {
           id: nodeId,
           label: nodeId,

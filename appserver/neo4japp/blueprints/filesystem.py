@@ -12,9 +12,9 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc, or_, not_
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from sqlalchemy.sql.expression import text
@@ -33,7 +33,7 @@ from neo4japp.models import (
     FileVersion,
     FileBackup
 )
-from neo4japp.models.files import FileLock, FileAnnotationsVersion
+from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks
 from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
@@ -87,7 +87,7 @@ def get_all_enrichment_tables():
         raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
 
     query = db.session.query(Files.hash_id).filter(
-            Files.mime_type == 'vnd.lifelike.document/enrichment-table')
+        Files.mime_type == 'vnd.lifelike.document/enrichment-table')
     results = [hash_id[0] for hash_id in query.all()]
     return jsonify(dict(result=results)), 200
 
@@ -118,9 +118,9 @@ class FilesystemBaseView(MethodView):
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content, attr_excl=attr_excl)
         if not len(files):
             raise RecordNotFound(
-                    title='File Not Found',
-                    message='The requested file object could not be found.',
-                    code=404)
+                title='File Not Found',
+                message='The requested file object could not be found.',
+                code=404)
         return files[0]
 
     def get_nondeleted_recycled_files(
@@ -163,8 +163,8 @@ class FilesystemBaseView(MethodView):
         # the following generated query does. In the future, we MAY want to cache the project of
         # a file on every file row to make a lot of queries a lot simpler.
         query = build_file_hierarchy_query(and_(
-                filter,
-                Files.deletion_date.is_(None)
+            filter,
+            Files.deletion_date.is_(None)
         ), t_project, t_file, file_attr_excl=attr_excl) \
             .options(raiseload('*'),
                      joinedload(t_file.user),
@@ -179,7 +179,7 @@ class FilesystemBaseView(MethodView):
         # Thankfully, we just loaded all parent folders and the project above, and so we'll use
         # the handy FileHierarchy class later to calculate this permission information.
         private_data_access = get_authorization_service().has_role(
-                current_user, 'private-data-access'
+            current_user, 'private-data-access'
         )
         query = add_project_user_role_columns(query, t_project, current_user.id,
                                               access_override=private_data_access)
@@ -218,10 +218,10 @@ class FilesystemBaseView(MethodView):
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
-                        title='File Not Found',
-                        message=f"The request specified one or more file or directory "
-                                f"({', '.join(missing_hash_ids)}) that could not be found.",
-                        code=404)
+                    title='File Not Found',
+                    message=f"The request specified one or more file or directory "
+                            f"({', '.join(missing_hash_ids)}) that could not be found.",
+                    code=404)
 
         # In the end, we just return a list of Files instances!
         return files
@@ -253,28 +253,28 @@ class FilesystemBaseView(MethodView):
 
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                                curr_access='no',
-                                req_access='readable',
-                                hash_id=file.hash_id
+                            curr_access='no',
+                            req_access='readable',
+                            hash_id=file.hash_id
                         )
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                    curr_access='commentable',
-                                    req_access='writable',
-                                    hash_id=file.hash_id
+                                curr_access='commentable',
+                                req_access='writable',
+                                hash_id=file.hash_id
                             )
                         else:
                             raise AccessRequestRequiredError(
-                                    curr_access='readable',
-                                    req_access='writable',
-                                    hash_id=file.hash_id
+                                curr_access='readable',
+                                req_access='writable',
+                                hash_id=file.hash_id
                             )
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
-                        f"The file or directory '{file.filename}' has been trashed and "
-                        "must be restored first.")
+                    f"The file or directory '{file.filename}' has been trashed and "
+                    "must be restored first.")
 
     def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
         """
@@ -330,7 +330,7 @@ class FilesystemBaseView(MethodView):
             # We don't allow multiple files to be changed due to a potential deadlock
             # in FileContent.get_or_create(), and also because it's a weird use case
             raise NotImplementedError(
-                    "Cannot update the content of multiple files with this method")
+                "Cannot update the content of multiple files with this method")
 
         if params.get('fallback_organism'):
             db.session.add(params['fallback_organism'])
@@ -363,9 +363,9 @@ class FilesystemBaseView(MethodView):
                     while current_parent:
                         if current_parent.hash_id == file.hash_id:
                             raise ValidationError(
-                                    f"If the parent of '{file.filename}' was set to "
-                                    f"'{parent_file.filename}', it would result in circular"
-                                    f"inheritance.", "parent_hash_id")
+                                f"If the parent of '{file.filename}' was set to "
+                                f"'{parent_file.filename}', it would result in circular"
+                                f"inheritance.", "parent_hash_id")
                         current_parent = current_parent.parent
 
                     file.parent = parent_file
@@ -402,8 +402,8 @@ class FilesystemBaseView(MethodView):
 
                     if size > self.file_max_size:
                         raise ValidationError(
-                                'Your file could not be processed because it is too large.',
-                                "content_value")
+                            'Your file could not be processed because it is too large.',
+                            "content_value")
 
                     # Get the provider
                     provider = file_type_service.get(file)
@@ -458,14 +458,14 @@ class FilesystemBaseView(MethodView):
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
 
         return_file = self.get_nondeleted_recycled_file(
-                Files.hash_id == hash_id,
-                attr_excl=EXCLUDE_FIELDS
+            Files.hash_id == hash_id,
+            attr_excl=EXCLUDE_FIELDS
         )
         self.check_file_permissions([return_file], user, ['readable'], permit_recycled=True)
 
         children = self.get_nondeleted_recycled_files(and_(
-                Files.parent_id == return_file.id,
-                Files.recycling_date.is_(None),
+            Files.parent_id == return_file.id,
+            Files.recycling_date.is_(None),
         ), attr_excl=EXCLUDE_FIELDS)
         # Note: We don't check permissions here, but there are no negate permissions
         return_file.calculated_children = children
@@ -720,7 +720,7 @@ class FileListView(FilesystemBaseView):
             # Check max file size
             if size > self.file_max_size:
                 raise ValidationError(
-                        'Your file could not be processed because it is too large.')
+                    'Your file could not be processed because it is too large.')
 
             # Save the URL
             file.upload_url = url
@@ -808,12 +808,12 @@ class FileListView(FilesystemBaseView):
                     file.filename = file.generate_non_conflicting_filename()
                 except ValueError:
                     raise ValidationError(
-                            'Filename conflicts with an existing file in the same folder.',
-                            "filename")
-            elif trial == 3:  # Give up
-                raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
                         "filename")
+            elif trial == 3:  # Give up
+                raise ValidationError(
+                    'Filename conflicts with an existing file in the same folder.',
+                    "filename")
 
             try:
                 db.session.begin_nested()
@@ -839,10 +839,46 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
+        # do NOT write any code before those two lines - it will cause some unit tests to fail
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
-        return self.get_bulk_file_response(targets['hash_ids'], current_user,
-                                           missing_hash_ids=missing_hash_ids)
+
+        linked_files = params.pop('hashes_of_linked', [])
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+
+        map_id = None
+        to_add, new_ids = [], []
+        if files:
+            file = files[0]
+            if file.mime_type == FILE_MIME_TYPE_MAP:
+                map_id = file.id
+
+                new_files = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
+
+                new_ids = [file.id for file in new_files]
+
+                # Possibly could be optimized with some get_or_create or insert_if_not_exist
+                to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
+                          db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
+                                                               ).scalar()]
+
+        response = self.get_bulk_file_response(targets['hash_ids'], current_user,
+                                               missing_hash_ids=missing_hash_ids)
+        # Add changes to the MapLinks after then response generation, as it might raise exceptions
+        try:
+            if to_add:
+                db.session.bulk_save_objects(to_add)
+            if map_id:
+                delete_count = db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
+                                                                 MapLinks.linked_id.notin_(new_ids)
+                                                                 ).delete(synchronize_session=False)
+                if to_add or delete_count:
+                    db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+        return response
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
@@ -862,8 +898,8 @@ class FileListView(FilesystemBaseView):
 
         for file in files:
             children = self.get_nondeleted_recycled_files(and_(
-                    Files.parent_id == file.id,
-                    Files.recycling_date.is_(None),
+                Files.parent_id == file.id,
+                Files.recycling_date.is_(None),
             ))
 
             # For now, we won't let people delete non-empty folders (although this code
@@ -895,8 +931,8 @@ class FileListView(FilesystemBaseView):
         # ========================================
 
         return jsonify(MultipleFileResponseSchema().dump(dict(
-                mapping={},
-                missing=[],
+            mapping={},
+            missing=[],
         )))
 
     def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
@@ -907,12 +943,12 @@ class FileListView(FilesystemBaseView):
         if url is not None:
             try:
                 buffer = read_url(
-                        urllib.request.Request(url, headers={
-                            'User-Agent': self.url_fetch_user_agent,
-                        }),
-                        max_length=self.file_max_size,
-                        timeout=self.url_fetch_timeout,
-                        prefer_direct_downloads=True
+                    urllib.request.Request(url, headers={
+                        'User-Agent': self.url_fetch_user_agent,
+                    }),
+                    max_length=self.file_max_size,
+                    timeout=self.url_fetch_timeout,
+                    prefer_direct_downloads=True
                 )
             except Exception:
                 raise ValidationError('Your file could not be downloaded, either because it is '
@@ -962,102 +998,16 @@ class FileSearchView(FilesystemBaseView):
                                                      lazy_load_content=True)
             self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
-            # Don't support pagination yet
-            limit = 5
-            offset = 0
+            # TODO: Sort?
+            query = db.session.query(MapLinks.map_id) \
+                .filter(MapLinks.linked_id == file.id)
 
-            # TODO: Improve the performance of this query
-            # Getting the roots and then parsing the JSON is not efficient
+            result = query.paginate(pagination['page'], pagination['limit'])
 
-            base_query = f"""
-                WITH RECURSIVE _roots AS (
-                    SELECT
-                        file.id AS file_id
-                        , file.parent_id
-                        , project.id AS project_id
-                        , file.id AS root_id
-                        , 0 AS level
-                    FROM files file
-                    LEFT JOIN projects project on project.root_id = file.id
-                    WHERE
-                        file.parent_id IS NULL
+            # Now we get the full file information for this slice of the results
+            files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
+            total = len(files)
 
-                    UNION ALL
-
-                    SELECT
-                        child.id AS file_id
-                        , child.parent_id
-                        , parent.project_id
-                        , parent.root_id
-                        , parent.level + 1 AS level
-                    FROM _roots parent
-                    INNER JOIN files child ON child.parent_id = parent.file_id
-                )
-                , _maps AS (
-                    SELECT
-                        file.id AS file_id
-                        , convert_from(content.raw_file, 'UTF-8')::jsonb AS parsed_content
-                    FROM files file
-                    INNER JOIN files_content content ON content.id = file.content_id
-                    WHERE
-                        file.mime_type = 'vnd.lifelike.document/map'
-                        AND file.deletion_date IS NULL
-                        AND file.recycling_date IS NULL
-                )
-                SELECT
-                    DISTINCT
-                    {'{select}'}
-                FROM (
-                    SELECT
-                        map.file_id
-                        , data
-                    FROM _maps map
-                    CROSS JOIN jsonb_to_recordset(jsonb_extract_path(map.parsed_content, 'nodes'))
-                        AS data(data JSONB)
-                    UNION ALL
-                    SELECT
-                        map.file_id
-                        , data
-                    FROM _maps map
-                    CROSS JOIN jsonb_to_recordset(jsonb_extract_path(map.parsed_content, 'edges'))
-                        AS data(data JSONB)
-                ) data
-                CROSS JOIN jsonb_to_recordset(jsonb_extract_path(data.data, 'sources'))
-                    AS source(url VARCHAR)
-                INNER JOIN files file ON file.id = data.file_id
-                INNER JOIN _roots root ON root.file_id = file.id
-                INNER JOIN projects project ON project.id = root.project_id
-                LEFT JOIN projects_collaborator_role pcr ON pcr.projects_id = project.id
-                LEFT JOIN app_role on pcr.app_role_id = app_role.id
-                LEFT JOIN appuser role_user on pcr.appuser_id = role_user.id
-                WHERE
-                    (
-                        url ~ :url_1
-                        OR url ~ :url_2
-                    )
-                    AND (
-                        file.public = true OR (
-                            app_role.name IN ('project-read', 'project-write', 'project-admin')
-                            AND role_user.id = :user_id
-                        )
-                    )
-            """
-
-            count_query = base_query.format(select='COUNT(*) AS count')
-            query = f"""
-                {base_query.format(select='file.id')}
-                LIMIT {int(limit)} OFFSET {int(offset)}
-            """
-
-            params = {
-                'url_1': f'/projects/(?:[^/]+)/[^/]+/{re.escape(hash_id)}(?:#.*)?',
-                'url_2': f'/dt/pdf/{re.escape(hash_id)}(?:#.*)?',
-                'user_id': g.current_user.id,
-            }
-            results = db.session.execute(query, params).fetchall()
-
-            total = len(results)
-            files = self.get_nondeleted_recycled_files(Files.id.in_([row[0] for row in results]))
         else:
             raise NotImplementedError()
 
@@ -1107,11 +1057,11 @@ class FileContentView(FilesystemBaseView):
             etag = hashlib.sha256(content).digest()
 
         return make_cacheable_file_response(
-                request,
-                content,
-                etag=etag,
-                filename=file.filename,
-                mime_type=file.mime_type
+            request,
+            content,
+            etag=etag,
+            filename=file.filename,
+            mime_type=file.mime_type
         )
 
 
@@ -1138,16 +1088,17 @@ class MapContentView(FilesystemBaseView):
         etag = hashlib.sha256(json_graph).hexdigest()
 
         return make_cacheable_file_response(
-                request,
-                json_graph,
-                etag=etag,
-                filename=file.filename,
-                mime_type=file.mime_type
+            request,
+            json_graph,
+            etag=etag,
+            filename=file.filename,
+            mime_type=file.mime_type
         )
 
 
 class FileExportView(FilesystemBaseView):
     decorators = [auth.login_required]
+
     # Move that to constants if accepted
 
     @use_args(FileExportRequestSchema)
@@ -1174,11 +1125,11 @@ class FileExportView(FilesystemBaseView):
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
         return make_cacheable_file_response(
-                request,
-                export_content,
-                etag=checksum_sha256.hex(),
-                filename=export.filename,
-                mime_type=export.mime_type,
+            request,
+            export_content,
+            etag=checksum_sha256.hex(),
+            filename=export.filename,
+            mime_type=export.mime_type,
         )
 
     def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
@@ -1263,9 +1214,9 @@ class FileBackupView(FilesystemBaseView):
 
         file_backup_table = FileBackup.__table__
         db.session.execute(
-                file_backup_table.delete().where(and_(file_backup_table.c.file_id == file.id,
-                                                      file_backup_table.c.user_id ==
-                                                      current_user.id))
+            file_backup_table.delete().where(and_(file_backup_table.c.file_id == file.id,
+                                                  file_backup_table.c.user_id ==
+                                                  current_user.id))
         )
         db.session.commit()
 
@@ -1294,19 +1245,19 @@ class FileBackupContentView(FilesystemBaseView):
 
         if backup is None:
             raise RecordNotFound(
-                    title='Failed to Get File Backup',
-                    message='No backup stored for this file.',
-                    code=404)
+                title='Failed to Get File Backup',
+                message='No backup stored for this file.',
+                code=404)
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
 
         return make_cacheable_file_response(
-                request,
-                content,
-                etag=etag,
-                filename=file.filename,
-                mime_type=file.mime_type
+            request,
+            content,
+            etag=etag,
+            filename=file.filename,
+            mime_type=file.mime_type
         )
 
 
@@ -1407,23 +1358,23 @@ class FileLockListView(FileLockBaseView):
 
         file_lock_table = FileLock.__table__
         stmt = insert(file_lock_table).returning(
-                file_lock_table.c.user_id,
+            file_lock_table.c.user_id,
         ).values(hash_id=file.hash_id,
                  user_id=current_user.id,
                  acquire_date=acquire_date
                  ).on_conflict_do_update(
-                index_elements=[
-                    file_lock_table.c.hash_id,
-                ],
-                set_={
-                    'acquire_date': datetime.now(),
-                    'user_id': current_user.id,
-                },
-                where=and_(
-                        file_lock_table.c.hash_id == hash_id,
-                        or_(file_lock_table.c.user_id == current_user.id,
-                            file_lock_table.c.acquire_date < cutoff_date)
-                ),
+            index_elements=[
+                file_lock_table.c.hash_id,
+            ],
+            set_={
+                'acquire_date': datetime.now(),
+                'user_id': current_user.id,
+            },
+            where=and_(
+                file_lock_table.c.hash_id == hash_id,
+                or_(file_lock_table.c.user_id == current_user.id,
+                    file_lock_table.c.acquire_date < cutoff_date)
+            ),
         )
 
         result = db.session.execute(stmt)
@@ -1444,9 +1395,9 @@ class FileLockListView(FileLockBaseView):
 
         file_lock_table = FileLock.__table__
         db.session.execute(
-                file_lock_table.delete().where(and_(
-                        file_lock_table.c.hash_id == file.hash_id,
-                        file_lock_table.c.user_id == current_user.id))
+            file_lock_table.delete().where(and_(
+                file_lock_table.c.hash_id == file.hash_id,
+                file_lock_table.c.user_id == current_user.id))
         )
         db.session.commit()
 
@@ -1476,8 +1427,8 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         total = query.order_by(None).count()
         if page == 1:
             items = itertools.chain(
-                    [file],
-                    query.limit(per_page).offset((page - 1) * per_page)
+                [file],
+                query.limit(per_page).offset((page - 1) * per_page)
             )
         else:
             items = query.limit(per_page + 1).offset((page - 1) * per_page - 1)
@@ -1490,9 +1441,9 @@ class FileAnnotationHistoryView(FilesystemBaseView):
                 'user': newer.user,
                 'cause': older.cause,
                 'inclusion_changes': self._get_annotation_changes(
-                        older.custom_annotations, newer.custom_annotations, 'inclusion'),
+                    older.custom_annotations, newer.custom_annotations, 'inclusion'),
                 'exclusion_changes': self._get_annotation_changes(
-                        older.excluded_annotations, newer.excluded_annotations, 'exclusion'),
+                    older.excluded_annotations, newer.excluded_annotations, 'exclusion'),
             })
 
         return jsonify(FileAnnotationHistoryResponseSchema().dump({

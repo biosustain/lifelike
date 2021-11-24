@@ -1,60 +1,68 @@
 import * as d3Sankey from 'd3-sankey';
+import { ValueFn } from 'd3-selection';
+import {color} from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode } from 'app/shared-sankey/interfaces';
+import { SankeyNode, SankeyLink } from 'app/shared-sankey/interfaces';
+
 
 export class AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
   }
 
-  get id(): (d: SankeyNode, i?: number, n?: Array<SankeyNode>) => number | string {
+  get id(): ValueFn<any, SankeyNode | SankeyLink, number | string> {
     return ({_id}) => _id;
   }
 
-  get nodeLabel() {
+  get nodeLabel(): ValueFn<any, SankeyNode, string> {
     return ({label = ''}) => label;
   }
 
-  get nodeLabelShort() {
+  get nodeLabelShort(): ValueFn<any, SankeyNode, string> {
     const {nodeLabel, truncatePipe: {transform}} = this;
-    return n => transform(nodeLabel(n), AttributeAccessors.labelEllipsis);
+    return (d, i?, n?) => transform(nodeLabel(d, i, n), AttributeAccessors.labelEllipsis);
   }
 
-  get nodeLabelShouldBeShorted() {
+  get nodeLabelShouldBeShorted(): ValueFn<any, SankeyNode, boolean> {
     const {nodeLabel} = this;
-    return n => nodeLabel(n).length > AttributeAccessors.labelEllipsis;
+    return (d, i, n) => nodeLabel(d, i, n).length > AttributeAccessors.labelEllipsis;
   }
 
-  get nodeColor() {
-    return ({_color}: SankeyNode) => _color;
-  }
-
-  get linkColor() {
+  // color can be object with toString method
+  get nodeColor(): ValueFn<any, SankeyNode, string | object> {
     return ({_color}) => _color;
   }
 
-  get nodeTitle(): (node: SankeyNode) => string {
+  // color can be object with toString method
+  get linkColor(): ValueFn<any, SankeyLink, string | object> {
+    return ({_color}) => _color;
+  }
+
+  get linkBorder() {
+    return undefined;
+  }
+
+  get nodeTitle(): ValueFn<any, SankeyNode, string> {    return ({description}) => description;
+  }
+
+  get linkTitle(): ValueFn<any, SankeyLink, string> {
     return ({description}) => description;
   }
 
-  get linkTitle(): (node: SankeyNode) => string {
-    return ({description}) => description;
-  }
-
-  get value() {
+  get value(): (node: SankeyNode) => number {
     return ({_value = 0}) => _value;
   }
 
-  get linkPath() {
-    return d3Sankey.sankeyLinkHorizontal();
+  get linkPath(): ValueFn<any, SankeyLink, string> {
+    return d3Sankey.sankeyLinkHorizontal;
   }
 
-  get circular() {
+  get circular(): ValueFn<any, SankeyLink, boolean> {
     return ({_circular}) => _circular;
   }
 
-  get fontSize() {
-    return (d?, i?, n?) => 12;
+  get fontSize(): ValueFn<any, SankeyNode, number | string> {
+    return () => 12;
   }
 
   static labelEllipsis = 10;

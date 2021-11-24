@@ -3,6 +3,7 @@ import { Injectable, RendererFactory2 } from '@angular/core';
 import { escape, uniqueId } from 'lodash-es';
 import Color from 'color';
 
+import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
   Hyperlink,
@@ -200,7 +201,20 @@ export class AnnotationTagHandler extends TagHandler {
     // Copied from pdf-viewer-lib.component.ts :(
     // TODO: Move somewhere else
     let base = [`Type: ${meta.type}`];
-    base.push(meta.id && meta.id.indexOf('NULL') === -1 ? `Id: ${escape(meta.id)}` : 'Id: None');
+    let idLink: DatabaseLink = null;
+    const annoId = meta.id.indexOf(':') !== -1 ? meta.id.split(':')[1] : meta.id;
+
+    if (ENTITY_TYPE_MAP.hasOwnProperty(meta.type)) {
+      const source = ENTITY_TYPE_MAP[meta.type] as EntityType;
+      idLink = source.links.filter(link => link.name === meta.idType)[0];
+    }
+
+    if (idLink !== null) {
+      // tslint:disable-next-line:max-line-length
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
+    } else {
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
+    }
 
     if (meta.idType) {
       base.push(`Data Source: ${escape(meta.idType)}`);
@@ -213,7 +227,6 @@ export class AnnotationTagHandler extends TagHandler {
 
     // source links if any
     if (meta.idHyperlinks && meta.idHyperlinks.length > 0) {
-      const sourceLinkCollapseTargetId = uniqueId('source-links-tooltip-collapse-target');
       htmlLinks += `
         <div>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
         <div>
@@ -228,7 +241,9 @@ export class AnnotationTagHandler extends TagHandler {
     }
 
     // search links
-    const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+    // TODO: collapsing doesn't work here
+    // need to play around with the stopPropagation
+    const searchLinkCollapseTargetId = uniqueId('enrichment-tooltip-collapse-target');
     htmlLinks += `
       <div>
         <div>Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>

@@ -101,13 +101,14 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
      *     functions like `combineLatest`
      */
     zip.file('graph.json', JSON.stringify(this.graphCanvas.getGraph()));
+    const hashesOfLinked = Array.from(this.graphCanvas.getHashesOfLinked());
     // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
     forkJoin(imageNodeObservables).pipe(defaultIfEmpty(null)).subscribe((imageBlobs: Blob[]) => {
       for (let i = 0; i < imageIds.length; i++) {
         imgs.file(imageIds[i] + '.png', imageBlobs[i]);
       }
       zip.generateAsync({ type: 'blob' }).then((content) => {
-        this.filesystemService.save([this.locator], { contentValue: content })
+        this.filesystemService.save([this.locator], { contentValue: content, hashesOfLinked})
           .pipe(this.errorHandler.create({label: 'Update map'}))
           .subscribe(() => {
             this.unsavedChanges$.next(false);
