@@ -34,7 +34,8 @@ export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
 
-  nodeTypeChoices = annotationTypes;
+  // TODO: Remove that if we decide to add image to annotationTypes
+  nodeTypeChoices = annotationTypes.concat({label: 'image', color: '#FFFFFF'});
   lineTypeChoices = [
     [null, {
       name: '(Default)',
@@ -58,6 +59,8 @@ export class NodeFormComponent implements AfterViewInit {
   previousLabel: string;
 
   overflow = false;
+
+  fixedType = false;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
@@ -110,9 +113,11 @@ export class NodeFormComponent implements AfterViewInit {
   @Input()
   set node(node) {
     this.previousLabel = node.label;
+    this.fixedType = node.label === 'image';
 
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
+
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.data.sources = this.updatedNode.data.sources || [];

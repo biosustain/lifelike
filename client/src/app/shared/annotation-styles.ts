@@ -56,7 +56,7 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
-const IMAGE = '#FFFFFF';
+// const IMAGE = '#FFFFFF';
 
 
 const annotationTypes: AnnotationStyle[] = [
@@ -200,18 +200,20 @@ const annotationTypes: AnnotationStyle[] = [
     },
   },
   /**
-   * Bob: put this back when we know how to render images on canvas upon file change
-   * see comments in node-form.component.html as well
+   * Adding image here allows to change the entity type to image and adds it to a pallete. Currently, we cannot
+   * handle such behaviour. If we decide to add additional image handling options (like adding additional tab,
+   * where we can handle uploading from file/resizing ect.), we should uncomment that AND remove concat
+   * from node-form-component.ts
    */
-  {
-    label: 'image',
-    color: IMAGE,
-    style: {
-      border: IMAGE,
-      background: IMAGE,
-      color: '#000',
-    }
-  },
+  // {
+  //   label: 'image',
+  //   color: IMAGE,
+  //   style: {
+  //     border: IMAGE,
+  //     background: IMAGE,
+  //     color: '#000',
+  //   }
+  // },
 ];
 
 const annotationTypesMap: Map<string, AnnotationStyle> = annotationTypes.reduce((map, item) => {
