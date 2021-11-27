@@ -101,7 +101,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Right - one-dim scaling
         {
           execute: (target, originalSize, dragStartPosition, graphPosition) => {
-             target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x));
+             target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * noZoomScale);
           },
           minX: bbox.maxX - halfSize,
           minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
@@ -112,7 +112,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
         // Left - one-dim scaling
         {
           execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x));
+          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * noZoomScale);
           },
           minX: bbox.minX - halfSize,
           minY: bbox.minY + (bbox.maxY - bbox.minY) / 2 - halfSize,
