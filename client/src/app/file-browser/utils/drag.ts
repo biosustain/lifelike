@@ -3,7 +3,7 @@ import 'canvas-plus';
 
 import { DragImage } from 'app/shared/utils/drag';
 import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
-import {Unicodes} from 'app/shared/constants';
+import {FA_CUSTOM_ICONS, Unicodes} from 'app/shared/constants';
 
 
 export function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
@@ -19,7 +19,7 @@ export function createDragImage(label: string, fontAwesomeIconCode: string): Dra
   let height = paddingY * 2 + shadowSize;
 
   // Specifies the correct font to use depending on whether the icon is in our custom kit or not
-  const fontAwesomeFont = fontAwesomeIconCode === Unicodes.Graph ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+  const fontAwesomeFont = FA_CUSTOM_ICONS.includes(fontAwesomeIconCode as Unicodes) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
   const iconTextElement = new TextElement(ctx, {
     text: fontAwesomeIconCode,
     font: `900 16px ${fontAwesomeFont}`,

@@ -1,10 +1,12 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import {HttpErrorResponse} from '@angular/common/http';
 
-import { catchError } from 'rxjs/operators';
-import { from, Observable, throwError, pipe } from 'rxjs';
-import { UnaryFunction } from 'rxjs/internal/types';
+import {catchError} from 'rxjs/operators';
+import {from, Observable, pipe, throwError} from 'rxjs';
+import {UnaryFunction} from 'rxjs/internal/types';
 
-import { OperatingSystems } from 'app/interfaces/shared.interface';
+import {OperatingSystems} from 'app/interfaces/shared.interface';
+
+import {FAClass, SpecialIconColors, Unicodes} from './constants';
 
 /**
  * Takes an input string and returns the title-cased version of that string. E.g., 'lazy dog' becomes 'Lazy Dog'.
@@ -221,3 +223,41 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
   }));
 }
 
+/**
+ * Matches filename/url with supported extensions and returns its information
+ */
+export function getSupportedFileCodes(text: string): SupportedExtensionInfo {
+  if (text.endsWith('.docx') || text.endsWith('.doc')) {
+    return {
+      unicode: Unicodes.Word,
+      FAClass: FAClass.Word,
+      color: SpecialIconColors.Word
+    };
+  } else if (text.endsWith('.xlsx') || text.endsWith('.xls')) {
+    return {
+      unicode: Unicodes.Excel,
+      FAClass: FAClass.Excel,
+      color: SpecialIconColors.Excel
+    };
+  } else if (text.endsWith('.pptx') || text.endsWith('.ppt')) {
+    return {
+      unicode: Unicodes.PowerPoint,
+      FAClass: FAClass.PowerPoint,
+      color: SpecialIconColors.PowerPoint
+    };
+  } else if (text.endsWith('.cys')) {
+    return {
+      unicode: Unicodes.Cytoscape,
+      FAClass: FAClass.Cytoscape,
+      color: SpecialIconColors.Cytoscape
+    };
+  }
+  return undefined;
+}
+
+
+export interface SupportedExtensionInfo {
+  unicode: Unicodes;
+  FAClass: FAClass;
+  color: SpecialIconColors;
+}
