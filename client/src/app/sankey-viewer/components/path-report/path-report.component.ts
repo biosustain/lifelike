@@ -32,7 +32,6 @@ export class PathReportComponent {
           });
         });
       });
-      console.log(text);
       this._pathReportText = text;
     }
     return this._pathReportText;
