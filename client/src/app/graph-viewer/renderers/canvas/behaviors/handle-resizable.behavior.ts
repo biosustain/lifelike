@@ -119,7 +119,6 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
           maxX: bbox.minX + halfSize,
           maxY: bbox.minY + (bbox.maxY - bbox.minY) / 2 + halfSize,
           displayColor: '#000000'
-
         },
         // Bottom - one-dim scaling
         {
@@ -131,7 +130,6 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
           maxX: bbox.minX + (bbox.maxX - bbox.minX) / 2 + halfSize,
           maxY: bbox.maxY + halfSize,
           displayColor: '#000000'
-
         }
       // Top left
     ];
