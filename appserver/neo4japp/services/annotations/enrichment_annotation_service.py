@@ -148,19 +148,19 @@ class EnrichmentAnnotationService(AnnotationService):
                     category = self.specified_organism.category
                 except KeyError:
                     continue
-                else:
-                    entities_to_create.append(
-                        CreateAnnotationObjParams(
-                            token=token,
-                            token_type=EntityType.PROTEIN.value,
-                            entity_id=protein_id,
-                            entity_synonym=entity_synonym,
-                            entity_name=protein_primary_names[protein_id],
-                            entity_datasource=entity_datasource,
-                            entity_hyperlinks=entity_hyperlinks,
-                            entity_category=category
-                        )
-                    )
+
+            entities_to_create.append(
+                CreateAnnotationObjParams(
+                    token=token,
+                    token_type=EntityType.PROTEIN.value,
+                    entity_id=protein_id,
+                    entity_synonym=entity_synonym,
+                    entity_name=protein_primary_names.get(protein_id, entity_synonym),
+                    entity_datasource=entity_datasource,
+                    entity_hyperlinks=entity_hyperlinks,
+                    entity_category=category
+                )
+            )
         return self._create_annotation_object(entities_to_create)
 
     def create_annotations(

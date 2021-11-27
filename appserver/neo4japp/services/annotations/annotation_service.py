@@ -658,6 +658,7 @@ class AnnotationService:
             )
 
             fallback_protein_organism_matches = fallback_graph_results.matches
+            protein_primary_names.update(fallback_graph_results.primary_names)
 
         for entity_synonym, category, entity_datasource, entity_hyperlinks, token in entity_token_pairs:  # noqa
             # in LMDB we use the synonym as id and name, so do the same here

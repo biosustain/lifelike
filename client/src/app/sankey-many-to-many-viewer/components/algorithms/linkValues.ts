@@ -3,24 +3,30 @@ import { partition, flatMap, sumBy, mean } from 'lodash-es';
 import { ExtendedWeakMap } from 'app/shared/utils/types';
 import {
   calculateInputCountSkippingCircularLinksB,
-  calculateInputCountSkippingCircularLinksA, initInputCountCalculation, getLinkLayers
+  calculateInputCountSkippingCircularLinksA,
+  initInputCountCalculation,
+  getLinkLayers
 } from 'app/sankey-viewer/components/algorithms/inputCount';
 import { SankeyTrace } from 'app/shared-sankey/interfaces';
+import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 
 import { CustomisedSankeyManyToManyLayoutService } from '../../services/customised-sankey-layout.service';
 import { SankeyManyToManyLink, SankeyManyToManyData } from '../interfaces';
 
-export const inputCount = (data: SankeyManyToManyData) => {
+export function inputCount(
+  this: SankeyControllerService,
+  data: SankeyManyToManyData
+) {
   // @ts-ignore
   const layout = new CustomisedSankeyManyToManyLayoutService();
   const {
     sortedNodes,
     dt,
     maxExpectedValue
-  } = initInputCountCalculation(layout, data);
-  calculateInputCountSkippingCircularLinksA(sortedNodes, dt, maxExpectedValue);
+  } = initInputCountCalculation.call(this, layout, data);
+  calculateInputCountSkippingCircularLinksA.call(this, sortedNodes, dt, maxExpectedValue);
   // estimate circular link values based on trace information (LL-3704)
-  const linkLayers = getLinkLayers(data.links);
+  const linkLayers: Map<number, SankeyManyToManyLink[]> = getLinkLayers.call(this, data.links);
   const perLayerLinkEstimation = new ExtendedWeakMap<SankeyManyToManyLink, number[]>();
   linkLayers.forEach(layer => {
     const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
@@ -44,11 +50,12 @@ export const inputCount = (data: SankeyManyToManyData) => {
     });
     circularLinks.forEach(circularLink => {
       circularLink._value = mean(perLayerLinkEstimation.get(circularLink));
-      console.assert(circularLink._value <= maxExpectedValue);
+      this.warningController.assert(circularLink._value <= maxExpectedValue,
+        'Input count algorithm fail - node value exceeds input node count');
     });
   });
   // propagate changes
-  calculateInputCountSkippingCircularLinksB(sortedNodes, dt, maxExpectedValue);
+  calculateInputCountSkippingCircularLinksB.call(this, sortedNodes, dt, maxExpectedValue);
 
   return {
     nodes: data.nodes
@@ -60,4 +67,4 @@ export const inputCount = (data: SankeyManyToManyData) => {
       }
     }
   };
-};
+}
