@@ -14,7 +14,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, isNil, uniqueId } from 'lodash-es';
+import { escape, isNil, uniqueId, transform, flatMap } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -431,9 +431,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return ENTITY_TYPE_MAP[an.meta.type].color;
   }
 
+  /**
+   * TODO: Make a reuseable function to create this tooltip to keep things consistent.
+   * Currently also used in AnnotationTagHandler.prepareTooltipContent()
+   *  - collapsing does not work there, maybe has to do with using Renderer2Factory and stopPropagation
+   * @param an
+   * @returns
+   */
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
     let idLink: DatabaseLink = null;
+    const annoId = an.meta.id.indexOf(':') !== -1 ? an.meta.id.split(':')[1] : an.meta.id;
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
       const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
@@ -441,9 +449,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
 
     if (idLink !== null) {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${an.meta.id}`)} target="_blank">${escape(an.meta.id)}</a>` : 'Id: None');
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
     } else {
-      base.push(an.meta.id && an.meta.id.indexOf('NULL') === -1 ? `Id: ${escape(an.meta.id)}` : 'Id: None');
+      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
     }
     base.push(an.meta.idType && an.meta.idType !== '' ? `Data Source: ${escape(an.meta.idType)}` : 'Data Source: None');
 
@@ -472,14 +480,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
     htmlLinks += `
       <div>
-        <a
-          class="pdf-tooltip-collapse-control collapsed"
+        <div
+          class="tooltip-collapse-control collapsed"
           role="button"
           data-toggle="collapse"
           data-target="#${searchLinkCollapseTargetId}"
           aria-expanded="false"
           aria-controls="${searchLinkCollapseTargetId}"
-        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
         <div class="collapse" id="${searchLinkCollapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
@@ -680,7 +688,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const clonedSelection = selection.getRangeAt(0).cloneContents();
 
       let rects = [];
-      const elements: any[] = Array.from(clonedSelection.children);
+      const elements: any[] = Array.from(clonedSelection.querySelectorAll(':not(.markedContent)'));
       elements.forEach((org_span: any) => {
         const span = org_span.cloneNode(true);
         const {transform} = span.style;

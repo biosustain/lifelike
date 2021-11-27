@@ -9,16 +9,23 @@ import math
 import os
 import sentry_sdk
 import uuid
+import requests
 
 from flask import g, request
 
 from marshmallow.exceptions import ValidationError
 
+from collections import namedtuple
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from sqlalchemy.exc import IntegrityError
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT, LogEventType
+from neo4japp.constants import (
+    ANNOTATION_STYLES_DICT,
+    FILE_MIME_TYPE_ENRICHMENT_TABLE,
+    FILE_MIME_TYPE_PDF,
+    LogEventType
+)
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
@@ -203,41 +210,6 @@ def update_or_create_index(index_id, index_mapping_file):
     elastic_service.update_or_create_index(index_id, index_mapping_file)
 
 
-# NOTE DEPRECATED: Files.file_id no longer exist -> Files.content_id
-@app.cli.command('reannotate')
-def reannotate_all():
-    """ CAUTION: Master command to reannotate all files
-    in the database. """
-    from neo4japp.blueprints.annotations import annotate
-    from neo4japp.models import Files, FileContent
-    from neo4japp.exceptions import AnnotationError
-    files = db.session.query(
-        Files.id,
-        Files.annotations,
-        Files.custom_annotations,
-        Files.excluded_annotations,
-        Files.file_id,
-        Files.filename,
-        FileContent.raw_file,
-    ).join(
-        FileContent,
-        FileContent.id == Files.content_id,
-    ).all()
-    updated_files = []
-    versions = []
-    for fi in files:
-        try:
-            update, version = annotate(fi, AnnotationChangeCause.SYSTEM_REANNOTATION)
-        except AnnotationError:
-            logger.info('Failed to annotate: <id:{fi.id}>')
-        else:
-            updated_files.append(update)
-            versions.append(version)
-    db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
-    db.session.bulk_update_mappings(Files, updated_files)
-    db.session.commit()
-
-
 @app.cli.command('load-lmdb')
 def load_lmdb():
     """ Downloads LMDB files from Cloud to Local for application """
@@ -261,92 +233,135 @@ def upload_lmdb():
     manager.upload_all(lmdb_dir_path)
 
 
-@app.cli.command('seed-neo4j-globals')
-@click.argument('filename')
-def seed_globals_into_graph(filename):
-    """Delete after LL-3523 related prod release is done"""
-    import csv
-    import datetime
-    import os
-    import json
-    from enum import Enum
-    from urllib.parse import urlparse
+Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organism_id'])
 
-    directory = os.path.realpath(os.path.dirname(__file__))
 
-    from neo4japp.services.annotations.initializer import get_manual_annotation_service
+@app.cli.command('reannotate')
+@click.argument('user')  # the user email
+@click.argument('password')
+def reannotate_files(user, password):
+    from neo4japp.models import FileContent, FallbackOrganism
+    # from neo4japp.exceptions import AnnotationError
+    from neo4japp.schemas.annotations import AnnotationConfigurations
+    from multiprocessing import Process, Queue, cpu_count
+    import time
 
-    class DatabaseType(Enum):
-        CHEBI = 'ChEBI'
-        CUSTOM = 'Custom'
-        MESH = 'MeSH'
-        UNIPROT = 'UniProt'
-        NCBI_GENE = 'NCBI Gene'
-        NCBI_TAXONOMY = 'NCBI Taxonomy'
-        BIOCYC = 'BioCyc'
-        PUBCHEM = 'PubChem'
+    def get_token():
+        req = requests.post(
+            'http://localhost:5000/auth/login',
+            data=json.dumps({'email': user, 'password': password}),
+            headers={'Content-type': 'application/json'})
+        return json.loads(req.text)['accessToken']['token']
 
-    db_types = {
-        'chebi': DatabaseType.CHEBI.value,
-        'mesh': DatabaseType.MESH.value,
-        'uniprot': DatabaseType.UNIPROT.value,
-        'ncbi gene': DatabaseType.NCBI_GENE.value,
-        'ncbi taxonomy': DatabaseType.NCBI_TAXONOMY.value,
-        'biocyc': DatabaseType.BIOCYC.value,
-        'pubchem': DatabaseType.PUBCHEM.value
-    }
+    def do_work(token, hash_ids, configs, organism: Fallback):
+        resp = requests.post(
+            'http://localhost:5000/filesystem/annotations/generate',
+            data=json.dumps({
+                'hashIds': hash_ids,
+                'organism': {
+                    'organism_name': organism.organism_name,
+                    'synonym': organism.organism_synonym,
+                    'tax_id': organism.organism_id
+                },
+                'annotationConfigs': configs
+            }),
+            headers={'Content-type': 'application/json', 'Authorization': f'Bearer {token}'})
+        print(f'Got response back for files {hash_ids}, status code is {resp.status_code}')
+        # if resp.status_code != 200:
+        #     raise AnnotationError(resp.text)
+        resp.close()
 
-    service = get_manual_annotation_service()
+    print('Running reannotate command')
 
-    with open(os.path.join(directory, filename), 'r') as f:
-        reader = csv.reader(f, delimiter=',', quotechar='"')
-        # skip header
-        headers = next(reader)
-        for line in reader:
-            print(line)
-            domain = line[0].strip().lower()
-            data_source = db_types[line[1].strip().lower()] if 'None' not in line[1] else None
-            entity_id = line[2]
-            text = line[3]
-            entity_type = line[4]
-            hyperlink = line[5]
-            creation_date = str(datetime.datetime.now())
-            creator = line[7]
+    token = get_token()
+    curr_time = time.time()
 
-            usernames = {
-                'Evelyn Travnik': 'evtravnik',
-                'Sebastian Schulz': 'Sebastian',
-                'Sharon Wiback': 'shawib'
-            }
+    # NUM_PROCESSES = 2
+    task_queue = Queue()
+    running = {}
 
-            if creator not in usernames:
-                continue
+    files = db.session.query(
+        Files.id,
+        Files.hash_id,
+        Files.annotation_configs,
+        FallbackOrganism.organism_name,
+        FallbackOrganism.organism_synonym,
+        FallbackOrganism.organism_taxonomy_id
+    ).join(
+        FileContent,
+        FileContent.id == Files.content_id
+    ).join(
+        FallbackOrganism,
+        FallbackOrganism.id == Files.fallback_organism_id
+    ).filter(
+        and_(
+            Files.mime_type.in_([FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]),
+            Files.deletion_date.is_(None),
+            and_(
+                Files.annotations.isnot(None),
+                Files.annotations != '[]'
+            )
+        )
+    )
 
-            createval = {
-                'primaryName': text,
-                'inclusion_date': creation_date,
-                'meta': {
-                    'type': entity_type,
-                    'id': entity_id,
-                    'idType': data_source,
-                    'allText': text,
-                    'idHyperlinks': [json.dumps({
-                        'label': urlparse(hyperlink).netloc.replace('www.', ''),
-                        'url': hyperlink})] if hyperlink else []
-                }
-            }
+    print(f'Total files: {files.count()}')
 
-            try:
-                service.save_global(
-                    annotation=createval,
-                    inclusion_type='inclusion',
-                    file_content_id=-1,
-                    file_id=-1,
-                    file_hash_id='',
-                    username=usernames[creator]
-                )
-            except Exception:
-                raise Exception(f'Failed to execute query for line {line}.')
+    for fid, hash, configs, organism, organism_synonym, organism_id in files:
+        task_queue.put((
+            fid, hash,
+            json.loads(AnnotationConfigurations().dumps(configs)),
+            Fallback(organism, organism_synonym, organism_id)
+        ))
+
+    print(f'Total tasks to do: {task_queue.qsize()}')
+
+    while task_queue.qsize() > 0:
+        if time.time() - curr_time > 180:
+            token = get_token()
+            curr_time = time.time()
+
+        file_id, hashes, configs, organism = task_queue.get()
+        do_work(token, [hashes], configs, organism)
+
+    # while True:
+    #     if time.time() - curr_time > 180:
+    #         token = get_token()
+    #         curr_time = time.time()
+
+    #     file_id, hashes, configs, organism = task_queue.get()
+    #     # this is preferred over multiprocessing.pool(...)
+    #     # because it is guaranteed to be in a different process
+    #     p = Process(target=do_work, args=(token, [hashes], configs, organism,))
+    #     p.daemon = True
+    #     p.start()
+    #     # print(f'Process {p.pid} started...')
+    #     running[p.pid] = (hashes, p)
+
+    #     if len(running) == 3:
+    #         while True:
+    #             for k in list(running):
+    #                 v = running[k]
+    #                 if not v[1].is_alive():
+    #                     # if v[1].exitcode:
+    #                     #     raise AnnotationError(f'File with hash_id {v[0]} failed to annotate.')  # noqa
+    #                     running.pop(k)
+
+    #             if len(running) == 0:
+    #                 break
+
+    #     if task_queue.qsize() == 0:
+    #         break
+
+    # while True:
+    #     for k in list(running):
+    #         v = running[k]
+    #         if not v[1].is_alive():
+    #             # if v[1].exitcode:
+    #             #     raise AnnotationError(f'File with hash_id {v[0]} failed to annotate.')
+    #             running.pop(k)
+
+    #     if len(running) == 0:
+    #         break
 
 
 def add_file(filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes):

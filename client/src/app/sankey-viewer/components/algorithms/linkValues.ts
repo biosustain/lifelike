@@ -1,22 +1,28 @@
 import * as d3Sankey from 'd3-sankey-circular';
 
+import { ValueProcessingStep } from 'app/shared-sankey/interfaces';
+
 import { representativePositiveNumber } from '../utils';
+import { SankeyControllerService } from '../../services/sankey-controller.service';
 
-export const fixedValue = value => ({links}) => {
-  links.forEach(l => {
-    l._value = value;
-  });
-  return {
-    links,
-    _sets: {
-      link: {
-        _value: true
-      }
-    }
-  };
-};
+export const fixedValue: (value: number) => ValueProcessingStep =
+  value =>
+    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    function(this: SankeyControllerService, {links}) {
+      links.forEach(l => {
+        l._value = value;
+      });
+      return {
+        links,
+        _sets: {
+          link: {
+            _value: true
+          }
+        }
+      };
+    };
 
-export const fractionOfFixedNodeValue = ({links, nodes}) => {
+export function fractionOfFixedNodeValue(this: SankeyControllerService, {links, nodes}) {
   links.forEach(l => {
     l.value = 1;
     l.s = l.source;
@@ -72,46 +78,53 @@ export const fractionOfFixedNodeValue = ({links, nodes}) => {
       }
     }
   };
-};
+}
 
 export { inputCount } from './inputCount';
 
-export const byProperty = property => ({links}) => {
-  links.forEach(l => {
-    l._value = representativePositiveNumber(l[property]);
-  });
-  return {
-    _sets: {
-      link: {
-        _value: true
-      }
-    },
-    _requires: {
-      link: {
-        _adjacent_normalisation: true
-      }
-    }
-  };
-};
+export const byProperty: (property: string) => ValueProcessingStep =
+  property =>
+    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    function(this: SankeyControllerService, {links}) {
+      links.forEach(l => {
+        l._value = representativePositiveNumber(l[property]);
+      });
+      return {
+        _sets: {
+          link: {
+            _value: true
+          }
+        },
+        _requires: {
+          link: {
+            _adjacent_normalisation: true
+          }
+        }
+      };
+    };
 
-export const byArrayProperty = property => ({links}) => {
-  links.forEach(l => {
-    const [v1, v2] = l[property];
-    l._multiple_values = [v1, v2].map(d => representativePositiveNumber(d));
-    // take max for layer calculation
-    l._value = Math.max(...l._multiple_values);
-  });
-  return {
-    _sets: {
-      link: {
-        _multiple_values: true,
-        _value: true
-      }
-    },
-    _requires: {
-      link: {
-        _adjacent_normalisation: true
-      }
-    }
-  };
-};
+
+export const byArrayProperty: (property: string) => ValueProcessingStep =
+  property =>
+    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    function(this: SankeyControllerService, {links}) {
+      links.forEach(l => {
+        const [v1, v2] = l[property];
+        l._multiple_values = [v1, v2].map(d => representativePositiveNumber(d)) as [number, number];
+        // take max for layer calculation
+        l._value = Math.max(...l._multiple_values);
+      });
+      return {
+        _sets: {
+          link: {
+            _multiple_values: true,
+            _value: true
+          }
+        },
+        _requires: {
+          link: {
+            _adjacent_normalisation: true
+          }
+        }
+      };
+    };
