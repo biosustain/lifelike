@@ -46,6 +46,6 @@ export function justify(node, n) {
 
 export function center(node) {
   return node._targetLinks.length ? node._depth
-      : node._sourceLinks.length ? min(node._sourceLinks, targetDepth) - 1
+      : node._sourceLinks.length ? (min(node._sourceLinks, targetDepth) as any) - 1
       : 0;
 }

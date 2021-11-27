@@ -8,15 +8,17 @@ import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/custom
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import { DirectedTraversal } from 'app/sankey-viewer/services/directed-traversal';
 import { SankeyNode } from 'app/shared-sankey/interfaces';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 @Injectable()
 // @ts-ignore
 export class CustomisedSankeyManyToManyLayoutService extends CustomisedSankeyLayoutService {
   constructor(
     readonly truncatePipe: TruncatePipe,
-    readonly sankeyController: SankeyControllerService
+    readonly sankeyController: SankeyControllerService,
+    readonly warningController: WarningControllerService
   ) {
-    super(truncatePipe, sankeyController);
+    super(truncatePipe, sankeyController, warningController);
   }
 
   get linkBorder() {

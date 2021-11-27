@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
 
 import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
+import { WordCloudAnnotationFilterEntityWithLayout } from 'app/word-cloud/interfaces';
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -231,30 +232,29 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * and added words will be drawn.
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
-  private updateDOM(words) {
+  private updateDOM(words: WordCloudAnnotationFilterEntityWithLayout[]) {
     // Add any new words
     return d3.select(this.g.nativeElement)
       .selectAll('text')
-      .data(words, (d) => d.text)
+      // @ts-ignore
+      .data<WordCloudAnnotationFilterEntityWithLayout>(words, d => d.text)
       .join(
         enter => enter
           .append('text')
           .attr('text-anchor', 'middle')
-          .text((d) => d.text)
+          .text(d => d.text)
           .call(e => this.enter.emit(e)),
         update => update,
         // Remove any words that have been removed by either the algorithm or the user
         exit => exit.remove()
       )
-      .style('fill', (d) => d.color)
-      .style('font-size', (d) => d.size + 'px')
+      .style('fill', d => d.color)
+      .style('font-size', d => d.size + 'px')
       .transition()
-      .attr('transform', (d) => {
+      .attr('transform', d => {
         return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
       })
       .ease(d3.easeSin)
       .duration(1000);
   }
-
-
 }

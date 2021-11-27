@@ -17,13 +17,17 @@
     opacity: 0.3;
     line-height: 1.0;
 
-    >span {
+    > span, .markedContent > span {
       color: transparent;
       position: absolute;
       white-space: pre;
       cursor: text;
       -webkit-transform-origin: 0% 0%;
       transform-origin: 0% 0%;
+    }
+
+    .markedContent {
+      top: 0;
     }
 
     .highlight {
