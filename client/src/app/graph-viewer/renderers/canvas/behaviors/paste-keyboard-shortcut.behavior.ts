@@ -37,13 +37,6 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     if (content) {
       const position = this.graphView.currentHoverPosition;
       if (position) {
-        const items = this.dataTransferDataService.extract(event.event.clipboardData);
-        const actions = extractGraphEntityActions(items, position);
-        if (actions.length) {
-          this.graphView.execute(new CompoundAction('Copy to map', actions));
-          this.graphView.focus();
-          event.event.preventDefault();
-        }
         this.graphView.execute(this.createActionFromPasteContent(content, position));
         event.event.preventDefault();
         return BehaviorResult.Stop;
@@ -98,6 +91,9 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
           y: position.y,
           detail: content,
         },
+        style: {
+          showDetail: true
+        }
       }, true,
     );
   }
