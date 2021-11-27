@@ -12,6 +12,17 @@ app-sankey {
   $node-stroke-width: 1;
   $node-selected-stroke-width: 3;
 
+  @keyframes searchBlink {
+    50% {
+      fill: red;
+    }
+  }
+
+  @mixin searchBlink {
+    animation-name: searchBlink;
+    animation-duration: 750ms;
+  }
+
   position: relative;
   //touch-action: none;
   //user-select: none;
@@ -88,6 +99,7 @@ app-sankey {
           &[focused=true] {
             .text-shadow {
               fill: rgba(187, 187, 187, 0.85);
+              @include searchBlink();
             }
 
             text {
@@ -159,8 +171,10 @@ app-sankey {
             stroke: red;
           }
 
+
           &[focused=true] {
-            fill: red;
+            stroke-width: $link-selected-stroke-width;
+            @include searchBlink();
           }
         }
       }

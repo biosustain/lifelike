@@ -86,10 +86,10 @@ export class SankeyLayoutService extends AttributeAccessors {
     [[this.x0, this.y0], [this.x1, this.y1]] = extent;
   }
 
-  x0 = 0;
-  y0 = 0;
-  x1 = 1;
-  y1 = 1; // extent
+  x0;
+  y0;
+  x1;
+  y1; // extent
   dy = 8;
   dx = 24; // nodeWidth
   py; // nodePadding
@@ -258,11 +258,11 @@ export class SankeyLayoutService extends AttributeAccessors {
     });
   }
 
-  get sourceValue() {
+  get sourceValue(): (link: SankeyLink) => number {
     return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[0] : _value;
   }
 
-  get targetValue() {
+  get targetValue(): (link: SankeyLink) => number {
     return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[1] : _value;
   }
 
@@ -311,7 +311,7 @@ export class SankeyLayoutService extends AttributeAccessors {
       for (const node of current) {
         yield [node, x];
         for (const link of node[nextLinksProperty]) {
-            next.add(link[nextNodeProperty] as SankeyNode);
+          next.add(link[nextNodeProperty] as SankeyNode);
         }
       }
       if (++x > n) {
@@ -327,7 +327,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
-  computeNodeLayers({nodes}: SankeyData) {
+  computeNodeLayers({nodes}: SankeyData): SankeyNode[][] {
     const {x1, x0, dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
     const kx = (x1 - x0 - dx) / (x - 1);
@@ -354,7 +354,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   /**
    * Calculate Y scaling factor and initialise nodes height&position.
    */
-  initializeNodeBreadths(columns) {
+  initializeNodeBreadths(columns: SankeyNode[][]) {
     const {y1, y0, py, value} = this;
 
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
@@ -570,6 +570,14 @@ export class SankeyLayoutService extends AttributeAccessors {
       y -= _width;
     }
     return y;
+  }
+
+  rescaleNodePosition(graph, innerWidthChangeRatio) {
+    const {dx, x0} = this;
+    for (const node of graph.nodes) {
+      node._x0 = (node._x0 - x0) * innerWidthChangeRatio + x0;
+      node._x1 = node._x0 + dx;
+    }
   }
 
   calcLayout(graph) {
