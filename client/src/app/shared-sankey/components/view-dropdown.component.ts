@@ -8,6 +8,7 @@ import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-contr
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
   SankeyView,
@@ -29,18 +30,14 @@ import { SankeyViewConfirmComponent } from './view-confirm.component';
 export class SankeyViewDropdownComponent implements OnChanges {
 
   get views() {
-    const {allData} = this.sankeyController;
-    let views = allData._views;
-    if (!isObject(views)) {
-      views = allData._views = {};
-    }
-    return views;
+    return (this.sankeyController.allData || {})._views;
   }
 
   constructor(
     readonly workspaceManager: WorkspaceManager,
     readonly sankeyController: SankeyControllerService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    readonly warningController: WarningControllerService
   ) {
   }
 
@@ -176,7 +173,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
       this.activeViewNameChange.emit(viewName);
       this.applyView(view);
     } else {
-      console.warn(`View ${viewName} has not been found in file.`);
+      this.warningController.warn(`View ${viewName} has not been found in file.`);
     }
   }
 

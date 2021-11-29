@@ -2,10 +2,9 @@ import io
 import json
 import math
 import re
-import shutil
 import typing
 import zipfile
-import uuid
+import tempfile
 
 from base64 import b64encode
 
@@ -78,7 +77,6 @@ from neo4japp.constants import (
     DETAIL_TEXT_LIMIT,
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
-    TEMP_PATH,
     LogEventType,
     IMAGE_BORDER_SCALE
 )
@@ -410,7 +408,7 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
     for image in images:
         text_content = text_content.replace(
-            TEMP_PATH + folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+            folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
                 zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
@@ -470,20 +468,56 @@ def create_default_node(node):
     }
 
 
+def create_image_label(node):
+    """
+    Creates a node acting as a label for the image
+    :params:
+    :param node: dict containing the node data
+    :returns: label params
+    """
+    style = node.get('style', {})
+    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
+    border_width = style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
+    # Try to match the front-end max width by assuming that average font width is equal to 50%%
+    # of the height - and adjusting the text to be roughly of the image width
+    label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    label = escape('\n'.join(textwrap.TextWrapper(
+        width=int(width / (label_font_size * 0.5)),
+        replace_whitespace=False).wrap(node['display_name'] or "")))
+    label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
+                                                   (1 + label.count('\n'))) - border_width
+    return {
+        'label': label,
+        'pos': (
+            f"{node['data']['x'] / SCALING_FACTOR},"
+            f"{(-node['data']['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
+        ),
+        'fontsize': f"{label_font_size}",
+        'penwidth': '0.0',
+        'fontcolor': style.get('fillColor') or 'black',
+        'fontname': 'sans-serif',
+        'name': node['hash'] + '_label'
+    }
+
+
 def create_image_node(node, params):
     """
     Add parameters specific to the image label.
-
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters
     :returns: modified params
     """
     style = node.get('style', {})
+    # Remove the label generated in 'create_default_node' - we will add it as separate node
+    params['label'] = ""
+    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
     params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
         if style.get('lineType') != 'none' else '0.0'
-    params['width'] = f"{node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH) / SCALING_FACTOR}"
-    params['height'] = f"{node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT) / SCALING_FACTOR}"
+    params['width'] = f"{width / SCALING_FACTOR}"
+    params['height'] = f"{height / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
     params['imagescale'] = 'both'
     params['shape'] = 'rect'
@@ -597,8 +631,7 @@ def create_icon_node(node, params):
     params['penwidth'] = '0.0'
     # Calculate the distance between icon and the label center
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
-        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-        (style.get('fontSizeScale', 1.0) - 1.0)
+        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
 
     # Move the label below to make space for the icon node
     params['pos'] = (
@@ -828,10 +861,8 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
-        folder_name = str(uuid.uuid4())
-        while os.path.isdir(TEMP_PATH + folder_name):
-            folder_name = str(uuid.uuid4())
-        os.mkdir(TEMP_PATH + folder_name)
+        # This should handle the naming and removal of the temporary directory
+        folder = tempfile.TemporaryDirectory()
 
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
@@ -858,13 +889,13 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph_attr.append(('dpi', '100'))
 
         graph = graphviz.Digraph(
-                escape(file.filename),
-                # New lines are not permitted in the comment - they will crash the export.
-                # Replace them with spaces until we find different solution
-                comment=file.description.replace('\n', ' ') if file.description else None,
-                engine='neato',
-                graph_attr=graph_attr,
-                format=format)
+            escape(file.filename),
+            # New lines are not permitted in the comment - they will crash the export.
+            # Replace them with spaces until we find different solution
+            comment=file.description.replace('\n', ' ') if file.description else None,
+            engine='neato',
+            graph_attr=graph_attr,
+            format=format)
 
         node_hash_type_dict = {}
         x_values, y_values = [], []
@@ -889,12 +920,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                     image_name = node.get('image_id') + '.png'
                     images.append(image_name)
                     im = zip_file.read("".join(['images/', image_name]))
-                    file_path = "".join([TEMP_PATH, folder_name, '/',  image_name])
+                    file_path = os.path.sep.join([folder.name, image_name])
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
-                    params = create_image_node(node, params)
-                    params['image'] = file_path
                 except KeyError:
                     name = node.get('image_id') + '.png'
                     current_app.logger.info(
@@ -904,6 +933,10 @@ class MapTypeProvider(BaseFileTypeProvider):
                     )
                     raise ValidationError(
                         f"Cannot retrieve image: {name} - file might be corrupted")
+                params = create_image_node(node, params)
+                if node['display_name']:
+                    graph.node(**create_image_label(node))
+                params['image'] = file_path
 
             if node['label'] in ICON_NODES:
                 # map and note should point to the first source or hyperlink, if the are no sources
@@ -943,9 +976,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = io.BytesIO(graph.pipe())
 
         if format == 'svg':
-            content = substitute_svg_images(content, images, zip_file, folder_name)
-
-        shutil.rmtree(TEMP_PATH + folder_name)
+            content = substitute_svg_images(content, images, zip_file, folder.name)
 
         return FileExport(
             content=content,

@@ -5,13 +5,15 @@ import { SankeyLink, SankeyNode, SankeyData, SankeyTrace } from 'app/shared-sank
 
 import { DirectedTraversal } from '../../services/directed-traversal';
 import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
+import { SankeyControllerService } from '../../services/sankey-controller.service';
 
-export const calculateInputCountSkippingCircularLinks = (
+export function calculateInputCountSkippingCircularLinks(
+  this: SankeyControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number,
   nextLinkValue: (nodeValue: number, nextLinks) => number
-) => {
+) {
   sortedNodes.forEach(n => {
     if (dt.startNodes.includes(n.id)) {
       n._fixedValue = 1;
@@ -21,7 +23,7 @@ export const calculateInputCountSkippingCircularLinks = (
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
     n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
-    console.assert(n._fixedValue <= maxExpectedValue);
+    this.warningController.assert(n._fixedValue <= maxExpectedValue, 'Input count algorithm fail - node value exceeds input node count');
     const outFrac = nextLinkValue(n._fixedValue, nextLinks);
     nextLinks.forEach(l => {
       // skip setting circular values
@@ -30,8 +32,12 @@ export const calculateInputCountSkippingCircularLinks = (
       }
     });
   });
-};
-export const initInputCountCalculation = (layout, data: SankeyData) => {
+}
+
+export function initInputCountCalculation(
+  this: SankeyControllerService,
+  layout, data: SankeyData
+) {
   // initially links does not carry values but we need to init it
   data.links.forEach(l => {
     l._value = 0;
@@ -54,11 +60,15 @@ export const initInputCountCalculation = (layout, data: SankeyData) => {
     // iterate nodes leaves first
     sortedNodes: [...data.nodes].sort(dt.depthSorter())
   };
-};
+}
+
 /**
  * make lists of links passing each immediate space between node layers
  */
-export const getLinkLayers = <Link extends SankeyLink>(links: Link[]) => {
+export function getLinkLayers<Link extends SankeyLink>(
+  this: SankeyControllerService,
+  links: Link[]
+): Map<number, Link[]> {
   const linkLayers = new ExtendedMap<number, Link[]>();
   links.forEach(link => {
     const sourceLayer = (link._source as SankeyNode)._layer;
@@ -71,26 +81,32 @@ export const getLinkLayers = <Link extends SankeyLink>(links: Link[]) => {
     }
   });
   return linkLayers;
-};
-export const calculateInputCountSkippingCircularLinksA = (
+}
+
+export function calculateInputCountSkippingCircularLinksA(
+  this: SankeyControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number
-) => {
-  calculateInputCountSkippingCircularLinks(
+) {
+  calculateInputCountSkippingCircularLinks.call(
+    this,
     sortedNodes,
     dt,
     maxExpectedValue,
     (nodeValue, nextLinks) =>
       nodeValue / nextLinks.length
   );
-};
-export const calculateInputCountSkippingCircularLinksB = (
+}
+
+export function calculateInputCountSkippingCircularLinksB(
+  this: SankeyControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number
-) => {
-  calculateInputCountSkippingCircularLinks(
+) {
+  calculateInputCountSkippingCircularLinks.call(
+    this,
     sortedNodes,
     dt,
     maxExpectedValue,
@@ -100,19 +116,22 @@ export const calculateInputCountSkippingCircularLinksB = (
       return (nodeValue - nextCircularLinksSum) / nextNonCircularLinks.length;
     }
   );
-};
+}
 
-export const inputCount = (data: SankeyData) => {
+export function inputCount(
+  this: SankeyControllerService,
+  data: SankeyData
+) {
   // @ts-ignore
   const layout = new CustomisedSankeyLayoutService();
   const {
     sortedNodes,
     dt,
     maxExpectedValue
-  } = initInputCountCalculation(layout, data);
-  calculateInputCountSkippingCircularLinksA(sortedNodes, dt, maxExpectedValue);
+  } = initInputCountCalculation.call(this, layout, data);
+  calculateInputCountSkippingCircularLinksA.call(this, sortedNodes, dt, maxExpectedValue);
   // estimate circular link values based on trace information (LL-3704)
-  const linkLayers = getLinkLayers<SankeyLink>(data.links);
+  const linkLayers = getLinkLayers.call(this, data.links);
   const perLayerLinkEstimation = new ExtendedWeakMap<SankeyLink, number[]>();
   linkLayers.forEach(layer => {
     const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
@@ -136,11 +155,12 @@ export const inputCount = (data: SankeyData) => {
     });
     circularLinks.forEach(circularLink => {
       circularLink._value = mean(perLayerLinkEstimation.get(circularLink));
-      console.assert(circularLink._value <= maxExpectedValue);
+      this.warningController.assert(circularLink._value <= maxExpectedValue,
+        'Input count algorithm fail - node value exceeds input node count');
     });
   });
   // propagate changes
-  calculateInputCountSkippingCircularLinksB(sortedNodes, dt, maxExpectedValue);
+  calculateInputCountSkippingCircularLinksB.call(this, sortedNodes, dt, maxExpectedValue);
 
   return {
     nodes: data.nodes
@@ -152,4 +172,4 @@ export const inputCount = (data: SankeyData) => {
       }
     }
   };
-};
+}
