@@ -77,7 +77,9 @@ SET r.type=row.type
   <changeSet id="LL-3212 set species_id for taxonomy nodes on date 10072021" author="Binh Vu">
     <comment>Taxonomy needs species_id</comment>
     <sql>
-    MATCH (n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'}) SET n.species_id = s.eid
+      CALL apoc.periodic.iterate(
+      "MATCH (n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'}) RETURN n, s",
+      "SET n.species_id = s.eid", {batchSize:5000})
     </sql>
   </changeSet>
 </databaseChangeLog>
