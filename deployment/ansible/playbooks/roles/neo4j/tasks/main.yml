@@ -1,0 +1,5 @@
+- include: install_neo4j.yml
+  tags: neo4j
+
+- include: install_apoc_plugin.yml
+  tags: [neo4j, neo4j-apoc]

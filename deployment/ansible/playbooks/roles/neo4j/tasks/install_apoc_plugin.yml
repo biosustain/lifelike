@@ -1,0 +1,20 @@
+- name: Check if APOC plugin is already installed
+  stat: path=/var/lib/neo4j/plugins/apoc-{{ neo4j_apoc_version }}-all.jar
+  register: apoc_installed
+
+- name: Install APOC plugin
+  get_url:
+    url: https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/{{ neo4j_apoc_version }}/apoc-{{ neo4j_apoc_version }}-all.jar
+    dest: /var/lib/neo4j/plugins/apoc-{{ neo4j_apoc_version }}-all.jar
+    owner: neo4j
+    group: adm
+    timeout: 60
+  when: apoc_installed.stat.exists == False
+  notify: Restart Neo4j
+
+- name: Configure Neo4j to unrestrict APOC procedures calls
+  ansible.builtin.lineinfile:
+    path: /etc/neo4j/neo4j.conf
+    line: dbms.security.procedures.unrestricted=apoc.*
+  when: apoc_installed.stat.exists == False
+  notify: Restart Neo4j

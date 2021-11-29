@@ -1,0 +1,26 @@
+- name: Add Neo4j APT key
+  apt_key: url=https://debian.neo4j.com/neotechnology.gpg.key state=present
+
+- name: Set Neo4j repository
+  apt_repository: repo="deb https://debian.neo4j.com stable latest" update_cache=yes
+
+- name: Install Neo4j package
+  apt: name="{{ neo4j_package }}={{ neo4j_package_version }}" update_cache=yes force=yes
+
+- name: Configure Neo4j to listen on all network interfaces
+  ansible.builtin.lineinfile:
+    path: /etc/neo4j/neo4j.conf
+    regexp: '^dbms\.connectors\.default_listen_address='
+    line: dbms.connectors.default_listen_address=0.0.0.0
+  notify: Restart Neo4j
+
+- name: Set memory heap max size
+  ansible.builtin.lineinfile:
+    path: /etc/neo4j/neo4j.conf
+    regexp: '^dbms\.memory\.heap.max_size='
+    line: dbms.memory.heap.max_size={{ neo4j_memory_heap_max_size }}
+  when: neo4j_memory_heap_max_size is defined
+  notify: Restart Neo4j
+
+- name: Ensure Neo4j is enabled and started
+  service: name=neo4j enabled=yes state=started
