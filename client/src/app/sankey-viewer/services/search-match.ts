@@ -9,13 +9,14 @@
  */
 import { omit, slice, transform, isObject } from 'lodash-es';
 
-import { compileFind } from 'app/shared/utils/find';
 import { SankeyLink, SankeyTrace, SankeyNode } from 'app/shared-sankey/interfaces';
+import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 
 
 export interface Match {
   path: string[];
   term: string | number;
+  priority: MatchPriority;
 }
 
 enum LAYERS {
@@ -60,7 +61,7 @@ export class SankeySearch {
   }
 
   setMatcher() {
-    this.matcher = compileFind(this.terms, this.options);
+    this.matcher = prioritisedCompileFind(this.terms, this.options);
   }
 
   setNodeById() {
@@ -71,6 +72,7 @@ export class SankeySearch {
     for (const match of this.matchObject(obj)) {
       yield {
         path: [key, ...match.path],
+        priority: match.priority,
         term: match.term
       } as Match;
     }
@@ -85,11 +87,15 @@ export class SankeySearch {
       for (const [key, term] of Object.entries(obj)) {
         yield* this.matchKeyObject(term, key);
       }
-    } else if (this.matcher(obj)) {
-      yield {
-        term: obj,
-        path: []
-      } as Match;
+    } else {
+      const match = this.matcher(obj);
+      if (match) {
+        yield {
+          term: obj,
+          path: [],
+          priority: match
+        } as Match;
+      }
     }
   }
 
@@ -123,6 +129,7 @@ export class SankeySearch {
         for (const mm of matchedTrace) {
           yield {
             term: mm.term,
+            priority: mm.priority,
             path: ['trace', ...mm.path]
           } as Match;
         }
@@ -160,6 +167,7 @@ export class SankeySearch {
             for (const match of this.matchNode(node, context)) {
               yield {
                 term: match.term,
+                priority: match.priority,
                 path: ['node paths', ...match.path]
               } as Match;
             }
@@ -172,6 +180,7 @@ export class SankeySearch {
             for (const match of this.matchNode(node, context)) {
               yield {
                 term: match.term,
+                priority: match.priority,
                 path: ['detail edges', ...match.path]
               } as Match;
             }
@@ -183,6 +192,7 @@ export class SankeySearch {
           for (const match of this.matchLink(link, context)) {
             yield {
               term: match.term,
+              priority: match.priority,
               path: ['edges', ...match.path]
             } as Match;
           }

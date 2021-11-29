@@ -14,6 +14,7 @@
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
             </app-object-menu>
+            <app-warning-pill></app-warning-pill>
             <ng-container objectMenuAdditions>
                 <div class="dropdown-divider"></div>
                 <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
@@ -75,6 +76,21 @@
                         </div>
                     </ng-template>
                 </button>
+                <button (click)="open(warningList)" ngbDropdownItem>
+                    Warning List
+                    <ng-template #warningList let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Warnings</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-warning-list [showAll]="true" [dismissible]="false"></app-warning-list>
+                        </div>
+                    </ng-template>
+                </button>
             </ng-container>
             <button (click)="resetView()" class="btn btn-secondary" container="body"
                     ngbTooltip="Reset the view" placement="bottom"
@@ -83,7 +99,7 @@
             </button>
             <app-sankey-view-dropdown
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                 class="d-inline-block"
+                    class="d-inline-block"
                     [object]="object"
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
@@ -151,26 +167,27 @@
             </div>
         </app-module-header>
         <div class="relative w-100 h-100 overflow-hidden">
-            <app-sankey #sankey
-                        *ngIf="dataToRender | async"
-                        (linkClicked)="selectLink($event)"
-                        (nodeClicked)="selectNode($event)"
-                        (backgroundClicked)="closeDetailsPanel();resetSelection()"
-                        [nodeAlign]="nodeAlign"
-                        [data]="dataToRender | async"
-                        [normalizeLinks]="state.normalizeLinks"
-                        [selectedLinks]="selectedLinks | async"
-                        [selectedNodes]="selectedNodes | async"
-                        [searchedEntities]="entitySearchList | async"
-                        [focusedNode]="searchFocus">
-
-            </app-sankey>
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
-                      class="overlaying-panel"
             >
-                <as-split-area [order]="0"></as-split-area>
+                <as-split-area [order]="0">
+                    <app-sankey #sankey
+                                *ngIf="dataToRender | async"
+                                (linkClicked)="selectLink($event)"
+                                (nodeClicked)="selectNode($event)"
+                                (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                [nodeAlign]="nodeAlign"
+                                [data]="dataToRender | async"
+                                [normalizeLinks]="state.normalizeLinks"
+                                [selectedLinks]="selectedLinks | async"
+                                [selectedNodes]="selectedNodes | async"
+                                [searchedEntities]="entitySearchList | async"
+                                [focusedNode]="searchFocus">
+
+                    </app-sankey>
+<!--                    <app-warning-list></app-warning-list>-->
+                </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
                                 detailsPanel ? 'border' : 'as-hidden'

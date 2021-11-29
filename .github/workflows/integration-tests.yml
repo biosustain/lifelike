@@ -35,6 +35,11 @@ jobs:
                 docker-compose -f docker-compose.ci-test.yml up -d
                 docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 300 bin/wait-for-flask
 
+            - name: Show docker logs
+              if: ${{ failure() }}
+              run: |-
+                docker-compose -f docker-compose.ci-test.yml logs
+
             - name: Appserver Linting Checks
               run: |-
                 docker-compose -f docker-compose.ci-test.yml exec -T appserver mypy .
@@ -71,5 +76,5 @@ jobs:
                 cd client
                 yarn install
                 yarn build
-                yarn lint
+                yarn lint-ci
                 yarn test
