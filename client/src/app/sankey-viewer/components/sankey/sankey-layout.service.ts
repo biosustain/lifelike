@@ -86,10 +86,10 @@ export class SankeyLayoutService extends AttributeAccessors {
     [[this.x0, this.y0], [this.x1, this.y1]] = extent;
   }
 
-  x0 = 0;
-  y0 = 0;
-  x1 = 1;
-  y1 = 1; // extent
+  x0;
+  y0;
+  x1;
+  y1; // extent
   dy = 8;
   dx = 24; // nodeWidth
   py; // nodePadding
@@ -311,7 +311,7 @@ export class SankeyLayoutService extends AttributeAccessors {
       for (const node of current) {
         yield [node, x];
         for (const link of node[nextLinksProperty]) {
-            next.add(link[nextNodeProperty] as SankeyNode);
+          next.add(link[nextNodeProperty] as SankeyNode);
         }
       }
       if (++x > n) {
@@ -570,6 +570,14 @@ export class SankeyLayoutService extends AttributeAccessors {
       y -= _width;
     }
     return y;
+  }
+
+  rescaleNodePosition(graph, innerWidthChangeRatio) {
+    const {dx, x0} = this;
+    for (const node of graph.nodes) {
+      node._x0 = (node._x0 - x0) * innerWidthChangeRatio + x0;
+      node._x1 = node._x0 + dx;
+    }
   }
 
   calcLayout(graph) {
