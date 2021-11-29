@@ -5,6 +5,7 @@ import { first, last } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
@@ -32,7 +33,8 @@ const DEFAULT_FONT_SIZE = 12 * 1.60;
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   constructor(
     readonly truncatePipe: TruncatePipe,
-    readonly sankeyController: SankeyControllerService
+    readonly sankeyController: SankeyControllerService,
+    readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
   }

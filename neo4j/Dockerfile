@@ -1,4 +1,5 @@
 FROM neo4j:3.5.14
+LABEL app=kg-prototypes
 
 COPY --chown=neo4j:neo4j . /var/lib/neo4j
 

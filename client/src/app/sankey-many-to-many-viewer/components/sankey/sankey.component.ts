@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input, ElementRef } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input } from '@angular/core';
 
 import { select as d3_select } from 'd3-selection';
 import { isNil, compact } from 'lodash-es';
@@ -8,8 +7,6 @@ import { SankeyNode, SankeyLink } from 'app/shared-sankey/interfaces';
 import * as aligns from 'app/sankey-viewer/components/sankey/aligin';
 import { SankeyComponent } from 'app/sankey-viewer/components/sankey/sankey.component';
 import { uuidv4 } from 'app/shared/utils';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { SankeyLayoutService } from 'app/sankey-viewer/components/sankey/sankey-layout.service';
 
 import { SankeyManyToManyLink, SankeyManyToManyNode } from '../interfaces';
 

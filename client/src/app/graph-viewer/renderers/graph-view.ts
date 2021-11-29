@@ -216,7 +216,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       return associatedMapsRegex.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
-      return source.url.split('/').pop();
+      return associatedMapsRegex.exec(source.url)[1];
     });
   }
 

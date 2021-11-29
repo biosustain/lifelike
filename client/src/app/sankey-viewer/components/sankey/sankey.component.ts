@@ -225,9 +225,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   attachResizeObserver() {
     this.zone.runOutsideAngular(() =>
       // resize and listen to future resize events
-      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement).subscribe(({width, height}) =>
-        this.zone.run(() => this.onResize(width, height))
-      )
+      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
+        .subscribe(size =>
+          this.zone.run(() => this.onResize(size))
+        )
     );
   }
 
@@ -266,7 +267,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Graph sizing
-  onResize(width, height) {
+  onResize({width, height}) {
     const {zoom, margin} = this;
     const extentX = width - margin.right;
     const extentY = height - margin.bottom;
@@ -281,9 +282,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
+    const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
     this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
+    const [innerWidth, innerHeight] = this.sankey.size;
 
-    return this.updateLayout(this.data).then(this.updateDOM.bind(this));
+    const parsedData = innerHeight / prevInnerHeight === 1 ?
+      this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
+      this.updateLayout(this.data);
+    return parsedData.then(data => this.updateDOM(data));
   }
 
   // endregion
@@ -730,8 +736,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     }
   }
 
-  // endregion
-
   /**
    * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
    * and adjustments from outer scope
@@ -742,6 +746,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         if (!data._precomputedLayout) {
           this.sankey.calcLayout(data);
         }
+        resolve(data);
+      }
+    );
+  }
+
+  scaleLayout(data, changeRatio) {
+    return new Promise(resolve => {
+        this.sankey.rescaleNodePosition(data, changeRatio);
         resolve(data);
       }
     );
