@@ -58,8 +58,6 @@ services:
             - "7687:7687"
         networks:
             - backend
-        volumes:
-            - ./db/logs:/logs
 
     elasticsearch:
         container_name: elasticsearch
