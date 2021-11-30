@@ -3,12 +3,7 @@ from unittest.mock import patch
 
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.services.elastic import ElasticService
-from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
-from neo4japp.services.file_types.providers import (
-    EnrichmentTableTypeProvider,
-    MapTypeProvider,
-    PDFTypeProvider
-)
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
 def generate_headers(jwt_token):
@@ -40,28 +35,43 @@ def text_field_boosts():
 
 
 @pytest.fixture(scope='function')
-def keyword_fields():
-    return []
+def return_fields():
+    return ['id']
 
 
 @pytest.fixture(scope='function')
-def keyword_field_boosts():
-    return {}
+def filter_(fix_project):
+    return [
+            {
+                'bool': {
+                    'should': [
+                        {'terms': {'project_id': [fix_project.id]}},
+                        {'term': {'public': True}}
+                    ]
+                }
+            },
+            {
+                'bool': {
+                    'must_not': [
+                        {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
+                    ]
+                }
+            }
+        ]
 
 
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
+# @pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_user_can_search_content(
     client,
     session,
     test_user,
     test_user_with_pdf,
-    fix_project,
     elastic_service,
     text_fields,
     text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
     highlight,
+    return_fields,
+    filter_
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -69,9 +79,9 @@ def test_user_can_search_content(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
+        return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-        resp = client.post(
+        resp = client.get(
             f'/search/content',
             headers=headers,
             data={
@@ -83,132 +93,31 @@ def test_user_can_search_content(
         )
 
         assert resp.status_code == 200
+
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
-            search_term='BOLA3',
+            user_search_query='BOLA3',
             offset=(1 - 1) * 10,
             limit=10,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
+            return_fields=return_fields,
+            filter_=filter_,
+            highlight=highlight,
         )
 
 
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
-def test_user_can_search_content_with_advanced_args(
-    client,
-    session,
-    test_user,
-    test_user_with_pdf,
-    fix_project,
-    elastic_service,
-    text_fields,
-    text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
-    highlight,
-):
-    login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['accessToken']['token'])
-
-    with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
-    ) as mock_search:
-
-        resp = client.post(
-            f'/search/content',
-            headers=headers,
-            data={
-                'q': 'BOLA3',
-                'limit': 10,
-                'page': 1,
-                'types': 'enrichment-table;map;pdf',
-                'projects': '',
-                'phrase': '',
-                'wildcard': '',
-            },
-            content_type='multipart/form-data'
-        )
-
-        assert resp.status_code == 200
-        mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
-            search_term='BOLA3',
-            offset=(1 - 1) * 10,
-            limit=10,
-            text_fields=text_fields,
-            text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
-        )
-
-
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_user_can_search_content_with_single_types(
     client,
     session,
     test_user,
     test_user_with_pdf,
-    fix_project,
     elastic_service,
     text_fields,
     text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
     highlight,
+    return_fields,
+    filter_
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -216,10 +125,10 @@ def test_user_can_search_content_with_single_types(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
+        return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.post(
+        resp = client.get(
             f'/search/content',
             headers=headers,
             data={
@@ -234,46 +143,28 @@ def test_user_can_search_content_with_single_types(
         assert resp.status_code == 200
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
-            search_term='',
+            user_search_query='(type:pdf)',
             offset=(1 - 1) * 10,
             limit=10,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {'terms': {'mime_type': [PDFTypeProvider.MIME_TYPE]}},
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
+            return_fields=return_fields,
+            filter_=filter_,
+            highlight=highlight,
         )
 
 
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
 def test_user_can_search_content_with_multiple_types(
     client,
     session,
     test_user,
     test_user_with_pdf,
-    fix_project,
     elastic_service,
     text_fields,
     text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
     highlight,
+    return_fields,
+    filter_
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -281,17 +172,17 @@ def test_user_can_search_content_with_multiple_types(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
+        return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.post(
+        resp = client.get(
             f'/search/content',
             headers=headers,
             data={
-                'q': '',
+                'q': 'BOLA3',
+                'limit': 10,
+                'page': 1,
                 'types': 'enrichment-table;map;pdf',
-                'limit': 10,
-                'page': 1
             },
             content_type='multipart/form-data'
         )
@@ -299,54 +190,28 @@ def test_user_can_search_content_with_multiple_types(
         assert resp.status_code == 200
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
-            search_term='',
+            user_search_query='BOLA3 (type:enrichment-table OR type:map OR type:pdf)',
             offset=(1 - 1) * 10,
             limit=10,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
+            return_fields=return_fields,
+            filter_=filter_,
+            highlight=highlight,
         )
 
 
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
-def test_user_can_search_content_with_project(
+def test_user_can_search_content_with_folder(
     client,
     session,
     test_user,
     test_user_with_pdf,
-    fix_project,
     elastic_service,
     text_fields,
     text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
     highlight,
+    return_fields,
+    filter_
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -354,15 +219,17 @@ def test_user_can_search_content_with_project(
     with patch.object(
         ElasticService,
         'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
+        return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.post(
+        resp = client.get(
             f'/search/content',
             headers=headers,
             data={
                 'q': '',
-                'projects': f'{fix_project.name}',
+                # We don't care about actually finding  a folder with this hash id in this test,
+                # just that the param is properly handled
+                'folders': 'ABCDEF123456',
                 'limit': 10,
                 'page': 1
             },
@@ -372,180 +239,15 @@ def test_user_can_search_content_with_project(
         assert resp.status_code == 200
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
-            search_term='',
+            user_search_query='',
             offset=(1 - 1) * 10,
             limit=10,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'must': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
+            return_fields=return_fields,
+            filter_=filter_,
+            highlight=highlight,
         )
 
-
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
-def test_user_can_search_content_with_phrase(
-    client,
-    session,
-    test_user,
-    test_user_with_pdf,
-    fix_project,
-    elastic_service,
-    text_fields,
-    text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
-    highlight,
-):
-    login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['accessToken']['token'])
-
-    with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
-    ) as mock_search:
-
-        resp = client.post(
-            f'/search/content',
-            headers=headers,
-            data={
-                'q': '',
-                'phrase': 'BOLA3',
-                'limit': 10,
-                'page': 1
-            },
-            content_type='multipart/form-data'
-        )
-
-        assert resp.status_code == 200
-        mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
-            search_term='"BOLA3"',
-            offset=(1 - 1) * 10,
-            limit=10,
-            text_fields=text_fields,
-            text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
-        )
-
-
-@pytest.mark.skip(reason='Skipping until Neo4j container is updated')
-def test_user_can_search_content_with_wildcard(
-    client,
-    session,
-    test_user,
-    test_user_with_pdf,
-    fix_project,
-    elastic_service,
-    text_fields,
-    text_field_boosts,
-    keyword_fields,
-    keyword_field_boosts,
-    highlight,
-):
-    login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['accessToken']['token'])
-
-    with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
-    ) as mock_search:
-
-        resp = client.post(
-            f'/search/content',
-            headers=headers,
-            data={
-                'q': 'B*3',
-                'limit': 10,
-                'page': 1
-            },
-            content_type='multipart/form-data'
-        )
-
-        assert resp.status_code == 200
-        mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
-            search_term='B*3',
-            offset=(1 - 1) * 10,
-            limit=10,
-            text_fields=text_fields,
-            text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            use_synonyms=True,
-            query_filter={
-                'bool': {
-                    'must': [
-                        {
-                            'terms': {
-                                'mime_type': [
-                                    EnrichmentTableTypeProvider.MIME_TYPE,
-                                    MapTypeProvider.MIME_TYPE,
-                                    PDFTypeProvider.MIME_TYPE,
-                                ]
-                            }
-                        },
-                        {
-                            'bool': {
-                                'should': [
-                                    {'terms': {'project_id': [fix_project.id]}},
-                                    {'term': {'public': True}}
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            highlight=highlight
-        )
+# TODO: Should write a test that actually finds the given folder hash id and updates the search
+# filter accordingly
