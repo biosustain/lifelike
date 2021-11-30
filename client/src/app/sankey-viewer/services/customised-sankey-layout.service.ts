@@ -5,6 +5,7 @@ import { first, last } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
@@ -32,7 +33,8 @@ const DEFAULT_FONT_SIZE = 12 * 1.60;
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   constructor(
     readonly truncatePipe: TruncatePipe,
-    readonly sankeyController: SankeyControllerService
+    readonly sankeyController: SankeyControllerService,
+    readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
   }
@@ -71,9 +73,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       truncatePipe: {transform}
     } = this;
     if (enabled) {
-      return n => transform(nodeLabel(n), value);
+      return (d, i?, n?) => transform(nodeLabel(d, i, n), value);
     } else {
-      return n => nodeLabel(n);
+      return (d, i?, n?) => nodeLabel(d, i, n);
     }
   }
 
@@ -92,9 +94,9 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       nodeLabel
     } = this;
     if (enabled) {
-      return n => nodeLabel(n).length > value;
+      return (d, i?, n?) => nodeLabel(d, i, n).length > value;
     } else {
-      return _ => false;
+      return () => false;
     }
   }
 
@@ -128,8 +130,8 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   normalizeLinks = false;
 
-  columns;
-  columnsWithLinkPlaceholders;
+  columns: SankeyNode[][] = [];
+  columnsWithLinkPlaceholders: SankeyNode[][] = [];
 
   ky; // y scaling factor (_value * ky = height)
 

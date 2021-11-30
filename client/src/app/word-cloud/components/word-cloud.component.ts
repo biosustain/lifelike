@@ -14,6 +14,7 @@ import { AnnotationsService } from 'app/file-browser/services/annotations.servic
 import { NodeLegend } from 'app/interfaces';
 
 import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
+import { WordCloudAnnotationFilterEntityWithLayout } from '../interfaces';
 
 @Component({
   selector: 'app-word-cloud',
@@ -296,7 +297,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
    * and added words will be drawn.
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
-  private updateWordCloudElements(words: WordCloudAnnotationFilterEntity[]) {
+  private updateWordCloudElements(words: WordCloudAnnotationFilterEntityWithLayout[]) {
     this.updateWordVisibility(words);
 
     // Get grouping element
@@ -320,7 +321,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     };
 
     // Get the word elements
-    const wordElements = g.selectAll('text').data(words, (d) => d.text);
+    const wordElements = g.selectAll<any, WordCloudAnnotationFilterEntityWithLayout>('text').data(words, d => d.text);
 
     // Add any new words
     wordElements

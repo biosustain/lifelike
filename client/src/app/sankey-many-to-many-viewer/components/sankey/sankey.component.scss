@@ -20,6 +20,17 @@ app-sankey-many-to-many {
     stroke: darken($color, $darken-link-stroke);
   }
 
+  @keyframes searchBlink {
+    50% {
+      fill: red;
+    }
+  }
+
+  @mixin searchBlink {
+    animation-name: searchBlink;
+    animation-duration: 750ms;
+  }
+
   position: relative;
   //touch-action: none;
   //user-select: none;
@@ -105,6 +116,7 @@ app-sankey-many-to-many {
           &[focused=true] {
             .text-shadow {
               fill: rgba(187, 187, 187, 0.85);
+              @include searchBlink();
             }
 
             text {
@@ -199,6 +211,7 @@ app-sankey-many-to-many {
 
         &[focused=true] {
           fill: $search-color;
+          @include searchBlink();
         }
       }
     }
