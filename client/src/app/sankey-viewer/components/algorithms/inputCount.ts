@@ -77,7 +77,7 @@ export function getLinkLayers<Link extends SankeyLink>(
     const maxLayer = Math.max(sourceLayer, targetLayer);
     for (let layer = minLayer; layer < maxLayer; layer++) {
       const layerLinks = linkLayers.getSet(layer, []);
-      layerLinks.push(link as SankeyLink);
+      layerLinks.push(link as Link);
     }
   });
   return linkLayers;
