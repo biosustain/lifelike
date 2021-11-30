@@ -4,8 +4,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY } from 'rxjs';
-import { map, delay, catchError, auditTime } from 'rxjs/operators';
-import { isNull, compact, isNumber, isNil } from 'lodash-es';
+import { map, delay, catchError, auditTime, tap } from 'rxjs/operators';
+import { isNull, compact, isNil } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -62,7 +62,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     zone.runOutsideAngular(() =>
       this.sankeySearch.matches.pipe(
-        auditTime(500)
+        auditTime(500),
+        tap(matches => {
+          const {options, state} = this.sankeyController;
+          return matches
+            .sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)
+            .filter(({networkTraceIdx}) => isNil(networkTraceIdx) || networkTraceIdx !== state.networkTraceIdx)
+            .map(match => {
+              if (!isNil(match.networkTraceIdx)) {
+                match.networkTrace = options.networkTraces[match.networkTraceIdx];
+              }
+              return match;
+            });
+        })
       ).subscribe(matches => {
         this.zone.run(() =>
           this.entitySearchList.next(matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
@@ -178,7 +190,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   set entitySearchListIdx(idx) {
     this._entitySearchListIdx = idx;
-    this.setSearchFocus(idx);
+    const {networkTraceIdx} = this.entitySearchList.value[idx] || {};
+    if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
+      this.selectNetworkTrace(networkTraceIdx);
+    } else {
+      this.setSearchFocus(idx);
+    }
   }
 
   searchFocus = undefined;
@@ -474,15 +491,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   panToEntity(entity) {
     // @ts-ignore
-    this.sankey.sankeySelection.transition().call(
-      this.sankey.zoom.translateTo,
-      // x
-      (entity._x0 !== undefined) ?
-        (entity._x0 + entity._x1) / 2 :
-        (entity._source._x1 + entity._target._x0) / 2,
-      // y
-      (entity._y0 + entity._y1) / 2
-    );
+    if (entity) {
+      this.sankey.sankeySelection.transition().call(
+        this.sankey.zoom.translateTo,
+        // x
+        (entity._x0 !== undefined) ?
+          (entity._x0 + entity._x1) / 2 :
+          (entity._source._x1 + entity._target._x0) / 2,
+        // y
+        (entity._y0 + entity._y1) / 2
+      );
+    }
   }
 
   resolveMatchToEntity({nodeId, linkId}) {

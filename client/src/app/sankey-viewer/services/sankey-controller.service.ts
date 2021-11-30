@@ -299,10 +299,10 @@ export class SankeyControllerService {
       ...networkTraceLinks.reduce((o, link) => {
         let {_source = link.source, _target = link.target} = link;
         if (typeof _source !== 'object') {
-          _source = SankeyLayoutService.find(nodeById, String(_source));
+          _source = SankeyLayoutService.find(nodeById, _source);
         }
         if (typeof _target !== 'object') {
-          _target = SankeyLayoutService.find(nodeById, String(_target));
+          _target = SankeyLayoutService.find(nodeById, _target);
         }
         o.add(_source);
         o.add(_target);
@@ -593,10 +593,10 @@ export class SankeyControllerService {
 
   preprocessData(content: SankeyData) {
     content.nodes.forEach(n => {
-      n._id = String(n.id);
+      n._id = n.id;
     });
     content.links.forEach((l, index) => {
-      l._id = String(index);
+      l._id = index;
     });
     content.graph.trace_networks.forEach(tn => {
       let maxVal = max(tn.traces.map(({group}) => isNil(group) ? -1 : group));
@@ -691,10 +691,10 @@ export class SankeyControllerService {
       nodeValueAccessor, linkValueAccessor
     } = this;
     if (nodeValueAccessor.postprocessing) {
-      Object.assign(data, nodeValueAccessor.postprocessing.apply(this, data) || {});
+      Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) || {});
     }
     if (linkValueAccessor.postprocessing) {
-      Object.assign(data, linkValueAccessor.postprocessing.apply(this, data) || {});
+      Object.assign(data, linkValueAccessor.postprocessing.call(this, data) || {});
     }
     if (minValue < 0) {
       data.nodes.forEach(n => {
