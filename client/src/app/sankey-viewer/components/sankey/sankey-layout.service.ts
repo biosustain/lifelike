@@ -165,10 +165,10 @@ export class SankeyLayoutService extends AttributeAccessors {
       const {source, target} = link;
       let {_source, _target} = link;
       if (typeof _source !== 'object') {
-        _source = link._source = typeof source !== 'object' ? find(nodeById, String(source)) : source;
+        _source = link._source = typeof source !== 'object' ? find(nodeById, source) : source;
       }
       if (typeof _target !== 'object') {
-        _target = link._target = typeof target !== 'object' ? find(nodeById, String(target)) : target;
+        _target = link._target = typeof target !== 'object' ? find(nodeById, target) : target;
       }
       _source._sourceLinks.push(link);
       _target._targetLinks.push(link);
