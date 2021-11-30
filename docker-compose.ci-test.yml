@@ -20,7 +20,7 @@ services:
         ports:
             - "5000:5000"
         environment:
-            - NEO4J_HOST=n4j-database
+            - NEO4J_HOST=graphdatabase
             - NEO4J_AUTH=neo4j/password
             - NEO4J_SCHEME=bolt
             - NEO4J_PORT=7687
@@ -45,23 +45,19 @@ services:
             - frontend
             - backend
         depends_on:
-            - database
+            - graphdatabase
             - pgdatabase
 
-    database:
-        container_name: n4j-database
+    graphdatabase:
+        container_name: graphdatabase
         environment:
             - NEO4J_AUTH=neo4j/password
-        image: neo4j:3.5.14
+        image: neo4j:4.2-community
         ports:
             - "7474:7474"
             - "7687:7687"
         networks:
             - backend
-        volumes:
-            - ./db/data:/data
-            - ./db/logs:/logs
-            - ./db/plugins:/plugins
 
     elasticsearch:
         container_name: elasticsearch

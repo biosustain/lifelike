@@ -11,6 +11,11 @@ public class GoogleCloudStorage extends CloudStorage {
     }
 
     @Override
+    public void downloadToFile(String fileName, String saveDir) throws IOException {
+        //
+    }
+
+    @Override
     public void writeToFile(ByteArrayOutputStream bao, String localSaveDir) throws IOException {
         //
     }
