@@ -358,10 +358,6 @@ http:
       loadBalancer:
         servers:
           - url: <INTERNAL IP ADDRESS HERE>
-    ***ARANGO_DB_NAME***-qa-service:
-      loadBalancer:
-        servers:
-          - url: "http://10.128.15.243"
     ...
 
 ```
