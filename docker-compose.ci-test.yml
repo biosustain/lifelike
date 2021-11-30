@@ -5,8 +5,8 @@ version: '3.5'
 services:
     pgdatabase:
         command: postgres -c max_wal_size=2GB -c log_statement='all'
-        container_name: pgdatabase
-        image: postgres:11
+        container_name: pg-database
+        image: postgres:10.2
         networks:
             - backend
         ports:
@@ -58,8 +58,6 @@ services:
             - "7687:7687"
         networks:
             - backend
-        volumes:
-            - ./db/logs:/logs
 
     elasticsearch:
         container_name: elasticsearch
