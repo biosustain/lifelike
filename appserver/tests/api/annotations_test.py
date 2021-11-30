@@ -25,10 +25,12 @@ def test_user_can_get_gene_annotations_from_pdf(
         headers=headers,
         content_type='application/json',
     )
+
     assert response.status_code == 200
     assert response.get_data() == b'gene_id\tgene_name\torganism_id\torganism_name\t' \
                                   b'gene_annotation_count\r\n' + \
-                                  b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
+                                  b'945771\tcysB\t511145\t' + \
+                                  b'Escherichia coli str. K-12 substr. MG1655\t1\r\n'
 
 
 def test_user_can_get_all_annotations_from_pdf(
@@ -48,8 +50,9 @@ def test_user_can_get_all_annotations_from_pdf(
     )
     assert response.status_code == 200
     assert response.get_data() == b'entity_id\ttype\ttext\tprimary_name\tcount\r\n' + \
-                                  b'59272\tGene\tace2\tACE2\t1\r\n' + \
-                                  b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
+                                  b'945771\tGene\tcysB\tcysB\t1\r\n' + \
+                                  b'511145\tSpecies\te. coli\t' + \
+                                  b'Escherichia coli str. K-12 substr. MG1655\t1\r\n'
 
 
 def test_user_can_get_global_inclusions(

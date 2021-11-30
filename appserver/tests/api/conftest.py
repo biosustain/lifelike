@@ -144,18 +144,18 @@ def mock_get_combined_annotations_result(monkeypatch):
             {
                 'meta': {
                     'type': EntityType.GENE.value,
-                    'id': '59272',
+                    'id': '945771',
                 },
-                'keyword': 'ace2',
-                'primaryName': 'ACE2',
+                'keyword': 'cysB',
+                'primaryName': 'cysB',
             },
             {
                 'meta': {
                     'type': EntityType.SPECIES.value,
-                    'id': '9606',
+                    'id': '511145',
                 },
-                'keyword': 'human',
-                'primaryName': 'Homo Sapiens',
+                'keyword': 'e. coli',
+                'primaryName': 'Escherichia coli str. K-12 substr. MG1655',
             },
         ]
 
@@ -171,10 +171,10 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
     def get_organisms_from_gene_ids_result(*args, **kwargs):
         return [
             {
-                'gene_id': '59272',
-                'gene_name': 'ACE2',
-                'taxonomy_id': '9606',
-                'species_name': 'Homo sapiens',
+                'gene_id': '945771',
+                'gene_name': 'cysB',
+                'taxonomy_id': '511145',
+                'species_name': 'Escherichia coli str. K-12 substr. MG1655',
             }
         ]
 
@@ -293,7 +293,7 @@ def test_user_with_pdf(
         session, test_user: AppUser,
         fix_directory: Files,
         pdf_dir: str) -> Files:
-    pdf_path = os.path.join(pdf_dir, 'example3.pdf')
+    pdf_path = os.path.join(pdf_dir, 'example4.pdf')
 
     with open(pdf_path, 'rb') as pdf_file:
         pdf_content = pdf_file.read()
@@ -305,13 +305,13 @@ def test_user_with_pdf(
         )
 
         fallback = FallbackOrganism(
-            organism_name='Homo sapiens',
-            organism_synonym='Homo sapiens',
-            organism_taxonomy_id='9606'
+            organism_name='Escherichia coli str. K-12 substr. MG1655',
+            organism_synonym='Escherichia coli',
+            organism_taxonomy_id='511145'
         )
 
         fake_file = Files(
-            filename='example3.pdf',
+            filename='example4.pdf',
             content_id=file_content.id,
             user_id=test_user.id,
             mime_type=PDFTypeProvider.MIME_TYPE,
