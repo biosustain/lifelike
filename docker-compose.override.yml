@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
     pgdatabase:
-        container_name: pg-database
+        container_name: pgdatabase
         image: postgres:11
         command: postgres -c max_wal_size=2GB -c log_statement='all'
         environment:
@@ -12,17 +12,13 @@ services:
         networks:
             - backend
 
-    database:
-        container_name: n4j-database
-        build: ./neo4j
+    graphdatabase:
+        container_name: graphdatabase
+        build: ./graph-db/neo4j
         environment:
             - NEO4J_AUTH=neo4j/password
         volumes:
-            - ./neo4j/data:/data
-            - ./neo4j/logs:/logs
-            - ./neo4j/import:/import
-            - ./neo4j/plugins:/plugins
-            - ./neo4j/backups:/backups
+            - ./graph-db/neo4j/logs:/logs
         ports:
             - "7474:7474"
             - "7687:7687"
@@ -61,7 +57,7 @@ services:
             - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
             - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=n4j-database
+            - NEO4J_HOST=graphdatabase
             - NEO4J_AUTH=neo4j/password
             - NEO4J_PORT=7687
             # Redis
@@ -87,7 +83,7 @@ services:
             - backend
         depends_on:
             - elasticsearch
-            - database
+            - graphdatabase
             - pgdatabase
             - redis
             - pdfparser
@@ -105,7 +101,7 @@ services:
             - FLASK_ENV=development
             # Neo4j
             - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=n4j-database
+            - NEO4J_HOST=graphdatabase
             - NEO4J_AUTH=neo4j/password
             - NEO4J_PORT=7687
             # Redis
@@ -122,7 +118,7 @@ services:
         networks:
             - backend
         depends_on:
-            - database
+            - graphdatabase
             - redis
 
     cache-invalidator:
@@ -132,7 +128,7 @@ services:
             - LOG_LEVEL=debug
             # Neo4j
             - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=n4j-database
+            - NEO4J_HOST=graphdatabase
             - NEO4J_AUTH=neo4j/password
             - NEO4J_PORT=7687
             # Redis
@@ -146,7 +142,7 @@ services:
             - backend
         depends_on:
             - redis
-            - database
+            - graphdatabase
 
     client:
         container_name: client

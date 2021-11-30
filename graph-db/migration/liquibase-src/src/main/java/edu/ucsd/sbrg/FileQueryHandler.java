@@ -15,7 +15,6 @@ import liquibase.resource.ResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -159,10 +158,10 @@ public class FileQueryHandler implements CustomTaskChange {
         String[] header = null;
         try {
             if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
-                System.out.println("Downloading file " + this.getFileName() + " from Azure Cloud.");
-                cloudStorage.writeToFile((ByteArrayOutputStream) cloudStorage.download(this.getFileName()), this.getLocalSaveFileDir());
+                System.out.println("Downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
+                cloudStorage.downloadToFile(fileExtract.getFileName(), fileExtract.getFileDir());
+                System.out.println("Finished downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
             }
-//            content = fileExtract.getFileContent();
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
             Scanner sc = new Scanner(input);
             sc.useDelimiter(fileExtract.getDelimiter());
