@@ -6,6 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3210 load UniProt constraints on date 10262021" author="Binh Vu">
+    <validCheckSum>0c4ad950-9a0c-4ac7-8335-19eeaa8e6e8f</validCheckSum>
     <comment>Create constraints and indexes for UniProt data</comment>
     <sql>
     CREATE CONSTRAINT constraint_uniprot_id IF NOT EXISTS ON (n:db_UniProt) ASSERT n.eid IS UNIQUE;
@@ -16,6 +17,7 @@ CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein on date 10262021" author="Binh Vu">
+    <validCheckSum>02769fda-b255-4629-bf28-976150a244ca</validCheckSum>
     <comment>
         
     </comment>
@@ -40,6 +42,7 @@ SET n:Protein,n.name=row.name,n.tax_id=row.tax_id,n.pathway=row.pathway,n.functi
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein/gene on date 10262021" author="Binh Vu">
+    <validCheckSum>e0466a1b-d56e-4978-bcbb-1577533a2bc8</validCheckSum>
     <comment>
         
     </comment>
@@ -64,6 +67,7 @@ MERGE (a)-[r:HAS_GENE]->(b)
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein/gene synonyms  on date 10262021" author="Binh Vu">
+    <validCheckSum>4ddc67ce-ccf9-4176-9f8c-783c22fb6902</validCheckSum>
     <comment>
         
     </comment>
@@ -90,6 +94,7 @@ SET r.type=row.type
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein/gene synonyms derived on date 10262021" author="Binh Vu">
+    <validCheckSum>c90663d8-115e-410e-b7fc-d61a82ca5a15</validCheckSum>
     <comment>
         
     </comment>
@@ -116,6 +121,7 @@ SET r.type=row.type
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein/synonym relationship on date 10262021" author="Binh Vu">
+    <validCheckSum>96335d39-0116-441e-9cec-f5eb49c409c8</validCheckSum>
     <comment>Create a synonym relationships for Protein id and name</comment>
     <sql>
     
@@ -128,6 +134,7 @@ SET r.type=row.type
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein-GO on date 10262021" author="Binh Vu">
+    <validCheckSum>bfc3c453-79df-4280-865e-f3b90eabf8c3</validCheckSum>
     <comment>
         Create relationship between protein and GO
     </comment>
@@ -152,6 +159,7 @@ MERGE (a)-[r:GO_LINK]->(b)
   </changeSet>
 
   <changeSet id="LL-3210 load UniProt protein/taxonomy relationship on date 10262021" author="Binh Vu">
+    <validCheckSum>6ffa9cd1-7fa6-46f6-9fcf-9d1d17d54121</validCheckSum>
     <comment>Create a synonym relationship for Protein and Taxonomy</comment>
     <sql>
     
