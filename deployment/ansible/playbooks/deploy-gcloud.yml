@@ -202,7 +202,7 @@
     - name: Clean up Neo4j liquibase files
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "rm -r {{ deploy_dir }}/liquibase-data-files/*"
+        cmd: "rm -rf {{ deploy_dir }}/liquibase-data-files/*"
       tags:
         - deploy
 
