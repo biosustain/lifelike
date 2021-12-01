@@ -10,6 +10,22 @@
     And separate changeSets grouping by empty new line space
   -->
 
+  <changeSet id="LL-3625-create-index-on-original-entity-types" author="Binh Vu">
+    <comment>Create an temp index to to speed things up.</comment>
+    <sql>
+      CREATE INDEX index_anatomy_original_entity_types IF NOT EXISTS FOR (n:Anatomy) ON (n.original_entity_types);
+      CREATE INDEX index_chemical_original_entity_types IF NOT EXISTS FOR (n:Chemical) ON (n.original_entity_types);
+      CREATE INDEX index_compound_original_entity_types IF NOT EXISTS FOR (n:Compound) ON (n.original_entity_types);
+      CREATE INDEX index_disease_original_entity_types IF NOT EXISTS FOR (n:Disease) ON (n.original_entity_types);
+      CREATE INDEX index_food_original_entity_types IF NOT EXISTS FOR (n:Food) ON (n.original_entity_types);
+      CREATE INDEX index_gene_original_entity_types IF NOT EXISTS FOR (n:Gene) ON (n.original_entity_types);
+      CREATE INDEX index_phenomena_original_entity_types IF NOT EXISTS FOR (n:Phenomena) ON (n.original_entity_types);
+      CREATE INDEX index_phenotype_original_entity_types IF NOT EXISTS FOR (n:Phenotype) ON (n.original_entity_types);
+      CREATE INDEX index_protein_original_entity_types IF NOT EXISTS FOR (n:Protein) ON (n.original_entity_types);
+      CREATE INDEX index_tax_original_entity_types IF NOT EXISTS FOR (n:Taxonomy) ON (n.original_entity_types);
+    </sql>
+  </changeSet>
+
   <changeSet id="LL-3625-add-original-entity-types-mesh" author="Binh Vu">
     <comment>
       Add new property original_entity_types to entity nodes.
@@ -107,8 +123,8 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 100000',
-        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:10000})
+        'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:100000})
         
       "
       conditionQuery="MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
@@ -159,8 +175,8 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 100000',
-        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:10000})
+        'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:100000})
         
       "
       conditionQuery="MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
