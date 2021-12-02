@@ -10,10 +10,10 @@
     <ng-container *ngIf="status.resultsShown">
         <app-module-header [object]="object"
                            (dragStarted)="dragStarted($event)">
-              <app-object-menu *ngIf="object" [object]="object" [forEditing]="true"
+              <app-module-menu *ngIf="object" [object]="object" [forEditing]="true"
                                [showOpen]="false" [showDelete]="false"
                                (objectRefresh)="requestRefresh()">
-              </app-object-menu>
+              </app-module-menu>
             <div class="btn-group ml-auto mr-1 d-flex align-items-stretch">
                 <div ngbDropdown container="body" class="d-flex align-items-stretch btn-group">
                     <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle>

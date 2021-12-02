@@ -11,11 +11,11 @@
         <app-module-header
                 [object]="result.object.value"
                 (dragStarted)="dragStarted($event, result.object.value)">
-                  <app-object-menu [object]="result.object.value" [forEditing]="true"
+                  <app-module-menu [object]="result.object.value" [forEditing]="true"
                                    [showOpen]="false" [showDelete]="false"
                                    [showRestore]="true" (objectRestore)="restore($event)"
                                    (objectUpdate)="objectUpdate()">
-                  </app-object-menu>
+                  </app-module-menu>
             <div *ngIf="queuedChanges$.value">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
