@@ -117,13 +117,13 @@ export class SankeyViewDropdownComponent implements OnChanges {
 
   changeViewBaseIfNeeded(base, params?): boolean {
     if (this.activeViewBase !== base) {
-      this.openBaseView(base);
+      this.openBaseView(base, params);
       return true;
     }
   }
 
-  applyView(view: SankeyApplicableView) {
-    if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: this.activeViewName})) {
+  applyView(viewName, view: SankeyApplicableView) {
+    if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: viewName})) {
       const {state = {}, nodes = {}, links = {}} = view;
       mergeDeep(this.sankeyController.state, state);
       const graph = this.sankeyController.computeData();
@@ -171,7 +171,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     const view = this.views[viewName];
     if (view) {
       this.activeViewNameChange.emit(viewName);
-      this.applyView(view);
+      this.applyView(viewName, view);
     } else {
       this.warningController.warn(`View ${viewName} has not been found in file.`);
     }
@@ -194,7 +194,9 @@ export class SankeyViewDropdownComponent implements OnChanges {
     if (!this.sankeyController.allData._views) {
       this.sankeyController.allData._views = {};
     }
-    this.sankeyController.allData._views['Custom View'] = this.createView();
+    const savedViewName = 'Custom View';
+    this.sankeyController.allData._views[savedViewName] = this.createView();
+    this.sankeyController.state.viewName = savedViewName;
     this.viewDataChanged.emit();
   }
 
