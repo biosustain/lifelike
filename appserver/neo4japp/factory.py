@@ -4,9 +4,9 @@ import os
 import sentry_sdk
 import traceback
 
+from elasticapm.contrib.flask import ElasticAPM
 from neo4j.exceptions import ServiceUnavailable
 from functools import partial
-
 from flask import (
     current_app,
     Flask,
@@ -34,6 +34,8 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
+
+apm = ElasticAPM()
 
 # Set the following modules to have a minimum of log level 'WARNING'
 module_logs = [
@@ -192,6 +194,11 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(BrokenPipeError, handle_error)
     app.register_error_handler(ServiceUnavailable, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
+
+    # Initialize Elastic APM if configured
+    if os.getenv('ELASTIC_APM_SERVER_URL'):
+        apm.init_app(app, service_name='***ARANGO_DB_NAME***-appserver', environment=os.getenv('FLASK_ENV'))
+
     return app
 
 
