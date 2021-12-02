@@ -15,6 +15,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
+import { ViewService } from 'app/file-browser/services/view.service';
 
 import { SplitComponent } from 'angular-split';
 
@@ -30,7 +31,8 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   panes$: Observable<Pane[]>;
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
-              protected readonly modalService: NgbModal) {
+              protected readonly modalService: NgbModal,
+              protected readonly viewService: ViewService) {
     this.panes$ = this.workspaceManager.panes$;
   }
 
@@ -64,9 +66,18 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   copyLinkToTab(pane: Pane, tab: Tab) {
-    const url = new URL(tab.url.replace(/^\/+/, '/'), window.location.href).href;
     const modalRef = this.modalService.open(CopyLinkDialogComponent);
-    modalRef.componentInstance.url = url;
+    modalRef.componentInstance.url = 'Generating link...';
+    const urlSubscription = this.viewService.getShareableLink(tab.getComponent(), tab.url).subscribe(({href}) => {
+      modalRef.componentInstance.url = href;
+    });
+    // todo: use hidden after update of ng-bootstrap >= 8.0.0
+    // https://ng-bootstrap.github.io/#/components/modal/api#NgbModalRef
+    modalRef.result.then(
+      () => urlSubscription.unsubscribe(),
+      () => urlSubscription.unsubscribe()
+    );
+    return modalRef.result;
   }
 
   closeTab(pane: Pane, tab: Tab) {

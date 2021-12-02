@@ -112,6 +112,8 @@ export interface SankeyState {
     value: number
   } | undefined;
   fontSizeScale: number;
+  viewName?: string;
+  baseViewName?: string;
 }
 
 // endregion

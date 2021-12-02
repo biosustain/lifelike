@@ -26,8 +26,8 @@
                 <i class="fas fa-chevron-down fa-fw text-icon"></i>
             </a>
             <div ngbDropdownMenu>
-                <ng-content select="app-object-menu"></ng-content>
-                <ng-content select="[objectMenuAdditions]"></ng-content>
+                <ng-content select="app-module-menu"></ng-content>
+                <ng-content select="[moduleMenuAdditions]"></ng-content>
             </div>
         </div>
         <button class="btn btn-secondary ml-1" (click)="openNewWindow()"  *ngIf="showNewWindowButton">

@@ -10,12 +10,12 @@
     <ng-container *ngIf="object">
         <app-module-header [object]="object"
                            (dragStarted)="dragStarted($event)">
-            <app-object-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
+            <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
-            </app-object-menu>
+            </app-module-menu>
             <app-warning-pill></app-warning-pill>
-            <ng-container objectMenuAdditions>
+            <ng-container moduleMenuAdditions>
                 <div class="dropdown-divider"></div>
                 <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
                     Open logs
@@ -101,6 +101,7 @@
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
                     class="d-inline-block"
                     [object]="object"
+                    *ngIf="allData"
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"

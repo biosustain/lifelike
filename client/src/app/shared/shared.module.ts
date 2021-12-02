@@ -80,6 +80,7 @@ import { ObjectMenuComponent } from './components/object-menu/object-menu.compon
 import { ProjectIconComponent } from './components/project-icon/project-icon.component';
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
 import { ModuleHeaderComponent } from './components/module-header/module-header.component';
+import { ModuleMenuComponent } from './components/module-menu/module-menu.component';
 import { WarningListComponent } from './components/warning-list/warning-list.component';
 import { WarningPillComponent } from './components/warning-pill/warning-pill.component';
 
@@ -131,6 +132,7 @@ const components = [
   ObjectExplorerComponent,
   ObjectPathComponent,
   ObjectMenuComponent,
+  ModuleMenuComponent,
   ProjectIconComponent,
   ProjectMenuComponent,
   WarningListComponent,
