@@ -1,17 +1,9 @@
 FROM node:13.10.1 as base
-LABEL app=kg-prototypes
 
 # ========================================
 # Landing page
 # ========================================
-
 FROM base as landing
-LABEL app=kg-prototypes
-
-# Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
-RUN apt-get autoclean && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
 
 ENV CLIENT_USER node
 ENV CLIENT_HOME /home/$CLIENT_USER
@@ -29,11 +21,11 @@ RUN yarn install \
 COPY landing .
 RUN yarn build
 
+
 # ========================================
 # Angular app
 # ========================================
 FROM base as build
-LABEL app=kg-prototypes
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb \
@@ -63,42 +55,39 @@ COPY --chown=$CLIENT_USER:$CLIENT_USER yarn.lock .
 RUN yarn install \
     && chown -R $CLIENT_USER:$CLIENT_USER node_modules
 
-COPY . $ANGULAR_DIR
+# Copy the rest of the files
+COPY . .
 
+
+# ========================================
+# Angular bundle compilation
+# ========================================
 FROM build as compile
-LABEL app=kg-prototypes
 
-# ========================================
-# angular bundle compilation
-# ========================================
 ENV CLIENT_USER node
 ENV CLIENT_HOME /home/$CLIENT_USER
 ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
 ARG ANGULAR_CONFIG=production
+
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
 RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
 
 # ========================================
-# nginx
+# NGINX
 # ========================================
-# Set the nginx conf file to use
-FROM nginx:latest AS webserver
+FROM nginx:1.21 AS webserver
 LABEL app=kg-prototypes
 
-RUN apt-get update && \
-    apt-get install vim net-tools -y && \
-    apt-get autoclean && \
-    apt-get autoremove -y
+COPY --from=compile /home/node/client/dist .
+COPY --from=landing /home/node/client/landing/dist .
 
-RUN mkdir -p /home/node/client/dist
-RUN mkdir -p /home/node/client/landing/dist
-COPY --from=compile /home/node/client/dist /usr/share/nginx/html
-COPY --from=landing /home/node/client/landing/dist /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/templates/default.conf.template
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=build "/home/node/client/nginx/nginx.conf" /etc/nginx/conf.d/default.conf
 
-EXPOSE 80 443
+# URL to proxy requests to /api
+ENV APPSERVER_UPSTREAM http://appserver:5000
+ENV LIFELIKE_CONTENT_TYPES vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARANGO_DB_NAME***.document/enrichment-table vnd.***ARANGO_DB_NAME***.document/graph vnd.***ARANGO_DB_NAME***.document/map
 
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 80
