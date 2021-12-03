@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
@@ -588,7 +588,8 @@ export class SankeyControllerService {
   // endregion
 
   resetController() {
-    this.load(this.allData);
+    this.load(this.allData).then(() => {
+    }, console.error);
   }
 
   preprocessData(content: SankeyData) {
@@ -643,14 +644,31 @@ export class SankeyControllerService {
     return pass;
   }
 
-  load(content, updateOptions?) {
+  getDefaultViewBase(content) {
+    const {selectedNetworkTrace} = this;
+    const {graph: {node_sets}} = content;
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
+    return (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
+  }
+
+  setDefaultViewBase(content) {
+    this.state.baseViewName = this.getDefaultViewBase(content);
+  }
+
+  async load(content, updateOptions?: Observable<any>) {
     this.addIds(content);
     this.preprocessData(content);
     this.resetOptions();
     this.resetState();
     this.extractOptionsFromGraph(content);
     if (updateOptions) {
-      updateOptions();
+      updateOptions.subscribe(predefinedState => {
+        Object.assign(this.state, predefinedState);
+        if (isNil(this.state.baseViewName)) {
+          this.setDefaultViewBase(content);
+        }
+      });
     }
     this.applyState();
   }

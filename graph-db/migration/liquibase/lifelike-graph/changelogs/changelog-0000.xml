@@ -10,7 +10,24 @@
     And separate changeSets grouping by empty new line space
   -->
 
+  <changeSet id="LL-3625-create-index-on-original-entity-types" author="Binh Vu">
+    <comment>Create an temp index to to speed things up.</comment>
+    <sql>
+      CREATE INDEX index_anatomy_original_entity_types IF NOT EXISTS FOR (n:Anatomy) ON (n.original_entity_types);
+      CREATE INDEX index_chemical_original_entity_types IF NOT EXISTS FOR (n:Chemical) ON (n.original_entity_types);
+      CREATE INDEX index_compound_original_entity_types IF NOT EXISTS FOR (n:Compound) ON (n.original_entity_types);
+      CREATE INDEX index_disease_original_entity_types IF NOT EXISTS FOR (n:Disease) ON (n.original_entity_types);
+      CREATE INDEX index_food_original_entity_types IF NOT EXISTS FOR (n:Food) ON (n.original_entity_types);
+      CREATE INDEX index_gene_original_entity_types IF NOT EXISTS FOR (n:Gene) ON (n.original_entity_types);
+      CREATE INDEX index_phenomena_original_entity_types IF NOT EXISTS FOR (n:Phenomena) ON (n.original_entity_types);
+      CREATE INDEX index_phenotype_original_entity_types IF NOT EXISTS FOR (n:Phenotype) ON (n.original_entity_types);
+      CREATE INDEX index_protein_original_entity_types IF NOT EXISTS FOR (n:Protein) ON (n.original_entity_types);
+      CREATE INDEX index_tax_original_entity_types IF NOT EXISTS FOR (n:Taxonomy) ON (n.original_entity_types);
+    </sql>
+  </changeSet>
+
   <changeSet id="LL-3625-add-original-entity-types-mesh" author="Binh Vu">
+    <validCheckSum>344ffdfa-695a-4afa-9cec-7ceb593dfea0</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -39,6 +56,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-compound" author="Binh Vu">
+    <validCheckSum>7bec5783-b325-4dc8-a826-e65ffda821fb</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -67,6 +85,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-chemical" author="Binh Vu">
+    <validCheckSum>1f2a47e2-a185-440a-a959-e014ecb72c8d</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -95,6 +114,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
+    <validCheckSum>660a55eb-1af3-4866-8ddb-211d8e3e347b</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -107,8 +127,8 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 100000',
-        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:10000})
+        'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:100000})
         
       "
       conditionQuery="MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
@@ -119,6 +139,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-protein" author="Binh Vu">
+    <validCheckSum>283d530b-7ca2-4c5e-9d0a-8374274d7b03</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -147,6 +168,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-gene" author="Binh Vu">
+    <validCheckSum>f0916c8e-45c5-4dff-96f9-508795f4a302</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -159,8 +181,8 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 100000',
-        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:10000})
+        'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:100000})
         
       "
       conditionQuery="MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"

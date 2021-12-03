@@ -19,6 +19,7 @@ neo4j = "==4.2.1"
 webargs = "==8.0.0"
 py2neo = "==2021.0.1"
 gunicorn = "==20.0.4"
+elastic-apm = {extras = ["flask"], version = "*"}
 
 [requires]
 python_version = "3.8.2"
