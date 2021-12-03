@@ -129,7 +129,7 @@
       
         CALL apoc.periodic.iterate(
         'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
-        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:100000})
+        'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:50000})
         
       "
       conditionQuery="MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
@@ -183,7 +183,7 @@
       
         CALL apoc.periodic.iterate(
         'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
-        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:100000})
+        'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:50000})
         
       "
       conditionQuery="MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
