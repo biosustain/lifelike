@@ -197,7 +197,10 @@ def create_app(name='neo4japp', config='config.Development'):
 
     # Initialize Elastic APM if configured
     if os.getenv('ELASTIC_APM_SERVER_URL'):
-        apm.init_app(app, service_name='lifelike-appserver', environment=os.getenv('FLASK_ENV'))
+        apm.init_app(
+            app,
+            service_name='lifelike-appserver',
+            environment=os.getenv('FLASK_APP_CONFIG'))
 
     return app
 
