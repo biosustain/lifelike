@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3213 GO data constraints on date 10052021" author="Binh Vu">
-    <validCheckSum>1c611a1a-9be0-4333-98ce-fb6715e83587</validCheckSum>
     <comment>Create constraints and indexes for GO nodes</comment>
     <sql>
     CREATE CONSTRAINT constraint_go_id IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
@@ -16,7 +15,6 @@ CREATE INDEX index_go_name IF NOT EXISTS FOR (n:db_GO) ON (n.name);
   </changeSet>
 
   <changeSet id="LL-3213 load GO BiologicalProcess on date 10052021" author="Binh Vu">
-    <validCheckSum>4323c810-c12f-4376-b70f-a9034be48b54</validCheckSum>
     <comment>
         Load GO BiologicalProcess
     </comment>
@@ -42,7 +40,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO MolecularFunction on date 10052021" author="Binh Vu">
-    <validCheckSum>27572957-b4a6-4007-ab2e-a6f05c1d3894</validCheckSum>
     <comment>
         Load GO MolecularFunction
     </comment>
@@ -68,7 +65,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO CellularComponent on date 10052021" author="Binh Vu">
-    <validCheckSum>c4248f60-e772-4d32-9fc2-7b6e676367b9</validCheckSum>
     <comment>
         Load GO CellularComponent
     </comment>
@@ -94,7 +90,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO synonym on date 10052021" author="Binh Vu">
-    <validCheckSum>533b9363-e88a-4ff8-badc-8bb248c48574</validCheckSum>
     <comment>
         Load GO synonym relationship
     </comment>
@@ -119,7 +114,6 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
   <changeSet id="LL-3213 load GO IS_A on date 10052021" author="Binh Vu">
-    <validCheckSum>ae2054a5-00fc-4f26-8f87-7f3d6c78bb66</validCheckSum>
     <comment>
         Load GO IS_A relationship
     </comment>
@@ -144,7 +138,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO PART_OF on date 10052021" author="Binh Vu">
-    <validCheckSum>511b1cb7-73bb-45c7-889d-da9fc1ece107</validCheckSum>
     <comment>
         Load GO PART_OF relationship
     </comment>
@@ -169,7 +162,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO REGULATES on date 10052021" author="Binh Vu">
-    <validCheckSum>f7c2fa1a-44fe-4e52-9696-3a210ed2c31b</validCheckSum>
     <comment>
         Load GO REGULATES relationship
     </comment>
@@ -194,7 +186,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO HAS_PART on date 10052021" author="Binh Vu">
-    <validCheckSum>9acbf41e-a4e0-49c8-a81d-8774d42cee42</validCheckSum>
     <comment>
         Load GO HAS_PART relationship
     </comment>
@@ -219,7 +210,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO REPLACED_BY on date 10052021" author="Binh Vu">
-    <validCheckSum>1e29a930-d9b1-45eb-a031-444668d5befd</validCheckSum>
     <comment>
         Load GO REPLACED_BY relationship
     </comment>
@@ -244,7 +234,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO NEGATIVELY_REGULATES on date 10052021" author="Binh Vu">
-    <validCheckSum>c2e48163-5944-42a2-90f8-380189f09264</validCheckSum>
     <comment>
         Load GO NEGATIVELY_REGULATES relationship
     </comment>
@@ -269,7 +258,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO POSITIVELY_REGULATES on date 10052021" author="Binh Vu">
-    <validCheckSum>41a20993-0e8a-4655-926d-705dd4993bda</validCheckSum>
     <comment>
         Load GO POSITIVELY_REGULATES relationship
     </comment>
@@ -294,7 +282,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO OCCURS_IN on date 10052021" author="Binh Vu">
-    <validCheckSum>c9eae3d6-f343-420c-91f9-50cb99b0c04b</validCheckSum>
     <comment>
         Load GO OCCURS_IN relationship
     </comment>
@@ -319,7 +306,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO HAPPENS_DURING on date 10052021" author="Binh Vu">
-    <validCheckSum>504b1ec5-76cc-465d-83af-41807c3a9fb0</validCheckSum>
     <comment>
         Load GO HAPPENS_DURING relationship
     </comment>
@@ -344,7 +330,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3213 load GO ENDS_DURING on date 10052021" author="Binh Vu">
-    <validCheckSum>15a636be-b11d-439d-b5a7-97182a06744f</validCheckSum>
     <comment>
         Load GO ENDS_DURING relationship
     </comment>
