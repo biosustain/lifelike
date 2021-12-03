@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3686 remove stale global inclusion node properties" author="Binh Vu">
-    <validCheckSum>fe0e925c-bd39-493e-b0d5-8b1dd51680c5</validCheckSum>
     <comment>
       There are leftover node properties that were added when we were in the early stages of implementing global inclusions to the graph.
       Need to remove those as they are not used.
