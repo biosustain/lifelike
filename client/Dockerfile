@@ -1,12 +1,14 @@
+ARG NODE_IMAGE_TAG=node:14
+
 # ========================================
 # Landing page
 # ========================================
-FROM node:14 as landing
+FROM $NODE_IMAGE_TAG as landing-build
 WORKDIR /app
 
 # Install dependencies
 COPY landing/package.json landing/yarn.lock ./
-RUN yarn install
+RUN yarn install --network-timeout=1000000
 
 # Build landing page
 COPY landing ./
@@ -14,9 +16,9 @@ RUN yarn build
 
 
 # ========================================
-# Build Angular app
+# Angular app dependencies
 # ========================================
-FROM node:14 as angular
+FROM $NODE_IMAGE_TAG as angular-deps
 WORKDIR /app
 
 # build time argument for Angular environment
@@ -24,11 +26,21 @@ ARG ANGULAR_CONFIG=production
 
 # Install dependencies
 COPY package.json yarn.lock ./
-RUN yarn install
+RUN yarn install --network-timeout=1000000
 
-# Copy the rest and Build application
+
+# ========================================
+# Angular app bundle build
+# ========================================
+FROM $NODE_IMAGE_TAG as angular-build
+
+# Copy node_nodules
+COPY --from=angular-deps /app/node_modules ./
+
+# Copy the code and Build the app bundle
 COPY src ./src
 COPY tslint ./tslint
+COPY e2e ./e2e
 COPY *.json browserslist ./
 RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 
@@ -51,7 +63,7 @@ ENV LIFELIKE_CONTENT_TYPES vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARANGO_
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copy built assets
-COPY --from=landing /app/dist ./
-COPY --from=angular /app/dist ./
+COPY --from=landing-build /app/dist ./
+COPY --from=angular-build /app/dist ./
 
 EXPOSE 80
