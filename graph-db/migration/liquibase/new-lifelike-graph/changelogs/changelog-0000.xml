@@ -11,7 +11,6 @@
   -->
 
   <changeSet id="LL-3198-liquibase-chebi-data-constraints" author="Binh Vu">
-    <validCheckSum>288d8bc1-2ee4-4d81-b268-47cd455d96a2</validCheckSum>
     <comment>Create ChEBI data from scratch; creating constraints.</comment>
     <sql>
       CREATE CONSTRAINT constraint_chebi_id IF NOT EXISTS ON (n:db_CHEBI) ASSERT n.eid IS UNIQUE;
@@ -23,7 +22,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-pathway" author="Binh Vu">
-    <validCheckSum>8645a733-704b-4280-8fc7-3a53893876b1</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -46,7 +44,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-synonyms" author="Binh Vu">
-    <validCheckSum>1ecba037-7000-433f-b23d-8685ee85bca0</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi synonym data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -68,7 +65,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-is-a" author="Binh Vu">
-    <validCheckSum>b07e988f-81e2-469a-b1ce-10fc1430ba2d</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_A.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -90,7 +86,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-base" author="Binh Vu">
-    <validCheckSum>4dad2edf-7a74-4823-a54e-ca0b7a589e10</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_CONJUGATE_BASE_OF.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -112,7 +107,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-part" author="Binh Vu">
-    <validCheckSum>ebde3c57-4923-4ffb-9f20-57276de55614</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship HAS_PART.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -134,7 +128,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-role" author="Binh Vu">
-    <validCheckSum>3b015ae1-7b5c-4331-b76d-edfac93c07a8</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship HAS_ROLE.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -156,7 +149,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-parent" author="Binh Vu">
-    <validCheckSum>2ca38ef6-9e06-4afa-8dd4-30920a82d207</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship HAS_PARENT_HYDRIDE.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -178,7 +170,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-enantiomer-of" author="Binh Vu">
-    <validCheckSum>e873846e-25da-4ea6-8bd9-16ea62893a9d</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_ENANTIOMER_OF.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -200,7 +191,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-functional-parent" author="Binh Vu">
-    <validCheckSum>7b02cde6-1863-4553-9058-dbe5d440697b</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship HAS_FUNCTIONAL_PARENT.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -222,7 +212,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-acid" author="Binh Vu">
-    <validCheckSum>5cc274fb-2f0a-46b5-a09a-f3ecc7566497</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_CONJUGATE_ACID_OF.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -244,7 +233,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-tautomer" author="Binh Vu">
-    <validCheckSum>536ba840-5673-4e4c-ac17-c92816b39289</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_TAUTOMER_OF.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -266,7 +254,6 @@
   </changeSet>
 
   <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-substituent-group" author="Binh Vu">
-    <validCheckSum>4b2bb110-f38c-4b5e-82f1-1e64ca7d9f9d</validCheckSum>
     <comment>Create ChEBI data from scratch; load chebi relationship IS_SUBSTITUENT_GROUP_FROM.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
