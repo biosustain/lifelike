@@ -11,7 +11,6 @@
   -->
 
   <changeSet id="Init migrations for small graph used for local dev/testing" author="Binh Vu">
-    <validCheckSum>aa1d1241-17f1-430f-bdc8-ea08b73b8b53</validCheckSum>
     <comment>Init migration changeset</comment>
     <sql>CALL db.info()</sql>
   </changeSet>

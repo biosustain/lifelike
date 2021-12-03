@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="create synonym constraint" author="robin cai">
-    <validCheckSum>75cafc81-635d-4ec8-a34f-2de24fe4aa3a</validCheckSum>
     <comment>create synonym constraint</comment>
     <sql>
     create constraint constraint_synonym_name IF NOT EXISTS on (n:Synonym) assert (n.name) is Unique;
@@ -14,7 +13,6 @@
   </changeSet>
 
   <changeSet id="add Synonym nodes" author="robin cai">
-    <validCheckSum>beeb751b-39c3-4c7d-bfa2-1d4cc93a73d5</validCheckSum>
     <comment>Extract synonyms from names</comment>
     <sql>
     call apoc.periodic.iterate(
@@ -32,7 +30,6 @@
   </changeSet>
 
   <changeSet id="set entityType property" author="robin cai">
-    <validCheckSum>9fc44d0b-5626-4a3a-8165-fccd8e29c764</validCheckSum>
     <comment>set entityType, which will be used for display</comment>
     <sql>
     match(n:EntityWithAccessionedSequence) where (n)-[:referenceEntity]-(:ReferenceDNASequence) set n:Gene, n.entityType='Gene';

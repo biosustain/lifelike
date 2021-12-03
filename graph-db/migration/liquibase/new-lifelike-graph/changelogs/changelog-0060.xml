@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3215 load Stringdb constraints on date 10282021" author="Binh Vu">
-    <validCheckSum>5af735e3-92a1-4668-938b-9c0246bf6716</validCheckSum>
     <comment>Create constraints and indexes for Stringdb data</comment>
     <sql>
     CREATE CONSTRAINT constraint_string_id IF NOT EXISTS ON (n:db_STRING) ASSERT n.eid IS UNIQUE;
@@ -14,7 +13,6 @@
   </changeSet>
 
   <changeSet id="LL-3215 load Stringdb on date 10282021" author="Binh Vu">
-    <validCheckSum>1740b768-eaf8-4783-8d4a-461baa97e14a</validCheckSum>
     <comment>
         
     </comment>
@@ -39,7 +37,6 @@ SET n:Protein,n.name=row.name,n.protein_size=row.protein_size,n.annotation=row.a
   </changeSet>
 
   <changeSet id="LL-3215 load Stringdb synonym rel on date 10282021" author="Binh Vu">
-    <validCheckSum>326d6b0c-a747-467e-a493-c91a9b05b358</validCheckSum>
     <comment>
         
     </comment>
@@ -65,7 +62,6 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
   <changeSet id="LL-3215 load Stringdb-Gene rel on date 10282021" author="Binh Vu">
-    <validCheckSum>329edfa9-ece1-4437-86c2-1f6621ba7579</validCheckSum>
     <comment>
         
     </comment>
