@@ -1,8 +1,3 @@
 Dockerfile
-Dockerfile.prod
-Dockerfile.staging
-node_modules/**/*
-node_modules
-.gitignore
-landing/dist
-.githooks/
+**/node_modules
+**/dist
