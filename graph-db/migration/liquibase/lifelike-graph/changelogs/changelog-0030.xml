@@ -6,6 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="Add index to global inclusion queries" author="Binh Vu">
+    <validCheckSum>84d92d37-95bc-4198-85cd-b6b0986981d4</validCheckSum>
     <comment>
       Add index to properties that are used by global inclusion.
     </comment>
