@@ -6,6 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3212 create NCBI taxonomy constraints on date 10072021" author="Binh Vu">
+    <validCheckSum>eca03812-3ef4-444a-9fde-629ed3d2b4be</validCheckSum>
     <comment>Create constraints and indexes for NCBI taxonomy nodes</comment>
     <sql>
     CREATE CONSTRAINT constraint_taxonomy_id IF NOT EXISTS ON (n:Taxonomy) ASSERT n.eid IS UNIQUE;
@@ -16,6 +17,7 @@ CREATE INDEX index_taxonomy_speciesid IF NOT EXISTS FOR (n:Taxonomy) ON (n.speci
   </changeSet>
 
   <changeSet id="LL-3212 NCBI taxonomy data on date 10072021" author="Binh Vu">
+    <validCheckSum>aaa70b55-c65d-4118-b74d-acb5cff1dc0e</validCheckSum>
     <comment>
         Load NCBI taxonomy nodes
     </comment>
@@ -39,6 +41,7 @@ SET n:db_NCBI,n.name=row.name,n.rank=row.rank,n.category=row.category,n.parent_i
   </changeSet>
 
   <changeSet id="LL-3212 load NCBI taxonomy synonym relationship on date 10072021" author="Binh Vu">
+    <validCheckSum>8217d97a-b1f5-401a-a025-affa57765db8</validCheckSum>
     <comment>
         Load NCBI synonym taxonomy relationship
     </comment>
@@ -64,6 +67,7 @@ SET r.type=row.type
   </changeSet>
 
   <changeSet id="LL-3212 create relationship between taxonomy and parent nodes on date 10072021" author="Binh Vu">
+    <validCheckSum>7986f16c-a338-4a14-9ad1-9140cd19f3b3</validCheckSum>
     <comment>Taxonomy relationship with parent</comment>
     <sql>
     
@@ -75,6 +79,7 @@ SET r.type=row.type
   </changeSet>
 
   <changeSet id="LL-3212 set species_id for taxonomy nodes on date 10072021" author="Binh Vu">
+    <validCheckSum>1b8a380a-a0d8-4761-8809-ee22e30efff1</validCheckSum>
     <comment>Taxonomy needs species_id</comment>
     <sql>
       CALL apoc.periodic.iterate(
