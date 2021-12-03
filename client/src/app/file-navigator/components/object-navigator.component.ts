@@ -92,6 +92,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
         ['/search', 'content'], {
           queryParams: {
             q: `"${useKeyword ? annotation.text : annotation.primaryName}"`,
+            folders: this.object.hashId,
           },
           newTab: true,
           sideBySide: true,
