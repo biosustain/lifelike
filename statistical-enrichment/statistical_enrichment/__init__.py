@@ -13,7 +13,7 @@ if os.getenv('ELASTIC_APM_SERVER_URL'):
     apm = ElasticAPM(
         app,
         service_name='***ARANGO_DB_NAME***-statistical-enrichment',
-        environment=os.getenv('FLASK_ENV'))
+        environment=os.getenv('FLASK_APP_CONFIG'))
 
 from .views import *
 from .schemas import *
