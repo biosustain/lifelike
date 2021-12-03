@@ -11,6 +11,7 @@
   -->
 
   <changeSet id="LL-3625-create-index-on-original-entity-types" author="Binh Vu">
+    <validCheckSum>954d1ffd-f4ec-46a2-bd8d-50bdd74c6fdb</validCheckSum>
     <comment>Create an temp index to to speed things up.</comment>
     <sql>
       CREATE INDEX index_anatomy_original_entity_types IF NOT EXISTS FOR (n:Anatomy) ON (n.original_entity_types);
