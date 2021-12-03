@@ -126,7 +126,8 @@
           MB_ELASTICSEARCH_USERNAME={{ MB_ELASTICSEARCH_USERNAME }}
           MB_ELASTICSEARCH_PASSWORD={{ MB_ELASTICSEARCH_PASSWORD }}
           MB_KIBANA_HOST={{ MB_KIBANA_HOST }}
-          SEND_GRID_EMAIL_API_KEY= {{ SEND_GRID_EMAIL_API_KEY }}
+          SEND_GRID_EMAIL_API_KEY={{ SEND_GRID_EMAIL_API_KEY }}
+          ELASTIC_APM_SERVER_URL={{ ELASTIC_APM_SERVER_URL }}
           ASSETS_FOLDER="/home/n4j/assets/"
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
