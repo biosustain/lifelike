@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3782 delete all Zenodo related nodes" author="Binh Vu">
-    <validCheckSum>41cb0b31-5071-4f15-9ac9-554fc9b70ce2</validCheckSum>
     <comment>
       The Zenodo literature data are wrong, need to delete them to re-seed.
     </comment>
@@ -27,7 +26,6 @@
   </changeSet>
 
   <changeSet id="LL-3782 load Zenodo literature constraints on date 11022021" author="Binh Vu">
-    <validCheckSum>dbb9191d-c9be-4225-8b23-fa4c3a06b986</validCheckSum>
     <comment>Create constraints and indexes for Zenodo literature</comment>
     <sql>
     CREATE CONSTRAINT constraint_association_id IF NOT EXISTS ON (n:Association) ASSERT n.eid IS UNIQUE;
@@ -41,7 +39,6 @@ CREATE CONSTRAINT constraint_publication_pmid IF NOT EXISTS ON (n:Publication) A
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature data Chemical-Disease on date 11022021" author="Binh Vu">
-    <validCheckSum>20318127-7732-4a9d-bce8-e9c707df4c2c</validCheckSum>
     <comment>
         Split creation of Chemical-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
 The name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
@@ -86,7 +83,6 @@ Need to also consider the fact the property could be at risk for being outdated.
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature data Chemical-Gene on date 11022021" author="Binh Vu">
-    <validCheckSum>c5fa96d8-6843-402f-a7c2-2cca3c92ec9e</validCheckSum>
     <comment>
         Split creation of Chemical-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
 The name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
@@ -131,7 +127,6 @@ Need to also consider the fact the property could be at risk for being outdated.
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature data Gene-Disease on date 11022021" author="Binh Vu">
-    <validCheckSum>746b9446-62ac-4efe-8a91-11534d83a367</validCheckSum>
     <comment>
         Split creation of Gene-Disease nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
 The name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
@@ -176,7 +171,6 @@ Need to also consider the fact the property could be at risk for being outdated.
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature data Gene-Gene on date 11022021" author="Binh Vu">
-    <validCheckSum>ef75d72d-92f1-4eeb-a9e8-e23c00ac1fda</validCheckSum>
     <comment>
         Split creation of Gene-Gene nodes and assocation from snippet creation; seem to be faster instead of one giant cypher. Need to use foreach because if some entities can have two entity type so the on create will not set the second, and cannot use normal set cause it could add a duplicate.
 The name property is a duplicate data property, and only used for the visualizer. Not sure why this decision was made, cause the information is available in the (n)-[MAPPED_TO]-(m) in m.name, the extra relationship does not seem to make any difference, in fact it is faster since the current visualizer query returns the entire node.
@@ -221,7 +215,6 @@ Need to also consider the fact the property could be at risk for being outdated.
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Disease on date 11022021" author="Binh Vu">
-    <validCheckSum>3d0179df-0818-44f2-a750-8cb2b27b991e</validCheckSum>
     <comment>
         Link snippets for Chemical-Disease to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -258,7 +251,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature snippet data Chemical-Gene on date 11022021" author="Binh Vu">
-    <validCheckSum>be9f1f07-6b92-4fe8-af83-335d51336b2f</validCheckSum>
     <comment>
         Link snippets for Chemical-Gene to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -295,7 +287,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature snippet data Gene-Disease on date 11022021" author="Binh Vu">
-    <validCheckSum>ba9fdd20-3e16-4b3b-bbc2-11c487d9bf56</validCheckSum>
     <comment>
         Link snippets for Gene-Disease to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -332,7 +323,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 Zenodo literature snippet data Gene-Gene on date 11022021" author="Binh Vu">
-    <validCheckSum>bce25ff2-e1c1-4aaf-8891-96bf1bb36ee8</validCheckSum>
     <comment>
         Link snippets for Gene-Gene to publication. 
 Need to include properties in INDICATES relationship merge to be unique because there are multiple rows in data that can result in incorrectly merging the relationships.
@@ -369,7 +359,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 11022021" author="Binh Vu">
-    <validCheckSum>5972780e-4553-465c-a063-36454cfc4e5a</validCheckSum>
     <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
@@ -386,7 +375,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 11022021" author="Binh Vu">
-    <validCheckSum>4567faba-b08f-44a0-b0b1-069badc73c66</validCheckSum>
     <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
     <sql>
     
@@ -403,7 +391,6 @@ Need to include properties in INDICATES relationship merge to be unique because 
   </changeSet>
 
   <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 11022021" author="Binh Vu">
-    <validCheckSum>b6a5dd73-f53f-4848-9389-61776dc0d2fd</validCheckSum>
     <comment>LiteratureGene should be MAPPED_TO Gene nodes</comment>
     <sql>
     

@@ -6,7 +6,6 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="LL-3211 load NCBI gene constraints on date 10072021" author="Binh Vu">
-    <validCheckSum>6b6e61a9-0169-4cc1-8cf8-737aec860620</validCheckSum>
     <comment>Create constraints and indexes for NCBI gene nodes</comment>
     <sql>
     CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
@@ -18,7 +17,6 @@ CREATE INDEX index_gene_taxid IF NOT EXISTS FOR (n:Gene) ON (n.tax_id);
   </changeSet>
 
   <changeSet id="LL-3211 NCBI gene data on date 10072021" author="Binh Vu">
-    <validCheckSum>927980e4-436f-4ffa-a9e9-15859a53f476</validCheckSum>
     <comment>
         Load NCBI gene nodes
     </comment>
@@ -43,7 +41,6 @@ SET n:db_NCBI:Master,n.name=row.name,n.locus_tag=row.locus_tag,n.full_name=row.f
   </changeSet>
 
   <changeSet id="LL-3211 load NCBI gene synonym relationship on date 10072021" author="Binh Vu">
-    <validCheckSum>cda244a1-1b8d-493b-98fe-5d29cae3b7e4</validCheckSum>
     <comment>
         Load NCBI gene synonym relationship
     </comment>
@@ -69,7 +66,6 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
   <changeSet id="LL-3211 load NCBI gene to GO on date 10072021" author="Binh Vu">
-    <validCheckSum>8ecaf1a3-4dcf-45c7-90e8-3faf855cce93</validCheckSum>
     <comment>
         Load NCBI gene to GO
     </comment>
@@ -95,7 +91,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3211 update GO_LINK rel to have tax_id on date 10072021" author="Binh Vu">
-    <validCheckSum>3a05597f-659b-4aa1-ab2f-f8a1637c3ec7</validCheckSum>
     <comment>tax_id is used by statistical enrichment cypher queries</comment>
     <sql>
     
@@ -107,7 +102,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3211 update NCBI gene synonyms to have locus tag name on date 10072021" author="Binh Vu">
-    <validCheckSum>25f792a5-a4df-4166-af10-07cbb8f6c71e</validCheckSum>
     <comment>NCBI gene synonym names should be locus tag</comment>
     <sql>
     
@@ -120,7 +114,6 @@ RETURN COUNT(*)
   </changeSet>
 
   <changeSet id="LL-3211 create relationship between gene and taxonomy nodes on date 10072021" author="Binh Vu">
-    <validCheckSum>0245f929-065a-40b7-9c1b-0b9b0061b0da</validCheckSum>
     <comment>Gene and taxonomy need to be linked; important for annotations etc</comment>
     <sql>
     
