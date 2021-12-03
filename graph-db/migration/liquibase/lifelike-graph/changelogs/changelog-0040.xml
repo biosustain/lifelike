@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="LL-4005 Names are concatenated without space" author="Binh Vu">
+    <validCheckSum>c85121b2-3389-4132-a75b-093bfb17fd29</validCheckSum>
+    <comment>
+        From LL-3782, entity names were concatenated without spacing between the words.
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MATCH (n1:db_Literature:LiteratureChemical) WHERE n1.eid = row.entry1_id
+        SET n1.name = apoc.text.join([c in apoc.text.split(row.entry1_name, ' ') | apoc.text.capitalize(toLower(c))], ' ')
+        MATCH (n2:db_Literature:LiteratureDisease) WHERE n2.eid = row.entry2_id
+        SET n2.name = apoc.text.join([c in apoc.text.split(row.entry2_name,' ') | apoc.text.capitalize(toLower(c))], ' ')
+        
+      "
+      fileName="jira-LL-3782-Chemical2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-4005 Names are concatenated without space" author="Binh Vu">
+    <validCheckSum>5a88128b-c31b-4a4b-b5c5-e15db4bdd9d5</validCheckSum>
+    <comment>
+        From LL-3782, entity names were concatenated without spacing between the words.
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MATCH (n1:db_Literature:LiteratureChemical) WHERE n1.eid = row.entry1_id
+        SET n1.name = apoc.text.join([c in apoc.text.split(row.entry1_name, ' ') | apoc.text.capitalize(toLower(c))], ' ')
+        MATCH (n2:db_Literature:LiteratureGene) WHERE n2.eid = row.entry2_id
+        SET n2.name = apoc.text.join([c in apoc.text.split(row.entry2_name,' ') | apoc.text.capitalize(toLower(c))], ' ')
+        
+      "
+      fileName="jira-LL-3782-Chemical2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-4005 Names are concatenated without space" author="Binh Vu">
+    <validCheckSum>7b85f629-9e59-428d-a0bc-db4252331830</validCheckSum>
+    <comment>
+        From LL-3782, entity names were concatenated without spacing between the words.
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MATCH (n1:db_Literature:LiteratureGene) WHERE n1.eid = row.entry1_id
+        SET n1.name = apoc.text.join([c in apoc.text.split(row.entry1_name, ' ') | apoc.text.capitalize(toLower(c))], ' ')
+        MATCH (n2:db_Literature:LiteratureDisease) WHERE n2.eid = row.entry2_id
+        SET n2.name = apoc.text.join([c in apoc.text.split(row.entry2_name,' ') | apoc.text.capitalize(toLower(c))], ' ')
+        
+      "
+      fileName="jira-LL-3782-Gene2Disease_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-4005 Names are concatenated without space" author="Binh Vu">
+    <validCheckSum>c60d84ad-cf10-47c2-9d16-132fde6b5465</validCheckSum>
+    <comment>
+        From LL-3782, entity names were concatenated without spacing between the words.
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      
+        UNWIND $rows AS row
+        MATCH (n1:db_Literature:LiteratureGene) WHERE n1.eid = row.entry1_id
+        SET n1.name = apoc.text.join([c in apoc.text.split(row.entry1_name, ' ') | apoc.text.capitalize(toLower(c))], ' ')
+        MATCH (n2:db_Literature:LiteratureGene) WHERE n2.eid = row.entry2_id
+        SET n2.name = apoc.text.join([c in apoc.text.split(row.entry2_name,' ') | apoc.text.capitalize(toLower(c))], ' ')
+        
+      "
+      fileName="jira-LL-3782-Gene2Gene_assoc_theme.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+</databaseChangeLog>
