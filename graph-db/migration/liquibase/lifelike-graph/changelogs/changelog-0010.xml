@@ -370,16 +370,18 @@ Need to include properties in INDICATES relationship merge to be unique because 
 
   <changeSet id="LL-3782 create MAPPED_TO for literature chemical on date 11022021" author="Binh Vu">
     <validCheckSum>5972780e-4553-465c-a063-36454cfc4e5a</validCheckSum>
-    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
+    <comment>LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh).
+    Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label.
+    And update the Literature names to be the correct name in case Zenodo used different casing etc</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (c:db_MESH {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
+        'MERGE (c:db_MESH {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) SET n.name = c.name FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "CHEBI:" RETURN n',
-        'MERGE (c:db_CHEBI {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
+        'MERGE (c:db_CHEBI {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) SET n.name = c.name FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
         {batchSize:10000});
         
     </sql>
@@ -387,16 +389,18 @@ Need to include properties in INDICATES relationship merge to be unique because 
 
   <changeSet id="LL-3782 create MAPPED_TO for literature disease on date 11022021" author="Binh Vu">
     <validCheckSum>4567faba-b08f-44a0-b0b1-069badc73c66</validCheckSum>
-    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label</comment>
+    <comment>LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id).
+    Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label.
+    And update the Literature names to be the correct name in case Zenodo used different casing etc</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (d:db_MESH {eid:split(n.eid, ":")[1]}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d) FOREACH (item IN CASE WHEN NOT "Disease" IN labels(d) THEN [1] ELSE [] END | SET d:Disease)',
+        'MERGE (d:db_MESH {eid:split(n.eid, ":")[1]}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d) SET n.name = d.name FOREACH (item IN CASE WHEN NOT "Disease" IN labels(d) THEN [1] ELSE [] END | SET d:Disease)',
         {batchSize:10000});
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (d:Disease {eid:n.eid}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d)',
+        'MERGE (d:Disease {eid:n.eid}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d) SET n.name = d.name',
         {batchSize:10000});
         
     </sql>
@@ -404,12 +408,12 @@ Need to include properties in INDICATES relationship merge to be unique because 
 
   <changeSet id="LL-3782 create MAPPED_TO for literature gene on date 11022021" author="Binh Vu">
     <validCheckSum>b6a5dd73-f53f-4848-9389-61776dc0d2fd</validCheckSum>
-    <comment>LiteratureGene should be MAPPED_TO Gene nodes</comment>
+    <comment>LiteratureGene should be MAPPED_TO Gene nodes, and update the Literature names to be the correct name in case Zenodo used different casing etc</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
         'MATCH (n:db_Literature:LiteratureGene) RETURN n',
-        'MERGE (g:db_NCBI:Gene {eid:n.eid}) WITH g,n MERGE (n)-[:MAPPED_TO]->(g)',
+        'MERGE (g:db_NCBI:Gene {eid:n.eid}) WITH g,n MERGE (n)-[:MAPPED_TO]->(g) SET n.name = g.name',
         {batchSize:10000});
         
     </sql>
