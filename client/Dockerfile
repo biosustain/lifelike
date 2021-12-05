@@ -37,12 +37,12 @@ FROM $NODE_IMAGE_TAG as angular-build
 # Copy node_nodules
 COPY --from=angular-deps /app/node_modules ./
 
-# Copy the code and Build the app bundle
+# Copy the code and build the app bundle
 COPY src ./src
 COPY tslint ./tslint
 COPY e2e ./e2e
 COPY *.json browserslist ./
-RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
+RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
 
 
 # ========================================
@@ -57,7 +57,7 @@ ENV APPSERVER_UPSTREAM http://appserver:5000
 
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
-ENV LIFELIKE_CONTENT_TYPES vnd.lifelike.document/bioc vnd.lifelike.document/enrichment-table vnd.lifelike.document/graph vnd.lifelike.document/map
+ENV GZIP_EXTRA_TYPES text/tsv vnd.lifelike.document/bioc vnd.lifelike.document/enrichment-table vnd.lifelike.document/graph vnd.lifelike.document/map
 
 # Copy nginx configuraiton template
 COPY nginx.conf /etc/nginx/templates/default.conf.template
