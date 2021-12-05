@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY landing/package.json landing/yarn.lock ./
-RUN yarn install --network-timeout=1000000
+RUN yarn install
 
 # Build landing page
 COPY landing ./
@@ -26,7 +26,7 @@ ARG ANGULAR_CONFIG=production
 
 # Install dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --network-timeout=1000000
+RUN yarn Install
 
 
 # ========================================
