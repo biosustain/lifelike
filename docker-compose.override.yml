@@ -33,7 +33,9 @@ services:
     liquibase:
         container_name: liquibase
         build: ./graph-db/migration
-        command: update
+        command: status
+        environment:
+            - NEO4J_HOST=graphdatabase:7687
         networks:
             - backend
         depends_on:
