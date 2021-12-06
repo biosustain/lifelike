@@ -26,7 +26,7 @@ ARG ANGULAR_CONFIG=production
 
 # Install dependencies
 COPY package.json yarn.lock ./
-RUN yarn Install
+RUN yarn install
 
 
 # ========================================
