@@ -149,13 +149,13 @@ services:
         build:
             context: ./client
             dockerfile: Dockerfile
-            target: build
+            target: angular-deps
         command: yarn dev-start
         volumes:
-            - ./client:/home/node/client
+            - ./client:/app
             # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
             # Helps not overwrite the node_modules with host
-            - /home/node/client/node_modules
+            - /app/node_modules
         ports:
             - "4200:4200"
         networks:
