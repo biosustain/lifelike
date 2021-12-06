@@ -6,7 +6,7 @@ import {UnaryFunction} from 'rxjs/internal/types';
 
 import {OperatingSystems} from 'app/interfaces/shared.interface';
 
-import {FAClass, SpecialIconColors, Unicodes} from './constants';
+import {FAClass, CustomIconColors, Unicodes} from './constants';
 
 /**
  * Takes an input string and returns the title-cased version of that string. E.g., 'lazy dog' becomes 'Lazy Dog'.
@@ -231,25 +231,25 @@ export function getSupportedFileCodes(text: string): SupportedExtensionInfo {
     return {
       unicode: Unicodes.Word,
       FAClass: FAClass.Word,
-      color: SpecialIconColors.Word
+      color: CustomIconColors.Word
     };
   } else if (text.endsWith('.xlsx') || text.endsWith('.xls')) {
     return {
       unicode: Unicodes.Excel,
       FAClass: FAClass.Excel,
-      color: SpecialIconColors.Excel
+      color: CustomIconColors.Excel
     };
   } else if (text.endsWith('.pptx') || text.endsWith('.ppt')) {
     return {
       unicode: Unicodes.PowerPoint,
       FAClass: FAClass.PowerPoint,
-      color: SpecialIconColors.PowerPoint
+      color: CustomIconColors.PowerPoint
     };
   } else if (text.endsWith('.cys')) {
     return {
       unicode: Unicodes.Cytoscape,
       FAClass: FAClass.Cytoscape,
-      color: SpecialIconColors.Cytoscape
+      color: CustomIconColors.Cytoscape
     };
   }
   return undefined;
@@ -259,5 +259,5 @@ export function getSupportedFileCodes(text: string): SupportedExtensionInfo {
 export interface SupportedExtensionInfo {
   unicode: Unicodes;
   FAClass: FAClass;
-  color: SpecialIconColors;
+  color: CustomIconColors;
 }

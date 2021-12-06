@@ -19,7 +19,7 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import {FA_CUSTOM_ICONS, SpecialIconColors, Unicodes} from 'app/shared/constants';
+import {FA_CUSTOM_ICONS, CustomIconColors, Unicodes} from 'app/shared/constants';
 import {getSupportedFileCodes} from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
