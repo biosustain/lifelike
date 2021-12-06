@@ -14,21 +14,32 @@ services:
 
     graphdatabase:
         container_name: graphdatabase
-        build: ./graph-db/neo4j
+        image: neo4j:4.3
         environment:
             - NEO4J_AUTH=neo4j/password
-        volumes:
-            - ./graph-db/neo4j/logs:/logs
+            - NEO4JLABS_PLUGINS=["apoc"]
         ports:
             - "7474:7474"
             - "7687:7687"
         networks:
             - backend
+        healthcheck:
+            test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "return 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 15s
 
     liquibase:
         container_name: liquibase
-        user: ***ARANGO_USERNAME***
-        build: ./graph-db
+        build: ./graph-db/migration
+        command: update
+        networks:
+            - backend
+        depends_on:
+            graphdatabase:
+                  condition: service_healthy
+
 
     appserver:
         container_name: appserver

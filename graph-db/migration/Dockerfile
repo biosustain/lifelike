@@ -31,7 +31,7 @@ ADD --chown=liquibase:liquibase https://github.com/neo4j-contrib/neo4j-jdbc/rele
 COPY --from=build --chown=liquibase:liquibase /target/***ARANGO_DB_NAME***-liquibase-*.jar ./lib
 
 # Copy changelog directory
-COPY --chown=liquibase:liquibase changelog ./changelog
+COPY --chown=liquibase:liquibase liquibase ./changelog
 
 # Neo4j database configuration
 ENV NEO4J_HOST=neo4j:7687
