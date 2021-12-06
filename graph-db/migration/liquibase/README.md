@@ -108,9 +108,9 @@ liquibase rollback "some text description" --url jdbc:neo4j:bolt://<ip_address> 
 **IMPORTANT: The neo4j version needs to be at least 4.2.11**.
 
 ```bash
-cd graph-db/migration/liquibase
+cd graph-db/migration/changelog
 ```
-You should be in the `graph-db/migration/liquibase`, look for the `liquibase.properties` file to know if you're in the right folder. Liquibase will use this file to get the credentials for Neo4j.
+You should be in the `graph-db/migration/changelog`, look for the `liquibase.properties` file to know if you're in the right folder. Liquibase will use this file to get the credentials for Neo4j.
 
 ```bash
 > cat liquibase.properties
