@@ -351,10 +351,11 @@ ANNOTATION_STYLES_DICT = {
         'color': '#4caf50',
         'label': 'chemical',
     },
-    'ms-icons': {
+    'custom_icons': {
         'ms-word': '#0d47a1',
         'ms-excel': '#2e7d32',
-        'ms-powerpoint': '#e64a19'
+        'ms-powerpoint': '#e64a19',
+        'cytoscape': '#ea9123'
     }
 }
 

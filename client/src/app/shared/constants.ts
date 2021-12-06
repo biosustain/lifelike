@@ -90,6 +90,11 @@ export enum FAClass {
   Pdf = 'fa fa-file-pdf',
   BioC = 'fa fa-file',
   Default = 'fa fa-file',
+  Excel = 'fak fa-excel-solid',
+  PowerPoint = 'fak fa-powerpoint-solid',
+  Word = 'fak fa-word-solid',
+  Cytoscape = 'fak fa-cytoscape-solid',
+
 }
 
 export enum Unicodes {
@@ -108,16 +113,18 @@ export enum Unicodes {
   Excel = '\ue001',
   Word = '\ue002',
   PowerPoint = '\ue003',
+  Cytoscape = '\ue004'
 }
 // Colors used to render microsoft icons - they should not change
-export enum MicrosoftColors {
+export enum CustomIconColors {
   Excel = '#2e7d32',
   Word = '#0d47a1',
-  PowerPoint = '#e64a19'
+  PowerPoint = '#e64a19',
+  Cytoscape = '#ea9123'
 }
 
 // We need to specify different font family for custom icons (see comment about graph unicode above)
-export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint];
+export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint, Unicodes.Cytoscape];
 
 // Regex used to check if a map link is pointing to a file that can be looking for associated maps
 export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;

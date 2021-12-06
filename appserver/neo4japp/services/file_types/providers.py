@@ -34,7 +34,7 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
-from neo4japp.utils.logger import EventLog, UserEventLog
+from neo4japp.utils.logger import EventLog
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -420,7 +420,7 @@ def get_icon_strings():
         return ICON_DATA
     else:
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
-                    'ms-word', 'ms-excel', 'ms-powerpoint']:
+                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
                                                        + b64encode(file.read()) \
@@ -612,6 +612,8 @@ def get_link_icon_type(node):
                     return 'ms-powerpoint', None
                 elif domain.endswith('.xlsx') or domain.endswith('.xls'):
                     return 'ms-excel', None
+                elif domain.endswith('.cys'):
+                    return 'cytoscape', None
     return 'link', None
 
 
@@ -651,19 +653,20 @@ def create_icon_node(node, params):
     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                     {'defaultimagecolor': 'black'}
                                                     )['defaultimagecolor']
+    custom_icons = ANNOTATION_STYLES_DICT.get('custom_icons', {})
     if label == 'link':
         label, link = get_link_icon_type(node)
         # Save the link for later usage
         node['link'] = link
+        custom_icons = ANNOTATION_STYLES_DICT.get('custom_icons', {})
         # If label is microsoft icon, we set default text color to its color for consistent look
-        if label.startswith('ms-'):
-            default_icon_color = ANNOTATION_STYLES_DICT.get('ms-icons', {}).get(
-                label, default_icon_color)
+        if label in custom_icons.keys():
+            default_icon_color = custom_icons.get(label, default_icon_color)
 
     icon_params['image'] = (
         f'{ASSETS_PATH}{label}.png'
     )
-    if label[:2] != 'ms':
+    if label not in custom_icons.keys():
         # We are setting the icon color by using 'inverse' icon images and colorful background
         # But not for microsoft icons, as those are always in the same color
         icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
@@ -924,6 +927,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     f = open(file_path, "wb")
                     f.write(im)
                     f.close()
+                # Note: Add placeholder images instead?
                 except KeyError:
                     name = node.get('image_id') + '.png'
                     current_app.logger.info(
