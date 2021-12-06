@@ -46,6 +46,6 @@ export class SankeyDetailsComponent {
   }
 
   getNodeById(nodeId) {
-    return (this.sankeyController.allData.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
+    return (this.sankeyController.allData.value.nodes.find(({id}) => id === nodeId) || {}) as SankeyNode;
   }
 }
