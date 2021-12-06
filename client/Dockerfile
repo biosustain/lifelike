@@ -21,9 +21,6 @@ RUN yarn build
 FROM $NODE_IMAGE_TAG as angular-deps
 WORKDIR /app
 
-# build time argument for Angular environment
-ARG ANGULAR_CONFIG=production
-
 # Install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install
@@ -33,6 +30,9 @@ RUN yarn install
 # Angular app bundle build
 # ========================================
 FROM angular-deps as angular-build
+
+# build time argument for Angular environment
+ARG ANGULAR_CONFIG=production
 
 # Copy the code and build the app bundle
 COPY src ./src
