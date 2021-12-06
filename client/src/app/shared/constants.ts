@@ -121,3 +121,5 @@ export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, U
 
 // Regex used to check if a map link is pointing to a file that can be looking for associated maps
 export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
+
+export const handleBlue = '#97C2FC';
