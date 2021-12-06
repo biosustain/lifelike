@@ -33,9 +33,10 @@ import { InfoPanel } from '../../models/info-panel';
 export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+  @ViewChild('option') selectedOption: ElementRef;
 
   // TODO: Remove that if we decide to add image to annotationTypes
-  nodeTypeChoices = annotationTypes.concat({label: 'image', color: '#FFFFFF'});
+  nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
     [null, {
       name: '(Default)',
