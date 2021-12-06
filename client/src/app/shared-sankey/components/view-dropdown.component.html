@@ -14,16 +14,17 @@
         </button>
         <div class="dropdown-divider"></div>
         <button ngbDropdownItem [disabled]="!object?.isEditable"
-                (click)="confirmSaveView()">
+                (click)="saveView()">
             Save view
         </button>
         <div class="dropdown-divider" *ngIf="views?.length"></div>
         <button ngbDropdownItem *ngFor="let view of views | keyvalue" (click)="setViewFromName(view.key)">
-            {{ view.key }} <i [ngClass]="{
+            <div>{{ view.key }}</div>
+            <i [ngClass]="{
                         'fa fa-trash': true,
                         'disabled': !object?.isEditable
                         }"
-                              (click)="confirmDeleteViews()"></i>
+               (click)="confirmDeleteView(view.key)"></i>
         </button>
     </div>
 </div>

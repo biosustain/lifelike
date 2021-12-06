@@ -9,6 +9,7 @@
 
     <ng-container *ngIf="object">
         <app-module-header [object]="object"
+                           *ngIf="(allData | async) as data"
                            (dragStarted)="dragStarted($event)">
             <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                              [object]="object" [showDelete]="false"
@@ -17,7 +18,7 @@
             <app-warning-pill></app-warning-pill>
             <ng-container moduleMenuAdditions>
                 <div class="dropdown-divider"></div>
-                <button (click)="open(logModal)" *ngIf="allData?.graph.log" ngbDropdownItem>
+                <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
                     Open logs
                     <ng-template #logModal let-modal>
                         <div class="modal-header">
@@ -29,16 +30,16 @@
                         </div>
                         <div class="modal-body p-0 pb-1">
                             <ng-container
-                                    *ngIf="isArray(allData.graph.log); else justText">
+                                    *ngIf="isArray(data.graph.log); else justText">
 
                                 <ul class="list-group list-group-flush">
-                                    <li *ngFor="let log of allData.graph.log"
+                                    <li *ngFor="let log of data?.graph.log"
                                         class="list-group-item"
                                     >{{ log }}</li>
                                 </ul>
                             </ng-container>
                             <ng-template #justText>
-                                {{ allData.graph.log }}
+                                {{ data.graph.log }}
                             </ng-template>
                         </div>
                     </ng-template>
@@ -54,7 +55,7 @@
                             </button>
                         </div>
                         <div class="modal-body" [style.whiteSpace]="'pre-line'">
-                            {{ allData.graph.description }}
+                            {{ data.graph.description }}
                         </div>
                     </ng-template>
                 </button>
@@ -72,7 +73,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <app-object-explorer [dataSource]="allData"></app-object-explorer>
+                            <app-object-explorer [dataSource]="data"></app-object-explorer>
                         </div>
                     </ng-template>
                 </button>
@@ -101,6 +102,7 @@
                     [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
                     class="d-inline-block"
                     [object]="object"
+                    *ngIf="data"
                     [(activeViewName)]="activeViewName"
                     [preselectedViewBase]="preselectedViewBase"
                     (viewDataChanged)="saveFile()"
@@ -163,20 +165,20 @@
                 </div>
             </div>
         </app-module-header>
-        <div class="relative w-100 h-100 overflow-hidden">
+        <div class="relative w-100 h-100 overflow-hidden" *ngIf="(dataToRender | async) as renderData">
             <as-split [gutterSize]="5"
                       direction="horizontal"
                       unit="pixel"
             >
                 <as-split-area [order]="0">
                     <app-sankey-many-to-many #sankey
-                                             *ngIf="dataToRender | async"
+                                             *ngIf="renderData"
+                                             [data]="renderData"
                                              (linkClicked)="selectLink($event)"
                                              (nodeClicked)="selectNode($event)"
                                              (backgroundClicked)="closeDetailsPanel();resetSelection()"
                                              [highlightCircular]="state.highlightCircular"
                                              [nodeAlign]="nodeAlign"
-                                             [data]="dataToRender | async"
                                              [normalizeLinks]="state.normalizeLinks"
                                              [selected]="selection | async"
                                              [searchedEntities]="entitySearchList | async"
