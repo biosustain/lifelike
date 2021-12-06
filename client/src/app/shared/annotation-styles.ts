@@ -202,8 +202,7 @@ const annotationTypes: AnnotationStyle[] = [
   /**
    * Adding image here allows to change the entity type to image and adds it to a pallete. Currently, we cannot
    * handle such behaviour. If we decide to add additional image handling options (like adding additional tab,
-   * where we can handle uploading from file/resizing ect.), we should uncomment that AND remove concat
-   * from node-form-component.ts
+   * where we can handle uploading from file/resizing ect.), we should uncomment that
    */
   // {
   //   label: 'image',
