@@ -20,7 +20,7 @@ RUN mvn -B clean package -DskipTests
 FROM liquibase/liquibase:$LIQUIBASE_IMAGE_TAG
 
 # Install liquibase-neo4j extension
-ARG LIQUIBASE_NEO4J_VERSION=4.6.1
+ARG LIQUIBASE_NEO4J_VERSION=4.6.2
 RUN lpm update && lpm add --global liquibase-neo4j@$LIQUIBASE_NEO4J_VERSION
 
 # Download Neo4j JDBC driver
@@ -41,13 +41,17 @@ ENV NEO4J_DATABASE=neo4j
 
 # Remote storage configuration
 ENV STORAGE_TYPE=azure
-ENV STORAGE_AZURE_ACCOUNT_NAME=***ARANGO_DB_NAME***
-ENV STORAGE_AZURE_ACCOUNT_KEY=pom
+ENV AZURE_ACCOUNT_STORAGE_NAME=***ARANGO_DB_NAME***
+ENV AZURE_ACCOUNT_STORAGE_KEY=
 
 # Liquibase configuration
-ENV LOG_LEVEL=INFO
+ENV LOG_LEVEL=WARNING
+
+# Add wait-for-it command
+ADD --chown=liquibase:liquibase https://raw.githubusercontent.com/vishnubob/wait-for-it/81b1373f17855a4dc21156cfe1694c31d7d1792e/wait-for-it.sh ./
+RUN chmod +x ./wait-for-it.sh
 
 # Override parent image entrypoint
 COPY --chown=liquibase:liquibase docker-entrypoint.sh ./
 
-USER ***ARANGO_USERNAME***
+CMD ["--help"]

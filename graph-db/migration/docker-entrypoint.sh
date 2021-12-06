@@ -4,10 +4,6 @@ set -e
 ## This is a modified version of the official Docker entrypoint script.
 ## Ref: https://github.com/liquibase/docker/blob/ff6b4b8753d4a8a755521bf0e99bf3f03ecbfa08/docker-entrypoint.sh
 
-if [[ "$INSTALL_MYSQL" ]]; then
-  lpm add mysql --global
-fi
-
 if type "$1" > /dev/null 2>&1; then
   ## First argument is an actual OS command. Run it
   exec "$@"
@@ -16,6 +12,26 @@ else
     ## Just run as-is
     liquibase "$@"
   else
+    ## Validate envrioment variables
+    if [ -z "$NEO4J_HOST" ]; then
+      echo "NEO4J_HOST environment variable is not set. Please set it to the hostname or IP address of the Neo4j server."
+      exit 1
+    elif [[ "$NEO4J_HOST" != *":"* ]]; then
+      ## If no port is specified, use the default one
+      NEO4J_HOST="$NEO4J_HOST:7687"
+    fi
+    if [ "$STORAGE_TYPE" != "azure" ]; then
+      echo "STORAGE_TYPE environment is set to an invalid valie. `azure` is currently only supported."
+      exit 1
+    fi
+    if [ -z "$AZURE_ACCOUNT_STORAGE_KEY" ]; then
+      echo "AZURE_ACCOUNT_STORAGE_KEY environment variable is not set. Please set it to the storage account key."
+      exit 1
+    fi
+
+    ## Wait until Neo4j is available
+    ./wait-for-it.sh "${NEO4J_HOST}" -t 120 -- echo "Neo4j is up"
+
     ## Include standard defaultsFile
     liquibase \
       --defaults-file=/liquibase/liquibase.docker.properties \
@@ -27,8 +43,8 @@ else
       -Dneo4jHost=bolt://$NEO4J_HOST \
       -Dneo4jCredentials=$NEO4J_USERNAME,$NEO4J_PASSWORD \
       -Dneo4jDatabase=$NEO4J_DATABASE \
-      -DazureStorageName=$STORAGE_AZURE_ACCOUNT_NAME \
-      -DazureStorageKey=$STORAGE_AZURE_ACCOUNT_KEY \
+      -DazureStorageName=$AZURE_ACCOUNT_STORAGE_NAME \
+      -DazureStorageKey=$AZURE_ACCOUNT_STORAGE_KEY \
       -DlocalSaveFileDir=/tmp
   fi
 fi
