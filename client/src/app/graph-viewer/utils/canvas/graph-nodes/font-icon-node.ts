@@ -15,6 +15,7 @@ export interface IconNodeOptions {
  */
 export class FontIconNode extends PlacedNode {
   readonly resizable = false;
+  readonly uniformlyResizable = false;
 
   readonly x: number;
   readonly y: number;
