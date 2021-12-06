@@ -32,17 +32,14 @@ RUN yarn install
 # ========================================
 # Angular app bundle build
 # ========================================
-FROM $NODE_IMAGE_TAG as angular-build
-
-# Copy node_nodules
-COPY --from=angular-deps /app/node_modules ./
+FROM angular-deps as angular-build
 
 # Copy the code and build the app bundle
 COPY src ./src
 COPY tslint ./tslint
 COPY e2e ./e2e
 COPY *.json browserslist ./
-RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
+RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 
 
 # ========================================
