@@ -13,7 +13,7 @@ import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import {MimeTypes, Unicodes, FAClass, SpecialIconColors} from 'app/shared/constants';
+import {MimeTypes, Unicodes, FAClass, CustomIconColors} from 'app/shared/constants';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';

@@ -116,7 +116,7 @@ export enum Unicodes {
   Cytoscape = '\ue004'
 }
 // Colors used to render microsoft icons - they should not change
-export enum SpecialIconColors {
+export enum CustomIconColors {
   Excel = '#2e7d32',
   Word = '#0d47a1',
   PowerPoint = '#e64a19',
