@@ -5,85 +5,28 @@
     git_timestamp: "{{ set_git_timestamp | default('not specified') }}"
     app_build_number: "{{ set_app_build_number | default('not specified') }}"
     app_version: "{{ set_app_version | default('not specified') }}"
+
   roles:
     - role: docker
-      tags: ["docker"]
+      tags: docker
 
   tasks:
-    - name: Install utils
-      apt:
-        update_cache: yes
-        pkg:
-          - fail2ban
-          # for liquibase
-          - openjdk-11-jdk
-
-    - name: Create liquibase directory
-      file:
-        name: "{{ LIQUIBASE_INSTALL_FOLDER }}"
-        state: directory
-        mode: 0755
-
-    - name: Install liquibase
-      unarchive:
-        src: https://github.com/liquibase/liquibase/releases/download/v{{ LIQUIBASE_VERSION }}/liquibase-{{ LIQUIBASE_VERSION }}.tar.gz
-        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}"
-        remote_src: yes
-        mode: 0755
-        creates: "{{ LIQUIBASE_INSTALL_FOLDER }}/liquibase"
-
-    - name: Download liquibase-neo4j jar
-      get_url:
-        url: https://github.com/liquibase/liquibase-neo4j/releases/download/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}.jar
-        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/lib/liquibase-neo4j-{{ LIQUIBASE_NEO4J_VERSION }}.jar"
-        mode: 0755
-
-    - name: Download neo4j-jdbc jar
-      get_url:
-        url: https://github.com/neo4j-contrib/neo4j-jdbc/releases/download/{{ LIQUIBASE_NEO4J_JDBC_VERSION }}/neo4j-jdbc-driver-{{ LIQUIBASE_NEO4J_JDBC_VERSION }}.jar
-        dest: "{{ LIQUIBASE_INSTALL_FOLDER }}/lib/neo4j-jdbc-driver-{{ LIQUIBASE_NEO4J_JDBC_VERSION }}.jar"
-        mode: 0755
-
     - name: Log into Docker Registry
       docker_login:
-        registry_url: ***ARANGO_DB_NAME***.azurecr.io
+        registry_url: "{{ registry_url | default('***ARANGO_DB_NAME***.azurecr.io') }}"
         username: "{{ AZURE_CR_USERNAME }}"
         password: "{{ AZURE_CR_PASSWORD }}"
       tags:
         - deploy
+        - docker
 
-    - name: Pull Docker Images
-      docker_image:
-        name: "***ARANGO_DB_NAME***.azurecr.io/{{ item }}:{{ docker_img_hash }}"
-        source: pull
-      with_items:
-        - kg-appserver
-        - kg-webserver
-        - kg-cache-service
-        - kg-liquibase
-      tags:
-        - deploy
-
-    - name: Pull PDFParser Docker Image
-      docker_image:
-        name: "***ARANGO_DB_NAME***.azurecr.io/{{ item }}:latest"
-        source: pull
-      with_items:
-        - kg-pdfparser
-      tags:
-        - deploy
-
-    - name: Copy docker-compose files
+    - name: Copy docker-compose file
       copy:
-        src: "./files/{{ item }}"
+        src: files/docker-compose.yml
         dest: "{{ deploy_dir }}"
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
-        mode: u=rw,g=r,o=r
-      with_items:
-        - docker-compose.yml
       tags:
         - deploy
+        - docmer-compose
 
     - name: Create .env file
       copy:
@@ -130,115 +73,61 @@
           ELASTIC_APM_SERVER_URL={{ ELASTIC_APM_SERVER_URL }}
           ASSETS_FOLDER="/home/n4j/assets/"
         dest: "{{ deploy_dir }}/.env"
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
-        mode: u=rw,g=r,o=r
       tags:
         - deploy
+        - docker-compose
 
-    - name: Creates liquibase data file directory
-      file:
-        path: "{{ deploy_dir }}/liquibase-data-files"
-        state: directory
-        mode: "774"
-        owner: "{{ deploy_user }}"
-
-    - name: Create liquibase.properties file
-      copy:
-        content: |
-          # properties used by liquibase command line
-          changeLogFile=***ARANGO_DB_NAME***-graph/changelog-master.xml
-          url=jdbc:neo4j:bolt://{{ NEO4J_HOST }}?database={{ NEO4J_AUTH.split("/")[0] }}
-          username={{ NEO4J_AUTH.split("/")[0] }}
-          password={{ NEO4J_AUTH.split("/")[1] }}
-          # properties used as parameters by *Handler.java classes in liquibase changelog.xml
-          parameter.neo4jHost=bolt://{{ NEO4J_HOST }}
-          # separate credentials by comma; username first: <username>,<password>
-          parameter.neo4jCredentials={{ NEO4J_AUTH | replace("/", ",")}}
-          parameter.neo4jDatabase={{ NEO4J_AUTH.split("/")[0] }}
-          parameter.azureStorageName={{ AZURE_ACCOUNT_STORAGE_NAME }}
-          parameter.azureStorageKey={{ AZURE_ACCOUNT_STORAGE_KEY }}
-          parameter.localSaveFileDir={{ deploy_dir }}/liquibase-data-files
-          liquibase.hub.mode=off
-        dest: "{{ deploy_dir }}/liquibase.properties"
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
-        mode: u=rw,g=r,o=r
+    - name: Create and start services in Docker Compose file
+      community.docker.docker_compose:
+        project_src: "{{ deploy_dir }}"
+      register: docker_compose_up_output
       tags:
         - deploy
-
-    - name: Stop any previous containers
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: docker stop $(docker ps -aq)
-
-    - name: Pull latest docker images (if any)
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose pull"
-      tags:
-        - deploy
-
-    - name: Start docker
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose up -d"
-      tags:
-        - deploy
-
-    - name: Run Neo4j liquibase migration
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/***ARANGO_DB_NAME***-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }}/lib && \
-              chown ansible:ansible {{ LIQUIBASE_INSTALL_FOLDER }}/lib/*.jar && \
-              docker cp liquibase:/home/neo4j/liquibase {{ deploy_dir }} && \
-              mv {{ deploy_dir }}/liquibase.properties {{ deploy_dir }}/liquibase && \
-              chown ansible:ansible -R {{ deploy_dir }}/liquibase && \
-              cd {{ deploy_dir }}/liquibase && \
-              touch output.txt && : > output.txt && \
-              /opt/liquibase/liquibase --log-level=info update >> output.txt 2>&1"
-      tags:
-        - deploy
-
-    - name: Clean up Neo4j liquibase files
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "rm -rf {{ deploy_dir }}/liquibase-data-files/*"
-      tags:
-        - deploy
-
-    - name: Prune unused images
-      shell:
-        "docker image prune -a -f"
-      tags:
-        - deploy
+        - docker-compose
 
     - name: Run the PostgreSQL migration
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -T appserver bin/migrate-db --upgrade --data-migrate"
+      community.docker.docker_container_exec:
+        container: appserver
+        command: bin/migrate-db --upgrade --data-migrate
+      register: postgres_migration_output
       tags:
-        - deploy
-
-    - name: Create LMDB directory
-      file:
-        path: "{{ deploy_dir }}/lmdb"
-        state: directory
-        mode: "774"
-        owner: "{{ deploy_user }}"
-        group: "1000" # We do this because of group permissions 1000 in Docker
+        - migration
+        - postgres
 
     - name: Create/Update LMDB database
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose exec -d -T appserver flask load-lmdb"
+      community.docker.docker_container_exec:
+        container: appserver
+        command: flask load-lmdb
+      register: load_lmdb_output
       tags:
-        - deploy
+        - lmdb
+
+    - name: Run the graph database migration task
+      docker_container:
+        state: started
+        image: ***ARANGO_DB_NAME***.azurecr.io/kg-liquibase:{{ loquibase_image_tag | default(docker_img_hash) }}
+        name: kg-liquibase
+        pull: yes
+        restart_policy: on-failure
+        env:
+          NEO4J_HOST: "{{ NEO4J_HOST }}"
+          NEO4J_USERNAME: "{{ NEO4J_AUTH | split('/')[0] }}"
+          NEO4J_PASSWORD: "{{ NEO4J_AUTH | split('/')[1] }}"
+          NEO4J_DATABASE: "{{ NEO4J_DATABASE | default('neo4j') }}"
+          AZURE_ACCOUNT_NAME: "{{ AZURE_ACCOUNT_STORAGE_NAME }}"
+          AZURE_ACCOUNT_KEY: "{{ AZURE_ACCOUNT_STORAGE_KEY }}"
+        command: update
+      tags:
+        - migration
+        - neo4j
 
     - name: Seed Elasticsearch
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose run -d -T appserver flask reset-elastic"
+      community.docker.docker_container_exec:
+        container: appserver
+        command: flask reset-elastic
+      register: reset_elastic_output
+      tags:
+        - elasticsearch
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
@@ -247,5 +136,5 @@
           tags:
             - always
       tags:
+        - elasticsearch
         - annotation
-        - deploy
