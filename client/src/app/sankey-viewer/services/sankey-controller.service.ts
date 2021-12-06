@@ -149,7 +149,7 @@ export class SankeyControllerService {
     };
   }
 
-  allData: SankeyData;
+  allData: BehaviorSubject<SankeyData> = new BehaviorSubject(undefined);
   dataToRender = new BehaviorSubject(undefined);
 
   options: SankeyOptions;
@@ -206,7 +206,7 @@ export class SankeyControllerService {
   }
 
   get oneToMany() {
-    const {graph: {node_sets}} = this.allData;
+    const {graph: {node_sets}} = this.allData.value;
     const {selectedNetworkTrace} = this;
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
@@ -241,7 +241,7 @@ export class SankeyControllerService {
     const traceGroupColorMap = colorMap ? colorMap : new Map(
       networkTrace.traces.map(({_group}) => [_group, christianColors[_group]])
     );
-    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
+    const networkTraceLinks = networkTrace.traces.reduce((o, trace, traceIdx) => {
       const color = traceGroupColorMap.get(trace._group);
       trace._color = color;
       return o.concat(
@@ -252,7 +252,7 @@ export class SankeyControllerService {
             _color: color,
             _trace: trace,
             _order: -trace._group,
-            _id: `${originLink._id}_${trace._group}`
+            _id: `${originLink._id}_${trace._group}_${traceIdx}`
           };
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
@@ -312,7 +312,7 @@ export class SankeyControllerService {
   }
 
   getPathReports() {
-    const {nodes, links, graph} = this.allData;
+    const {nodes, links, graph} = this.allData.value;
     const pathReports: SankeyPathReport = {};
     graph.trace_networks.forEach(traceNetwork => {
       pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
@@ -453,7 +453,7 @@ export class SankeyControllerService {
     if (!selectedNetworkTrace) {
       return;
     }
-    const {links, nodes, graph: {node_sets}} = this.allData;
+    const {links, nodes, graph: {node_sets}} = this.allData.value;
     const {palette: {palette}} = this;
     const traceColorPaletteMap = createMapToColor(
       selectedNetworkTrace.traces.map(({_group}) => _group),
@@ -588,7 +588,7 @@ export class SankeyControllerService {
   // endregion
 
   resetController() {
-    this.load(this.allData).then(() => {
+    this.load(this.allData.value).then(() => {
     }, console.error);
   }
 
@@ -608,14 +608,16 @@ export class SankeyControllerService {
         tr._group = (isNil(tr.group) || tr.group === -1) ? ++maxVal : tr.group;
       });
     });
-    this.allData = transform(content, (result, value, key) => {
-      // only views are editable
-      if (key === '_views') {
-        result[key] = value;
-      } else {
-        result[key] = cloneDeepWith(value, Object.freeze);
-      }
-    }, {}) as SankeyData;
+    this.allData.next(
+      transform(content, (result, value, key) => {
+        // only views are editable
+        if (key === '_views') {
+          result[key] = value;
+        } else {
+          result[key] = cloneDeepWith(value, Object.freeze);
+        }
+      }, {}) as SankeyData
+    );
   }
 
   addIds(content) {
