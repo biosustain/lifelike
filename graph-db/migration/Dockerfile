@@ -6,11 +6,11 @@ ARG LIQUIBASE_IMAGE_TAG=4.6
 FROM maven:3.8-jdk-11 as build
 
 # Install dependencies
-COPY pom.xml ./
+COPY liquibase-src/pom.xml ./
 RUN mvn -B dependency:go-offline
 
 # Copy code and build JAR
-COPY src ./src
+COPY liquibase-src/src ./src
 RUN mvn -B clean package -DskipTests
 
 
