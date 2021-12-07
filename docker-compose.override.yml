@@ -34,14 +34,15 @@ services:
         container_name: liquibase
         build: ./graph-db/migration
         command: status
+        env_file:
+            - azure-secrets.env
         environment:
             - NEO4J_HOST=graphdatabase:7687
+            - NEO4J_PASSWORD=password
         networks:
             - backend
         depends_on:
-            graphdatabase:
-                  condition: service_healthy
-
+            - graphdatabase
 
     appserver:
         container_name: appserver
