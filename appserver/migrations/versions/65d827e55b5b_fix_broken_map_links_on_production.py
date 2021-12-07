@@ -8,6 +8,8 @@ Create Date: 2021-12-07 00:35:15.548428
 from alembic import context, op
 import hashlib
 import json
+import logging
+import os
 import re
 import sqlalchemy as sa
 from sqlalchemy import table, column, and_
@@ -22,11 +24,19 @@ down_revision = 'e32ff16900a3'
 branch_labels = None
 depends_on = None
 
+logger = logging.getLogger('alembic.runtime.migration.' + __name__)
+
 
 def upgrade():
-    pass
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
-        data_upgrades()
+        # This migration may have unintended side effects on environments other than production.
+        if os.getenv('FLASK_APP_CONFIG') == 'Production':
+            data_upgrades()
+        else:
+            logger.info(
+                'Detected non-prouction environment, skipping data upgrades for this' +
+                'migration'
+            )
 
 
 def data_upgrades():
@@ -91,7 +101,7 @@ def data_upgrades():
     new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
-        print(f'Replacing links in file #{fcid}')
+        logger.info(f'Replacing links in file #{fcid}')
         map_json = json.loads(raw_file.decode('utf-8'))
 
         for node in map_json['nodes']:
@@ -100,7 +110,7 @@ def data_upgrades():
                 if link_search is not None:
                     hash_id = link_search.group(1)
                     if hash_id in HASH_CONVERSION_MAP:
-                        print(
+                        logger.info(
                             f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
                             f'{HASH_CONVERSION_MAP[hash_id]}'
                         )
@@ -116,7 +126,7 @@ def data_upgrades():
                     if link_search is not None:
                         hash_id = link_search.group(1)
                         if hash_id in HASH_CONVERSION_MAP:
-                            print(
+                            logger.info(
                                 f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
                                 f'{HASH_CONVERSION_MAP[hash_id]}'
                             )
