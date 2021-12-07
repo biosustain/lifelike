@@ -8,7 +8,7 @@ To run migrations from Lifelike Docker registry latest image, you can run the fo
 ```bash
 docker run --rm --network host
   --env NEO4J_HOST=http://localhost:7687 \
-  --env NEO4J_USER=neo4j --env NEO4J_PASSWORD=password \
+  --env NEO4J_USERNAME=neo4j --env NEO4J_PASSWORD=password \
   --env AZURE_ACCOUNT_STORAGE_KEY=<your-key> \
   ***ARANGO_DB_NAME***.azurecr.io/liquibase:latest \
   update
@@ -16,16 +16,16 @@ docker run --rm --network host
 
 ### Environment Variables
 
-| Variable                   | Default value | Comment |
-| -------------------------- | ------------- | ------- |
+| Variable                   | Default value | Comment                       |
+| -------------------------- | ------------- | ----------------------------- |
 | NEO4J_HOST                 | neo4j:7687    | Host and port of target Neo4j instance (Bolt protocol) |
 | NEO4J_USERNAME             | neo4j         | Neo4j authentication username |
 | NEO4J_PASSWORD             | password      | Neo4j authentication password |
-| NEO4J_DATABASE             | neo4j         | Neo4j target database |
+| NEO4J_DATABASE             | neo4j         | Neo4j target database         |
 | STORAGE_TYPE               | azure         | Remote storage type from where to download datasets (`azure` is currently only supported) |
-| AZURE_ACCOUNT_STORAGE_NAME | ***ARANGO_DB_NAME***      | Azure Storage Account Name |
-| AZURE_ACCOUNT_STORAGE_KEY  |               | Required. Key for Azure Storage Account |
-| LOG_LEVEL                  | WARNING       | Liquibase log level |
+| AZURE_ACCOUNT_STORAGE_NAME | ***ARANGO_DB_NAME***      | Azure Storage Account Name    |
+| AZURE_ACCOUNT_STORAGE_KEY  |               | Required. Azure Storage Key   |
+| LOG_LEVEL                  | WARNING       | Liquibase log level           |
 
 ### Build Docker image
 
