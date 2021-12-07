@@ -5,27 +5,14 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3686 remove stale global inclusion node properties" author="Binh Vu">
+  <changeSet id="Add index to global inclusion queries" author="Binh Vu">
+    <validCheckSum>84d92d37-95bc-4198-85cd-b6b0986981d4</validCheckSum>
     <comment>
-      There are leftover node properties that were added when we were in the early stages of implementing global inclusions to the graph.
-      Need to remove those as they are not used.
+      Add index to properties that are used by global inclusion.
     </comment>
     <sql>
-      MATCH (n:db_MESH) WHERE exists(n.entity_type) REMOVE n.entity_type;
-      MATCH (n:db_MESH) WHERE exists(n.inclusion_date) REMOVE n.inclusion_date;
-      MATCH (n:db_MESH) WHERE exists(n.user) REMOVE n.user;
-      MATCH (n:Gene) WHERE exists(n.inclusion_date) REMOVE n.inclusion_date;
-      MATCH (n:Gene) WHERE exists(n.user) REMOVE n.user;
-      MATCH (n:Taxonomy) WHERE exists(n.entity_type) REMOVE n.entity_type;
-      MATCH (n:Taxonomy) WHERE exists(n.inclusion_date) REMOVE n.inclusion_date;
-      MATCH (n:Taxonomy) WHERE exists(n.user) REMOVE n.user;
-      MATCH (n:db_UniProt) WHERE exists(n.user) REMOVE n.user;
-      MATCH (n:db_UniProt) WHERE exists(n.inclusion_date) REMOVE n.inclusion_date;
-      MATCH (n:db_Lifelike) WHERE exists(n.external_id) REMOVE n.external_id;
-      MATCH (n:db_Lifelike) WHERE exists(n.entity_type) REMOVE n.entity_type;
-      MATCH (n:db_Lifelike) WHERE exists(n.hyperlink) REMOVE n.hyperlink;
-      MATCH (n:db_Lifelike) WHERE exists(n.inclusion_date) REMOVE n.inclusion_date;
-      MATCH (n:db_Lifelike) WHERE exists(n.user) REMOVE n.user;
+      CREATE CONSTRAINT constraint_lifelike_name IF NOT EXISTS ON (n:db_Lifelike) ASSERT n.name IS UNIQUE;
+      CREATE INDEX index_lifelike_id IF NOT EXISTS FOR (n:db_Lifelike) ON (n.eid)
     </sql>
   </changeSet>
 </databaseChangeLog>

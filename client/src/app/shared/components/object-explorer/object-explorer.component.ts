@@ -1,4 +1,4 @@
-import { Component, Input, } from '@angular/core';
+import { Component, Input, isDevMode, } from '@angular/core';
 import { isDataSource } from '@angular/cdk/collections';
 
 import { Observable } from 'rxjs';
@@ -35,9 +35,10 @@ export class ObjectExplorerComponent {
       if (node.children) {
         return node.children;
       }
+      const filterPrivateProperties: (value: any) => boolean = isDevMode() ? () => true : ([label]) => label[0] !== '_';
       return Object.entries(node)
         // filter out internally used properties (not allowed in file)
-        .filter(([label]) => label[0] !== '_')
+        .filter(filterPrivateProperties)
         .map(([label, value], index) => {
           const n = {
             label: label

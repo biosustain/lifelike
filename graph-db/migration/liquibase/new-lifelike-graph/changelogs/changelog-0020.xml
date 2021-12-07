@@ -5,31 +5,32 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3213 GO data constraints on date 10052021" author="Binh Vu">
-    <comment>Create constraints and indexes for GO nodes</comment>
+  <changeSet id="LL-3212 create NCBI taxonomy constraints on date 10072021" author="Binh Vu">
+    <validCheckSum>eca03812-3ef4-444a-9fde-629ed3d2b4be</validCheckSum>
+    <comment>Create constraints and indexes for NCBI taxonomy nodes</comment>
     <sql>
-    CREATE CONSTRAINT constraint_go_id IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
+    CREATE CONSTRAINT constraint_taxonomy_id IF NOT EXISTS ON (n:Taxonomy) ASSERT n.eid IS UNIQUE;
 CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
-CREATE INDEX index_go_name IF NOT EXISTS FOR (n:db_GO) ON (n.name);
+CREATE INDEX index_taxonomy_name IF NOT EXISTS FOR (n:Taxonomy) ON (n.name);
+CREATE INDEX index_taxonomy_speciesid IF NOT EXISTS FOR (n:Taxonomy) ON (n.species_id);
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3213 load GO BiologicalProcess on date 10052021" author="Binh Vu">
+  <changeSet id="LL-3212 NCBI taxonomy data on date 10072021" author="Binh Vu">
+    <validCheckSum>aaa70b55-c65d-4118-b74d-acb5cff1dc0e</validCheckSum>
     <comment>
-        Load GO BiologicalProcess
+        Load NCBI taxonomy nodes
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows as row
-MERGE (n:db_GO {eid: row.eid})
-SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
-FOREACH (item IN CASE WHEN row.namespace = 'biological_process' THEN [1] ELSE [] END | SET n:BiologicalProcess)
-RETURN COUNT(*)
+MERGE (n:Taxonomy {eid: row.eid})
+SET n:db_NCBI,n.name=row.name,n.rank=row.rank,n.category=row.category,n.parent_id=row.parent_id,n.data_source='NCBI Taxonomy'
       "
-      fileName="jira-LL-3213-go-data.zip"
+      fileName="jira-LL-3212-taxonomy.zip"
       startAt="1"
-      fileType="TSV"
+      fileType="TSV" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
@@ -39,71 +40,23 @@ RETURN COUNT(*)
     />
   </changeSet>
 
-  <changeSet id="LL-3213 load GO MolecularFunction on date 10052021" author="Binh Vu">
+  <changeSet id="LL-3212 load NCBI taxonomy synonym relationship on date 10072021" author="Binh Vu">
+    <validCheckSum>8217d97a-b1f5-401a-a025-affa57765db8</validCheckSum>
     <comment>
-        Load GO MolecularFunction
+        Load NCBI synonym taxonomy relationship
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows as row
-MERGE (n:db_GO {eid: row.eid})
-SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
-FOREACH (item IN CASE WHEN row.namespace = 'molecular_function' THEN [1] ELSE [] END | SET n:MolecularFunction)
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-data.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO CellularComponent on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO CellularComponent
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MERGE (n:db_GO {eid: row.eid})
-SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
-FOREACH (item IN CASE WHEN row.namespace = 'cellular_component' THEN [1] ELSE [] END | SET n:CellularComponent)
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-data.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO synonym on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO synonym relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MERGE (a:Synonym {name: row.name}) set a.lowercase_name=toLower(row.name)
-WITH row, a MATCH (b:db_GO {eid: row.eid})
+      UNWIND $rows AS row
+MERGE (a:Synonym {name: row.name}) SET a.lowercase_name=toLower(row.name)
+WITH row, a MATCH (b:Taxonomy {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
+SET r.type=row.type
       "
-      fileName="jira-LL-3213-go-data.zip"
+      fileName="jira-LL-3212-taxonomy2synonym.zip"
       startAt="1"
-      fileType="TSV"
+      fileType="TSV" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
@@ -113,243 +66,25 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
     />
   </changeSet>
 
-  <changeSet id="LL-3213 load GO IS_A on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO IS_A relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
+  <changeSet id="LL-3212 create relationship between taxonomy and parent nodes on date 10072021" author="Binh Vu">
+    <validCheckSum>7986f16c-a338-4a14-9ad1-9140cd19f3b3</validCheckSum>
+    <comment>Taxonomy relationship with parent</comment>
+    <sql>
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:Taxonomy), (m:Taxonomy) WHERE m.eid = n.parent_id RETURN n, m',
+        'MERGE (n)-[:HAS_PARENT]->(m)', {batchSize:5000})
+        
+    </sql>
   </changeSet>
 
-  <changeSet id="LL-3213 load GO PART_OF on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO PART_OF relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'PART_OF' THEN [1] ELSE [] END | MERGE (a)-[r:PART_OF]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO REGULATES on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO REGULATES relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:REGULATES]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO HAS_PART on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO HAS_PART relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO REPLACED_BY on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO REPLACED_BY relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'REPLACED_BY' THEN [1] ELSE [] END | MERGE (a)-[r:REPLACED_BY]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO NEGATIVELY_REGULATES on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO NEGATIVELY_REGULATES relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'NEGATIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:NEGATIVELY_REGULATES]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO POSITIVELY_REGULATES on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO POSITIVELY_REGULATES relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'POSITIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:POSITIVELY_REGULATES]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO OCCURS_IN on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO OCCURS_IN relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'OCCURS_IN' THEN [1] ELSE [] END | MERGE (a)-[r:OCCURS_IN]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO HAPPENS_DURING on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO HAPPENS_DURING relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'HAPPENS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:HAPPENS_DURING]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
-  </changeSet>
-
-  <changeSet id="LL-3213 load GO ENDS_DURING on date 10052021" author="Binh Vu">
-    <comment>
-        Load GO ENDS_DURING relationship
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
-FOREACH (item IN CASE WHEN row.relationship = 'ENDS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:ENDS_DURING]->(b))
-RETURN COUNT(*)
-      "
-      fileName="jira-LL-3213-go-relationship.zip"
-      startAt="1"
-      fileType="TSV"
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-    />
+  <changeSet id="LL-3212 set species_id for taxonomy nodes on date 10072021" author="Binh Vu">
+    <validCheckSum>1b8a380a-a0d8-4761-8809-ee22e30efff1</validCheckSum>
+    <comment>Taxonomy needs species_id</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+      "MATCH (n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'}) RETURN n, s",
+      "SET n.species_id = s.eid", {batchSize:5000})
+    </sql>
   </changeSet>
 </databaseChangeLog>

@@ -9,9 +9,9 @@
         </app-module-error>
     </ng-container>
     <app-module-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
-                <app-object-menu [object]="map" [forEditing]="false"
+                <app-module-menu [object]="map" [forEditing]="false"
                                  [showOpen]="false" [showDelete]="false">
-                </app-object-menu>
+                </app-module-menu>
         <div class="btn-group ml-1 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"

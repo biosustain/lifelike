@@ -5,28 +5,31 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="LL-3212 create NCBI taxonomy constraints on date 10072021" author="Binh Vu">
-    <comment>Create constraints and indexes for NCBI taxonomy nodes</comment>
+  <changeSet id="LL-3211 load NCBI gene constraints on date 10072021" author="Binh Vu">
+    <validCheckSum>6b6e61a9-0169-4cc1-8cf8-737aec860620</validCheckSum>
+    <comment>Create constraints and indexes for NCBI gene nodes</comment>
     <sql>
-    CREATE CONSTRAINT constraint_taxonomy_id IF NOT EXISTS ON (n:Taxonomy) ASSERT n.eid IS UNIQUE;
+    CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
 CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
-CREATE INDEX index_taxonomy_name IF NOT EXISTS FOR (n:Taxonomy) ON (n.name);
-CREATE INDEX index_taxonomy_speciesid IF NOT EXISTS FOR (n:Taxonomy) ON (n.species_id);
+CREATE INDEX index_gene_name IF NOT EXISTS FOR (n:Gene) ON (n.name);
+CREATE INDEX index_locus_tag IF NOT EXISTS FOR (n:Gene) ON (n.locus_tag);
+CREATE INDEX index_gene_taxid IF NOT EXISTS FOR (n:Gene) ON (n.tax_id);
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3212 NCBI taxonomy data on date 10072021" author="Binh Vu">
+  <changeSet id="LL-3211 NCBI gene data on date 10072021" author="Binh Vu">
+    <validCheckSum>927980e4-436f-4ffa-a9e9-15859a53f476</validCheckSum>
     <comment>
-        Load NCBI taxonomy nodes
+        Load NCBI gene nodes
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows as row
-MERGE (n:Taxonomy {eid: row.eid})
-SET n:db_NCBI,n.name=row.name,n.rank=row.rank,n.category=row.category,n.parent_id=row.parent_id,n.data_source='NCBI Taxonomy'
+MERGE (n:Gene {eid: row.eid})
+SET n:db_NCBI:Master,n.name=row.name,n.locus_tag=row.locus_tag,n.full_name=row.full_name,n.tax_id=row.tax_id,n.data_source=row.data_source
       "
-      fileName="jira-LL-3212-taxonomy.zip"
+      fileName="jira-LL-3211-gene.zip"
       startAt="1"
       fileType="TSV" 
       neo4jHost="${neo4jHost}"
@@ -35,23 +38,24 @@ SET n:db_NCBI,n.name=row.name,n.rank=row.rank,n.category=row.category,n.parent_i
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
       localSaveFileDir="${localSaveFileDir}"
+
     />
   </changeSet>
 
-  <changeSet id="LL-3212 load NCBI taxonomy synonym relationship on date 10072021" author="Binh Vu">
+  <changeSet id="LL-3211 load NCBI gene synonym relationship on date 10072021" author="Binh Vu">
+    <validCheckSum>cda244a1-1b8d-493b-98fe-5d29cae3b7e4</validCheckSum>
     <comment>
-        Load NCBI gene taxonomy relationship
+        Load NCBI gene synonym relationship
     </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-MERGE (a:Synonym {name: row.name}) SET a.lowercase_name=toLower(row.name)
-WITH row, a MATCH (b:Taxonomy {eid: row.eid})
+MERGE (a:Synonym {name: row.synonym}) SET a.lowercase_name=toLower(row.synonym)
+WITH row, a MATCH (b:Gene {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
-SET r.type=row.type
       "
-      fileName="jira-LL-3212-taxonomy2synonym.zip"
+      fileName="jira-LL-3211-gene_synonym.zip"
       startAt="1"
       fileType="TSV" 
       neo4jHost="${neo4jHost}"
@@ -60,24 +64,70 @@ SET r.type=row.type
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
       localSaveFileDir="${localSaveFileDir}"
+
     />
   </changeSet>
 
-  <changeSet id="LL-3212 create relationship between taxonomy and parent nodes on date 10072021" author="Binh Vu">
-    <comment>Taxonomy relationship with parent</comment>
+  <changeSet id="LL-3211 load NCBI gene to GO on date 10072021" author="Binh Vu">
+    <validCheckSum>8ecaf1a3-4dcf-45c7-90e8-3faf855cce93</validCheckSum>
+    <comment>
+        Load NCBI gene to GO
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+MATCH (a:Gene {eid: row.GeneID}), (b:db_GO {eid: row.GO_ID})
+MERGE (a)-[r:GO_LINK]->(b)
+RETURN COUNT(*)
+      "
+      fileName="jira-LL-3211-gene2go.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3211 update GO_LINK rel to have tax_id on date 10072021" author="Binh Vu">
+    <validCheckSum>3a05597f-659b-4aa1-ab2f-f8a1637c3ec7</validCheckSum>
+    <comment>tax_id is used by statistical enrichment cypher queries</comment>
     <sql>
     
         CALL apoc.periodic.iterate(
-        'MATCH (n:Taxonomy), (m:Taxonomy) WHERE m.eid = n.parent_id RETURN n, m',
-        'MERGE (n)-[:HAS_PARENT]->(m)', {batchSize:5000})
+        'MATCH (n:db_GO)-[r:GO_LINK]-(g:Gene) RETURN g.tax_id AS taxid, r',
+        'SET r.tax_id = taxid', {batchSize: 5000})
         
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3212 set species_id for taxonomy nodes on date 10072021" author="Binh Vu">
-    <comment>Taxonomy needs species_id</comment>
+  <changeSet id="LL-3211 update NCBI gene synonyms to have locus tag name on date 10072021" author="Binh Vu">
+    <validCheckSum>25f792a5-a4df-4166-af10-07cbb8f6c71e</validCheckSum>
+    <comment>NCBI gene synonym names should be locus tag</comment>
     <sql>
-    MATCH (n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'}) SET n.species_id = s.eid
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:Gene:db_NCBI) WHERE exists(n.locus_tag) AND n.locus_tag &lt;> &quot;&quot; AND n.locus_tag &lt;> n.name RETURN n',
+        'MERGE (s:Synonym {name:n.locus_tag}) SET s.lowercase_name = toLower(n.locus_tag) MERGE (n)-[:HAS_SYNONYM]->(s)',
+        {batchSize:10000})
+        
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3211 create relationship between gene and taxonomy nodes on date 10072021" author="Binh Vu">
+    <validCheckSum>0245f929-065a-40b7-9c1b-0b9b0061b0da</validCheckSum>
+    <comment>Gene and taxonomy need to be linked; important for annotations etc</comment>
+    <sql>
+    
+        CALL apoc.periodic.iterate(
+        'MATCH (n:Gene:db_NCBI), (t:Taxonomy {eid:n.tax_id}) RETURN n, t',
+        'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
+        
     </sql>
   </changeSet>
 </databaseChangeLog>
