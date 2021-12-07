@@ -14,7 +14,7 @@ services:
 
     graphdatabase:
         container_name: graphdatabase
-        image: neo4j:4.3
+        image: neo4j:4.3-community
         environment:
             - NEO4J_AUTH=neo4j/password
             - NEO4JLABS_PLUGINS=["apoc"]
