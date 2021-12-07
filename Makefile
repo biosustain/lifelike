@@ -47,6 +47,9 @@ docker-stop:
 docker-flask-seed:
 	docker-compose exec appserver flask seed
 
+docker-liquibase-update:
+	docker-compose run liquibase update
+
 clean-postgres:
 	# Quick command to drop the data in localhost postgres database
 	# Usually used to seed database from cloud backups
