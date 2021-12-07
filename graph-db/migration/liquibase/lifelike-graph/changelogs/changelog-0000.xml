@@ -11,7 +11,7 @@
   -->
 
   <changeSet id="LL-3625-create-index-on-original-entity-types" author="Binh Vu">
-    <validCheckSum>954d1ffd-f4ec-46a2-bd8d-50bdd74c6fdb</validCheckSum>
+    <validCheckSum>8:954d1ffd-f4ec-46a2-bd8d-50bdd74c6fdb</validCheckSum>
     <comment>Create an temp index to to speed things up.</comment>
     <sql>
       CREATE INDEX index_anatomy_original_entity_types IF NOT EXISTS FOR (n:Anatomy) ON (n.original_entity_types);
@@ -28,7 +28,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-mesh" author="Binh Vu">
-    <validCheckSum>344ffdfa-695a-4afa-9cec-7ceb593dfea0</validCheckSum>
+    <validCheckSum>8:344ffdfa-695a-4afa-9cec-7ceb593dfea0</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -57,7 +57,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-compound" author="Binh Vu">
-    <validCheckSum>7bec5783-b325-4dc8-a826-e65ffda821fb</validCheckSum>
+    <validCheckSum>8:7bec5783-b325-4dc8-a826-e65ffda821fb</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -86,7 +86,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-chemical" author="Binh Vu">
-    <validCheckSum>1f2a47e2-a185-440a-a959-e014ecb72c8d</validCheckSum>
+    <validCheckSum>8:1f2a47e2-a185-440a-a959-e014ecb72c8d</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -115,7 +115,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-taxonomy" author="Binh Vu">
-    <validCheckSum>660a55eb-1af3-4866-8ddb-211d8e3e347b</validCheckSum>
+    <validCheckSum>8:660a55eb-1af3-4866-8ddb-211d8e3e347b</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -140,7 +140,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-protein" author="Binh Vu">
-    <validCheckSum>283d530b-7ca2-4c5e-9d0a-8374274d7b03</validCheckSum>
+    <validCheckSum>8:283d530b-7ca2-4c5e-9d0a-8374274d7b03</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
@@ -169,7 +169,7 @@
   </changeSet>
 
   <changeSet id="LL-3625-add-original-entity-types-gene" author="Binh Vu">
-    <validCheckSum>f0916c8e-45c5-4dff-96f9-508795f4a302</validCheckSum>
+    <validCheckSum>8:f0916c8e-45c5-4dff-96f9-508795f4a302</validCheckSum>
     <comment>
       Add new property original_entity_types to entity nodes.
       This is to help with deleting global inclusion, to avoid deleting a real relationship.
