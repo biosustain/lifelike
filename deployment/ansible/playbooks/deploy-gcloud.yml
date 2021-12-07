@@ -26,8 +26,7 @@
         dest: "{{ deploy_dir }}"
       tags:
         - deploy
-        - docmer-compose
-
+        - docker-compose
     - name: Create .env file
       copy:
         content: |
@@ -105,7 +104,7 @@
     - name: Run the graph database migration task
       docker_container:
         state: started
-        image: ***ARANGO_DB_NAME***.azurecr.io/kg-liquibase:{{ loquibase_image_tag | default(docker_img_hash) }}
+        image: ***ARANGO_DB_NAME***.azurecr.io/kg-liquibase:{{ liquibase_image_tag | default(docker_img_hash) }}
         name: kg-liquibase
         pull: yes
         restart_policy: on-failure
