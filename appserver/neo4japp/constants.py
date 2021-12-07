@@ -351,10 +351,11 @@ ANNOTATION_STYLES_DICT = {
         'color': '#4caf50',
         'label': 'chemical',
     },
-    'ms-icons': {
+    'custom_icons': {
         'ms-word': '#0d47a1',
         'ms-excel': '#2e7d32',
-        'ms-powerpoint': '#e64a19'
+        'ms-powerpoint': '#e64a19',
+        'cytoscape': '#ea9123'
     }
 }
 
@@ -373,7 +374,7 @@ DEFAULT_DPI = 96.0
 POINT_TO_PIXEL = 72.0
 VERTICAL_TEXT_PADDING = 0.055 * DEFAULT_DPI
 HORIZONTAL_TEXT_PADDING = 0.18 * DEFAULT_DPI
-LABEL_OFFSET = 25
+LABEL_OFFSET = 20
 PDF_MARGIN = 3
 MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
 NAME_NODE_OFFSET = 100
@@ -443,4 +444,3 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
-TEMP_PATH = '/tmp/'

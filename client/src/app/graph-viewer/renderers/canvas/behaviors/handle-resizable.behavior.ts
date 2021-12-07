@@ -4,6 +4,7 @@ import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-to
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { handleBlue } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -43,6 +44,8 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
   private originalSize: { width: number, height: number } | undefined;
   private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
   private originalTarget: UniversalGraphNode;
+  private readonly RATIO_FACTOR = 300;
+
 
   constructor(graphView: CanvasGraphView,
               target: UniversalGraphNode,
@@ -93,52 +96,68 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
     const size = this.size * noZoomScale;
     const halfSize = size / 2;
-    return [
+    const handleDiagonal = Math.sqrt(2) * size;
+    // const [x, y] = [placedNode.x, placedNode.y];
+    // or
+    const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
+    // There is no handle on top = edge creation button is there.
+    const sideMaker = (posX, posY, execute) => ({
+      execute,
+      minX: posX - halfSize,
+      minY: posY - halfSize,
+      maxX: posX + halfSize,
+      maxY: posY + halfSize,
+      displayColor: '#000000'
+    });
+    const handles = [
+      // Right - one-dim scaling
+      sideMaker(
+        bbox.maxX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        (target, originalSize, dragStartPosition, graphPosition) => {
+          target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * noZoomScale);
+        }),
+      // Left - one-dim scaling
+      sideMaker(
+        bbox.minX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        (target, originalSize, dragStartPosition, graphPosition) => {
+          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * noZoomScale);
+        }),
+      // Bottom - one-dim scaling
+      sideMaker(
+        bbox.minX + (bbox.maxX - bbox.minX) / 2,
+        bbox.maxY,
+        (target, originalSize, dragStartPosition, graphPosition) => {
+          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y) * noZoomScale);
+        }),
       // Top left
-      {
-        execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height - (graphPosition.y - this.dragStartPosition.y) * 2);
-        },
-        minX: bbox.minX - halfSize,
-        minY: bbox.minY - halfSize,
-        maxX: bbox.minX + halfSize,
-        maxY: bbox.minY + halfSize,
-      },
-      // Bottom left
-      {
-        execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width - (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y) * 2);
-        },
-        minX: bbox.minX - halfSize,
-        minY: bbox.maxY - halfSize,
-        maxX: bbox.minX + halfSize,
-        maxY: bbox.maxY + halfSize,
-      },
-      // Top right
-      {
-        execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height - (graphPosition.y - this.dragStartPosition.y) * 2);
-        },
-        minX: bbox.maxX - halfSize,
-        minY: bbox.minY - halfSize,
-        maxX: bbox.maxX + halfSize,
-        maxY: bbox.minY + halfSize,
-      },
-      // Bottom right
-      {
-        execute: (target, originalSize, dragStartPosition, graphPosition) => {
-          target.data.width = Math.abs(this.originalSize.width + (graphPosition.x - this.dragStartPosition.x) * 2);
-          target.data.height = Math.abs(this.originalSize.height + (graphPosition.y - this.dragStartPosition.y) * 2);
-        },
-        minX: bbox.maxX - halfSize,
-        minY: bbox.maxY - halfSize,
-        maxX: bbox.maxX + halfSize,
-        maxY: bbox.maxY + halfSize,
-      },
     ];
+    // If node (currently: images) can be scaled uniformly, add those handles.
+    if (placedNode.uniformlyResizable) {
+      const execute = (target, originalSize, dragStartPosition, graphPosition) => {
+        const ratio = this.originalSize.width / this.originalSize.height;
+        const sizingVecLen = Math.hypot(graphPosition.x - x, graphPosition.y - y) - handleDiagonal / 2;
+        const normY = Math.abs(sizingVecLen / Math.sqrt(ratio ** 2 + 1));
+        target.data.width = 2 * normY * ratio;
+        target.data.height = 2 * normY;
+      };
+      const cornerMaker = (posX, posY) => ({
+        execute,
+        minX: posX - halfSize,
+        minY: posY - halfSize,
+        maxX: posX + halfSize,
+        maxY: posY + halfSize,
+        displayColor: handleBlue
+      });
+      handles.push(
+        cornerMaker(bbox.minX, bbox.minY), // Top left
+        cornerMaker(bbox.minX, bbox.maxY), // Bottom left
+        cornerMaker(bbox.maxX, bbox.maxY), // Bottom right
+        cornerMaker(bbox.maxX, bbox.minY), // Top right
+      );
+    }
+    return handles;
   }
 }
 

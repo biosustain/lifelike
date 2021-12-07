@@ -7,6 +7,9 @@ services:
     webserver:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
 
+    liquibase:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-liquibase:${GITHUB_HASH:-latest}
+
     pdfparser:
         image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
 

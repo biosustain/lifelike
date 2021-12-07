@@ -148,6 +148,7 @@ export abstract class PlacedObject {
  */
 export abstract class PlacedNode extends PlacedObject {
   resizable: boolean;
+  uniformlyResizable: boolean;
 
   /**
    * Get the first intersection point of a line coming from outside this object

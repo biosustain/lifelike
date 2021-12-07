@@ -4,123 +4,193 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+  <!--
+    Neo4j does not allow the same transaction for changing the scheme and writes.
+    So group changeSets together by id="some text-#"
+    And separate changeSets grouping by empty new line space
+  -->
 
-  <changeSet id="LL-3211 load NCBI gene constraints on date 10072021" author="Binh Vu">
-    <comment>Create constraints and indexes for NCBI gene nodes</comment>
+  <changeSet id="LL-3216-liquibase-kegg-data-constraints" author="Binh Vu">
+    <validCheckSum>60d15185-ad13-4881-beaa-0da10c10773a</validCheckSum>
+    <comment>Create KEGG data from scratch; creating constraints.</comment>
     <sql>
-    CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
-CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
-CREATE INDEX index_gene_name IF NOT EXISTS FOR (n:Gene) ON (n.name);
-CREATE INDEX index_locus_tag IF NOT EXISTS FOR (n:Gene) ON (n.locus_tag);
-CREATE INDEX index_gene_taxid IF NOT EXISTS FOR (n:Gene) ON (n.tax_id);
+      CREATE CONSTRAINT constraint_kegg_id IF NOT EXISTS ON (n:db_KEGG) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_ko_id IF NOT EXISTS ON (n:KO) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_pathway_id IF NOT EXISTS ON (n:Pathway) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_gene_id IF NOT EXISTS ON (n:Gene) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_genome_id IF NOT EXISTS ON (n:Genome) ASSERT n.eid IS UNIQUE;
+      CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+      CREATE INDEX index_pathway_name IF NOT EXISTS FOR (n:Pathway) ON (n.name);
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3211 NCBI gene data on date 10072021" author="Binh Vu">
-    <comment>
-        Load NCBI gene nodes
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.FileQueryHandler"
-      query="
-      UNWIND $rows as row
-MERGE (n:Gene {eid: row.eid})
-SET n:db_NCBI:Master,n.name=row.name,n.locus_tag=row.locus_tag,n.full_name=row.full_name,n.tax_id=row.tax_id,n.data_source=row.data_source
-      "
-      fileName="jira-LL-3211-gene.zip"
-      startAt="1"
-      fileType="TSV" 
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      azureStorageName="${azureStorageName}"
-      azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
-  </changeSet>
-
-  <changeSet id="LL-3211 load NCBI gene synonym relationship on date 10072021" author="Binh Vu">
-    <comment>
-        Load NCBI gene synonym relationship
-    </comment>
+  <changeSet id="LL-3216-liquibase-kegg-data-load-pathway" author="Binh Vu">
+    <validCheckSum>f13252c7-d1ba-444c-9427-e2b0b9a1b010</validCheckSum>
+    <comment>Create KEGG data from scratch; loading pathway data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-MERGE (a:Synonym {name: row.synonym}) SET a.lowercase_name=toLower(row.synonym)
-WITH row, a MATCH (b:Gene {eid: row.eid})
-MERGE (b)-[r:HAS_SYNONYM]->(a)
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:Pathway, n.name = row.name, n.data_source = 'KEGG'
       "
-      fileName="jira-LL-3211-gene_synonym.zip"
+      fileName="jira-LL-3216-pathway_data.zip"
       startAt="1"
-      fileType="TSV" 
+      fileType="TSV"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
-  <changeSet id="LL-3211 load NCBI gene to GO on date 10072021" author="Binh Vu">
-    <comment>
-        Load NCBI gene to GO
-    </comment>
+  <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology" author="Binh Vu">
+    <validCheckSum>7a10c26f-9d35-46b8-a8b9-bafc36eed1eb</validCheckSum>
+    <comment>Create KEGG data from scratch; loading kegg orthology data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
       UNWIND $rows AS row
-MATCH (a:Gene {eid: row.GeneID}), (b:db_GO {eid: row.GO_ID})
-MERGE (a)-[r:GO_LINK]->(b)
-RETURN COUNT(*)
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:KO, n.name = row.name, n.definition = row.definition, n.data_source = 'KEGG'
       "
-      fileName="jira-LL-3211-gene2go.zip"
+      fileName="jira-LL-3216-ko_data.zip"
       startAt="1"
-      fileType="TSV" 
+      fileType="TSV"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
-  <changeSet id="LL-3211 update GO_LINK rel to have tax_id on date 10072021" author="Binh Vu">
-    <comment>tax_id is used by statistical enrichment cypher queries</comment>
-    <sql>
-    
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_GO)-[r:GO_LINK]-(g:Gene) RETURN g.tax_id AS taxid, r',
-        'SET r.tax_id = taxid', {batchSize: 5000})
-        
-    </sql>
+  <changeSet id="LL-3216-liquibase-kegg-data-load-genes" author="Binh Vu">
+    <validCheckSum>c76e5b42-21b6-4d55-aa56-18d2856581ee</validCheckSum>
+    <comment>Create KEGG data from scratch; loading gene-kegg data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MERGE (n:db_KEGG {eid: row.eid})
+      ON CREATE SET n:Gene, n.genome = row.genome, n.data_source = 'KEGG'
+      "
+      fileName="jira-LL-3216-gene_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
-  <changeSet id="LL-3211 update NCBI gene synonyms to have locus tag name on date 10072021" author="Binh Vu">
-    <comment>NCBI gene synonym names should be locus tag</comment>
-    <sql>
-    
-        CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI) WHERE exists(n.locus_tag) AND n.locus_tag &lt;> '' AND n.locus_tag &lt;> n.name RETURN n',
-        'MERGE (s:Synonym {name:n.locus_tag}) SET s.lowercase_name = toLower(n.locus_tag) MERGE (n)-[:HAS_SYNONYM]->(s)',
-        {batchSize:10000})
-        
-    </sql>
+  <changeSet id="LL-3216-liquibase-kegg-data-load-gene-ncbi-gene-kegg-relationship" author="Binh Vu">
+    <validCheckSum>fbfbb469-7639-4720-90f9-0820a4e6fa62</validCheckSum>
+    <comment>Create KEGG data from scratch; loading gene-ncbi gene-kegg relationship data. Uses the same data as LL-3216-liquibase-kegg-data-load-genes.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_KEGG {eid: row.eid}), (b:Gene {eid: row.gene_id})
+      MERGE (a)-[r:IS]->(b)
+      "
+      fileName="jira-LL-3216-gene_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 
-  <changeSet id="LL-3211 create relationship between gene and taxonomy nodes on date 10072021" author="Binh Vu">
-    <comment>Gene and taxonomy need to be linked; important for annotations etc</comment>
-    <sql>
-    
-        CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI), (t:Taxonomy {id:n.tax_id}) RETURN n, t',
-        'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
-        
-    </sql>
+  <changeSet id="LL-3216-liquibase-kegg-data-load-gene-kegg-orthology-relationship" author="Binh Vu">
+    <validCheckSum>a14e9a97-87e7-49b9-975c-157c8d6dda05</validCheckSum>
+    <comment>Create KEGG data from scratch; loading gene kegg orthology relationship data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:db_KEGG {eid: row.gene}), (b:KO {eid: row.ko})
+      MERGE (a)-[r:HAS_KO]->(b)
+      "
+      fileName="jira-LL-3216-gene2ko_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology-pathway-relationship" author="Binh Vu">
+    <validCheckSum>a8e378eb-bcd6-4c97-af3a-93da234b456e</validCheckSum>
+    <comment>Create KEGG data from scratch; loading kegg orthology pathway relationship data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:KO {eid: row.ko}), (b:Pathway {eid: row.pathway})
+      MERGE (a)-[r:IN_PATHWAY]->(b)
+      "
+      fileName="jira-LL-3216-ko2pathway_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway" author="Binh Vu">
+    <validCheckSum>3a306d77-c275-4689-a8e4-f08535d821f1</validCheckSum>
+    <comment>Create KEGG data from scratch; loading genome pathway data.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      WITH collect(DISTINCT row.genome) AS genomes
+      UNWIND genomes AS genome
+      MERGE (n:Genome {eid: genome})
+      ON CREATE SET n:db_KEGG, n.data_source = 'KEGG'
+      "
+      fileName="jira-LL-3216-genome2pathway_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
+  </changeSet>
+
+  <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway-relationship" author="Binh Vu">
+    <validCheckSum>47aa97a1-314b-4748-8567-848a1fe5773f</validCheckSum>
+    <comment>Create KEGG data from scratch; loading genome pathway relationship data. Uses the same data as LL-3216-liquibase-kegg-data-load-genome-pathway.</comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows AS row
+      MATCH (a:Genome {eid: row.genome}), (b:Pathway {eid: row.pathway})
+      MERGE (a)-[r:HAS_PATHWAY]->(b)
+      "
+      fileName="jira-LL-3216-genome2pathway_data.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"/>
   </changeSet>
 </databaseChangeLog>

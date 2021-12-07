@@ -1,11 +1,11 @@
-import { Component, EventEmitter, OnDestroy, ViewChild, NgZone } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY } from 'rxjs';
-import { map, delay, catchError, auditTime } from 'rxjs/operators';
-import { isNull, compact, isNumber, isNil } from 'lodash-es';
+import { map, delay, catchError, auditTime, tap } from 'rxjs/operators';
+import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY, of } from 'rxjs';
+import { compact, isNil, pick, defer } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -20,6 +20,7 @@ import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { MimeTypes } from 'app/shared/constants';
 import { SelectionManyToManyEntity } from 'app/sankey-many-to-many-viewer/components/interfaces';
 import { SankeyOptions, SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam } from 'app/shared-sankey/interfaces';
+import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
@@ -43,8 +44,19 @@ import { SankeySearchService } from '../services/search.service';
     SankeySearchService
   ]
 })
-export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
-  searchTerms = [];
+export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnInit {
+
+  get activeViewName() {
+    return this.sankeyController.state.viewName;
+  }
+
+  set activeViewName(viewName) {
+    this.sankeyController.state.viewName = viewName;
+  }
+
+  get preselectedViewBase() {
+    return this.sankeyController.state.baseViewName;
+  }
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -58,11 +70,26 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     readonly sankeyController: SankeyControllerService,
     readonly warningController: WarningControllerService,
     readonly sankeySearch: SankeySearchService,
-    private zone: NgZone
+    private zone: NgZone,
+    readonly viewService: ViewService
   ) {
+    this.dataToRender = this.sankeyController.dataToRender;
+    this.allData = this.sankeyController.allData;
     zone.runOutsideAngular(() =>
       this.sankeySearch.matches.pipe(
-        auditTime(500)
+        auditTime(500),
+        tap(matches => {
+          const {options, state} = this.sankeyController;
+          return matches
+            .sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)
+            .filter(({networkTraceIdx}) => isNil(networkTraceIdx) || networkTraceIdx !== state.networkTraceIdx)
+            .map(match => {
+              if (!isNil(match.networkTraceIdx)) {
+                match.networkTrace = options.networkTraces[match.networkTraceIdx];
+              }
+              return match;
+            });
+        })
       ).subscribe(matches => {
         this.zone.run(() =>
           this.entitySearchList.next(matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
@@ -72,15 +99,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.initSelection();
 
-    this.loadTask = new BackgroundTask(hashId => {
-      return combineLatest([
+    this.loadTask = new BackgroundTask(hashId =>
+      combineLatest([
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
-      ]);
-    });
+      ])
+    );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -91,12 +118,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
                                                              result: [object, content],
                                                            }) => {
       if (this.sankeyController.sanityChecks(content)) {
-        this.sankeyController.load(content, () => {
-          this.sankeyController.state.networkTraceIdx = this.preselectedNetworkTraceIdx || 0;
-          if (isNil(this.preselectedViewBase)) {
-            this.setDefaultViewBase(content);
-          }
-        });
+        this.sankeyController.load(
+          content,
+          this.predefinedState
+        ).then(
+          () => {
+          },
+          console.error
+        );
       }
       this.object = object;
       this.emitModuleProperties();
@@ -104,16 +133,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
       this.currentFileId = object.hashId;
       this.ready = true;
     });
-
-    this.loadFromUrl();
   }
 
   get warnings() {
     return this.warningController.warnings;
-  }
-
-  get allData() {
-    return this.sankeyController.allData;
   }
 
   get options() {
@@ -122,10 +145,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   get state() {
     return this.sankeyController.state as SankeyState;
-  }
-
-  get dataToRender() {
-    return this.sankeyController.dataToRender;
   }
 
   get nodeAlign() {
@@ -147,6 +166,36 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   get searching() {
     return !this.sankeySearch.done;
   }
+
+  get viewParams() {
+    return pick(
+      this.sankeyController.state,
+      [
+        'networkTraceIdx',
+        'viewBase',
+        'viewName'
+      ]
+    );
+  }
+
+  get entitySearchListIdx() {
+    return this._entitySearchListIdx;
+  }
+
+  set entitySearchListIdx(idx) {
+    this._entitySearchListIdx = idx;
+    const {networkTraceIdx} = this.entitySearchList.value[idx] || {};
+    if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
+      this.selectNetworkTrace(networkTraceIdx);
+    } else {
+      this.setSearchFocus(idx);
+    }
+  }
+
+  dataToRender;
+  allData;
+
+  searchTerms = [];
 
   paramsSubscription: Subscription;
   returnUrl: string;
@@ -172,28 +221,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   entitySearchTerm = '';
   entitySearchList = new BehaviorSubject([]);
   _entitySearchListIdx = -1;
-  get entitySearchListIdx() {
-    return this._entitySearchListIdx;
-  }
-
-  set entitySearchListIdx(idx) {
-    this._entitySearchListIdx = idx;
-    this.setSearchFocus(idx);
-  }
 
   searchFocus = undefined;
 
-  private preselectedNetworkTraceIdx;
-  activeViewName: string;
-  preselectedViewBase: string;
+  predefinedState: Observable<Partial<SankeyState>>;
 
-  setDefaultViewBase(content) {
-    const {selectedNetworkTrace} = this;
-    const {graph: {node_sets}} = content;
-    const _inNodes = node_sets[selectedNetworkTrace.sources];
-    const _outNodes = node_sets[selectedNetworkTrace.targets];
-    this.preselectedViewBase = (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
+  ngOnInit() {
+    setTimeout(() => this.loadFromUrl(), 0);
   }
+
 
   initSelection() {
     this.selection = new BehaviorSubject([]);
@@ -219,7 +255,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   saveFile() {
     const contentValue = new Blob(
       [JSON.stringify(
-        this.sankeyController.allData
+        this.sankeyController.allData.value
       )],
       {type: MimeTypes.Graph});
     this.filesystemService.save(
@@ -228,7 +264,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     )
       .pipe(
         delay(1000),
-        catchError((err) => {
+        catchError(() => {
           this.snackBar.open('Error saving file.', null, {
             duration: 2000,
           });
@@ -244,7 +280,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   selectNetworkTrace(networkTraceIdx) {
     this.sankeyController.state.networkTraceIdx = networkTraceIdx;
-    this.setDefaultViewBase(this.sankeyController.allData);
+    this.sankeyController.state.viewName = undefined;
+    this.sankeyController.setDefaultViewBase(this.sankeyController.allData.value);
     this.sankeyController.setPredefinedValueAccessor();
     this.sankeyController.applyState();
     this.resetSelection();
@@ -262,11 +299,27 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     return modalRef;
   }
 
-  parseUrlFragment(fragment: string) {
-    const params = new URLSearchParams(fragment);
-    this.preselectedNetworkTraceIdx = parseInt(params.get(SankeyURLLoadParam.NETWORK_TRACE_IDX), 10) || 0;
-    this.activeViewName = params.get(SankeyURLLoadParam.VIEW_NAME);
-    this.preselectedViewBase = params.get(SankeyURLLoadParam.BASE_VIEW_NAME);
+  parseUrlFragmentToState(fragment: string): Observable<Partial<SankeyState>> {
+    const state = {} as Partial<SankeyState>;
+    const params = new URLSearchParams(fragment || '');
+    for (const [param, value] of (params as any).entries()) {
+      switch (param) {
+        case SankeyURLLoadParam.NETWORK_TRACE_IDX:
+          state.networkTraceIdx = parseInt(value, 10) || 0;
+          break;
+        case SankeyURLLoadParam.VIEW_NAME:
+          state.viewName = value;
+          break;
+        case SankeyURLLoadParam.BASE_VIEW_NAME:
+          state.baseViewName = value;
+          break;
+        default:
+          return this.viewService.get(param).pipe(
+            tap(view => Object.assign(view, state))
+          );
+      }
+    }
+    return of(state);
   }
 
   openPathReport() {
@@ -331,22 +384,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   loadFromUrl() {
-    // Check if the component was loaded with additional params
-    const fragment = this.route.snapshot.fragment;
-    if (!isNull(fragment)) {
-      this.parseUrlFragment(fragment);
-    }
-
-    // Check if the component was loaded with a url to parse fileId
-    // from
-    if (this.route.snapshot.params.file_id) {
+    const {file_id} = this.route.snapshot.params;
+    if (file_id) {
+      const {fragment} = this.route.snapshot;
+      this.predefinedState = this.parseUrlFragmentToState(fragment);
       this.object = null;
       this.currentFileId = null;
-
-      const linkedFileId = this.route.snapshot.params.file_id;
-      this.openSankey(linkedFileId);
+      this.openSankey(file_id);
     }
-
   }
 
   requestRefresh() {
@@ -442,7 +487,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sankeySearch.update({
       terms,
       options,
-      data: this.sankeyController.allData,
+      data: this.sankeyController.allData.value,
       dataToSearch: this.sankeyController.dataToRender.value
     });
     this.sankeySearch.search();
@@ -474,15 +519,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent {
 
   panToEntity(entity) {
     // @ts-ignore
-    this.sankey.sankeySelection.transition().call(
-      this.sankey.zoom.translateTo,
-      // x
-      (entity._x0 !== undefined) ?
-        (entity._x0 + entity._x1) / 2 :
-        (entity._source._x1 + entity._target._x0) / 2,
-      // y
-      (entity._y0 + entity._y1) / 2
-    );
+    if (entity) {
+      this.sankey.sankeySelection.transition().call(
+        this.sankey.zoom.translateTo,
+        // x
+        (entity._x0 !== undefined) ?
+          (entity._x0 + entity._x1) / 2 :
+          (entity._source._x1 + entity._target._x0) / 2,
+        // y
+        (entity._y0 + entity._y1) / 2
+      );
+    }
   }
 
   resolveMatchToEntity({nodeId, linkId}) {

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
-import { transform, pick, omitBy, isNil, mapValues, isObject, size } from 'lodash-es';
+import { transform, pick, omitBy, isNil, mapValues, defer } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -21,16 +21,18 @@ import {
   SankeyApplicableView
 } from '../interfaces';
 import { SankeyViewConfirmComponent } from './view-confirm.component';
+import { SankeyViewCreateComponent } from './view-create.component';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
-  templateUrl: 'view-dropdown.component.html'
+  templateUrl: 'view-dropdown.component.html',
+  styleUrls: ['./view-dropdown.component.scss']
 })
 
 export class SankeyViewDropdownComponent implements OnChanges {
 
   get views() {
-    return (this.sankeyController.allData || {})._views;
+    return (this.sankeyController.allData || {}).value._views;
   }
 
   constructor(
@@ -81,7 +83,9 @@ export class SankeyViewDropdownComponent implements OnChanges {
     '_y1',
     '_circular',
     '_width',
-    '_order'
+    '_order',
+    '_adjacent_divider',
+    '_id'
   ];
 
 
@@ -98,32 +102,36 @@ export class SankeyViewDropdownComponent implements OnChanges {
   ngOnChanges({preselectedViewBase, activeViewName}: SimpleChanges) {
     if (activeViewName || preselectedViewBase) {
       if (!isNil(this.activeViewName)) {
-        this.setViewFromName(this.activeViewName);
+        defer(() => this.setViewFromName(this.activeViewName));
       } else if (!isNil(this.preselectedViewBase)) {
         this.changeViewBaseIfNeeded(this.preselectedViewBase);
       }
     }
   }
 
-  createView() {
+  createView(viewName) {
     const renderedData = this.sankeyController.dataToRender.value;
-    return {
+    const view = {
       state: this.sankeyController.state,
       base: this.activeViewBase,
       nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
       links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
     } as SankeyView;
+
+    this.sankeyController.allData.value._views[viewName] = view;
+    this.sankeyController.state.viewName = viewName;
+    this.viewDataChanged.emit();
   }
 
   changeViewBaseIfNeeded(base, params?): boolean {
     if (this.activeViewBase !== base) {
-      this.openBaseView(base);
+      this.openBaseView(base, params);
       return true;
     }
   }
 
-  applyView(view: SankeyApplicableView) {
-    if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: this.activeViewName})) {
+  applyView(viewName, view: SankeyApplicableView) {
+    if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: viewName})) {
       const {state = {}, nodes = {}, links = {}} = view;
       mergeDeep(this.sankeyController.state, state);
       const graph = this.sankeyController.computeData();
@@ -160,10 +168,14 @@ export class SankeyViewDropdownComponent implements OnChanges {
     entities: Array<SankeyNode | SankeyLink>
   ) {
     // for faster lookup
-    const entityById = new Map(entities.map((d, i) => [d._id, d]));
+    const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
     Object.entries(propertyObject).map(([id, properties]) => {
       const entity = entityById.get(id);
-      Object.assign(entity, properties);
+      if (entity) {
+        Object.assign(entity, properties);
+      } else {
+        this.warningController.warn(`No entity found for id ${id}`);
+      }
     });
   }
 
@@ -171,7 +183,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     const view = this.views[viewName];
     if (view) {
       this.activeViewNameChange.emit(viewName);
-      this.applyView(view);
+      this.applyView(viewName, view);
     } else {
       this.warningController.warn(`View ${viewName} has not been found in file.`);
     }
@@ -191,37 +203,45 @@ export class SankeyViewDropdownComponent implements OnChanges {
   }
 
   saveView() {
-    if (!this.sankeyController.allData._views) {
-      this.sankeyController.allData._views = {};
+    if (!this.sankeyController.allData.value._views) {
+      this.sankeyController.allData.value._views = {};
     }
-    this.sankeyController.allData._views['Custom View'] = this.createView();
-    this.viewDataChanged.emit();
+    const createDialog = this.modalService.open(
+      SankeyViewCreateComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    createDialog.result.then(({viewName}) => {
+      this.confirmCreateView(viewName);
+    });
   }
 
-  confirmSaveView() {
-    if (size(this.views)) {
+  confirmCreateView(viewName) {
+    if (this.views[viewName]) {
       this.confirm({
         header: 'Confirm overwrite',
-        body: 'Saving this view will overwrite existing view. Would you like to continue?'
+        body: `Saving this view as '${viewName}' will overwrite existing view. Would you like to continue?`
       }).then(() => {
-        this.saveView();
+        this.createView(viewName);
       });
     } else {
-      this.saveView();
+      this.createView(viewName);
     }
   }
 
-  deleteViews() {
-    delete this.sankeyController.allData._views;
+  deleteView(viewName) {
+    delete this.sankeyController.allData.value._views[viewName];
+    if (this.activeViewName === viewName) {
+      this.activeViewNameChange.emit(undefined);
+    }
     this.viewDataChanged.emit();
   }
 
-  confirmDeleteViews() {
+  confirmDeleteView(viewName) {
     this.confirm({
       header: 'Confirm delete',
-      body: 'Are you sure you wan to delete the view?'
+      body: `Are you sure you want to delete the '${viewName}' view?`
     }).then(() => {
-      this.deleteViews();
+      this.deleteView(viewName);
     });
   }
 }
