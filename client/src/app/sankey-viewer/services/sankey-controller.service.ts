@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
@@ -149,7 +149,7 @@ export class SankeyControllerService {
     };
   }
 
-  allData: SankeyData;
+  allData: BehaviorSubject<SankeyData> = new BehaviorSubject(undefined);
   dataToRender = new BehaviorSubject(undefined);
 
   options: SankeyOptions;
@@ -206,7 +206,7 @@ export class SankeyControllerService {
   }
 
   get oneToMany() {
-    const {graph: {node_sets}} = this.allData;
+    const {graph: {node_sets}} = this.allData.value;
     const {selectedNetworkTrace} = this;
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
@@ -241,7 +241,7 @@ export class SankeyControllerService {
     const traceGroupColorMap = colorMap ? colorMap : new Map(
       networkTrace.traces.map(({_group}) => [_group, christianColors[_group]])
     );
-    const networkTraceLinks = networkTrace.traces.reduce((o, trace) => {
+    const networkTraceLinks = networkTrace.traces.reduce((o, trace, traceIdx) => {
       const color = traceGroupColorMap.get(trace._group);
       trace._color = color;
       return o.concat(
@@ -252,7 +252,7 @@ export class SankeyControllerService {
             _color: color,
             _trace: trace,
             _order: -trace._group,
-            _id: `${originLink._id}_${trace._group}`
+            _id: `${originLink._id}_${trace._group}_${traceIdx}`
           };
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
@@ -299,10 +299,10 @@ export class SankeyControllerService {
       ...networkTraceLinks.reduce((o, link) => {
         let {_source = link.source, _target = link.target} = link;
         if (typeof _source !== 'object') {
-          _source = SankeyLayoutService.find(nodeById, String(_source));
+          _source = SankeyLayoutService.find(nodeById, _source);
         }
         if (typeof _target !== 'object') {
-          _target = SankeyLayoutService.find(nodeById, String(_target));
+          _target = SankeyLayoutService.find(nodeById, _target);
         }
         o.add(_source);
         o.add(_target);
@@ -312,7 +312,7 @@ export class SankeyControllerService {
   }
 
   getPathReports() {
-    const {nodes, links, graph} = this.allData;
+    const {nodes, links, graph} = this.allData.value;
     const pathReports: SankeyPathReport = {};
     graph.trace_networks.forEach(traceNetwork => {
       pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
@@ -453,7 +453,7 @@ export class SankeyControllerService {
     if (!selectedNetworkTrace) {
       return;
     }
-    const {links, nodes, graph: {node_sets}} = this.allData;
+    const {links, nodes, graph: {node_sets}} = this.allData.value;
     const {palette: {palette}} = this;
     const traceColorPaletteMap = createMapToColor(
       selectedNetworkTrace.traces.map(({_group}) => _group),
@@ -588,15 +588,16 @@ export class SankeyControllerService {
   // endregion
 
   resetController() {
-    this.load(this.allData);
+    this.load(this.allData.value).then(() => {
+    }, console.error);
   }
 
   preprocessData(content: SankeyData) {
     content.nodes.forEach(n => {
-      n._id = String(n.id);
+      n._id = n.id;
     });
     content.links.forEach((l, index) => {
-      l._id = String(index);
+      l._id = index;
     });
     content.graph.trace_networks.forEach(tn => {
       let maxVal = max(tn.traces.map(({group}) => isNil(group) ? -1 : group));
@@ -607,14 +608,16 @@ export class SankeyControllerService {
         tr._group = (isNil(tr.group) || tr.group === -1) ? ++maxVal : tr.group;
       });
     });
-    this.allData = transform(content, (result, value, key) => {
-      // only views are editable
-      if (key === '_views') {
-        result[key] = value;
-      } else {
-        result[key] = cloneDeepWith(value, Object.freeze);
-      }
-    }, {}) as SankeyData;
+    this.allData.next(
+      transform(content, (result, value, key) => {
+        // only views are editable
+        if (key === '_views') {
+          result[key] = value;
+        } else {
+          result[key] = cloneDeepWith(value, Object.freeze);
+        }
+      }, {}) as SankeyData
+    );
   }
 
   addIds(content) {
@@ -643,14 +646,31 @@ export class SankeyControllerService {
     return pass;
   }
 
-  load(content, updateOptions?) {
+  getDefaultViewBase(content) {
+    const {selectedNetworkTrace} = this;
+    const {graph: {node_sets}} = content;
+    const _inNodes = node_sets[selectedNetworkTrace.sources];
+    const _outNodes = node_sets[selectedNetworkTrace.targets];
+    return (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
+  }
+
+  setDefaultViewBase(content) {
+    this.state.baseViewName = this.getDefaultViewBase(content);
+  }
+
+  async load(content, updateOptions?: Observable<any>) {
     this.addIds(content);
     this.preprocessData(content);
     this.resetOptions();
     this.resetState();
     this.extractOptionsFromGraph(content);
     if (updateOptions) {
-      updateOptions();
+      updateOptions.subscribe(predefinedState => {
+        Object.assign(this.state, predefinedState);
+        if (isNil(this.state.baseViewName)) {
+          this.setDefaultViewBase(content);
+        }
+      });
     }
     this.applyState();
   }
@@ -691,10 +711,10 @@ export class SankeyControllerService {
       nodeValueAccessor, linkValueAccessor
     } = this;
     if (nodeValueAccessor.postprocessing) {
-      Object.assign(data, nodeValueAccessor.postprocessing.apply(this, data) || {});
+      Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) || {});
     }
     if (linkValueAccessor.postprocessing) {
-      Object.assign(data, linkValueAccessor.postprocessing.apply(this, data) || {});
+      Object.assign(data, linkValueAccessor.postprocessing.call(this, data) || {});
     }
     if (minValue < 0) {
       data.nodes.forEach(n => {

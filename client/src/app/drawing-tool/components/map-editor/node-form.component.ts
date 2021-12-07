@@ -33,7 +33,9 @@ import { InfoPanel } from '../../models/info-panel';
 export class NodeFormComponent implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+  @ViewChild('option') selectedOption: ElementRef;
 
+  // TODO: Remove that if we decide to add image to annotationTypes
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
     [null, {
@@ -58,6 +60,8 @@ export class NodeFormComponent implements AfterViewInit {
   previousLabel: string;
 
   overflow = false;
+
+  fixedType = false;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
@@ -110,9 +114,11 @@ export class NodeFormComponent implements AfterViewInit {
   @Input()
   set node(node) {
     this.previousLabel = node.label;
+    this.fixedType = node.label === 'image';
 
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
+
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.data.sources = this.updatedNode.data.sources || [];

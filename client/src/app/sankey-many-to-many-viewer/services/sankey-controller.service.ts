@@ -110,13 +110,13 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
   }
 
   get sourcesIds() {
-    return this.allData.graph.node_sets[
+    return this.allData.value.graph.node_sets[
       this.selectedNetworkTrace.sources
       ];
   }
 
   get targetsIds() {
-    return this.allData.graph.node_sets[
+    return this.allData.value.graph.node_sets[
       this.selectedNetworkTrace.targets
       ];
   }
@@ -148,7 +148,7 @@ export class SankeyManyToManyControllerService extends SankeyControllerService {
 
   computeData() {
     const {selectedNetworkTrace, state: {colorLinkByType}} = this;
-    const {links, nodes, graph: {node_sets}} = this.allData;
+    const {links, nodes, graph: {node_sets}} = this.allData.value;
     const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
     const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
     if (colorLinkByType) {

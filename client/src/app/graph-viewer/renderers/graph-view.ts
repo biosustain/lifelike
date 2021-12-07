@@ -159,6 +159,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   editorPanelFocus$ = new Subject<any>();
 
+  /**
+   * Defines how close to the node we have to click to terminate the node search early.
+   */
+  readonly MIN_NODE_DISTANCE = 6.0;
+
+
   constructor() {
     this.cola = cola
       .d3adaptor(d3)
@@ -556,15 +562,31 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param y graph Y location
    */
   getNodeAtPosition(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
+    const possibleNodes = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
       const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, x, y);
       if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(x, y)) {
-        return d;
+        const distance = Math.hypot(x - d.data.x, y - d.data.y);
+        // Node is so close, that we are sure it is it. Terminate early.
+        if (distance <= this.MIN_NODE_DISTANCE) {
+          return d;
+        }
+        possibleNodes.push({
+          node: d,
+          distance
+        });
+
       }
     }
-    return undefined;
+    if (possibleNodes.length === 0) {
+      return undefined;
+    }
+    possibleNodes.sort((a, b) => {
+      return a.distance - b.distance;
+    });
+    return possibleNodes[0].node;
   }
 
   /**

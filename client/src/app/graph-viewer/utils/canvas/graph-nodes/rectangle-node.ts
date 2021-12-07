@@ -16,6 +16,7 @@ export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
  */
 export class RectangleNode extends BaseRectangleNode {
   readonly resizable = true;
+  readonly uniformlyResizable = false;
 
   readonly textbox: TextElement;
   readonly shapeFillColor: string;

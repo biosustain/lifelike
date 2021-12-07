@@ -14,9 +14,9 @@
                            (dragEnd)="dragEnd($event)"
                            [returnUrl]="returnUrl"
         >
-            <app-object-menu [object]="object" [forEditing]="true" [showOpen]="false"
+            <app-module-menu [object]="object" [forEditing]="true" [showOpen]="false"
                              [showDelete]="false" (objectRefresh)="requestRefresh()">
-            </app-object-menu>
+            </app-module-menu>
         </app-module-header>
         <div class="module-body overflow-auto">
             <div class="document" *ngFor="let doc of biocData">

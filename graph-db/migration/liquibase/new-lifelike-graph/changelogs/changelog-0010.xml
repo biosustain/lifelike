@@ -4,35 +4,32 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
-  <!--
-    Neo4j does not allow the same transaction for changing the scheme and writes.
-    So group changeSets together by id="some text-#"
-    And separate changeSets grouping by empty new line space
-  -->
 
-  <changeSet id="LL-3198-liquibase-chebi-data-constraints" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; creating constraints.</comment>
+  <changeSet id="LL-3213 GO data constraints on date 10052021" author="Binh Vu">
+    <validCheckSum>1c611a1a-9be0-4333-98ce-fb6715e83587</validCheckSum>
+    <comment>Create constraints and indexes for GO nodes</comment>
     <sql>
-      CREATE CONSTRAINT constraint_chebi_id IF NOT EXISTS ON (n:db_CHEBI) ASSERT n.eid IS UNIQUE;
-      CREATE INDEX index_chebi_name IF NOT EXISTS FOR (n:db_CHEBI) ON (n.name);
-      CREATE INDEX index_chemical_id IF NOT EXISTS FOR (n:Chemical) ON (n.eid);
-      CREATE INDEX index_chemical_name IF NOT EXISTS FOR (n:Chemical) ON (n.name);
-      CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE
+    CREATE CONSTRAINT constraint_go_id IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+CREATE INDEX index_go_name IF NOT EXISTS FOR (n:db_GO) ON (n.name);
     </sql>
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-pathway" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi data.</comment>
+  <changeSet id="LL-3213 load GO BiologicalProcess on date 10052021" author="Binh Vu">
+    <validCheckSum>4323c810-c12f-4376-b70f-a9034be48b54</validCheckSum>
+    <comment>
+        Load GO BiologicalProcess
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MERGE (n:db_CHEBI {eid: row.eid})
-      ON CREATE SET n:Chemical, n.name = row.name, n.definition = row.definition,
-        n.inchi = row.inchi, n.inchi_key = row.inchi_key, n.smiles = row.smiles,
-        n.alt_id = row.alt_id, n.data_source = row.data_source
+      UNWIND $rows as row
+MERGE (n:db_GO {eid: row.eid})
+SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
+FOREACH (item IN CASE WHEN row.namespace = 'biological_process' THEN [1] ELSE [] END | SET n:BiologicalProcess)
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-data.zip"
+      fileName="jira-LL-3213-go-data.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -40,20 +37,25 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-synonyms" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi synonym data.</comment>
+  <changeSet id="LL-3213 load GO MolecularFunction on date 10052021" author="Binh Vu">
+    <validCheckSum>27572957-b4a6-4007-ab2e-a6f05c1d3894</validCheckSum>
+    <comment>
+        Load GO MolecularFunction
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MERGE (a:Synonym {name: row.name}) SET a.lowercase_name = toLower(row.name)
-      WITH row, a MATCH (b:db_CHEBI {eid: row.eid})
-      MERGE (b)-[r:HAS_SYNONYM]->(a)
+      UNWIND $rows as row
+MERGE (n:db_GO {eid: row.eid})
+SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
+FOREACH (item IN CASE WHEN row.namespace = 'molecular_function' THEN [1] ELSE [] END | SET n:MolecularFunction)
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-data.zip"
+      fileName="jira-LL-3213-go-data.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -61,20 +63,25 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-is-a" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_A.</comment>
+  <changeSet id="LL-3213 load GO CellularComponent on date 10052021" author="Binh Vu">
+    <validCheckSum>c4248f60-e772-4d32-9fc2-7b6e676367b9</validCheckSum>
+    <comment>
+        Load GO CellularComponent
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MERGE (n:db_GO {eid: row.eid})
+SET n.name=row.name,n.description=row.description,n.alt_id=row.alt_id,n.obsolete=row.obsolete,n.data_source=row.data_source
+FOREACH (item IN CASE WHEN row.namespace = 'cellular_component' THEN [1] ELSE [] END | SET n:CellularComponent)
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-data.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -82,20 +89,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-base" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_CONJUGATE_BASE_OF.</comment>
+  <changeSet id="LL-3213 load GO synonym on date 10052021" author="Binh Vu">
+    <validCheckSum>533b9363-e88a-4ff8-badc-8bb248c48574</validCheckSum>
+    <comment>
+        Load GO synonym relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_CONJUGATE_BASE_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_BASE_OF]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MERGE (a:Synonym {name: row.name}) set a.lowercase_name=toLower(row.name)
+WITH row, a MATCH (b:db_GO {eid: row.eid})
+MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-data.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -103,20 +114,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-part" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship HAS_PART.</comment>
+  <changeSet id="LL-3213 load GO IS_A on date 10052021" author="Binh Vu">
+    <validCheckSum>ae2054a5-00fc-4f26-8f87-7f3d6c78bb66</validCheckSum>
+    <comment>
+        Load GO IS_A relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'IS_A' THEN [1] ELSE [] END | MERGE (a)-[r:IS_A]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -124,20 +139,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-role" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship HAS_ROLE.</comment>
+  <changeSet id="LL-3213 load GO PART_OF on date 10052021" author="Binh Vu">
+    <validCheckSum>511b1cb7-73bb-45c7-889d-da9fc1ece107</validCheckSum>
+    <comment>
+        Load GO PART_OF relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'HAS_ROLE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_ROLE]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'PART_OF' THEN [1] ELSE [] END | MERGE (a)-[r:PART_OF]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -145,20 +164,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-parent" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship HAS_PARENT_HYDRIDE.</comment>
+  <changeSet id="LL-3213 load GO REGULATES on date 10052021" author="Binh Vu">
+    <validCheckSum>f7c2fa1a-44fe-4e52-9696-3a210ed2c31b</validCheckSum>
+    <comment>
+        Load GO REGULATES relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'HAS_PARENT_HYDRIDE' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PARENT_HYDRIDE]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:REGULATES]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -166,20 +189,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-enantiomer-of" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_ENANTIOMER_OF.</comment>
+  <changeSet id="LL-3213 load GO HAS_PART on date 10052021" author="Binh Vu">
+    <validCheckSum>9acbf41e-a4e0-49c8-a81d-8774d42cee42</validCheckSum>
+    <comment>
+        Load GO HAS_PART relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_ENANTIOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_ENANTIOMER_OF]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'HAS_PART' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_PART]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -187,20 +214,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-has-functional-parent" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship HAS_FUNCTIONAL_PARENT.</comment>
+  <changeSet id="LL-3213 load GO REPLACED_BY on date 10052021" author="Binh Vu">
+    <validCheckSum>1e29a930-d9b1-45eb-a031-444668d5befd</validCheckSum>
+    <comment>
+        Load GO REPLACED_BY relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'HAS_FUNCTIONAL_PARENT' THEN [1] ELSE [] END | MERGE (a)-[r:HAS_FUNCTIONAL_PARENT]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'REPLACED_BY' THEN [1] ELSE [] END | MERGE (a)-[r:REPLACED_BY]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -208,20 +239,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-conjugate-acid" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_CONJUGATE_ACID_OF.</comment>
+  <changeSet id="LL-3213 load GO NEGATIVELY_REGULATES on date 10052021" author="Binh Vu">
+    <validCheckSum>c2e48163-5944-42a2-90f8-380189f09264</validCheckSum>
+    <comment>
+        Load GO NEGATIVELY_REGULATES relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_CONJUGATE_ACID_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_CONJUGATE_ACID_OF]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'NEGATIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:NEGATIVELY_REGULATES]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -229,20 +264,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-tautomer" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_TAUTOMER_OF.</comment>
+  <changeSet id="LL-3213 load GO POSITIVELY_REGULATES on date 10052021" author="Binh Vu">
+    <validCheckSum>41a20993-0e8a-4655-926d-705dd4993bda</validCheckSum>
+    <comment>
+        Load GO POSITIVELY_REGULATES relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_TAUTOMER_OF' THEN [1] ELSE [] END | MERGE (a)-[r:IS_TAUTOMER_OF]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'POSITIVELY_REGULATES' THEN [1] ELSE [] END | MERGE (a)-[r:POSITIVELY_REGULATES]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -250,20 +289,24 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 
-  <changeSet id="LL-3198-liquibase-chebi-data-load-relationship-substituent-group" author="Binh Vu">
-    <comment>Create ChEBI data from scratch; load chebi relationship IS_SUBSTITUENT_GROUP_FROM.</comment>
+  <changeSet id="LL-3213 load GO OCCURS_IN on date 10052021" author="Binh Vu">
+    <validCheckSum>c9eae3d6-f343-420c-91f9-50cb99b0c04b</validCheckSum>
+    <comment>
+        Load GO OCCURS_IN relationship
+    </comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
       query="
-      UNWIND $rows AS row
-      MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
-      FOREACH (item IN CASE WHEN row.relationship = 'IS_SUBSTITUENT_GROUP_FROM' THEN [1] ELSE [] END | MERGE (a)-[r:IS_SUBSTITUENT_GROUP_FROM]->(b))
-      RETURN COUNT(*)
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'OCCURS_IN' THEN [1] ELSE [] END | MERGE (a)-[r:OCCURS_IN]->(b))
+RETURN COUNT(*)
       "
-      fileName="jira-LL-3198-chebi-relationship-data.zip"
+      fileName="jira-LL-3213-go-relationship.zip"
       startAt="1"
       fileType="TSV"
       neo4jHost="${neo4jHost}"
@@ -271,6 +314,57 @@
       neo4jDatabase="${neo4jDatabase}"
       azureStorageName="${azureStorageName}"
       azureStorageKey="${azureStorageKey}"
-      localSaveFileDir="${localSaveFileDir}"/>
+      localSaveFileDir="${localSaveFileDir}"
+    />
+  </changeSet>
+
+  <changeSet id="LL-3213 load GO HAPPENS_DURING on date 10052021" author="Binh Vu">
+    <validCheckSum>504b1ec5-76cc-465d-83af-41807c3a9fb0</validCheckSum>
+    <comment>
+        Load GO HAPPENS_DURING relationship
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'HAPPENS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:HAPPENS_DURING]->(b))
+RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+    />
+  </changeSet>
+
+  <changeSet id="LL-3213 load GO ENDS_DURING on date 10052021" author="Binh Vu">
+    <validCheckSum>15a636be-b11d-439d-b5a7-97182a06744f</validCheckSum>
+    <comment>
+        Load GO ENDS_DURING relationship
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.FileQueryHandler"
+      query="
+      UNWIND $rows as row
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+FOREACH (item IN CASE WHEN row.relationship = 'ENDS_DURING' THEN [1] ELSE [] END | MERGE (a)-[r:ENDS_DURING]->(b))
+RETURN COUNT(*)
+      "
+      fileName="jira-LL-3213-go-relationship.zip"
+      startAt="1"
+      fileType="TSV"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+    />
   </changeSet>
 </databaseChangeLog>

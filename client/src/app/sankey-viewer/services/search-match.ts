@@ -7,9 +7,10 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, transform, isObject } from 'lodash-es';
+import { omit, slice, transform, isObject, flatMap, flatMapDeep } from 'lodash-es';
 
 import { SankeyLink, SankeyTrace, SankeyNode } from 'app/shared-sankey/interfaces';
+import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 
 
@@ -26,6 +27,17 @@ enum LAYERS {
 }
 
 export class SankeySearch {
+
+  get traceNetworksMapping() {
+    if (!this._traceNetworksMapping) {
+      this._traceNetworksMapping = this.getTraceNetworkMapping();
+    }
+    return this._traceNetworksMapping;
+  }
+
+  set traceNetworksMapping(traceNetworkMapping) {
+    this._traceNetworksMapping = traceNetworkMapping;
+  }
   matcher;
   dataToSearch;
   data;
@@ -42,11 +54,27 @@ export class SankeySearch {
     'edges'
   ];
 
-  private matchedTraces: WeakMap<SankeyTrace & any, any>;
+  private matchedTraces: ExtendedWeakMap<SankeyTrace & any, any>;
+  private matchedNodes: LazyLoadedMap<SankeyNode['_id'], any>;
+  private matchedLink: LazyLoadedMap<SankeyLink['_id'], any>;
   private nodeById: Map<string, SankeyNode>;
 
+  _traceNetworksMapping;
+
+  traceNetwork = new WeakMap();
+
   cleanCache() {
-    this.matchedTraces = new WeakMap();
+    this.matchedTraces = new ExtendedWeakMap();
+    this.matchedLink = new LazyLoadedMap<SankeyLink['_id'], any>();
+    this.matchedNodes = new LazyLoadedMap<SankeyNode['_id'], any>();
+  }
+
+  getTraceNetworkMapping() {
+    return this.data.graph.trace_networks.map((traceNetwork, networkTraceIdx) => ({
+      networkTraceIdx,
+      nodesId: flatMapDeep(traceNetwork.traces, ({node_paths}) => node_paths),
+      linksId: flatMapDeep(traceNetwork.traces, ({edges}) => edges),
+    }));
   }
 
   update(updateObj) {
@@ -54,6 +82,7 @@ export class SankeySearch {
     Object.assign(this, updateObj);
     if (updateObj.data) {
       this.setNodeById();
+      this.traceNetworksMapping = undefined;
     }
     if (updateObj.terms && updateObj.options) {
       this.setMatcher();
@@ -100,15 +129,22 @@ export class SankeySearch {
   }
 
   matchNode(node: SankeyNode, _context): Generator<Match> {
-    return this.matchObject(
-      omit(node, this.nodePropertiesContainingEntities)
+    return this.matchedNodes.getSet(
+      node._id,
+      () => this.matchObject(
+        omit(node, this.nodePropertiesContainingEntities)
+      )
     );
   }
 
   * matchLink(link: (SankeyLink & any), {layers}): Generator<Match> {
-    yield* this.matchObject(
-      omit(link, this.linkPropertiesContainingEntities)
+    const matches = this.matchedLink.getSet(
+      link._id,
+      () => this.matchObject(
+        omit(link, this.linkPropertiesContainingEntities)
+      )
     );
+    yield* matches;
     const context = {
       layers: {
         ...layers,
@@ -117,12 +153,8 @@ export class SankeySearch {
     };
     if (!layers[LAYERS.link]) {
       const {_trace, _traces} = link;
-      for (const trace of (_traces || [_trace])) {
-        let matchedTrace = this.matchedTraces.get(trace);
-        if (!matchedTrace) {
-          matchedTrace = [];
-          this.matchedTraces.set(trace, matchedTrace);
-        }
+      for (const trace of (_traces || _trace && [_trace] || [])) {
+        const matchedTrace = this.matchedTraces.getSet(trace, []);
         for (const mt of this.matchTrace(trace, context)) {
           matchedTrace.push(mt);
         }
@@ -214,11 +246,11 @@ export class SankeySearch {
     return [calculatedMatches, matchGenerator()];
   }
 
-  * traverseAll(): Generator<any> {
+  * traverseData({nodes, links}) {
     const context = {
       layers: {}
     };
-    for (const node of this.dataToSearch.nodes) {
+    for (const node of nodes) {
       const [calculatedMatches, matchGenerator] = this.saveGeneratorResults(this.matchNode(node, context));
       if (matchGenerator.next().value) {
         yield {
@@ -228,7 +260,7 @@ export class SankeySearch {
         };
       }
     }
-    for (const link of this.dataToSearch.links) {
+    for (const link of links) {
       const [calculatedMatches, matchGenerator] = this.saveGeneratorResults(this.matchLink(link, context));
       if (matchGenerator.next().value) {
         yield {
@@ -236,6 +268,26 @@ export class SankeySearch {
           calculatedMatches,
           matchGenerator
         };
+      }
+    }
+  }
+
+  * traverseAll(): Generator<any> {
+    yield * this.traverseData(this.dataToSearch);
+    const {traceNetworksMapping} = this;
+    for (const match of this.traverseData(this.data)) {
+      for (const {nodesId, linksId, networkTraceIdx} of traceNetworksMapping) {
+        if (nodesId.includes(match.nodeId)) {
+          yield {
+            networkTraceIdx,
+            ...match
+          };
+        } else if (linksId.includes(match.linkId)) {
+          yield {
+            networkTraceIdx,
+            ...match
+          };
+        }
       }
     }
   }
