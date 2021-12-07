@@ -1,0 +1,6 @@
+# Editor configuration, see https://editorconfig.org
+# ij_ prefixes are for IntelliJ IDEs
+***ARANGO_USERNAME*** = false
+
+[*]
+end_of_line = lf
