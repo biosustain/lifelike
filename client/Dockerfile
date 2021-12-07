@@ -1,7 +1,9 @@
+ARG NODE_IMAGE_TAG=node:14
+
 # ========================================
 # Landing page
 # ========================================
-FROM node:14 as landing
+FROM $NODE_IMAGE_TAG as landing-build
 WORKDIR /app
 
 # Install dependencies
@@ -14,21 +16,28 @@ RUN yarn build
 
 
 # ========================================
-# Build Angular app
+# Angular app dependencies
 # ========================================
-FROM node:14 as angular
+FROM $NODE_IMAGE_TAG as angular-deps
 WORKDIR /app
-
-# build time argument for Angular environment
-ARG ANGULAR_CONFIG=production
 
 # Install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install
 
-# Copy the rest and Build application
+
+# ========================================
+# Angular app bundle build
+# ========================================
+FROM angular-deps as angular-build
+
+# build time argument for Angular environment
+ARG ANGULAR_CONFIG=production
+
+# Copy the code and build the app bundle
 COPY src ./src
 COPY tslint ./tslint
+COPY e2e ./e2e
 COPY *.json browserslist ./
 RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 
@@ -45,13 +54,13 @@ ENV APPSERVER_UPSTREAM http://appserver:5000
 
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
-ENV LIFELIKE_CONTENT_TYPES vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARANGO_DB_NAME***.document/enrichment-table vnd.***ARANGO_DB_NAME***.document/graph vnd.***ARANGO_DB_NAME***.document/map
+ENV GZIP_EXTRA_TYPES text/tsv vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARANGO_DB_NAME***.document/enrichment-table vnd.***ARANGO_DB_NAME***.document/graph vnd.***ARANGO_DB_NAME***.document/map
 
 # Copy nginx configuraiton template
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copy built assets
-COPY --from=landing /app/dist ./
-COPY --from=angular /app/dist ./
+COPY --from=landing-build /app/dist ./
+COPY --from=angular-build /app/dist ./
 
 EXPOSE 80

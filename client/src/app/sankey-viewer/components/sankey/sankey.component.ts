@@ -216,6 +216,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       const e = d3_event;
       if (!e.target.__data__) {
         this.backgroundClicked.emit();
+        // events are consumed by d3_zoom recall mouse down/up on document to close possible popups
+        document.dispatchEvent(new MouseEvent('mousedown'));
+        document.dispatchEvent(new MouseEvent('mouseup'));
       }
     });
 

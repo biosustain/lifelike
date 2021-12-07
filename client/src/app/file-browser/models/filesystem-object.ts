@@ -13,10 +13,11 @@ import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
+import {MimeTypes, Unicodes, FAClass, CustomIconColors} from 'app/shared/constants';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
+import {getSupportedFileCodes} from 'app/shared/utils';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
@@ -305,6 +306,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MimeTypes.Pdf:
         return FAClass.Pdf;
       default:
+        const matchedIcon = getSupportedFileCodes(this.filename);
+        if (matchedIcon !== undefined) {
+          return matchedIcon.FAClass;
+        }
         return FAClass.Default;
     }
   }
@@ -325,6 +330,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case MimeTypes.Pdf:
         return Unicodes.Pdf;
       default:
+        const matchedIcon = getSupportedFileCodes(this.filename);
+        if (matchedIcon !== undefined) {
+          return matchedIcon.unicode;
+        }
         return Unicodes.Default;
     }
   }

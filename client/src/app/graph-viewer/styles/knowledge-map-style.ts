@@ -13,13 +13,14 @@ import {
   PlacementOptions,
 } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce, nullIfEmpty } from 'app/shared/utils/types';
-import { RectangleNode, RectangleNodeOptions } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
+import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import {FA_CUSTOM_ICONS, MicrosoftColors, Unicodes} from 'app/shared/constants';
+import {FA_CUSTOM_ICONS, CustomIconColors, Unicodes} from 'app/shared/constants';
+import {getSupportedFileCodes} from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
@@ -139,7 +140,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       // ---------------------------------
       // Generic icon node + Note
       // ---------------------------------
-      let microsoftColor: string;
+      let specialIconColor: string;
 
       // Override icon for link types
       if (d.label === 'link') {
@@ -174,18 +175,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
               break;
             } else if (url.pathname.match(/^\/files\//)) {
               const domain = link.domain.trim();
-              if (domain.endsWith('.docx') || domain.endsWith('.doc')) {
-                iconCode = Unicodes.Word;
-                microsoftColor = MicrosoftColors.Word;
-                break;
-              } else if (domain.endsWith('.xlsx') || domain.endsWith('.xls')) {
-                iconCode = Unicodes.Excel;
-                microsoftColor = MicrosoftColors.Excel;
-                break;
-              } else if (domain.endsWith('.pptx') || domain.endsWith('.ppt')) {
-                iconCode = Unicodes.PowerPoint;
-                microsoftColor = MicrosoftColors.PowerPoint;
-                break;
+              const matchedIcon = getSupportedFileCodes(domain);
+              if (matchedIcon !== undefined) {
+                iconCode = matchedIcon.unicode;
+                specialIconColor = matchedIcon.color;
               }
             }
           } catch (e) {
@@ -193,10 +186,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         }
       }
       let iconTextColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
-      if (microsoftColor && !styleData.fillColor) {
-        iconTextColor = microsoftColor;
+      if (specialIconColor && !styleData.fillColor) {
+        iconTextColor = specialIconColor;
       }
-      const iconLabelColor = nullCoalesce(microsoftColor, iconTextColor);
+      const iconLabelColor = nullCoalesce(specialIconColor, iconTextColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
       // Change font family to custom kit if icon is customly added
       const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
