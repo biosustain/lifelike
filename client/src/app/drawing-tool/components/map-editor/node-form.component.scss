@@ -34,17 +34,6 @@
   }
 }
 
-.textarea-grow-wrap::after {
-  /* Note the weird space! Needed to prevent jumpy behavior */
-  content: attr(data-replicated-value) " ";
-
-  /* This is how textarea text behaves */
-  white-space: pre-wrap;
-
-  /* Hidden from view, clicks, and screen readers */
-  visibility: hidden;
-}
-
 .textarea-grow-wrap > textarea {
   /* You could leave this, but after a user resizes, then it ruins the auto sizing */
   box-sizing: border-box;
@@ -54,15 +43,4 @@
 
   /* Firefox shows scrollbar on growth, you can hide like this. */
   overflow: hidden;
-}
-
-.textarea-grow-wrap > textarea,
-.textarea-grow-wrap::after {
-  /* Identical styling required!! */
-  border: none;
-  padding: 0;
-  font: inherit;
-
-  /* Place on top of each other */
-  grid-area: 1 / 1 / 2 / 2;
 }
