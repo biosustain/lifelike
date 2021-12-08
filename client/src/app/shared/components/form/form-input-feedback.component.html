@@ -20,6 +20,9 @@
   <div *ngIf="control.hasError('whitespace')">
     This field cannot contain only whitespace characters.
   </div>
+  <div *ngIf="control.hasError('filenameError')">
+    The filename contains illegal char(s): {{control.getError('filenameError').value.join(' ')}}
+  </div>
   <div *ngIf="control.hasError('serverValidated')">
     <div *ngFor="let error of control.getError('serverValidated')">
       {{ error }}

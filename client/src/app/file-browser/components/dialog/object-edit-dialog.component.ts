@@ -1,5 +1,12 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -39,7 +46,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     contentValue: new FormControl(null),
     contentUrl: new FormControl(''),
     parent: new FormControl(null),
-    filename: new FormControl('', Validators.required),
+    filename: new FormControl('', [Validators.required, this.filenameValidator()]),
     description: new FormControl(),
     public: new FormControl(false),
     annotationConfigs: new FormGroup(
@@ -280,6 +287,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       });
     }, () => {
     });
+  }
+
+  filenameValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const forbidden = control.value.match(/[^\p{L}\d\s()&^%$!.,'"\-_@#]/gu);
+      return forbidden !== null ? {filenameError: {value: forbidden}} : null;
+    };
   }
 }
 
