@@ -9,6 +9,7 @@ import numpy as np
 from pandas.core.common import SettingWithCopyWarning
 from common.base_parser import BaseParser
 from common.constants import *
+from common.database import get_database
 
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', handlers=[logging.StreamHandler()])
@@ -21,7 +22,7 @@ ZENODO_GENE2GENE_FILE = 'Gene2Gene_assoc_theme.tsv'
 
 headers = ['pmid', 'sentence_num', 'entry_formatted', 'entry1Loc', 'entry2_formatted', 'entry2Loc',
            'entry1_name', 'entry2_name', 'entry1_id', 'entry2_id', 'entry1_type', 'entry2_type', 'path', 'sentence']
-
+dependency_headers = ['snippet_id', 'entry1_id', 'entry2_id', 'entry1_name', 'entry2_name', 'path']
 columns = ['pmid', 'sentence_num', 'entry1_name', 'entry2_name', 'entry1_id', 'entry2_id', 'path', 'sentence']
 
 theme_map = {
@@ -145,7 +146,7 @@ class LiteratureDataParser(BaseParser):
                     )
 
                 df['snippet_id'] = df.apply(lambda row: str(row['pmid']) + '-' + str(row['sentence_num']), axis=1)
-                df_assoc = df[['snippet_id', 'entry1_id', 'entry2_id', 'entry1_name', 'entry2_name', 'path']]
+                df_assoc = df[dependency_headers]
 
                 df_assoc.to_csv(outfile, index=False, mode='a', sep='\t')
                 if snippet_file:
@@ -207,13 +208,55 @@ class LiteratureDataParser(BaseParser):
         logging.info('literature diseases:' + str(len(self.literature_diseases)))
         logging.info('literature chemicals:' + str(len(self.literature_chemicals)))
 
-        # TODO: query graph and exclude ids that are not in that graph set
-        with open(os.path.join(self.parsed_dir, self.file_prefix + 'chemical.tsv'), 'w') as f:
-            f.writelines([s + '\n' for s in self.literature_chemicals])
-        with open(os.path.join(self.parsed_dir, self.file_prefix + 'disease.tsv'), 'w') as f:
-            f.writelines([s + '\n' for s in self.literature_diseases])
-        with open(os.path.join(self.parsed_dir, self.file_prefix + 'gene.tsv'), 'w') as f:
-            f.writelines([s + '\n' for s in self.literature_genes])
+        db = get_database()
+        print('Cleaning chemical...')
+        chemical_ids_to_exclude = db.get_data(
+            'MATCH (n:Chemical) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
+            {'zenodo_ids': list(self.literature_chemicals)})['exclude'].tolist()[0]
+        print('Cleaning disease...')
+        disease_ids_to_exclude = db.get_data(
+            'MATCH (n:Disease) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
+            {'zenodo_ids': list(self.literature_diseases)})['exclude'].tolist()[0]
+        print('Cleaning gene...')
+        gene_ids_to_exclude = db.get_data(
+            'MATCH (n:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
+            {'zenodo_ids': list(self.literature_genes)})['exclude'].tolist()[0]
+
+        # print('Cleaning chemical...')
+        # with open(os.path.join(self.parsed_dir, self.file_prefix + 'chemical.tsv'), 'w') as f:
+        #     f.writelines([s + '\n' for s in list(self.literature_chemicals - set(chemical_ids_to_exclude))])
+        # print('Cleaning disease...')
+        # with open(os.path.join(self.parsed_dir, self.file_prefix + 'disease.tsv'), 'w') as f:
+        #     f.writelines([s + '\n' for s in list(self.literature_diseases - set(disease_ids_to_exclude))])
+        # print('Cleaning gene...')
+        # with open(os.path.join(self.parsed_dir, self.file_prefix + 'gene.tsv'), 'w') as f:
+        #     f.writelines([s + '\n' for s in list(self.literature_genes - set(gene_ids_to_exclude))])
+
+        cleaned_chemical_ids = list(self.literature_chemicals - set(chemical_ids_to_exclude))
+        cleaned_disease_ids = list(self.literature_diseases - set(disease_ids_to_exclude))
+        cleaned_gene_ids = list(self.literature_genes - set(gene_ids_to_exclude))
+        self.clean_dependency_files(NODE_CHEMICAL, NODE_GENE, cleaned_chemical_ids, cleaned_gene_ids)
+        self.clean_dependency_files(NODE_GENE, NODE_DISEASE, cleaned_gene_ids, cleaned_disease_ids)
+        self.clean_dependency_files(NODE_GENE, NODE_GENE, cleaned_gene_ids, cleaned_gene_ids)
+
+    def clean_dependency_files(self, entry1_type, entry2_type, entry1_ids, entry2_ids):
+        input_file = f'{entry1_type}2{entry2_type}_assoc_theme.tsv'
+        file_path = os.path.join(self.parsed_dir, input_file)
+        converters = None
+        if entry1_type == NODE_GENE or entry2_type == NODE_GENE:
+            f = lambda x: str(x)
+            converters = {'entry1_id': f, 'entry2_id': f}
+
+        df = pd.read_csv(file_path, header=0, sep='\t', converters=converters, names=dependency_headers)
+        df.drop_duplicates(inplace=True)
+        df.set_index('entry1_id', inplace=True)
+        df = df[df.index.isin(entry1_ids)]
+        df.reset_index(inplace=True)
+        df.set_index('entry2_id', inplace=True)
+        df = df[df.index.isin(entry2_ids)]
+        df.reset_index(inplace=True)
+
+        df.to_csv(file_path, index=False, sep='\t', chunksize=50000)
 
     def parse_path2theme_file(self, entry1_type, entry2_type):
         file = self.get_path2theme_datafile_name(entry1_type, entry2_type)
@@ -311,6 +354,9 @@ class LiteratureDataParser(BaseParser):
         logging.info('total rows:' + str(len(df)))
         df.drop_duplicates(subset=['id'], inplace=True)
         logging.info('unique rows: ' + str(len(df)))
+        translate = {'-LRB- ': '(', ' -RRB-': ')', '-LRB-': '(', '-RRB-': ')', '-LSB- ': '[', ' -RSB-': ']'}
+        for current, replace in translate.items():
+            df.sentence = df.sentence.str.replace(current, replace)
         df.to_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), index=False, sep='\t', chunksize=50000)
         logging.info('done')
 

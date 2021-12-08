@@ -73,7 +73,7 @@ class ChangeSet:
         template = get_template(sql_template)
         # liquibase doesn't like the `<` character
         self.cypher = self.cypher.replace('<', '&lt;')
-        return template.render(checksum=str(uuid4()), change_id=self.id, author=self.author, change_comment=self.comment, cypher_query=self.cypher)
+        return template.render(checksum=f'8:{str(uuid4())}', change_id=self.id, author=self.author, change_comment=self.comment, cypher_query=self.cypher)
 
 
 class CustomChangeSet(ChangeSet):
@@ -90,7 +90,7 @@ class CustomChangeSet(ChangeSet):
 
     def create_changelog_str(self):
         template = get_template(custom_template)
-        return template.render(checksum=str(uuid4()), change_id=self.id, change_comment=self.comment, author=self.author,
+        return template.render(checksum=f'8:{str(uuid4())}', change_id=self.id, change_comment=self.comment, author=self.author,
                                handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
                                start_at=self.start_at, file_type=self.filetype, params=CUSTOM_PARAMS)
 
