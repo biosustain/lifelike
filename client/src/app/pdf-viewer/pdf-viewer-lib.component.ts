@@ -448,7 +448,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       idLink = source.links.filter(link => link.name === an.meta.idType)[0];
     }
 
-    if (idLink !== null) {
+    // null/undefined because a data source did not match
+    // e.g we use "Custom" for phenotype
+    if (idLink !== null && idLink !== undefined) {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
     } else {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
