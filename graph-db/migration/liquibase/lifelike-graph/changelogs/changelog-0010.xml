@@ -71,7 +71,7 @@ Need to also consider the fact the property could be at risk for being outdated.
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
         WITH a, row
-        MERGE (t:AssociationType {name: row.theme)
+        MERGE (t:AssociationType {name: row.theme})
         MERGE (a)-[:HAS_TYPE]->(t)
         
       "
@@ -119,7 +119,7 @@ Need to also consider the fact the property could be at risk for being outdated.
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
         WITH a, row
-        MERGE (t:AssociationType {name: row.theme)
+        MERGE (t:AssociationType {name: row.theme})
         MERGE (a)-[:HAS_TYPE]->(t)
         
       "
@@ -167,7 +167,7 @@ Need to also consider the fact the property could be at risk for being outdated.
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
         WITH a, row
-        MERGE (t:AssociationType {name: row.theme)
+        MERGE (t:AssociationType {name: row.theme})
         MERGE (a)-[:HAS_TYPE]->(t)
         
       "
@@ -215,7 +215,7 @@ Need to also consider the fact the property could be at risk for being outdated.
         MERGE (n1)-[:HAS_ASSOCIATION]->(a)
         MERGE (a)-[:HAS_ASSOCIATION]->(n2)
         WITH a, row
-        MERGE (t:AssociationType {name: row.theme)
+        MERGE (t:AssociationType {name: row.theme})
         MERGE (a)-[:HAS_TYPE]->(t)
         
       "
