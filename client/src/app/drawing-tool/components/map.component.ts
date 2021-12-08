@@ -196,6 +196,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
                 this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
               }
             }
+            this.graphCanvas.render();
             this.graphCanvas.zoomToFit(0);
 
             if (this.highlightTerms != null && this.highlightTerms.length) {
