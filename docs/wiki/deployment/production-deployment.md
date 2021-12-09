@@ -265,7 +265,7 @@ interpreter_python = /usr/bin/python3
 [inventory]
 enable_plugins = host_list, script, yaml, ini, auto, gcp_compute
 ```
-4. Download the *Ansible Vault* secrets file which is needed to decrypt the Ansible encrypted files. 
+4. Download the *Ansible Vault* secrets file which is needed to decrypt the Ansible encrypted files.
 
 **Note:** You may place the file anywhere, but its recommended to add it to the top level of the *ansible* directory
 ```bash
@@ -306,30 +306,9 @@ Now that we know what each playbook is for, we'll look into what is involved to 
 ```yaml
 all:
     children:
-        elk:
-            hosts:
-                35.238.72.201:
-        webservers:
-            hosts:
-                35.223.19.98:
-                34.67.176.248:
-                35.225.4.84:
-                34.69.0.24:
-        qa:
-            hosts:
-                35.225.4.84:
-        demo:
+        example:
             hosts:
                 <IP ADDRESS HERE>:
-        staging:
-            hosts:
-                34.67.176.248:
-        prod:
-            hosts:
-                34.69.0.24:
-        traefik:
-            hosts:
-                35.239.196.222:
 ```
 
 2. Under `ansible/inventories/group_vars` we'll create a folder named **demo**. The name is important here and has to match what we specified in our `hosts.yml` for our machine. Ansible uses this to find the correct folder for using interpreting defined variables.
@@ -379,10 +358,6 @@ http:
       loadBalancer:
         servers:
           - url: <INTERNAL IP ADDRESS HERE>
-    ***ARANGO_DB_NAME***-qa-service:
-      loadBalancer:
-        servers:
-          - url: "http://10.128.15.243"
     ...
 
 ```

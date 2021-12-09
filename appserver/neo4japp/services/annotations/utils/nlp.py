@@ -1,7 +1,7 @@
 import json
 import multiprocessing as mp
+import os
 import requests
-import time
 
 from typing import Dict, Set
 
@@ -18,9 +18,7 @@ def call_nlp_service(model: str, text: str) -> dict:
             data=json.dumps({'model': model, 'sentence': text}),
             headers={
                 'Content-type': 'application/json',
-                # TODO: replace this with real one in envs
-                # Need JIRA to create/add to ansible vault
-                'secret': '***NLP_SERVICE_SECRET***'},
+                'secret': os.environ.get('NLP_SECRET')},
             timeout=REQUEST_TIMEOUT)
 
         resp = req.json()
