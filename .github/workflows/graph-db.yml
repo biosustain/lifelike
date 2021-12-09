@@ -5,7 +5,7 @@ on:
     branches:
       - 'master'
     paths:
-      - 'graph-db/**'
+      - 'statistical-enrichment/**'
       - '.github/**'
 
 jobs:
@@ -15,6 +15,6 @@ jobs:
       - name: Docker publish
         uses: ./.github/actions/docker-publish.yml
         with:
-          image: ***ARANGO_DB_NAME***/graph-db
-          dockerfile: ./graph-db/Dockerfile
-          context: ./graph-db
+          image: statistical-enrichment/client
+          dockerfile: ./statistical-enrichment/Dockerfile
+          context: ./statistical-enrichment
