@@ -196,6 +196,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
                 this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
               }
             }
+            // Sometimes, we can observe that the map renders before the images are loaded, resulting
+            // in grey placeholders instead of images. Re-rendering the map after all the images are unzipped and loaded
+            // should solve this issue. If the issue is solved in some other way, this render call might be safely removed.
+            this.graphCanvas.render();
             this.graphCanvas.zoomToFit(0);
 
             if (this.highlightTerms != null && this.highlightTerms.length) {
