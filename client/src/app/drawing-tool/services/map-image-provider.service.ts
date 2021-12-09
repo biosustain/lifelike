@@ -16,6 +16,34 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
     this.preloadedUrls.set(id, url);
   }
 
+  getDimensions(id: string): Observable<Dimensions> {
+    const preloadedUrl = this.preloadedUrls.get(id);
+    return new Observable( subscriber => {
+     const img = new Image();
+     img.src = preloadedUrl;
+     img.onload = () => {
+       subscriber.next({height: img.height, width: img.width});
+     };
+   });
+
+
+
+    // const preloadedUrl = this.preloadedUrls.get(id);
+    // if (preloadedUrl != null) {
+    //   const image = new Image();
+    //   const result = from(image.onload = () => {
+    //       const height = image.height;
+    //       const width = image.width;
+    //       return {height, width};
+    //   });
+    //   image.src = preloadedUrl;
+    //   return result;
+    // } else {
+    //   // TODO: Return an error to be handled
+    //   return of(null);
+    // }
+  }
+
   get(id: string): Observable<CanvasImageSource> {
     const preloadedUrl = this.preloadedUrls.get(id);
     if (preloadedUrl != null) {
@@ -41,5 +69,9 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
       return of(null);
     }
   }
+}
 
+export interface Dimensions {
+  width: number;
+  height: number;
 }
