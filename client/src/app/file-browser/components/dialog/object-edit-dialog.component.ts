@@ -291,7 +291,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   filenameValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const forbidden = control.value.match(/[^\p{L}\d\s()&^%$!.,'"\-_@#]/gu);
+      const forbidden = control.value.match(/[^\p{L}\d ()\[\]+{}^%$!.,'\-_@#]/gu);
       return forbidden !== null ? {filenameError: {value: forbidden}} : null;
     };
   }
