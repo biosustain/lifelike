@@ -9,6 +9,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
   protected readonly maxFileSize = 1024 * 1024 * 40;
+  protected readonly pasteSize = 100;
 
   constructor(protected readonly graphView: CanvasGraphView,
               protected readonly mapImageProvider: MapImageProviderService) {
@@ -41,7 +42,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   private isSupportedFile(file: File) {
-    return file.type.match(/^image\/(jpeg|png|gif|bmp)$/i) && file.size <= this.maxFileSize;
+    return file.type.match(this.mimeTypePattern) && file.size <= this.maxFileSize;
   }
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
@@ -90,7 +91,10 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     if (position) {
       const imageId = makeid();
       this.mapImageProvider.setMemoryImage(imageId, URL.createObjectURL(file));
-      this.graphView.execute(new NodeCreation(
+      this.mapImageProvider.getDimensions(imageId).subscribe(dimensions => {
+        // Scale larger side to have 100 px
+        const ratio = this.pasteSize / Math.max(dimensions.width, dimensions.height);
+        this.graphView.execute(new NodeCreation(
         `Insert image`, {
           hash: uuidv4(),
           image_id: imageId,
@@ -100,9 +104,11 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
           data: {
             x: position.x + xOffset,
             y: position.y + yOffset,
+            width: dimensions.width * ratio,
+            height: dimensions.height * ratio,
           },
-        }, true,
-      ));
+        }, true));
+      });
       return BehaviorResult.Stop;
     }
   }
