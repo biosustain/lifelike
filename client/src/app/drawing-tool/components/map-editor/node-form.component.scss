@@ -34,7 +34,6 @@
   }
 }
 
-.textarea-grow-wrap > textarea {
   /* You could leave this, but after a user resizes, then it ruins the auto sizing */
   box-sizing: border-box;
   width: inherit;
