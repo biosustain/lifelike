@@ -1,4 +1,4 @@
-import { AbstractControl } from '@angular/forms';
+import {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
 
 import { toValidLink } from './utils/browser';
 
@@ -35,4 +35,15 @@ export function potentiallyInternalUrl(control: AbstractControl): { [key: string
   } else {
     return null;
   }
+}
+
+export function filenameValidator(control: AbstractControl): ValidationErrors | null {
+  const forbidden = control.value.match(/[^\p{L}\d ()\[\]+{}^%$!.,'\-_@#]/gu);
+  return forbidden !== null ? {filenameError: {value: forbidden}} : null;
+}
+
+
+export function noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
+  const forbidden = /\s/g.test(control.value);
+  return forbidden ? {whitespaceError: {value: control.value}} : null;
 }

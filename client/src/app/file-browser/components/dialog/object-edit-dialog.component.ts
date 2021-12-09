@@ -1,10 +1,8 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import {
-  AbstractControl,
   FormControl,
   FormGroup,
   ValidationErrors,
-  ValidatorFn,
   Validators
 } from '@angular/forms';
 
@@ -15,6 +13,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { filenameValidator } from 'app/shared/validators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
@@ -46,7 +45,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     contentValue: new FormControl(null),
     contentUrl: new FormControl(''),
     parent: new FormControl(null),
-    filename: new FormControl('', [Validators.required, this.filenameValidator()]),
+    filename: new FormControl('', [Validators.required, filenameValidator]),
     description: new FormControl(),
     public: new FormControl(false),
     annotationConfigs: new FormGroup(
@@ -287,13 +286,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       });
     }, () => {
     });
-  }
-
-  filenameValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const forbidden = control.value.match(/[^\p{L}\d ()\[\]+{}^%$!.,'\-_@#]/gu);
-      return forbidden !== null ? {filenameError: {value: forbidden}} : null;
-    };
   }
 }
 
