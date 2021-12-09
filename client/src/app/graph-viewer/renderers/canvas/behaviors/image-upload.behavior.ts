@@ -1,3 +1,5 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
@@ -8,11 +10,13 @@ import { CanvasGraphView } from '../canvas-graph-view';
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
-  protected readonly maxFileSize = 1024 * 1024 * 40;
+  protected readonly mebibyte = 1024 * 1024;
+  protected readonly maxFileSize = 20;
   protected readonly pasteSize = 100;
 
   constructor(protected readonly graphView: CanvasGraphView,
-              protected readonly mapImageProvider: MapImageProviderService) {
+              protected readonly mapImageProvider: MapImageProviderService,
+              protected readonly snackBar: MatSnackBar) {
     super();
   }
 
@@ -42,7 +46,15 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   private isSupportedFile(file: File) {
-    return file.type.match(this.mimeTypePattern) && file.size <= this.maxFileSize;
+    if (file.type.match(this.mimeTypePattern)) {
+      if (file.size <= this.maxFileSize * this.mebibyte) {
+        return true;
+      }
+      this.snackBar.open(`Image size too big (>${this.maxFileSize} MiB)`, null, {
+          duration: 4000,
+      });
+    }
+    return false;
   }
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
