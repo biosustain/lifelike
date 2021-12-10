@@ -15,8 +15,10 @@
                 <div class="form-group">
                     <label for="detail">Detail:</label>
                     <div class="form-control textarea-grow-wrap" [attr.data-replicated-value]="node.data.detail">
-                        <textarea [(ngModel)]="node.data.detail" (change)="doSave()"
-                                  id="detail" rows="2"
+                        <textarea  [(ngModel)]="node.data.detail" cdkTextareaAutosize
+                                   cdkAutosizeMinRows="2" cdkAutosizeMaxRows="9"
+                                  (change)="doSave()"
+                                  id="detail"
                                   maxlength="5000"></textarea>
                     </div>
                 </div>
@@ -71,12 +73,8 @@
                 </div>
 
                 <ng-container *ngIf="!overflow" [ngTemplateOutlet]="search"></ng-container>
+                <ng-container *ngIf="overflow" [ngTemplateOutlet]="delete"></ng-container>
 
-                <div class="mb-4">
-                    <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
-                        Delete
-                    </button>
-                </div>
             </ng-template>
         </li>
         <li ngbNavItem="search" *ngIf="overflow">
@@ -153,6 +151,7 @@
                         %
                     </div>
                 </fieldset>
+                <ng-container [ngTemplateOutlet]="delete"></ng-container>
             </ng-template>
         </li>
     </ul>
@@ -192,4 +191,13 @@
         <app-quick-search [query]="node.display_name"
                           [links]="node.data?.search"></app-quick-search>
     </fieldset>
+    <ng-container [ngTemplateOutlet]="delete"></ng-container>
+</ng-template>
+
+<ng-template #delete>
+    <div class="mb-4">
+        <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
+            Delete
+        </button>
+    </div>
 </ng-template>
