@@ -130,6 +130,8 @@ jobs:
 
       - name: Deploy application
         uses: ./.github/actions/ansible
+        ## workaround: increase step timeout to let Ansible action wait for long running Liquibase updates.
+        timeout-minutes: 720
         with:
           workspace_dir: 'deployment/ansible'
           playbook_file_path: 'playbooks/deploy-gcloud.yml'
