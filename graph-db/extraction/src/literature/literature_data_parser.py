@@ -220,7 +220,7 @@ class LiteratureDataParser(BaseParser):
             {'zenodo_ids': list(self.literature_diseases)})['exclude'].tolist()[0]
         print('Cleaning gene...')
         gene_ids_to_exclude = db.get_data(
-            'MATCH (n:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
+            'MATCH (n:Gene:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
             {'zenodo_ids': list(self.literature_genes)})['exclude'].tolist()[0]
 
         # print('Cleaning chemical...')
@@ -233,7 +233,9 @@ class LiteratureDataParser(BaseParser):
         # with open(os.path.join(self.parsed_dir, self.file_prefix + 'gene.tsv'), 'w') as f:
         #     f.writelines([s + '\n' for s in list(self.literature_genes - set(gene_ids_to_exclude))])
 
-        cleaned_chemical_ids = list(self.literature_chemicals - set(chemical_ids_to_exclude))
+        # CHEBI:21653 is in neo4j-prod but not stage, it seems that was created because we did not drop unmatched Zenodo data
+        # and did not clean it up
+        cleaned_chemical_ids = list(self.literature_chemicals - set(chemical_ids_to_exclude).union({'CHEBI:21653'}))
         cleaned_disease_ids = list(self.literature_diseases - set(disease_ids_to_exclude))
         cleaned_gene_ids = list(self.literature_genes - set(gene_ids_to_exclude))
         self.clean_dependency_files(NODE_CHEMICAL, NODE_DISEASE, cleaned_chemical_ids, cleaned_disease_ids)
