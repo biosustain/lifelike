@@ -94,13 +94,13 @@ export class VisualizationService extends AbstractService {
         ).pipe(map(resp => resp.result.associatedData));
     }
 
-    getSnippetsForNodePair(fromId: number, toId: number, page: number, limit: number) {
+    getSnippetsForNodePair(node1Id: number, node2Id: number, page: number, limit: number) {
       return this.http.post<{result: GetNodePairSnippetsResult}>(
         `${this.baseUrl}/get-snippets-for-node-pair`, {
           page,
           limit,
-          from_id: fromId,
-          to_id: toId,
+          node_1_id: node1Id,
+          node_2_id: node2Id,
         },
         {...this.getHttpOptions(true)}
       ).pipe(map(resp => resp.result));
