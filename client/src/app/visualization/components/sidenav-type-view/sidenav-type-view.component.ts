@@ -93,17 +93,17 @@ export class SidenavTypeViewComponent {
   getNewPageOfSnippets(newPageRequest: NewNodePairSnippetsPageRequest) {
     this.newSnippetDisplayEntity = false;
     this.getSnippets(
-      newPageRequest.queryData.fromNodeId,
-      newPageRequest.queryData.toNodeId,
+      newPageRequest.queryData.node1Id,
+      newPageRequest.queryData.node2Id,
       newPageRequest.limit,
       newPageRequest.page
     );
   }
 
-  getSnippets(fromNodeId: number, toNodeId: number, limit: number, page: number) {
+  getSnippets(node1Id: number, node2Id: number, limit: number, page: number) {
     this.visualizationService.getSnippetsForNodePair(
-      fromNodeId,
-      toNodeId,
+      node1Id,
+      node2Id,
       page,
       limit
     ).subscribe(
@@ -143,6 +143,5 @@ export class SidenavTypeViewComponent {
         this.error = error;
       }
     );
-
   }
 }
