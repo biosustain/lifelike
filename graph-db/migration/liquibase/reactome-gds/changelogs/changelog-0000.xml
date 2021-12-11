@@ -8,7 +8,6 @@
     Create reactome-gds from reactome database download reactome.graph.tgz, then change the database by running the cyphers
   -->
   <changeSet id="1. Remove un-needed nodes and labels" author="robin cai">
-    <validCheckSum>8:dd168e2d-2d24-45ad-b093-afa92b326847</validCheckSum>
     <comment>
       Remove DatabaseObject, InstanceEdit, Affilication, Person, Publication, Taxon
     </comment>
@@ -31,7 +30,6 @@
   </changeSet>
 
   <changeSet id="2. Remove all non-human PhysicalEntity and Event" author="robin cai">
-    <validCheckSum>8:9c7a1b3d-36b0-42d5-bbcd-cba4b91e8b67</validCheckSum>
     <comment>The GDS is currently for human data analysis only</comment>
     <sql>
     match(n:Event) where n.speciesName &lt;&gt; 'Homo sapiens' detach delete n;
@@ -40,7 +38,6 @@
   </changeSet>
 
   <changeSet id="3. Set commonName and compartment properties" author="robin cai">
-    <validCheckSum>8:228f881a-232d-46d1-8e21-58b1b2c4b7a3</validCheckSum>
     <comment></comment>
     <sql>
     match(n:PhysicalEntity) set n.commonName = n.name[0];
@@ -56,7 +53,6 @@
   </changeSet>
 
   <changeSet id="4. Reverse and rename relationshps for better traversal" author="robin cai">
-    <validCheckSum>8:bec180d6-1cdb-40eb-877f-401bc321128e</validCheckSum>
     <comment> Change the following relationships:
       - Change hasComponent to componentOf, reverse
       - Change hasMember to memberOf, reverse
@@ -85,7 +81,6 @@
   </changeSet>
 
   <changeSet id="5. Remove all non-human PhysicalEntity and Event" author="robin cai">
-    <validCheckSum>8:d70ec308-0adc-4bd9-9bb8-da75ec7fef50</validCheckSum>
     <comment>The GDS is currently for human data analysis only</comment>
     <sql>
     match(n:Event) where n.speciesName &lt;&gt; 'Homo sapiens' detach delete n;
