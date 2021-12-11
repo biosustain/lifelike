@@ -384,18 +384,18 @@ class VisualizerService(KgService):
 
     def get_snippets_for_node_pair(
         self,
-        from_id: int,
-        to_id: int,
+        node_1: int,
+        node_2: int,
         page: int,
         limit: int,
     ):
-        data = self.get_snippets_from_node_pair(from_id, to_id, page, limit)
-        total_results = self.get_snippet_count_from_node_pair(from_id, to_id)
+        data = self.get_snippets_from_node_pair(node_1, node_2, page, limit)
+        total_results = self.get_snippet_count_from_node_pair(node_1, node_2)
 
         results = [
             GetSnippetsFromEdgeResult(
-                from_node_id=from_id,
-                to_node_id=to_id,
+                from_node_id=row['from_id'],
+                to_node_id=row['to_id'],
                 association=row['description'],
                 snippets=[Snippet(
                     reference=GraphNode(
@@ -423,7 +423,7 @@ class VisualizerService(KgService):
         return GetNodePairSnippetsResult(
             snippet_data=results,
             total_results=total_results,
-            query_data={'from_node_id': from_id, 'to_node_id': to_id},
+            query_data={'node_1_id': node_1, 'node_2_id': node_2},
         )
 
     def get_expand_query(self, tx: Neo4jTx, node_id: str, labels: List[str]) -> List[Neo4jRecord]:
@@ -560,22 +560,27 @@ class VisualizerService(KgService):
     def get_snippets_from_node_pair_query(
         self,
         tx: Neo4jTx,
-        from_id: List[int],
-        to_id: List[int],
+        node_1_id: List[int],
+        node_2_id: List[int],
         skip: int,
         limit: int
     ) -> List[Neo4jRecord]:
         return list(
             tx.run(
                 """
-                MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+                MATCH (f)-[r:ASSOCIATED]-(t)
                 WHERE
-                    ID(f)=$from_id AND
-                    ID(t)=$to_id
+                    ID(f)=$node_1_id AND
+                    ID(t)=$node_2_id
+                WITH ID(startNode(r)) as from_id, ID(endNode(r)) as to_id
+                MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+                WHERE
+                    ID(f)=from_id AND
+                    ID(t)=to_id
                 WITH
                     a AS association,
-                    ID(f) AS from_id,
-                    ID(t) AS to_id,
+                    from_id,
+                    to_id,
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
@@ -618,7 +623,7 @@ class VisualizerService(KgService):
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) AS references, from_id, to_id, description
                 """,
-                from_id=from_id, to_id=to_id, skip=skip, limit=limit
+                node_1_id=node_1_id, node_2_id=node_2_id, skip=skip, limit=limit
             )
         )
 
