@@ -17,7 +17,8 @@ import {
   SankeyState,
   LINK_VALUE_GENERATOR,
   NODE_VALUE_GENERATOR,
-  PREDEFINED_VALUE
+  PREDEFINED_VALUE,
+  ViewBase
 } from 'app/shared-sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
@@ -58,7 +59,7 @@ export class SankeyControllerService {
     this.resetState();
   }
 
-  viewBase = 'sankey';
+  viewBase = ViewBase.sankey;
 
   get defaultOptions(): SankeyOptions {
     return {
@@ -157,7 +158,7 @@ export class SankeyControllerService {
 
   get nodeValueAccessor() {
     const valueAccessor = (
-      this.options.nodeValueGenerators[this.state.nodeValueAccessorId] ||
+      this.options.nodeValueGenerators[this.state.nodeValueAccessorId] ??
       this.options.nodeValueAccessors[this.state.nodeValueAccessorId]
     );
     if (valueAccessor) {
@@ -170,7 +171,7 @@ export class SankeyControllerService {
 
   get linkValueAccessor() {
     const valueAccessor = (
-      this.options.linkValueGenerators[this.state.linkValueAccessorId] ||
+      this.options.linkValueGenerators[this.state.linkValueAccessorId] ??
       this.options.linkValueAccessors[this.state.linkValueAccessorId]
     );
     if (valueAccessor) {
@@ -238,7 +239,7 @@ export class SankeyControllerService {
     colorMap?
   ) {
     const traceBasedLinkSplitMap = new Map();
-    const traceGroupColorMap = colorMap ? colorMap : new Map(
+    const traceGroupColorMap = colorMap ?? new Map(
       networkTrace.traces.map(({_group}) => [_group, christianColors[_group]])
     );
     const networkTraceLinks = networkTrace.traces.reduce((o, trace, traceIdx) => {
@@ -434,7 +435,7 @@ export class SankeyControllerService {
         this.warningController.warn(`Trace network default sizing preset ${default_sizing} could not be found among value accessors`);
         default_sizing = undefined;
       }
-      return default_sizing || (
+      return default_sizing ?? (
         this.oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height
       );
     }
@@ -481,7 +482,7 @@ export class SankeyControllerService {
 
   // region Extract options
   private extractLinkValueProperties({links: sankeyLinks, graph: {sizing}}) {
-    const predefinedPropertiesToFind = new Set(Object.values(sizing || {}).map(({link_sizing}) => link_sizing));
+    const predefinedPropertiesToFind = new Set(Object.values(sizing ?? {}).map(({link_sizing}) => link_sizing));
     // extract all numeric properties
     for (const link of sankeyLinks) {
       for (const [k, v] of Object.entries(link)) {
@@ -534,7 +535,7 @@ export class SankeyControllerService {
   }
 
   private extractNodeValueProperties({nodes: sankeyNodes, graph: {sizing}}) {
-    const predefinedPropertiesToFind = new Set(Object.values(sizing || {}).map(({node_sizing}) => node_sizing));
+    const predefinedPropertiesToFind = new Set(Object.values(sizing ?? {}).map(({node_sizing}) => node_sizing));
     // extract all numeric properties
     for (const node of sankeyNodes) {
       for (const [k, v] of Object.entries(node)) {
@@ -600,12 +601,12 @@ export class SankeyControllerService {
       l._id = index;
     });
     content.graph.trace_networks.forEach(tn => {
-      let maxVal = max(tn.traces.map(({group}) => isNil(group) ? -1 : group));
+      let maxVal = max(tn.traces.map(({group}) => group ?? -1));
       if (!isFinite(maxVal)) {
         maxVal = Math.random();
       }
       tn.traces.forEach(tr => {
-        tr._group = (isNil(tr.group) || tr.group === -1) ? ++maxVal : tr.group;
+        tr._group = tr.group ?? (tr.group === -1 && ++maxVal);
       });
     });
     this.allData.next(
@@ -646,12 +647,12 @@ export class SankeyControllerService {
     return pass;
   }
 
-  getDefaultViewBase(content) {
+  getDefaultViewBase(content): ViewBase {
     const {selectedNetworkTrace} = this;
     const {graph: {node_sets}} = content;
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
-    return (_inNodes.length > 1 && _outNodes.length > 1) ? 'sankey-many-to-many' : 'sankey';
+    return (_inNodes.length > 1 && _outNodes.length > 1) ? ViewBase.sankeyManyToMany : ViewBase.sankey;
   }
 
   setDefaultViewBase(content) {
@@ -676,8 +677,8 @@ export class SankeyControllerService {
   }
 
   linkGraph(data) {
-    const preprocessedNodes = this.nodeValueAccessor.preprocessing.call(this, data) || {};
-    const preprocessedLinks = this.linkValueAccessor.preprocessing.call(this, data) || {};
+    const preprocessedNodes = this.nodeValueAccessor.preprocessing.call(this, data) ?? {};
+    const preprocessedLinks = this.linkValueAccessor.preprocessing.call(this, data) ?? {};
 
     Object.assign(
       data,
@@ -711,10 +712,10 @@ export class SankeyControllerService {
       nodeValueAccessor, linkValueAccessor
     } = this;
     if (nodeValueAccessor.postprocessing) {
-      Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) || {});
+      Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) ?? {});
     }
     if (linkValueAccessor.postprocessing) {
-      Object.assign(data, linkValueAccessor.postprocessing.call(this, data) || {});
+      Object.assign(data, linkValueAccessor.postprocessing.call(this, data) ?? {});
     }
     if (minValue < 0) {
       data.nodes.forEach(n => {
