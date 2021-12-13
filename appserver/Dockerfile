@@ -43,7 +43,7 @@ WORKDIR /home/h4j
 USER n4j
 
 # Copy application code
-COPY --chown=appuser . .
+COPY --chown=n4j . .
 
 ENV FLASK_ENV=development
 ENV DOMAIN=http://localhost:4242
