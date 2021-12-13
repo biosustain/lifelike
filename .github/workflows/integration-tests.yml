@@ -22,7 +22,8 @@ jobs:
                 password: ${{ secrets.AZURE_CR_PASSWORD }}
                 registry: ***ARANGO_DB_NAME***.azurecr.io
                 image_name: kg-appserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }},latest-dev
+                build_extra_args: "--build-arg=DEV=1"
                 context: ./appserver
                 dockerfile: ./Dockerfile
 
