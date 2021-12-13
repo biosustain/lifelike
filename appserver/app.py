@@ -33,8 +33,7 @@ from neo4japp.models import AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent, Files
 from neo4japp.utils.logger import EventLog
 
-app_config = os.environ['FLASK_APP_CONFIG']
-app = create_app(config=f'config.{app_config}')
+app = create_app(config='config.Config')
 logger = logging.getLogger(__name__)
 
 

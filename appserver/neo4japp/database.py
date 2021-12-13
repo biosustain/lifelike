@@ -48,7 +48,7 @@ db = SQLAlchemy(
     }
 )
 
-host = os.getenv('NEO4J_HOST', '0.0.0.0')
+host = os.getenv('NEO4J_HOST', 'localhost')
 scheme = os.getenv('NEO4J_SCHEME', 'bolt')
 port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'
@@ -74,7 +74,7 @@ def close_neo4j_db(e=None):
 def _connect_to_elastic():
     return Elasticsearch(
         timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS', 'http://localhost:9200')]
     )
 
 

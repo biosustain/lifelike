@@ -77,7 +77,7 @@ def graph(request, app) -> Session:
     IMPORTANT: Tests may not behave as expected if the
     Neo4J database is not cleared before running tests!
     """
-    host = os.getenv('NEO4J_HOST', '0.0.0.0')
+    host = os.getenv('NEO4J_HOST', 'localhost')
     scheme = os.getenv('NEO4J_SCHEME', 'bolt')
     port = os.getenv('NEO4J_PORT', '7687')
     url = f'{scheme}://{host}:{port}'
@@ -98,7 +98,7 @@ def graph(request, app) -> Session:
 
 @pytest.fixture(scope='function')
 def graph_driver(request, app):
-    host = os.getenv('NEO4J_HOST', '0.0.0.0')
+    host = os.getenv('NEO4J_HOST', 'localhost')
     scheme = os.getenv('NEO4J_SCHEME', 'bolt')
     port = os.getenv('NEO4J_PORT', '7687')
     url = f'{scheme}://{host}:{port}'
