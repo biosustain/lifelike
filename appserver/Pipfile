@@ -67,7 +67,4 @@ memory-profiler = "==0.58.0"
 elastic-apm = {extras = ["flask"], version = "*"}
 
 [requires]
-python_version = "3.8.2"
-
-[scripts]
-lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle .'"
+python_version = "3.8"
