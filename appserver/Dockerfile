@@ -38,9 +38,9 @@ COPY --from=build-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 
 # Add unprivileged user
-RUN useradd --create-home appuser
-WORKDIR /home/appuser
-USER appuser
+RUN useradd --create-home n4j
+WORKDIR /home/h4j
+USER n4j
 
 # Copy application code
 COPY --chown=appuser . .
