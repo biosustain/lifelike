@@ -1,31 +1,29 @@
 import os
 
 
-class Base():
+class Config():
     """Default values"""
-    SITE_NAME = 'Lifelike Knowledge Search'
-
     # Optional for tracking the master branch for the build
     GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
     GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
     APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
     APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
 
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'secrets')
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'secret')
 
     NLP_SECRET = os.environ.get('NLP_SECRET', 'secret')
 
-    POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-    POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-    POSTGRES_USER = os.environ.get('POSTGRES_USER')
-    POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-    POSTGRES_DB = os.environ.get('POSTGRES_DB')
+    POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
+    POSTGRES_PORT = os.environ.get('POSTGRES_PORT', '5432')
+    POSTGRES_USER = os.environ.get('POSTGRES_USER', 'postgres')
+    POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'postgres')
+    POSTGRES_DB = os.environ.get('POSTGRES_DB', 'postgres')
 
-    NEO4J_HOST = os.environ.get('NEO4J_HOST')
-    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME')
-    NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
-    NEO4J_PORT = os.environ.get('NEO4J_PORT')
-    NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
+    NEO4J_HOST = os.environ.get('NEO4J_HOST', 'localhost')
+    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME', 'bolt')
+    NEO4J_AUTH = os.environ.get('NEO4J_AUTH', 'neo4j/password')
+    NEO4J_PORT = os.environ.get('NEO4J_PORT', '7687')
+    NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE', 'neo4j')
 
     AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
@@ -41,35 +39,10 @@ class Base():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
 
+    WTF_CSRF_ENABLED = False
     SUPPORTED_LOCALES = ['en']
 
 
-class Development(Base):
-    """Development configurations"""
-
-    ASSETS_DEBUG = True
-    WTF_CSRF_ENABLED = False
-    DOMAIN = 'http://localhost'
-
-
-class QA(Base):
-    """ QA configuration """
-    SITE_NAME = 'Lifelike Knowledge Search (QA)'
-    DOMAIN = 'https://qa.***ARANGO_DB_NAME***.bio'
-
-
-class Staging(Base):
-    """Staging configurations"""
-    SITE_NAME = 'Lifelike Knowledge Search (Staging)'
-    DOMAIN = 'https://test.***ARANGO_DB_NAME***.bio'
-
-
-class Testing(Base):
+class Testing(Config):
     """Functional test configuration"""
     TESTING = True
-    WTF_CSRF_ENABLED = False
-
-
-class Production(Base):
-    """ Production configuration """
-    DOMAIN = 'https://kg.***ARANGO_DB_NAME***.bio'

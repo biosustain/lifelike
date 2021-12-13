@@ -218,11 +218,11 @@ class LMDBManager:
                 self.lmdb_versions = config_fi
 
     def init_db_connection(self):
-        POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-        POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-        POSTGRES_USER = os.environ.get('POSTGRES_USER')
-        POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-        POSTGRES_DB = os.environ.get('POSTGRES_DB')
+        POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
+        POSTGRES_PORT = os.environ.get('POSTGRES_PORT', '5432')
+        POSTGRES_USER = os.environ.get('POSTGRES_USER', 'postgres')
+        POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'postgres')
+        POSTGRES_DB = os.environ.get('POSTGRES_DB', 'postgres')
         engine = sqlalchemy.create_engine(
             sqlalchemy.engine.url.URL(
                         drivername='postgres+psycopg2',

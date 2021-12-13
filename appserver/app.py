@@ -38,8 +38,7 @@ from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.utils.logger import EventLog
 
-app_config = os.environ['FLASK_APP_CONFIG']
-app = create_app(config=f'config.{app_config}')
+app = create_app(config='config.Config')
 logger = logging.getLogger(__name__)
 
 

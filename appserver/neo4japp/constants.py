@@ -429,14 +429,14 @@ RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string
 MESSAGE_SENDER_IDENTITY = "***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio"
 MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
-RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', "r").read()
+RESET_PASS_MAIL_CONTENT = codecs.open('assets/reset_email.html', "r").read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
 # Start shared Elastic constants
-FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
+FILE_INDEX_ID = os.getenv('ELASTIC_FILE_INDEX_ID', 'file')
 FRAGMENT_SIZE = 1024
 
-LIFELIKE_DOMAIN = os.getenv('DOMAIN')
+LIFELIKE_DOMAIN = os.getenv('DOMAIN', 'http://localhost:5000')
 ASSETS_PATH = os.getenv('ASSETS_FOLDER')
 
 # Start constants for export of merged maps
