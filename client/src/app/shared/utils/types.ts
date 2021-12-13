@@ -109,3 +109,5 @@ export class LazyLoadedMap<K, V> extends Map<K, V> {
     return loadedValue;
   }
 }
+
+export const frozenEmptyObject = Object.freeze({});
