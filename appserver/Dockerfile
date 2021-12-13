@@ -1,40 +1,56 @@
+# ========================================
+# Base image
+# ========================================
 FROM fedora:32 as base
-LABEL app=kg-prototypes
+
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONFAULTHANDLER 1
+
+
+# ========================================
+# Build dependencies stage
+# ========================================
+FROM base as build-deps
 
 # Install dependencies
-RUN dnf install htop postgresql graphviz python-pip python3-devel vim net-tools which -y \
-    && dnf groupinstall 'Development Tools' -y \
-    && dnf clean packages
+RUN dnf install -y python3-devel && dnf groupinstall -y 'Development Tools'
 RUN pip install pipenv
 
-ENV N4J_USER n4j
-ENV N4J_HOME /home/$N4J_USER
-ENV UID 1000
-ENV GID 1000
+# Copy Pipfiles and install dependencies
+COPY Pipfile Pipfile.lock ./
 
-# User and group creation
-RUN groupadd -g $GID $N4J_USER && \
-    useradd -u $UID -g $GID -G wheel --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
+ARG DEV
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy $(if [ "$DEV" ]; then echo --dev; fi)
 
-WORKDIR $N4J_HOME
+# ========================================
+# Runtime stage
+# ========================================
+FROM base
+LABEL app=kg-prototypes
 
-# Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
-COPY --chown=1000:1000 Pipfile .
-COPY --chown=1000:1000 Pipfile.lock .
-RUN pipenv install --dev --deploy --system
+# Install runtime system dependencies
+RUN dnf install -y graphviz && dnf clean packages
 
-# ...then copy everything else
-COPY --chown=1000:1000 . .
+# Copy Python virtual environment
+COPY --from=build-deps /.venv /.venv
+ENV PATH="/.venv/bin:$PATH"
 
-# TODO: We should consider breaking this apart into dev and prod
-# builds, so we don't build unnecessary packages
+# Add unprivileged user
+RUN useradd --create-home appuser
+WORKDIR /home/appuser
+USER appuser
 
-# Don't lose stdin, stdout and stderr output due to buffering
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH $N4J_HOME
+# Copy application code
+COPY --chown=appuser . .
 
-RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
+ENV FLASK_ENV=development
+ENV DOMAIN=http://localhost:4242
+ENV JWT_SECRET=secret
+ENV NLP_SECRET=secret
+ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+ENV ELASTIC_APM_SERVER_URL=
 
-USER $N4J_USER
-
+EXPOSE 5000
 CMD [ "bin/startup.sh" ]
