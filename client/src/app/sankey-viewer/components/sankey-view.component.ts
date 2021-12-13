@@ -184,7 +184,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
 
   set entitySearchListIdx(idx) {
     this._entitySearchListIdx = idx;
-    const {networkTraceIdx} = this.entitySearchList.value[idx] || {};
+    const {networkTraceIdx} = this.entitySearchList.value[idx] ?? {};
     if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
       this.selectNetworkTrace(networkTraceIdx);
     } else {
@@ -301,7 +301,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
 
   parseUrlFragmentToState(fragment: string): Observable<Partial<SankeyState>> {
     const state = {} as Partial<SankeyState>;
-    const params = new URLSearchParams(fragment || '');
+    const params = new URLSearchParams(fragment ?? '');
     for (const [param, value] of (params as any).entries()) {
       switch (param) {
         case SankeyURLLoadParam.NETWORK_TRACE_IDX:

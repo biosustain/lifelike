@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, merge, intersection } from 'lodash-es';
 
-import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, SankeyTrace } from 'app/shared-sankey/interfaces';
+import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, SankeyTrace, ViewBase } from 'app/shared-sankey/interfaces';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { RecursivePartial } from 'app/shared/schemas/common';
@@ -27,7 +27,7 @@ import { nodeColors, NodePosition } from '../utils/nodeColors';
 @Injectable()
 // @ts-ignore
 export class SankeyManyToManyControllerService extends SankeyControllerService {
-  viewBase = 'sankey-many-to-many';
+  viewBase = ViewBase.sankeyManyToMany;
 
   // @ts-ignore
   get defaultState(): SankeyManyToManyState {

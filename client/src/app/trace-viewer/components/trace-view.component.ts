@@ -57,13 +57,13 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     this.sourceFileURL = `/projects/${projectName}/sankey/${fileId}`;
 
     this.loadTask = new BackgroundTask((id) => {
-      return combineLatest(
+      return combineLatest([
         this.filesystemService.get(id),
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
-      );
+      ]);
     });
 
     this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [object, fileContent]}) => {

@@ -259,11 +259,11 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   get sourceValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[0] : _value;
+    return ({_value, _multiple_values}) => _multiple_values?.[0] ?? _value;
   }
 
   get targetValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values ? _multiple_values[1] : _value;
+    return ({_value, _multiple_values}) => _multiple_values?.[1] ?? _value;
   }
 
   /**
@@ -273,9 +273,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   computeNodeValues({nodes}: SankeyData) {
     const {sourceValue, targetValue} = this;
     for (const node of nodes) {
-      node._value = node._fixedValue === undefined
-        ? Math.max(sum(node._sourceLinks, sourceValue), sum(node._targetLinks, targetValue))
-        : node._fixedValue;
+      node._value = node._fixedValue ?? Math.max(sum(node._sourceLinks, sourceValue), sum(node._targetLinks, targetValue));
     }
   }
 
