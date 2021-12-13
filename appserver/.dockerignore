@@ -6,7 +6,7 @@ Dockerfile
 neo4japp/services/annotations/lmdb/**/*.mdb
 neo4japp/services/annotations/datasets/*.csv
 neo4japp/services/annotations/datasets/*.tsv
-**/*.tar.ggz
-**/*.env
+**/*.tar.gz
+**/.env
 *.git*
 .githooks/
