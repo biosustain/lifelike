@@ -77,7 +77,8 @@ public class FileQueryHandler implements CustomTaskChange {
     }
 
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        String environ = System.getenv("NEO4J_ENV").equals("QA") || System.getenv("NEO4J_ENV").equals("Staging") ? "stage" : "prod";
+        this.fileName = environ + "-" + fileName;
     }
 
     public String getFileType() {

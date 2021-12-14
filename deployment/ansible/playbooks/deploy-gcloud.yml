@@ -198,6 +198,14 @@
         # e.g if fresh, then do not use NEO4J_ENV?
         NEO4J_ENV: "{{ FLASK_APP_CONFIG }}"
       shell:
+        environment:
+          # temp fix, liquibase will use this env to determine which data files to use
+          # because our neo4j are in different states, we need different data files...
+          #
+          # will probably need another env, e.g NEO4J_FRESH: false/true
+          # for seeding a blank neo4j, so liquibase can choose the appropriate data files
+          # e.g if fresh, then do not use NEO4J_ENV?
+          NEO4J_ENV: "{{ FLASK_APP_CONFIG }}"
         chdir: "{{ deploy_dir }}"
         cmd: "docker cp liquibase:/home/neo4j/liquibase-src/target/***ARANGO_DB_NAME***-liquibase-1.0-SNAPSHOT.jar {{ LIQUIBASE_INSTALL_FOLDER }}/lib && \
               chown ansible:ansible {{ LIQUIBASE_INSTALL_FOLDER }}/lib/*.jar && \
