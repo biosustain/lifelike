@@ -123,11 +123,11 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'MATCH (n:Taxonomy) WHERE NOT n:GlobalInclusion AND NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
         'SET n.original_entity_types = [&quot;Taxonomy&quot;]', {batchSize:50000})
         
       "
-      conditionQuery="MATCH (n:Taxonomy) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
+      conditionQuery="MATCH (n:Taxonomy) WHERE NOT n:GlobalInclusion AND NOT exists(n.original_entity_types) RETURN COUNT(n)"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"
@@ -175,11 +175,11 @@
       query="
       
         CALL apoc.periodic.iterate(
-        'MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
+        'MATCH (n:Gene) WHERE NOT n:GlobalInclusion AND NOT exists(n.original_entity_types) RETURN n LIMIT 500000',
         'SET n.original_entity_types = [&quot;Gene&quot;]', {batchSize:50000})
         
       "
-      conditionQuery="MATCH (n:Gene) WHERE NOT exists(n.original_entity_types) RETURN COUNT(n)"
+      conditionQuery="MATCH (n:Gene) WHERE NOT n:GlobalInclusion AND NOT exists(n.original_entity_types) RETURN COUNT(n)"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
       neo4jDatabase="${neo4jDatabase}"

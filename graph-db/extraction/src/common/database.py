@@ -98,7 +98,7 @@ class Database:
             except Neo4jError as ex:
                 self.logger.error(ex.message)
 
-    def get_data(self, query:str, params) -> pd.DataFrame:
+    def get_data(self, query:str, params={}) -> pd.DataFrame:
         """
         Run query to get data as dataframe
         :param query: the query with parameter $dict (see query_builder.py)
