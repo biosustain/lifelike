@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
@@ -589,8 +589,8 @@ export class SankeyControllerService {
   // endregion
 
   resetController() {
-    this.load(this.allData.value).then(() => {
-    }, console.error);
+    this.load(this.allData.value);
+    this.computeGraph();
   }
 
   preprocessData(content: SankeyData) {
@@ -659,19 +659,18 @@ export class SankeyControllerService {
     this.state.baseViewName = this.getDefaultViewBase(content);
   }
 
-  async load(content, updateOptions?: Observable<any>) {
+  load(content) {
     this.addIds(content);
     this.preprocessData(content);
     this.resetOptions();
     this.resetState();
     this.extractOptionsFromGraph(content);
-    if (updateOptions) {
-      updateOptions.subscribe(predefinedState => {
-        Object.assign(this.state, predefinedState);
-        if (isNil(this.state.baseViewName)) {
-          this.setDefaultViewBase(content);
-        }
-      });
+  }
+
+  computeGraph(stateUpdate?: Partial<SankeyState>) {
+    Object.assign(this.state, stateUpdate);
+    if (isNil(this.state.baseViewName)) {
+      this.setDefaultViewBase(this.allData.value);
     }
     this.applyState();
   }
