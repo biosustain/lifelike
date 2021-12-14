@@ -483,7 +483,10 @@ class VisualizerService(KgService):
                 RETURN
                     name,
                     node_id,
-                    count(DISTINCT r) AS snippet_count
+                    count(DISTINCT {{
+                        description: association.description,
+                        snippet_id: s.eid
+                    }}) AS snippet_count
                 ORDER BY snippet_count DESC
                 """,
                 source_node=source_node, associated_nodes=associated_nodes
@@ -523,8 +526,7 @@ class VisualizerService(KgService):
                                 entry2_text: r.entry2_text,
                                 entry1_type: coalesce(association.entry1_type, 'Unknown'),
                                 entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence,
-                                path: r.path
+                                sentence: s.sentence
                             }
                         },
                         publication: {
@@ -593,8 +595,7 @@ class VisualizerService(KgService):
                                 entry2_text: r.entry2_text,
                                 entry1_type: coalesce(association.entry1_type, 'Unknown'),
                                 entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence,
-                                path: r.path
+                                sentence: s.sentence
                             }
                         },
                         publication: {
@@ -644,7 +645,11 @@ class VisualizerService(KgService):
                 ID(f) AS from_id,
                 ID(t) AS to_id
             MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
-            RETURN count(DISTINCT r) AS snippet_count
+            RETURN
+                count(DISTINCT {
+                    description: association.description,
+                    snippet_id: s.eid
+                }) AS snippet_count
             """,
             from_id=from_id, to_id=to_id
         ).single()
@@ -672,7 +677,10 @@ class VisualizerService(KgService):
                     labels(t) AS to_labels
                 OPTIONAL MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(DISTINCT r) AS snippet_count,
+                    count(DISTINCT {
+                        description: association.description,
+                        snippet_id: s.eid
+                    }) AS snippet_count,
                     max(p.pub_year) AS max_pub_year,
                     from_id,
                     to_id,
