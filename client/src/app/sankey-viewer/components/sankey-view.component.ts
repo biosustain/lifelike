@@ -1,11 +1,11 @@
-import { Component, EventEmitter, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild, NgZone, AfterViewInit, AfterContentInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { map, delay, catchError, auditTime, tap } from 'rxjs/operators';
+import { map, delay, catchError, auditTime, tap, switchMap } from 'rxjs/operators';
 import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY, of } from 'rxjs';
-import { compact, isNil, pick, defer } from 'lodash-es';
+import { compact, isNil, pick } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -44,7 +44,7 @@ import { SankeySearchService } from '../services/search.service';
     SankeySearchService
   ]
 })
-export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnInit {
+export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit {
 
   get activeViewName() {
     return this.sankeyController.state.viewName;
@@ -118,13 +118,25 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
                                                              result: [object, content],
                                                            }) => {
       if (this.sankeyController.sanityChecks(content)) {
-        this.sankeyController.load(
-          content,
-          this.predefinedState
-        ).then(
-          () => {
-          },
-          console.error
+        this.sankeyController.load(content);
+
+        combineLatest([
+          this.route.queryParams,
+          this.route.fragment
+        ]).pipe(
+          switchMap(([queryParams, fragment]) =>
+            // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
+            // (do not kill route observable)
+            this.parseUrlFragmentToState(fragment).pipe(
+              catchError((err, o) => {
+                this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
+                // return empty observable so does not continue with that one
+                return EMPTY;
+              })
+            )
+          )
+        ).subscribe(
+          stateUpdate => this.sankeyController.computeGraph(stateUpdate)
         );
       }
       this.object = object;
@@ -226,8 +238,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
 
   predefinedState: Observable<Partial<SankeyState>>;
 
-  ngOnInit() {
-    setTimeout(() => this.loadFromUrl(), 0);
+  ngAfterContentInit() {
+    this.route.params.subscribe((params: { file_id: string }) => this.loadFromUrl(params));
   }
 
 
@@ -383,11 +395,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
     this.loadTask.update(hashId);
   }
 
-  loadFromUrl() {
-    const {file_id} = this.route.snapshot.params;
+  loadFromUrl({file_id}) {
     if (file_id) {
-      const {fragment} = this.route.snapshot;
-      this.predefinedState = this.parseUrlFragmentToState(fragment);
       this.object = null;
       this.currentFileId = null;
       this.openSankey(file_id);
@@ -396,7 +405,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, OnI
 
   requestRefresh() {
     if (confirm('There have been some changes. Would you like to refresh this open document?')) {
-      this.loadFromUrl();
+      this.openSankey(this.currentFileId);
     }
   }
 
