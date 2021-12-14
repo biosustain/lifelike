@@ -556,7 +556,7 @@ def gas_gangrene_with_associations_and_references(
         )
         penicillins_to_gas_gangrene_snippet_node4 = create_snippet_node(
             tx=tx,
-            snippet_id=9810346,
+            snippet_id=9810349,
             sentence='...suppresses toxins and rapidly kills bacteria...',
         )
 
