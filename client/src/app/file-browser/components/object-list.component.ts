@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -25,7 +25,7 @@ import { FilesystemService } from '../services/filesystem.service';
   selector: 'app-object-list',
   templateUrl: './object-list.component.html',
 })
-export class ObjectListComponent {
+export class ObjectListComponent implements AfterViewInit {
   id = uniqueId('FileListComponent-');
 
   @Input() appLinks = false;
@@ -38,6 +38,8 @@ export class ObjectListComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
+  loadCheck: number;
+
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -48,6 +50,12 @@ export class ObjectListComponent {
               protected readonly filesystemService: FilesystemService,
               protected readonly elementRef: ElementRef,
               protected readonly progressDialog: ProgressDialog) {
+    this.loadCheck = new Date().getTime();
+  }
+
+  ngAfterViewInit(): void {
+    console.log(`time to initialize view: ${new Date().getTime() - this.loadCheck}`);
+    this.loadCheck = new Date().getTime();
   }
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
