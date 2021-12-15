@@ -100,7 +100,6 @@
             draggable="true"
             (dragstart)="objectDragStart($event, object)">
 
-          <!-- NOTE: Slowness on this column is almost certainly the rendering of the checkboxes -->
           <td class="align-middle text-nowrap text-truncate"
               (click)="objects.toggle(object)">
             <div class="custom-control custom-checkbox text-truncate"
