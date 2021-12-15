@@ -55,8 +55,9 @@ export interface DuplicateEdgeConnectionData {
 }
 
 export interface NodePair {
-  fromNodeId: number;
-  toNodeId: number;
+  // Note that it's inaccurate to use "from" and "to" terminology here, since the nodes *may* have bidirectional relationships.
+  node1Id: number;
+  node2Id: number;
 }
 
 export interface DuplicateNodeEdgePair {
