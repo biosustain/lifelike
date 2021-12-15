@@ -530,7 +530,6 @@ class VisualizerService(KgService):
                             }
                         },
                         publication: {
-                            id: p.eid,
                             data: {
                                 journal: p.journal,
                                 title: p.title,
@@ -599,7 +598,6 @@ class VisualizerService(KgService):
                             }
                         },
                         publication: {
-                            id: p.eid,
                             data: {
                                 journal: p.journal,
                                 title: p.title,
