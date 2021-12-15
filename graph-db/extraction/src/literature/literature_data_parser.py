@@ -210,6 +210,7 @@ class LiteratureDataParser(BaseParser):
 
         db = get_database()
         print('Cleaning chemical...')
+        self.literature_chemicals = set(val for entry in self.literature_chemicals for val in entry.split('|'))
         chemical_ids_to_exclude = db.get_data(
             'MATCH (n:Chemical) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
             {'zenodo_ids': list(self.literature_chemicals)})['exclude'].tolist()[0]
@@ -219,7 +220,7 @@ class LiteratureDataParser(BaseParser):
             {'zenodo_ids': list(self.literature_diseases)})['exclude'].tolist()[0]
         print('Cleaning gene...')
         gene_ids_to_exclude = db.get_data(
-            'MATCH (n:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
+            'MATCH (n:Gene:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
             {'zenodo_ids': list(self.literature_genes)})['exclude'].tolist()[0]
 
         # print('Cleaning chemical...')
@@ -235,6 +236,7 @@ class LiteratureDataParser(BaseParser):
         cleaned_chemical_ids = list(self.literature_chemicals - set(chemical_ids_to_exclude))
         cleaned_disease_ids = list(self.literature_diseases - set(disease_ids_to_exclude))
         cleaned_gene_ids = list(self.literature_genes - set(gene_ids_to_exclude))
+        self.clean_dependency_files(NODE_CHEMICAL, NODE_DISEASE, cleaned_chemical_ids, cleaned_disease_ids)
         self.clean_dependency_files(NODE_CHEMICAL, NODE_GENE, cleaned_chemical_ids, cleaned_gene_ids)
         self.clean_dependency_files(NODE_GENE, NODE_DISEASE, cleaned_gene_ids, cleaned_disease_ids)
         self.clean_dependency_files(NODE_GENE, NODE_GENE, cleaned_gene_ids, cleaned_gene_ids)
