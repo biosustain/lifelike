@@ -1,6 +1,6 @@
+import os
 from enum import Enum
 from typing import Dict, Union
-
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
@@ -27,10 +27,10 @@ MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
 REQUEST_TIMEOUT = 60
-NLP_SERVICE_ENDPOINT = 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict'
-PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
-PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
-PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
+NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT')
+PDFPARSER_ENDPOINT = os.getenv('PDFPARSER_ENDPOINT', 'http://pdfparser:7600')
+PARSER_RESOURCE_PULL_ENDPOINT = os.getenv('PARSER_RESOURCE_PULL_ENDPOINT',
+                                          'http://appserver:5000/annotations/files')
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
