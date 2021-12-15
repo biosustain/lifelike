@@ -246,7 +246,7 @@ def create_publication_node(
 ) -> Node:
     """Creates a publication node and adds it to the graph."""
     query = """
-        CREATE (p:Publication {eid: $pub_id, pub_year: $pub_year}) RETURN p
+        CREATE (p:Publication {pmid: $pub_id, pub_year: $pub_year}) RETURN p
     """
     return tx.run(
         query, pub_id=pub_id, pub_year=pub_year
