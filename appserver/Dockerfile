@@ -48,8 +48,10 @@ COPY --chown=n4j . .
 ENV FLASK_ENV=development
 ENV DOMAIN=http://localhost:4242
 ENV JWT_SECRET=secret
-ENV NLP_SECRET=secret
 ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
+ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
+ENV NLP_SECRET=secret
 ENV ELASTIC_APM_SERVER_URL=
 
 EXPOSE 5000
