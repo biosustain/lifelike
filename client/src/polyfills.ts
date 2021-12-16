@@ -62,6 +62,7 @@ import '@angular/localize/init';
 import 'zone.js/dist/zone';  // Included with Angular CLI.
 import 'hammerjs';
 import 'web-animations-js';
+import 'resize-observer-browser';
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
