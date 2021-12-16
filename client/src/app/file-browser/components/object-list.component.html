@@ -100,16 +100,16 @@
             draggable="true"
             (dragstart)="objectDragStart($event, object)">
 
-          <td class="align-middle text-nowrap text-truncate"
+          <td class="align-middle text-nowrap"
               (click)="objects.toggle(object)">
-            <div class="custom-control custom-checkbox text-truncate"
+            <div class="custom-control custom-checkbox"
                 (click)="$event.preventDefault()">
               <input type="checkbox" class="custom-control-input"
                     id="{{ id }}-object-{{ objectIndex }}"
                     (change)="objects.toggle(object); $event.preventDefault()"
                     [checked]="objects.isSelected(object)">
               <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}">
-                <div class="d-flex align-items-center text-truncate"
+                <div class="d-flex align-items-center"
                     popoverTitle="Description" container="body" triggers="mouseenter:mouseleave"
                     placement="right"
                     [popoverClass]="'tooltip-newlines'"
