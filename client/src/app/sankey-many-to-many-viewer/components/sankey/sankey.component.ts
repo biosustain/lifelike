@@ -135,9 +135,9 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   }
 
   getConnectedNodesAndLinks(data: SankeyNode | SankeyLink) {
-    const traversalId = (data as SankeyNode)._id || uuidv4();
-    const leftNode = (data as SankeyLink)._source || data;
-    const rightNode = (data as SankeyLink)._target || data;
+    const traversalId = (data as SankeyNode)._id ?? uuidv4();
+    const leftNode = (data as SankeyLink)._source ?? data;
+    const rightNode = (data as SankeyLink)._target ?? data;
     const {highlightCircular} = this;
     const objects2traverse = new Set([
       {

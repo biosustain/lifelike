@@ -1,5 +1,4 @@
   <changeSet id="${change_id}" author="${author}">
-    <validCheckSum>${checksum}</validCheckSum>
     <comment>${change_comment}</comment>
     <sql>
     ${cypher_query}

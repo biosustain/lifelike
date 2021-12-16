@@ -11,7 +11,6 @@
   -->
 
   <changeSet id="LL-3216-liquibase-kegg-data-constraints" author="Binh Vu">
-    <validCheckSum>8:60d15185-ad13-4881-beaa-0da10c10773a</validCheckSum>
     <comment>Create KEGG data from scratch; creating constraints.</comment>
     <sql>
       CREATE CONSTRAINT constraint_kegg_id IF NOT EXISTS ON (n:db_KEGG) ASSERT n.eid IS UNIQUE;
@@ -25,7 +24,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-pathway" author="Binh Vu">
-    <validCheckSum>8:f13252c7-d1ba-444c-9427-e2b0b9a1b010</validCheckSum>
     <comment>Create KEGG data from scratch; loading pathway data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -46,7 +44,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology" author="Binh Vu">
-    <validCheckSum>8:7a10c26f-9d35-46b8-a8b9-bafc36eed1eb</validCheckSum>
     <comment>Create KEGG data from scratch; loading kegg orthology data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -67,7 +64,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genes" author="Binh Vu">
-    <validCheckSum>8:c76e5b42-21b6-4d55-aa56-18d2856581ee</validCheckSum>
     <comment>Create KEGG data from scratch; loading gene-kegg data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -88,7 +84,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-gene-ncbi-gene-kegg-relationship" author="Binh Vu">
-    <validCheckSum>8:fbfbb469-7639-4720-90f9-0820a4e6fa62</validCheckSum>
     <comment>Create KEGG data from scratch; loading gene-ncbi gene-kegg relationship data. Uses the same data as LL-3216-liquibase-kegg-data-load-genes.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -109,7 +104,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-gene-kegg-orthology-relationship" author="Binh Vu">
-    <validCheckSum>8:a14e9a97-87e7-49b9-975c-157c8d6dda05</validCheckSum>
     <comment>Create KEGG data from scratch; loading gene kegg orthology relationship data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -130,7 +124,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-kegg-orthology-pathway-relationship" author="Binh Vu">
-    <validCheckSum>8:a8e378eb-bcd6-4c97-af3a-93da234b456e</validCheckSum>
     <comment>Create KEGG data from scratch; loading kegg orthology pathway relationship data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -151,7 +144,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway" author="Binh Vu">
-    <validCheckSum>8:3a306d77-c275-4689-a8e4-f08535d821f1</validCheckSum>
     <comment>Create KEGG data from scratch; loading genome pathway data.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
@@ -174,7 +166,6 @@
   </changeSet>
 
   <changeSet id="LL-3216-liquibase-kegg-data-load-genome-pathway-relationship" author="Binh Vu">
-    <validCheckSum>8:47aa97a1-314b-4748-8567-848a1fe5773f</validCheckSum>
     <comment>Create KEGG data from scratch; loading genome pathway relationship data. Uses the same data as LL-3216-liquibase-kegg-data-load-genome-pathway.</comment>
     <customChange
       class="edu.ucsd.sbrg.FileQueryHandler"
