@@ -90,6 +90,7 @@
     "@types/lodash-es": "^4.17.5",
     "@types/node": "^12.11.1",
     "@types/pdfjs-dist": "^2.1.6",
+    "@types/resize-observer-browser": "^0.1.6",
     "@types/vis": "^4.21.19",
     "babel-loader": "^8.2.1",
     "codelyzer": "^5.1.2",
