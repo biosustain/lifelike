@@ -479,18 +479,18 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
-    const node = this.getNodeAtPosition(this.nodes, x, y);
-    if (node) {
-      return {
-        type: GraphEntityType.Node,
-        entity: node,
-      };
-    }
     const edge = this.getEdgeAtPosition(this.edges, x, y);
     if (edge) {
       return {
         type: GraphEntityType.Edge,
         entity: edge,
+      };
+    }
+    const node = this.getNodeAtPosition(this.nodes, x, y);
+    if (node) {
+      return {
+        type: GraphEntityType.Node,
+        entity: node,
       };
     }
     return undefined;
