@@ -42,21 +42,25 @@ class RegulonDbParser(BaseParser):
             else:
                 headers.append(col)
         return headers
+    def create_index(self):
+        self.database.create_constraint('db_RegulonDB', 'regulondb_id', 'constraint_regulondb_id')
+        self.database.create_index('db_RegulonDB', 'name', 'index_regulondb_name')
+
 
     def create_nodes(self, filename, node_label, node_prop_map: dict):
         skiplines, headers = self.pre_process_file(filename)
         data_file = os.path.join(self.download_dir, filename)
         df_headers = self._get_dataframe_headers(headers, node_prop_map)
         properties = [val for val in node_prop_map.values()]
-        query = get_create_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
-        self.database.load_csv_file(data_file, df_headers, query, skiplines)
+        query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
+        self.database.load_csv_file(query, data_file, '\t', None, df_headers, skiprows=skiplines)
 
     def update_nodes(self, filename, node_label, node_prop_map: dict):
         skiplines, headers = self.pre_process_file(filename)
         data_file = os.path.join(self.download_dir, filename)
         df_headers = self._get_dataframe_headers(headers, node_prop_map)
         properties = [val for val in node_prop_map.values()]
-        query = get_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
+        query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
         self.database.load_csv_file(data_file, df_headers, query, skiplines)
 
     def create_edges(self, filename, rel_type:str,  start_node_id_col, end_node_id_col, rel_property_map = None):
@@ -72,7 +76,7 @@ class RegulonDbParser(BaseParser):
         query = get_create_relationships_query(NODE_REGULONDB, PROP_REGULONDB_ID, start_node_id_col,
                                                NODE_REGULONDB, PROP_REGULONDB_ID, end_node_id_col, rel_type, rel_properties)
         # print(query)
-        self.database.load_data_from_dataframe(df, query)
+        self.database.load_data_from_dataframe(query, df)
 
     def load_genes(self):
         attribute_map = {
@@ -225,10 +229,10 @@ class RegulonDbParser(BaseParser):
         query = get_create_relationships_query(NODE_REGULONDB, PROP_REGULONDB_ID, 'REGULON_ID',
                                                   NODE_REGULONDB, PROP_REGULONDB_ID, 'PROMOTER_ID', REL_REGULATE,
                                                   rel_properties)
-        self.database.load_data_from_dataframe(df, query)
+        self.database.load_data_from_dataframe(query, df)
 
     def parse_and_load_data(self):
-        # self.database.create_constraint(NODE_REGULONDB, PROP_REGULONDB_ID)
+        self.create_index()
         self.load_genes()
         self.load_gene_products()
         self.load_operons()
@@ -275,7 +279,7 @@ class RegulonDbParser(BaseParser):
     def add_gene_properties_for_enrichment(self):
         self.logger.info('Populate properties for enrichment')
         query = """
-        match (n:Gene:db_RegulonDB)-[:ENCODES]-(p)-[]-(t:TranscriptionFactor) 
+        match (n:Gene:db_RegulonDB)-[:ENCODES]-(p)-[]-(t:TranscriptionFactor)
         set n.regulator_family = t.regulator_family
         """
         self.database.run_query(query)
