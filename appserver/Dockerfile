@@ -40,19 +40,44 @@ ENV PATH="/.venv/bin:$PATH"
 # Add unprivileged user
 RUN useradd --create-home n4j
 WORKDIR /home/h4j
-USER n4j
 
 # Copy application code
 COPY --chown=n4j . .
 
+# Configuration variables
 ENV FLASK_ENV=development
 ENV DOMAIN=http://localhost:4242
-ENV JWT_SECRET=secret
+
+# PostgreSQL configuration
+ENV POSTGRES_HOST=postgres
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=postgres
+
+# Neo4j configuration
+ENV NEO4J_HOST=neo4j
+ENV NEO4J_PORT=7687
+ENV NEO4J_AUTH=neo4j/password
+ENV NEO4J_SCHEME=bolt
+
+# Elasticsearch configuration
 ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
-ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
-ENV NLP_SECRET=secret
+ENV ELAASTICSEARCH_USERNAME=elastic
+ENV ELAASTICSEARCH_PASSWORD=elastic
 ENV ELASTIC_APM_SERVER_URL=
 
-EXPOSE 5000
-CMD [ "bin/startup.sh" ]
+ENV JWT_SECRET=secret
+ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
+ENV NLP_SECRET=secret
+ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
+ENV PORT=5000
+
+# Add wait tool
+ENV WAIT_VERSION 2.9.0
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
+RUN chmod +x /wait
+
+USER n4j
+EXPOSE $PORT
+CMD /wait && bin/startup.sh
