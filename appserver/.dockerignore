@@ -8,5 +8,9 @@ neo4japp/services/annotations/datasets/*.csv
 neo4japp/services/annotations/datasets/*.tsv
 **/*.tar.gz
 **/.env
+.coverage
+.htmlcov/
+.venv/
+.pytest_cache
 *.git*
 .githooks/
