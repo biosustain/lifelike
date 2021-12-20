@@ -1,19 +1,30 @@
-from common.base_parser import BaseParser
-from common.constants import *
-from common.database import *
-from common.query_builder import *
 import pandas as pd
 import os, logging, re
 
+from common.base_parser import BaseParser
+from common.constants import *
+# from common.query_builder import *
+from common.database import get_create_update_nodes_query, get_create_relationships_query
+
+REGULON_D_FILE = 'regulon_d_tmp.tsv'
+REGULON_GENE_FILE = 'gene.tsv'
+REGULON_OPERON_FILE = 'operon.tsv'
+REGULON_PRODUCT_FILE = 'product.tsv'
+REGULON_PROMOTER_FILE = 'promoter.tsv'
+REGULON_TERMINATOR_FILE = 'terminator.tsv'
+REGULON_TRANSCRIPTION_FACTOR_FILE = 'transcription_factor.tsv'
+REGULON_TRANSCRIPTION_UNIT_FILE = 'transcription_unit.tsv'
+REGULON_PROMOTOR_TRANSUNIT_REL_FILE = 'promoter_to_transcription_unit.tsv'
+REGULON_OPERON_TRANSUNIT_REL_FILE = 'transcription_unit_to_operon.tsv'
+
 
 class RegulonDbParser(BaseParser):
-    def __init__(self, database:Database, base_dir: str = None,):
-        BaseParser.__init__(self, DB_REGULONDB.lower(), base_dir)
+    def __init__(self, prefix: str, base_dir: str = None,):
+        BaseParser.__init__(self, prefix, DB_REGULONDB.lower(), base_dir)
         self.download_dir = os.path.join(self.download_dir, 'txt')
-        self.database = database
         self.logger = logging.getLogger(__name__)
 
-    def pre_process_file(self, filename):
+    def _pre_process_file(self, filename: str):
         """
         Read text file and return num of skip lines and headers
         :param filename: text file name
@@ -34,49 +45,70 @@ class RegulonDbParser(BaseParser):
                 skiplines += 1
         return skiplines, headers
 
-    def _get_dataframe_headers(self, col_headers:[], property_dict:dict):
-        headers = list()
+    def _get_dataframe_headers(self, col_headers: list, property_dict: dict):
+        headers = []
         for col in col_headers:
             if property_dict and col in property_dict:
                 headers.append(property_dict[col])
             else:
                 headers.append(col)
         return headers
-    def create_index(self):
-        self.database.create_constraint('db_RegulonDB', 'regulondb_id', 'constraint_regulondb_id')
-        self.database.create_index('db_RegulonDB', 'name', 'index_regulondb_name')
 
+    # def create_index(self):
+    #     self.database.create_constraint('db_RegulonDB', 'regulondb_id', 'constraint_regulondb_id')
+    #     self.database.create_index('db_RegulonDB', 'name', 'index_regulondb_name')
+
+    def _clean_characters(self, df, col: str):
+        char_map = {
+            r'&mdash;': '--',
+            r'&quot;': '"',
+            r'&deg;': '',
+            r'(?i)&alpha;': 'alpha',
+            r'(?i)&beta;': 'beta',
+            r'(?i)&gamma;': 'gamma',
+            r'(?i)&epsilon;': 'epsilon',
+            r'(?i)&omega;': 'omega',
+            r'(?i)&delta;': 'delta',
+            r'(?i)&psi;': 'psi',
+            r'(?i)&chi;': 'chi',
+            r'(?i)&rho;': 'rho',
+            r'(?i)&sigma;': 'sigma',
+            r'(?i)&tau;': 'tau',
+            r'(?i)&theta;': 'theta',
+            r'&larr;': '<-',
+            r'&rarr;': '->',
+            r'(?i)<sub>|</sub>|<sup>|</sup>|<i>|</i>|<b>|</b>|<br>|</br>': ''
+        }
+        df[col].replace(char_map, inplace=True, regex=True)
+
+    def process_file(self, filename: str, node_prop_map: dict):
+        skiplines, headers = self._pre_process_file(filename)
+        data_file = os.path.join(self.download_dir, filename)
+        df_headers = self._get_dataframe_headers(headers, node_prop_map)
+        df = pd.read_csv(data_file, delimiter='\t', names=df_headers, skiprows=skiplines)
+        df = df.fillna('')
+        return df[[v for _,v in node_prop_map.items()]]
 
     def create_nodes(self, filename, node_label, node_prop_map: dict):
-        skiplines, headers = self.pre_process_file(filename)
-        data_file = os.path.join(self.download_dir, filename)
-        df_headers = self._get_dataframe_headers(headers, node_prop_map)
         properties = [val for val in node_prop_map.values()]
         query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
-        self.database.load_csv_file(query, data_file, '\t', None, df_headers, skiprows=skiplines)
+        print(query)
 
-    def update_nodes(self, filename, node_label, node_prop_map: dict):
-        skiplines, headers = self.pre_process_file(filename)
-        data_file = os.path.join(self.download_dir, filename)
-        df_headers = self._get_dataframe_headers(headers, node_prop_map)
-        properties = [val for val in node_prop_map.values()]
-        query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
-        self.database.load_csv_file(data_file, df_headers, query, skiplines)
+    # def update_nodes(self, filename, node_label, node_prop_map: dict):
+    #     skiplines, headers = self.pre_process_file(filename)
+    #     data_file = os.path.join(self.download_dir, filename)
+    #     df_headers = self._get_dataframe_headers(headers, node_prop_map)
+    #     properties = [val for val in node_prop_map.values()]
+    #     query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
+    #     self.database.load_csv_file(data_file, df_headers, query, skiplines)
 
     def create_edges(self, filename, rel_type:str,  start_node_id_col, end_node_id_col, rel_property_map = None):
-        skiplines, headers = self.pre_process_file(filename)
-        df_headers = self._get_dataframe_headers(headers, rel_property_map)
-        data_file = os.path.join(self.download_dir, filename)
-        df = pd.read_csv(data_file, sep='\t', header=None, names=df_headers, skiprows=skiplines,
-                         index_col=False, low_memory=False, engine='c')
-        self.logger.info("Relationship count: " + str(len(df)))
         rel_properties = []
         if rel_property_map:
             rel_properties = [val for val in rel_property_map.values()]
-        query = get_create_relationships_query(NODE_REGULONDB, PROP_REGULONDB_ID, start_node_id_col,
-                                               NODE_REGULONDB, PROP_REGULONDB_ID, end_node_id_col, rel_type, rel_properties)
-        # print(query)
-        self.database.load_data_from_dataframe(query, df)
+        query = get_create_relationships_query(NODE_REGULONDB, PROP_REGULONDB_ID, start_node_id_col, NODE_REGULONDB,
+            PROP_REGULONDB_ID, end_node_id_col, rel_type, rel_properties)
+        print(query)
 
     def load_genes(self):
         attribute_map = {
@@ -88,6 +120,13 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb genes')
         self.create_nodes('gene.txt', NODE_GENE, attribute_map)
+        df = self.process_file('gene.txt', attribute_map)
+        # some genes have an apostrophe at the end of the name
+        # but regulondb does not have that apostrophe, so drop it
+        df.loc[df.name.str[-1] == ("'"), PROP_NAME] = df.name.str[:-1]
+        self._clean_characters(df, PROP_NAME)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'gene.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_operons(self):
         attribute_map = {
@@ -99,6 +138,10 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb operons')
         self.create_nodes('operon.txt', NODE_OPERON, attribute_map)
+        df = self.process_file('operon.txt', attribute_map)
+        self._clean_characters(df, PROP_NAME)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'operon.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_gene_products(self):
         attribute_map = {
@@ -111,6 +154,13 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb products')
         self.create_nodes('product.txt', NODE_PRODUCT, attribute_map)
+        df = self.process_file('product.txt', attribute_map)
+        # some genes have an apostrophe at the end of the name
+        # but regulondb does not have that apostrophe, so drop it
+        df.loc[df.name.str[-1] == ("'"), PROP_NAME] = df.name.str[:-1]
+        self._clean_characters(df, PROP_NAME)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'product.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_promoters(self):
         attribute_map = {
@@ -124,6 +174,12 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb promoters')
         self.create_nodes('promoter.txt', NODE_PROMOTER, attribute_map)
+        df = self.process_file('promoter.txt', attribute_map)
+        self._clean_characters(df, PROP_NAME)
+        # there are two rows that was not parsed correctly and have html and links
+        df.drop([1007,1008], inplace=True)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'promoter.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_regulons(self):
         attribute_map = {
@@ -133,7 +189,10 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb regulons')
         self.create_nodes('regulon_d_tmp.txt', NODE_REGULON, attribute_map)
-
+        df = self.process_file('regulon_d_tmp.txt', attribute_map)
+        self._clean_characters(df, PROP_NAME)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'regulon_d_tmp.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_terminators(self):
         attribute_map = {
@@ -145,6 +204,27 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb terminators')
         self.create_nodes('terminator.txt', NODE_TERMINATOR, attribute_map)
+        df = self.process_file('terminator.txt', attribute_map)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'terminator.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
+
+    def load_transcription_factors(self):
+        attribute_map = {
+            'TRANSCRIPTION_FACTOR_ID': PROP_REGULONDB_ID,
+            'TRANSCRIPTION_FACTOR_NAME': PROP_NAME,
+            # 'SITE_LENGTH': 'site_length',
+            # 'SYMMETRY': 'symmetry',
+            'TRANSCRIPTION_FACTOR_FAMILY': 'regulator_family',
+            # 'TRANSCRIPTION_FACTOR_NOTE': PROP_COMMENT,
+            # 'CONNECTIVITY_CLASS': 'connectivity_class',
+            # 'SENSING_CLASS': 'sensing_class',
+            # 'CONSENSUS_SEQUENCE': 'consensus_sequence',
+        }
+        self.logger.info('Load transcription_factors')
+        self.create_nodes('transcription_factor.txt', NODE_TRANS_FACTOR, attribute_map)
+        df = self.process_file('transcription_factor.txt', attribute_map)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'transcription_factor.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def load_transunits(self):
         attribute_map = {
@@ -154,26 +234,32 @@ class RegulonDbParser(BaseParser):
         }
         self.logger.info('Load regulondb transcription_units')
         self.create_nodes('transcription_unit.txt', NODE_TRANS_UNIT, attribute_map)
-        self.create_edges('transcription_unit.txt', REL_IS_ELEMENT, 'PROMOTER_ID', 'TRANSCRIPTION_UNIT_ID')
-        self.create_edges('transcription_unit.txt', REL_IS_ELEMENT, 'TRANSCRIPTION_UNIT_ID', 'OPERON_ID')
+        df = self.process_file('transcription_unit.txt', attribute_map)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'transcription_unit.tsv')
+        self._clean_characters(df, PROP_NAME)
+        self._clean_characters(df, PROP_COMMENT)
+        df.to_csv(outfile, index=False, sep='\t')
 
-    def load_transcription_factors(self, update=False):
-        attribute_map = {
-            'TRANSCRIPTION_FACTOR_ID': PROP_REGULONDB_ID,
-            'TRANSCRIPTION_FACTOR_NAME': PROP_NAME,
-            'SITE_LENGTH': 'site_length',
-            'SYMMETRY': 'symmetry',
-            'TRANSCRIPTION_FACTOR_FAMILY': 'regulator_family',
-            # 'TRANSCRIPTION_FACTOR_NOTE': PROP_COMMENT,
-            'CONNECTIVITY_CLASS': 'connectivity_class',
-            'SENSING_CLASS': 'sensing_class',
-            'CONSENSUS_SEQUENCE': 'consensus_sequence',
+        promoter_transunit_map = {
+            'PROMOTER_ID': 'promoter_id',
+            'TRANSCRIPTION_UNIT_ID': 'transcription_unit_id'
         }
-        self.logger.info('Load transcription_factors')
-        if update:
-            self.update_nodes('transcription_factor.txt', NODE_TRANS_FACTOR, attribute_map)
-        else:
-            self.create_nodes('transcription_factor.txt', NODE_TRANS_FACTOR, attribute_map)
+        transunit_operon_map = {
+            'OPERON_ID': 'operon_id',
+            'TRANSCRIPTION_UNIT_ID': 'transcription_unit_id'
+        }
+
+        self.create_edges('transcription_unit.txt', REL_IS_ELEMENT, 'PROMOTER_ID', 'TRANSCRIPTION_UNIT_ID')
+        df = self.process_file('transcription_unit.txt', promoter_transunit_map)
+        # if a transcription unit doesn't have a promoter then drop it
+        df = df.loc[df.promoter_id != '']
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'promoter_to_transcription_unit.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
+
+        self.create_edges('transcription_unit.txt', REL_IS_ELEMENT, 'TRANSCRIPTION_UNIT_ID', 'OPERON_ID')
+        df = self.process_file('transcription_unit.txt', transunit_operon_map)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + 'transcription_unit_to_operon.tsv')
+        df.to_csv(outfile, index=False, sep='\t')
 
     def map_gene_product_link(self) -> []:
         """ associate gene with product, return list of edges"""
@@ -232,7 +318,7 @@ class RegulonDbParser(BaseParser):
         self.database.load_data_from_dataframe(query, df)
 
     def parse_and_load_data(self):
-        self.create_index()
+        # # self.create_index()
         self.load_genes()
         self.load_gene_products()
         self.load_operons()
@@ -242,13 +328,13 @@ class RegulonDbParser(BaseParser):
         self.load_transcription_factors()
         self.load_transunits()
 
-        self.map_gene_product_link()
-        self.map_genetic_network()
-        self.map_product_tf_link()
-        self.map_regulon_promoter_link()
-        self.map_regulon_tf_link()
-        self.map_tu_gene_link()
-        self.map_tu_terminator_link()
+        # self.map_gene_product_link()
+        # self.map_genetic_network()
+        # self.map_product_tf_link()
+        # self.map_regulon_promoter_link()
+        # self.map_regulon_tf_link()
+        # self.map_tu_gene_link()
+        # self.map_tu_terminator_link()
 
     def write_gene2bnumber(self):
         with open(os.path.join(self.download_dir, 'object_synonym.txt'), 'r') as f, open(os.path.join(self.output_dir, 'gene2bnumber.tsv'), 'w') as outfile:
@@ -299,16 +385,10 @@ class RegulonDbParser(BaseParser):
         self.database.run_query(query)
 
 
-def main():
-    database = get_database()
-    parser = RegulonDbParser(database)
+def main(args):
+    parser = RegulonDbParser(args.prefix)
     parser.parse_and_load_data()
-    parser.write_gene2bnumber()
-    parser.associate_genes_with_NCBI()
-    parser.add_name_property_as_synonym()
-    parser.add_gene_properties_for_enrichment()
-    database.close()
-
-
-if __name__ == "__main__":
-    main()
+    # parser.write_gene2bnumber()
+    # parser.associate_genes_with_NCBI()
+    # parser.add_name_property_as_synonym()
+    # parser.add_gene_properties_for_enrichment()
