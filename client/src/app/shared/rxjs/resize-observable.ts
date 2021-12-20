@@ -11,6 +11,7 @@ import { isEqual } from 'lodash-es';
  */
 export function createResizeObservable(element: HTMLElement) {
   return new Observable<DOMRectReadOnly>(subscriber => {
+    // @ts-ignore there is not type definition for ResizeObserver in Angular
     const ro = new ResizeObserver(([{contentRect}]: ResizeObserverEntry[]) => {
       subscriber.next(contentRect);
       const updatedSize = element.getBoundingClientRect();
