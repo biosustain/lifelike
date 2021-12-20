@@ -237,7 +237,7 @@ def handle_error(ex):
     ex.transaction_id = transaction_id
     if current_app.debug:
         ex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
+            type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
@@ -268,7 +268,7 @@ def handle_generic_error(code: int, ex: Exception):
     newex.transaction_id = transaction_id
     if current_app.debug:
         newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
+            type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
