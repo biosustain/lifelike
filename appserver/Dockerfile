@@ -73,6 +73,10 @@ ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
 ENV ELAASTICSEARCH_USERNAME=elastic
 ENV ELAASTICSEARCH_PASSWORD=password
 
+# Statistical enrichment service
+ENV SE_HOST=statistical-enrichment
+ENV SE_PORT=5000
+
 # Analysis services
 ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
 ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict

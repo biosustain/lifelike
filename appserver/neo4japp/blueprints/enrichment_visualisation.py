@@ -14,7 +14,7 @@ from requests.exceptions import ConnectionError
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
 host = os.getenv('SE_HOST', 'statistical-enrichment')
-port = os.getenv('SE_PORT', '5010')
+port = os.getenv('SE_PORT', '5000')
 
 
 def forward_request():
