@@ -1,84 +1,39 @@
-# liinting
-/**/.husky
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+# Local History for Visual Studio Code
+.history/
 
-# Python
-__pycache__/
-*.pyc
-env/
-.cache/
-.python_history
-.ipython/
-.mypy_cache/
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# compiled output
-dist/
-/**/*.pyc
+# Common credential files
+**/credentials.json
+**/client_secrets.json
+**/client_secret.json
+*creds*
+*.dat
+*password*
+*.httr-oauth*
 
-# System Files
+# Dotenv files
+.env*
+!.env.example
+
+# System files
 .DS_Store
+*.log
 Thumbs.db
 .bash_history
 .local/
 .run
-
-# IDE - VSCode
-.vscode/
-
-# ignore db files
-neo4j/data/*
-neo4j/import/*
-neo4j/logs/*
-neo4j/plugins/*
-
-postgres/
-!postgres/.gitkeep
-
-# ignore node_modules
-client/node_modules
-esdata/
-node_modules/
-
-# ignore copy
-deployment/kg-prototypes
-# terraform files
-terraform.tfstate.*
-.terraform/
-# The terraform Gcloud service account
-terraform-gcloud.json
-
-# .env Files (to protect secrets)
-*.env
-*.env.*
-
-# IDE - IntelliJ
-.idea/
-/*.iml
-.run
-
-#virtual environments
-.venv/
-venv/
-outputs/
-
-# LMDB files
-appserver/neo4japp/services/annotations/**/*.mdb
-appserver/neo4japp/services/annotations/**/*.mdb.old
-appserver/neo4japp/services/annotations/datasets/**/*.csv
-appserver/neo4japp/services/annotations/datasets/**/*.tsv
-
-# profiler results
-appserver/profilers/results/
-
-# nlp pdfs
-appserver/neo4japp/services/annotations/nlp_data_output/pdfs/*.pdf
-appserver/neo4japp/services/annotations/nlp_data_output/annotations/*.json
-appserver/neo4japp/services/annotations/nlp_data_output/*.txt
-
-# Backups
-*.backup
-
-# gcloud service accounts
-*ansible_service_account*
-
-# ansible secrets
-.vault_secrets_pw
