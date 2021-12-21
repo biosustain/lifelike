@@ -1,29 +1,64 @@
-FROM python:3.8.3-slim
-LABEL app=kg-prototypes
+# ========================================
+# Base image
+# ========================================
+FROM python:3.10-slim as base
 
-ENV APP_USER ***ARANGO_DB_NAME***
-ENV APP_HOME /home/$APP_USER
-ENV UID 1000
-ENV GID 1000
-
-RUN groupadd -g $GID $APP_USER && \
-    useradd -u $UID -g $GID -G sudo --create-home --home-dir $APP_HOME --shell /bin/bash $APP_USER
-
-WORKDIR $APP_HOME
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONFAULTHANDLER 1
 
 RUN pip install pipenv
 
-COPY --chown=1000:1000 Pipfile .
-COPY --chown=1000:1000 Pipfile.lock .
 
-RUN pipenv install --deploy --dev --system
+# ========================================
+# Build dependencies stage
+# ========================================
+FROM base as build-deps
 
-COPY --chown=1000:1000 . .
+# Copy Pipfiles
+COPY Pipfile Pipfile.lock ./
 
-# Don't lose stdin, stdout and stderr output due to buffering
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH $APP_HOME
+# Install Python dependencies
+ARG DEV
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy $(if [ "$DEV" ]; then echo --dev; fi)
 
-USER $APP_USER
+
+# ========================================
+# Runtime stage
+# ========================================
+FROM base
+LABEL app=***ARANGO_DB_NAME***
+
+# Copy Python virtual environment
+COPY --from=build-deps /.venv /.venv
+ENV PATH="/.venv/bin:$PATH"
+
+# Set user and working directory
+WORKDIR /app
+RUN useradd -m -d /app app
+USER app
+
+# Copy application code
+COPY --chown=app main.py ./
+
+# Neo4j configuration
+ENV NEO4J_HOST=neo4j
+ENV NEO4J_PORT=7687
+ENV NEO4J_AUTH=neo4j/password
+ENV NEO4J_SCHEME=bolt
+ENV NEO4J_DATABASE=neo4j
+
+# Redis cache configuration
+ENV REDIS_HOST=redis
+ENV REDIS_PORT=6379
+ENV REDIS_PASSWORD=password
+ENV REDIS_DB=0
+
+# Default TTL for cache
+ENV CACHE_TTL=86400
+
+# Logging level
+ENV LOG_LEVEL=INFO
 
 CMD ["python", "main.py"]
