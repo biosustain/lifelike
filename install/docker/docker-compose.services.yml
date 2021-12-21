@@ -1,0 +1,105 @@
+# Overrides base docker-compose.yml file
+# to add stateful backing services (e.g. databases)
+version: "3.9"
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:11
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-q"]
+      interval: 10s
+      timeout: 10s
+      start_period: 10s
+
+  ## Neo4j graph database
+  neo4j:
+    image: neo4j:4.4-community
+    container_name: neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc"]
+    ports:
+      - 7687
+    volumes:
+      - neo4j:/var/lib/neo4j/data
+    healthcheck:
+      test: ["CMD", "wget", "localhost:7474", "-O", "-"]
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+
+  ## Ekasticsearch search engine
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=password
+    ports:
+      - 9200
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--user", "elastic:password", "localhost:9200/_cluster/health"]
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+
+  appserver:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  statistical-enrichment:
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  cache-invalidator:
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres:
+  neo4j:
+  elasticsearch:

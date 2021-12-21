@@ -1,0 +1,21 @@
+{{- if .image.imagePullSecrets }}
+imagePullSecrets: {{ toYaml .image.imagePullSecrets | nindent 2 }}
+{{- end }}
+{{- if .affinity }}
+affinity: {{ toYaml .affinity | nindent 2 }}
+{{- end }}
+{{- if .nodeSelector }}
+nodeSelector: {{ toYaml .nodeSelector | nindent 2 }}
+{{- end }}
+{{- if .tolerations }}
+tolerations: {{ toYaml .tolerations | nindent 2 }}
+{{- end }}
+{{- if .schedulerName }}
+schedulerName: {{ .schedulerName }}
+{{- end }}
+securityContext:
+{{- $securityContext := .podSecurityContext | default (dict) | deepCopy }}
+{{- if .defaultPodSecurityContext.enabled }}
+{{- $securityContext = $securityContext | merge (omit .Values.pdfparser.defaultPodSecurityContext "enabled") }}
+{{- end }}
+{{- toYaml $securityContext }}

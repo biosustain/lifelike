@@ -1,0 +1,23 @@
+api:
+  extraEnv:
+    FLASK_APP_CONFIG: QA
+    FLASK_ENV: development
+    AZURE_ACCOUNT_STORAGE_NAME: ***ARANGO_DB_NAME***
+    AZURE_ACCOUNT_STORAGE_KEY: ***AZURE_ACCOUNT_STORAGE_KEY***
+
+frontend:
+  ingress:
+    enabled: false
+    hosts:
+    - host: default.rit.***ARANGO_DB_NAME***.today
+      paths:
+      - path: "/"
+        pathType: Prefix
+    tls:
+    - secretName: ***ARANGO_DB_NAME***-tls
+      hosts:
+      - default.rit.***ARANGO_DB_NAME***.today
+
+postgresql:
+  image:
+    debug: true

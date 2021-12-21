@@ -1,2 +1,0 @@
-*.sh text=auto eol=lf
-/appserver/bin/* text=auto eol=lf

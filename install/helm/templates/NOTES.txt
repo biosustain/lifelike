@@ -1,0 +1,33 @@
+  📓
+
+    888      d8b  .d888         888 d8b 888               
+    888      Y8P d88P"          888 Y8P 888               
+    888          888            888     888               
+    888      888 888888 .d88b.  888 888 888  888  .d88b.  
+    888      888 888   d8P  Y8b 888 888 888 .88P d8P  Y8b 
+    888      888 888   88888888 888 888 888888K  88888888 
+    888      888 888   Y8b.     888 888 888 "88b Y8b.     
+    88888888 888 888    "Y8888  888 888 888  888  "Y8888  
+
+
+  ** Please be patient while Lifelike is being deployed **
+
+
+  - To watch the resources being ready, run:
+
+      kubectl -n {{ .Release.Namespace }} get pods -l app={{ .Release.Name }} --watch
+
+{{ if .Values.ingress.enabled }}
+  - Then access Lifelike in a browser
+
+      http://{{ .Values.ingress.hostname }}
+{{- else }}
+  - To access Lifelike using port-forwarding, run:
+
+      kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "***ARANGO_DB_NAME***.fullname" . }}-frontend 8080:{{ .Values.frontend.service.port }}      
+
+
+  - Then access Lifelike in a browser:
+
+        http://localhost:8080
+{{- end }}
