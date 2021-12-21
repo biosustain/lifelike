@@ -10,7 +10,7 @@ import csv
 import logging
 import pandas as pd
 
-from create_data_file import azure_upload
+from common.cloud_utils import azure_upload
 
 
 attribute_map = {
@@ -74,7 +74,7 @@ class ChebiOboParser(OboParser, BaseParser):
             writer.writerow(list(df.columns.values))
 
         df.to_csv(filepath, sep='\t', index=False)
-        azure_upload(filepath, filename, zip_filename, zip_filepath)
+        azure_upload(zip_filename, zip_filepath)
 
         filename = 'jira-LL-3198-chebi-relationship-data.tsv'
         filepath = os.path.join(self.output_dir, filename)
@@ -92,7 +92,7 @@ class ChebiOboParser(OboParser, BaseParser):
             writer.writerow(list(df.columns.values))
 
         df.to_csv(filepath, sep='\t', index=False)
-        azure_upload(filepath, filename, zip_filename, zip_filepath)
+        azure_upload(zip_filename, zip_filepath)
         return nodes
 
     def load_data_to_neo4j(self, database: Database):
