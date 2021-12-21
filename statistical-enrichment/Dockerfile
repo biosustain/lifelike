@@ -57,11 +57,10 @@ ENV REDIS_DB=0
 # Default TTL for cache
 ENV CACHE_TTL=86400
 
-# APM
-ENV ELASTIC_APM_SERVER_URL=
-
-# Flask environment
+# Misc configuration
 ENV FLASK_ENV=production
+ENV ENVIRONMENT_NAME=
+ENV ELASTIC_APM_SERVER_URL=
 
 # Listen port
 ENV PORT=5000
