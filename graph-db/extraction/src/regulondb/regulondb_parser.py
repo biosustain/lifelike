@@ -3,7 +3,6 @@ import os, logging, re
 
 from common.base_parser import BaseParser
 from common.constants import *
-# from common.query_builder import *
 from common.database import get_create_update_nodes_query, get_create_relationships_query
 
 REGULON_D_FILE = 'regulon_d_tmp.tsv'
@@ -23,6 +22,7 @@ REGULON_FUNC_PROMOTER_REGULATES_REL_FILE = 'func_promoter_link.tsv'
 REGULON_TRANSFACTOR_REL_FILE = 'regulon_transfac_link.tsv'
 REGULON_GENE_TRANSUNIT_REL_FILE = 'gene_transunit_link.tsv'
 REGULON_TERMINATOR_TRANSUNIT_REL_FILE = 'terminator_transunit_link.tsv'
+REGULON_NCBI_GENE_REL_FILE = 'regulon_ncbi_gene_link.tsv'
 
 
 class RegulonDbParser(BaseParser):
@@ -61,10 +61,6 @@ class RegulonDbParser(BaseParser):
                 headers.append(col)
         return headers
 
-    # def create_index(self):
-    #     self.database.create_constraint('db_RegulonDB', 'regulondb_id', 'constraint_regulondb_id')
-    #     self.database.create_index('db_RegulonDB', 'name', 'index_regulondb_name')
-
     def _clean_characters(self, df, col: str):
         char_map = {
             r'&mdash;': '--',
@@ -100,14 +96,6 @@ class RegulonDbParser(BaseParser):
         properties = [val for val in node_prop_map.values()]
         query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
         print(query)
-
-    # def update_nodes(self, filename, node_label, node_prop_map: dict):
-    #     skiplines, headers = self.pre_process_file(filename)
-    #     data_file = os.path.join(self.download_dir, filename)
-    #     df_headers = self._get_dataframe_headers(headers, node_prop_map)
-    #     properties = [val for val in node_prop_map.values()]
-    #     query = get_create_update_nodes_query(NODE_REGULONDB, PROP_REGULONDB_ID, properties, [node_label])
-    #     self.database.load_csv_file(data_file, df_headers, query, skiplines)
 
     def create_edges(self, rel_type:str,  start_node_id_col, end_node_id_col, rel_property_map = None):
         rel_properties = []
@@ -364,7 +352,6 @@ class RegulonDbParser(BaseParser):
         df.to_csv(outfile, index=False, sep='\t')
 
     def parse_and_load_data(self):
-        # self.create_index()
         self.load_genes()
         self.load_gene_products()
         self.load_operons()
@@ -383,7 +370,8 @@ class RegulonDbParser(BaseParser):
         self.map_tu_terminator_link()
 
     def write_gene2bnumber(self):
-        with open(os.path.join(self.download_dir, 'object_synonym.txt'), 'r') as f, open(os.path.join(self.output_dir, 'gene2bnumber.tsv'), 'w') as outfile:
+        with open(os.path.join(self.download_dir, 'object_synonym.txt'), 'r') as f, open(os.path.join(self.output_dir, f'{self.file_prefix}' + REGULON_NCBI_GENE_REL_FILE), 'w') as outfile:
+            outfile.write('regulon_id\tlocus_tag\n')
             for line in f:
                 if line.startswith('#'):
                     continue
@@ -391,50 +379,34 @@ class RegulonDbParser(BaseParser):
                 if re.match(r'^b(\d)+$', row[1]):
                     outfile.write(f'{row[0]}\t{row[1]}\n')
 
-    def associate_genes_with_NCBI(self):
-        self.logger.info('Link regulondb genes with ncbi genes')
-        file = os.path.join(self.output_dir, 'gene2bnumber.tsv')
-        query = get_create_relationships_query(NODE_REGULONDB, PROP_REGULONDB_ID, PROP_REGULONDB_ID,
-                                                        NODE_GENE, PROP_LOCUS_TAG, PROP_LOCUS_TAG, REL_IS)
-        self.database.load_csv_file(file, [PROP_REGULONDB_ID, PROP_LOCUS_TAG], query)
-
-    def set_id_prperty(self):
-        query = "match (n:db_RegulonDB) set n.eid = n.regulondb_id"
-        self.database.run_query(query)
-
-    def add_name_property_as_synonym(self):
-        self.logger.info('Add name as synonyms')
-        # self.database.create_index(NODE_SYNONYM, PROP_NAME)
-        query = "match (n:db_RegulonDB) where exists(n.name) with n merge (s:Synonym {name:n.name}) merge (n)-[:HAS_SYNONYM]->(s)"
-        self.database.run_query(query)
-
-    def add_gene_properties_for_enrichment(self):
-        self.logger.info('Populate properties for enrichment')
-        query = """
-        match (n:Gene:db_RegulonDB)-[:ENCODES]-(p)-[]-(t:TranscriptionFactor)
-        set n.regulator_family = t.regulator_family
-        """
-        self.database.run_query(query)
-
-        query = """
-        match (n:Gene:db_RegulonDB)-[r:REGULATES]-(t) where r.function = '+'
-        with n, collect(t.name) as regulators
-        set n.activated_by = regulators
-        """
-        self.database.run_query(query)
-
-        query = """
-        match (n:Gene:db_RegulonDB)-[r:REGULATES]-(t) where r.function = '-'
-        with n, collect(t.name) as regulators
-        set n.repressed_by = regulators
-        """
-        self.database.run_query(query)
-
 
 def main(args):
     parser = RegulonDbParser(args.prefix)
-    # parser.parse_and_load_data()
+    parser.parse_and_load_data()
     parser.write_gene2bnumber()
-    # parser.associate_genes_with_NCBI()
-    # parser.add_name_property_as_synonym()
-    # parser.add_gene_properties_for_enrichment()
+
+    for filename in [
+        REGULON_D_FILE,
+        REGULON_GENE_FILE,
+        REGULON_OPERON_FILE,
+        REGULON_PRODUCT_FILE,
+        REGULON_PROMOTER_FILE,
+        REGULON_TERMINATOR_FILE,
+        REGULON_TRANSCRIPTION_FACTOR_FILE,
+        REGULON_TRANSCRIPTION_UNIT_FILE,
+        REGULON_PROMOTOR_TRANSUNIT_REL_FILE,
+        REGULON_OPERON_TRANSUNIT_REL_FILE,
+        REGULON_GENE_PRODUCT_REL_FILE,
+        REGULON_REGULATES_REL_FILE,
+        REGULON_PRODUCT_TRANSFACTOR_REL_FILE,
+        REGULON_FUNC_PROMOTER_REGULATES_REL_FILE,
+        REGULON_TRANSFACTOR_REL_FILE,
+        REGULON_GENE_TRANSUNIT_REL_FILE,
+        REGULON_TERMINATOR_TRANSUNIT_REL_FILE,
+        REGULON_NCBI_GENE_REL_FILE
+    ]:
+        parser.upload_azure_file(filename, args.prefix)
+
+
+if __name__ == '__main__':
+    main()
