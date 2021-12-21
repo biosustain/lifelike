@@ -76,10 +76,13 @@ ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
 ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
 ENV NLP_SECRET=secret
 
+# Auth secret token
+ENV JWT_SECRET=secret
+
 # Misc configuration
 ENV FLASK_ENV=production
 ENV DOMAIN=http://localhost:4242
-ENV JWT_SECRET=secret
+ENV ENVIRONMENT_NAMME=
 ENV ELASTIC_APM_SERVER_URL=
 
 # Listen port
