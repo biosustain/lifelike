@@ -1,0 +1,55 @@
+# Overrides base docmer-compose.yml file
+# for running in development mode
+version: "3.8"
+
+services:
+  webserver:
+    build:
+      context: ../../client
+      target: angular-deps
+    command: yarn dev-start
+    volumes:
+      - ../../client:/app
+      - /app/node_modules
+    ports:
+      - 4200:4200
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:4200"]
+      interval: 20s
+      timeout: 20s
+      start_period: 30s
+
+  appserver:
+    build:
+      context: ../../appserver
+      args:
+        DEV: 1
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    volumes:
+      - ../../appserver:/app
+    user: ***ARANGO_USERNAME***
+
+  statistical-enrichment:
+    build:
+      context: ../../statistical-enrichment
+      args:
+        DEV: 1
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    volumes:
+      - ../../statistical-enrichment:/app
+    user: ***ARANGO_USERNAME***
+
+  cache-invalidator:
+    build:
+      context: ../../cache-invalidator
+      args:
+        DEV: 1
+    environment:
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ../../cache-invalidator:/app
+    user: ***ARANGO_USERNAME***

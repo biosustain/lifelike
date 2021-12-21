@@ -1,0 +1,15 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.13.4
+- name: neo4j
+  repository: https://neo4j-contrib.github.io/neo4j-helm
+  version: 4.3.6
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.15.0
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.5.4
+digest: sha256:272a858c3b0b8be2b76386ff09ccda9e37abea2c60219e17310e0c8ccfd7d0c4
+generated: "2021-11-08T18:40:57.385099-06:00"

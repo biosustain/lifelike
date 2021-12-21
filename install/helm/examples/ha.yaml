@@ -1,0 +1,43 @@
+api:
+  replicaCount: 2
+
+  extraEnv:
+    FLASK_APP_CONFIG: QA
+    FLASK_ENV: development
+    AZURE_ACCOUNT_STORAGE_NAME: ***ARANGO_DB_NAME***
+    AZURE_ACCOUNT_STORAGE_KEY: ***AZURE_ACCOUNT_STORAGE_KEY***
+
+frontend:
+  replicaCount: 3
+
+  ingress:
+    enabled: true
+    hosts:
+    - host: qa.rit.***ARANGO_DB_NAME***.today
+      paths:
+      - path: "/"
+        pathType: Prefix
+    tls:
+    - secretName: ***ARANGO_DB_NAME***-tls
+      hosts:
+      - qa.rit.***ARANGO_DB_NAME***.today
+
+postgresql:
+  metrics:
+    enabled: true
+  prometheusRule:
+    enabled: true
+  serviceMonitor:
+    enabled: true
+
+neo4j:
+  core:
+    standalone: false
+    numberOfServers: 3
+
+elasticsearch:
+  replicas: 3
+  clusterHealthCheckParams: wait_for_status=green&timeout=1s
+
+redis:
+  architecture: replication
