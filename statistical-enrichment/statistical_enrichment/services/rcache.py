@@ -2,22 +2,19 @@
 import os
 import redis
 
-REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT')
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
+REDIS_DB = os.getenv("REDIS_DB", "0")
+REDIS_SSL = os.getenv("REDIS_SSL", "").lower()
 
-DEFAULT_CACHE_SETTINGS = {
-    'ex': 3600 * 24
-}
+DEFAULT_CACHE_SETTINGS = {"ex": int(os.getenv("CACHE_TTL", 3600 * 24))}
 
-connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
-
+schema = "rediss" if REDIS_SSL in ["true", "1"] else "redis"
+connection_url = f"{schema}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 redis_server = redis.Redis(
-        connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
+    connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
 )
-
 
 # Helper method to use redis cache
 #   If:
@@ -30,13 +27,13 @@ redis_server = redis.Redis(
 #
 # TODO: switch to the three functions below
 def redis_cached(
-        uid: str,
-        # TODO: why is this a function? Better if it's a data type...
-        # Needs refactor to be generic for other uses
-        result_provider,
-        cache_setting=None,
-        load=None,
-        dump=None
+    uid: str,
+    # TODO: why is this a function? Better if it's a data type...
+    # Needs refactor to be generic for other uses
+    result_provider,
+    cache_setting=None,
+    load=None,
+    dump=None,
 ):
     if cache_setting is None:
         cache_setting = DEFAULT_CACHE_SETTINGS
@@ -62,11 +59,11 @@ def delcache(uid: str):
 
 
 def setcache(
-        uid: str,
-        data,
-        load=None,
-        dump=None,
-        cache_setting=None,
+    uid: str,
+    data,
+    load=None,
+    dump=None,
+    cache_setting=None,
 ):
     if cache_setting is None:
         cache_setting = DEFAULT_CACHE_SETTINGS

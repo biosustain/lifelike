@@ -1,28 +1,24 @@
-from . import app
-
-from functools import partial
-
-from .services.rcache import redis_cached
+from flask import Blueprint, jsonify
 from webargs.flaskparser import use_args
+
 from .schemas import EnrichmentSchema
-from .services import get_enrichment_visualisation_service
+from .services import get_enrichment_visualisation_service, redis_cached
 
-@app.route('/', methods=['GET','POST'])
-def enrich():
-    raise Exception('No function provided!')
+bp = Blueprint("statistical_enrichment", __name__, url_prefix="/")
 
-@app.route('/healthz', methods=['GET','POST'])
-def healthz():
-    return "I am OK!"
 
-@app.route('/enrich-with-go-terms', methods=['POST'])
+@bp.post("/enrich-with-go-terms")
 @use_args(EnrichmentSchema)
 def enrich_go(args):
-    gene_names = args['geneNames']
-    organism = args['organism']
-    analysis = args['analysis']
-    cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
-    enrichment_visualisation = get_enrichment_visualisation_service()
-    return redis_cached(
-            cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
-    ), dict(mimetype='application/json')
+    gene_names = args["geneNames"]
+    organism = args["organism"]
+    analysis = args["analysis"]
+
+    return jsonify(
+        redis_cached(
+            f'enrich_go_{",".join(gene_names)}_{analysis}_{organism}',
+            lambda: get_enrichment_visualisation_service().enrich_go(
+                gene_names, analysis, organism
+            ),
+        )
+    )
