@@ -37,11 +37,6 @@ LABEL app=***ARANGO_DB_NAME***
 # Install runtime system dependencies
 RUN dnf install -y graphviz && dnf clean packages
 
-# Add wait tool
-ENV WAIT_VERSION 2.9.0
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
-RUN chmod +x /wait
-
 # Copy Python virtual environment
 COPY --from=build-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
@@ -92,4 +87,4 @@ ENV ELASTIC_APM_SERVER_URL=
 ENV PORT=5000
 EXPOSE $PORT
 
-CMD /wait && bin/startup.sh
+CMD ["bin/startup.sh"]
