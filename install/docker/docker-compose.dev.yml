@@ -1,6 +1,5 @@
-# Overrides base docmer-compose.yml file
-# for running in development mode
-version: "3.8"
+# Overrides base docker-compose.yml file for running in development mode.
+version: "3.9"
 
 services:
   webserver:
