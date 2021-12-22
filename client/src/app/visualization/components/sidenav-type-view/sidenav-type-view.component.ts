@@ -27,7 +27,6 @@ export class SidenavTypeViewComponent {
 
   node: VisNode;
   connectedNodes: VisNode[];
-  type: string;
   associatedType = AssociatedType;
   typeEntries: AssociatedTypeEntry[];
   color: string;
@@ -52,14 +51,13 @@ export class SidenavTypeViewComponent {
     this.loading = true;
     this.node = nodeEntity.sourceNode;
     this.connectedNodes = nodeEntity.connectedNodes;
-    this.type = AssociatedType[nodeEntity.type];
 
+    const nodeType = AssociatedType[nodeEntity.type];
     const request: AssociatedTypeSnippetCountRequest = {
       source_node: this.node.id,
       associated_nodes: this.connectedNodes.map(node => node.id),
-      label: this.type,
     };
-    this.color = this.legend.get(this.type)[0];
+    this.color = this.legend.get(nodeType)[0];
     this.visualizationService.getAssociatedTypeSnippetCount(request).subscribe(
       (associatedTypes) => {
         this.typeEntries = [];

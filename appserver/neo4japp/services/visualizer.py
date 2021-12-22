@@ -173,28 +173,28 @@ class VisualizerService(KgService):
 
     def get_snippets_from_node_pair(
         self,
-        from_id: int,
-        to_id: int,
+        node_1_id: int,
+        node_2_id: int,
         page: int,
         limit: int
     ):
         return self.graph.read_transaction(
             self.get_snippets_from_node_pair_query,
-            from_id,
-            to_id,
+            node_1_id,
+            node_2_id,
             (page - 1) * limit,
             limit
         )
 
     def get_snippet_count_from_node_pair(
         self,
-        from_id: int,
-        to_id: int,
+        node_1_id: int,
+        node_2_id: int,
     ):
         return self.graph.read_transaction(
             self.get_snippet_count_from_node_pair_query,
-            from_id,
-            to_id
+            node_1_id,
+            node_2_id
         )['snippet_count']
 
     def get_reference_table_data(self, node_edge_pairs: List[ReferenceTablePair]):
@@ -361,19 +361,9 @@ class VisualizerService(KgService):
         self,
         source_node: int,
         associated_nodes: List[int],
-        label: str
     ):
-        sanitized_label = ''
-        if (label == 'LiteratureGene'):
-            sanitized_label = 'LiteratureGene'
-        elif (label == 'LiteratureChemical'):
-            sanitized_label = 'LiteratureChemical'
-        elif (label == 'LiteratureDisease'):
-            sanitized_label = 'LiteratureDisease'
-
         results = self.graph.read_transaction(
             self.get_associated_type_snippet_count_query,
-            sanitized_label,
             source_node,
             associated_nodes
         )
@@ -384,13 +374,13 @@ class VisualizerService(KgService):
 
     def get_snippets_for_node_pair(
         self,
-        node_1: int,
-        node_2: int,
+        node_1_id: int,
+        node_2_id: int,
         page: int,
         limit: int,
     ):
-        data = self.get_snippets_from_node_pair(node_1, node_2, page, limit)
-        total_results = self.get_snippet_count_from_node_pair(node_1, node_2)
+        data = self.get_snippets_from_node_pair(node_1_id, node_2_id, page, limit)
+        total_results = self.get_snippet_count_from_node_pair(node_1_id, node_2_id)
 
         results = [
             GetSnippetsFromEdgeResult(
@@ -423,7 +413,7 @@ class VisualizerService(KgService):
         return GetNodePairSnippetsResult(
             snippet_data=results,
             total_results=total_results,
-            query_data={'node_1_id': node_1, 'node_2_id': node_2},
+            query_data={'node_1_id': node_1_id, 'node_2_id': node_2_id},
         )
 
     def get_expand_query(self, tx: Neo4jTx, node_id: str, labels: List[str]) -> List[Neo4jRecord]:
@@ -463,30 +453,35 @@ class VisualizerService(KgService):
     def get_associated_type_snippet_count_query(
         self,
         tx,
-        sanitized_label: str,
         source_node: int,
         associated_nodes: List[int]
     ):
         return list(
             tx.run(
-                f"""
-                MATCH
-                    (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{sanitized_label})
+                """
+                UNWIND $associated_nodes as associated_node
+                MATCH (f)-[r:ASSOCIATED]-(t)
                 WHERE
-                    ID(f) = $source_node AND
-                    ID(t) IN $associated_nodes
+                    ID(f)=$source_node AND
+                    ID(t)=associated_node
                 WITH
-                    a AS association,
-                    t.name AS name,
-                    ID(t) AS node_id
+                    ID(startNode(r)) as from_id,
+                    ID(endNode(r)) as to_id,
+                    t.name as name,
+                    ID(t) as node_id
+                MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+                WHERE ID(f)=from_id AND ID(t)=to_id
+                WITH from_id, to_id, a AS association, name, node_id
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 RETURN
                     name,
                     node_id,
-                    count(DISTINCT {{
+                    count(DISTINCT {
+                        from_id: from_id,
+                        to_id: to_id,
                         description: association.description,
                         snippet_id: s.eid
-                    }}) AS snippet_count
+                    }) AS snippet_count
                 ORDER BY snippet_count DESC, node_id
                 """,
                 source_node=source_node, associated_nodes=associated_nodes
@@ -565,8 +560,8 @@ class VisualizerService(KgService):
     def get_snippets_from_node_pair_query(
         self,
         tx: Neo4jTx,
-        node_1_id: List[int],
-        node_2_id: List[int],
+        node_1_id: int,
+        node_2_id: int,
         skip: int,
         limit: int
     ) -> List[Neo4jRecord]:
@@ -637,27 +632,29 @@ class VisualizerService(KgService):
     def get_snippet_count_from_node_pair_query(
         self,
         tx: Neo4jTx,
-        from_id: int,
-        to_id: int
+        node_1_id: int,
+        node_2_id: int
     ) -> Neo4jRecord:
         return tx.run(
             """
-            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            MATCH (f)-[r:ASSOCIATED]-(t)
             WHERE
-                ID(f)=$from_id AND
-                ID(t)=$to_id
-            WITH
-                a AS association,
-                ID(f) AS from_id,
-                ID(t) AS to_id
+                ID(f)=$node_1_id AND
+                ID(t)=$node_2_id
+            WITH ID(startNode(r)) as from_id, ID(endNode(r)) as to_id
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            WHERE ID(f)=from_id AND ID(t)=to_id
+            WITH from_id, to_id, a AS association
             MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN
                 count(DISTINCT {
+                    from_id: from_id,
+                    to_id: to_id,
                     description: association.description,
                     snippet_id: s.eid
                 }) AS snippet_count
             """,
-            from_id=from_id, to_id=to_id
+            node_1_id=node_1_id, node_2_id=node_2_id
         ).single()
 
     def get_snippet_count_from_edges_query(
