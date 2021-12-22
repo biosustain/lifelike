@@ -35,6 +35,7 @@ graphviz = "==0.19.1"
 PyPDF4 = "==1.27.0"
 sqlalchemy-searchable = "==1.2.0"
 elasticsearch = "==7.16.1"
+IPy = "==1.01"
 sentry-sdk = {extras = ["flask"],version = "==0.14.3"}
 redis = "==4.0.2"
 flask-apispec = "==0.9.0"
