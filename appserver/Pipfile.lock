@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "db73a0b5d52453089ac749494ef8958220433c76772b969eeca947c3c53fb58e"
+            "sha256": "3bc8e7841e9b2df2125f564bc36baf5b1d61f5956b74b8153fe58aa49980384a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -500,6 +500,13 @@
             ],
             "index": "pypi",
             "version": "==3.1.0"
+        },
+        "ipy": {
+            "hashes": [
+                "sha256:edeca741dea2d54aca568fa23740288c3fe86c0f3ea700344571e9ef14a7cc1a"
+            ],
+            "index": "pypi",
+            "version": "==1.01"
         },
         "isodate": {
             "hashes": [
@@ -1293,11 +1300,11 @@
         },
         "sqlalchemy-utils": {
             "hashes": [
-                "sha256:4667edbdcb1ece011076b69772ef524bfbb17cc97e03f11ee6b85d98e7741d61",
-                "sha256:bb6f4da8ac044cb0dd4d0278b1fb434141a5ee9d1881c757a076830ddbb04160"
+                "sha256:7bed3396f4103dc8663f05751065284c2e3d529f20ebd4a80847e1281fccb1fe",
+                "sha256:a484ccfdc7f9298df49d2558a5309691e5e3e51c815a23a33b3355989176cb3e"
             ],
             "markers": "python_version ~= '3.4'",
-            "version": "==0.37.9"
+            "version": "==0.38.1"
         },
         "starkbank-ecdsa": {
             "hashes": [
