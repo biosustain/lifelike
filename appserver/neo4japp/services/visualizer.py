@@ -487,7 +487,7 @@ class VisualizerService(KgService):
                         description: association.description,
                         snippet_id: s.eid
                     }}) AS snippet_count
-                ORDER BY snippet_count DESC
+                ORDER BY snippet_count DESC, node_id
                 """,
                 source_node=source_node, associated_nodes=associated_nodes
             ).data()
@@ -551,7 +551,10 @@ class VisualizerService(KgService):
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
+                ORDER BY
+                    snippet_count DESC,
+                    [from_id, to_id],
+                    coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) AS references, from_id, to_id, description
                 """,
@@ -620,7 +623,10 @@ class VisualizerService(KgService):
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
+                ORDER BY
+                    snippet_count DESC,
+                    [from_id, to_id],
+                    coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
                 RETURN collect(reference) AS references, from_id, to_id, description
                 """,
@@ -686,7 +692,7 @@ class VisualizerService(KgService):
                     to_id,
                     from_labels,
                     to_labels
-                ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
+                ORDER BY snippet_count DESC, [from_id, to_id], coalesce(max_pub_year, -1) DESC
                 RETURN from_id, to_id, from_labels, to_labels, snippet_count AS count
                 """,
                 from_ids=from_ids, to_ids=to_ids, description=description
