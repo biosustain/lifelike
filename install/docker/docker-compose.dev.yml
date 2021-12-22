@@ -26,6 +26,7 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
+      - MIGRATE_DB=1
     volumes:
       - ../../appserver:/app
     user: ***ARANGO_USERNAME***

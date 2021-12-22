@@ -30,6 +30,9 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy $(if [ "$DEV" ]; then echo 
 FROM base
 LABEL app=***ARANGO_DB_NAME***
 
+# Install curl for self healthchecks
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
 # Copy Python virtual environment
 COPY --from=build-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
