@@ -26,7 +26,7 @@ from .exceptions import ServerException
 from .schemas.common import ErrorResponseSchema
 from .utils.logger import ErrorLog
 
-APP_VERSION = os.environ.get("GITHUB_HASH", "undefined")
+GITHUB_HASH = os.environ.get("GITHUB_HASH", "undefined")
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 
 # Set the following modules to have a minimum of log level 'WARNING'
