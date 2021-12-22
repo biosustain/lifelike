@@ -512,37 +512,48 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(s) AS snippet_count,
-                    collect(DISTINCT {
-                        snippet: {
-                            id: s.eid,
-                            data: {
-                                entry1_text: r.entry1_text,
-                                entry2_text: r.entry2_text,
-                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
-                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence
-                            }
-                        },
-                        publication: {
-                            id: p.pmid,
-                            data: {
-                                journal: p.journal,
-                                title: p.title,
-                                pmid: p.pmid,
-                                pub_year: p.pub_year
-                            }
-                        }
-                    }) AS references,
-                    max(p.pub_year) AS max_pub_year,
+                    s,
+                    p,
+                    head(collect(r)) as sample_path,
+                    coalesce(association.entry1_type, 'Unknown') as entry1_type,
+                    coalesce(association.entry2_type, 'Unknown') as entry2_type,
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, max_pub_year DESC
-                UNWIND references AS reference
                 WITH
+                    collect({snippet: s, publication: p, path: sample_path}) as references,
+                    count({snippet: s, publication: p, path: sample_path}) as snippet_count,
+                    entry1_type,
+                    entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                UNWIND references as reference
+                WITH
+                    entry1_type,
+                    entry2_type,
+                    {
+                        snippet: {
+                            id: reference.snippet.eid,
+                            data: {
+                                entry1_text: reference.path.entry1_text,
+                                entry2_text: reference.path.entry2_text,
+                                entry1_type: entry1_type,
+                                entry2_type: entry2_type,
+                                sentence: reference.snippet.sentence
+                            }
+                        },
+                        publication: {
+                            id: reference.publication.pmid,
+                            data: {
+                                journal: reference.publication.journal,
+                                title: reference.publication.title,
+                                pmid: reference.publication.pmid,
+                                pub_year: reference.publication.pub_year
+                            }
+                        }
+                    } AS reference,
                     snippet_count,
-                    reference,
                     from_id,
                     to_id,
                     description
@@ -551,7 +562,7 @@ class VisualizerService(KgService):
                     [from_id, to_id],
                     coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
-                RETURN collect(reference) AS references, from_id, to_id, description
+                RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
                 from_ids=from_ids, to_ids=to_ids, description=description, skip=skip, limit=limit
             )
@@ -584,37 +595,48 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(s) AS snippet_count,
-                    collect(DISTINCT {
-                        snippet: {
-                            id: s.eid,
-                            data: {
-                                entry1_text: r.entry1_text,
-                                entry2_text: r.entry2_text,
-                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
-                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence
-                            }
-                        },
-                        publication: {
-                            id: p.pmid,
-                            data: {
-                                journal: p.journal,
-                                title: p.title,
-                                pmid: p.pmid,
-                                pub_year: p.pub_year
-                            }
-                        }
-                    }) AS references,
-                    max(p.pub_year) AS max_pub_year,
+                    s,
+                    p,
+                    head(collect(r)) as sample_path,
+                    coalesce(association.entry1_type, 'Unknown') as entry1_type,
+                    coalesce(association.entry2_type, 'Unknown') as entry2_type,
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, max_pub_year DESC
-                UNWIND references AS reference
                 WITH
+                    collect({snippet: s, publication: p, path: sample_path}) as references,
+                    count({snippet: s, publication: p, path: sample_path}) as snippet_count,
+                    entry1_type,
+                    entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                UNWIND references as reference
+                WITH
+                    entry1_type,
+                    entry2_type,
+                    {
+                        snippet: {
+                            id: reference.snippet.eid,
+                            data: {
+                                entry1_text: reference.path.entry1_text,
+                                entry2_text: reference.path.entry2_text,
+                                entry1_type: entry1_type,
+                                entry2_type: entry2_type,
+                                sentence: reference.snippet.sentence
+                            }
+                        },
+                        publication: {
+                            id: reference.publication.pmid,
+                            data: {
+                                journal: reference.publication.journal,
+                                title: reference.publication.title,
+                                pmid: reference.publication.pmid,
+                                pub_year: reference.publication.pub_year
+                            }
+                        }
+                    } AS reference,
                     snippet_count,
-                    reference,
                     from_id,
                     to_id,
                     description
@@ -623,7 +645,7 @@ class VisualizerService(KgService):
                     [from_id, to_id],
                     coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
-                RETURN collect(reference) AS references, from_id, to_id, description
+                RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
                 node_1_id=node_1_id, node_2_id=node_2_id, skip=skip, limit=limit
             )
