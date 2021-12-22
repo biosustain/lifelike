@@ -49,6 +49,13 @@ USER app
 # Copy application code
 COPY --chown=app . .
 
+# Set to 1 to automatically apply any pending DB migrations at startup
+ENV MIGRATE_DB=
+
+# Create an initial admin user
+ENV INITIAL_ADMIN_USER=admin@example.com
+ENV INITIAL_ADMIN_PASSWORD=password
+
 # PostgreSQL configuration
 ENV POSTGRES_HOST=postgres
 ENV POSTGRES_PORT=5432
@@ -63,10 +70,10 @@ ENV NEO4J_AUTH=neo4j/password
 ENV NEO4J_DATABASE=neo4j
 ENV NEO4J_SCHEME=bolt
 
-# Elasticsearch configuration
+# Elasticsearch node URL(s)
 ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-ENV ELAASTICSEARCH_USERNAME=elastic
-ENV ELAASTICSEARCH_PASSWORD=password
+# Elasticsearch files ndex name
+ENV ELASTIC_FILE_INDEX_ID=file
 
 # Statistical enrichment service
 ENV STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5000
@@ -79,14 +86,24 @@ ENV NLP_SECRET=secret
 # Auth secret token
 ENV JWT_SECRET=secret
 
-# Misc configuration
-ENV FLASK_ENV=production
+# Base URL
+ENV SELF_BASE_URL=http://appserver:5000
+# Base URL of the frontend, for link generation
 ENV DOMAIN=http://localhost:4242
-ENV ENVIRONMENT_NAMME=
+
+# Enables Sentry logging (Optional)
+ENV SENTRY_DSN=
+# Enables Elastic APM for perfoemance monitoring (Optional)
 ENV ELASTIC_APM_SERVER_URL=
+ENV ENVIRONMENT_NAME=
 
 # Listen port
 ENV PORT=5000
+
+# Flask env [development, testing, production]
+ENV FLASK_ENV=production
+
 EXPOSE $PORT
 
-CMD ["bin/startup.sh"]
+RUN chmod +x bin/docker-entrypoint.sh
+ENTRYPOINT [ "bin/docker-entrypoint.sh" ]
