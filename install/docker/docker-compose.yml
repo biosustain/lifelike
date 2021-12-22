@@ -4,7 +4,6 @@ services:
   ## Frontend web server
   webserver:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-webserver:latest
-    container_name: webserver
     restart: unless-stopped
     ports:
       - 80:80
@@ -16,7 +15,6 @@ services:
   ## Backend application server
   appserver:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:latest
-    container_name: appserver
     restart: unless-stopped
     ports:
       - 5000:5000
@@ -28,7 +26,6 @@ services:
   ## Statistical enrichment service
   statistical-enrichment:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-statistical-enrichment:latest
-    container_name: statistical_enrichment
     restart: unless-stopped
     ports:
       - 5000
@@ -40,23 +37,7 @@ services:
   # Cache invalidation service
   cache-invalidator:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-cache-invalidator:latest
-    container_name: cache_invalidator
     restart: unless-stopped
-
-  ## PDF parsing service
-  pdfparser:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-pdfparser:latest
-    container_name: pdfparser
-    restart: unless-stopped
-    tty: true
-    environment:
-      - PORT=7600
-    ports:
-      - 7600
-    healthcheck:
-      test: ["CMD", "curl", "-f", "localhost:7600"]
-      interval: 5s
-      timeout: 10s
 
 networks:
   default:

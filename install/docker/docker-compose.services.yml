@@ -6,7 +6,6 @@ services:
   # PostgreSQL database
   postgres:
     image: postgres:11
-    container_name: postgres
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -23,7 +22,6 @@ services:
   ## Neo4j graph database
   neo4j:
     image: neo4j:4.4-community
-    container_name: neo4j
     restart: unless-stopped
     environment:
       - NEO4J_AUTH=neo4j/password
@@ -41,13 +39,10 @@ services:
   ## Ekasticsearch search engine
   elasticsearch:
     build: ./elasticsearch
-    container_name: elasticsearch
     restart: unless-stopped
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=password
     ports:
       - 9200
     volumes:
@@ -57,14 +52,13 @@ services:
         soft: -1
         hard: -1
     healthcheck:
-      test: ["CMD", "curl", "-f", "--user", "elastic:password", "localhost:9200/_cluster/health"]
+      test: ["CMD", "curl", "-f", "localhost:9200/_cluster/health"]
       interval: 10s
       timeout: 10s
       start_period: 30s
 
   redis:
     image: redis:alpine
-    container_name: redis
     restart: unless-stopped
     command: ["redis-server", "--requirepass", "password"]
     ports:
@@ -74,7 +68,26 @@ services:
       interval: 10s
       timeout: 5s
 
+  ## PDF parsing service
+  pdfparser:
+    image: ***ARANGO_DB_NAME***.azurecr.io/kg-pdfparser:latest
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 7600
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:7600"]
+      interval: 5s
+      timeout: 10s
+
   appserver:
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - NEO4J_HOST=neo4j
+      - NEO4J_AUTH=neo4j/password
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=password
+      - PDFPARSER_ENDPOINT=http://pdfparser:7600
     depends_on:
       postgres:
         condition: service_healthy
@@ -83,6 +96,8 @@ services:
       elasticsearch:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      pdfparser:
         condition: service_healthy
 
   statistical-enrichment:

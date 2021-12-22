@@ -1,6 +1,18 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-COMPOSE_FILES=-f ${ROOT_DIR}/docker-compose.yml -f ${ROOT_DIR}/docker-compose.dev.yml -f ${ROOT_DIR}/docker-compose.services.yml
 
+# Base docker compose command---------------------------------------------------
+#  docker-compose.yml           -> Base services containers
+#  docker-compose.dev.yml       -> Override base services for local development \
+#  docker-compose.services.yml  -> Third party services (DB, Neo4j, Redis, etc)
+COMPOSE_COMMAND=\
+  docker compose -p ***ARANGO_DB_NAME*** \
+  -f ${ROOT_DIR}/docker-compose.yml \
+  -f ${ROOT_DIR}/docker-compose.dev.yml \
+  -f ${ROOT_DIR}/docker-compose.services.yml
+# ------------------------------------------------------------------------------
+
+
+# Helpers ---------------------------------------------------------------------
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
@@ -19,31 +31,43 @@ HELP_FUN = \
     print "\n"; }
 
 .DEFAULT_GOAL := help
-.PHONY: help up status ps logs stop down reset clean exec
+.PHONY: help up status ps logs restart stop down clean reset exec test
+# -----------------------------------------------------------------------------
+
+
+# Targets ---------------------------------------------------------------------
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
-up: ## Start all or c=<name> containers in foreground
-	@docker compose ${COMPOSE_FILES} up -d --build $(ARGS)
+up: ## Build and run all (or some) containers in development mode. [c=<names>]
+	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
+	@${COMPOSE_COMMAND} up -d --build --quiet-pull --wait ${c} $(ARGS)
+	@echo "\nTo access Lifelike, point your browser at: http://localhost:4200\n"
 
-status: ## Show containers status
-	@docker compose ${COMPOSE_FILES} ps ${ARGS}
+status: ## Show container(s) status. [c=<names>]
+	@${COMPOSE_COMMAND} ${COMPOSE_FILES} ps ${c} ${ARGS}
 
 ps: status
 
-logs: ## Tail containers logs
-	@docker compose ${COMPOSE_FILES} logs -f $(ARGS)
+logs: ## Show container(s) logs. [c=<names>]
+	@${COMPOSE_COMMAND} logs -f ${c} $(ARGS)
 
-stop: ## Stop all containers
-	@docker compose ${COMPOSE_FILES} stop $(ARGS)
+restart: ## Restart some or all container. [c=<names>]
+	@${COMPOSE_COMMAND} restart ${c} $(ARGS)
+
+stop: ## Stop some or all containers [c=<names>]
+	@${COMPOSE_COMMAND} stop ${c} $(ARGS)
 
 down: ## Destroy all containers and volumes
-	@docker compose ${COMPOSE_FILES} down --volumes --remove-orphans
+	@${COMPOSE_COMMAND} down --volumes --remove-orphans ${ARGS}
 
 clean: down
 
 reset: down up ## Destroy and recreate all containers and volumes
 
-exec: ## Execute a command inside a container
-	@docker compose ${COMPOSE_FILES} exec ${ARGS}
+exec: ## Execute a command inside a container. [c=<name>, cmd=<command>]. E.g. make exec c=appserver cmd="flask create-user"
+	@${COMPOSE_COMMAND} exec ${ARGS} ${c} ${cmd}
+
+test: ## Execute test suite
+	@${COMPOSE_COMMAND} exec ${ARGS} appserver pytest --cov=neo4japp ${pytest_args}

@@ -4,53 +4,62 @@ Docker is an easy way to get started with Lifelike.
 
 ## Prerequisites
 
-1. Docker [link](https://www.docker.com/get-started)
-2. Docker-compose [link](https://docs.docker.com/compose/install/)
+- Docker [link](https://www.docker.com/get-started)
 
-## Configuration
+## Run locally with Docker Compose
 
-The `/app/pythonpath` folder is mounted from [`./docker/pythonpath_dev`](./pythonpath_dev)
-which contains a base configuration [`./docker/pythonpath_dev/superset_config.py`](./pythonpath_dev/superset_config.py)
-intended for use with local development.
+In order to build and bring up all required containers, run the following command after cloning this repository:
 
-### Local overrides
+Once it's running, you can access the Lifelike UI at [http://localhost:4242](http://localhost:4242) in your browser. Default username / password is: `admin@example.com` / `password`
 
-In order to override configuration settings locally, simply make a copy of [`./docker/pythonpath_dev/superset_config_local.example`](./pythonpath_dev/superset_config_local.example)
-into `./docker/pythonpath_dev/superset_config_docker.py` (git ignored) and fill in your overrides.
+```bash
+make up
+```
 
-### Local packages
+Output will be something like:
 
-If you want to add Python packages in order to test things like databases locally, you can simply add a local requirements.txt (`./docker/requirements-local.txt`)
-and rebuild your Docker stack.
+```
+Building and running containers...
+This may take a while if running for the first time.
 
-Steps:
+[+] Running 9/9
+ ⠿ Container ***ARANGO_DB_NAME***-postgres-1                Started                                                                                          3.6s
+ ⠿ Container ***ARANGO_DB_NAME***-webserver-1               Started                                                                                          3.5s
+ ⠿ Container ***ARANGO_DB_NAME***-neo4j-1                   Started                                                                                          3.2s
+ ⠿ Container ***ARANGO_DB_NAME***-elasticsearch-1           Started                                                                                          3.5s
+ ⠿ Container ***ARANGO_DB_NAME***-redis-1                   Started                                                                                          3.5s
+ ⠿ Container ***ARANGO_DB_NAME***-pdfparser-1               Started                                                                                          3.3s
+ ⠿ Container ***ARANGO_DB_NAME***-statistical-enrichment-1  Started                                                                                        238.2s
+ ⠿ Container ***ARANGO_DB_NAME***-cache-invalidator-1       Started                                                                                        237.2s
+ ⠿ Container ***ARANGO_DB_NAME***-appserver-1               Started
 
-1. Create `./docker/requirements-local.txt`
-2. Add your new packages
-3. Rebuild docker-compose
-    1. `docker-compose down -v`
-    2. `docker-compose up`
+ To access Lifelike, point your browser at: http://localhost:4200
+```
 
-## Initializing Database
+You can see other available targets by running `make help`:
 
-The database will initialize itself upon startup via the init container ([`superset-init`](./docker-init.sh)). This may take a minute.
+```shell
+$ make help
+usage: make [target]
 
-## Normal Operation
+options:
+  up                     Build and run all (or some) containers in development mode. [c=<names>]
+  status                 Show container(s) status. [c=<names>]
+  logs                   Show container(s) logs. [c=<names>]
+  restart                Restart some or all container. [c=<names>]
+  stop                   Stop some or all containers [c=<names>]
+  down                   Destroy all containers and volumes
+  reset                  Destroy and recreate all containers and volumes
+  exec                   Execute a command inside a container. [c=<name>, cmd=<command>]. E.g. make exec c=appserver cmd="flask create-user"
+  test                   Execute test suite
 
-To run the container, simply run: `docker-compose up`
+other:
+  help                   Show this help.
+```
 
-After waiting several minutes for Superset initialization to finish, you can open a browser and view [`http://localhost:8088`](http://localhost:8088)
-to start your journey.
+You can customize which containers are started by combining or overriding the following compose files. See [Makefile](Makefile) for more details.
 
-## Developing
+    ├── docker-compose.yml           --> Base services containers
+    ├── docker-compose.dev.yml       --> Override base services for local development \
+    └── docker-compose.services.yml  --> Third party services (DB, Neo4j, Redis, etc)
 
-While running, the container server will reload on modification of the Superset Python and JavaScript source code.
-Don't forget to reload the page to take the new frontend into account though.
-
-## Production
-
-It is possible to run Superset in non-development mode by using [`docker-compose-non-dev.yml`](../docker-compose-non-dev.yml). This file excludes the volumes needed for development and uses [`./docker/.env-non-dev`](./.env-non-dev) which sets the variable `SUPERSET_ENV` to `production`.
-
-## Resource Constraints
-
-If you are attempting to build on macOS and it exits with 137 you need to increase your Docker resources. See instructions [here](https://docs.docker.com/docker-for-mac/#advanced) (search for memory)
