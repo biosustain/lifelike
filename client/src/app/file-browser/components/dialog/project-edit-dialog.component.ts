@@ -5,6 +5,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { filenameValidator, noWhitespaceValidator } from 'app/shared/validators';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { ProjectCreateRequest } from '../../schema';
@@ -19,7 +20,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
   private _project: ProjectImpl;
 
   readonly form: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]),
+    name: new FormControl('', [Validators.required, noWhitespaceValidator, filenameValidator]),
     description: new FormControl(),
   });
 
