@@ -107,6 +107,9 @@ class URLFixerHandler(BaseHandler):
 
     @staticmethod
     def fix_url(url):
+        # urllib sanitizes newlines: https://bugs.python.org/issue43882
+        url = url.replace("\r", "%0D").replace("\n", "%0A")
+
         parsed = urlsplit(url)
 
         scheme, netloc, path, query, fragment = parsed
