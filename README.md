@@ -24,7 +24,7 @@ $ make up
 
 This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:4200](http://localhost:4200).
 
-**To see more details about running and customizing Lifelike with Docker, please see the [install/docker](Docker installation) section.**
+**To see more details about running and customizing Lifelike with Docker, please see the [Docker installation section](install/docker).**
 
 
 ### Other installation methods
