@@ -14,17 +14,25 @@ Lifelike is an open source project that aims to provide a simple, yet powerful p
 The easiest way to get started and run a fully functional development environment of Lifelike is to clone this repository and run the `make up` command.
 
 ```shell
+# Clone Lifelike repository
+$ git clone https://github.com/SBRG/***ARANGO_DB_NAME***.git
+$ cd ***ARANGO_DB_NAME***
+
+# Build and run all required components
 $ make up
 ```
 
 This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:4200](http://localhost:4200).
 
+**To see more details about running and customizing Lifelike with Docker, please see the [install/docker](Docker installation) section.**
+
+
 ### Other installation methods
 
-To deploy Lifelike in a production environment or customize installation, you can see the available methods described in the [Installation](install-manifests) section.
+To deploy Lifelike in a production environment or customize installation, you can see all the available methods described in the [Installation methods](install) section.
 
 
-## Lifelike concepts
+## Lifelike main concepts
 
 ### Projects
 
@@ -34,14 +42,13 @@ Lifelike organizes content into projects. A project is a filesystem-like collect
 
 Lifelike structures knowledge around domains. A domain is a collection of semantically related entities belonging to a field of study.
 
-
 ### Annotations
 
-Annotations are a powerfull way to attach context to your data in knowledge Domains.
+Annotations are a powerfull way to attach context to your data in knowledge Domains, Lifelike automatically annotates all yout data with Domain known entities as well as lets you define your own custom annotations.
 
 ### Knowledge Graph
 
-Generated knowledge is organized in a Knowledge graph. A knowledge graph consist of nodes and edges. Nodes are domain entities and edges are relations between entities
+Domain data sources are annotated and stored in a graph database. A knowledge graph consist of nodes and edges. Nodes are domain entities and edges are relations between entities.
 
 
 ### Visualizations
@@ -54,16 +61,19 @@ Lifelike currenty provides the following built-in visualization types:
 - Enrichment tables
 - Sankey diagrams
 
+## Other features
+
+- Multi-user collaborative workbench
+- Powerful search engine
+
 ## Architecture
 
 Lifelike is a distributed system comprised of the following components:
 
-### Services and components
-
-- Backend appserver
-- Frontend client application
+- Backend appserver and API writen in Python with the Flask framework
+- Frontend client application written in Angular
 - Statistical enrichment service
-- PostgreSQL
-- Neo4j
-- Elasticsearch
-- PDFParser
+- PostgreSQL RDMS
+- Neo4j graph database
+- Elasticsearch search engine
+- PDFParser document parsing library
