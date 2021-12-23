@@ -224,6 +224,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       const file = event.target.files[0];
       this.form.get('contentValue').setValue(file);
       this.form.get('filename').setValue(this.extractFilename(file.name));
+      this.form.get('filename').markAsDirty();
       this.getDocumentPossibility(file).then(maybeDocument => {
         if (file === this.form.get('contentValue').value) {
           this.filePossiblyAnnotatable = maybeDocument;
