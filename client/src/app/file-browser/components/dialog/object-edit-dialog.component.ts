@@ -13,7 +13,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { filenameValidator } from 'app/shared/validators';
+import {filenameValidator, validFilenameRegex} from 'app/shared/validators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
@@ -39,6 +39,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
+
+  fileList: FileInput[] = [];
+  private selectedFile: FileInput;
+  private selectedFileIndex = 0;
 
   readonly form: FormGroup = new FormGroup({
     contentSource: new FormControl('contentValue'),
@@ -142,6 +146,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
     }
+
+    const file = {
+      filename: value.filename || '',
+      formState: this.form.value(),
+      hasValidFilename: this.form.get('filename').hasError('filenameError'),
+      // If there are configs, the file is most likely annotable
+      filePossiblyAnnotatable: annotationConfigs !== null
+    };
+    this.selectedFile = file;
+    this.fileList.push(file);
+    this.selectedFileIndex = this.fileList.length - 1;
   }
 
   get possiblyAnnotatable(): boolean {
@@ -220,19 +235,44 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   fileChanged(event) {
-    if (event.target.files.length) {
-      const file = event.target.files[0];
-      this.form.get('contentValue').setValue(file);
-      this.form.get('filename').setValue(this.extractFilename(file.name));
-      this.getDocumentPossibility(file).then(maybeDocument => {
-        if (file === this.form.get('contentValue').value) {
-          this.filePossiblyAnnotatable = maybeDocument;
-        }
+    // TODO: Check if we need this, it seems like this unsets stuff on cancel when selecting files
+    const length = event.target.files.length;
+    if (length) {
+      const promiseList = [];
+      for (const targetFile of event.target.files) {
+        const filename = this.extractFilename(targetFile.name);
+
+
+        promiseList.push(this.getDocumentPossibility(targetFile));
+        promiseList[promiseList.length - 1].then(maybeDocument => {
+          const fileEntry: FileInput = {
+            formState: {
+            contentValue: targetFile,
+            filename: targetFile.name,
+            },
+            filename,
+            hasValidFilename: validFilenameRegex.test(filename),
+            filePossiblyAnnotatable: maybeDocument
+          };
+          this.fileList.push(fileEntry);
+        });
+      }
+      // Once all files are pushed, switch to the last one
+      Promise.all(promiseList).then( _ => {
+        this.changeSelectedFile(this.fileList.length - 1);
       });
     } else {
       this.form.get('contentValue').setValue(null);
       this.filePossiblyAnnotatable = false;
     }
+  }
+
+  changeSelectedFile(newIndex: number) {
+    if (newIndex >= this.fileList.length) {
+      console.log('Invalid file selection index!');
+      newIndex = this.fileList.length - 1;
+    }
+
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
@@ -287,6 +327,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }, () => {
     });
   }
+}
+
+export interface FileInput {
+  filename: string;
+  formState: any;
+  hasValidFilename: boolean;
+  filePossiblyAnnotatable: boolean;
 }
 
 export interface ObjectEditDialogValue {
