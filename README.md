@@ -1,36 +1,52 @@
-# [Open Surce Readme DRAFT]
+#### Public README draft
 
-
+---
 
 # Lifelike
 
 Lifelike is an open source project that aims to provide a simple, yet powerful platform for turning structured and unstructured data from a variety of sources into a single, coherent and explorable knowledge graph.
 
-
 ## Getting started
 
-### Quick Start
-
-The easiest way to get started and run a fully functional development environment of Lifelike is to clone this repository and run the `make up` command.
+The easiest way to get started and run a fully functional development environment of Lifelike is to clone this repository and run the `make up` command:
 
 ```shell
-# Clone Lifelike repository
 $ git clone https://github.com/SBRG/***ARANGO_DB_NAME***.git
 $ cd ***ARANGO_DB_NAME***
 
-# Build and run all required components
 $ make up
 ```
 
-This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:4200](http://localhost:4200).
+This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:4200](http://localhost:4200). You can login with the default admin user `admin@example.com` and password `admin`.
 
-**To see more details about running and customizing Lifelike with Docker, please see the [install/docker](Docker installation) section.**
+You can run `make help` to see a list of available commands.
 
+```shell
+$ make help
+
+usage: make [target]
+
+development:
+  githooks                        Set up Git commit hooks for linting and code formatting
+
+docker:
+  up                              Build and run container(s) for development. [c=<names>]
+  status                          Show container(s) status. [c=<names>]
+  logs                            Show container(s) logs. [c=<names>]
+  restart                         Restart container(s). [c=<names>]
+  stop                            Stop containers(s). [c=<names>]
+  exec                            Execute a command inside a container. [c=<name>, cmd=<command>]
+  test                            Execute test suite
+  down                            Destroy all containers and volumes
+  reset                           Destroy and recreate all containers and volumes
+
+other:
+  help                            Show this help.
+```
 
 ### Other installation methods
 
 To deploy Lifelike in a production environment or customize installation, you can see all the available methods described in the [Installation methods](install) section.
-
 
 ## Lifelike main concepts
 
@@ -44,12 +60,11 @@ Lifelike structures knowledge around domains. A domain is a collection of semant
 
 ### Annotations
 
-Annotations are a powerfull way to attach context to your data in knowledge Domains, Lifelike automatically annotates all yout data with Domain known entities as well as lets you define your own custom annotations.
+Annotations are a powerful way to attach context to your data in knowledge Domains, Lifelike automatically annotates all your data with Domain known entities as well as lets you define your own custom annotations.
 
 ### Knowledge Graph
 
 Domain data sources are annotated and stored in a graph database. A knowledge graph consist of nodes and edges. Nodes are domain entities and edges are relations between entities.
-
 
 ### Visualizations
 
@@ -77,3 +92,7 @@ Lifelike is a distributed system comprised of the following components:
 - Neo4j graph database
 - Elasticsearch search engine
 - PDFParser document parsing library
+
+## License
+
+Lifelike is licensed under the [MIT license](LICENSE).
