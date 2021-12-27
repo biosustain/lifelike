@@ -40,34 +40,34 @@ HELP_FUN = \
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
-up: ## Build and run all (or some) containers in development mode. [c=<names>]
+up: ##@docker Build and run container(s) for development. [c=<names>]
 	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
 	@${COMPOSE_COMMAND} up -d --build --quiet-pull --wait ${c} $(ARGS)
 	@echo "\nTo access Lifelike, point your browser at: http://localhost:4200\n"
 
-status: ## Show container(s) status. [c=<names>]
+status: ##@docker Show container(s) status. [c=<names>]
 	@${COMPOSE_COMMAND} ${COMPOSE_FILES} ps ${c} ${ARGS}
 
 ps: status
 
-logs: ## Show container(s) logs. [c=<names>]
+logs: ##@docker Show container(s) logs. [c=<names>]
 	@${COMPOSE_COMMAND} logs -f ${c} $(ARGS)
 
-restart: ## Restart some or all container. [c=<names>]
+restart: ##@docker Restart container(s). [c=<names>]
 	@${COMPOSE_COMMAND} restart ${c} $(ARGS)
 
-stop: ## Stop some or all containers [c=<names>]
+stop: ##@docker Stop containers(s). [c=<names>]
 	@${COMPOSE_COMMAND} stop ${c} $(ARGS)
 
-down: ## Destroy all containers and volumes
-	@${COMPOSE_COMMAND} down --volumes --remove-orphans ${ARGS}
-
-clean: down
-
-reset: down up ## Destroy and recreate all containers and volumes
-
-exec: ## Execute a command inside a container. [c=<name>, cmd=<command>]. E.g. make exec c=appserver cmd="flask create-user"
+exec: ##@docker Execute a command inside a container. [c=<name>, cmd=<command>]
 	@${COMPOSE_COMMAND} exec ${ARGS} ${c} ${cmd}
 
-test: ## Execute test suite
+test: ##@docker Execute test suite
 	@${COMPOSE_COMMAND} exec ${ARGS} appserver pytest --cov=neo4japp ${pytest_args}
+
+down: ##@docker Destroy all containers and volumes
+	@${COMPOSE_COMMAND} down --volumes --remove-orphans ${ARGS}
+
+reset: down up ##@docker Destroy and recreate all containers and volumes
+
+clean: down

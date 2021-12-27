@@ -12,13 +12,13 @@ In order to build and bring up all required containers, run the following comman
 
 Once it's running, you can access the Lifelike UI at [http://localhost:4242](http://localhost:4242) in your browser. Default username / password is: `admin@example.com` / `password`
 
-```bash
+```shell
 make up
 ```
 
 Output will be something like:
 
-```
+```text
 Building and running containers...
 This may take a while if running for the first time.
 
@@ -42,24 +42,22 @@ You can see other available targets by running `make help`:
 $ make help
 usage: make [target]
 
-options:
-  up                     Build and run all (or some) containers in development mode. [c=<names>]
-  status                 Show container(s) status. [c=<names>]
-  logs                   Show container(s) logs. [c=<names>]
-  restart                Restart some or all container. [c=<names>]
-  stop                   Stop some or all containers [c=<names>]
-  down                   Destroy all containers and volumes
-  reset                  Destroy and recreate all containers and volumes
-  exec                   Execute a command inside a container. [c=<name>, cmd=<command>]. E.g. make exec c=appserver cmd="flask create-user"
-  test                   Execute test suite
-
-other:
-  help                   Show this help.
+docker:
+  up                              Build and run container(s) for development. [c=<names>]
+  status                          Show container(s) status. [c=<names>]
+  logs                            Show container(s) logs. [c=<names>]
+  restart                         Restart container(s). [c=<names>]
+  stop                            Stop containers(s). [c=<names>]
+  exec                            Execute a command inside a container. [c=<name>, cmd=<command>]
+  test                            Execute test suite
+  down                            Destroy all containers and volumes
+  reset                           Destroy and recreate all containers and volumes
 ```
 
-You can customize which containers are started by combining or overriding the following compose files. See [Makefile](Makefile) for more details.
+You can customize which containers are started by combining or overriding the following Compose files. See [Makefile](Makefile) for more details.
 
-    ├── docker-compose.yml           --> Base services containers
-    ├── docker-compose.dev.yml       --> Override base services for local development \
-    └── docker-compose.services.yml  --> Third party services (DB, Neo4j, Redis, etc)
-
+```tree
+├── docker-compose.yml           --> Base services
+├── docker-compose.dev.yml       --> Override base services for local development
+└── docker-compose.services.yml  --> Third party services (PostgreSQL, Neo4j, Redis, etc)
+```
