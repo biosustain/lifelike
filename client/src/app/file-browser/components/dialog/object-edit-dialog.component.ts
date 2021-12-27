@@ -1,23 +1,18 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  Validators
-} from '@angular/forms';
+import {Component, ElementRef, Input, ViewChild} from '@angular/core';
+import {FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
 
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { OrganismAutocomplete } from 'app/interfaces';
-import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
-import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import {MessageDialog} from 'app/shared/services/message-dialog.service';
+import {CommonFormDialogComponent} from 'app/shared/components/dialog/common-form-dialog.component';
+import {OrganismAutocomplete} from 'app/interfaces';
+import {AnnotationMethods, NLPANNOTATIONMODELS} from 'app/interfaces/annotation';
+import {ENTITY_TYPE_MAP} from 'app/shared/annotation-types';
 import {filenameValidator, validFilenameRegex} from 'app/shared/validators';
 
-import { FilesystemObject } from '../../models/filesystem-object';
-import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
-import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
+import {FilesystemObject} from '../../models/filesystem-object';
+import {AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest} from '../../schema';
+import {ObjectSelectionDialogComponent} from './object-selection-dialog.component';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -41,8 +36,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   private filePossiblyAnnotatable = false;
 
   fileList: FileInput[] = [];
-  private selectedFile: FileInput;
-  private selectedFileIndex = 0;
+  selectedFile: FileInput = null;
+  private selectedFileIndex;
 
   readonly form: FormGroup = new FormGroup({
     contentSource: new FormControl('contentValue'),
@@ -106,15 +101,21 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
               messageDialog: MessageDialog,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
+    console.log('selected file');
+    console.log(this.selectedFile);
   }
 
   get object() {
     return this._object;
   }
 
+  // TODO: This sets an empty filesystem file when clicking the upload button. Maybe get rid of that
+  // or find a way to check if input is meaningful
   @Input()
   set object(value: FilesystemObject) {
     this._object = value;
+    console.log('inputing file');
+    console.log(value);
     this.form.patchValue({
       parent: value.parent,
       filename: value.filename || '',
@@ -149,7 +150,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
     const file = {
       filename: value.filename || '',
-      formState: this.form.value(),
+      formState: this.form.value,
       hasValidFilename: this.form.get('filename').hasError('filenameError'),
       // If there are configs, the file is most likely annotable
       filePossiblyAnnotatable: annotationConfigs !== null
@@ -223,6 +224,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.form.get('organism').setValue(organism ? organism : null);
   }
 
+  // TODO: Handle this
   activeTabChanged(newId) {
     this.form.get('contentSource').setValue(newId);
     this.form.get('contentValue').setValue(null);
@@ -262,8 +264,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         this.changeSelectedFile(this.fileList.length - 1);
       });
     } else {
-      this.form.get('contentValue').setValue(null);
-      this.filePossiblyAnnotatable = false;
+      // this.form.get('contentValue').setValue(null);
+      // this.filePossiblyAnnotatable = false;
     }
   }
 
@@ -272,7 +274,20 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       console.log('Invalid file selection index!');
       newIndex = this.fileList.length - 1;
     }
-
+    if (this.selectedFile) {
+      // Update file
+      this.fileList[this.selectedFileIndex] = {
+        filename: this.form.get('filename').value,
+        formState: this.form.value,
+        hasValidFilename: this.form.get('filename').hasError('filenameError'),
+        // If there are configs, the file is most likely annotable
+        filePossiblyAnnotatable: this.filePossiblyAnnotatable
+      };
+    }
+    // TODO: Possibly change the form format, due to annotations
+    this.selectedFile = this.fileList[newIndex];
+    this.selectedFileIndex = newIndex;
+    this.form.patchValue(this.selectedFile.formState);
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
@@ -329,6 +344,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 }
 
+
+// TODO: Need more data for sure, we might simplify some fields
 export interface FileInput {
   filename: string;
   formState: any;
