@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 
 # Include Docker Compose Makefile
-include ./install/docker/Makefile
+include ./docker/Makefile
 
 githooks: ##@development Set up Git commit hooks for linting and code formatting
 	git config --local core.hooksPath .githooks/

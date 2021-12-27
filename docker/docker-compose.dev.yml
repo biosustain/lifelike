@@ -4,11 +4,11 @@ version: "3.9"
 services:
   webserver:
     build:
-      context: ../../client
+      context: ../client
       target: angular-deps
     command: yarn dev-start
     volumes:
-      - ../../client:/app
+      - ../client:/app
       - /app/node_modules
     ports:
       - 4200:4200
@@ -20,7 +20,7 @@ services:
 
   appserver:
     build:
-      context: ../../appserver
+      context: ../appserver
       args:
         DEV: 1
     environment:
@@ -28,28 +28,28 @@ services:
       - FLASK_DEBUG=1
       - MIGRATE_DB=1
     volumes:
-      - ../../appserver:/app
+      - ../appserver:/app
     user: ***ARANGO_USERNAME***
 
   statistical-enrichment:
     build:
-      context: ../../statistical-enrichment
+      context: ../statistical-enrichment
       args:
         DEV: 1
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
     volumes:
-      - ../../statistical-enrichment:/app
+      - ../statistical-enrichment:/app
     user: ***ARANGO_USERNAME***
 
   cache-invalidator:
     build:
-      context: ../../cache-invalidator
+      context: ../cache-invalidator
       args:
         DEV: 1
     environment:
       - LOG_LEVEL=DEBUG
     volumes:
-      - ../../cache-invalidator:/app
+      - ../cache-invalidator:/app
     user: ***ARANGO_USERNAME***

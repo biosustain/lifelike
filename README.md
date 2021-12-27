@@ -44,9 +44,14 @@ other:
   help                            Show this help.
 ```
 
-### Other installation methods
+# Lifelike installation methods
 
 To deploy Lifelike in a production environment or customize installation, you can see all the available methods described in the [Installation methods](install) section.
+
+There are various installation / deployment methods for Lifelike you can choose from depending on your needs and preference.
+
+1. [Docker with Docker Compose](docker)
+2. [Kubernetes with Helm chart](helm/***ARANGO_DB_NAME***) (beta)
 
 ## Lifelike main concepts
 
