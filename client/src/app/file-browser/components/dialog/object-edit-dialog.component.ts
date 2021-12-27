@@ -151,7 +151,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const file = {
       filename: value.filename || '',
       formState: this.form.value,
-      hasValidFilename: this.form.get('filename').hasError('filenameError'),
+      hasValidFilename: !this.form.get('filename').hasError('filenameError'),
       // If there are configs, the file is most likely annotable
       filePossiblyAnnotatable: annotationConfigs !== null
     };
@@ -253,7 +253,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
             filename: targetFile.name,
             },
             filename,
-            hasValidFilename: validFilenameRegex.test(filename),
+            hasValidFilename: !validFilenameRegex.test(filename),
             filePossiblyAnnotatable: maybeDocument
           };
           this.fileList.push(fileEntry);
@@ -279,7 +279,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       this.fileList[this.selectedFileIndex] = {
         filename: this.form.get('filename').value,
         formState: this.form.value,
-        hasValidFilename: this.form.get('filename').hasError('filenameError'),
+        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
         // If there are configs, the file is most likely annotable
         filePossiblyAnnotatable: this.filePossiblyAnnotatable
       };
