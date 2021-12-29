@@ -27,19 +27,52 @@
               <input type="file" id="content-value" (change)="fileChanged($event)"
                      class="d-none" multiple #fileInput>
             </app-form-row>
+              <table class="table" style="table-layout: fixed">
+                <colgroup>
+                  <col style="width: 50%">
+                </colgroup>
+                <thead>
+                <tr>
+                <tr>
+                  <th class="d-none d-md-table-cell">Filename</th>
+                  <th class="d-none d-md-table-cell">Actions</th>
+                  <th class="d-none d-lg-table-cell">Problems</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let file of fileList; let index=index"
+                        (appTabSelectable)="changeSelectedFile(index)"
+                        [class.active]="index === selectedFileIndex">
+                  <td class="align-middle text-truncate mw-100">
+                     {{ file.filename }}
+                  </td>
+                <td>
+                  <button class="btn btn-danger" (click)="fileList.splice(index, 1)">
+                    <i class="fa fa-fw fa-minus-square"></i>
+                  </button>
+                </td>
+                  <td>
+                    Index: {{ index }}
+                    <i class="fa fa-fw fa-exclamation-circle alert-danger"
+                    ngbTooltip="Invalid filename!" *ngIf="!file.hasValidFilename"></i>
+                    {{ file.hasValidFilename }}
+                  </td>
+                </tr>
+                </tbody>
+              </table>
 <!--            TODO: Change into table with buttons to select/delete -->
-                <div class="list" *ngIf="fileList.length; else noFileChosen">
-                  <div class="row">
-                      <div *ngFor="let file of fileList">
-                         <div class="text-truncate">
-                          <i class="fa fa-fw fa-file-upload text-icon"></i>
-                           File: {{ file.filename }}
-                           <i class="fa fa-fw fa-ban text-icon" *ngIf="!file.hasValidFilename" ></i>
-                         </div>
-                      </div>
-                  </div>
-                  <br/>
-                </div>
+<!--                <div class="list" *ngIf="fileList.length; else noFileChosen">-->
+<!--                  <div class="row">-->
+<!--                      <div *ngFor="let file of fileList">-->
+<!--                         <div class="text-truncate">-->
+<!--                          <i class="fa fa-fw fa-file-upload text-icon"></i>-->
+<!--                           File: {{ file.filename }}-->
+<!--                           <i class="fa fa-fw fa-ban text-icon" *ngIf="!file.hasValidFilename" ></i>-->
+<!--                         </div>-->
+<!--                      </div>-->
+<!--                  </div>-->
+<!--                  <br/>-->
+<!--                </div>-->
                 <ng-template #noFileChosen>
                 </ng-template>
           </ng-template>
