@@ -39,6 +39,15 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   selectedFile: FileInput = null;
   selectedFileIndex;
 
+  readonly defaultAnnotationMethods = this.annotationModels.reduce(
+            (obj, key) => ({
+              ...obj, [key]: new FormGroup(
+                {
+                  nlp: new FormControl(false),
+                  rulesBased: new FormControl(true),
+                }),
+            }), {});
+
   readonly form: FormGroup = new FormGroup({
     contentSource: new FormControl('contentValue'),
     contentValue: new FormControl(null),
@@ -50,16 +59,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     annotationConfigs: new FormGroup(
       {
         excludeReferences: new FormControl(true),
-        annotationMethods: new FormGroup(
-          this.annotationModels.reduce(
-            (obj, key) => ({
-              ...obj, [key]: new FormGroup(
-                {
-                  nlp: new FormControl(false),
-                  rulesBased: new FormControl(true),
-                }),
-            }), {}),
-        ),
+        annotationMethods: new FormGroup(this.defaultAnnotationMethods),
       }, [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
@@ -112,8 +112,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input()
   set object(value: FilesystemObject) {
     this._object = value;
-    console.log('inputing file');
-    console.log(value);
     this.form.patchValue({
       parent: value.parent,
       filename: value.filename || '',
@@ -188,6 +186,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
+    console.log('getting value:');
+    console.log(value);
+
     const objectChanges: Partial<FilesystemObject> = {
       parent: value.parent,
       filename: value.filename,
@@ -246,12 +247,19 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         promiseList[promiseList.length - 1].then(maybeDocument => {
           const fileEntry: FileInput = {
             formState: {
-            contentValue: targetFile,
-            filename,
+              contentValue: targetFile,
+              filename,
+              description: '',
+              public: false,
+              organism: null,
+              annotationsConfigs: {
+                annotationMethods: this.defaultAnnotationMethods,
+                excludeReferences: true
+              }
             },
             filename,
-            hasValidFilename: !validFilenameRegex.test(filename),
-            filePossiblyAnnotatable: maybeDocument
+            hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
+            filePossiblyAnnotatable: maybeDocument,
           };
           this.fileList.push(fileEntry);
         });
@@ -267,14 +275,15 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   changeSelectedFile(newIndex: number) {
-    if (this.fileList.length === 0) {
+    const fileCount = this.fileList.length;
+    if (fileCount === 0) {
       this.selectedFileIndex = -1;
       this.form.get('contentValue').setValue(null);
       this.filePossiblyAnnotatable = false;
       return;
     }
-    if (newIndex >= this.fileList.length) {
-      console.log('Invalid file selection index!');
+    if (newIndex >= fileCount ) {
+      console.log(`Invalid file selection index! ${newIndex} >= ${fileCount}`);
       newIndex = this.fileList.length - 1;
     }
     if (this.selectedFile) {
