@@ -39,6 +39,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   selectedFile: FileInput = null;
   selectedFileIndex;
 
+  invalidInputs = false;
+
   readonly defaultAnnotationMethods = this.annotationModels.reduce(
             (obj, key) => ({
               ...obj, [key]: new FormGroup(
@@ -186,9 +188,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
-    console.log('getting value:');
-    console.log(value);
-
     const objectChanges: Partial<FilesystemObject> = {
       parent: value.parent,
       filename: value.filename,
@@ -260,6 +259,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
             filename,
             hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
             filePossiblyAnnotatable: maybeDocument,
+            annotationsInspected: false
           };
           this.fileList.push(fileEntry);
         });
@@ -283,7 +283,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       return;
     }
     if (newIndex >= fileCount ) {
-      console.log(`Invalid file selection index! ${newIndex} >= ${fileCount}`);
       newIndex = this.fileList.length - 1;
     }
     if (this.selectedFile) {
@@ -292,8 +291,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         filename: this.form.get('filename').value,
         formState: this.form.value,
         hasValidFilename: !this.form.get('filename').hasError('filenameError'),
-        // If there are configs, the file is most likely annotable
-        filePossiblyAnnotatable: this.filePossiblyAnnotatable
+        filePossiblyAnnotatable: this.filePossiblyAnnotatable,
+        annotationsInspected: true
       };
     }
     // TODO: Possibly change the form format, due to annotations
@@ -301,8 +300,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
     this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
-    console.log('patching form values');
-    console.log(this.selectedFile.formState);
+    // Remove the warnings - they will come back if switched again
+    this.selectedFile.hasValidFilename = true;
+
+    this.invalidInputs = this.fileList.some((file) => !file.hasValidFilename);
+
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
@@ -372,6 +374,7 @@ export interface FileInput {
   formState: any;
   hasValidFilename: boolean;
   filePossiblyAnnotatable: boolean;
+  annotationsInspected: boolean;
 }
 
 export interface ObjectEditDialogValue {
