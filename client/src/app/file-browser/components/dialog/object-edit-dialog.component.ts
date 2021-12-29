@@ -101,8 +101,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
               messageDialog: MessageDialog,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    console.log('selected file');
-    console.log(this.selectedFile);
   }
 
   get object() {
