@@ -17,12 +17,6 @@
                 <button type="button" class="btn btn-secondary mr-2" (click)="showFileDialog()">
                   Browse...
                 </button>
-<!--                <div class="text-truncate" *ngIf="selectedFile !== null; else noFileChosen">-->
-<!--                  <i class="fa fa-fw fa-file-upload text-icon"></i>-->
-<!--&lt;!&ndash;                  {{ form.get('contentValue').value.name }}&ndash;&gt;-->
-<!--                  {{ selectedFile.filename }}-->
-<!--                </div>-->
-
               </div>
               <input type="file" id="content-value" (change)="fileChanged($event)"
                      class="d-none" multiple #fileInput>
@@ -60,21 +54,6 @@
                 </tr>
                 </tbody>
               </table>
-<!--            TODO: Change into table with buttons to select/delete -->
-<!--                <div class="list" *ngIf="fileList.length; else noFileChosen">-->
-<!--                  <div class="row">-->
-<!--                      <div *ngFor="let file of fileList">-->
-<!--                         <div class="text-truncate">-->
-<!--                          <i class="fa fa-fw fa-file-upload text-icon"></i>-->
-<!--                           File: {{ file.filename }}-->
-<!--                           <i class="fa fa-fw fa-ban text-icon" *ngIf="!file.hasValidFilename" ></i>-->
-<!--                         </div>-->
-<!--                      </div>-->
-<!--                  </div>-->
-<!--                  <br/>-->
-<!--                </div>-->
-                <ng-template #noFileChosen>
-                </ng-template>
           </ng-template>
         </li>
         <li ngbNavItem="contentUrl">
