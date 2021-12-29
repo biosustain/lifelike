@@ -37,7 +37,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   fileList: FileInput[] = [];
   selectedFile: FileInput = null;
-  private selectedFileIndex;
+  selectedFileIndex;
 
   readonly form: FormGroup = new FormGroup({
     contentSource: new FormControl('contentValue'),
@@ -148,16 +148,16 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
     }
 
-    const file = {
-      filename: value.filename || '',
-      formState: this.form.value,
-      hasValidFilename: !this.form.get('filename').hasError('filenameError'),
-      // If there are configs, the file is most likely annotable
-      filePossiblyAnnotatable: annotationConfigs !== null
-    };
-    this.selectedFile = file;
-    this.fileList.push(file);
-    this.selectedFileIndex = this.fileList.length - 1;
+    // const file = {
+    //   filename: value.filename || '',
+    //   formState: this.form.value,
+    //   hasValidFilename: !this.form.get('filename').hasError('filenameError'),
+    //   // If there are configs, the file is most likely annotable
+    //   filePossiblyAnnotatable: annotationConfigs !== null
+    // };
+    // this.selectedFile = file;
+    // this.fileList.push(file);
+    // this.selectedFileIndex = this.fileList.length - 1;
   }
 
   get possiblyAnnotatable(): boolean {
@@ -244,13 +244,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       for (const targetFile of event.target.files) {
         const filename = this.extractFilename(targetFile.name);
 
-
         promiseList.push(this.getDocumentPossibility(targetFile));
         promiseList[promiseList.length - 1].then(maybeDocument => {
           const fileEntry: FileInput = {
             formState: {
             contentValue: targetFile,
-            filename: targetFile.name,
+            filename,
             },
             filename,
             hasValidFilename: !validFilenameRegex.test(filename),
@@ -288,6 +287,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.selectedFile = this.fileList[newIndex];
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
+    console.log('patching form values');
+    console.log(this.selectedFile.formState);
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
