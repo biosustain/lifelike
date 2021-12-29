@@ -269,6 +269,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   changeSelectedFile(newIndex: number) {
+    if (this.fileList.length === 0) {
+      this.selectedFileIndex = -1;
+      this.form.get('contentValue').setValue(null);
+      this.filePossiblyAnnotatable = false;
+      return;
+    }
     if (newIndex >= this.fileList.length) {
       console.log('Invalid file selection index!');
       newIndex = this.fileList.length - 1;
@@ -287,6 +293,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.selectedFile = this.fileList[newIndex];
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
+    this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
     console.log('patching form values');
     console.log(this.selectedFile.formState);
   }
@@ -342,6 +349,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       });
     }, () => {
     });
+  }
+
+  handleDelete(index: number) {
+    this.fileList.splice(index, 1);
+    this.selectedFile = null;
+    this.changeSelectedFile(this.fileList.length - 1);
   }
 }
 
