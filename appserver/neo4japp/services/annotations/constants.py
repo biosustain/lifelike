@@ -2,6 +2,10 @@ import os
 from enum import Enum
 from typing import Dict, Union
 
+# LMDB data dir
+LMDB_DATA_DIR = os.getenv('LMDB_DATA_DIR', '').strip() or \
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lmdb')
+
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
 CHEMICALS_LMDB = 'chemicals_lmdb'

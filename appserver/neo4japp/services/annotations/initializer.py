@@ -27,6 +27,7 @@ from .constants import (
     PHENOTYPES_LMDB,
     PROTEINS_LMDB,
     SPECIES_LMDB,
+    LMDB_DATA_DIR,
 )
 
 
@@ -85,7 +86,7 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+    return LMDBService(LMDB_DATA_DIR, **configs)
 
 
 def get_recognition_service(exclusions, inclusions):

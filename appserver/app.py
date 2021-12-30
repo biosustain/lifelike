@@ -30,6 +30,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_PDF,
     LogEventType
 )
+from neo4japp.services.annotations.constants import LMDB_DATA_DIR
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
@@ -218,9 +219,8 @@ def update_or_create_index(index_id, index_mapping_file):
 def load_lmdb():
     """ Downloads LMDB files from Cloud to Local for application """
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
-    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
-    manager.download_all(lmdb_dir_path)
-    manager.update_all_dates(lmdb_dir_path)
+    manager.download_all(LMDB_DATA_DIR)
+    manager.update_all_dates(LMDB_DATA_DIR)
 
 
 @app.cli.command('upload-lmdb')
@@ -233,8 +233,7 @@ def upload_lmdb():
     to the correct versions
     """
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
-    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
-    manager.upload_all(lmdb_dir_path)
+    manager.upload_all(LMDB_DATA_DIR)
 
 
 Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organism_id'])

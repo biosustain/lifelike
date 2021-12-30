@@ -56,6 +56,14 @@ ENV MIGRATE_DB=
 ENV INITIAL_ADMIN_USER=admin@example.com
 ENV INITIAL_ADMIN_PASSWORD=password
 
+# LMDB database volume
+ENV LMDB_DATA_DIR=/lmdb
+VOLUME /lmdb
+
+# LMDB download cloud storage
+# ENV AZURE_ACCOUNT_STORAGE_NAME=
+# ENV AZURE_ACCOUNT_STORAGE_KEY=
+
 # Base URL of this app, reachable by external services
 ENV APPSERVER_URL=http://localhost:5000
 
@@ -84,26 +92,31 @@ ENV ELASTIC_FILE_INDEX_ID=file
 # Statistical enrichment service
 ENV STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5000
 
-# Analysis services
+# PDFParser
 ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
+
+# NLP Processing
 ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
 ENV NLP_SECRET=secret
 
 # Auth secret token
 ENV JWT_SECRET=secret
 
-# Enables Sentry logging (Optional)
+# Sendgrid API key
+ENV SEND_GRID_EMAIL_API_KEY=
+
+# Enables Sentry logging service (optional)
 ENV SENTRY_DSN=
+
 # Enables Elastic APM for perfoemance monitoring (Optional)
 ENV ELASTIC_APM_SERVER_URL=
 ENV ENVIRONMENT_NAME=
 
-# Listen port
-ENV PORT=5000
-
 # Flask env [development, testing, production]
 ENV FLASK_ENV=production
 
+# Listen port
+ENV PORT=5000
 EXPOSE $PORT
 
 RUN chmod +x bin/docker-entrypoint.sh

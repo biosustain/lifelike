@@ -27,6 +27,8 @@ services:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
       - MIGRATE_DB=1
+      # Unset to use the default LMDB data directory
+      - LMDB_DATA_DIR=
     volumes:
       - ../appserver:/app
     user: ***ARANGO_USERNAME***
