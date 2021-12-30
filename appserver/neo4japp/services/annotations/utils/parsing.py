@@ -8,7 +8,7 @@ from neo4japp.exceptions import ServerException
 from ....constants import APPSERVER_URL
 from ..constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
-    PDFPARSER_ENDPOINT,
+    PDFPARSER_URL,
     REQUEST_TIMEOUT
 )
 from ..data_transfer_objects import PDFWord
@@ -53,7 +53,7 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
 
 def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[PDFWord]]:
     parserPath = '/token/rect/json/' if content_type == FILE_MIME_TYPE_PDF else '/token/rect/text/json'
-    url = f'{PDFPARSER_ENDPOINT}{parserPath}'
+    url = f'{PDFPARSER_URL}{parserPath}'
 
     if 'exclude_references' in kwargs:
         try:

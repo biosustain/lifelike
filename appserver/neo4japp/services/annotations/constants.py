@@ -31,8 +31,9 @@ MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
 REQUEST_TIMEOUT = 60
-NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT')
-PDFPARSER_ENDPOINT = os.getenv('PDFPARSER_ENDPOINT', 'http://localhost:7600')
+
+NLP_URL = os.getenv('NLP_URL')
+PDFPARSER_URL = os.getenv('PDFPARSER_URL', 'http://localhost:7600')
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',

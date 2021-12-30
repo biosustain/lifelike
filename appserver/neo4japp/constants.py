@@ -425,29 +425,34 @@ MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
 RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
-# Start email constants
-MESSAGE_SENDER_IDENTITY = "***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio"
-MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
-RESET_PASSWORD_EMAIL_TITLE = 'Lifelike.bio: Account password reset'
-RESET_PASS_MAIL_CONTENT = codecs.open('assets/reset_email.html', "r").read()
-SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
+# Assets
+ASSETS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../assets')
+
+# Reset password messages
+RESET_PASSWORD_EMAIL_SUBJECT = 'Lifelike: Account password reset'
+RESET_PASSWORD_EMAIL_BODY = codecs.open(os.path.join(ASSETS_PATH, 'reset_email.html'), "r").read()
+
+# Email configuration
+FROM_EMAIL = "Lifelike <no-reply@example.com>"
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_API_CLIENT = SendGridAPIClient(SENDGRID_API_KEY)
 
 # Start shared Elastic constants
-FILE_INDEX_ID = os.getenv('ELASTIC_FILE_INDEX_ID', 'file')
+FILE_INDEX_ID = os.getenv('ELASTICSEARCH_FILE_INDEX', 'file')
 FRAGMENT_SIZE = 1024
 
 APPSERVER_URL = os.getenv('APPSERVER_URL', 'http://localhost:5000')
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4200')
 
-ASSETS_PATH = os.getenv('ASSETS_FOLDER')
-
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
+
 # links to maps with spaces at the beginning are still valid
 MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 
 # Start SVG map export data constants
-IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+IMAGES_RE = re.compile(fr'{ASSETS_PATH}.*\.png')
+
 BYTE_ENCODING = 'utf-8'
 
 MAX_FILE_DESCRIPTION_LENGTH = 5000

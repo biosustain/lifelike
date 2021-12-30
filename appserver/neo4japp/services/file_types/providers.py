@@ -426,10 +426,11 @@ def get_icons_data():
     else:
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
                     'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', '***ARANGO_DB_NAME***']:
-            with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
-                ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
-                                                       + b64encode(file.read()) \
-                                                           .decode(BYTE_ENCODING)
+            icon_path = os.path.join(ASSETS_PATH, f'{key}.png')
+            with open(icon_path, 'rb') as file:
+                ICON_DATA[icon_path] = 'data:image/png;base64,' \
+                                       + b64encode(file.read()) \
+                                           .decode(BYTE_ENCODING)
         return ICON_DATA
 
 
@@ -690,9 +691,8 @@ def create_icon_node(node, params):
         if label in custom_icons.keys():
             default_icon_color = custom_icons.get(label, default_icon_color)
 
-    icon_params['image'] = (
-        f'{ASSETS_PATH}{label}.png'
-    )
+    icon_params['image'] = os.path.join(ASSETS_PATH, f'{label}.png')
+
     if label not in custom_icons.keys():
         # We are setting the icon color by using 'inverse' icon images and colorful background
         # But not for microsoft icons, as those are always in the same color

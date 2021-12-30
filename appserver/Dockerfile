@@ -64,6 +64,9 @@ VOLUME /lmdb
 # ENV AZURE_ACCOUNT_STORAGE_NAME=
 # ENV AZURE_ACCOUNT_STORAGE_KEY=
 
+# JWT Authendication
+ENV JWT_SECRET=secret
+
 # Base URL of this app, reachable by external services
 ENV APPSERVER_URL=http://localhost:5000
 
@@ -84,35 +87,36 @@ ENV NEO4J_AUTH=neo4j/password
 ENV NEO4J_DATABASE=neo4j
 ENV NEO4J_SCHEME=bolt
 
-# Elasticsearch node URL(s)
+# Elasticsearch configuration
 ENV ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-# Elasticsearch files ndex name
-ENV ELASTIC_FILE_INDEX_ID=file
+ENV ELASTICSEARCH_FILE_INDEX=file
 
 # Statistical enrichment service
 ENV STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5000
 
-# PDFParser
-ENV PDFPARSER_ENDPOINT=http://pdfparser:7600
+# PDFParser service
+ENV PDFPARSER_URL=http://pdfparser:7600
 
-# NLP Processing
-ENV NLP_SERVICE_ENDPOINT=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
+# NLP Processing service
+ENV NLP_URL=https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict
 ENV NLP_SECRET=secret
 
-# Auth secret token
-ENV JWT_SECRET=secret
+# Mailserver configuration
+ENV FROM_EMAIL=***ARANGO_DB_NAME***@example.com
 
-# Sendgrid API key
-ENV SEND_GRID_EMAIL_API_KEY=
+# Sendgrid integration
+ENV SENDGRID_API_KEY=
 
-# Enables Sentry logging service (optional)
+# Optional Sentry logging configuration
 ENV SENTRY_DSN=
 
-# Enables Elastic APM for perfoemance monitoring (Optional)
+# Optional Elastic APM configuration.
+# To enable, at least ELASTIC_APM_SERVER_URL must be set
+# Other available variables: https://www.elastic.co/guide/en/apm/agent/python/master/configuration.html
 ENV ELASTIC_APM_SERVER_URL=
-ENV ENVIRONMENT_NAME=
+ENV ELASTIC_APM_SERVICE_NAME=appserver
 
-# Flask env [development, testing, production]
+# Flask env (development, testing, production)
 ENV FLASK_ENV=production
 
 # Listen port

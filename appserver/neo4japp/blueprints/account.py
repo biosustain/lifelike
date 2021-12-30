@@ -18,14 +18,14 @@ from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
-    MESSAGE_SENDER_IDENTITY,
-    RESET_PASS_MAIL_CONTENT,
     MIN_TEMP_PASS_LENGTH,
     MAX_TEMP_PASS_LENGTH,
     RESET_PASSWORD_SYMBOLS,
     RESET_PASSWORD_ALPHABET,
-    SEND_GRID_API_CLIENT,
-    RESET_PASSWORD_EMAIL_TITLE,
+    RESET_PASSWORD_EMAIL_SUBJECT,
+    RESET_PASSWORD_EMAIL_BODY,
+    FROM_EMAIL,
+    SENDGRID_API_CLIENT,
     LogEventType
 )
 from neo4japp.models.auth import user_role
@@ -279,14 +279,14 @@ def reset_password(email: str):
                                          new_length))
 
     message = Mail(
-        from_email=MESSAGE_SENDER_IDENTITY,
+        from_email=FROM_EMAIL,
         to_emails=email,
-        subject=RESET_PASSWORD_EMAIL_TITLE,
-        html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
+        subject=RESET_PASSWORD_EMAIL_SUBJECT,
+        html_content=RESET_PASSWORD_EMAIL_BODY.format(name=target.first_name,
                                                     lastname=target.last_name,
                                                     password=new_password))
     try:
-        SEND_GRID_API_CLIENT.send(message)
+        SENDGRID_API_CLIENT.send(message)
     except Exception as e:
         raise
 

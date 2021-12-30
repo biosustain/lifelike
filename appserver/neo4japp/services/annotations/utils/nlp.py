@@ -5,7 +5,7 @@ import requests
 
 from typing import Dict, Set
 
-from ..constants import NLP_SERVICE_ENDPOINT, REQUEST_TIMEOUT, EntityType
+from ..constants import NLP_URL, REQUEST_TIMEOUT, EntityType
 from ..data_transfer_objects import NLPResults
 
 from neo4japp.exceptions import ServerException
@@ -14,7 +14,7 @@ from neo4japp.exceptions import ServerException
 def call_nlp_service(model: str, text: str) -> dict:
     try:
         req = requests.post(
-            NLP_SERVICE_ENDPOINT,
+            NLP_URL,
             data=json.dumps({'model': model, 'sentence': text}),
             headers={
                 'Content-type': 'application/json',

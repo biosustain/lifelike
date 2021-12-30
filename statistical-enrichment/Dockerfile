@@ -60,10 +60,14 @@ ENV REDIS_DB=0
 # Default TTL for cache
 ENV CACHE_TTL=86400
 
-# Misc configuration
-ENV FLASK_ENV=production
-ENV ENVIRONMENT_NAME=
+# Optional Elastic APM configuration.
+# To enable, at least ELASTIC_APM_SERVER_URL must be set
+# Other available variables: https://www.elastic.co/guide/en/apm/agent/python/master/configuration.html
 ENV ELASTIC_APM_SERVER_URL=
+ENV ELASTIC_APM_SERVICE_NAME=statistical-enrichment
+
+# Flask env [development, testing, production]
+ENV FLASK_ENV=production
 
 # Listen port
 ENV PORT=5000

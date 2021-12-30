@@ -112,7 +112,7 @@ class TokenService:
 @auth.verify_token
 def verify_token(token):
     """ Verify JWT """
-    token_service = TokenService(current_app.config['JWT_SECRET_KEY'])
+    token_service = TokenService(current_app.config['JWT_SECRET'])
     decoded = token_service.decode_token(token)
     if decoded['type'] == 'access':
         token = request.headers.get('Authorization')
@@ -159,8 +159,7 @@ def refresh():
     """ Renew access token with refresh token """
     data = request.get_json()
     token = data.get('jwt')
-    token_service = TokenService(current_app.config['JWT_SECRET_KEY'])
-
+    token_service = TokenService(current_app.config['JWT_SECRET'])
     decoded = token_service.decode_token(token)
     if decoded['type'] != 'refresh':
         raise JWTTokenException(
@@ -222,7 +221,7 @@ def login():
                 UserEventLog(
                     username=user.username,
                     event_type=LogEventType.AUTHENTICATION.value).to_dict())
-            token_service = TokenService(current_app.config['JWT_SECRET_KEY'])
+            token_service = TokenService(current_app.config['JWT_SECRET'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0

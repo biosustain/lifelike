@@ -29,10 +29,6 @@ def create_app(test_config: Dict = None):
     if os.getenv("ELASTIC_APM_SERVER_URL"):
         from elasticapm.contrib.flask import ElasticAPM
 
-        ElasticAPM(
-            app,
-            service_name=app.name,
-            environment=os.getenv("ENVIRONMENT_NAME", app.config["FLASK_ENV"]),
-        )
+        ElasticAPM(app)
 
     return app

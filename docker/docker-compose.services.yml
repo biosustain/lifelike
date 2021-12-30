@@ -87,7 +87,7 @@ services:
       - NEO4J_AUTH=neo4j/password
       - REDIS_HOST=redis
       - REDIS_PASSWORD=password
-      - PDFPARSER_ENDPOINT=http://pdfparser:7600
+      - PDFPARSER_URL=http://pdfparser:7600
     depends_on:
       postgres:
         condition: service_healthy
