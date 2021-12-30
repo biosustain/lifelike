@@ -1,3 +1,4 @@
+import os
 import lmdb
 
 from typing import Any, Dict
@@ -31,8 +32,8 @@ class LMDBConnection(DatabaseConnection):
 
     def begin(self, **kwargs):
         dbname = kwargs.get('dbname', '')
-        create = kwargs.get('create', False)
-        readonly = kwargs.get('readonly', True)
+        create = kwargs.get('create', True)
+        readonly = kwargs.get('readonly', False)
 
         if not dbname:
             current_app.logger.error(
@@ -43,7 +44,7 @@ class LMDBConnection(DatabaseConnection):
                 title='Cannot Connect to LMDB',
                 message='Unable to connect to LMDB, database name is invalid.')
 
-        dbpath = f'{self.dirpath}{self.configs[dbname]}'
+        dbpath = os.path.join(self.dirpath, self.configs[dbname])
         try:
             env: Environment = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
         except Exception:
