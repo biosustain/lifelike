@@ -73,4 +73,8 @@ ENV FLASK_ENV=production
 ENV PORT=5000
 EXPOSE $PORT
 
+# Healtcheck
+HEALTHCHECK --start-period=15s \
+    CMD curl -f localhost:$PORT/healthz || exit 1
+
 CMD bin/startup.sh

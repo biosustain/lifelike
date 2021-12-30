@@ -123,5 +123,9 @@ ENV FLASK_ENV=production
 ENV PORT=5000
 EXPOSE $PORT
 
+# Health check by requesting system info to /meta endpoint
+HEALTHCHECK --start-period=30s \
+    CMD curl -f localhost:$PORT/meta || exit 1
+
 RUN chmod +x bin/docker-entrypoint.sh
-ENTRYPOINT [ "bin/docker-entrypoint.sh" ]
+ENTRYPOINT ["bin/docker-entrypoint.sh"]

@@ -15,8 +15,6 @@ services:
       - postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-q"]
-      interval: 10s
-      timeout: 10s
       start_period: 10s
 
   ## Neo4j graph database
@@ -32,9 +30,7 @@ services:
       - neo4j:/var/lib/neo4j/data
     healthcheck:
       test: ["CMD", "wget", "localhost:7474", "-O", "-"]
-      interval: 10s
-      timeout: 10s
-      start_period: 30s
+      start_period: 1m
 
   ## Ekasticsearch search engine
   elasticsearch:
@@ -53,9 +49,7 @@ services:
         hard: -1
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:9200/_cluster/health"]
-      interval: 10s
-      timeout: 10s
-      start_period: 30s
+      start_period: 1m
 
   redis:
     image: redis:alpine
@@ -65,8 +59,6 @@ services:
       - 6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
 
   ## PDF parsing service
   pdfparser:
@@ -77,8 +69,6 @@ services:
       - 7600
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:7600"]
-      interval: 5s
-      timeout: 10s
 
   appserver:
     environment:

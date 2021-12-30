@@ -7,10 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - 8080:80
-    healthcheck:
-      test: ["CMD", "curl", "-f", "localhost"]
-      interval: 10s
-      timeout: 10s
+    links:
+      - appserver
 
   ## Backend application server
   appserver:
@@ -21,10 +19,6 @@ services:
     environment:
       - APPSERVER_URL=http://appserver:5000
       - FRONTEND_URL=http://localhost:8080
-    healthcheck:
-      test: ["CMD", "curl", "-f", "localhost:5000/meta"]
-      interval: 10s
-      timeout: 5s
 
   ## Statistical enrichment service
   statistical-enrichment:
@@ -32,10 +26,6 @@ services:
     restart: unless-stopped
     ports:
       - 5000
-    healthcheck:
-      test: ["CMD", "curl", "-f", "localhost:5000/healthz"]
-      interval: 5s
-      timeout: 5s
 
   # Cache invalidation service
   cache-invalidator:

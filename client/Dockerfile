@@ -63,4 +63,6 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=landing-build /app/dist ./
 COPY --from=angular-build /app/dist ./
 
-EXPOSE 80
+# Healtcheck
+HEALTHCHECK --interval=1m \
+  CMD curl -f localhost:${PORT} || exit 1
