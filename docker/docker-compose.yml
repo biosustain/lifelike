@@ -5,6 +5,8 @@ services:
   webserver:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-webserver:latest
     restart: unless-stopped
+    environment:
+      - APPSERVER_URL=http://appserver:5000
     ports:
       - 8080:80
     links:

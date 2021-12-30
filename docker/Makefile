@@ -31,7 +31,7 @@ HELP_FUN = \
     print "\n"; }
 
 .DEFAULT_GOAL := help
-.PHONY: help up status ps logs restart stop down clean reset exec test
+.PHONY: help up build status ps logs restart stop down clean reset exec test
 # -----------------------------------------------------------------------------
 
 
@@ -42,31 +42,34 @@ help: ##@other Show this help.
 
 up: ##@docker Build and run container(s) for development. [c=<names>]
 	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
-	@${COMPOSE_COMMAND} up -d --build --quiet-pull --wait ${c} $(ARGS)
-	@echo "\nTo access Lifelike, point your browser at: http://localhost:4200\n"
+	${COMPOSE_COMMAND} $(ARGS) up -d --build --quiet-pull --wait ${c}
+	@echo "\nTo access Lifelike, point your browser at: http://localhost:8080\n"
+
+build: ##@docker Build container(s) for development. [c=<names>]
+	${COMPOSE_COMMAND} $(ARGS) build ${c}
 
 status: ##@docker Show container(s) status. [c=<names>]
-	@${COMPOSE_COMMAND} ${COMPOSE_FILES} ps ${c} ${ARGS}
+	@${COMPOSE_COMMAND} ${ARGS} ps ${c}
 
 ps: status
 
 logs: ##@docker Show container(s) logs. [c=<names>]
-	@${COMPOSE_COMMAND} logs -f ${c} $(ARGS)
+	@${COMPOSE_COMMAND} $(ARGS) logs -f ${c}
 
 restart: ##@docker Restart container(s). [c=<names>]
-	@${COMPOSE_COMMAND} restart ${c} $(ARGS)
+	@${COMPOSE_COMMAND} $(ARGS) restart ${c}
 
 stop: ##@docker Stop containers(s). [c=<names>]
-	@${COMPOSE_COMMAND} stop ${c} $(ARGS)
+	@${COMPOSE_COMMAND} $(ARGS) stop ${c}
 
 exec: ##@docker Execute a command inside a container. [c=<name>, cmd=<command>]
-	@${COMPOSE_COMMAND} exec ${ARGS} ${c} ${cmd}
+	@${COMPOSE_COMMAND} ${ARGS} exec ${c} ${cmd}
 
 test: ##@docker Execute test suite
-	@${COMPOSE_COMMAND} exec ${ARGS} appserver pytest --cov=neo4japp ${pytest_args}
+	@${COMPOSE_COMMAND} ${ARGS} exec appserver pytest --cov=neo4japp ${pytest_args}
 
 down: ##@docker Destroy all containers and volumes
-	@${COMPOSE_COMMAND} down --volumes --remove-orphans ${ARGS}
+	@${COMPOSE_COMMAND} ${ARGS} down --volumes --remove-orphans
 
 reset: down up ##@docker Destroy and recreate all containers and volumes
 

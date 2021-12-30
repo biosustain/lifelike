@@ -10,7 +10,7 @@ Docker is an easy way to get started with Lifelike.
 
 In order to build and bring up all required containers, run the following command after cloning this repository:
 
-Once it's running, you can access the Lifelike UI at [http://localhost:4242](http://localhost:4242) in your browser. Default username / password is: `admin@example.com` / `password`
+Once it's running, you can access the Lifelike UI at [http://localhost:8080](http://localhost:8080) in your browser. Default username / password is: `admin@example.com` / `password`
 
 ```shell
 make up
@@ -44,6 +44,7 @@ usage: make [target]
 
 docker:
   up                              Build and run container(s) for development. [c=<names>]
+  build                           Build container(s) for development. [c=<names>]
   status                          Show container(s) status. [c=<names>]
   logs                            Show container(s) logs. [c=<names>]
   restart                         Restart container(s). [c=<names>]
@@ -52,6 +53,9 @@ docker:
   test                            Execute test suite
   down                            Destroy all containers and volumes
   reset                           Destroy and recreate all containers and volumes
+
+other:
+  help                            Show this help.
 ```
 
 You can customize which containers are started by combining or overriding the following Compose files. See [Makefile](Makefile) for more details.

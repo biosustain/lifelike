@@ -17,7 +17,7 @@ $ cd ***ARANGO_DB_NAME***
 $ make up
 ```
 
-This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:4200](http://localhost:4200). You can login with the default admin user `admin@example.com` and password `admin`.
+This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:8080](http://localhost:8080). You can login with the default admin user `admin@example.com` and password `admin`.
 
 You can run `make help` to see a list of available commands.
 
@@ -31,6 +31,7 @@ development:
 
 docker:
   up                              Build and run container(s) for development. [c=<names>]
+  build                           Build container(s) for development. [c=<names>]
   status                          Show container(s) status. [c=<names>]
   logs                            Show container(s) logs. [c=<names>]
   restart                         Restart container(s). [c=<names>]
