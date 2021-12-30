@@ -5,7 +5,7 @@ import re
 import typing
 import zipfile
 import tempfile
-from collections import namedtuple
+from urllib.parse import urljoin
 
 from base64 import b64encode
 
@@ -56,7 +56,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN,
+    FRONTEND_URL,
     BYTE_ENCODING,
     DEFAULT_DPI,
     POINT_TO_PIXEL,
@@ -763,7 +763,7 @@ def set_node_href(node):
             # And search again
             href = set_node_href(node)
         else:
-            href = LIFELIKE_DOMAIN + current_link
+            href = urljoin(FRONTEND_URL, current_link)
     return href
 
 

@@ -56,6 +56,12 @@ ENV MIGRATE_DB=
 ENV INITIAL_ADMIN_USER=admin@example.com
 ENV INITIAL_ADMIN_PASSWORD=password
 
+# Base URL of this app, reachable by external services
+ENV APPSERVER_URL=http://localhost:5000
+
+# Base URL of the frontend app, for link generation
+ENV FRONTEND_URL=http://localhost:4242
+
 # PostgreSQL configuration
 ENV POSTGRES_HOST=postgres
 ENV POSTGRES_PORT=5432
@@ -85,11 +91,6 @@ ENV NLP_SECRET=secret
 
 # Auth secret token
 ENV JWT_SECRET=secret
-
-# Base URL
-ENV SELF_BASE_URL=http://appserver:5000
-# Base URL of the frontend, for link generation
-ENV DOMAIN=http://localhost:4242
 
 # Enables Sentry logging (Optional)
 ENV SENTRY_DSN=

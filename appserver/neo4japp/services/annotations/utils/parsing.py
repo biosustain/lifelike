@@ -5,9 +5,9 @@ import requests
 from neo4japp.constants import FILE_MIME_TYPE_PDF
 from neo4japp.exceptions import ServerException
 
+from ....constants import APPSERVER_URL
 from ..constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
-    PARSER_RESOURCE_PULL_ENDPOINT,
     PDFPARSER_ENDPOINT,
     REQUEST_TIMEOUT
 )
@@ -64,7 +64,7 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
                 'Parsing Error',
                 'Cannot parse the PDF file, the file id is missing or data is corrupted.')
         data = {
-            'fileUrl': f'{PARSER_RESOURCE_PULL_ENDPOINT}/{file_id}',
+            'fileUrl': f'{APPSERVER_URL}/annotations/files/{file_id}',
             'excludeReferences': exclude_references
         }
     else:

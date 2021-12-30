@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
 
 services:
   ## Frontend web server
@@ -6,7 +6,7 @@ services:
     image: ***ARANGO_DB_NAME***.azurecr.io/kg-webserver:latest
     restart: unless-stopped
     ports:
-      - 80:80
+      - 8080:80
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost"]
       interval: 10s
@@ -18,6 +18,9 @@ services:
     restart: unless-stopped
     ports:
       - 5000:5000
+    environment:
+      - APPSERVER_URL=http://appserver:5000
+      - FRONTEND_URL=http://localhost:8080
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:5000/meta"]
       interval: 10s

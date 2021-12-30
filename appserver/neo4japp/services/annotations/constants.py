@@ -28,9 +28,7 @@ MAX_FOOD_WORD_LENGTH = 4
 
 REQUEST_TIMEOUT = 60
 NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT')
-PDFPARSER_ENDPOINT = os.getenv('PDFPARSER_ENDPOINT', 'http://pdfparser:7600')
-PARSER_RESOURCE_PULL_ENDPOINT = os.getenv('PARSER_RESOURCE_PULL_ENDPOINT',
-                                          'http://appserver:5000/annotations/files')
+PDFPARSER_ENDPOINT = os.getenv('PDFPARSER_ENDPOINT', 'http://localhost:7600')
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',

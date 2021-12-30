@@ -436,7 +436,9 @@ SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 FILE_INDEX_ID = os.getenv('ELASTIC_FILE_INDEX_ID', 'file')
 FRAGMENT_SIZE = 1024
 
-LIFELIKE_DOMAIN = os.getenv('DOMAIN', 'http://localhost:5000')
+APPSERVER_URL = os.getenv('APPSERVER_URL', 'http://localhost:5000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4200')
+
 ASSETS_PATH = os.getenv('ASSETS_FOLDER')
 
 # Start constants for export of merged maps
