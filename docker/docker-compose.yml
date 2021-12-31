@@ -3,7 +3,7 @@ version: "3.9"
 services:
   ## Frontend web server
   webserver:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-webserver:latest
+    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-webserver:latest
     restart: unless-stopped
     environment:
       - APPSERVER_URL=http://appserver:5000
@@ -14,7 +14,7 @@ services:
 
   ## Backend application server
   appserver:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:latest
+    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver:latest
     restart: unless-stopped
     ports:
       - 5000:5000
@@ -35,14 +35,14 @@ services:
 
   ## Statistical enrichment service
   statistical-enrichment:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-statistical-enrichment:latest
+    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-statistical-enrichment
     restart: unless-stopped
     ports:
       - 5000
 
   # Cache invalidation service
   cache-invalidator:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-cache-invalidator:latest
+    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-cache-invalidator:latest
     restart: unless-stopped
 
 networks:
