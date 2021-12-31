@@ -46,6 +46,7 @@ helm.sh/chart: {{ include "***ARANGO_DB_NAME***.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: ***ARANGO_DB_NAME***
 {{- end }}
 
 {{/* ---------------------------------------------------------------------- */}}
@@ -214,6 +215,17 @@ Return the Neo4j password
 {{- end -}}
 {{- end -}}
 
+{{/*
+Return the Neo4j database name
+*/}}
+{{- define "***ARANGO_DB_NAME***.neo4jDatabase" -}}
+{{- if .Values.neo4j.enabled }}
+    {{- default "neo4j" .Values.neo4j.defaultDatabase -}}
+{{- else -}}
+    {{- default "neo4j" .Values.neo4jExternal.database -}}
+{{- end -}}
+{{- end -}}
+
 {{/* ---------------------------------------------------------------------- */}}
 {{/* Elasticsearch                                                          */}}
 {{/* ---------------------------------------------------------------------- */}}
@@ -340,3 +352,81 @@ Return the Redis password
     {{- printf "%s" .Values.redisExternal.password -}}
 {{- end -}}
 {{- end -}}
+
+
+{{/* ---------------------------------------------------------------------- */}}
+
+
+{{/*
+Common image spec
+*/}}
+
+{{- define "***ARANGO_DB_NAME***.image" -}}
+image: {{ .image.repository }}:{{ .image.tag | default (printf "%s" .Chart.AppVersion) }}
+imagePullPolicy: {{ .image.imagePullPolicy | default "IfNotPresent" }}
+{{- if .image.pullSecrets }}
+imagePullSecrets: {{ toYaml .image.pullSecrets | nindent 2 }}
+{{- end }}
+{{- end }}
+
+
+{{/* ---------------------------------------------------------------------- */}}
+
+
+{{/*
+Common pod spec
+*/}}
+{{- define "***ARANGO_DB_NAME***.podSpec" -}}
+{{- if .image.imagePullSecrets }}
+imagePullSecrets: {{ toYaml .image.imagePullSecrets | nindent 2 }}
+{{- end }}
+{{- if .affinity }}
+affinity: {{ toYaml .affinity | nindent 2 }}
+{{- end }}
+{{- if .nodeSelector }}
+nodeSelector: {{ toYaml .nodeSelector | nindent 2 }}
+{{- end }}
+{{- if .tolerations }}
+tolerations: {{ toYaml .tolerations | nindent 2 }}
+{{- end }}
+{{- if .schedulerName }}
+schedulerName: {{ .schedulerName }}
+{{- end }}
+securityContext:
+{{- $securityContext := .podSecurityContext | default (dict) | deepCopy }}
+{{- toYaml $securityContext | nindent 2 }}
+{{- end }}
+
+
+{{/* ---------------------------------------------------------------------- */}}
+
+
+{{/*
+Common health checks
+*/}}
+{{- define "***ARANGO_DB_NAME***.healthChecks" -}}
+{{- if .livenessProbe.enabled }}
+livenessProbe:
+  httpGet:
+    path: {{ .livenessProbe.path | default "/healthz" }}
+    port: {{ .service.port }}
+    scheme: {{ .livenessProbe.scheme | default "HTTP" }}
+  initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds | default 10 }}
+  timeoutSeconds: {{ .livenessProbe.timeoutSeconds | default 5 }}
+  periodSeconds: {{ .livenessProbe.periodSeconds | default 10 }}
+  successThreshold: {{ .livenessProbe.successThreshold | default 1 }}
+  failureThreshold: {{ .livenessProbe.failureThreshold | default 3 }}
+{{- end }}
+{{- if .readinessProbe.enabled }}
+readinessProbe:
+  httpGet:
+    path: {{ .readinessProbe.path | default "/healthz" }}
+    port: {{ .service.port }}
+    scheme: {{ .readinessProbe.scheme | default "HTTP" }}
+  initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds | default 10 }}
+  timeoutSeconds: {{ .readinessProbe.timeoutSeconds | default 5 }}
+  periodSeconds: {{ .readinessProbe.periodSeconds | default 10 }}
+  successThreshold: {{ .readinessProbe.successThreshold | default 1 }}
+  failureThreshold: {{ .readinessProbe.failureThreshold | default 3 }}
+{{- end }}
+{{- end }}

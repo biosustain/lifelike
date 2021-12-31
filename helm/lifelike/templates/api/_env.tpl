@@ -1,9 +1,4 @@
-- name: FLASK_APP
-  value: app
-- name: FLASK_ENV
-  value: production
-- name: FLASK_APP_CONFIG
-  value: Production
+{{- define "***ARANGO_DB_NAME***.apiEnv" -}}
 - name: POSTGRES_HOST
   value: {{ template "***ARANGO_DB_NAME***.postgresqlHost" . }}
 - name: POSTGRES_PORT
@@ -19,20 +14,19 @@
 - name: NEO4J_PORT
   value: {{ include "***ARANGO_DB_NAME***.neo4jPort" . | quote }}
 - name: NEO4J_AUTH
-  value: "{{ template "***ARANGO_DB_NAME***.neo4jUser" . }}/{{ template "***ARANGO_DB_NAME***.neo4jPassword" . }}"
+  value: {{ template "***ARANGO_DB_NAME***.neo4jUser" . }}/{{ template "***ARANGO_DB_NAME***.neo4jPassword" . }}
+- name: NEO4J_DB
+  value: {{ template "***ARANGO_DB_NAME***.neo4jDatabase" . }}
 - name: REDIS_HOST
   value: {{ template "***ARANGO_DB_NAME***.redisHost" . }}
 - name: REDIS_PORT
   value: {{ include "***ARANGO_DB_NAME***.redisPort" . | quote }}
 - name: REDIS_PASSWORD
   value: {{ include "***ARANGO_DB_NAME***.redisPassword" . | quote }}
-- name: ELASTICSEARCH_HOSTS
+- name: ELASTICSEARCH_HOST
   value: "{{ printf "%s://%s:%s@%s:%s" "http" (include "***ARANGO_DB_NAME***.elasticsearchUser" .) (include "***ARANGO_DB_NAME***.elasticsearchPassword" .) (include "***ARANGO_DB_NAME***.elasticsearchHost" .) (include "***ARANGO_DB_NAME***.elasticsearchPort" .) }}"
-- name: ELASTIC_FILE_INDEX_ID
-  value: file
-- name: LMDB_HOME_FOLDER
-  value: /home/n4j/neo4japp/services/annotations/lmdb/
 {{- range $envName, $envValue := .Values.api.extraEnv }}
 - name: {{ $envName }}
   value: {{ $envValue | quote }}
+{{- end -}}
 {{- end -}}

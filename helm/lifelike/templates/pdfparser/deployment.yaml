@@ -3,84 +3,37 @@ kind: Deployment
 metadata:
   name: {{ template "***ARANGO_DB_NAME***.fullname" . }}-pdfparser
   labels:
-    {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
     app.kubernetes.io/component: pdfparser
+    {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
       {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: pdfparser
   replicas: {{ .Values.pdfparser.replicaCount }}
+  strategy:
+    type: {{ .Values.pdfparser.strategyType | default "RollingUpdate" }}
   template:
     metadata:
-      {{- if .Values.pdfparser.podAnnotations }}
-      annotations: {{ toYaml .Values.pdfparser.podAnnotations | nindent 8 }}
-      {{- end }}
+      annotations: {{ toYaml (default dict .Values.pdfparser.podAnnotations) | nindent 8 }}
       labels:
         {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: pdfparser
         {{- if .Values.pdfparser.podLabels }}
         {{ toYaml .Values.pdfparser.podLabels | indent 8 }}
         {{- end }}
+        app.kubernetes.io/component: pdfparser
     spec:
-      {{- include "***ARANGO_DB_NAME***.podSpec" . | nindent 6 }}
+      {{- include "***ARANGO_DB_NAME***.podSpec" .Values.pdfparser | nindent 6 }}
       containers:
       - name: {{ .Chart.Name }}-pdfparser
-        image: {{ .Values.pdfparser.image.repository }}:{{ .Values.pdfparser.image.tag | default (printf "%s" .Chart.AppVersion) }}
-        imagePullPolicy: {{ .Values.pdfparser.image.imagePullPolicy }}
-        # command: ["sleep", "3600"]
+        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.pdfparser.image "Chart" .Chart) | nindent 8 }}
+        {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.pdfparser | nindent 8 }}
+        resources: {{ toYaml (default dict .Values.pdfparser.resources) | nindent 10 }}
         ports:
         - containerPort: {{ .Values.pdfparser.service.port }}
         tty: true
-        livenessProbe:
-          failureThreshold: {{ .Values.pdfparser.livenessProbe.failureThreshold }}
-          httpGet:
-            path: /
-            port: {{ .Values.pdfparser.service.port }}
-            scheme: HTTP
-          initialDelaySeconds: {{ .Values.pdfparser.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.pdfparser.livenessProbe.periodSeconds }}
-          successThreshold: {{ .Values.pdfparser.livenessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.pdfparser.livenessProbe.timeoutSeconds }}
-        readinessProbe:
-          failureThreshold: {{ .Values.pdfparser.readinessProbe.failureThreshold }}
-          httpGet:
-            path: /
-            port: {{ .Values.pdfparser.service.port }}
-            scheme: HTTP
-          initialDelaySeconds: {{ .Values.pdfparser.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.pdfparser.readinessProbe.periodSeconds }}
-          successThreshold: {{ .Values.pdfparser.readinessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.pdfparser.readinessProbe.timeoutSeconds }}
-        resources: {{ toYaml .Values.pdfparser.resources | nindent 10 }}
-{{/*
-#     - name: Create LMDB directory
-#       file:
-#         path: "{{ deploy_dir }}/lmdb"
-#         state: directory
-#         mode: "774"
-#         owner: "{{ deploy_user }}"
-#         group: "1000" # We do this because of group permissions 1000 in Docker
-
-#     - name: Create/Update LMDB database
-#       shell:
-#         chdir: "{{ deploy_dir }}"
-#         cmd: "docker-compose exec -d -T appserver flask load-lmdb"
-#       tags:
-#         - deploy
-
-#     - name: Seed Elasticsearch
-#       shell:
-#         chdir: "{{ deploy_dir }}"
-#         cmd: "docker-compose run -d -T appserver flask reset-elastic"
-
-#     - name: Seed Elasticsearch with Global Annotations
-#       include_role:
-#         name: global-annotation
-#         apply:
-#           tags:
-#             - always
-#       tags:
-#         - annotation
-#         - deploy
-*/}}
+        env:
+        {{- range $envName, $envValue := (default dict .Values.pdfparser.extraEnv) }}
+        - name: {{ $envName }}
+          value: {{ $envValue | quote }}
+        {{- end }}

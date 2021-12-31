@@ -6,7 +6,7 @@ metadata:
   name: {{ $fullName }}
   labels: {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
   annotations: {{- toYaml .Values.ingress.annotations | nindent 4 }}
-{{- with .Values.ingress }} 
+{{- with .Values.ingress }}
 spec:
   {{- if .className }}
   ingressClassName: {{ .className }}

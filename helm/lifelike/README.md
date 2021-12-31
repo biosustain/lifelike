@@ -1,8 +1,14 @@
-# Lifelike Helm chart
+# ***ARANGO_DB_NAME***
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.6](https://img.shields.io/badge/AppVersion-0.9.6-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
-A Helm chart to deploy Lifelike in Kubernetes
+A Helm chart to deploy Lifelike in Kubernetes. Turning big data into contextualized knowledge
+
+**Homepage:** <https://www.***ARANGO_DB_NAME***.bio>
+
+## Source Code
+
+* <https://github.com/SBRG/***ARANGO_DB_NAME***>
 
 ## Requirements
 
@@ -10,17 +16,16 @@ Kubernetes: `>=1.20.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.bitnami.com/bitnami | postgresql | 10.13.4 |
-| https://charts.bitnami.com/bitnami | redis | 15.5.4 |
-| https://helm.elastic.co | elasticsearch | 7.15.0 |
-| https://neo4j-contrib.github.io/neo4j-helm | neo4j | 4.3.6 |
+| https://charts.bitnami.com/bitnami | postgresql | 10.14.0 |
+| https://charts.bitnami.com/bitnami | redis | 15.6.9 |
+| https://helm.elastic.co | elasticsearch | 7.16.2 |
+| https://neo4j-contrib.github.io/neo4j-helm | neo4j | 4.4.1 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| api.affinity | object | `{}` |  |
-| api.autoScaling.enabled | bool | `false` | Enable or disable the API server autoscaling |
+| api.autoScaling.enabled | bool | `false` | If enabled, value at api.replicaCount will be ignored |
 | api.autoScaling.maxReplicas | int | `4` |  |
 | api.autoScaling.minReplicas | int | `2` |  |
 | api.autoScaling.targetCPUUtilizationPercentage | int | `80` |  |
@@ -29,189 +34,111 @@ Kubernetes: `>=1.20.0-0`
 | api.dbWaiter.image.repository | string | `"willwill/wait-for-it"` |  |
 | api.dbWaiter.image.tag | string | `"latest"` |  |
 | api.dbWaiter.timeoutSeconds | int | `30` |  |
-| api.defaultPodSecurityContext.enabled | bool | `true` |  |
-| api.extraEnv | object | `{}` | Extra environment variables to pass to the API server |
-| api.image.imagePullPolicy | string | `"IfNotPresent"` |  |
-| api.image.imagePullSecrets[0].name | string | `"***ARANGO_DB_NAME***-registry"` |  |
-| api.image.repository | string | `"***ARANGO_DB_NAME***.azurecr.io/kg-appserver"` |  |
-| api.image.tag | string | `"latest"` |  |
-| api.ingress.annotations | object | `{}` |  |
-| api.ingress.enabled | bool | `false` |  |
-| api.ingress.hosts[0].host | string | `"***ARANGO_DB_NAME***-api.local"` |  |
-| api.ingress.hosts[0].paths | list | `[]` |  |
-| api.ingress.tls | list | `[]` |  |
-| api.livenessProbe.failureThreshold | int | `20` |  |
-| api.livenessProbe.initialDelaySeconds | int | `20` |  |
+| api.extraEnv | object | `{}` | Extra environment variables to pass to the appserver |
+| api.extraVolumeMounts[0].mountPath | string | `"/lmdb"` |  |
+| api.extraVolumeMounts[0].name | string | `"lmdb"` |  |
+| api.extraVolumeMounts[0].readOnly | bool | `false` |  |
+| api.extraVolumes[0].hostPath.path | string | `"/mnt/data/lmdb"` |  |
+| api.extraVolumes[0].name | string | `"lmdb"` |  |
+| api.image.repository | string | `"us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver"` |  |
+| api.image.tag | string | `""` |  |
 | api.livenessProbe.path | string | `"/meta/"` |  |
-| api.livenessProbe.periodSeconds | int | `10` |  |
-| api.livenessProbe.successThreshold | int | `1` |  |
-| api.livenessProbe.timeoutSeconds | int | `10` |  |
-| api.nodeSelector | object | `{}` |  |
-| api.podAnnotations | object | `{}` |  |
-| api.podLabels | object | `{}` |  |
-| api.podSecurityContext.fsGroup | int | `1000` |  |
-| api.readinessProbe.failureThreshold | int | `20` |  |
-| api.readinessProbe.initialDelaySeconds | int | `20` |  |
+| api.lmdb.loadEnabled | bool | `false` |  |
 | api.readinessProbe.path | string | `"/meta/"` |  |
-| api.readinessProbe.periodSeconds | int | `10` |  |
-| api.readinessProbe.successThreshold | int | `1` |  |
-| api.readinessProbe.timeoutSeconds | int | `10` |  |
-| api.replicaCount | int | `1` | Number of replicas running for the API server |
-| api.resources.requests.cpu | string | `"250m"` |  |
-| api.resources.requests.memory | string | `"1600Mi"` |  |
-| api.schedulerName | string | `nil` |  |
+| api.replicaCount | int | `2` | Number of replicas running the appserver |
+| api.resources.requests.cpu | string | `"500m"` |  |
+| api.resources.requests.memory | string | `"2000Mi"` |  |
 | api.service.port | int | `5000` |  |
-| api.service.type | string | `"ClusterIP"` |  |
 | api.strategyType | string | `"Recreate"` |  |
-| api.tolerations | list | `[]` |  |
-| elasticsearch.clusterHealthCheckParams | string | `"wait_for_status=yellow&timeout=1s"` | If replicas is 1, status stays in yellow, otherwise change to green |
-| elasticsearch.enabled | bool | `true` | When enabled, a new Elasticsearch cluster will be deployed using the official Helm chart |
-| elasticsearch.esConfig | object | `{"elasticsearch.yml":"node.store.allow_mmap: false\n"}` | Elasticsearch confguration |
+| elasticsearch.enabled | bool | `true` |  |
+| elasticsearch.esConfig."elasticsearch.yml" | string | `"node.store.allow_mmap: false\n"` |  |
 | elasticsearch.extraEnvs[0].name | string | `"ELASTIC_USERNAME"` |  |
 | elasticsearch.extraEnvs[0].value | string | `"elastic"` |  |
 | elasticsearch.extraEnvs[1].name | string | `"ELASTIC_PASSWORD"` |  |
 | elasticsearch.extraEnvs[1].value | string | `"password"` |  |
-| elasticsearch.extraInitContainers | list | `[{"command":["sh","-c","bin/elasticsearch-plugin install --batch ingest-attachment\n"],"image":"docker.elastic.co/elasticsearch/elasticsearch:7.15.0","name":"install-plugins"}]` | Extra init containers to install plugins |
-| elasticsearch.replicas | int | `1` | Number of replicas for the Elasticsearch cluster |
-| elasticsearch.volumeClaimTemplate | object | `{"resources":{"requests":{"storage":"10Gi"}}}` | Persistent storage for Elasticsearch nodes |
-| elasticsearchExternal | object | `{"host":"elasticsearch.local","password":"","port":9200,"user":""}` | When elasticsearch.enabled is false, this Elsaicsearch configuration will be used |
-| frontend.affinity | object | `{}` |  |
-| frontend.apiProxy.enabled | bool | `false` |  |
-| frontend.autoScaling.enabled | bool | `false` | Enable or disable the API server autoscaling |
+| elasticsearch.fullnameOverride | string | `"elasticsearch"` |  |
+| elasticsearch.replicas | int | `3` |  |
+| elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"10Gi"` |  |
+| elasticsearchExternal.host | string | `"elasticsearch.local"` |  |
+| elasticsearchExternal.password | string | `""` |  |
+| elasticsearchExternal.port | int | `9200` |  |
+| elasticsearchExternal.user | string | `""` |  |
+| frontend.autoScaling.enabled | bool | `false` |  |
 | frontend.autoScaling.maxReplicas | int | `4` |  |
 | frontend.autoScaling.minReplicas | int | `2` |  |
 | frontend.autoScaling.targetCPUUtilizationPercentage | int | `80` |  |
 | frontend.autoScaling.targetMemoryUtilizationPercentage | int | `80` |  |
-| frontend.defaultPodSecurityContext.enabled | bool | `true` |  |
-| frontend.extraEnv | object | `{}` |  |
-| frontend.frontend.ingress.annotations."cert-manager.io/cluster-issuer" | string | `"letsencrypt"` |  |
-| frontend.frontend.ingress.annotations."kubernetes.io/ingress.class" | string | `"nginx"` |  |
-| frontend.frontend.ingress.annotations."nginx.ingress.kubernetes.io/service-upstream" | string | `"true"` |  |
-| frontend.frontend.ingress.enabled | bool | `false` |  |
-| frontend.frontend.ingress.hosts[0] | object | `{"host":"***ARANGO_DB_NAME***.local","paths":[{"path":"/","pathType":"Prefix"}]}` | Ingress hostname |
-| frontend.frontend.ingress.tls[0].hosts[0] | string | `"***ARANGO_DB_NAME***.local"` |  |
-| frontend.frontend.ingress.tls[0].secretName | string | `"***ARANGO_DB_NAME***-tls"` |  |
-| frontend.image.imagePullPolicy | string | `"IfNotPresent"` |  |
-| frontend.image.imagePullSecrets[0].name | string | `"***ARANGO_DB_NAME***-registry"` |  |
-| frontend.image.repository | string | `"***ARANGO_DB_NAME***.azurecr.io/kg-webserver"` |  |
-| frontend.image.tag | string | `"latest"` |  |
-| frontend.livenessProbe.failureThreshold | int | `20` |  |
-| frontend.livenessProbe.initialDelaySeconds | int | `20` |  |
-| frontend.livenessProbe.periodSeconds | int | `10` |  |
-| frontend.livenessProbe.successThreshold | int | `1` |  |
-| frontend.livenessProbe.timeoutSeconds | int | `10` |  |
-| frontend.nodeSelector | object | `{}` |  |
-| frontend.podAnnotations | object | `{}` |  |
-| frontend.podLabels | object | `{}` |  |
-| frontend.podSecurityContext | object | `{}` |  |
-| frontend.readinessProbe.failureThreshold | int | `20` |  |
-| frontend.readinessProbe.initialDelaySeconds | int | `20` |  |
-| frontend.readinessProbe.periodSeconds | int | `10` |  |
-| frontend.readinessProbe.successThreshold | int | `1` |  |
-| frontend.readinessProbe.timeoutSeconds | int | `10` |  |
-| frontend.replicaCount | int | `1` |  |
-| frontend.resources | object | `{}` |  |
+| frontend.image.repository | string | `"us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-frontend"` |  |
+| frontend.image.tag | string | `""` |  |
+| frontend.livenessProbe.enabled | bool | `true` |  |
+| frontend.livenessProbe.path | string | `"/"` |  |
+| frontend.readinessProbe.enabled | bool | `true` |  |
+| frontend.readinessProbe.path | string | `"/"` |  |
+| frontend.replicaCount | int | `3` |  |
 | frontend.service.port | int | `80` |  |
-| frontend.service.type | string | `"ClusterIP"` |  |
-| frontend.tolerations | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
 | global | object | `{}` |  |
-| logstash.extraEnvs[0].name | string | `"ELASTIC_USERNAME"` |  |
-| logstash.extraEnvs[0].valueFrom.secretKeyRef.key | string | `"username"` |  |
-| logstash.extraEnvs[0].valueFrom.secretKeyRef.name | string | `"elasticsearch-master-credentials"` |  |
-| logstash.extraEnvs[1].name | string | `"ELASTIC_PASSWORD"` |  |
-| logstash.extraEnvs[1].valueFrom.secretKeyRef.key | string | `"password"` |  |
-| logstash.extraEnvs[1].valueFrom.secretKeyRef.name | string | `"elasticsearch-master-credentials"` |  |
-| logstash.logstashConfig."logstash.yml" | string | `"http.host: 0.0.0.0\nxpack.monitoring.enabled: false\n"` |  |
-| logstash.logstashPipeline."uptime.conf" | string | `"input { exec { command => \"uptime\" interval => 30 } }\noutput {\n  elasticsearch {\n    hosts => [\"http://elasticsearch-master:9200\"]\n    user => '${ELASTIC_USERNAME}'\n    password => '${ELASTIC_PASSWORD}'\n    index => \"annotations\"\n  }\n}\n"` |  |
-| logstash.persistence.enabled | bool | `true` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.className | string | `""` |  |
+| ingress.enabled | bool | `true` |  |
+| ingress.hostname | string | `"***ARANGO_DB_NAME***.local"` |  |
+| ingress.tls | list | `[]` |  |
 | nameOverride | string | `""` |  |
-| neo4j.acceptLicenseAgreement | string | `"yes"` |  |
 | neo4j.core.numberOfServers | int | `1` |  |
-| neo4j.core.persistentVolume.size | string | `"5Gi"` | Size of the persistent volume for each server |
-| neo4j.core.standalone | bool | `true` | Whether to deploy a santalone server or a replicated cluster |
-| neo4j.enabled | bool | `true` | Whether to automatically deploy a new Neo4j cluter |
-| neo4j.neo4jPassword | string | `"password"` | Neo4j password |
+| neo4j.core.persistentVolume.size | string | `"100Gi"` |  |
+| neo4j.core.standalone | bool | `true` |  |
+| neo4j.enabled | bool | `true` |  |
+| neo4j.imageTag | string | `"4.4.1-community"` |  |
+| neo4j.neo4jPassword | string | `"password"` |  |
+| neo4jExternal.database | string | `"neo4j"` |  |
 | neo4jExternal.host | string | `"neo4j.local"` |  |
 | neo4jExternal.password | string | `"password"` |  |
-| neo4jExternal.port | int | `7474` |  |
+| neo4jExternal.port | int | `7687` |  |
 | neo4jExternal.user | string | `"neo4j"` |  |
-| pdfparser.affinity | object | `{}` |  |
-| pdfparser.autoScaling.enabled | bool | `false` | Enable or disable the API server autoscaling |
-| pdfparser.autoScaling.maxReplicas | int | `4` |  |
-| pdfparser.autoScaling.minReplicas | int | `2` |  |
-| pdfparser.autoScaling.targetCPUUtilizationPercentage | int | `80` |  |
-| pdfparser.autoScaling.targetMemoryUtilizationPercentage | int | `80` |  |
-| pdfparser.defaultPodSecurityContext.enabled | bool | `true` |  |
-| pdfparser.extraEnv | object | `{}` |  |
-| pdfparser.image.imagePullPolicy | string | `"IfNotPresent"` |  |
-| pdfparser.image.imagePullSecrets[0].name | string | `"***ARANGO_DB_NAME***-registry"` |  |
-| pdfparser.image.repository | string | `"***ARANGO_DB_NAME***.azurecr.io/kg-pdfparser"` |  |
+| pdfparser.autoScaling | object | `{"enabled":false,"maxReplicas":4,"minReplicas":2,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80}` | Horizontal pod autoscaler configuration |
+| pdfparser.autoScaling.enabled | bool | `false` | Set to true to enable autoscaling, ignoring pdfparser.replicaCount |
+| pdfparser.image.repository | string | `"us.gcr.io/able-goods-221820/pdfparser"` |  |
 | pdfparser.image.tag | string | `"latest"` |  |
-| pdfparser.livenessProbe.failureThreshold | int | `20` |  |
-| pdfparser.livenessProbe.initialDelaySeconds | int | `20` |  |
-| pdfparser.livenessProbe.periodSeconds | int | `10` |  |
-| pdfparser.livenessProbe.successThreshold | int | `1` |  |
-| pdfparser.livenessProbe.timeoutSeconds | int | `10` |  |
-| pdfparser.nodeSelector | object | `{}` |  |
-| pdfparser.podAnnotations | object | `{}` |  |
-| pdfparser.podLabels | object | `{}` |  |
-| pdfparser.podSecurityContext | object | `{}` |  |
-| pdfparser.readinessProbe.failureThreshold | int | `20` |  |
-| pdfparser.readinessProbe.initialDelaySeconds | int | `20` |  |
-| pdfparser.readinessProbe.periodSeconds | int | `10` |  |
-| pdfparser.readinessProbe.successThreshold | int | `1` |  |
-| pdfparser.readinessProbe.timeoutSeconds | int | `10` |  |
-| pdfparser.replicaCount | int | `1` | Number of replicas running for the API server |
-| pdfparser.resources | object | `{}` |  |
-| pdfparser.schedulerName | string | `nil` |  |
+| pdfparser.livenessProbe.enabled | bool | `true` | Set to false to disable liveness probes |
+| pdfparser.livenessProbe.path | string | `"/"` |  |
+| pdfparser.readinessProbe.enabled | bool | `true` |  |
+| pdfparser.readinessProbe.path | string | `"/"` |  |
+| pdfparser.replicaCount | int | `3` | Number of replicas running, ignored if autoScaling is enabled |
 | pdfparser.service.port | int | `7600` |  |
-| pdfparser.service.type | string | `"ClusterIP"` |  |
-| pdfparser.tolerations | list | `[]` |  |
-| postgresql.enabled | bool | `true` | Whether to automatically deploy a new PostgreSQL database |
-| postgresql.postgresqlDatabase | string | `"***ARANGO_DB_NAME***"` |  |
-| postgresql.postgresqlPassword | string | `"***ARANGO_DB_NAME***"` |  |
-| postgresql.postgresqlUsername | string | `"***ARANGO_DB_NAME***"` |  |
-| postgresql.serviceAccount.enabled | bool | `true` |  |
-| postgresqlExternal | object | `{"database":"***ARANGO_DB_NAME***","host":"postgres.local","password":"password","port":5432,"user":"postgres"}` | Optionally, bring your own PostgreSQL |
-| redis.architecture | string | `"standalone"` | Allowed values: `standalone` or `replication` |
+| postgresql.enabled | bool | `true` | Set to false to disable automatic deployment of PostgreSQL |
+| postgresql.postgresqlDatabase | string | `"postgres"` |  |
+| postgresqlExternal.database | string | `"postgres"` |  |
+| postgresqlExternal.host | string | `"postgres.local"` |  |
+| postgresqlExternal.password | string | `"postgres"` |  |
+| postgresqlExternal.port | int | `5432` |  |
+| postgresqlExternal.user | string | `"postgres"` |  |
+| redis.architecture | string | `"standalone"` |  |
 | redis.auth.password | string | `"password"` |  |
-| redis.commonConfiguration | string | `"# Disable persistence\nsave \"\"\n# Disable AOF https://redis.io/topics/persistence#append-only-file\nappendonly no"` | Redis configuration as a fast cache |
-| redis.enabled | bool | `true` | When enabled, a new Redis cluster will be deployed using the Bitnami Helm chart |
+| redis.commonConfiguration | string | `"# Disable persistence to disk\nsave \"\"\n# Disable AOF https://redis.io/topics/persistence#append-only-file\nappendonly no"` |  |
+| redis.enabled | bool | `true` |  |
 | redis.master.extraFlags[0] | string | `"--maxmemory-policy allkeys-lru"` |  |
-| redis.master.persistence | object | `{"enabled":false}` | As we use Redis as a cache, we don't need persistence |
+| redis.master.persistence.enabled | bool | `false` |  |
 | redis.replica.extraFlags[0] | string | `"--maxmemory-policy allkeys-lru"` |  |
 | redis.replica.persistence.enabled | bool | `false` |  |
-| redisExternal | object | `{"host":"redis.local","password":"","port":6379}` | When redis.enabled is false, this Redis configuration will be used |
+| redisExternal.host | string | `"redis.local"` |  |
+| redisExternal.password | string | `""` |  |
+| redisExternal.port | int | `6379` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
-| statisticalEnrichment.affinity | object | `{}` |  |
-| statisticalEnrichment.defaultPodSecurityContext.enabled | bool | `true` |  |
-| statisticalEnrichment.extraEnv | object | `{}` |  |
-| statisticalEnrichment.image.imagePullPolicy | string | `"IfNotPresent"` |  |
-| statisticalEnrichment.image.imagePullSecrets[0].name | string | `"***ARANGO_DB_NAME***-registry"` |  |
-| statisticalEnrichment.image.repository | string | `"***ARANGO_DB_NAME***.azurecr.io/kg-statistical-enrichment"` |  |
-| statisticalEnrichment.image.tag | string | `"latest"` |  |
-| statisticalEnrichment.livenessProbe.failureThreshold | int | `20` |  |
-| statisticalEnrichment.livenessProbe.initialDelaySeconds | int | `20` |  |
-| statisticalEnrichment.livenessProbe.periodSeconds | int | `10` |  |
-| statisticalEnrichment.livenessProbe.successThreshold | int | `1` |  |
-| statisticalEnrichment.livenessProbe.timeoutSeconds | int | `10` |  |
-| statisticalEnrichment.nodeSelector | object | `{}` |  |
-| statisticalEnrichment.podAnnotations | object | `{}` |  |
-| statisticalEnrichment.podLabels | object | `{}` |  |
-| statisticalEnrichment.podSecurityContext | object | `{}` |  |
-| statisticalEnrichment.readinessProbe.failureThreshold | int | `20` |  |
-| statisticalEnrichment.readinessProbe.initialDelaySeconds | int | `20` |  |
-| statisticalEnrichment.readinessProbe.periodSeconds | int | `10` |  |
-| statisticalEnrichment.readinessProbe.successThreshold | int | `1` |  |
-| statisticalEnrichment.readinessProbe.timeoutSeconds | int | `10` |  |
-| statisticalEnrichment.replicaCount | int | `1` |  |
+| statisticalEnrichment.image.repository | string | `"us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-statistical-enrichment"` |  |
+| statisticalEnrichment.image.tag | string | `""` |  |
+| statisticalEnrichment.livenessProbe.path | string | `"/healthz"` |  |
+| statisticalEnrichment.readinessProbe.path | string | `"/healthz"` |  |
+| statisticalEnrichment.replicaCount | int | `2` |  |
 | statisticalEnrichment.resources | object | `{}` |  |
-| statisticalEnrichment.service.port | int | `7600` |  |
+| statisticalEnrichment.service.port | int | `5000` |  |
 | statisticalEnrichment.service.type | string | `"ClusterIP"` |  |
-| statisticalEnrichment.tolerations | list | `[]` |  |
+| worker.autoScaling | object | `{"enabled":false,"maxReplicas":4,"minReplicas":2,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80}` | Horizontal pod autoscaler configuration |
+| worker.autoScaling.enabled | bool | `false` | Set to true to enable autoscaling, ignoring pdfparser.replicaCount |
+| worker.image.repository | string | `"us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver"` |  |
+| worker.image.tag | string | `""` |  |
+| worker.replicaCount | int | `3` | Number of running replicas, ignored if autoScaling is enabled |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)

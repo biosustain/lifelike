@@ -1,11 +1,12 @@
 apiVersion: v2
 name: ***ARANGO_DB_NAME***
 description: A Helm chart to deploy Lifelike in Kubernetes. Turning big data into contextualized knowledge
+home: https://www.***ARANGO_DB_NAME***.bio
 icon: https://***ARANGO_DB_NAME***.bio/favicon.ico
 type: application
 
 version: 0.1.0
-appVersion: 0.96.0
+appVersion: latest
 
 kubeVersion: ">=1.20.0-0"
 
@@ -16,20 +17,23 @@ keywords:
   - biofoundry
   - knowledgegraph
 
+sources:
+  - https://github.com/SBRG/***ARANGO_DB_NAME***
+
 dependencies:
   - name: postgresql
     repository: https://charts.bitnami.com/bitnami
-    version: 10.13.6
+    version: 10.14.0
     condition: postgresql.enabled
   - name: neo4j
-    version: 4.3.6
+    version: 4.4.1
     repository: https://neo4j-contrib.github.io/neo4j-helm
     condition: neo4j.enabled
   - name: elasticsearch
-    version: 7.15.0
+    version: 7.16.2
     repository: https://helm.elastic.co
     condition: elasticsearch.enabled
   - name: redis
-    version: 15.5.4
+    version: 15.6.9
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled

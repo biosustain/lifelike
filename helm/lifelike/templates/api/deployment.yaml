@@ -12,53 +12,37 @@ spec:
       app.kubernetes.io/component: api
   replicas: {{ .Values.api.replicaCount }}
   strategy:
-    type: {{ .Values.api.strategyType }}
+    type: {{ .Values.api.strategyType | default "RollingUpdate" }}
   template:
     metadata:
       annotations:
         {{- if .Values.api.podAnnotations }}
-        {{ toYaml .Values.api.podAnnotations | nindent 8 }}
+        {{- toYaml .Values.api.podAnnotations | nindent 8 }}
         {{- end }}
       labels:
         {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: api
         {{- if .Values.api.podLabels }}
-        {{ toYaml .Values.api.podLabels | indent 8 }}
+        {{- toYaml .Values.api.podLabels | indent 8 }}
         {{- end }}
     spec:
-      volumes:
-      - name: lmdb-storage
-        emptyDir: {}
-      {{- if .Values.api.affinity }}
-      affinity:
-      {{ toYaml .Values.api.affinity | indent 8 }}
-      {{- end }}
-      {{- if .Values.api.nodeSelector }}
-      nodeSelector:
-      {{ toYaml .Values.api.nodeSelector | indent 8 }}
-      {{- end }}
-      {{- if .Values.api.tolerations }}
-      tolerations:
-      {{ toYaml .Values.api.tolerations | indent 8 }}
-      {{- end }}
-      {{- if .Values.api.schedulerName }}
-      schedulerName: {{ .Values.api.schedulerName }}
-      {{- end }}
-      {{- if .Values.api.image.imagePullSecrets }}
-      imagePullSecrets:
-      {{ toYaml .Values.api.image.imagePullSecrets | indent 6 }}
-      {{- end }}
-      securityContext:
-        {{- $securityContext := .Values.api.podSecurityContext | default (dict) | deepCopy }}
-        {{- if .Values.api.defaultPodSecurityContext.enabled }}
-        {{- $securityContext = $securityContext | merge (omit .Values.api.defaultPodSecurityContext "enabled") }}
-        {{- end }}
-        {{- toYaml $securityContext | nindent 8 }}
+      {{- include "***ARANGO_DB_NAME***.podSpec" .Values.api | nindent 6 }}
+      containers:
+      - name: {{ .Chart.Name }}-api
+        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
+        {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.api | nindent 8 }}
+        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
+        resources: {{ toYaml (default dict .Values.api.resources) | nindent 10 }}
+        ports:
+        - containerPort: {{ .Values.api.service.port }}
+        volumeMounts:
+        - mountPath: /lmdb
+          name: lmdb-storage
       initContainers:
       {{- if .Values.postgresql.enabled }}
       - name: wait-for-postgres
         image: "{{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}"
-        imagePullPolicy: {{ .Values.api.dbWaiter.image.imagePullPolicy }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
         command:
         - /wait-for-it.sh
         - --host={{ template "***ARANGO_DB_NAME***.postgresqlHost" . }}
@@ -68,7 +52,7 @@ spec:
       {{- if .Values.neo4j.enabled }}
       - name: wait-for-neo4j
         image: {{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}
-        imagePullPolicy: {{ .Values.api.dbWaiter.image.imagePullPolicy }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
         command:
         - /wait-for-it.sh
         - --host={{ template "***ARANGO_DB_NAME***.neo4jHost" . }}
@@ -76,55 +60,19 @@ spec:
         - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
       {{- end }}
       - name: migrate-db
-        image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default (printf "%s" .Chart.AppVersion) }}
-        imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
+        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
+        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
         command:
         - bin/migrate-db
         - --upgrade
-        env: {{ include (print $.Template.BasePath "/_environment.yaml") . | nindent 8 }}
       {{- if .Values.api.lmdb.loadEnabled }}
       - name: load-lmdb
-        image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default (printf "%s" .Chart.AppVersion) }}
-        imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
+        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
+        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
         command:
         - flask
         - load-lmdb
-        env: {{ include (print $.Template.BasePath "/_environment.yaml") . | nindent 8 }}
       {{- end }}
-      containers:
-      - name: {{ .Chart.Name }}-api
-        image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default (printf "%s" .Chart.AppVersion) }}
-        imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
-        env: {{ include (print $.Template.BasePath "/_environment.yaml") . | nindent 8 }}
-        ports:
-        - containerPort: {{ .Values.api.service.port }}
-        volumeMounts:
-        - mountPath: "/home/n4j/neo4japp/services/annotations/lmdb"
-          name: lmdb-storage
-        {{- if .Values.api.livenessProbe.enabled }}
-        livenessProbe:
-          failureThreshold: {{ .Values.api.livenessProbe.failureThreshold }}
-          httpGet:
-            path: {{ .Values.api.livenessProbe.path }}
-            port: {{ .Values.api.service.port }}
-            scheme: HTTP
-          initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
-          successThreshold: {{ .Values.api.livenessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.api.livenessProbe.timeoutSeconds }}
-        {{- end }}
-        {{- if .Values.api.readinessProbe.enabled }}
-        readinessProbe:
-          failureThreshold: {{ .Values.api.readinessProbe.failureThreshold }}
-          httpGet:
-            path: {{ .Values.api.livenessProbe.path }}
-            port: {{ .Values.api.service.port }}
-            scheme: HTTP
-          initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
-          successThreshold: {{ .Values.api.readinessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.api.readinessProbe.timeoutSeconds }}
-        {{- end }}
-        {{- if .Values.api.resources }}
-        resources: {{ toYaml .Values.api.resources | nindent 10 }}
-        {{- end }}
+      volumes:
+      - name: lmdb-storage
+        emptyDir: {}
