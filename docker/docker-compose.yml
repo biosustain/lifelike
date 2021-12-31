@@ -21,6 +21,17 @@ services:
     environment:
       - APPSERVER_URL=http://appserver:5000
       - FRONTEND_URL=http://localhost:8080
+      - PDFPARSER_URL=http://pdfparser:7600
+
+  ## PDF parsing service
+  pdfparser:
+    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-pdfparser:latest
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 7600
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:7600"]
 
   ## Statistical enrichment service
   statistical-enrichment:

@@ -59,17 +59,6 @@ services:
       - 6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-
-  ## PDF parsing service
-  pdfparser:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-pdfparser:latest
-    restart: unless-stopped
-    tty: true
-    ports:
-      - 7600
-    healthcheck:
-      test: ["CMD", "curl", "-f", "localhost:7600"]
-
   appserver:
     environment:
       - NEO4J_HOST=neo4j
@@ -77,7 +66,6 @@ services:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - REDIS_HOST=redis
       - REDIS_PASSWORD=password
-      - PDFPARSER_URL=http://pdfparser:7600
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,8 +74,6 @@ services:
       elasticsearch:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      pdfparser:
         condition: service_healthy
 
   statistical-enrichment:

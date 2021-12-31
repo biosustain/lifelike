@@ -1,9 +1,9 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# Base docker compose command---------------------------------------------------
+# Base Docker Compose command --------------------------------------------------
 #  docker-compose.yml           -> Base services containers
-#  docker-compose.dev.yml       -> Override base services for local development \
-#  docker-compose.services.yml  -> Third party services (DB, Neo4j, Redis, etc)
+#  docker-compose.dev.yml       -> Override base services for local development
+#  docker-compose.services.yml  -> Third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
 COMPOSE_COMMAND=\
   docker compose -p ***ARANGO_DB_NAME*** \
   -f ${ROOT_DIR}/docker-compose.yml \
@@ -12,7 +12,7 @@ COMPOSE_COMMAND=\
 # ------------------------------------------------------------------------------
 
 
-# Helpers ---------------------------------------------------------------------
+# Help -------------------------------------------------------------------------
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
