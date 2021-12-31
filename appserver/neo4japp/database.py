@@ -2,7 +2,7 @@ import hashlib
 import os
 
 from elasticsearch import Elasticsearch
-from flask import g
+from flask import current_app, g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -71,13 +71,6 @@ def close_neo4j_db(e=None):
         neo4j_db.close()
 
 
-def _connect_to_elastic():
-    return Elasticsearch(
-        timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS', 'http://localhost:9200')]
-    )
-
-
 class DBConnection:
     def __init__(self):
         super().__init__()
@@ -93,7 +86,10 @@ class GraphConnection:
 class ElasticConnection:
     def __init__(self):
         super().__init__()
-        self.elastic_client = _connect_to_elastic()
+        self.elastic_client = Elasticsearch(
+            hosts=[current_app.config['ELASTICSEARCH_URL']],
+            timeout=180
+        )
 
 
 """

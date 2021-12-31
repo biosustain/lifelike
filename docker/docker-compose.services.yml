@@ -72,9 +72,9 @@ services:
 
   appserver:
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - NEO4J_HOST=neo4j
       - NEO4J_AUTH=neo4j/password
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
       - REDIS_HOST=redis
       - REDIS_PASSWORD=password
       - PDFPARSER_URL=http://pdfparser:7600
