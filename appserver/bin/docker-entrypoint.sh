@@ -20,11 +20,11 @@ else
     echo "Finished executing DB migrations"
   fi
 
-  ## Create initial user if $INITIAL_ADMIN_USER is set.
-  if [ "$INITIAL_ADMIN_USER" ]; then
-    echo "Trying to create initial admin user: $INITIAL_ADMIN_USER"
-    flask create-user "Admin" "$INITIAL_ADMIN_USER" > /dev/null 2>&1 || true
-    flask set-role "$INITIAL_ADMIN_USER" "admin" > /dev/null 2>&1 || true
+  ## Create initial user if $INITIAL_ADMIN_EMAIL is set.
+  if [ "$INITIAL_ADMIN_EMAIL" ]; then
+    echo "Trying to create initial admin user: $INITIAL_ADMIN_EMAIL"
+    flask create-user "Admin" "$INITIAL_ADMIN_EMAIL" > /dev/null 2>&1 || true
+    flask set-role "$INITIAL_ADMIN_EMAIL" "admin" > /dev/null 2>&1 || true
   fi
 
   ## Run the Flask appserver app, using the built-in development Flask server,

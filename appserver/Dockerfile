@@ -53,7 +53,7 @@ COPY --chown=app . .
 ENV MIGRATE_DB=
 
 # Create an initial admin user
-ENV INITIAL_ADMIN_USER=admin@example.com
+ENV INITIAL_ADMIN_EMAIL=
 ENV INITIAL_ADMIN_PASSWORD=password
 
 # LMDB database volume
