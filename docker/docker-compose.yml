@@ -16,6 +16,9 @@ services:
   appserver:
     image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver:latest
     restart: unless-stopped
+    links:
+      - statistical-enrichment
+      - pdfparser
     ports:
       - 5000:5000
     environment:
