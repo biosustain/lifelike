@@ -1,4 +1,5 @@
 DOCKER_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+DOCKER_REGISTRY:=us.gcr.io/able-goods-221820
 
 # Base Docker Compose command --------------------------------------------------
 #  docker-compose.yml           -> Base services containers
@@ -11,20 +12,21 @@ COMPOSE_COMMAND=\
   -f ${DOCKER_DIR}/docker-compose.services.yml
 # ------------------------------------------------------------------------------
 
-.PHONY: up build status ps logs restart stop exec test down reset diagram
+.PHONY: up images status logs restart stop exec test down reset diagram
 
 up: ##@docker Build and run container(s) for development. [c=<names>]
 	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
 	@${COMPOSE_COMMAND} ${args} up -d --build --quiet-pull --wait ${c}
 	@echo "\nTo access Lifelike, point your browser at: http://localhost:8080\n"
 
-build: ##@docker Build container(s) for development. [c=<names>]
-	@${COMPOSE_COMMAND} ${args} build ${c}
+images: ##@docker Build container(s) for distribution.
+	cd ${ROOT_DIR}/appserver && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-appserver .
+	cd ${ROOT_DIR}/client && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-webserver .
+	cd ${ROOT_DIR}/statistical-enrichment && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-statistical-enrichment .
+	cd ${ROOT_DIR}/cache-invalidator && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-cache-invalidator .
 
 status: ##@docker Show container(s) status. [c=<names>]
 	@${COMPOSE_COMMAND} ${args} ps ${c}
-
-ps: status
 
 logs: ##@docker Show container(s) logs. [c=<names>]
 	@${COMPOSE_COMMAND} ${args} logs -f ${c}

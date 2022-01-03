@@ -25,7 +25,8 @@ services:
       - NEO4J_AUTH=neo4j/password
       - NEO4JLABS_PLUGINS=["apoc"]
     ports:
-      - 7687
+      - 7687:7687
+      - 7474:7474
     volumes:
       - neo4j:/var/lib/neo4j/data
     healthcheck:
@@ -54,18 +55,19 @@ services:
   redis:
     image: redis:alpine
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "password"]
     ports:
       - 6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+
   appserver:
     environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=postgres
       - NEO4J_HOST=neo4j
       - NEO4J_AUTH=neo4j/password
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - REDIS_HOST=redis
-      - REDIS_PASSWORD=password
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,6 +79,10 @@ services:
         condition: service_healthy
 
   statistical-enrichment:
+    environment:
+      - NEO4J_HOST=neo4j
+      - NEO4J_AUTH=neo4j/password
+      - REDIS_HOST=redis
     depends_on:
       neo4j:
         condition: service_healthy
@@ -84,6 +90,10 @@ services:
         condition: service_healthy
 
   cache-invalidator:
+    environment:
+      - NEO4J_HOST=neo4j
+      - NEO4J_AUTH=neo4j/password
+      - REDIS_HOST=redis
     depends_on:
       neo4j:
         condition: service_healthy

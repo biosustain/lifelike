@@ -4,47 +4,68 @@ Docker is an easy way to get started with Lifelike.
 
 ## Prerequisites
 
-- Docker [link](https://www.docker.com/get-started)
+- [Docker](https://www.docker.com/get-started)
 
-## Run locally with Docker Compose
+## Run locally
 
 In order to build and bring up all required containers, run the following command after cloning this repository:
 
-Once it's running, you can access the Lifelike UI at [http://localhost:8080](http://localhost:8080) in your browser. Default username / password is: `admin@example.com` / `password`
+Once it's running, you can access the Lifelike UI at [http://localhost:8080](http://localhost:8080) in your browser.
+Default username / password is: `admin@example.com` / `password`
 
 ```shell
 make up
 ```
 
-Output will be something like:
-
 ```text
 Building and running containers...
-This may take a while if running for the first time.
+This may take a while if running for the first time. 
 
-[+] Running 9/9
- ⠿ Container ***ARANGO_DB_NAME***-postgres-1                Started                                                                                          3.6s
- ⠿ Container ***ARANGO_DB_NAME***-webserver-1               Started                                                                                          3.5s
- ⠿ Container ***ARANGO_DB_NAME***-neo4j-1                   Started                                                                                          3.2s
- ⠿ Container ***ARANGO_DB_NAME***-elasticsearch-1           Started                                                                                          3.5s
- ⠿ Container ***ARANGO_DB_NAME***-redis-1                   Started                                                                                          3.5s
- ⠿ Container ***ARANGO_DB_NAME***-pdfparser-1               Started                                                                                          3.3s
- ⠿ Container ***ARANGO_DB_NAME***-statistical-enrichment-1  Started                                                                                        238.2s
- ⠿ Container ***ARANGO_DB_NAME***-cache-invalidator-1       Started                                                                                        237.2s
+[+] Running 13/13
+ ⠿ Network ***ARANGO_DB_NAME***                             Created
+ ⠿ Volume "***ARANGO_DB_NAME***_postgres"                   Created
+ ⠿ Volume "***ARANGO_DB_NAME***_elasticsearch"              Created
+ ⠿ Volume "***ARANGO_DB_NAME***_neo4j"                      Created
+ ⠿ Container ***ARANGO_DB_NAME***-neo4j-1                   Started
+ ⠿ Container ***ARANGO_DB_NAME***-postgres-1                Started
+ ⠿ Container ***ARANGO_DB_NAME***-pdfparser-1               Started
+ ⠿ Container ***ARANGO_DB_NAME***-elasticsearch-1           Started
+ ⠿ Container ***ARANGO_DB_NAME***-redis-1                   Started
+ ⠿ Container ***ARANGO_DB_NAME***-statistical-enrichment-1  Started
+ ⠿ Container ***ARANGO_DB_NAME***-cache-invalidator-1       Started
  ⠿ Container ***ARANGO_DB_NAME***-appserver-1               Started
+ ⠿ Container ***ARANGO_DB_NAME***-webserver-1               Started
 
- To access Lifelike, point your browser at: http://localhost:4200
+To access Lifelike, point your browser at: http://localhost:8080
 ```
 
-You can see other available targets by running `make help`:
+## Architecture diagram
 
-```shell
-$ make help
+
+![Architecture diagram](diagram.svg)
+
+## Customize
+
+The stack definition is divided into three Docker Compose files:
+
+```tree
+├── docker-compose.yml           --> Base core services
+├── docker-compose.dev.yml       --> Overrides base core services for local development and debugging.
+└── docker-compose.services.yml  --> Adds third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
+```
+
+You may combine them as you need and/or add your own `docker-compose.override.yml` to override any configuration. (this file will be ignored by Git)
+
+## Other Docker operations
+
+You can run `make help` to see other available common operation:
+
+```text
 usage: make [target]
 
 docker:
   up                              Build and run container(s) for development. [c=<names>]
-  build                           Build container(s) for development. [c=<names>]
+  images                          Build container(s) for distribution.
   status                          Show container(s) status. [c=<names>]
   logs                            Show container(s) logs. [c=<names>]
   restart                         Restart container(s). [c=<names>]
@@ -53,15 +74,5 @@ docker:
   test                            Execute test suite
   down                            Destroy all containers and volumes
   reset                           Destroy and recreate all containers and volumes
-
-other:
-  help                            Show this help.
-```
-
-You can customize which containers are started by combining or overriding the following Compose files. See [Makefile](Makefile) for more details.
-
-```tree
-├── docker-compose.yml           --> Base services
-├── docker-compose.dev.yml       --> Override base services for local development
-└── docker-compose.services.yml  --> Third party services (PostgreSQL, Neo4j, Redis, etc)
+  diagram                         Generate an architecture diagram from the Docker Compose files
 ```
