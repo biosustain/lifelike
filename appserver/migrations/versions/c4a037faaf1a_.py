@@ -63,7 +63,8 @@ def data_upgrades():
     tableclause2 = table(
         'files_content',
         column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary))
+        column('raw_file', sa.LargeBinary),
+        column('checksum_sha256', sa.Binary))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
         tableclause1.c.id.label('file_id'),
@@ -76,9 +77,17 @@ def data_upgrades():
         )
     ))
 
+    # just in case the processing has not picked up a checksum
+    # that exists in the db before trying to insert it
+    existing_checksums = session.execute(sa.select([
+        tableclause2.c.id.label('file_content_id'),
+        tableclause2.c.checksum_sha256
+    ]))
+
     with open(schema_file, 'rb') as f:
         validate_enrichment_table = fastjsonschema.compile(json.load(f))
-        file_content_hashes = {}
+        file_content_hashes = {
+            content_hash: content_id for content_id, content_hash in existing_checksums}
 
         for chunk in window_chunk(files, 25):
             files_to_update = []
