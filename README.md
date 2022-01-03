@@ -6,7 +6,7 @@
 
 Lifelike is an open-source project that aims to provide a simple, yet powerful platform for turning structured and unstructured data from a variety of sources into a single, coherent and explorable knowledge graph.
 
-## Getting started
+## Quick start
 
 The easiest way to get started and run a fully functional development environment of Lifelike is to clone this repository and run the `make up` command:
 
@@ -17,11 +17,26 @@ cd ***ARANGO_DB_NAME***
 make up
 ```
 
-This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:8080](http://localhost:8080). You can log in with the default admin user `admin@example.com` and password `admin`.
+This will take a few minutes to complete, after which you can start using Lifelike by pointing your browser to [http://localhost:8080](http://localhost:8080).
+
+You can log in using the default admin user `admin@example.com` and password `password`.
+
+See the next section for other installation options.
+
+
+## Installation methods
+
+You can see more details about how to deploy ***ARANGO_DB_NAME*** in a production environment,
+or customize the development installation in the following sections.
+
+1. [Docker with Docker Compose](docker)
+2. [Kubernetes with Helm chart](helm/***ARANGO_DB_NAME***)
+
+## Common development operations
 
 You can run `make help` to see a list of available commands.
 
-```shell
+```text
 $ make help
 
 usage: make [target]
@@ -31,7 +46,7 @@ development:
 
 docker:
   up                              Build and run container(s) for development. [c=<names>]
-  build                           Build container(s) for development. [c=<names>]
+  images                          Build container(s) for distribution.
   status                          Show container(s) status. [c=<names>]
   logs                            Show container(s) logs. [c=<names>]
   restart                         Restart container(s). [c=<names>]
@@ -40,19 +55,20 @@ docker:
   test                            Execute test suite
   down                            Destroy all containers and volumes
   reset                           Destroy and recreate all containers and volumes
+  diagram                         Generate an architecture diagram from the Docker Compose files
+
+helm:
+  helm-lint                       Run helm lint on Lifelike chart
+  helm-dependency-update          Install or update chart dependencies
+  helm-schema-gen                 Generate Helm chart values JSON schema
+  helm-docs                       Generate Helm chart README docs
+  helm-package                    Generate Lifelike helm chart package
+  helm-install                    Install or upgrade Lifelike chart
+  helm-install-single-node        Install or upgrade Lifelike chart using the single-node example values
 
 other:
   help                            Show this help.
 ```
-
-# Lifelike installation methods
-
-To deploy Lifelike in a production environment or customize the installation, you can see all the available methods described in the [Installation methods](install) section.
-
-There are various deployment methods for Lifelike you can choose from depending on your needs and preference.
-
-1. [Docker with Docker Compose](docker)
-2. [Kubernetes with Helm chart](helm/***ARANGO_DB_NAME***) (beta)
 
 ## Lifelike main concepts
 
@@ -82,7 +98,7 @@ Lifelike currently provides the following built-in visualization types:
 - Enrichment tables
 - Sankey diagrams
 
-## Other features
+### Other features
 
 - Multi-user collaborative workbench
 - Powerful search engine
@@ -91,16 +107,25 @@ Lifelike currently provides the following built-in visualization types:
 
 Lifelike is a distributed system comprised of the following components:
 
-- Backend appserver and API, written in Python with the Flask framework
-- Frontend client application, written in Angular
-- Statistical enrichment service
-- PostgreSQL RDMS
-- Neo4j graph database
-- Elasticsearch search engine
-- PDFParser document parsing library
+### Core services
+
+- **[Appserver](appserver)**. Backend API service, written in Python using the the Flask framework.
+- **[Client](client)**. Frontend Single Page Application, written in Typescript using the Angular framework.
+- **[Statistical enrichment](statistical-enrichment)**. Statistics generation microservice, written in Python using the the Flask framework.
+- **[Cache invalidator](cache-invalidator)**. Recurrent task runner for bulk large computations and cache data management, written in Python.
+- **[Graph data migrator](graph-db)**. Utility service for migrating and versioning knowledge graph database, using the Liquibase database migration tool.
+
+### Backing services
+
+- **PostgreSQL** as a RDBMS.
+- **Neo4j** as a graph database.
+- **Elasticsearch** as a full-text search engine.
+- **Redis** as a key-value cache store.
+- **PDFParser** as a document parsing library.
+- **Sendgrid** as an email messaging service.
 
 ![Architecture diagram](docker/diagram.svg)
 
 ## License
 
-Lifelike is licensed under the [MIT license](LICENSE).
+Lifelike is distributed under the [MIT license](LICENSE).
