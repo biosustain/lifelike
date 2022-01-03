@@ -2,37 +2,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "***ARANGO_DB_NAME***.fullname" . }}-fontend
-  labels:
+  labels: {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
-    {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels:
+    matchLabels: {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: frontend
-      {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
   replicas: {{ .Values.frontend.replicaCount }}
   template:
     metadata:
       annotations: {{ toYaml .Values.frontend.podAnnotations | nindent 8 }}
-      labels:
-        {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
+      labels: {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
         {{- if .Values.frontend.podLabels }}
         {{- toYaml .Values.frontend.podLabels | nindent 8 }}
         {{- end }}
-        app.kubernetes.io/component: frontend
     spec:
       {{- include "***ARANGO_DB_NAME***.podSpec" .Values.frontend | nindent 6 }}
       containers:
-      - name: {{ .Chart.Name }}-frontend
-        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.frontend.image "Chart" .Chart) | nindent 8 }}
-        {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.api | nindent 8 }}
-        resources: {{ toYaml (default dict .Values.frontend.resources) | nindent 10 }}
-        ports:
-        - containerPort: {{ .Values.frontend.service.port }}
-        env:
-        - name: APPSERVER_URL
-          value: http://appserver:{{ .Values.api.service.port }}
-        {{- range $envName, $envValue := .Values.frontend.extraEnv }}
-        - name: {{ $envName }}
-          value: {{ $envValue | quote }}
-        {{- end }}
+        - name: {{ .Chart.Name }}-frontend
+          {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.frontend.image "Chart" .Chart) | nindent 10 }}
+          {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.frontend | nindent 10 }}
+          resources: {{ toYaml (default dict .Values.frontend.resources) | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.service.port }}
+          env:
+            - name: APPSERVER_URL
+              value: http://{{ include "***ARANGO_DB_NAME***.fullname" . }}-api:{{ .Values.api.service.port }}
+            {{- range $envName, $envValue := .Values.frontend.extraEnv }}
+            - name: {{ $envName }}
+              value: {{ $envValue | quote }}
+            {{- end -}}

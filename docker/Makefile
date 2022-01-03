@@ -20,10 +20,10 @@ up: ##@docker Build and run container(s) for development. [c=<names>]
 	@echo "\nTo access Lifelike, point your browser at: http://localhost:8080\n"
 
 images: ##@docker Build container(s) for distribution.
-	cd ${ROOT_DIR}/appserver && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-appserver .
-	cd ${ROOT_DIR}/client && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-webserver .
-	cd ${ROOT_DIR}/statistical-enrichment && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-statistical-enrichment .
-	cd ${ROOT_DIR}/cache-invalidator && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-cache-invalidator .
+	cd ${DOCKER_DIR}/../appserver && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-appserver .
+	cd ${DOCKER_DIR}/../client && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-webserver .
+	cd ${DOCKER_DIR}/../statistical-enrichment && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-statistical-enrichment .
+	cd ${DOCKER_DIR}/../cache-invalidator && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-cache-invalidator .
 
 status: ##@docker Show container(s) status. [c=<names>]
 	@${COMPOSE_COMMAND} ${args} ps ${c}

@@ -2,77 +2,72 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "***ARANGO_DB_NAME***.fullname" . }}-api
-  labels:
-    {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
+  labels: {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
     app.kubernetes.io/component: api
 spec:
   selector:
-    matchLabels:
-      {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: api
   replicas: {{ .Values.api.replicaCount }}
   strategy:
     type: {{ .Values.api.strategyType | default "RollingUpdate" }}
   template:
     metadata:
-      annotations:
-        {{- if .Values.api.podAnnotations }}
-        {{- toYaml .Values.api.podAnnotations | nindent 8 }}
-        {{- end }}
-      labels:
-        {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
+      annotations: {{ toYaml (default dict .Values.api.podAnnotations) | nindent 8 }}
+      labels: {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: api
         {{- if .Values.api.podLabels }}
         {{- toYaml .Values.api.podLabels | indent 8 }}
         {{- end }}
     spec:
       {{- include "***ARANGO_DB_NAME***.podSpec" .Values.api | nindent 6 }}
-      containers:
-      - name: {{ .Chart.Name }}-api
-        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
-        {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.api | nindent 8 }}
-        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
-        resources: {{ toYaml (default dict .Values.api.resources) | nindent 10 }}
-        ports:
-        - containerPort: {{ .Values.api.service.port }}
-        volumeMounts:
-        - mountPath: /lmdb
-          name: lmdb-storage
-      initContainers:
-      {{- if .Values.postgresql.enabled }}
-      - name: wait-for-postgres
-        image: "{{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}"
-        imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
-        command:
-        - /wait-for-it.sh
-        - --host={{ template "***ARANGO_DB_NAME***.postgresqlHost" . }}
-        - --port={{ template "***ARANGO_DB_NAME***.postgresqlPort" . }}
-        - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
-      {{- end }}
-      {{- if .Values.neo4j.enabled }}
-      - name: wait-for-neo4j
-        image: {{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}
-        imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
-        command:
-        - /wait-for-it.sh
-        - --host={{ template "***ARANGO_DB_NAME***.neo4jHost" . }}
-        - --port={{ template "***ARANGO_DB_NAME***.neo4jPort" . }}
-        - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
-      {{- end }}
-      - name: migrate-db
-        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
-        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
-        command:
-        - bin/migrate-db
-        - --upgrade
-      {{- if .Values.api.lmdb.loadEnabled }}
-      - name: load-lmdb
-        {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 8 }}
-        env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 8 }}
-        command:
-        - flask
-        - load-lmdb
-      {{- end }}
       volumes:
-      - name: lmdb-storage
-        emptyDir: {}
+        - name: lmdb-storage
+          emptyDir: {}
+      containers:
+        - name: {{ .Chart.Name }}-api
+          {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 10 }}
+          {{- include "***ARANGO_DB_NAME***.healthChecks" .Values.api | nindent 10 }}
+          env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 12 }}
+          resources: {{ toYaml (default dict .Values.api.resources) | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.service.port }}
+          volumeMounts:
+            - mountPath: /lmdb
+              name: lmdb-storage
+      initContainers:
+        {{- if .Values.postgresql.enabled }}
+        - name: wait-for-postgres
+          image: "{{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
+          command:
+            - /wait-for-it.sh
+            - --host={{ template "***ARANGO_DB_NAME***.postgresqlHost" . }}
+            - --port={{ template "***ARANGO_DB_NAME***.postgresqlPort" . }}
+            - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
+        {{- end }}
+        {{- if .Values.neo4j.enabled }}
+        - name: wait-for-neo4j
+          image: {{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
+          command:
+            - /wait-for-it.sh
+            - --host={{ template "***ARANGO_DB_NAME***.neo4jHost" . }}
+            - --port={{ template "***ARANGO_DB_NAME***.neo4jPort" . }}
+            - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
+        {{- end }}
+        - name: migrate-db
+          {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 10 }}
+          env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 12 }}
+          command:
+            - bin/migrate-db
+            - --upgrade
+        {{- if .Values.api.lmdb.loadEnabled }}
+        - name: load-lmdb
+          {{- include "***ARANGO_DB_NAME***.image" (dict "image" .Values.api.image "Chart" .Chart) | nindent 10 }}
+          env: {{ include "***ARANGO_DB_NAME***.apiEnv" . | nindent 12 }}
+          command:
+            - flask
+            - load-lmdb
+        {{- end -}}

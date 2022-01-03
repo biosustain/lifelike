@@ -23,7 +23,7 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
-{{- end }}
+{{- end -}}
 
 {{/* ---------------------------------------------------------------------- */}}
 
@@ -32,7 +32,7 @@ Create chart name and version as used by the chart label.
 */}}
 {{- define "***ARANGO_DB_NAME***.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
+{{- end -}}
 
 {{/* ---------------------------------------------------------------------- */}}
 
@@ -47,7 +47,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: ***ARANGO_DB_NAME***
-{{- end }}
+{{- end -}}
 
 {{/* ---------------------------------------------------------------------- */}}
 
@@ -57,20 +57,8 @@ Selector labels
 {{- define "***ARANGO_DB_NAME***.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "***ARANGO_DB_NAME***.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
+{{- end -}}
 
-{{/* ---------------------------------------------------------------------- */}}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "***ARANGO_DB_NAME***.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "***ARANGO_DB_NAME***.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
 
 {{/* ---------------------------------------------------------------------- */}}
 {{/* PostgreSQL                                                             */}}
@@ -146,6 +134,30 @@ Return the PostgreSQL password
     {{- printf "%s" .Values.postgresql.postgresqlPassword -}}
 {{- else -}}
     {{- printf "%s" .Values.postgresqlExternal.password -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Set postgres secret
+*/}}
+{{- define "***ARANGO_DB_NAME***.postgresql.secret" -}}
+{{- if .Values.postgresql.enabled -}}
+{{- template "***ARANGO_DB_NAME***.postgresql.fullname" . -}}
+{{- else -}}
+{{- template "***ARANGO_DB_NAME***.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Set postgres secretKey
+*/}}
+{{- define "***ARANGO_DB_NAME***.postgresql.secretKey" -}}
+{{- if .Values.postgresql.enabled -}}
+"postgresql-password"
+{{- else -}}
+{{- default "postgresql-password" .Values.postgresqlExternal.existingSecretKey | quote -}}
 {{- end -}}
 {{- end -}}
 
@@ -299,6 +311,16 @@ Return the Elasticsearch password
 {{- end -}}
 {{- end -}}
 
+{{- define "***ARANGO_DB_NAME***.elasticsearchUrl" -}}
+{{- if .Values.elasticsearch.enabled }}
+    {{- printf "http://%s:%s@%s:%s" (include "***ARANGO_DB_NAME***.elasticsearchUser" .) (include "***ARANGO_DB_NAME***.elasticsearchPassword" .) (include "***ARANGO_DB_NAME***.elasticsearchHost" .) (include "***ARANGO_DB_NAME***.elasticsearchPort" .) -}}
+{{- else -}}
+    {{- printf "%s" .Values.elasticsearchExternal.url -}}
+{{- end -}}
+{{- end -}}
+
+
+
 {{/* ---------------------------------------------------------------------- */}}
 {{/* Redis                                                                  */}}
 {{/* ---------------------------------------------------------------------- */}}
@@ -348,9 +370,9 @@ Return the Redis password
 {{- define "***ARANGO_DB_NAME***.redisPassword" -}}
 {{- if .Values.redis.enabled }}
     {{- printf "%s" .Values.redis.auth.password -}}
-{{- else -}}
+{{- else }}
     {{- printf "%s" .Values.redisExternal.password -}}
-{{- end -}}
+{{- end }}
 {{- end -}}
 
 
@@ -363,11 +385,11 @@ Common image spec
 
 {{- define "***ARANGO_DB_NAME***.image" -}}
 image: {{ .image.repository }}:{{ .image.tag | default (printf "%s" .Chart.AppVersion) }}
-imagePullPolicy: {{ .image.imagePullPolicy | default "IfNotPresent" }}
+imagePullPolicy: {{ .image.imagePullPolicy | default "Always" }}
 {{- if .image.pullSecrets }}
 imagePullSecrets: {{ toYaml .image.pullSecrets | nindent 2 }}
 {{- end }}
-{{- end }}
+{{- end -}}
 
 
 {{/* ---------------------------------------------------------------------- */}}
@@ -377,9 +399,6 @@ imagePullSecrets: {{ toYaml .image.pullSecrets | nindent 2 }}
 Common pod spec
 */}}
 {{- define "***ARANGO_DB_NAME***.podSpec" -}}
-{{- if .image.imagePullSecrets }}
-imagePullSecrets: {{ toYaml .image.imagePullSecrets | nindent 2 }}
-{{- end }}
 {{- if .affinity }}
 affinity: {{ toYaml .affinity | nindent 2 }}
 {{- end }}
@@ -395,7 +414,7 @@ schedulerName: {{ .schedulerName }}
 securityContext:
 {{- $securityContext := .podSecurityContext | default (dict) | deepCopy }}
 {{- toYaml $securityContext | nindent 2 }}
-{{- end }}
+{{- end -}}
 
 
 {{/* ---------------------------------------------------------------------- */}}
@@ -405,7 +424,7 @@ securityContext:
 Common health checks
 */}}
 {{- define "***ARANGO_DB_NAME***.healthChecks" -}}
-{{- if .livenessProbe.enabled }}
+{{- if .livenessProbe.enabled -}}
 livenessProbe:
   httpGet:
     path: {{ .livenessProbe.path | default "/healthz" }}
@@ -429,4 +448,52 @@ readinessProbe:
   successThreshold: {{ .readinessProbe.successThreshold | default 1 }}
   failureThreshold: {{ .readinessProbe.failureThreshold | default 3 }}
 {{- end }}
-{{- end }}
+{{- end -}}
+
+
+{{/* ---------------------------------------------------------------------- */}}
+
+
+{{/*
+PostgreSQL environment variables helper
+*/}}
+{{- define "***ARANGO_DB_NAME***.poostgresEnv" -}}
+- name: POSTGRES_HOST
+  value: {{ template "***ARANGO_DB_NAME***.postgresqlHost" . }}
+- name: POSTGRES_PORT
+  value: {{ include "***ARANGO_DB_NAME***.postgresqlPort" . | quote }}
+- name: POSTGRES_USER
+  value: {{ template "***ARANGO_DB_NAME***.postgresqlUser" . }}
+- name: POSTGRES_PASSWORD
+  value: {{ include "***ARANGO_DB_NAME***.postgresqlPassword" . | quote }}
+- name: POSTGRES_DB
+  value: {{ template "***ARANGO_DB_NAME***.postgresqlDatabase" . }}
+{{- end -}}
+
+
+{{/*
+Neo4j environment variables helper
+*/}}
+{{- define "***ARANGO_DB_NAME***.neo4jEnv" -}}
+- name: NEO4J_HOST
+  value: {{ template "***ARANGO_DB_NAME***.neo4jHost" . }}
+- name: NEO4J_PORT
+  value: {{ include "***ARANGO_DB_NAME***.neo4jPort" . | quote }}
+- name: NEO4J_AUTH
+  value: {{ template "***ARANGO_DB_NAME***.neo4jUser" . }}/{{ template "***ARANGO_DB_NAME***.neo4jPassword" . }}
+- name: NEO4J_DB
+  value: {{ template "***ARANGO_DB_NAME***.neo4jDatabase" . }}
+{{- end -}}
+
+
+{{/*
+Redis environment variables helper
+*/}}
+{{- define "***ARANGO_DB_NAME***.redisEnv" -}}
+- name: REDIS_HOST
+  value: {{ template "***ARANGO_DB_NAME***.redisHost" . }}
+- name: REDIS_PORT
+  value: {{ include "***ARANGO_DB_NAME***.redisPort" . | quote }}
+- name: REDIS_PASSWORD
+  value: {{ include "***ARANGO_DB_NAME***.redisPassword" . | quote }}
+{{- end -}}

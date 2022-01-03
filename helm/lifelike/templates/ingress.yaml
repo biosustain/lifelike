@@ -13,22 +13,15 @@ spec:
   {{- end }}
   tls: {{- toYaml .tls | nindent 4 }}
   rules:
-  - host: {{ .hostname | quote }}
-    http:
-      paths:
-      - path: "/api"
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ $fullName }}-api
-            port:
-              number: {{ $.Values.api.service.port }}
-      - path: "/"
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ $fullName }}-frontend
-            port:
-              number: {{ $.Values.frontend.service.port }}
+    - host: {{ .hostname | quote }}
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: {{ $.Values.frontend.service.port }}
 {{- end }}
 {{- end }}

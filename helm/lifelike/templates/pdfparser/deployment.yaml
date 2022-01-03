@@ -2,13 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "***ARANGO_DB_NAME***.fullname" . }}-pdfparser
-  labels:
+  labels: {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
     app.kubernetes.io/component: pdfparser
-    {{- include "***ARANGO_DB_NAME***.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels:
-      {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "***ARANGO_DB_NAME***.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: pdfparser
   replicas: {{ .Values.pdfparser.replicaCount }}
   strategy:

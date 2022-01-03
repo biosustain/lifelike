@@ -16,7 +16,7 @@ ingress:
 
   ## -- Ingress annotations
   annotations: {}
-    # certmanager.k8s.io/cluster-issuer: letsencrypt
+    # cert-manager.io/cluster-issuer: letsencrypt
     # nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
   ## -- Ingress TLS
@@ -35,8 +35,14 @@ api:
     ## -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  ## -- JWT secret token
+  ## -- Generate secure value with: openssl rand -hex 16
+  secret: secret
+
   # -- Extra environment variables to pass to the appserver
-  extraEnv: {}
+  extraEnv:
+    # Create an initial admin user (initial password is "password")
+    INITIAL_ADMIN_EMAIL: admin@example.com
     # LOG_LEVEL: debug
 
   # -- Number of replicas running the appserver
@@ -50,12 +56,14 @@ api:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 
-  strategyType: Recreate
+  # -- if using some PV that does not support readWriteMany, set this to 'Recreate'
+  strategyType: RollingUpdate
 
   lmdb:
     loadEnabled: false
 
   service:
+    type: ClusterIP
     port: 5000
 
   resources: {}
@@ -68,7 +76,9 @@ api:
 
 
   livenessProbe:
-    path: /meta/
+    # -- Set to false to disable liveness probes
+    enabled: true
+    path: /meta
     # failureThreshold: 20
     # initialDelaySeconds: 20
     # periodSeconds: 10
@@ -76,7 +86,9 @@ api:
     # timeoutSeconds: 10
 
   readinessProbe:
-    path: /meta/
+    # -- Set to false to disable readiness probes
+    enabled: true
+    path: /meta
     # failureThreshold: 20
     # initialDelaySeconds: 20
     # periodSeconds: 10
@@ -122,15 +134,19 @@ frontend:
     targetMemoryUtilizationPercentage: 80
 
   service:
+    type: ClusterIP
     port: 80
 
   livenessProbe:
+    # -- Set to false to disable liveness probes
     enabled: true
     path: /
 
   readinessProbe:
+    ## -- Set to false to disable readiness probes
     enabled: true
     path: /
+
 
 # ------------------------------------------------------------------------------
 # PDF Parser
@@ -153,6 +169,7 @@ pdfparser:
     targetMemoryUtilizationPercentage: 80
 
   service:
+    type: ClusterIP
     port: 7600
 
   livenessProbe:
@@ -177,12 +194,17 @@ statisticalEnrichment:
   replicaCount: 1
 
   service:
+    type: ClusterIP
     port: 5000
 
   livenessProbe:
+    # -- Set to false to disable liveness probes
+    enabled: true
     path: /healthz
 
   readinessProbe:
+    # -- Set to false to disable readiness probes
+    enabled: true
     path: /healthz
 
   resources: {}
@@ -193,7 +215,7 @@ statisticalEnrichment:
 # ------------------------------------------------------------------------------
 worker:
   image:
-    repository: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver
+    repository: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-worker
     ## -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -211,24 +233,50 @@ worker:
 
 
 # ------------------------------------------------------------------------------
-# Kubernetes service account
+# External services
 # ------------------------------------------------------------------------------
 
-serviceAccount:
-  ## -- Specifies whether a service account should be created
-  create: true
-  ## -- Annotations to add to the service account
-  annotations: {}
-  ## -- The name of the service account to use.
-  ## -- If not set and create is true, a name is generated using the fullname template
-  name: ""
+## -- External PostgreSQL connection details, ignored if postgresql.enabled is set to true
+postgresqlExternal:
+  host: postgres.local
+  port: 5432
+  user: postgres
+  database: postgres
+  ## -- Ignored if postgresql.existingSecret is set
+  password: password
+  ## -- Read password from an existing secret, must contain key "postgres-password"
+  existingSecret: ""
+
+## -- External Neo4j connection details, ignored if neo4j.enabled is set to true
+neo4jExternal:
+  host: neo4j.local
+  port: 7687
+  user: neo4j
+  password: password
+  database: neo4j
 
 
-################################################################################
+## -- External Redis connection details, ignored if redis.enabled is set to true
+redisExternal:
+  host: redis.local
+  port: 6379
+  password: ""
+
+
+## -- External Elasticsearch connection details, ignored if elasticsearch.enabled is set to true
+elasticsearchExternal:
+  host: elasticsearch.local
+  port: 9200
+  user: ""
+  password: ""
+  ssl: false
+
+
+# ---------------------------------------------------------------------------- #
 #                                                                              #
 #                               Subcharts                                      #
 #                                                                              #
-################################################################################
+# ---------------------------------------------------------------------------- #
 
 
 # ------------------------------------------------------------------------------
@@ -241,14 +289,7 @@ postgresql:
   # -- Set to false to disable automatic deployment of PostgreSQL
   enabled: true
   postgresqlDatabase: postgres
-
-## -- External PostgreSQL connection details, ignored if postgresql.enabled is set to true
-postgresqlExternal:
-  host: postgres.local
-  port: 5432
-  user: postgres
-  database: postgres
-  password: postgres
+  postgresqlPassword: password
 
 
 # ------------------------------------------------------------------------------
@@ -268,19 +309,12 @@ neo4j:
 
   core:
     ## -- Whether to deploy a standalone server or a replicated cluster
+    ## -- Community Edition only supports standalone
     standalone: true
     numberOfServers: 1
     persistentVolume:
       ## -- Size of the persistent volume for each server
       size: 100Gi
-
-## -- External Neo4j connection details, ignored if neo4j.enabled is set to true
-neo4jExternal:
-  host: neo4j.local
-  port: 7687
-  user: neo4j
-  password: password
-  database: neo4j
 
 
 # ------------------------------------------------------------------------------
@@ -293,19 +327,11 @@ elasticsearch:
   ## -- Set to false to disable automatic deployment of Elasticsearch
   enabled: true
 
-  ## -- Number of replicas
-  replicas: 3
-
-  extraEnvs:
-  - name: ELASTIC_USERNAME
-    value: elastic
-  - name: ELASTIC_PASSWORD
-    value: password
-
   fullnameOverride: elasticsearch
 
   ## -- Elasticsearch configuration
   esConfig:
+    ## -- Virtual memory, see: https://www.elastic.co/guide/en/cloud-on-k8s/master/k8s-virtual-memory.html
     elasticsearch.yml: |
       node.store.allow_mmap: false
 
@@ -313,15 +339,7 @@ elasticsearch:
   volumeClaimTemplate:
     resources:
       requests:
-        storage: 10Gi
-
-
-## -- External Elasticsearch connection details, ignored if elasticsearch.enabled is set to true
-elasticsearchExternal:
-  host: elasticsearch.local
-  port: 9200
-  user: ""
-  password: ""
+        storage: 30Gi
 
 
 # ------------------------------------------------------------------------------
@@ -334,15 +352,12 @@ redis:
   ## -- Set to false to disable automatic deployment of Redis
   enabled: true
 
-  ## -- Allowed values: `standalone` or `replication`
-  architecture: standalone
-
   auth:
     password: password
 
   master:
-    ## -- As we use Redis as a cache, we don't need persistence
     persistence:
+      ## -- As we use Redis as a cache, we don't need persistence
       enabled: false
 
     extraFlags:
@@ -360,10 +375,3 @@ redis:
     save ""
     # Disable AOF https://redis.io/topics/persistence#append-only-file
     appendonly no
-
-
-## -- External Redis connection details, ignored if redis.enabled is set to true
-redisExternal:
-  host: redis.local
-  port: 6379
-  password: ""
