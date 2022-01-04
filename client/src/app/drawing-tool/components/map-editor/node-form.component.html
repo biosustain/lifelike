@@ -16,7 +16,7 @@
                     <label for="detail">Detail:</label>
                     <div class="form-control textarea-grow-wrap" [attr.data-replicated-value]="node.data.detail">
                         <textarea  [(ngModel)]="node.data.detail" cdkTextareaAutosize
-                                   cdkAutosizeMinRows="2" cdkAutosizeMaxRows="9"
+                                   cdkAutosizeMinRows="2"
                                   (change)="doSave()"
                                   id="detail"
                                   maxlength="5000"></textarea>
