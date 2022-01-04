@@ -198,7 +198,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       annotationConfigs: value.annotationConfigs,
     };
 
-    const request: ObjectCreateRequest = {
+    const requests: ObjectCreateRequest[] = [{
       filename: value.filename,
       parentHashId: value.parent ? value.parent.hashId : null,
       description: value.description,
@@ -207,12 +207,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       fallbackOrganism: value.organism,
       annotationConfigs: value.annotationConfigs,
       ...this.getFileContentRequest(value),
-    };
+    }];
 
     return {
       object: this.object,
       objectChanges,
-      request,
+      requests,
       annotationConfigs: value.annotationConfigs,
       organism: value.organism,
     };
@@ -224,9 +224,19 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   // TODO: Handle this
   activeTabChanged(newId) {
+    if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
+      if (!confirm('Are you sure? Your progress will be lost!')) {
+       return;
+       // this.filePossiblyAnnotatable = newId === 'contentUrl' && this.form.get('contentUrl').value.length;
+      }
+    }
+    this.fileList = [];
+    this.selectedFile = null;
+    this.selectedFileIndex = -1;
+    this.form.get('contantUrl').setValue(null);
     this.form.get('contentSource').setValue(newId);
     this.form.get('contentValue').setValue(null);
-    this.filePossiblyAnnotatable = newId === 'contentUrl' && this.form.get('contentUrl').value.length;
+    this.filePossiblyAnnotatable = false;
   }
 
   urlChanged(event) {
@@ -380,7 +390,7 @@ export interface FileInput {
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
-  request: ObjectCreateRequest;
+  requests: ObjectCreateRequest[];
   annotationConfigs: AnnotationConfigurations;
   organism: OrganismAutocomplete;
 }
