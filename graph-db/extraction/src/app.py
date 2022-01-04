@@ -11,6 +11,7 @@ import chebi.chebi_parser as chebi_parser
 import enzyme.enzyme_parser as enzyme_parser
 import go.go_parser as go_parser
 import kegg.kegg_parser as kegg_parser
+import mesh.mesh_parser as mesh_parser
 import mesh.add_disease_synonyms_by_pruning_disease as add_disease_synonyms_by_pruning_disease
 import mesh.mesh_annotations as mesh_annotations
 import ncbi.ncbi_gene_parser as ncbi_gene_parser
@@ -30,6 +31,7 @@ DOMAIN_PARSERS = {
     'enzyme': enzyme_parser,
     'go': go_parser,
     'kegg': kegg_parser,
+    'mesh': mesh_parser,
     'mesh-add-disease-synonyms': add_disease_synonyms_by_pruning_disease,
     'mesh-annotations': mesh_annotations,
     'ncbi-gene': ncbi_gene_parser,
@@ -73,6 +75,7 @@ def parse_args(argv):
     subparser.add_parser('enzyme')
     subparser.add_parser('go')
     subparser.add_parser('kegg')
+    subparser.add_parser('mesh')
     subparser.add_parser('mesh-add-disease-synonyms')
     subparser.add_parser('mesh-annotations')
     subparser.add_parser('ncbi-gene')
