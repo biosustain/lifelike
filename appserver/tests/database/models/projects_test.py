@@ -14,8 +14,8 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
 @pytest.mark.parametrize('name', [
-    ('!nva!d'),
-    ('i3cr3e@m'),
+    ('!nva!d|'),
+    ('i3cr3e@m>i4cr4e@m'),
     ('s t y l e'),
 ])
 def test_flag_invalid_projects_name(session, name):
@@ -29,6 +29,9 @@ def test_flag_invalid_projects_name(session, name):
 @pytest.mark.parametrize('name', [
     ('test-project'),
     ('project1'),
+    ('valid_underscore'),
+    ('ö-german'),
+    ('æØÅ_nordic#letters$are@valid')
 ])
 def test_can_add_projects(session, name, test_user):
     ***ARANGO_USERNAME***_dir = Files(

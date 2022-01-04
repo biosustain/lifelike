@@ -74,7 +74,9 @@ export function compileFind(terms: string[], options: FindOptions = {}): Matcher
   }
 
   const pattern = new RegExp(termPatterns.join('|'), 'i');
-  const matcher = pattern.test;
+  // We need to bind the pattern, or it will be destroyed after the function returns.
+  // See: https://stackoverflow.com/questions/20579033/why-do-i-need-to-write-functionvalue-return-my-functionvalue-as-a-callb
+  const matcher = RegExp.prototype.test.bind(pattern);
   Object.assign(matcher, {
     pattern,
     termPatterns
