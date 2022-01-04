@@ -44,7 +44,7 @@ class EnzymeChangeLog(ChangeLog):
 
     def add_index_change_set(self):
         id = f'Enzyme data initial load {self.date_tag}'
-        comment = "Create constraints and indexes for enzyme nodes"
+        comment = 'Create constraints and indexes for enzyme nodes'
         queries = self.create_indexes()
         query_str = '\n'.join(queries)
         changeset = ChangeSet(id, self.author, comment, query_str)
