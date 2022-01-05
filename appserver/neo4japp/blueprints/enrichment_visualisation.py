@@ -13,13 +13,11 @@ from requests.exceptions import ConnectionError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-host = os.getenv('SE_HOST', 'statistical-enrichment')
-port = os.getenv('SE_PORT', '5010')
+SE_URL = os.getenv('STATISTICAL_ENRICHMENT_URL', 'http://statistical-enrichment:5000')
 
 
-def forward_request():
-    host_port = f'{host}:{port}'
-    url = f'{request.scheme}://{request.path.replace(bp.url_prefix, host_port)}'
+def _forward_request(resource):
+    url = f'{SE_URL}{resource}'
     try:
         resp = requests.request(
                 method=request.method,
@@ -27,7 +25,8 @@ def forward_request():
                 headers={key: value for (key, value) in request.headers if key != 'Host'},
                 data=request.get_data(),
                 cookies=request.cookies,
-                allow_redirects=False
+                allow_redirects=False,
+                timeout=120,
         )
         excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
         headers = [
@@ -51,21 +50,20 @@ def forward_request():
             raise StatisticalEnrichmentError(
                     'Statistical enrichment error',
                     decoded_error_message,
-                    code=resp.status_code
+                    code=500,
             )
 
     # All errors including failure to parse internal error message
     if 400 <= resp.status_code < 600:
         raise StatisticalEnrichmentError(
                 'Unable to process request',
-                'An internal error of statistical enrichment service occurred.',
+                'An error of statistical enrichment service occurred.',
                 code=resp.status_code
         )
 
     return Response(resp.content, resp.status_code, headers)
 
-
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
 def enrich_go():
-    return forward_request()
+    return _forward_request('/enrich-with-go-terms')
