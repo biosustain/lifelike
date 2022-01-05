@@ -113,7 +113,7 @@ export interface SankeyState {
   } | undefined;
   fontSizeScale: number;
   viewName?: string;
-  baseViewName?: string;
+  baseViewName?: ViewBase;
 }
 
 // endregion
@@ -195,7 +195,7 @@ export interface SankeyView {
   links: SankeyLinksOverwrites;
 }
 
-export type SankeyApplicableView  = RecursivePartial<SankeyView> & Pick<SankeyView, 'base'>;
+export type SankeyApplicableView = RecursivePartial<SankeyView> & Pick<SankeyView, 'base'>;
 
 export interface SankeyViews {
   [viewName: string]: SankeyView;
@@ -257,3 +257,10 @@ export interface SankeyPathReport {
 }
 
 // endregion
+
+// Do not change! tightly coupled with url
+export enum ViewBase {
+  sankey = 'sankey',
+  sankeyManyToMany = 'sankey-many-to-many'
+}
+

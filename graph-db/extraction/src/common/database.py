@@ -98,7 +98,7 @@ class Database:
             except Neo4jError as ex:
                 self.logger.error(ex.message)
 
-    def get_data(self, query:str, **params) -> pd.DataFrame:
+    def get_data(self, query:str, params={}) -> pd.DataFrame:
         """
         Run query to get data as dataframe
         :param query: the query with parameter $dict (see query_builder.py)
@@ -154,7 +154,7 @@ class Database:
                 result = session.run(query, rows=rows).consume()
                 self.logger.info(result.counters)
 
-    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:[]=None, usecols = None,
+    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:list = None, usecols = None,
                       skiprows=None, chunksize=None, dtype=None):
         """
         load csv file to neo4j database

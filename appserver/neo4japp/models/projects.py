@@ -82,7 +82,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
 
     @validates('name')
     def validate_name(self, key, name):
-        if not re.match('^[A-Za-z0-9-]+$', name):
+        if not re.match(r'^[\w\-()\[\]+{}^%$!.,\'@#]+$', name):
             raise ValueError(f'incorrect project name format')
         return name
 
