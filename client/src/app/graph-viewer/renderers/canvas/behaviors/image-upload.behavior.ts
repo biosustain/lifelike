@@ -1,5 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { isNil } from 'lodash-es';
+
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
@@ -58,9 +60,8 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
-    const dragEvent = event.event;
-    if (this.containsFiles(dragEvent.dataTransfer)) {
-      dragEvent.preventDefault();
+    if (!isNil(event.event) && this.containsFiles(event.event.dataTransfer)) {
+      event.event.preventDefault();
     }
     return BehaviorResult.Continue;
   }
