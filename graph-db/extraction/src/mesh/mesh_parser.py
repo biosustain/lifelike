@@ -142,7 +142,7 @@ class MeshParser(BaseParser):
         """
         df = db.get_data(data_query)
         self.logger.info(f'len of df: {len(df)}')
-        query = get_create_synonym_relationships_query(NODE_MESH, PROP_ID, PROP_ID, 'synonym')
+        query = get_create_synonym_relationships_query(NODE_MESH, PROP_ID, PROP_ID, PROP_NAME)
         print(query)
         # exclude synonyms with comma
         # only care about the ones with eid starting with certain letters
@@ -158,6 +158,12 @@ def main(args):
     parser = MeshParser(args.prefix)
     parser.load_data_to_neo4j(db)
     db.close()
+
+    for filename in [
+        MESH_CHEMICAL_FILE, MESH_CHEMICAL_TOPICALDESC_REL_FILE, MESH_DISEASE_FILE, MESH_DISEASE_TOPICALDESC_REL_FILE,
+        MESH_SYNONYM_REL_FILE, MESH_TOPICALDESC_FILE, MESH_TREENUMBER_FILE, MESH_TREENUMBER_PARENT_REL_FILE, MESH_TREENUMBER_TOPICALDESC_REL_FILE
+    ]:
+        parser.upload_azure_file(filename, args.prefix)
 
 
 if __name__ == "__main__":
