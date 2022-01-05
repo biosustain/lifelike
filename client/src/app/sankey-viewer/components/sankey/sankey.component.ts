@@ -507,7 +507,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param nodes set of node data objects to use for selection
    */
   selectNodes(nodes: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.nodeSelection
       .attr('selected', n => nodes.has(n));
   }
@@ -517,7 +517,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * @param links set of link data objects to use for selection
    */
   selectLinks(links: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.linkSelection
       .attr('selected', l => links.has(l));
   }
@@ -583,7 +583,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   stopSearchNodes() {
-    // tslint:disable-next-line:no-unused-expression
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.nodeSelection
       .attr('searched', undefined);
   }
@@ -596,7 +596,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   stopSearchLinks() {
-    // tslint:disable-next-line:no-unused-expression
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.linkSelection
       .attr('searched', undefined);
   }
@@ -607,7 +607,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   focusNode(nodeId: SankeyId) {
     const {nodeLabel} = this.sankey;
     const selection = this.nodeSelection
-      // tslint:disable-next-line:triple-equals
+      // eslint-disable-next-line eqeqeq
       .filter(({_id}) => _id == nodeId)
       .raise()
       .attr('focused', true)
@@ -629,7 +629,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const {nodeLabelShort} = this.sankey;
     const selection = this.nodeSelection
       .attr('focused', undefined)
-      // tslint:disable-next-line:triple-equals
+      // eslint-disable-next-line eqeqeq
       .filter(({_id}) => _id == nodeId)
       .select('g')
       .call(textGroup => {
@@ -647,7 +647,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   focusLink(linkId: SankeyId) {
     this.linkSelection
-      // tslint:disable-next-line:triple-equals
+      // eslint-disable-next-line eqeqeq
       .filter(({_id}) => _id == linkId)
       .raise()
       .attr('focused', true);

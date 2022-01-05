@@ -5,7 +5,7 @@ import { SankeyControllerService } from '../../services/sankey-controller.servic
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>
-    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions, , , , , , , , , , 
     function(this: SankeyControllerService, {nodes}) {
       nodes.forEach(n => {
         n._fixedValue = value;
@@ -37,7 +37,7 @@ export function noneNodeValue(this: SankeyControllerService, {nodes}) {
 
 export const byProperty: (property: string) => ValueProcessingStep =
   property =>
-    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     function(this: SankeyControllerService, {nodes}) {
       nodes.forEach(n => {
         n._fixedValue = representativePositiveNumber(n[property]);

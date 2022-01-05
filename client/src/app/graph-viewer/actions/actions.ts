@@ -96,7 +96,7 @@ export class CompoundAction implements GraphAction {
   }
 
   apply(component: GraphActionReceiver) {
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.actions.length; i++) {
       this.actions[i].apply(component);
     }

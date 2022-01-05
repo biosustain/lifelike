@@ -5,6 +5,6 @@
 /* TODO: Force the linter to ignore empty interfaces for now, once we
 * add a ***ARANGO_USERNAME*** level state we can remove this.*/
 
-/* tslint:disable:no-empty-interface */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 export interface State {
 }

@@ -41,10 +41,10 @@ import {
 
 class DummyFile implements PdfFile {
   constructor(
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public file_id: string,
     public filename: string = null,
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     public creation_date: string = null,
     public username: string = null) {
   }
@@ -439,7 +439,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           // assumes first link will be main database source link
           // tslint ignore cause other option is destructuring and that
           // also gets name shadowing error
-          /* tslint:disable-next-line */
+          /* eslint-disable-next-line */
           url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])['url'] : '',
         }],
         hyperlinks,

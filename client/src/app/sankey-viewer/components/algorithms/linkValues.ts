@@ -7,7 +7,7 @@ import { SankeyControllerService } from '../../services/sankey-controller.servic
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>
-    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions, , , , , , , , , , 
     function(this: SankeyControllerService, {links}) {
       links.forEach(l => {
         l._value = value;
@@ -84,7 +84,7 @@ export { inputCount } from './inputCount';
 
 export const byProperty: (property: string) => ValueProcessingStep =
   property =>
-    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions, , , , , , , , , , 
     function(this: SankeyControllerService, {links}) {
       links.forEach(l => {
         l._value = representativePositiveNumber(l[property]);
@@ -106,7 +106,7 @@ export const byProperty: (property: string) => ValueProcessingStep =
 
 export const byArrayProperty: (property: string) => ValueProcessingStep =
   property =>
-    // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     function(this: SankeyControllerService, {links}) {
       links.forEach(l => {
         const [v1, v2] = l[property];

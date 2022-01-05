@@ -219,19 +219,19 @@ export class PdfViewerComponent
   private isInitialized = false;
   private loadingTask: PDFDocumentLoadingTask;
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('matches-count-updated') matchesCountUpdated = new EventEmitter();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('find-control-state-updated') findControlStateUpdated = new EventEmitter();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('error') onError = new EventEmitter<any>();
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
   @Input()

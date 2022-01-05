@@ -253,7 +253,7 @@ export class BackgroundTask<T, R> {
     switch (this.state) {
       case TaskState.RetryLimitExceeded:
         this.error = false;
-      // tslint:disable-next-line:no-switch-case-fall-through
+      // eslint-disable-next-line no-fallthrough
       case TaskState.Idle:
         this.state = TaskState.Delaying;
         this.pendingValue = this.futureValue;

@@ -51,7 +51,7 @@ interface ScrollDestination {
 }
 
 @Component({
-  // tslint:disable-next-line:component-selector
+  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
@@ -116,7 +116,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  // tslint:disable-next-line: variable-name
+  // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match
   private _showExcludedAnnotations: boolean;
   @Input()
   set showExcludedAnnotations(showExcludedAnnotations: boolean) {
@@ -130,7 +130,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @Output() loadCompleted = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
-  // tslint:disable
+  /* eslint-disable */
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
   @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();

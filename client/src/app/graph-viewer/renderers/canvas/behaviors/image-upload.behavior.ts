@@ -22,7 +22,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   private containsFiles(dataTransfer: DataTransfer) {
     if (dataTransfer.types) {
-      // tslint:disable-next-line:prefer-for-of
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < dataTransfer.types.length; i++) {
         if (dataTransfer.types[i] === 'Files') {
           return true;
@@ -35,7 +35,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   private getFiles(dataTransfer: DataTransfer): File[] {
     const result: File[] = [];
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < dataTransfer.files.length; i++) {
       const file = dataTransfer.files[i];
       if (this.isSupportedFile(file)) {

@@ -36,7 +36,6 @@ ARG ANGULAR_CONFIG=production
 
 # Copy the code and build the app bundle
 COPY src ./src
-COPY tslint ./tslint
 COPY e2e ./e2e
 COPY *.json browserslist ./
 RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist

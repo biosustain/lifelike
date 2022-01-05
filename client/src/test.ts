@@ -1,4 +1,4 @@
-/* tslint:disable:ordered-imports */
+/* eslint-disable import/order */
 // https://github.com/start-angular/SB-Admin-BS4-Angular-8/issues/139
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 

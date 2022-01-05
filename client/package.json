@@ -7,10 +7,10 @@
     "dev-start": "ng serve --host=0.0.0.0 --disable-host-check --proxy-config=proxy.conf.json --source-map=true",
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
-    "lint": "tslint --formatters-dir ./tslint --project . --format groupedStylish",
-    "lint-ci": "yarn lint --format groupedProse",
+    "lint": "ng lint",
+    "lint-ci": "yarn lint",
     "e2e": "ng e2e",
-    "compileTsLintCustomisations": "tsc tslint/*.ts"
+    "watch": "ng build --watch --configuration development"
   },
   "lint-staged": {
     "*.ts": "yarn lint"
@@ -109,7 +109,17 @@
     "ng-mocks": "^9.0.0",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
-    "tslint": "~5.15.0",
-    "typescript": "~3.8.3"
+    "typescript": "~3.8.3",
+    "eslint": "^7.6.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jsdoc": "30.7.6",
+    "eslint-plugin-prefer-arrow": "1.2.2",
+    "@angular-eslint/builder": "1.2.0",
+    "@angular-eslint/eslint-plugin": "1.2.0",
+    "@angular-eslint/eslint-plugin-template": "1.2.0",
+    "@angular-eslint/schematics": "1.2.0",
+    "@angular-eslint/template-parser": "1.2.0",
+    "@typescript-eslint/eslint-plugin": "4.3.0",
+    "@typescript-eslint/parser": "4.3.0"
   }
 }

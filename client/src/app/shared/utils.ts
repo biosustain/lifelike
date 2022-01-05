@@ -66,7 +66,7 @@ export function hexToRGBA(hex: string, opacity: number) {
       c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
     c = '0x' + c.join('');
-    /* tslint:disable:no-bitwise*/
+    /* eslint-disable no-bitwise */
     return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `,${opacity})`;
   }
   throw new Error('Bad Hex');
@@ -78,7 +78,7 @@ export function hexToRGBA(hex: string, opacity: number) {
 export function uuidv4(): string {
   // @ts-ignore
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-    /* tslint:disable:no-bitwise*/
+    /* eslint-disable no-bitwise */
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16),
   );
 }

@@ -401,7 +401,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
-      /* tslint:disable:no-bitwise*/
+      /* eslint-disable no-bitwise */
       // .rotate(() => (~~(Math.random() * 8) - 3) * 15)
       .on('end', words => this.updateWordCloudElements(words));
     this.layout.start();

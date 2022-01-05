@@ -24,7 +24,7 @@ import { createResizeObservable } from '../rxjs/resize-observable';
  * Show tooltip only if text offloads
  */
 @Directive({
-  // tslint:disable-next-line:directive-selector
+  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: '.text-truncate'
 })
 // @ts-ignore
