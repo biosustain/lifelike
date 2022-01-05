@@ -140,6 +140,7 @@ export class ObjectCreationService {
             annotationConfigs: request.annotationConfigs,
             organism: request.fallbackOrganism
           }).pipe(
+            // Catch error but do not break the upload loop - see https://github.com/SBRG/kg-prototypes/pull/1442/files
             catchError((err, o) => {
               // TODO: what if multiple files fail?
               this.snackBar.open('Could not create file: ' + request.filename, null, {duration: 2000});

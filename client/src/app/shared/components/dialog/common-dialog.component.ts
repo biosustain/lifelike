@@ -37,6 +37,7 @@ export abstract class CommonDialogComponent<T = any, V = T> {
 
   submit(): void {
     this.accept(this.getValue()).then(result => {
+      console.log(result);
       this.applyValue(result);
       this.modal.close(result);
     }, () => {
