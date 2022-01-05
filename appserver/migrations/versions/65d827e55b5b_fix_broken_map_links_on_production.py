@@ -7,6 +7,7 @@ Create Date: 2021-12-07 00:35:15.548428
 """
 from alembic import context, op
 import hashlib
+import io
 import json
 import logging
 import os
@@ -14,6 +15,7 @@ import re
 import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
+import zipfile
 
 from neo4japp.models.files import FileContent
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -37,6 +39,9 @@ def upgrade():
                 'Detected non-prouction environment, skipping data upgrades for this' +
                 'migration'
             )
+
+def downgrade():
+    return
 
 
 def data_upgrades():
@@ -92,9 +97,9 @@ def data_upgrades():
         t_files_content.c.raw_file
     ]).where(
         and_(
-                t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
-                t_files.c.content_id == t_files_content.c.id,
-                t_files.c.id.in_(FILE_IDS)
+            t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/map',
+            t_files.c.content_id == t_files_content.c.id,
+            t_files.c.id.in_(FILE_IDS)
         )
     ))
 
@@ -102,7 +107,8 @@ def data_upgrades():
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
         logger.info(f'Replacing links in file #{fcid}')
-        map_json = json.loads(raw_file.decode('utf-8'))
+        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
             for source in node['data'].get('sources', []):
@@ -136,10 +142,15 @@ def data_upgrades():
                             )
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
-        new_hash = hashlib.sha256(byte_graph).digest()
         validate_map(json.loads(byte_graph))
 
-        need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
+        # Zip the file back up before saving to the DB
+        zip_bytes2 = io.BytesIO()
+        with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
+            zip_file.writestr('graph.json', byte_graph)
+        new_bytes = zip_bytes2.getvalue()
+        new_hash = hashlib.sha256(new_bytes).digest()
+        need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
 
     try:
         session.bulk_update_mappings(FileContent, need_to_update)

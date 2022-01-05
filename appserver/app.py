@@ -12,6 +12,7 @@ import re
 import sentry_sdk
 import uuid
 import requests
+import zipfile
 
 from flask import g, request
 
@@ -825,7 +826,8 @@ def find_broken_map_links():
                     hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
 
     for files_id, raw_file in all_maps:
-        map_json = json.loads(raw_file.decode('utf-8'))
+        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
             potential_links = [source['url'] for source in node['data'].get('sources', [])]
@@ -915,7 +917,8 @@ def fix_broken_map_links():
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
         print(f'Replacing links in file #{fcid}')
-        map_json = json.loads(raw_file.decode('utf-8'))
+        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
             for source in node['data'].get('sources', []):
@@ -949,10 +952,15 @@ def fix_broken_map_links():
                             )
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
-        new_hash = hashlib.sha256(byte_graph).digest()
         validate_map(json.loads(byte_graph))
 
-        need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
+        # Zip the file back up before saving to the DB
+        zip_bytes2 = io.BytesIO()
+        with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
+            zip_file.writestr('graph.json', byte_graph)
+        new_bytes = zip_bytes2.getvalue()
+        new_hash = hashlib.sha256(new_bytes).digest()
+        need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
 
     try:
         db.session.bulk_update_mappings(FileContent, need_to_update)
