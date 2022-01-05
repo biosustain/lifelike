@@ -186,6 +186,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   getValue(): ObjectEditDialogValue {
+    // This saves the info about current file
+    if (this.selectedFileIndex !== -1) {
+      this.changeSelectedFile(this.selectedFileIndex);
+    }
     const value = this.form.value;
 
     const objectChanges: Partial<FilesystemObject> = {
@@ -224,6 +228,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         contentValue: formState.contentValue
       });
     }
+
+    console.log(uploadRequests.length);
 
     return {
       object: this.object,
