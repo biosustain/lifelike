@@ -31,4 +31,6 @@
           2. Then access Lifelike in a browser:
 
               http://localhost:8080
+
+          You may also consider enabling ingress with `ingress.enabled=true`
           {{- end }}

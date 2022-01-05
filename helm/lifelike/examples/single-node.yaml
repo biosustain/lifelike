@@ -1,13 +1,13 @@
-## This is an example values files for the simplest Lifelike deployment,
+## This is an example values files for a simple Lifelike deployment
 ## consisting of a single replica of each component.
 ## Typically used for testing on a single node cluster.
 
-# Deploy a one-node cluster
 elasticsearch:
+  # Deploy a single replica
   replicas: 1
-  # Need to set wait_for_status=yellow to allow single replica cluster
+  # Needed to allow a single replica cluster be consiedered healthy
   clusterHealthCheckParams: wait_for_status=yellow&timeout=10s
 
 redis:
-  # Only deploy one node
+  # Deploy a single node
   architecture: standalone
