@@ -1,7 +1,7 @@
 """Fix broken map links on production
 
 Revision ID: 65d827e55b5b
-Revises: e32ff16900a3
+Revises: 1e48a5fadb23
 Create Date: 2021-12-07 00:35:15.548428
 
 """
@@ -20,7 +20,7 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 
 # revision identifiers, used by Alembic.
 revision = '65d827e55b5b'
-down_revision = 'e32ff16900a3'
+down_revision = '1e48a5fadb23'
 branch_labels = None
 depends_on = None
 
