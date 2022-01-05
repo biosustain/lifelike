@@ -55,7 +55,7 @@ class EnzymeChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID, [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER])
+        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID, [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER], datasource='Enzyme')
         changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{ENZYME_FILE}')
         self.change_sets.append(changeset)
 

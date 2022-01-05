@@ -22,7 +22,7 @@ CREATE INDEX index_regulondb_name IF NOT EXISTS FOR (n:db_RegulonDB) ON (n.name)
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:Gene,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.strand=row.strand
+SET n:Gene,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.strand=row.strand,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-gene.zip"
       startAt="1"
@@ -46,7 +46,7 @@ SET n:Gene,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position=r
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:Operon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.strand=row.strand
+SET n:Operon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.strand=row.strand,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-operon.zip"
       startAt="1"
@@ -70,7 +70,7 @@ SET n:Operon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.left_end_position
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:GeneProduct,n.regulondb_id=row.regulondb_id,n.name=row.name,n.molecular_weight=row.molecular_weight,n.location=row.location
+SET n:GeneProduct,n.regulondb_id=row.regulondb_id,n.name=row.name,n.molecular_weight=row.molecular_weight,n.location=row.location,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-product.zip"
       startAt="1"
@@ -94,7 +94,7 @@ SET n:GeneProduct,n.regulondb_id=row.regulondb_id,n.name=row.name,n.molecular_we
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:Promoter,n.regulondb_id=row.regulondb_id,n.name=row.name,n.pos_1=row.pos_1,n.sigma_factor=row.sigma_factor,n.sequence=row.sequence,n.strand=row.strand
+SET n:Promoter,n.regulondb_id=row.regulondb_id,n.name=row.name,n.pos_1=row.pos_1,n.sigma_factor=row.sigma_factor,n.sequence=row.sequence,n.strand=row.strand,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-promoter.zip"
       startAt="1"
@@ -118,7 +118,7 @@ SET n:Promoter,n.regulondb_id=row.regulondb_id,n.name=row.name,n.pos_1=row.pos_1
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:Regulon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.num_tfs=row.num_tfs
+SET n:Regulon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.num_tfs=row.num_tfs,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-regulon_d_tmp.zip"
       startAt="1"
@@ -142,7 +142,7 @@ SET n:Regulon,n.regulondb_id=row.regulondb_id,n.name=row.name,n.num_tfs=row.num_
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:Terminator,n.regulondb_id=row.regulondb_id,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.terminator_class=row.terminator_class,n.sequence=row.sequence
+SET n:Terminator,n.regulondb_id=row.regulondb_id,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.terminator_class=row.terminator_class,n.sequence=row.sequence,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-terminator.zip"
       startAt="1"
@@ -166,7 +166,7 @@ SET n:Terminator,n.regulondb_id=row.regulondb_id,n.left_end_position=row.left_en
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:TranscriptionFactor,n.regulondb_id=row.regulondb_id,n.name=row.name,n.regulator_family=row.regulator_family
+SET n:TranscriptionFactor,n.regulondb_id=row.regulondb_id,n.name=row.name,n.regulator_family=row.regulator_family,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-transcription_factor.zip"
       startAt="1"
@@ -190,7 +190,7 @@ SET n:TranscriptionFactor,n.regulondb_id=row.regulondb_id,n.name=row.name,n.regu
       query="
       UNWIND $rows as row
 MERGE (n:db_RegulonDB {eid: row.regulondb_id})
-SET n:TranscriptionUnit,n.regulondb_id=row.regulondb_id,n.name=row.name,n.comment=row.comment
+SET n:TranscriptionUnit,n.regulondb_id=row.regulondb_id,n.name=row.name,n.comment=row.comment,n.data_source='RegulonDB'
       "
       fileName="jira-LL-3218-transcription_unit.zip"
       startAt="1"
