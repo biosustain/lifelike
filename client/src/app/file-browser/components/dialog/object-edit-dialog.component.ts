@@ -198,7 +198,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       annotationConfigs: value.annotationConfigs,
     };
 
-    const requests: ObjectCreateRequest[] = [{
+    const request: ObjectCreateRequest = {
       filename: value.filename,
       parentHashId: value.parent ? value.parent.hashId : null,
       description: value.description,
@@ -207,14 +207,31 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       fallbackOrganism: value.organism,
       annotationConfigs: value.annotationConfigs,
       ...this.getFileContentRequest(value),
-    }];
+    };
+
+    const uploadRequests = [];
+    for (const file of this.fileList) {
+      const formState = file.formState;
+      uploadRequests.push({
+         filename: formState.filename,
+        parentHashId: formState.parent ? formState.parent.hashId : null,
+        description: formState.description,
+        public: formState.public,
+        mimeType: formState.mimeType,
+        fallbackOrganism: formState.organism,
+        annotationConfigs: formState.annotationConfigs,
+        // No URL upload fir multiple files yet
+        contentValue: formState.contentValue
+      });
+    }
 
     return {
       object: this.object,
       objectChanges,
-      requests,
+      request,
       annotationConfigs: value.annotationConfigs,
       organism: value.organism,
+      uploadRequests
     };
   }
 
@@ -222,7 +239,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.form.get('organism').setValue(organism ? organism : null);
   }
 
-  // TODO: Handle this
   activeTabChanged(newId) {
     if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
       if (!confirm('Are you sure? Your progress will be lost!')) {
@@ -390,7 +406,8 @@ export interface FileInput {
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
-  requests: ObjectCreateRequest[];
+  request: ObjectCreateRequest;
   annotationConfigs: AnnotationConfigurations;
   organism: OrganismAutocomplete;
+  uploadRequests?: ObjectCreateRequest[];
 }
