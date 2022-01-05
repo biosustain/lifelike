@@ -159,25 +159,25 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
     for (let i = 0; i < sourceIndex; i++) {
       const nestedLink = _sourceLinks[i];
-      sourceY += nestedLink._multiple_values ? nestedLink._multiple_values[0] : nestedLink._value;
+      sourceY += nestedLink._multiple_values?.[0] ?? nestedLink._value;
     }
     for (let i = 0; i < targetIndex; i++) {
       const nestedLink = _targetLinks[i];
-      targetY += nestedLink._multiple_values ? nestedLink._multiple_values[1] : nestedLink._value;
+      targetY += nestedLink._multiple_values?.[1] ?? nestedLink._value;
     }
 
     if (normalize) {
       let sourceValues;
       let targetValues;
       if (_multiple_values) {
-        sourceValues = _sourceLinks.map(l => l._multiple_values ? l._multiple_values[0] : l._value);
-        targetValues = _targetLinks.map(l => l._multiple_values ? l._multiple_values[1] : l._value);
+        sourceValues = _sourceLinks.map(l => l._multiple_values?.[0] ?? l._value);
+        targetValues = _targetLinks.map(l => l._multiple_values?.[1] ?? l._value);
       } else {
         sourceValues = _sourceLinks.map(({_value}) => _value);
         targetValues = _targetLinks.map(({_value}) => _value);
       }
-      const sourceNormalizer = _sourceLinks._normalizer || (_sourceLinks._normalizer = normalizeGenerator(sourceValues));
-      const targetNormalizer = _targetLinks._normalizer || (_targetLinks._normalizer = normalizeGenerator(targetValues));
+      const sourceNormalizer = _sourceLinks._normalizer ?? (_sourceLinks._normalizer = normalizeGenerator(sourceValues));
+      const targetNormalizer = _targetLinks._normalizer ?? (_targetLinks._normalizer = normalizeGenerator(targetValues));
       const sourceHeight = _source._y1 - _source._y0;
       const targetHeight = _target._y1 - _target._y0;
       // tslint:disable-next-line:no-bitwise
@@ -454,7 +454,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
         const startNode = link._circular ? link._target : link._source;
 
         const id = link._source.id + ' ' + link._target.id;
-        const virtualPath = _virtualPaths.get(id) || [];
+        const virtualPath = _virtualPaths.get(id) ?? [];
         _virtualPaths.set(id, virtualPath);
 
         let newNode;
