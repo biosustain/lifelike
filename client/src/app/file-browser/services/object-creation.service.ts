@@ -129,20 +129,20 @@ export class ObjectCreationService {
       }
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
-      value.requests.forEach(request => {
+      // value.requests.forEach(request => {
         return this.executePutWithProgressDialog({
-          ...request,
+          ...value.request,
           ...(options.request || {}),
           // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
           // via the type checker, that we will be forming a 100% legitimate request,
           // because it's possible to provide multiple sources of content due to this cast, which
           // the server will reject because it does not make sense
         } as ObjectCreateRequest, {
-          annotationConfigs: request.annotationConfigs,
-          organism: request.fallbackOrganism,
-        });
+          annotationConfigs: value.annotationConfigs,
+          organism: value.organism,
+        }).toPromise();
       });
-    });
+    // });
     return dialogRef.result;
   }
 
