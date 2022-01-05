@@ -162,10 +162,10 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     super.registerGraphBehaviors();
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut',
       new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('image-upload',
-      new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
       new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
+    this.graphCanvas.behaviors.add('image-upload',
+      new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut',
       new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
     this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10); // from below
