@@ -255,12 +255,16 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    */
   convertToVisJSFormat(results: Neo4jResults): Neo4jResults {
     let {nodes, edges} = results;
-    nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n));
+    nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n)).filter(val => val !== null);
     edges = edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e));
     return {nodes, edges};
   }
 
   convertNodeToVisJSFormat(n: GraphNode) {
+    if (isNil(n.displayName) || isNil(n.label)) {
+      console.error(`Node does not have expected label and displayName properties ${n}`);
+      return null;
+    }
     const color = this.legend.get(n.label) ? this.legend.get(n.label)[0] : '#000000';
     const border = this.legend.get(n.label) ? this.legend.get(n.label)[1] : '#000000';
     return {
@@ -356,7 +360,9 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     this.nodes.clear();
     this.edges.clear();
     const node = this.convertNodeToVisJSFormat(data);
-    this.nodes.add(node);
+    if (node !== null) {
+      this.nodes.add(node);
+    }
   }
 
   hideCanvas(state: boolean) {

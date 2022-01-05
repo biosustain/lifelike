@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 
-import { transform, pick, omitBy, isNil, mapValues, defer } from 'lodash-es';
+import { transform, pick, omitBy, isNil, mapValues, defer, omit } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -9,6 +9,7 @@ import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { frozenEmptyObject } from 'app/shared/utils/types';
 
 import {
   SankeyView,
@@ -18,21 +19,41 @@ import {
   SankeyLinksOverwrites,
   SankeyURLLoadParams,
   SankeyURLLoadParam,
-  SankeyApplicableView
+  SankeyApplicableView,
+  ViewBase
 } from '../interfaces';
 import { SankeyViewConfirmComponent } from './view-confirm.component';
 import { SankeyViewCreateComponent } from './view-create.component';
+import { viewBaseToNameMapping } from '../constants';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
   templateUrl: 'view-dropdown.component.html',
   styleUrls: ['./view-dropdown.component.scss']
 })
-
 export class SankeyViewDropdownComponent implements OnChanges {
 
-  get views() {
-    return (this.sankeyController.allData || {}).value._views;
+  @Input() set activeViewName(viewName) {
+    if (viewName) {
+      const view = this.views[viewName];
+      if (view) {
+        this._activeViewName = viewName;
+        this._activeView = view;
+      } else {
+        this.warningController.warn(`View ${viewName} has not been found in file.`);
+      }
+    } else {
+      this._activeView = undefined;
+      this._activeViewName = undefined;
+    }
+  }
+
+  get activeViewName() {
+    return this._activeViewName;
+  }
+
+  get activeView() {
+    return this._activeView;
   }
 
   constructor(
@@ -43,25 +64,22 @@ export class SankeyViewDropdownComponent implements OnChanges {
   ) {
   }
 
-  get activeViewBase() {
+  get views(): { [key: string]: object } {
+    // make sure that default value is not extended - unintended use
+    return this.sankeyController.allData?.value._views ?? frozenEmptyObject;
+  }
+
+  get activeViewBase(): ViewBase {
     return this.sankeyController.viewBase;
   }
 
-  get activeViewBaseName() {
-    if (this.activeViewBase === 'sankey') {
-      return 'Multi-Lane View';
-    }
-    if (this.activeViewBase === 'sankey-many-to-many') {
-      return 'Single-Lane View';
-    }
+  get activeViewBaseName(): string {
+    return viewBaseToNameMapping[this.activeViewBase] ?? '';
   }
-
-  @Input() activeViewName: string;
-  @Output() activeViewNameChange = new EventEmitter<string>();
-
   @Input() preselectedViewBase: string;
-
   @Input() object: FilesystemObject;
+
+  @Output() activeViewNameChange = new EventEmitter<string>();
   @Output() viewDataChanged = new EventEmitter();
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
@@ -87,9 +105,13 @@ export class SankeyViewDropdownComponent implements OnChanges {
     '_adjacent_divider',
     '_id'
   ];
+  readonly statusOmitProperties = ['viewName', 'baseViewName'];
+  private _activeViewName: string;
+  private _activeView;
 
+  viewBase = ViewBase;
 
-  confirm({header, body}) {
+  confirm({header, body}): Promise<any> {
     const modal = this.modalService.open(
       SankeyViewConfirmComponent,
       {ariaLabelledBy: 'modal-basic-title'}
@@ -99,26 +121,24 @@ export class SankeyViewDropdownComponent implements OnChanges {
     return modal.result;
   }
 
-  ngOnChanges({preselectedViewBase, activeViewName}: SimpleChanges) {
+  ngOnChanges({preselectedViewBase, activeViewName}: SimpleChanges): void {
     if (activeViewName || preselectedViewBase) {
       if (!isNil(this.activeViewName)) {
-        defer(() => this.setViewFromName(this.activeViewName));
+        this.applyActiveView();
       } else if (!isNil(this.preselectedViewBase)) {
         this.changeViewBaseIfNeeded(this.preselectedViewBase);
       }
     }
   }
 
-  createView(viewName) {
+  createView(viewName): void {
     const renderedData = this.sankeyController.dataToRender.value;
-    const view = {
-      state: this.sankeyController.state,
+    this.sankeyController.allData.value._views[viewName] = {
+      state: omit(this.sankeyController.state, this.statusOmitProperties),
       base: this.activeViewBase,
       nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
       links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
     } as SankeyView;
-
-    this.sankeyController.allData.value._views[viewName] = view;
     this.sankeyController.state.viewName = viewName;
     this.viewDataChanged.emit();
   }
@@ -130,10 +150,12 @@ export class SankeyViewDropdownComponent implements OnChanges {
     }
   }
 
-  applyView(viewName, view: SankeyApplicableView) {
+  applyView(viewName, view: SankeyApplicableView): void {
     if (!this.changeViewBaseIfNeeded(view.base, {[SankeyURLLoadParam.VIEW_NAME]: viewName})) {
-      const {state = {}, nodes = {}, links = {}} = view;
-      mergeDeep(this.sankeyController.state, state);
+      const {state = {}, nodes = {}, links = {}, base} = view;
+      mergeDeep(this.sankeyController.state, omitBy(state, this.statusOmitProperties), {
+        viewName, baseViewName: base
+      });
       const graph = this.sankeyController.computeData();
       graph._precomputedLayout = true;
       this.applyPropertyObject(nodes, graph.nodes);
@@ -145,7 +167,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     }
   }
 
-  objectToFragment(obj) {
+  objectToFragment(obj): string {
     return new URLSearchParams(
       mapValues(
         omitBy(
@@ -157,7 +179,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     ).toString();
   }
 
-  mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties) {
+  mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
     return transform(entities, (result, entity) => {
       result[entity._id] = pick(entity, properties);
     }, {});
@@ -166,7 +188,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
   applyPropertyObject(
     propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
     entities: Array<SankeyNode | SankeyLink>
-  ) {
+  ): void {
     // for faster lookup
     const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
     Object.entries(propertyObject).map(([id, properties]) => {
@@ -179,17 +201,11 @@ export class SankeyViewDropdownComponent implements OnChanges {
     });
   }
 
-  setViewFromName(viewName: string) {
-    const view = this.views[viewName];
-    if (view) {
-      this.activeViewNameChange.emit(viewName);
-      this.applyView(viewName, view);
-    } else {
-      this.warningController.warn(`View ${viewName} has not been found in file.`);
-    }
+  applyActiveView(): void {
+    defer(() => this.applyView(this.activeViewName, this.activeView));
   }
 
-  openBaseView(baseView: string, params?: Partial<SankeyURLLoadParams>) {
+  openBaseView(baseView: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<boolean> {
     const {object} = this;
     return this.workspaceManager.navigateByUrl({
       url: `/projects/${object.project.name}/${baseView}/${object.hashId}#${
@@ -202,7 +218,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     });
   }
 
-  saveView() {
+  saveView(): Promise<any> {
     if (!this.sankeyController.allData.value._views) {
       this.sankeyController.allData.value._views = {};
     }
@@ -210,25 +226,23 @@ export class SankeyViewDropdownComponent implements OnChanges {
       SankeyViewCreateComponent,
       {ariaLabelledBy: 'modal-basic-title'}
     );
-    createDialog.result.then(({viewName}) => {
-      this.confirmCreateView(viewName);
-    });
+    return createDialog.result.then(({viewName}) => this.confirmCreateView(viewName));
   }
 
   confirmCreateView(viewName) {
     if (this.views[viewName]) {
-      this.confirm({
+      return this.confirm({
         header: 'Confirm overwrite',
         body: `Saving this view as '${viewName}' will overwrite existing view. Would you like to continue?`
       }).then(() => {
         this.createView(viewName);
       });
     } else {
-      this.createView(viewName);
+      return this.createView(viewName);
     }
   }
 
-  deleteView(viewName) {
+  deleteView(viewName): void {
     delete this.sankeyController.allData.value._views[viewName];
     if (this.activeViewName === viewName) {
       this.activeViewNameChange.emit(undefined);
@@ -236,7 +250,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
     this.viewDataChanged.emit();
   }
 
-  confirmDeleteView(viewName) {
+  confirmDeleteView(viewName): void {
     this.confirm({
       header: 'Confirm delete',
       body: `Are you sure you want to delete the '${viewName}' view?`

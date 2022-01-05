@@ -8,8 +8,9 @@
   resize: vertical;
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 200px;
-  height: auto !important;
+  height: fit-content;
+  // We set this to prevent large initial block. Unsetted at the bottom of the file
+  max-height: 300px;
   grid-template-columns: 100%;
 
   &:focus-within {
@@ -34,17 +35,6 @@
   }
 }
 
-.textarea-grow-wrap::after {
-  /* Note the weird space! Needed to preventy jumpy behavior */
-  content: attr(data-replicated-value) " ";
-
-  /* This is how textarea text behaves */
-  white-space: pre-wrap;
-
-  /* Hidden from view, clicks, and screen readers */
-  visibility: hidden;
-}
-
 .textarea-grow-wrap > textarea {
   /* You could leave this, but after a user resizes, then it ruins the auto sizing */
   box-sizing: border-box;
@@ -56,13 +46,7 @@
   overflow: hidden;
 }
 
-.textarea-grow-wrap > textarea,
-.textarea-grow-wrap::after {
-  /* Identical styling required!! */
-  border: none;
-  padding: 0;
-  font: inherit;
-
-  /* Place on top of each other */
-  grid-area: 1 / 1 / 2 / 2;
+// When we recalculate the height (resize) we unset max height
+.textarea-grow-wrap[style*="height"] {
+  max-height: unset;
 }

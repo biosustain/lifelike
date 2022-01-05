@@ -134,12 +134,12 @@ def get_associated_type_snippet_count(source_node, associated_nodes, label):
 @bp.route('/get-snippets-for-node-pair', methods=['POST'])
 @auth.login_required
 @use_kwargs(GetSnippetsForNodePairRequest)
-def get_snippets_for_node_pair(from_id, to_id, page, limit):
+def get_snippets_for_node_pair(node_1_id, node_2_id, page, limit):
     visualizer = get_visualizer_service()
 
     node_pair_snippet_result = visualizer.get_snippets_for_node_pair(
-        from_id,
-        to_id,
+        node_1_id,
+        node_2_id,
         page,
         limit
     )
