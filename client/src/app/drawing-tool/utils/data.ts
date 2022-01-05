@@ -24,7 +24,7 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
 
   entities = normalizeGraphEntities(entities, origin);
 
-  // Create nodes
+  // Create nodes and edges
   for (const entity of entities) {
     if (entity.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
@@ -46,17 +46,19 @@ export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: num
   const newEntities: GraphEntity[] = [];
   const nodeHashMap = new Map<string, string>();
 
-  // Create nodes
+  // Create nodes and edges
   for (const entity of entities) {
     if (entity.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
+      // Creating a new hash like this when we're assuming that a hash already exists seems kind of fishy to me. Leaving this here
+      // because I don't want to break anything, but it's worth pointing out.
       const newId = uuidv4();
       nodeHashMap.set(node.hash, newId);
       newEntities.push({
         type: GraphEntityType.Node,
         entity: {
-          hash: newId,
           ...node,
+          hash: newId,
           data: {
             ...node.data,
             x: origin.x + ((node.data && node.data.x) || 0),
@@ -64,12 +66,7 @@ export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: num
           },
         },
       });
-    }
-  }
-
-  // Create edges
-  for (const entity of entities) {
-    if (entity.type === GraphEntityType.Edge) {
+    } else if (entity.type === GraphEntityType.Edge) {
       const edge = entity.entity as UniversalGraphEdge;
       const newFrom = nodeHashMap.get(edge.from);
       const newTo = nodeHashMap.get(edge.to);

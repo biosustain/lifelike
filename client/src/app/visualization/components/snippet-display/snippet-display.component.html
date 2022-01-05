@@ -30,6 +30,7 @@
       [rightNodeLabel]="result.to.primaryLabel"
       [rightNodeUrl]="result.to.url"
       [edge]="result.association"
+      [snippets]="result.snippets"
     ></app-node-relationship>
 
     <div class="mt-1" *ngIf="result.snippets.length > 0; else noSnippets">

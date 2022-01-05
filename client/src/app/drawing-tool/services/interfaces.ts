@@ -1,5 +1,11 @@
 import { ReferenceType } from 'app/shared/references';
 
+export interface UniversalGraphRelationship {
+  node1: UniversalGraphNode;
+  node2: UniversalGraphNode;
+  edge: UniversalGraphEdge;
+}
+
 export interface UniversalEntityData {
   references?: Reference[];
   hyperlinks?: Hyperlink[];
