@@ -79,13 +79,15 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const clipboardEvent = event.event;
-    const files = this.getFiles(clipboardEvent.clipboardData);
-    if (files.length) {
-      clipboardEvent.stopPropagation();
-      clipboardEvent.preventDefault();
-      this.createImageNodes(files);
-      return BehaviorResult.Stop;
+    const position = this.graphView.currentHoverPosition;
+    if (position) {
+      const clipboardEvent = event.event;
+      const files = this.getFiles(clipboardEvent.clipboardData);
+      if (files.length) {
+        this.createImageNodes(files);
+        clipboardEvent.preventDefault();
+        return BehaviorResult.Stop;
+      }
     }
     return BehaviorResult.Continue;
   }
