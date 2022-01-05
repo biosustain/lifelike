@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, Observable, iif, of, merge } from 'rxjs';
-import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
+import {BehaviorSubject, Observable, iif, of, merge, pipe, from, EMPTY} from 'rxjs';
+import {catchError, filter, finalize, map, mergeMap, switchMap, tap} from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -130,19 +130,36 @@ export class ObjectCreationService {
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       // value.requests.forEach(request => {
-        return this.executePutWithProgressDialog({
-          ...value.request,
-          ...(options.request || {}),
-          // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
-          // via the type checker, that we will be forming a 100% legitimate request,
-          // because it's possible to provide multiple sources of content due to this cast, which
-          // the server will reject because it does not make sense
-        } as ObjectCreateRequest, {
-          annotationConfigs: value.annotationConfigs,
-          organism: value.organism,
-        }).toPromise();
-      });
-    // });
+      return from(value.uploadRequests).pipe(
+        switchMap(request => {
+          return this.executePutWithProgressDialog({
+            ...request,
+            // NOTE: Check if this should still go there
+            ...(options.request || {}),
+          } as ObjectCreateRequest, {
+            annotationConfigs: request.annotationConfigs,
+            organism: request.fallbackOrganism
+          }).pipe(
+            catchError((err, o) => {
+              // TODO: what if multiple files fail?
+              this.snackBar.open('Could not create file: ' + request.filename, null, {duration: 2000});
+              return EMPTY;
+            }));
+        })
+      ).toPromise();
+      //   return this.executePutWithProgressDialog({
+      //     ...value.request,
+      //     ...(options.request || {}),
+      //     // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
+      //     // via the type checker, that we will be forming a 100% legitimate request,
+      //     // because it's possible to provide multiple sources of content due to this cast, which
+      //     // the server will reject because it does not make sense
+      //   } as ObjectCreateRequest, {
+      //     annotationConfigs: value.annotationConfigs,
+      //     organism: value.organism,
+      //   }).toPromise();
+      // });
+    });
     return dialogRef.result;
   }
 
