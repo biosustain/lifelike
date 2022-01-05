@@ -129,9 +129,12 @@ export class ObjectCreationService {
       }
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
+      this.snackBar.open('Starting upload', null, {duration: 2000});
+      const requests = value.uploadRequests || [value.request];
       // value.requests.forEach(request => {
-      return from(value.uploadRequests).pipe(
+      return from(requests).pipe(
         switchMap(request => {
+          console.log(request);
           return this.executePutWithProgressDialog({
             ...request,
             // NOTE: Check if this should still go there
