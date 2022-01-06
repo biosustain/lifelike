@@ -63,7 +63,7 @@
               <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
                 <a
                   class="pubtator-link"
-                  [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                  [href]="getSnippetPubtatorLink(snippet.publication.data.pmid)"
                   target="_blank">{{ snippet.publication.data.pmid }}</a>
                 <i class="fas fa-fw fa-external-link-alt"></i>
               </p>

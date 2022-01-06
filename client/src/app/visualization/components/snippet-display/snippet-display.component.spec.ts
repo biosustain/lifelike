@@ -11,6 +11,7 @@ import {
     Reference,
     SidenavSnippetData,
 } from 'app/interfaces';
+import { PUBTATOR_DOC_URL } from 'app/shared/constants';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
 
@@ -157,7 +158,7 @@ describe('SnippetDisplayComponentComponent', () => {
 
         const link = pubmedLinks[0];
 
-        expect(link.getAttribute('href')).toEqual('https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=123456');
+        expect(link.getAttribute('href')).toEqual(`${PUBTATOR_DOC_URL}123456`);
         expect(link.textContent).toEqual('123456');
     });
 
