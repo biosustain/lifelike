@@ -33,10 +33,10 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   }
 
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const content = event.event.clipboardData.getData('text/plain');
-    if (content) {
-      const position = this.graphView.currentHoverPosition;
-      if (position) {
+    const position = this.graphView.currentHoverPosition;
+    if (position) {
+      const content = event.event.clipboardData.getData('text/plain');
+      if (content) {
         this.graphView.execute(this.createActionFromPasteContent(content, position));
         event.event.preventDefault();
         return BehaviorResult.Stop;
