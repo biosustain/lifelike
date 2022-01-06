@@ -237,15 +237,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   dragOver(event: DragEvent) {
-    if (!isNil(event)) {
-      if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
-        event.dataTransfer.dropEffect = 'link';
-        event.preventDefault();
-        if (!this.dropTargeted) {
-          this.ngZone.run(() => {
-            this.dropTargeted = true;
-          });
-        }
+    if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+      event.dataTransfer.dropEffect = 'link';
+      event.preventDefault();
+      if (!this.dropTargeted) {
+        this.ngZone.run(() => {
+          this.dropTargeted = true;
+        });
       }
     }
   }

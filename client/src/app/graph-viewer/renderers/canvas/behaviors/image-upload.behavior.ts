@@ -60,8 +60,9 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
-    if (!isNil(event.event) && this.containsFiles(event.event.dataTransfer)) {
-      event.event.preventDefault();
+    const dragEvent = event.event;
+    if (dragEvent?.dataTransfer && this.containsFiles(dragEvent.dataTransfer)) {
+      dragEvent.preventDefault();
     }
     return BehaviorResult.Continue;
   }

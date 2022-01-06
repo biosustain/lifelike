@@ -3,6 +3,7 @@ export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
 export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
 export const PUBMEDURL = 'https://pubmed.ncbi.nlm.nih.gov/';
+export const PUBTATOR_DOC_URL = 'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=';
 
 export const VIZ_SEARCH_LIMIT = 10;
 

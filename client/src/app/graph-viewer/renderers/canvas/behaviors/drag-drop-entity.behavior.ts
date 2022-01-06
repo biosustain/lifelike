@@ -13,7 +13,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
     const dragEvent = event.event;
-    if (dragEvent.dataTransfer.types.includes('application/lifelike-node')) {
+    if (dragEvent?.dataTransfer.types.includes('application/lifelike-node')) {
       dragEvent.preventDefault();
     }
     return BehaviorResult.Continue;
