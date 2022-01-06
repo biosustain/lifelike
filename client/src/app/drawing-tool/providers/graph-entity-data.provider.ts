@@ -37,7 +37,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     const relationshipData = dataTransfer.getData(GRAPH_RELATIONSHIP_TYPE);
 
     // First check if the content has a node embedded in it
-    if (nodeData !== '') {
+    if (nodeData) {
       const node = JSON.parse(nodeData) as UniversalGraphNode;
       results.push({
         token: GRAPH_ENTITY_TOKEN,
@@ -50,7 +50,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     }
 
     // Then check if it has a relationship embedded in it
-    if (relationshipData !== '') {
+    if (relationshipData) {
       const {node1, node2, edge} = JSON.parse(relationshipData) as UniversalGraphRelationship;
       results.push({
         token: GRAPH_ENTITY_TOKEN,
@@ -73,7 +73,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     }
 
     // Otherwise try to create a note or link node from available data
-    if (nodeData === '' && relationshipData === '') {
+    if (!nodeData && !relationshipData) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];
