@@ -88,7 +88,6 @@ export class VisualizationService extends AbstractService {
             `${this.baseUrl}/get-associated-type-snippet-count`, {
                 source_node: request.source_node,
                 associated_nodes: request.associated_nodes,
-                label: request.label,
             },
             {...this.getHttpOptions(true)}
         ).pipe(map(resp => resp.result.associatedData));
