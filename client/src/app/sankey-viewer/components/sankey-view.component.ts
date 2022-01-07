@@ -1,11 +1,11 @@
-import { Component, EventEmitter, OnDestroy, ViewChild, NgZone, AfterViewInit, AfterContentInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ViewChild, AfterContentInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { map, delay, catchError, auditTime, tap, switchMap } from 'rxjs/operators';
+import { map, delay, catchError, tap, switchMap } from 'rxjs/operators';
 import { combineLatest, Subscription, BehaviorSubject, Observable, EMPTY, of } from 'rxjs';
-import { compact, isNil, pick } from 'lodash-es';
+import { compact, pick, isNil } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -14,7 +14,6 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { SessionStorageService } from 'app/shared/services/session-storage.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
-import { tokenizeQuery, FindOptions } from 'app/shared/utils/find';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { MimeTypes } from 'app/shared/constants';
@@ -28,6 +27,7 @@ import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { SankeyControllerService } from '../services/sankey-controller.service';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeySearchService } from '../services/search.service';
+import { SearchEntity } from './search-panel/interfaces';
 
 
 @Component({
@@ -69,33 +69,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly sankeyController: SankeyControllerService,
     readonly warningController: WarningControllerService,
-    readonly sankeySearch: SankeySearchService,
-    private zone: NgZone,
+    public sankeySearch: SankeySearchService,
     readonly viewService: ViewService
   ) {
     this.dataToRender = this.sankeyController.dataToRender;
     this.allData = this.sankeyController.allData;
-    zone.runOutsideAngular(() =>
-      this.sankeySearch.matches.pipe(
-        auditTime(500),
-        tap(matches => {
-          const {options, state} = this.sankeyController;
-          return matches
-            .sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)
-            .filter(({networkTraceIdx}) => isNil(networkTraceIdx) || networkTraceIdx !== state.networkTraceIdx)
-            .map(match => {
-              if (!isNil(match.networkTraceIdx)) {
-                match.networkTrace = options.networkTraces[match.networkTraceIdx];
-              }
-              return match;
-            });
-        })
-      ).subscribe(matches => {
-        this.zone.run(() =>
-          this.entitySearchList.next(matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
-        );
-      })
-    );
 
     this.initSelection();
 
@@ -136,7 +114,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
             )
           )
         ).subscribe(
-          stateUpdate => this.sankeyController.computeGraph(stateUpdate)
+          stateUpdate => {
+            this.sankeyController.computeGraph(stateUpdate);
+            this.sankeySearch.search();
+          }
         );
       }
       this.object = object;
@@ -144,6 +125,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
       this.currentFileId = object.hashId;
       this.ready = true;
+    });
+
+    this.sankeySearch.searchFocus.subscribe(match => {
+      if (match) {
+        const {networkTraceIdx} = match;
+        if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
+          this.selectNetworkTrace(networkTraceIdx);
+        } else {
+          this.panToEntity(this.resolveMatchToEntity(match));
+        }
+      }
+    });
+
+    this.sankeySearch.entitySearchTerm.subscribe(entitySearchTerm => {
+      this.searchPanel = Boolean(entitySearchTerm);
     });
   }
 
@@ -175,9 +171,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return this.sankeyController.predefinedValueAccessor;
   }
 
-  get searching() {
-    return !this.sankeySearch.done;
-  }
 
   get viewParams() {
     return pick(
@@ -190,24 +183,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     );
   }
 
-  get entitySearchListIdx() {
-    return this._entitySearchListIdx;
-  }
-
-  set entitySearchListIdx(idx) {
-    this._entitySearchListIdx = idx;
-    const {networkTraceIdx} = this.entitySearchList.value[idx] ?? {};
-    if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
-      this.selectNetworkTrace(networkTraceIdx);
-    } else {
-      this.setSearchFocus(idx);
-    }
-  }
 
   dataToRender;
   allData;
-
-  searchTerms = [];
 
   paramsSubscription: Subscription;
   returnUrl: string;
@@ -230,13 +208,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   @ViewChild('sankey', {static: false}) sankey;
   isArray = Array.isArray;
 
-  entitySearchTerm = '';
-  entitySearchList = new BehaviorSubject([]);
-  _entitySearchListIdx = -1;
-
-  searchFocus = undefined;
 
   predefinedState: Observable<Partial<SankeyState>>;
+
+
+  resolveMatchToEntity({nodeId, linkId}: SearchEntity) {
+    const {nodes, links} = this.sankeyController.dataToRender.value;
+    if (!isNil(nodeId)) {
+      /* eslint-disable-next-line eqeqeq -- allow string == number match interpolation ("58" == 58 -> true) */
+      return nodes.find(({_id}) => _id == nodeId);
+    }
+    if (!isNil(linkId)) {
+      /* eslint-disable-next-line eqeqeq -- allow string == number match interpolation ("58" == 58 -> true) */
+      return links.find(({_id}) => _id == linkId);
+    }
+  }
 
   ngAfterContentInit() {
     this.route.params.subscribe((params: { file_id: string }) => this.loadFromUrl(params));
@@ -262,6 +248,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       return new Set(compact(currentSelection.map(e => e[SelectionType.link])));
     }));
     this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
+  }
+
+  panToEntity(entity) {
+    // @ts-ignore
+    if (entity) {
+      this.sankey.sankeySelection.transition().call(
+        this.sankey.zoom.translateTo,
+        // x
+        (entity._x0 !== undefined) ?
+          (entity._x0 + entity._x1) / 2 :
+          (entity._source._x1 + entity._target._x0) / 2,
+        // y
+        (entity._y0 + entity._y1) / 2
+      );
+    }
   }
 
   saveFile() {
@@ -297,9 +298,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.sankeyController.setPredefinedValueAccessor();
     this.sankeyController.applyState();
     this.resetSelection();
-    if (this.entitySearchTerm) {
-      this.search();
-    }
+    this.sankeySearch.search();
   }
 
   open(content) {
@@ -324,6 +323,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           break;
         case SankeyURLLoadParam.BASE_VIEW_NAME:
           state.baseViewName = value;
+          break;
+        case SankeyURLLoadParam.SEARCH_TERMS:
+          this.sankeySearch.search(value);
           break;
         default:
           return this.viewService.get(param).pipe(
@@ -483,104 +485,4 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.sankeyController.predefinedValueAccessor.callback();
     this.sankeyController.applyState();
   }
-
-  // region Search
-  /**
-   * Get all nodes and edges that match some search terms.
-   * @param terms the terms
-   * @param options additional find options
-   */
-  findMatching(terms: string[], options: FindOptions = {}) {
-    this.sankeySearch.stopSearch();
-    this.sankeySearch.clear();
-    this.sankeySearch.update({
-      terms,
-      options,
-      data: this.sankeyController.allData.value,
-      dataToSearch: this.sankeyController.dataToRender.value
-    });
-    this.sankeySearch.search();
-  }
-
-  search() {
-    this.searchTerms = tokenizeQuery(
-      this.entitySearchTerm,
-      {singleTerm: true}
-    );
-    this.entitySearchListIdx = -1;
-    if (this.entitySearchTerm.length) {
-      this.searchPanel = true;
-      this.findMatching(
-        this.searchTerms,
-        {wholeWord: false}
-      );
-    } else {
-      this.searchPanel = false;
-      this.entitySearchList.next([]);
-    }
-  }
-
-  clearSearchQuery() {
-    this.searchPanel = false;
-    this.entitySearchTerm = '';
-    this.search();
-  }
-
-  panToEntity(entity) {
-    // @ts-ignore
-    if (entity) {
-      this.sankey.sankeySelection.transition().call(
-        this.sankey.zoom.translateTo,
-        // x
-        (entity._x0 !== undefined) ?
-          (entity._x0 + entity._x1) / 2 :
-          (entity._source._x1 + entity._target._x0) / 2,
-        // y
-        (entity._y0 + entity._y1) / 2
-      );
-    }
-  }
-
-  resolveMatchToEntity({nodeId, linkId}) {
-    const {nodes, links} = this.sankeyController.dataToRender.value;
-    if (!isNil(nodeId)) {
-      // allow string == number match interpolation ("58" == 58 -> true)
-      // eslint-disable-next-line eqeqeq
-      return nodes.find(({_id}) => _id == nodeId);
-    }
-    if (!isNil(linkId)) {
-      // allow string == number match interpolation ("58" == 58 -> true)
-      // eslint-disable-next-line eqeqeq
-      return links.find(({_id}) => _id == linkId);
-    }
-  }
-
-  setSearchFocus(idx) {
-    const searchEntity = this.entitySearchList.value[idx];
-    if (searchEntity) {
-      this.searchFocus = searchEntity;
-      this.panToEntity(this.resolveMatchToEntity(this.searchFocus));
-    } else {
-      this.searchFocus = undefined;
-    }
-  }
-
-  next() {
-    if (this.entitySearchListIdx >= this.entitySearchList.value.length - 1) {
-      this.entitySearchListIdx = 0;
-    } else {
-      this.entitySearchListIdx++;
-    }
-  }
-
-  previous() {
-    // we need rule ..
-    if (this.entitySearchListIdx <= 0) {
-      this.entitySearchListIdx = this.entitySearchList.value.length - 1;
-    } else {
-      this.entitySearchListIdx--;
-    }
-  }
-
-  // endregion
 }

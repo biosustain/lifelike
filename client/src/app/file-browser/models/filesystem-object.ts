@@ -79,7 +79,7 @@ export class ProjectImpl implements Project {
   get colorHue(): number {
     let hash = 3242;
     for (let i = 0; i < this.hashId.length; i++) {
-      // eslint-disable-next-line no-bitwise
+      /* eslint-disable-next-line no-bitwise */
       hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
     }
     return hash % 100 / 100;
@@ -146,7 +146,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
-  // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match
+  /* eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match */
   annotations_date_tooltip?: string;
   annotationsTooltipContent: string;
 

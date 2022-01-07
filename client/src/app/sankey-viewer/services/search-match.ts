@@ -7,17 +7,20 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, transform, isObject, flatMap, flatMapDeep } from 'lodash-es';
+import { omit, slice, transform, isObject, flatMapDeep } from 'lodash-es';
 
 import { SankeyLink, SankeyTrace, SankeyNode } from 'app/shared-sankey/interfaces';
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
+
+import { SearchEntity } from '../components/search-panel/interfaces';
 
 
 export interface Match {
   path: string[];
   term: string | number;
   priority: MatchPriority;
+  networkTraceIdx?: number;
 }
 
 enum LAYERS {
@@ -38,6 +41,7 @@ export class SankeySearch {
   set traceNetworksMapping(traceNetworkMapping) {
     this._traceNetworksMapping = traceNetworkMapping;
   }
+
   matcher;
   dataToSearch;
   data;
@@ -54,9 +58,9 @@ export class SankeySearch {
     'edges'
   ];
 
-  private matchedTraces: ExtendedWeakMap<SankeyTrace & any, any>;
-  private matchedNodes: LazyLoadedMap<SankeyNode['_id'], any>;
-  private matchedLink: LazyLoadedMap<SankeyLink['_id'], any>;
+  private matchedTraces: ExtendedWeakMap<SankeyTrace & any, Match[]>;
+  private matchedNodes: LazyLoadedMap<SankeyNode['_id'], Generator<Match>>;
+  private matchedLink: LazyLoadedMap<SankeyLink['_id'], Generator<Match>>;
   private nodeById: Map<string, SankeyNode>;
 
   _traceNetworksMapping;
@@ -65,8 +69,8 @@ export class SankeySearch {
 
   cleanCache() {
     this.matchedTraces = new ExtendedWeakMap();
-    this.matchedLink = new LazyLoadedMap<SankeyLink['_id'], any>();
-    this.matchedNodes = new LazyLoadedMap<SankeyNode['_id'], any>();
+    this.matchedLink = new LazyLoadedMap();
+    this.matchedNodes = new LazyLoadedMap();
   }
 
   getTraceNetworkMapping() {
@@ -246,7 +250,7 @@ export class SankeySearch {
     return [calculatedMatches, matchGenerator()];
   }
 
-  * traverseData({nodes, links}) {
+  * traverseData({nodes, links}): Generator<SearchEntity & any> {
     const context = {
       layers: {}
     };
@@ -272,8 +276,8 @@ export class SankeySearch {
     }
   }
 
-  * traverseAll(): Generator<any> {
-    yield * this.traverseData(this.dataToSearch);
+  * traverseAll(): Generator<SearchEntity> {
+    yield* this.traverseData(this.dataToSearch);
     const {traceNetworksMapping} = this;
     for (const match of this.traverseData(this.data)) {
       for (const {nodesId, linksId, networkTraceIdx} of traceNetworksMapping) {

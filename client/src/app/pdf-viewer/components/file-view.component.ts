@@ -41,10 +41,10 @@ import {
 
 class DummyFile implements PdfFile {
   constructor(
-    // eslint-disable-next-line
+    /* eslint-disable-next-line */
     public file_id: string,
     public filename: string = null,
-    // eslint-disable-next-line
+    /* eslint-disable-next-line */
     public creation_date: string = null,
     public username: string = null) {
   }

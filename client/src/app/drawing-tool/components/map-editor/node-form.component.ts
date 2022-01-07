@@ -110,7 +110,7 @@ export class NodeFormComponent implements AfterViewInit {
     return isNil(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
   }
 
-  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
+  /* eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures */
   @Input()
   set node(node) {
     this.previousLabel = node.label;

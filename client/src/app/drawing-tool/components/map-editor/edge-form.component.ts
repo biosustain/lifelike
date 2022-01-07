@@ -61,7 +61,7 @@ export class EdgeFormComponent implements AfterViewInit {
     return isNil(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
-  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
+  /* eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures */
   @Input()
   set edge(edge) {
     this.originalEdge = cloneDeep(edge);

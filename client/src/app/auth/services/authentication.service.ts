@@ -132,7 +132,7 @@ export class AuthenticationService implements OnDestroy {
   getCookie(name) {
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    /* eslint-disable-next-line @typescript-eslint/prefer-for-of */
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
         while (c.charAt(0) === ' ') { c = c.substring(1, c.length); }

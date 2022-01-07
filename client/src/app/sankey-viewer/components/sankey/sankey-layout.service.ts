@@ -461,7 +461,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     const {
       py, y1, y0
     } = this;
-    // eslint-disable-next-line no-bitwise
+    /* eslint-disable-next-line no-bitwise */
     const i = nodes.length >> 1;
     const subject = nodes[i];
     this.resolveCollisionsBottomToTop(nodes, subject._y0 - py, i - 1, alpha);

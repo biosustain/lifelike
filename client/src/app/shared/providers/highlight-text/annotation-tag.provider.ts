@@ -210,7 +210,7 @@ export class AnnotationTagHandler extends TagHandler {
     }
 
     if (idLink !== null) {
-      // eslint-disable-next-line max-len
+      /* eslint-disable-next-line max-len */
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
     } else {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');

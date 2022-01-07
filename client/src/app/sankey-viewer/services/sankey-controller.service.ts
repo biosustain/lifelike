@@ -282,7 +282,7 @@ export class SankeyControllerService {
    */
   getNodeById<T extends { _id: SankeyId }>(nodes: T[]) {
     // todo: find the way to declare it only once
-    // eslint-disable-next-line
+    /* eslint-disable-next-line */
     const id = ({_id}, i?, nodes?) => _id;
     return new Map<number, T>(nodes.map((d, i) => [id(d, i, nodes), d]));
   }

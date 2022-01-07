@@ -180,19 +180,19 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       const targetNormalizer = _targetLinks._normalizer ?? (_targetLinks._normalizer = normalizeGenerator(targetValues));
       const sourceHeight = _source._y1 - _source._y0;
       const targetHeight = _target._y1 - _target._y0;
-      // eslint-disable-next-line no-bitwise
+      /* eslint-disable-next-line no-bitwise */
       sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + _source._y0;
-      // eslint-disable-next-line no-bitwise
+      /* eslint-disable-next-line no-bitwise */
       targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + _target._y0;
       if (_multiple_values) {
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         sourceY1 = (sourceNormalizer.normalize(_multiple_values[0]) * sourceHeight) + sourceY0;
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         targetY1 = (targetNormalizer.normalize(_multiple_values[1]) * targetHeight) + targetY0;
       } else {
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
       }
     } else {
@@ -200,19 +200,19 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       _width = _width || 1e-4;
       const valueScaler = _width / linkValue;
 
-      // eslint-disable-next-line no-bitwise
+      /* eslint-disable-next-line no-bitwise */
       sourceY0 = sourceY * valueScaler + _source._y0;
-      // eslint-disable-next-line no-bitwise
+      /* eslint-disable-next-line no-bitwise */
       targetY0 = targetY * valueScaler + _target._y0;
       if (_multiple_values) {
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         sourceY1 = _multiple_values[0] * valueScaler + sourceY0;
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         targetY1 = _multiple_values[1] * valueScaler + targetY0;
       } else {
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         sourceY1 = linkValue * valueScaler + sourceY0;
-        // eslint-disable-next-line no-bitwise
+        /* eslint-disable-next-line no-bitwise */
         targetY1 = linkValue * valueScaler + targetY0;
       }
     }

@@ -21,6 +21,7 @@
       "dom"
     ]
   },
+  "exclude": ["**/node_modules", "landing"],
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true

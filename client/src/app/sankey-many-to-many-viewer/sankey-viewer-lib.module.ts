@@ -18,6 +18,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { SharedSankeyModule } from 'app/shared-sankey/shared-sankey.module';
 import { SankeySearchPanelModule } from 'app/sankey-viewer/components/search-panel/sankey-search-panel.module';
+import { SankeySearchControlModule } from 'app/sankey-viewer/components/search-control/sankey-search-control.module';
 
 import { SankeyManyToManyModule } from './components/sankey/sankey.module';
 import { SankeyManyToManyViewComponent } from './components/sankey-view.component';
@@ -50,7 +51,8 @@ import { SankeyManyToManyDetailsPanelModule } from './components/details-panel/s
     SankeyManyToManyDetailsPanelModule,
     SharedSankeyModule,
     SankeyManyToManyDetailsPanelModule,
-    SankeySearchPanelModule
+    SankeySearchPanelModule,
+    SankeySearchControlModule
   ],
   exports: [
     SankeyManyToManyViewComponent
