@@ -173,28 +173,28 @@ class VisualizerService(KgService):
 
     def get_snippets_from_node_pair(
         self,
-        from_id: int,
-        to_id: int,
+        node_1_id: int,
+        node_2_id: int,
         page: int,
         limit: int
     ):
         return self.graph.read_transaction(
             self.get_snippets_from_node_pair_query,
-            from_id,
-            to_id,
+            node_1_id,
+            node_2_id,
             (page - 1) * limit,
             limit
         )
 
     def get_snippet_count_from_node_pair(
         self,
-        from_id: int,
-        to_id: int,
+        node_1_id: int,
+        node_2_id: int,
     ):
         return self.graph.read_transaction(
             self.get_snippet_count_from_node_pair_query,
-            from_id,
-            to_id
+            node_1_id,
+            node_2_id
         )['snippet_count']
 
     def get_reference_table_data(self, node_edge_pairs: List[ReferenceTablePair]):
@@ -361,19 +361,9 @@ class VisualizerService(KgService):
         self,
         source_node: int,
         associated_nodes: List[int],
-        label: str
     ):
-        sanitized_label = ''
-        if (label == 'LiteratureGene'):
-            sanitized_label = 'LiteratureGene'
-        elif (label == 'LiteratureChemical'):
-            sanitized_label = 'LiteratureChemical'
-        elif (label == 'LiteratureDisease'):
-            sanitized_label = 'LiteratureDisease'
-
         results = self.graph.read_transaction(
             self.get_associated_type_snippet_count_query,
-            sanitized_label,
             source_node,
             associated_nodes
         )
@@ -384,13 +374,13 @@ class VisualizerService(KgService):
 
     def get_snippets_for_node_pair(
         self,
-        node_1: int,
-        node_2: int,
+        node_1_id: int,
+        node_2_id: int,
         page: int,
         limit: int,
     ):
-        data = self.get_snippets_from_node_pair(node_1, node_2, page, limit)
-        total_results = self.get_snippet_count_from_node_pair(node_1, node_2)
+        data = self.get_snippets_from_node_pair(node_1_id, node_2_id, page, limit)
+        total_results = self.get_snippet_count_from_node_pair(node_1_id, node_2_id)
 
         results = [
             GetSnippetsFromEdgeResult(
@@ -423,7 +413,7 @@ class VisualizerService(KgService):
         return GetNodePairSnippetsResult(
             snippet_data=results,
             total_results=total_results,
-            query_data={'node_1_id': node_1, 'node_2_id': node_2},
+            query_data={'node_1_id': node_1_id, 'node_2_id': node_2_id},
         )
 
     def get_expand_query(self, tx: Neo4jTx, node_id: str, labels: List[str]) -> List[Neo4jRecord]:
@@ -463,31 +453,36 @@ class VisualizerService(KgService):
     def get_associated_type_snippet_count_query(
         self,
         tx,
-        sanitized_label: str,
         source_node: int,
         associated_nodes: List[int]
     ):
         return list(
             tx.run(
-                f"""
-                MATCH
-                    (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{sanitized_label})
+                """
+                UNWIND $associated_nodes as associated_node
+                MATCH (f)-[r:ASSOCIATED]-(t)
                 WHERE
-                    ID(f) = $source_node AND
-                    ID(t) IN $associated_nodes
+                    ID(f)=$source_node AND
+                    ID(t)=associated_node
                 WITH
-                    a AS association,
-                    t.name AS name,
-                    ID(t) AS node_id
+                    ID(startNode(r)) as from_id,
+                    ID(endNode(r)) as to_id,
+                    t.name as name,
+                    ID(t) as node_id
+                MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+                WHERE ID(f)=from_id AND ID(t)=to_id
+                WITH from_id, to_id, a AS association, name, node_id
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 RETURN
                     name,
                     node_id,
-                    count(DISTINCT {{
+                    count(DISTINCT {
+                        from_id: from_id,
+                        to_id: to_id,
                         description: association.description,
                         snippet_id: s.eid
-                    }}) AS snippet_count
-                ORDER BY snippet_count DESC
+                    }) AS snippet_count
+                ORDER BY snippet_count DESC, node_id
                 """,
                 source_node=source_node, associated_nodes=associated_nodes
             ).data()
@@ -517,43 +512,57 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(s) AS snippet_count,
-                    collect(DISTINCT {
+                    s,
+                    p,
+                    head(collect(r)) as sample_path,
+                    coalesce(association.entry1_type, 'Unknown') as entry1_type,
+                    coalesce(association.entry2_type, 'Unknown') as entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                WITH
+                    collect({snippet: s, publication: p, path: sample_path}) as references,
+                    count({snippet: s, publication: p, path: sample_path}) as snippet_count,
+                    entry1_type,
+                    entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                UNWIND references as reference
+                WITH
+                    entry1_type,
+                    entry2_type,
+                    {
                         snippet: {
-                            id: s.eid,
+                            id: reference.snippet.eid,
                             data: {
-                                entry1_text: r.entry1_text,
-                                entry2_text: r.entry2_text,
-                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
-                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence
+                                entry1_text: reference.path.entry1_text,
+                                entry2_text: reference.path.entry2_text,
+                                entry1_type: entry1_type,
+                                entry2_type: entry2_type,
+                                sentence: reference.snippet.sentence
                             }
                         },
                         publication: {
-                            id: p.pmid,
+                            id: reference.publication.pmid,
                             data: {
-                                journal: p.journal,
-                                title: p.title,
-                                pmid: p.pmid,
-                                pub_year: p.pub_year
+                                journal: reference.publication.journal,
+                                title: reference.publication.title,
+                                pmid: reference.publication.pmid,
+                                pub_year: reference.publication.pub_year
                             }
                         }
-                    }) AS references,
-                    max(p.pub_year) AS max_pub_year,
-                    from_id,
-                    to_id,
-                    description
-                ORDER BY snippet_count DESC, max_pub_year DESC
-                UNWIND references AS reference
-                WITH
+                    } AS reference,
                     snippet_count,
-                    reference,
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
+                ORDER BY
+                    snippet_count DESC,
+                    [from_id, to_id],
+                    coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
-                RETURN collect(reference) AS references, from_id, to_id, description
+                RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
                 from_ids=from_ids, to_ids=to_ids, description=description, skip=skip, limit=limit
             )
@@ -562,8 +571,8 @@ class VisualizerService(KgService):
     def get_snippets_from_node_pair_query(
         self,
         tx: Neo4jTx,
-        node_1_id: List[int],
-        node_2_id: List[int],
+        node_1_id: int,
+        node_2_id: int,
         skip: int,
         limit: int
     ) -> List[Neo4jRecord]:
@@ -586,43 +595,57 @@ class VisualizerService(KgService):
                     a.description AS description
                 MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
                 WITH
-                    count(s) AS snippet_count,
-                    collect(DISTINCT {
+                    s,
+                    p,
+                    head(collect(r)) as sample_path,
+                    coalesce(association.entry1_type, 'Unknown') as entry1_type,
+                    coalesce(association.entry2_type, 'Unknown') as entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                WITH
+                    collect({snippet: s, publication: p, path: sample_path}) as references,
+                    count({snippet: s, publication: p, path: sample_path}) as snippet_count,
+                    entry1_type,
+                    entry2_type,
+                    from_id,
+                    to_id,
+                    description
+                UNWIND references as reference
+                WITH
+                    entry1_type,
+                    entry2_type,
+                    {
                         snippet: {
-                            id: s.eid,
+                            id: reference.snippet.eid,
                             data: {
-                                entry1_text: r.entry1_text,
-                                entry2_text: r.entry2_text,
-                                entry1_type: coalesce(association.entry1_type, 'Unknown'),
-                                entry2_type: coalesce(association.entry2_type, 'Unknown'),
-                                sentence: s.sentence
+                                entry1_text: reference.path.entry1_text,
+                                entry2_text: reference.path.entry2_text,
+                                entry1_type: entry1_type,
+                                entry2_type: entry2_type,
+                                sentence: reference.snippet.sentence
                             }
                         },
                         publication: {
-                            id: p.pmid,
+                            id: reference.publication.pmid,
                             data: {
-                                journal: p.journal,
-                                title: p.title,
-                                pmid: p.pmid,
-                                pub_year: p.pub_year
+                                journal: reference.publication.journal,
+                                title: reference.publication.title,
+                                pmid: reference.publication.pmid,
+                                pub_year: reference.publication.pub_year
                             }
                         }
-                    }) AS references,
-                    max(p.pub_year) AS max_pub_year,
-                    from_id,
-                    to_id,
-                    description
-                ORDER BY snippet_count DESC, max_pub_year DESC
-                UNWIND references AS reference
-                WITH
+                    } AS reference,
                     snippet_count,
-                    reference,
                     from_id,
                     to_id,
                     description
-                ORDER BY snippet_count DESC, coalesce(reference.publication.data.pub_year, -1) DESC
+                ORDER BY
+                    snippet_count DESC,
+                    [from_id, to_id],
+                    coalesce(reference.publication.data.pub_year, -1) DESC
                 SKIP $skip LIMIT $limit
-                RETURN collect(reference) AS references, from_id, to_id, description
+                RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
                 node_1_id=node_1_id, node_2_id=node_2_id, skip=skip, limit=limit
             )
@@ -631,27 +654,29 @@ class VisualizerService(KgService):
     def get_snippet_count_from_node_pair_query(
         self,
         tx: Neo4jTx,
-        from_id: int,
-        to_id: int
+        node_1_id: int,
+        node_2_id: int
     ) -> Neo4jRecord:
         return tx.run(
             """
-            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            MATCH (f)-[r:ASSOCIATED]-(t)
             WHERE
-                ID(f)=$from_id AND
-                ID(t)=$to_id
-            WITH
-                a AS association,
-                ID(f) AS from_id,
-                ID(t) AS to_id
+                ID(f)=$node_1_id AND
+                ID(t)=$node_2_id
+            WITH ID(startNode(r)) as from_id, ID(endNode(r)) as to_id
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            WHERE ID(f)=from_id AND ID(t)=to_id
+            WITH from_id, to_id, a AS association
             MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN
                 count(DISTINCT {
+                    from_id: from_id,
+                    to_id: to_id,
                     description: association.description,
                     snippet_id: s.eid
                 }) AS snippet_count
             """,
-            from_id=from_id, to_id=to_id
+            node_1_id=node_1_id, node_2_id=node_2_id
         ).single()
 
     def get_snippet_count_from_edges_query(
@@ -686,7 +711,7 @@ class VisualizerService(KgService):
                     to_id,
                     from_labels,
                     to_labels
-                ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
+                ORDER BY snippet_count DESC, [from_id, to_id], coalesce(max_pub_year, -1) DESC
                 RETURN from_id, to_id, from_labels, to_labels, snippet_count AS count
                 """,
                 from_ids=from_ids, to_ids=to_ids, description=description

@@ -10,6 +10,7 @@ import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/custom
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { frozenEmptyObject } from 'app/shared/utils/types';
+import { SankeySearchService } from 'app/sankey-viewer/services/search.service';
 
 import {
   SankeyView,
@@ -60,7 +61,8 @@ export class SankeyViewDropdownComponent implements OnChanges {
     readonly workspaceManager: WorkspaceManager,
     readonly sankeyController: SankeyControllerService,
     private modalService: NgbModal,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    public sankeySearch: SankeySearchService
   ) {
   }
 
@@ -76,6 +78,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
   get activeViewBaseName(): string {
     return viewBaseToNameMapping[this.activeViewBase] ?? '';
   }
+
   @Input() preselectedViewBase: string;
   @Input() object: FilesystemObject;
 
@@ -143,10 +146,9 @@ export class SankeyViewDropdownComponent implements OnChanges {
     this.viewDataChanged.emit();
   }
 
-  changeViewBaseIfNeeded(base, params?): boolean {
+  changeViewBaseIfNeeded(base, params?): Promise<boolean> | void {
     if (this.activeViewBase !== base) {
-      this.openBaseView(base, params);
-      return true;
+      return this.openBaseView(base, params);
     }
   }
 
@@ -212,6 +214,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
         this.objectToFragment({
           [SankeyURLLoadParam.NETWORK_TRACE_IDX]: this.sankeyController.state.networkTraceIdx,
           [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
+          [SankeyURLLoadParam.SEARCH_TERMS]: this.sankeySearch.entitySearchTerm.value,
           ...params
         } as SankeyURLLoadParams)
       }`

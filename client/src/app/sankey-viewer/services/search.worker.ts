@@ -6,6 +6,7 @@ import { uuidv4 } from 'app/shared/utils/identifiers';
 
 import { SearchWorkerMessage, WorkerActions, WorkerOutputActions } from './search-worker-actions';
 import { SankeySearch } from './search-match';
+import { SearchEntity } from '../components/search-panel/interfaces';
 
 const search = new SankeySearch();
 let searchId;
@@ -29,7 +30,7 @@ addEventListener('message', async ({data: messageData}) => {
         if (thisSearchId === searchId) {
           postMessage({
             action: WorkerOutputActions.match,
-            actionLoad: rest
+            actionLoad: rest as SearchEntity
           });
           defer(step);
         } else {

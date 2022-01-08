@@ -118,13 +118,12 @@ def get_annotation_legend():
 @bp.route('/get-associated-type-snippet-count', methods=['POST'])
 @auth.login_required
 @use_kwargs(AssociatedTypeSnippetCountRequest)
-def get_associated_type_snippet_count(source_node, associated_nodes, label):
+def get_associated_type_snippet_count(source_node, associated_nodes):
     visualizer = get_visualizer_service()
 
     associated_types_result = visualizer.get_associated_type_snippet_count(
         source_node,
         associated_nodes,
-        label,
     )
     return jsonify({
         'result': associated_types_result.to_dict(),
