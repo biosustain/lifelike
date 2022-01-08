@@ -217,8 +217,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     for (const file of this.fileList) {
       const formState = file.formState;
       uploadRequests.push({
-         filename: formState.filename,
-        parentHashId: formState.parent ? formState.parent.hashId : null,
+        filename: formState.filename,
+        parentHashId: value.parent ? value.parent.hashId : null,
         description: formState.description,
         public: formState.public,
         mimeType: formState.mimeType,
