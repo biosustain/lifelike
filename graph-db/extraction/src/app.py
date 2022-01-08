@@ -8,6 +8,7 @@ import coloredlogs
 
 import biocyc.biocyc_parser as biocyc_parser
 import chebi.chebi_parser as chebi_parser
+import enzyme.enzyme_parser as enzyme_parser
 import go.go_parser as go_parser
 import kegg.kegg_parser as kegg_parser
 import mesh.add_disease_synonyms_by_pruning_disease as add_disease_synonyms_by_pruning_disease
@@ -26,6 +27,7 @@ _LOG_MAX_FILES = 5
 DOMAIN_PARSERS = {
     'biocyc': biocyc_parser,
     'chebi': chebi_parser,
+    'enzyme': enzyme_parser,
     'go': go_parser,
     'kegg': kegg_parser,
     'mesh-add-disease-synonyms': add_disease_synonyms_by_pruning_disease,
@@ -68,6 +70,7 @@ def parse_args(argv):
 
     # parsers with no additional arguments
     subparser.add_parser('chebi')
+    subparser.add_parser('enzyme')
     subparser.add_parser('go')
     subparser.add_parser('kegg')
     subparser.add_parser('mesh-add-disease-synonyms')
