@@ -15,17 +15,4 @@
                         (find-control-state-updated)="findControlStateUpdated($event)">
     </app-pdf-viewer-lib>
   </div>
-  <div class="popover d-none" #frictionlessAnnotationToolbar>
-    <div class="popover-body">
-      <button type="button" class="btn btn-secondary btn-sm" ngbTooltip="Copy text to clipboard"
-              container="body" (click)="copySelectionText()">
-        <i class="fa fa-fw fa-copy"></i>
-      </button>
-      <button type="button" class="btn btn-secondary btn-sm ml-1"
-              ngbTooltip="Create an annotation over your selection" container="body"
-              (click)="openAnnotationPanel()" [disabled]="!isSelectionAnnotatable()">
-        <span><i class="fa fa-fw fa-money-check-edit"></i> Annotate</span>
-      </button>
-    </div>
-  </div>
 </div>

@@ -12,7 +12,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
   protected readonly mebibyte = 1024 * 1024;
   protected readonly maxFileSize = 20;
-  protected readonly pasteSize = 100;
+  protected readonly pasteSize = 300;
 
   constructor(protected readonly graphView: CanvasGraphView,
               protected readonly mapImageProvider: MapImageProviderService,
@@ -79,13 +79,15 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const clipboardEvent = event.event;
-    const files = this.getFiles(clipboardEvent.clipboardData);
-    if (files.length) {
-      clipboardEvent.stopPropagation();
-      clipboardEvent.preventDefault();
-      this.createImageNodes(files);
-      return BehaviorResult.Stop;
+    const position = this.graphView.currentHoverPosition;
+    if (position) {
+      const clipboardEvent = event.event;
+      const files = this.getFiles(clipboardEvent.clipboardData);
+      if (files.length) {
+        this.createImageNodes(files);
+        clipboardEvent.preventDefault();
+        return BehaviorResult.Stop;
+      }
     }
     return BehaviorResult.Continue;
   }
@@ -104,8 +106,8 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
       const imageId = makeid();
       this.mapImageProvider.setMemoryImage(imageId, URL.createObjectURL(file));
       this.mapImageProvider.getDimensions(imageId).subscribe(dimensions => {
-        // Scale larger side to have 100 px
-        const ratio = this.pasteSize / Math.max(dimensions.width, dimensions.height);
+        // Scale small side to have 300 px
+        const ratio = this.pasteSize / Math.min(dimensions.width, dimensions.height);
         this.graphView.execute(new NodeCreation(
         `Insert image`, {
           hash: uuidv4(),
