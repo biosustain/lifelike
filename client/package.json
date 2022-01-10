@@ -7,8 +7,9 @@
     "dev-start": "ng serve --host=0.0.0.0 --disable-host-check --proxy-config=proxy.conf.json --source-map=true",
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
-    "lint": "ng lint",
-    "lint-ci": "yarn lint",
+    "ng-lint": "ng lint",
+    "lint": "eslint -f ./eslintSortFormatter.js ./src",
+    "lint-ci": "eslint -f compact ./src",
     "e2e": "ng e2e",
     "watch": "ng build --watch --configuration development"
   },
