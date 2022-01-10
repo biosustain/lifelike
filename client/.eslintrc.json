@@ -13,43 +13,70 @@
           "tsconfig.json",
           "e2e/tsconfig.json"
         ],
-        "createDefaultProgram": true
+        "createDefaultProgram": false
       },
       "extends": [
+        "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/ng-cli-compat",
         "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
+      "plugins": [
+        "deprecation"
+      ],
       "rules": {
-        "@angular-eslint/component-selector": [
+        "@angular-eslint/no-input-rename": "warn",
+        "@angular-eslint/no-empty-lifecycle-method": "off",
+        "@typescript-eslint/dot-notation": "warn",
+        "@typescript-eslint/ban-types": "warn",
+        "@typescript-eslint/explicit-member-accessibility": "off",
+        "@typescript-eslint/member-delimiter-style": "off",
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/no-unused-expressions": "warn",
+        "@typescript-eslint/no-empty-interface": "warn",
+        "@typescript-eslint/semi": "warn",
+        "deprecation/deprecation": "warn",
+        "import/no-deprecated": "off",
+        "import/no-restricted-paths": [
           "error",
           {
-            "type": "element",
-            "prefix": "app",
-            "style": "kebab-case"
+            "zones": [
+              {
+                "target": "./app",
+                "from": "**/app/**/*"
+              }
+            ]
           }
         ],
-        "@angular-eslint/directive-selector": [
+        "import/order": [
           "error",
           {
-            "type": "attribute",
-            "prefix": "app",
-            "style": "camelCase"
+            "groups": ["builtin", "external", "internal", ["parent", "sibling", "index"]],
+            "pathGroups": [
+              {
+                "pattern": "@angular/**",
+                "group": "external",
+                "position": "before"
+              },
+              {
+                "pattern": "app/**",
+                "group": "internal",
+                "position": "after"
+              }
+            ],
+            "pathGroupsExcludedImportTypes": ["builtin"]
           }
         ],
-        "@typescript-eslint/explicit-member-accessibility": [
-          "off",
-          {
-            "accessibility": "explicit"
-          }
-        ],
-        "arrow-parens": [
-          "off",
-          "always"
-        ],
-        "id-blacklist": "error",
-        "import/order": "error",
-        "no-duplicate-imports": "error"
+        "jsdoc/newline-after-description": "off",
+        "prefer-arrow/prefer-arrow-functions": "off",
+        "arrow-body-style": "off",
+        "arrow-parens": "off",
+        "id-blacklist": "off",
+        "no-duplicate-imports": "error",
+        "no-shadow": "warn",
+        "no-underscore-dangle": "off",
+        "no-var": "off",
+        "prefer-const": "warn"
       }
     },
     {
@@ -60,6 +87,25 @@
         "plugin:@angular-eslint/template/recommended"
       ],
       "rules": {}
+    },
+    {
+      "files": [
+        "*.html"
+      ],
+      "excludedFiles": [
+        "*inline-template-*.component.html"
+      ],
+      "extends": [
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "prettier/prettier": [
+          "off",
+          {
+            "parser": "angular"
+          }
+        ]
+      }
     }
   ]
 }
