@@ -215,14 +215,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   resolveMatchToEntity({nodeId, linkId}: SearchEntity) {
     const {nodes, links} = this.sankeyController.dataToRender.value;
     if (!isNil(nodeId)) {
-      /* eslint-disable-next-line eqeqeq
-         -- allow string == number match interpolation ("58" == 58 -> true) */
-      return nodes.find(({_id}) => _id == nodeId);
+      /* eslint-disable-next-line eqeqeq -- allow string == number match interpolation ("58" == 58 -> true) */
+      return nodes.find(({ _id }) => _id == nodeId);
     }
     if (!isNil(linkId)) {
-      /* eslint-disable-next-line eqeqeq
-         -- allow string == number match interpolation ("58" == 58 -> true) */
-      return links.find(({_id}) => _id == linkId);
+      /* eslint-disable-next-line eqeqeq -- allow string == number match interpolation ("58" == 58 -> true) */
+      return links.find(({ _id }) => _id == linkId);
     }
   }
 
