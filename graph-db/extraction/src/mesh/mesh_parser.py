@@ -1,214 +1,170 @@
-from common.constants import *
-from common.database import *
-from common.base_parser import BaseParser
-from mesh.mesh_annotations import add_annotation_entity_labels
-from mesh.mesh_LMDB_annotation import write_mesh_annotation_files
-import pandas as pd
+import logging
 import os
+
+from common.constants import *
+from common.database import get_database
+from common.base_parser import BaseParser
+from common.query_builder import (
+    get_create_update_nodes_query,
+    get_create_relationships_query,
+    get_create_synonym_relationships_query
+)
+
+MESH_CHEMICAL_FILE = 'mesh_chemicals.tsv'
+MESH_CHEMICAL_TOPICALDESC_REL_FILE = 'mesh_chemical_topicaldesc_rels.tsv'
+MESH_DISEASE_FILE = 'mesh_diseases.tsv'
+MESH_DISEASE_TOPICALDESC_REL_FILE = 'mesh_disease_topicaldesc_rels.tsv'
+MESH_SYNONYM_REL_FILE = 'mesh_synonym_rels.tsv'
+MESH_TOPICALDESC_FILE = 'mesh_topicaldescriptors.tsv'
+MESH_TREENUMBER_FILE = 'mesh_treenumber.tsv'
+MESH_TREENUMBER_PARENT_REL_FILE = 'mesh_treenumber_parent_rels.tsv'
+MESH_TREENUMBER_TOPICALDESC_REL_FILE = 'mesh_treenumber_topicaldesc_rels.tsv'
 
 
 class MeshParser(BaseParser):
-    def __init__(self, base_data_dir):
-        BaseParser.__init__(self, 'mesh', base_data_dir)
+    def __init__(self, prefix: str, base_dir=None):
+        BaseParser.__init__(self, prefix, DB_MESH.lower(), base_dir)
         self.logger = logging.getLogger(__name__)
-        self.datafile = os.path.join(self.download_dir, 'mesh.nt')
 
-    def import_mesh_rdf(self, meshdatabase:Database):
-        '''
-        Load mesh rdf file to Neo4j database using neosemantics
-        :param meshdatabase: neo4j database for mesh terms (not lifelike)
-        :param url: mesh.nt location
-        :return:
-        '''
-        # clean the database before loading meshs
-        query = """
-        match(n) detach delete n
-        """
-        meshdatabase.run_query(query)
+    def load_data_to_neo4j(self, db):
+        """Data was first loaded in temp db to easily parse RDF, now create data files from that."""
+        self._load_treenumber(db)
+        self._load_topical_descriptor(db)
+        self._load_chemical(db)
+        self._load_disease(db)
+        self._load_synonym(db)
 
-        meshdatabase.create_constraint('Resource', 'uri', 'uri_constraint')
-        # import mesh terms into graphdb
-        query = 'CALL n10s.graphconfig.init()'
-        meshdatabase.run_query(query)
-        query = """
-        CALL n10s.graphconfig.set({
-            handleVocabUris: "IGNORE",
-            handleMultival: 'ARRAY',
-            multivalPropList : ['http://id.nlm.nih.gov/mesh/vocab#altLabel']
-        });
-        """
-        meshdatabase.run_query(query)
-        query = f"CALL n10s.rdf.import.fetch('file:///{self.datafile}', 'N-Triples')"
-        meshdatabase.run_query(query)
-
-    def create_indexes(self, database: Database):
-        database.create_constraint(NODE_MESH, PROP_ID, 'constraint_mesh_id')
-        database.create_index(NODE_MESH, PROP_NAME, 'index_mesh_name')
-        database.create_constraint(NODE_SYNONYM, PROP_NAME, 'index_synonym_name')
-
-    def load_data_to_neo4j(self, from_database: Database, to_database:Database):
-        """
-        Mesh data was loaded into mesh_database. Need to query the data, and load into lifelike database
-        :param to_database: the lifelike database
-        :param from_database: database with mesh data from RDF file
-        :return:
-        """
-        self._load_treenumber(from_database, to_database)
-        self._load_topical_descriptor(from_database, to_database)
-        self._load_chemical(from_database, to_database)
-        self._load_disease(from_database, to_database)
-        self._load_synonym(from_database, to_database)
-
-    def _load_treenumber(self, from_database, to_database):
-        self.logger.info("Load treenumber nodes")
-        query = f"match(t:TreeNumber) return t.label as {PROP_ID}"
-        df = from_database.get_data(query)
+    def _load_treenumber(self, db):
+        self.logger.info('Load treenumber nodes')
+        df = db.get_data(f'MATCH (t:TreeNumber) RETURN t.label AS {PROP_ID}')
         df[PROP_OBSOLETE] = df[PROP_ID].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
-        self.logger.info(f"{len(df)}")
-        load_query = get_update_nodes_query(NODE_MESH, PROP_ID, [PROP_OBSOLETE], [NODE_TREENUMBER])
-        to_database.load_data_from_dataframe(df, load_query)
+        self.logger.info(f'len of df: {len(df)}')
+        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_OBSOLETE], [NODE_TREENUMBER], datasource='MeSH')
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_TREENUMBER_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-        self.logger.info("node treenumber has_parent relationship")
-        query = f"match(t:TreeNumber)-[:parentTreeNumber]->(p:TreeNumber) return t.label as {PROP_ID}, p.label as {PROP_PARENT_ID}"
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
+        self.logger.info('node treenumber has_parent relationship')
+        df = db.get_data(f'MATCH (t:TreeNumber)-[:parentTreeNumber]->(p:TreeNumber) RETURN t.label AS {PROP_ID}, p.label AS {PROP_PARENT_ID}')
+        self.logger.info(f'len of df: {len(df)}')
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
         df[PROP_PARENT_ID] = df[PROP_PARENT_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
-        load_query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, PROP_PARENT_ID, REL_PARENT)
-        to_database.load_data_from_dataframe(df, load_query)
+        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, PROP_PARENT_ID, REL_PARENT)
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_TREENUMBER_PARENT_REL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-    def _load_topical_descriptor(self, from_database, to_database):
-        self.logger.info("load topicaldescriptor nodes")
-        query = f"match (d:TopicalDescriptor) return d.identifier as {PROP_ID}, d.label as {PROP_NAME}"
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
+    def _load_topical_descriptor(self, db):
+        self.logger.info('load topicaldescriptor nodes')
+        df = db.get_data(f'MATCH (d:TopicalDescriptor) RETURN d.identifier AS {PROP_ID}, d.label AS {PROP_NAME}')
+        self.logger.info(f'len of df: {len(df)}')
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
+        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_TOPICALDESC], datasource='MeSH')
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_TOPICALDESC_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-        query = get_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_TOPICALDESC])
-        to_database.load_data_from_dataframe(df, query)
-
-        self.logger.info("map mesh to tree-number")
-        query = f"match(t:TreeNumber)-[]-(d:TopicalDescriptor) return d.identifier as {PROP_ID}, t.label as treenumber"
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
+        self.logger.info('map mesh to tree-number')
+        df = db.get_data(f'MATCH (t:TreeNumber)-[]-(d:TopicalDescriptor) RETURN d.identifier AS {PROP_ID}, t.label AS treenumber')
+        self.logger.info(f'len of df: {len(df)}')
         df['treenumber'] = df['treenumber'].str.replace('[OBSOLETE]', '', regex=False).str.strip()
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'treenumber',
-                                               REL_TREENUMBER)
-        to_database.load_data_from_dataframe(df, query)
+        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'treenumber', REL_TREENUMBER)
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_TREENUMBER_TOPICALDESC_REL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-    def _load_chemical(self, from_database, to_database):
-        self.logger.info("node mesh chemical nodes")
-        query = f"match (n:SCR_Chemical) return n.identifier as {PROP_ID}, n.label as {PROP_NAME}"
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
+    def _load_chemical(self, db):
+        self.logger.info('node mesh chemical nodes')
+        df = db.get_data(f'MATCH (n:SCR_Chemical) RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}')
+        self.logger.info(f'len of df: {len(df)}')
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
+        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_CHEMICAL], datasource='MeSH')
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_CHEMICAL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-        query = get_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_CHEMICAL])
-        to_database.load_data_from_dataframe(df, query)
-
-        self.logger.info("map chemical to topical descriptor")
-        query = f"""
-            match(n:SCR_Chemical)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
-            with n, d, r match(d)-[:treeNumber]-(t:TreeNumber) where substring(t.label, 0, 1) = 'D'
-            return distinct n.identifier as {PROP_ID}, d.identifier as descriptor_id, type(r) as {PROP_TYPE} 
-            """
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID,
-                                               'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
-        to_database.load_data_from_dataframe(df, query)
-
-    def _load_disease(self, from_database, to_database):
-        self.logger.info("load mesh disease ndoes")
-        query = f"match (n:SCR_Disease) return n.identifier as {PROP_ID}, n.label as {PROP_NAME}"
-        df = from_database.get_data(query)
-        df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
-        df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
-        self.logger.info(f"{len(df)}")
-        query = get_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_DISEASE])
-        to_database.load_data_from_dataframe(df, query)
-
-        self.logger.info("map disease to topical descriptor")
-        query = f"""
-            match(n:SCR_Disease)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
-            with n, d, r match(d)-[:treeNumber]-(t:TreeNumber) where substring(t.label, 0, 1) = 'C'
-            return distinct n.identifier as {PROP_ID}, d.identifier as descriptor_id, type(r) as {PROP_TYPE} 
-            """
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
+        self.logger.info('map chemical to topical descriptor')
+        df = db.get_data(f"""
+            MATCH (n:SCR_Chemical)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
+            WITH n, d, r
+            MATCH (d)-[:treeNumber]-(t:TreeNumber) WHERE substring(t.label, 0, 1) = 'D'
+            RETURN DISTINCT n.identifier AS {PROP_ID}, d.identifier AS descriptor_id, type(r) AS {PROP_TYPE}
+            """)
+        self.logger.info(f'len of df: {len(df)}')
         query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
-        to_database.load_data_from_dataframe(df, query)
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_CHEMICAL_TOPICALDESC_REL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
-    def _load_synonym(self, from_database, to_database):
-        query = f"""
-            match (n:TopicalDescriptor)-[]-(:Concept) -[]-(t:Term)
-            with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
-            unwind terms as synonym
-            return n.identifier as {PROP_ID}, synonym
+    def _load_disease(self, db):
+        self.logger.info('load mesh disease nodes')
+        df = db.get_data(f'MATCH (n:SCR_Disease) RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}')
+        df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
+        df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
+        self.logger.info(f'len of df: {len(df)}')
+        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_DISEASE], datasource='MeSH')
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_DISEASE_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
+
+        self.logger.info('map disease to topical descriptor')
+        df = db.get_data(f"""
+            MATCH (n:SCR_Disease)-[r:preferredMappedTo|mappedTo]->(d:TopicalDescriptor)
+            WITH n, d, r
+            MATCH (d)-[:treeNumber]-(t:TreeNumber) WHERE substring(t.label, 0, 1) = 'C'
+            RETURN DISTINCT n.identifier AS {PROP_ID}, d.identifier AS descriptor_id, type(r) AS {PROP_TYPE}
+            """)
+        self.logger.info(f'len of df: {len(df)}')
+        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
+        print(query)
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_DISEASE_TOPICALDESC_REL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
+
+    def _load_synonym(self, db):
+        data_query = f"""
+            MATCH (n:TopicalDescriptor)-[]-(:Concept)-[]-(t:Term)
+            WITH n, [t.prefLabel]+coalesce(t.altLabel, []) AS terms
+            UNWIND terms AS synonym
+            RETURN n.identifier AS {PROP_ID}, synonym
             UNION
-            match (n:SCR_Chemical)-[]-(:Concept)-[]-(t:Term)
-            with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
-            unwind terms as synonym
-            return n.identifier as {PROP_ID}, synonym
+            MATCH (n:SCR_Chemical)-[]-(:Concept)-[]-(t:Term)
+            WITH n, [t.prefLabel]+coalesce(t.altLabel, []) AS terms
+            UNWIND terms AS synonym
+            RETURN n.identifier AS {PROP_ID}, synonym
             UNION
-            match (n:SCR_Disease)-[]-(:Concept)-[]-(t:Term)
-            with n, [t.prefLabel]+coalesce(t.altLabel, []) as terms
-            unwind terms as synonym
-            return n.identifier as {PROP_ID}, synonym
+            MATCH (n:SCR_Disease)-[]-(:Concept)-[]-(t:Term)
+            WITH n, [t.prefLabel]+coalesce(t.altLabel, []) AS terms
+            UNWIND terms AS synonym
+            RETURN n.identifier AS {PROP_ID}, synonym
         """
-        df = from_database.get_data(query)
-        self.logger.info(f"{len(df)}")
-        query = get_create_synonym_relationships_query(NODE_MESH, PROP_ID, PROP_ID, 'synonym')
-        to_database.load_data_from_dataframe(df, query)
-
-    def remove_synonyms_with_comma(self, database):
-        query = """
-        match(n:TopicalDescriptor)-[:HAS_TREENUMBER]-(t) where left(t.id, 1) in ['A', 'C', 'F', 'G'] 
-        with distinct n match (n)-[r:HAS_SYNONYM]-(s) where s.name contains ',' 
-        delete r
-        """
-        database.run_query(query)
-
-        query = "match (n:Disease)-[r:HAS_SYNONYM]-(s) where s.name contains ',' delete r"
-        database.run_query(query)
-
-        # delete orphan nodes
-        query = "match(n:Synonym) where not (n)-[]-() delete n"
-        database.run_query(query)
-
-    def set_data_source(self, database):
-        query = """
-                match(n:db_MESH) set n.data_source='MeSH'
-                """
-        database.run_query(query)
+        df = db.get_data(data_query)
+        self.logger.info(f'len of df: {len(df)}')
+        query = get_create_synonym_relationships_query(NODE_MESH, PROP_ID, PROP_ID, PROP_NAME)
+        print(query)
+        # exclude synonyms with comma
+        # only care about the ones with eid starting with certain letters
+        df2 = df[df.eid.str.startswith(tuple(['A', 'C', 'F', 'G']))]
+        df3 = df2[df2.synonym.str.contains(',')]
+        df = df[~df.eid.isin(df3.eid)]
+        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + MESH_SYNONYM_REL_FILE)
+        df.to_csv(outfile, index=False, sep='\t')
 
 
-def main():
-    lifelike_db = get_database()
-    parser = MeshParser()
-    # create a database 'meshdb' in neo4j for mesh rdf data
-    meshdb = 'meshdb'
-    query = f"CREATE OR REPLACE DATABASE {meshdb}"
-    lifelike_db.run_query(query)
+def main(args):
+    db = get_database()
+    parser = MeshParser(args.prefix)
+    parser.load_data_to_neo4j(db)
+    db.close()
 
-    mesh_db = get_database()
-    mesh_db.dbname = meshdb
-    parser.import_mesh_rdf(mesh_db)
-
-    parser.load_data_to_neo4j(mesh_db, lifelike_db)
-    parser.remove_synonyms_with_comma(lifelike_db)
-    parser.set_data_source(lifelike_db)
-    add_annotation_entity_labels(lifelike_db)
-    mesh_db.close()
-    # can drop meshdb now
-    write_mesh_annotation_files(lifelike_db, parser.output_dir)
-    lifelike_db.close()
+    for filename in [
+        MESH_CHEMICAL_FILE, MESH_CHEMICAL_TOPICALDESC_REL_FILE, MESH_DISEASE_FILE, MESH_DISEASE_TOPICALDESC_REL_FILE,
+        MESH_SYNONYM_REL_FILE, MESH_TOPICALDESC_FILE, MESH_TREENUMBER_FILE, MESH_TREENUMBER_PARENT_REL_FILE, MESH_TREENUMBER_TOPICALDESC_REL_FILE
+    ]:
+        parser.upload_azure_file(filename, args.prefix)
 
 
 if __name__ == "__main__":
     main()
-
-
