@@ -77,8 +77,7 @@ public class FileQueryHandler implements CustomTaskChange {
     }
 
     public void setFileName(String fileName) {
-        String environ = System.getenv("NEO4J_ENV").equals("QA") || System.getenv("NEO4J_ENV").equals("Staging") ? "stage" : "prod";
-        this.fileName = environ + "-" + fileName;
+        this.fileName = fileName;
     }
 
     public String getFileType() {
@@ -159,6 +158,14 @@ public class FileQueryHandler implements CustomTaskChange {
         String[] header = null;
         try {
             if (!Files.exists(Paths.get(fileExtract.getFilePath()))) {
+                // we need to check for prefix because sometimes
+                // the data is different from different environments
+                // and we need to consider that, e.g drop specific nodes
+                String prefix = System.getenv("NEO4J_ENV").equals("QA") || System.getenv("NEO4J_ENV").equals("Staging") ? "stage" : "prod";
+                String prefixName = prefix + "-" +  fileExtract.getFileName();
+                if (cloudStorage.fileExists(prefixName)) {
+                    fileExtract.setFileName(prefixName);
+                }
                 System.out.println("Downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
                 cloudStorage.downloadToFile(fileExtract.getFileName(), fileExtract.getFileDir());
                 System.out.println("Finished downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
