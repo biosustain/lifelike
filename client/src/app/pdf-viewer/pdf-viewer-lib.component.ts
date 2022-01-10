@@ -20,6 +20,8 @@ import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
+import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
+import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
@@ -27,9 +29,6 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { toValidLink } from 'app/shared/utils/browser';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
-
-import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
-import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { AddedAnnotationExclusion, Annotation, Location, Meta, Rect, RemovedAnnotationExclusion, } from './annotation-type';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';

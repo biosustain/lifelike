@@ -1,3 +1,5 @@
+import { encode } from 'punycode';
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -24,7 +26,6 @@ import {
   ProjectData,
   ProjectSearchRequest,
 } from '../schema';
-import { encode } from 'punycode';
 import { Collaborator } from '../models/collaborator';
 
 @Injectable()
