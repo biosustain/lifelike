@@ -229,8 +229,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       });
     }
 
-    console.log(uploadRequests.length);
-
     return {
       object: this.object,
       objectChanges,
@@ -273,7 +271,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }
     const oldFilename = this.form.get('filename').value;
     for (const targetFile of event.target.files) {
-      console.log(targetFile);
       const filename = targetFile.name;
       this.form.get('filename').setValue(filename);
       const fileEntry: FileInput = {
@@ -352,26 +349,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       const isMap = s.match(/\.json$/i);
       return 'document' + (isMap ? '' : '.pdf');
     }
-  }
-
-  private getDocumentPossibility(file): Promise<boolean> {
-    // Too big, assume it could be a document
-    if (file.size >= 1024 * 500) {
-      return Promise.resolve(true);
-    }
-
-    return file.text().then(text => {
-      console.log('Document text: ' + text);
-      if (text.length === 0) {
-        return false;
-      }
-      try {
-        JSON.parse(text);
-        return false;
-      } catch (e) {
-        return true;
-      }
-    });
   }
 
   showFileDialog() {
