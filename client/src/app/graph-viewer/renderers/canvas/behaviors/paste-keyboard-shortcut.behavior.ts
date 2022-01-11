@@ -6,7 +6,6 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { uuidv4 } from 'app/shared/utils/identifiers';
-import { extractGraphEntityActions } from 'app/drawing-tool/utils/data';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';

@@ -2,7 +2,12 @@ export const NODE_EXPANSION_LIMIT = 500;
 export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
 export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
-export const PUBMEDURL = 'https://pubmed.ncbi.nlm.nih.gov/';
+
+export const PUBMED_URL = 'https://pubmed.ncbi.nlm.nih.gov/';
+export const PUBTATOR_URL = 'https://www.ncbi.nlm.nih.gov/research/pubtator/';
+export function getPubtatorSearchUrl(searchTerm: string) {
+  return `${PUBTATOR_URL}?view=docsum&query=${searchTerm}`;
+}
 
 export const VIZ_SEARCH_LIMIT = 10;
 
