@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { cloneDeep, isNil } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
