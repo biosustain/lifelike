@@ -26,12 +26,12 @@
     <div class="publication-container">
       <div>
         <span class="pub-data-header">Publication:</span>
-        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+        <a target="_blank" href="{{ PUBMED_URL }}/{{ node.publicationId }}">
           <span>{{ node.publicationTitle }}</span>
           <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
         </a>
         <span class="pubid-data-header">PubMed ID:</span>
-        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+        <a target="_blank" href="{{ PUBMED_URL }}/{{ node.publicationId }}">
           <span>{{ node.publicationId }}</span>
         </a>
       </div>

@@ -1,3 +1,5 @@
+import { groupBy } from 'lodash-es';
+
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
@@ -45,8 +47,10 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
 export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: number, y: number }): GraphEntity[] {
   const newEntities: GraphEntity[] = [];
   const nodeHashMap = new Map<string, string>();
-  const nodes = entities.filter(entity => entity.type === GraphEntityType.Node);
-  const edges = entities.filter(entity => entity.type === GraphEntityType.Edge);
+  const {
+    [GraphEntityType.Node]: nodes,
+    [GraphEntityType.Edge]: edges
+  } = groupBy(entities, ({type}) => type);
 
   // Create nodes and edges
   for (const entity of nodes) {

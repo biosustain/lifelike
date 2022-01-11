@@ -12,7 +12,7 @@ import {
   NewNodePairSnippetsPageRequest,
   AssociationSnippet,
 } from 'app/interfaces';
-import { PUBTATOR_DOC_URL, SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
+import { getPubtatorSearchUrl, SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
@@ -157,7 +157,7 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
     }
 
     getSnippetPubtatorLink(pmid: string): string {
-      return `${PUBTATOR_DOC_URL}${pmid}`;
+      return getPubtatorSearchUrl(pmid);
     }
 
     snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {

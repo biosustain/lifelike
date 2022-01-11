@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { Source, UniversalGraphNode, UniversalGraphRelationship } from 'app/drawing-tool/services/interfaces';
 import { AssociationSnippet } from 'app/interfaces';
 
-import { PUBTATOR_DOC_URL } from '../constants';
+import { getPubtatorSearchUrl } from '../constants';
 import { uuidv4 } from '../utils';
 import { parseURLToDomainName } from '../utils/browser';
 import { getDTCompatibleLabel } from '../utils/drawing-tool';
@@ -103,7 +103,7 @@ export class NodeRelationshipComponent {
             return {
               type: 'DATABASE',
               domain: snippet.publication.data.title || 'Unknown',
-              url: `${PUBTATOR_DOC_URL}${snippet.publication.data.pmid}`
+              url: getPubtatorSearchUrl(snippet.publication.data.pmid)
             } as Source;
           })
         },

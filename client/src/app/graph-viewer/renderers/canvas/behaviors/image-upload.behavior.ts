@@ -1,7 +1,5 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { isNil } from 'lodash-es';
-
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
