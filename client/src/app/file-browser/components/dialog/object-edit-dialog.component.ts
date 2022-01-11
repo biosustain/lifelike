@@ -273,13 +273,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       const promiseList = [];
       for (const targetFile of event.target.files) {
         const filename = this.extractFilename(targetFile.name);
-
         promiseList.push(this.getDocumentPossibility(targetFile));
         promiseList[promiseList.length - 1].then(maybeDocument => {
           const fileEntry: FileInput = {
             formState: {
               contentValue: targetFile,
-              filename,
+              filename: targetFile.name,
               description: '',
               public: false,
               organism: null,
@@ -288,7 +287,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
                 excludeReferences: true
               }
             },
-            filename,
+            filename: targetFile.name,
             hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
             filePossiblyAnnotatable: maybeDocument,
             annotationsInspected: false
@@ -300,10 +299,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       Promise.all(promiseList).then( _ => {
         this.changeSelectedFile(this.fileList.length - 1);
       });
-    } else {
+    }
+    // else {
       // this.form.get('contentValue').setValue(null);
       // this.filePossiblyAnnotatable = false;
-    }
+    // }
   }
 
   changeSelectedFile(newIndex: number) {
@@ -331,10 +331,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.selectedFile = this.fileList[newIndex];
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
+    this.form.markAsDirty();
     this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
     // Remove the warnings - they will come back if switched again
     this.selectedFile.hasValidFilename = true;
-
     this.invalidInputs = this.fileList.some((file) => !file.hasValidFilename);
 
   }
