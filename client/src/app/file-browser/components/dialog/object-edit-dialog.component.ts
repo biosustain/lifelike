@@ -268,42 +268,37 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   fileChanged(event) {
     // TODO: Check if we need this, it seems like this unsets stuff on cancel when selecting files
-    const length = event.target.files.length;
-    if (length) {
-      const promiseList = [];
-      for (const targetFile of event.target.files) {
-        const filename = this.extractFilename(targetFile.name);
-        promiseList.push(this.getDocumentPossibility(targetFile));
-        promiseList[promiseList.length - 1].then(maybeDocument => {
-          const fileEntry: FileInput = {
-            formState: {
-              contentValue: targetFile,
-              filename: targetFile.name,
-              description: '',
-              public: false,
-              organism: null,
-              annotationsConfigs: {
-                annotationMethods: this.defaultAnnotationMethods,
-                excludeReferences: true
-              }
-            },
-            filename: targetFile.name,
-            hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
-            filePossiblyAnnotatable: maybeDocument,
-            annotationsInspected: false
-          };
-          this.fileList.push(fileEntry);
-        });
-      }
-      // Once all files are pushed, switch to the last one
-      Promise.all(promiseList).then( _ => {
-        this.changeSelectedFile(this.fileList.length - 1);
-      });
+    if (!event.target.files.length) {
+      return;
     }
-    // else {
-      // this.form.get('contentValue').setValue(null);
-      // this.filePossiblyAnnotatable = false;
-    // }
+    const oldFilename = this.form.get('filename').value;
+    for (const targetFile of event.target.files) {
+      console.log(targetFile);
+      const filename = targetFile.name;
+      this.form.get('filename').setValue(filename);
+      const fileEntry: FileInput = {
+        formState: {
+          contentValue: targetFile,
+          filename: targetFile.name,
+          description: '',
+          public: false,
+          organism: null,
+          annotationConfigs: {
+            annotationMethods: this.defaultAnnotationMethods,
+            excludeReferences: true
+          }
+        },
+        filename: targetFile.name,
+        // hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
+        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
+        filePossiblyAnnotatable: targetFile.type === 'application/pdf',
+        annotationsInspected: false
+      };
+      this.fileList.push(fileEntry);
+
+    }
+    this.form.get('filename').setValue(oldFilename);
+    this.changeSelectedFile(this.fileList.length - 1);
   }
 
   changeSelectedFile(newIndex: number) {
@@ -366,6 +361,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }
 
     return file.text().then(text => {
+      console.log('Document text: ' + text);
+      if (text.length === 0) {
+        return false;
+      }
       try {
         JSON.parse(text);
         return false;
