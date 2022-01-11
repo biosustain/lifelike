@@ -478,9 +478,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.getEntityAtPosition(x, y);
   }
 
+  /**
+   * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
+   * we need to evaluate the click according to the display order:
+   * Nodes > Edges > Images
+   * @param x - x position
+   * @param y - y position
+   */
   getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
     const node = this.getNodeAtPosition(this.nodes, x, y);
-    if (node) {
+    // If the node is NOT an image, we return it
+    if (node && node.label !== 'image') {
       return {
         type: GraphEntityType.Node,
         entity: node,
@@ -491,6 +499,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       return {
         type: GraphEntityType.Edge,
         entity: edge,
+      };
+    }
+    // This node could only be image - as it is rendered below the edges, we need to
+    // Check and return edge first
+    if (node) {
+      return {
+        type: GraphEntityType.Node,
+        entity: node,
       };
     }
     return undefined;
