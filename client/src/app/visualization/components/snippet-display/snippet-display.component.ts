@@ -12,7 +12,7 @@ import {
   NewNodePairSnippetsPageRequest,
   AssociationSnippet,
 } from 'app/interfaces';
-import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
+import { getPubtatorSearchUrl, SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 @Component({
@@ -156,13 +156,17 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
         } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | NewNodePairSnippetsPageRequest);
     }
 
+    getSnippetPubtatorLink(pmid: string): string {
+      return getPubtatorSearchUrl(pmid);
+    }
+
     snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
         const dataTransfer: DataTransfer = event.dataTransfer;
         dataTransfer.setData('text/plain', snippet.reference.data.sentence);
         GenericDataProvider.setURIs(dataTransfer, [{
             title: snippet.reference.data.sentence,
             uri: snippet.publication.data.pmid ?
-                'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid :
+                this.getSnippetPubtatorLink(snippet.publication.data.pmid) :
                 snippet.publication.entityUrl,
         }]);
     }

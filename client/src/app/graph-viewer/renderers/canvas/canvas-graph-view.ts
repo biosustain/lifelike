@@ -240,15 +240,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         .subscribe(this.canvasKeyDown.bind(this)),
     );
 
-    this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'dragover')
-        .subscribe(this.canvasDragOver.bind(this)),
-    );
+    // We already have callbacks for these events in the map-editor component, so these produce potentially redundant behavior. It's likely
+    // there were plans to consolidate these that we never implemented. Disabling these for now to avoid undefined behavior.
+    // this.trackedSubscriptions.push(
+    //   fromEvent(this.canvas, 'dragover')
+    //     .subscribe(this.canvasDragOver.bind(this)),
+    // );
 
-    this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'drop')
-        .subscribe(this.canvasDrop.bind(this)),
-    );
+    // this.trackedSubscriptions.push(
+    //   fromEvent(this.canvas, 'drop')
+    //     .subscribe(this.canvasDrop.bind(this)),
+    // );
 
     this.trackedSubscriptions.push(
       fromEvent(document, 'paste')
@@ -1123,21 +1125,23 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.requestRender();
   }
 
-  canvasDragOver(event): void {
-    const behaviorEvent = {
-      // event,
-      event: d3.event,
-    };
-    this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
-  }
+  // See the comment in the constructor above regarding these callbacks. Disabling for now to avoid undefined behavior.
+  // canvasDragOver(event): void {
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
+  // }
 
-  canvasDrop(event): void {
-    const behaviorEvent = {
-      // event,
-      event: d3.event,
-    };
-    this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
-  }
+  // canvasDrop(event): void {
+  //   console.log('canvasDrop');
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
+  // }
 
   documentPaste(event): void {
     const behaviorEvent = {
