@@ -1,3 +1,5 @@
+import { groupBy } from 'lodash-es';
+
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
@@ -24,7 +26,7 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
 
   entities = normalizeGraphEntities(entities, origin);
 
-  // Create nodes
+  // Create nodes and edges
   for (const entity of entities) {
     if (entity.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
@@ -45,44 +47,45 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
 export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: number, y: number }): GraphEntity[] {
   const newEntities: GraphEntity[] = [];
   const nodeHashMap = new Map<string, string>();
+  const {
+    [GraphEntityType.Node]: nodes,
+    [GraphEntityType.Edge]: edges
+  } = groupBy(entities, ({type}) => type);
 
-  // Create nodes
-  for (const entity of entities) {
-    if (entity.type === GraphEntityType.Node) {
-      const node = entity.entity as UniversalGraphNode;
-      const newId = uuidv4();
-      nodeHashMap.set(node.hash, newId);
-      newEntities.push({
-        type: GraphEntityType.Node,
-        entity: {
-          hash: newId,
-          ...node,
-          data: {
-            ...node.data,
-            x: origin.x + ((node.data && node.data.x) || 0),
-            y: origin.y + ((node.data && node.data.y) || 0),
-          },
+  // Create nodes and edges
+  for (const entity of nodes) {
+    const node = entity.entity as UniversalGraphNode;
+    // Creating a new hash like this when we're assuming that a hash already exists seems kind of fishy to me. Leaving this here
+    // because I don't want to break anything, but it's worth pointing out.
+    const newId = node.hash || uuidv4();
+    nodeHashMap.set(node.hash, newId);
+    newEntities.push({
+      type: GraphEntityType.Node,
+      entity: {
+        ...node,
+        hash: newId,
+        data: {
+          ...node.data,
+          x: origin.x + ((node.data && node.data.x) || 0),
+          y: origin.y + ((node.data && node.data.y) || 0),
         },
-      });
-    }
+      },
+    });
   }
 
-  // Create edges
-  for (const entity of entities) {
-    if (entity.type === GraphEntityType.Edge) {
-      const edge = entity.entity as UniversalGraphEdge;
-      const newFrom = nodeHashMap.get(edge.from);
-      const newTo = nodeHashMap.get(edge.to);
-      if (newFrom != null && newTo != null) {
-        newEntities.push({
-          type: GraphEntityType.Edge,
-          entity: {
-            ...edge,
-            from: newFrom,
-            to: newTo,
-          },
-        });
-      }
+  for (const entity of edges) {
+    const edge = entity.entity as UniversalGraphEdge;
+    const newFrom = nodeHashMap.get(edge.from);
+    const newTo = nodeHashMap.get(edge.to);
+    if (newFrom != null && newTo != null) {
+      newEntities.push({
+        type: GraphEntityType.Edge,
+        entity: {
+          ...edge,
+          from: newFrom,
+          to: newTo,
+        },
+      });
     }
   }
 

@@ -3,7 +3,8 @@ import {
   UniversalGraphEdge,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeDeletion, NodeDeletion } from 'app/graph-viewer/actions/nodes';
+import { EdgeDeletion } from 'app/graph-viewer/actions/edges';
+import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
