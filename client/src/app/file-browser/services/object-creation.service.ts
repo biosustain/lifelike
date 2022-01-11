@@ -45,6 +45,7 @@ export class ObjectCreationService {
   executePutWithProgressDialog(request: ObjectCreateRequest,
                                annotationOptions: PDFAnnotationGenerationRequest = {}):
     Observable<FilesystemObject> {
+    console.log('Puting: ' + request.filename);
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
     }));
@@ -72,6 +73,7 @@ export class ObjectCreationService {
               }));
             }
           }
+          console.log('Progress with: ' + request.filename);
         }),
         filter(event => event.bodyValue != null),
         map((event): FilesystemObject => event.bodyValue),
@@ -129,11 +131,9 @@ export class ObjectCreationService {
       }
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
-      this.snackBar.open('Starting upload', null, {duration: 2000});
-      const requests = value.uploadRequests || [value.request];
-      // value.requests.forEach(request => {
+      const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
       return from(requests).pipe(
-        switchMap(request => {
+        mergeMap(request => {
           console.log(request);
           return this.executePutWithProgressDialog({
             ...request,
