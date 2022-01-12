@@ -23,7 +23,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SelectionManyToManyEntity } from 'app/sankey/sankey-many-to-many-viewer/components/interfaces';
+import { SelectionSingleLaneEntity } from 'app/sankey/base-views/single-lane/components/interfaces';
 import {
   SankeyState,
   SelectionType,
@@ -31,7 +31,7 @@ import {
   SankeyURLLoadParam,
   ViewBase,
   SankeyOptions
-} from 'app/sankey/shared-sankey/interfaces';
+} from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -39,9 +39,9 @@ import { MimeTypes } from 'app/shared/constants';
 import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
 
 import { SankeySearchService } from '../services/search.service';
-import Sankey from '../sankey-viewer/resolve';
-import SankeyManyToMany from '../sankey-many-to-many-viewer/resolve';
-import { SankeyControllerService } from '../sankey-viewer/services/sankey-controller.service';
+import Sankey from '../base-views/multi-lane/resolve';
+import SankeySingleLane from '../base-views/single-lane/resolve';
+import { SankeyControllerService } from '../services/sankey-controller.service';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.directive';
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
@@ -95,7 +95,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       parent: injector
     });
     this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
-    this.baseViewInjectors.set(SankeyManyToMany, createSankeyInjector(SankeyManyToMany.providers));
+    this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
 
     const stateHelper = new ReplaySubject(1);
     this.route.fragment.pipe(
@@ -259,7 +259,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   paramsSubscription: Subscription;
   returnUrl: string;
-  selection: BehaviorSubject<Array<SelectionManyToManyEntity>>;
+  selection: BehaviorSubject<Array<SelectionSingleLaneEntity>>;
   selectionWithTraces;
   loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
@@ -290,14 +290,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     const networkTrace = trace_networks[networkTraceIdx];
     const _inNodes = node_sets[networkTrace.sources];
     const _outNodes = node_sets[networkTrace.targets];
-    return (_inNodes.length > 1 && _outNodes.length > 1) ? ViewBase.sankeyManyToMany : ViewBase.sankey;
+    return (_inNodes.length > 1 && _outNodes.length > 1) ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane;
   }
 
 
   ngAfterViewInit() {
     this.baseViewName.subscribe(baseView => {
       console.log('baseViewName', baseView);
-      const o = baseView === ViewBase.sankey ? Sankey : SankeyManyToMany;
+      const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
       const sankeyInjector = this.baseViewInjectors.get(o);
       const injectComponent = (container, component) => {
         const factory = this.componentFactoryResolver.resolveComponentFactory(component);

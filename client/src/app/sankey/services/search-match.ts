@@ -9,7 +9,7 @@
  */
 import { omit, slice, transform, isObject, flatMap, flatMapDeep } from 'lodash-es';
 
-import { SankeyLink, SankeyTrace, SankeyNode } from 'app/sankey/shared-sankey/interfaces';
+import { SankeyLink, SankeyTrace, SankeyNode } from 'app/sankey/interfaces';
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 
