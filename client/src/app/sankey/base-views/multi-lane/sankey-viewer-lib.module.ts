@@ -16,29 +16,18 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyDirective } from './directives/sankey.directive';
-import { SankeyDetailsPanelDirective } from './directives/details-panel.directive';
-import { SankeySearchPanelModule } from './components/search-panel/sankey-search-panel.module';
-import { PathReportComponent } from './components/path-report/path-report.component';
-import { SankeyAdvancedPanelDirective } from './directives/advanced-panel.directive';
-import { SankeyViewConfirmComponent } from './components/view-confirm.component';
-import { SankeyViewCreateComponent } from './components/view-create.component';
-import { SankeyViewDropdownComponent } from './components/view-dropdown.component';
-import { BaseViewsModule } from './base-views/base-views.module';
+import { SankeyModule } from '../../components/sankey/sankey.module';
+import { SankeyMultiLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
+import { SankeyDetailsPanelModule } from '../../components/details-panel/sankey-details-panel.module';
+import { SankeyMultiLaneControllerService } from './services/sankey-multi-lane-controller.service';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyDirective,
-    SankeyDetailsPanelDirective,
-    SankeyAdvancedPanelDirective,
-    PathReportComponent,
-    SankeyViewConfirmComponent,
-    SankeyViewCreateComponent,
-    SankeyViewDropdownComponent
+    SankeyMultiLaneAdvancedPanelComponent
+  ],
+  providers: [
+    SankeyMultiLaneControllerService
   ],
   imports: [
     CommonModule,
@@ -57,15 +46,9 @@ import { BaseViewsModule } from './base-views/base-views.module';
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeySearchPanelModule,
-    BaseViewsModule
-  ],
-  exports: [
-    SankeyViewComponent
-  ],
-  providers: [
-    ClipboardService
+    SankeyModule,
+    SankeyDetailsPanelModule
   ]
 })
-export class SankeyViewerLibModule {
+export class SankeyMultiLaneOverwriteModule {
 }
