@@ -37,7 +37,7 @@ import {
 import { isPositiveNumber } from '../../../utils';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 import { SankeyMultiLaneOptions } from '../interfaces';
-
+import { inputCount } from '../algorithms/linkValues';
 export const customisedMultiValueAccessorId = 'Customised';
 
 export const customisedMultiValueAccessor = {
@@ -66,10 +66,16 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
 
   // @ts-ignore
   get defaultOptions(): Partial<SankeyOptions & SankeyMultiLaneOptions> {
-    return {
-      ...super.defaultOptions,
-      linkPalettes
-    };
+    return merge(super.defaultOptions, {
+      linkPalettes,
+      linkValueGenerators: {
+        [LINK_VALUE_GENERATOR.input_count]: {
+          description: LINK_VALUE_GENERATOR.input_count,
+          preprocessing: inputCount,
+          disabled: () => false
+        } as ValueGenerator
+      }
+    });
   }
 
   get defaultState(): SankeyState {

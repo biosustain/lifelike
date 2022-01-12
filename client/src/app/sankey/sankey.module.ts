@@ -25,8 +25,8 @@ import { SankeySearchPanelModule } from './components/search-panel/sankey-search
 import { PathReportComponent } from './components/path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from './directives/advanced-panel.directive';
 import { SankeyViewConfirmComponent } from './components/view-confirm.component';
-import { SankeyViewCreateComponent } from './components/view-create.component';
-import { SankeyViewDropdownComponent } from './components/view-dropdown.component';
+import { SankeyViewCreateComponent } from './components/view-create/view-create.component';
+import { SankeyViewDropdownComponent } from './components/view-dropdown/view-dropdown.component';
 import { BaseViewsModule } from './base-views/base-views.module';
 
 @NgModule({

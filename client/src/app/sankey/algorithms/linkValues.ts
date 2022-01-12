@@ -80,8 +80,6 @@ export function fractionOfFixedNodeValue(this: SankeyControllerService, {links, 
   };
 }
 
-export { inputCount } from './inputCount';
-
 export const byProperty: (property: string) => ValueProcessingStep =
   property =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context

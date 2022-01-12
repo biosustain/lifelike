@@ -21,10 +21,10 @@ import {
   SankeyURLLoadParam,
   SankeyApplicableView,
   ViewBase
-} from '../interfaces';
-import { SankeyViewConfirmComponent } from './view-confirm.component';
-import { SankeyViewCreateComponent } from './view-create.component';
-import { viewBaseToNameMapping } from '../constants';
+} from '../../interfaces';
+import { SankeyViewConfirmComponent } from '../view-confirm.component';
+import { SankeyViewCreateComponent } from '../view-create/view-create.component';
+import { viewBaseToNameMapping } from '../../constants';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -157,7 +157,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
         viewName, baseViewName: base
       });
       const graph = this.sankeyController.computeData();
-      graph._precomputedLayout = true;
+      (graph as any)._precomputedLayout = true;
       this.applyPropertyObject(nodes, graph.nodes);
       this.applyPropertyObject(links, graph.links);
       // @ts-ignore

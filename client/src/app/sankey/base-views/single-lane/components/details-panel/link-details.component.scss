@@ -1,21 +1,22 @@
 .trace {
-  &, & > * {
+  &,
+  > * {
     vertical-align: middle;
   }
 
-  & > .property {
+  > .property {
     align-items: baseline;
     display: flex;
     flex-wrap: wrap;
 
-    & > span {
+    > span {
       margin-right: 1em;
 
       &:first-child {
         flex-grow: 0;
         font-weight: bold;
-        margin-bottom: 0.25em;
-        margin-top: 0.5em;
+        margin-bottom: .25em;
+        margin-top: .5em;
       }
     }
   }
