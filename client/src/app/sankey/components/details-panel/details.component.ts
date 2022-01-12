@@ -10,10 +10,10 @@ import { SankeyControllerService } from '../../services/sankey-controller.servic
 
 
 @Component({
-  selector: 'app-sankey-search',
+  selector: 'app-sankey-details',
   template: ''
 })
-export class SankeySearchComponent {
+export class SankeyDetailsComponent {
   constructor(
     private sankeyController: SankeyControllerService,
     protected readonly route: ActivatedRoute
@@ -39,6 +39,10 @@ export class SankeySearchComponent {
 
   get options() {
     return this.sankeyController.options;
+  }
+
+  get state() {
+    return this.sankeyController.state;
   }
 
   getNodeById(nodeId) {

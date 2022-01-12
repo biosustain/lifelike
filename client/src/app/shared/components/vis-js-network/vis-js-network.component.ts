@@ -8,7 +8,7 @@ import { DataSet } from 'vis-data/dist/umd';
 import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
-import { isNodeMatching } from 'app/sankey/sankey-viewer/components/search-match';
+import { isNodeMatching } from 'app/sankey/base-views/multi-lane/components/search-match';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
 
 import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';

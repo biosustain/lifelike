@@ -16,29 +16,16 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { SharedSankeyModule } from 'app/sankey/shared-sankey.module';
+import { SankeySearchPanelModule } from 'app/sankey/components/search-panel/sankey-search-panel.module';
 
-import { SankeyViewComponent } from './components/sankey-view.component';
-import { SankeyDirective } from './directives/sankey.directive';
-import { SankeyDetailsPanelDirective } from './directives/details-panel.directive';
-import { SankeySearchPanelModule } from './components/search-panel/sankey-search-panel.module';
-import { PathReportComponent } from './components/path-report/path-report.component';
-import { SankeyAdvancedPanelDirective } from './directives/advanced-panel.directive';
-import { SankeyViewConfirmComponent } from './components/view-confirm.component';
-import { SankeyViewCreateComponent } from './components/view-create.component';
-import { SankeyViewDropdownComponent } from './components/view-dropdown.component';
-import { BaseViewsModule } from './base-views/base-views.module';
+import { SankeySingleLaneModule } from './components/sankey/sankey.module';
+import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
+import { SankeySingleLaneDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
 
 @NgModule({
   declarations: [
-    SankeyViewComponent,
-    SankeyDirective,
-    SankeyDetailsPanelDirective,
-    SankeyAdvancedPanelDirective,
-    PathReportComponent,
-    SankeyViewConfirmComponent,
-    SankeyViewCreateComponent,
-    SankeyViewDropdownComponent
+    SankeySingleLaneAdvancedPanelComponent
   ],
   imports: [
     CommonModule,
@@ -57,15 +44,12 @@ import { BaseViewsModule } from './base-views/base-views.module';
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeySearchPanelModule,
-    BaseViewsModule
+    SankeySingleLaneModule,
+    SankeySingleLaneDetailsPanelModule,
+    SharedSankeyModule,
+    SankeySingleLaneDetailsPanelModule,
+    SankeySearchPanelModule
   ],
-  exports: [
-    SankeyViewComponent
-  ],
-  providers: [
-    ClipboardService
-  ]
 })
-export class SankeyViewerLibModule {
+export class SankeySingleLaneOverwriteModule {
 }

@@ -1,0 +1,27 @@
+@import '../../../../../node_modules/bootstrap/scss/functions';
+@import '../../../../../node_modules/bootstrap/scss/variables';
+
+.btn-presets {
+  align-items: center;
+  column-gap: $spacer * .5;
+  display: flex;
+  justify-content: space-between;
+  overflow-wrap: break-word;
+  width: 100% !important;
+
+  &:disabled:hover {
+    text-decoration: none;
+  }
+
+  .selectable-text {
+    cursor: text;
+    pointer-events: all;
+    user-select: text;
+  }
+
+  & > *:last-child {
+    overflow-wrap: anywhere;
+    text-align: end;
+  }
+}
+

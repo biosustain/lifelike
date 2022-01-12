@@ -3,7 +3,7 @@ import { Component, } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { groupBy, values } from 'lodash-es';
 
-import { SankeyPathReport } from 'app/sankey/shared-sankey/interfaces';
+import { SankeyPathReport } from 'app/sankey/interfaces';
 
 @Component({
   selector: 'app-sankey-path-report',
