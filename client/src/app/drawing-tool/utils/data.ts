@@ -47,10 +47,9 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
 export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: number, y: number }): GraphEntity[] {
   const newEntities: GraphEntity[] = [];
   const nodeHashMap = new Map<string, string>();
-  const {
-    [GraphEntityType.Node]: nodes,
-    [GraphEntityType.Edge]: edges
-  } = groupBy(entities, ({type}) => type);
+  const nodes = [];
+  const edges = [];
+  entities.forEach((entity) => entity.type === GraphEntityType.Node ? nodes.push(entity) : edges.push(entity));
 
   // Create nodes and edges
   for (const entity of nodes) {
