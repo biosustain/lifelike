@@ -1,16 +1,34 @@
 import json
 import logging
+import os
+
 from pathlib import Path
 
 from common import utils as common_utils
 from common.constants import *
-from common.database import *
+from common.database import get_database
+from typing import Type
 
-from biocyc import (class_parser, compound_parser, dnabindsite_parser,
-                    enzymereaction_parser, gene_parser, pathway_parser,
-                    promoter_parser, protein_parser, reaction_parser,
-                    regulation_parser, rna_parser, terminator_parser,
-                    transcripitionunit_parser)
+from biocyc.base_data_file_parser import BaseDataFileParser
+from biocyc import (
+    class_parser,
+    compound_parser,
+    dnabindsite_parser,
+    enzymereaction_parser,
+    gene_parser,
+    pathway_parser,
+    promoter_parser,
+    protein_parser,
+    reaction_parser,
+    regulation_parser,
+    rna_parser,
+    terminator_parser,
+    transcripitionunit_parser
+)
+
+
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
 
 ENTITIES = [NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE, NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
             NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
@@ -33,25 +51,23 @@ PARSERS = {
 }
 
 
-class BiocycParser(object):
-    def __init__(self, base_data_dir: str = None):
-        self.base_data_dir = base_data_dir
+class BiocycParser:
+    def __init__(self, prefix: str, base_dir: str=None):
+        self.base_dir = base_dir
+        self.prefix = prefix
 
         # Read data source name and file from config
-        with open(
-            os.path.join(Path(__file__).parent.resolve(), "data_sources.json")
-        ) as f:
-            self.data_sources = {ds["name"]: ds["file"] for ds in json.load(f)}
+        with open(os.path.join(directory, 'data_sources.json')) as f:
+            self.data_sources = {ds['name']: ds['file'] for ds in json.load(f)}
 
         # Default to loading all data source files
         self.data_sources_to_load = self.data_sources
-
         self.logger = logging.getLogger(__name__)
 
-    def get_parser(self, entity_name: str, biocyc_dbname, filename):
-        return PARSERS[entity_name](biocyc_dbname, filename, self.base_data_dir)
+    def get_parser(self, entity_name: str, biocyc_dbname: str, filename: str) -> Type[BaseDataFileParser]:
+        return PARSERS[entity_name](self.prefix, biocyc_dbname, filename, self.base_dir)
 
-    def link_genes(self, database:Database):
+    def link_genes(self, database):
         """
         Link biocyc genes to NCBI genes using accession number to match NCBI gene locustag.  Since human genes don't have
         accession, use gene name match.
@@ -82,7 +98,7 @@ class BiocycParser(object):
         self.logger.info("Link HumanCyc genes with NCBI genes")
         database.run_query(query_human)
 
-    def set_gene_property_for_enrichment(self, database: Database):
+    def set_gene_property_for_enrichment(self, database):
         """
         Add 'pathways' property to biocyc genes. Since the pathways and genes are organism specific, but not reactions,
         we need specify the db_name label for the genes and pathways.
@@ -101,7 +117,7 @@ class BiocycParser(object):
             self.logger.debug(myquery)
             database.run_query(myquery)
 
-    def add_protein_synonyms(self, database: Database):
+    def add_protein_synonyms(self, database):
         """
         Add BioCyc protein abbrev_name as its synonym
         :param database: the database to run query
@@ -114,64 +130,35 @@ class BiocycParser(object):
         self.logger.info("Add protein synonyms")
         database.run_query(query)
 
-    def load_data_into_neo4j(self, database: Database):
+    def load_data_into_neo4j(self, database=None):
         """
         Use the default ENTITIES and DB_FILE_DICT to load all 4 biocyc databases into KG database. After load data,
         need to run scripts to set displayname and description.  See docs/biocyc/set_displayname_description.md
         :param database: the neo4j database to load data
         """
-
-        # Ensure constraint on EtlLoad
-        database.create_constraint("EtlLoad", "etl_load_id", "constraint_etlload_etl_load_id")
-
+        # TODO: NEEDED, biocyc constraints
+        #
         # Create constraints and indices if they don't exist
-        database.create_constraint(
-            NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
-        )
-        database.create_constraint(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id')
-        database.create_index(NODE_BIOCYC, PROP_NAME, "index_biocyc_name")
-        database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
+        # database.create_constraint(
+        #     NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
+        # )
+        # database.create_constraint(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id')
+        # database.create_index(NODE_BIOCYC, PROP_NAME, "index_biocyc_name")
+        # database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
 
         # loop data sources configured in data_sources.json
         for db, file in self.data_sources_to_load.items():
             DB_NODE = 'db_' + db
-            database.create_index(DB_NODE, PROP_BIOCYC_ID, f'index_{db}_{PROP_BIOCYC_ID}')
-            database.create_constraint(DB_NODE, PROP_ID, f'index_{db}_id')
-            database.create_index(DB_NODE, PROP_NAME, f'index_{db}_name')
+            # database.create_index(DB_NODE, PROP_BIOCYC_ID, f'index_{db}_{PROP_BIOCYC_ID}')
+            # database.create_constraint(DB_NODE, PROP_ID, f'index_{db}_id')
+            # database.create_index(DB_NODE, PROP_NAME, f'index_{db}_name')
             version = ''
             for entity in ENTITIES:
                 self.logger.info(f"Load {db}: {entity}")
                 parser = self.get_parser(entity, db, file)
                 parser.version = version
                 if parser:
-                    nodes = parser.parse_data_file()
-                    data_source_version = parser.version
-                    node_version = common_utils.get_node_version(data_source_version)
-
-                    # Create EtlLoad node
-                    etl_load_id = database.log_etl_load_start("BioCyc", parser.node_labels, node_version)
-                    self.logger.debug(f"etl_load_id: {etl_load_id}")
-
-                    no_of_created_nodes = 0
-                    no_of_updated_nodes = 0
-                    no_of_created_relations = 0
-                    no_of_updated_relations = 0
-                    parser.create_indexes(database)
-                    if nodes:
-                        node_count, result_counters = parser.update_nodes_in_graphdb(nodes, database, etl_load_id)
-                        no_of_created_nodes += result_counters.nodes_created
-                        no_of_updated_nodes += (node_count - result_counters.nodes_created)
-                        _no_of_created_nodes, _no_of_updated_nodes, _no_of_created_relations, _no_of_updated_relations = parser.add_edges_to_graphdb(nodes, database, etl_load_id)
-
-                        no_of_created_nodes += _no_of_created_nodes
-                        no_of_updated_nodes += _no_of_updated_nodes
-                        no_of_created_relations += _no_of_created_relations
-                        no_of_updated_relations += _no_of_updated_relations
-
-                    # TODO: Add number of entities in file and number of parsed nodes ?
-                    # TODO: Include numbers from scripts run after this
-
-                    database.log_etl_load_finished(etl_load_id, no_of_created_nodes, no_of_updated_nodes, no_of_created_relations, no_of_updated_relations)
+                    parser.parse_and_write_data_files()
 
     def write_entity_datafile(self, db_name, data_file, entities: []):
         for entity in entities:
@@ -181,10 +168,8 @@ class BiocycParser(object):
 
 
 def main(args):
-
     logger = logging.getLogger(__name__)
-
-    parser = BiocycParser()
+    parser = BiocycParser(args.prefix)
 
     if args.data_sources:
         # load only the specified data sources
@@ -195,23 +180,19 @@ def main(args):
                     data_source_name
                 ]
             else:
-                raise ValueError(
-                    "The specified data source was not recognized: '{}'".format(
-                        data_source_name
-                    )
-                )
+                raise ValueError(f'The specified data source was not recognized: {data_source_name}')
     else:
-        logger.info("No data sources specified. Loading all data sources...")
+        logger.info('No data sources specified. Loading all data sources...')
 
-    database = get_database()
+    # database = get_database()
 
     # After loading data, we (perhaps?) need to run scripts to set displayname and description. See docs/biocyc/set_displayname_description.md
-    parser.load_data_into_neo4j(database)
-    parser.link_genes(database)
-    parser.set_gene_property_for_enrichment(database)
-    parser.add_protein_synonyms(database)
+    parser.load_data_into_neo4j()
+    # parser.link_genes(database)
+    # parser.set_gene_property_for_enrichment(database)
+    # parser.add_protein_synonyms(database)
 
-    database.close()
+    # database.close()
 
 
 if __name__ == "__main__":

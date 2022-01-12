@@ -74,7 +74,7 @@ class KeggParser(BaseParser):
             return val
         return ''
 
-    def parse_and_write_data_files(self):
+    def parse_and_write_data_files(self, *args):
         df_pathway = self.parse_pathway_file()
         logging.info('kegg pathways: ' + str(len(df_pathway)))
         df_pathway.to_csv(os.path.join(self.output_dir, self.file_prefix + PATHWAY_FILE), sep='\t', index=False)

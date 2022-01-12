@@ -362,7 +362,7 @@ class LiteratureDataParser(BaseParser):
         df.to_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), index=False, sep='\t', chunksize=50000)
         logging.info('done')
 
-    def parse_and_write_data_files(self):
+    def parse_and_write_data_files(self, *args):
         df = pd.read_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), sep='\t')
 
         for filename, (entity1_type, entity2_type) in [

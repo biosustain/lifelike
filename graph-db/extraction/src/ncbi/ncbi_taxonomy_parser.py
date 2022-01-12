@@ -154,7 +154,7 @@ class TaxonomyParser(BaseParser):
             child.top_category = tax.top_category
             self._label_top_class_for_children(child)
 
-    def parse_and_write_data_files(self):
+    def parse_and_write_data_files(self, *args):
         nodes = self.parse_files()
         tax_file = open(os.path.join(self.output_dir, self.file_prefix + NCBI_TAXONOMY_FILE), 'w')
         synonym_file = open(os.path.join(self.output_dir, self.file_prefix + NCBI_TAXONOMY_SYNONYM_FILE), 'w')

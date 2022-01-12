@@ -111,7 +111,7 @@ class EnzymeParser(BaseParser):
         self.logger.info(f'enzyme classes: {len(ec_classes)}')
         return ec_classes
 
-    def parse_data_files(self) -> list:
+    def _parse_data_files(self) -> list:
         """
         Parse both data files and return list of enzyme nodes
         """
@@ -190,8 +190,8 @@ class EnzymeParser(BaseParser):
                 parent = enzyme_dict[parent_code]
                 parent.add_child(enz)
 
-    def load_data_to_neo4j(self):
-        enzymes = self.parse_data_files()
+    def parse_and_write_data_files(self, *args):
+        enzymes = self._parse_data_files()
         self.logger.info('load enzyme nodes')
         data = [enzyme.get_enzyme_dict() for enzyme in enzymes]
         self.logger.info(f'total enzymes: {len(data)}')
@@ -227,7 +227,7 @@ class EnzymeParser(BaseParser):
 
 def main(args):
     parser = EnzymeParser(args.prefix)
-    parser.load_data_to_neo4j()
+    parser.parse_and_write_data_files()
 
     for filename in [ENZYME_FILE, ENZYME_SYNONYM_FILE, ENZYME_REL_FILE]:
         parser.upload_azure_file(filename, args.prefix)

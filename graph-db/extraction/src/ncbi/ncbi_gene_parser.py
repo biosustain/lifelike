@@ -32,7 +32,7 @@ class GeneParser(BaseParser):
         self.gene2go_file = os.path.join(self.download_dir, 'gene2go.gz')
         self.logger = logging.getLogger(__name__)
 
-    def parse_and_write_data_files(self):
+    def parse_and_write_data_files(self, *args):
         self.logger.info('Parse bioinfo...')
         self._load_bioinfo_to_neo4j()
         self.logger.info('Parse gene2go...')
