@@ -68,7 +68,7 @@ export enum LINK_VALUE_GENERATOR {
 }
 
 type LINK_VALUE_GENERATORS = {
-  [linkValueGeneratorId in LINK_VALUE_GENERATOR]: ValueGenerator
+  [linkValueGeneratorId in LINK_VALUE_GENERATOR]?: ValueGenerator
 };
 
 type NODE_VALUE_GENERATORS = {

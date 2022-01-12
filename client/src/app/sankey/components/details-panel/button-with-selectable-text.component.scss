@@ -1,5 +1,4 @@
-@import '../../../../../node_modules/bootstrap/scss/functions';
-@import '../../../../../node_modules/bootstrap/scss/variables';
+@import 'sankey';
 
 .btn-presets {
   align-items: center;
@@ -19,7 +18,7 @@
     user-select: text;
   }
 
-  & > *:last-child {
+  > *:last-child {
     overflow-wrap: anywhere;
     text-align: end;
   }

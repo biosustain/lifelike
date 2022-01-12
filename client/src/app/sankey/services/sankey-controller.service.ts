@@ -75,11 +75,6 @@ export class SankeyControllerService {
         }
       },
       linkValueGenerators: {
-        [LINK_VALUE_GENERATOR.input_count]: {
-          description: LINK_VALUE_GENERATOR.input_count,
-          preprocessing: linkValues.inputCount,
-          disabled: () => false
-        } as ValueGenerator,
         [LINK_VALUE_GENERATOR.fixedValue0]: {
           description: LINK_VALUE_GENERATOR.fixedValue0,
           preprocessing: linkValues.fixedValue(0),
@@ -382,7 +377,7 @@ export class SankeyControllerService {
     }
   }
 
-  computeData() {
+  computeData(): SankeyData {
     throw new Error('Not implemented');
   }
 

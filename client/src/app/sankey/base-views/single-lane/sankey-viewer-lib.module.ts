@@ -16,7 +16,6 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { SharedSankeyModule } from 'app/sankey/shared-sankey.module';
 import { SankeySearchPanelModule } from 'app/sankey/components/search-panel/sankey-search-panel.module';
 
 import { SankeySingleLaneModule } from './components/sankey/sankey.module';
@@ -45,8 +44,6 @@ import { SankeySingleLaneDetailsPanelModule } from './components/details-panel/s
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeySingleLaneModule,
-    SankeySingleLaneDetailsPanelModule,
-    SharedSankeyModule,
     SankeySingleLaneDetailsPanelModule,
     SankeySearchPanelModule
   ],

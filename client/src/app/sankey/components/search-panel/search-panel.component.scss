@@ -1,15 +1,17 @@
+@import 'sankey';
+
 app-sankey-search-panel {
   @mixin clamp($max-lines) {
-    -webkit-box-orient: vertical;
     // oddly those prefixes are supported among all modern browsers
+    -webkit-box-orient: vertical;
     -webkit-line-clamp: $max-lines;
     display: -webkit-box;
     overflow: hidden;
   }
 
-  dt:after {
+  dt::after {
     content: ':';
-    margin-right: 0.5em;
+    margin-right: .5em;
   }
 
   dl {
@@ -24,29 +26,30 @@ app-sankey-search-panel {
       flex-grow: 1;
       margin-bottom: 0;
 
-      & app-highlight-text > span {
+      app-highlight-text > span {
         @include clamp(3);
       }
     }
   }
 
   .fieldset-properties {
-    border: 1px solid #ced4da;
+    $border-color: $gray-400;
+    border: 1px solid $border-color;
     cursor: pointer;
-    padding: 0 0.75rem 0.75rem;
+    padding: 0 .75rem .75rem;
 
     &:hover {
-      border-color: darken(#ced4da, 20%);
+      border-color: darken($border-color, 20%);
     }
 
     &.focused {
-      border: 2px solid #ff0000;
+      border: 2px solid $search-accent-color;
     }
 
     legend {
       margin-bottom: 0;
-      margin-left: -0.5rem;
-      padding: 0 0.5rem;
+      margin-left: -.5rem;
+      padding: 0 .5rem;
     }
   }
 

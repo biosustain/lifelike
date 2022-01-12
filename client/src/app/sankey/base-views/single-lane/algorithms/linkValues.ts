@@ -6,19 +6,19 @@ import {
   calculateInputCountSkippingCircularLinksA,
   initInputCountCalculation,
   getLinkLayers
-} from 'app/sankey/algorithms/inputCount';
+} from 'app/sankey/algorithms/inputCountSharedSteps';
 import { SankeyTrace } from 'app/sankey/interfaces';
 import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
+import { CustomisedSankeyLayoutService } from 'app/sankey/services/customised-sankey-layout.service';
 
-import { CustomisedSankeySingleLaneLayoutService } from '../../services/customised-sankey-layout.service';
-import { SankeySingleLaneLink, SankeySingleLaneData } from '../interfaces';
+import { SankeySingleLaneLink, SankeySingleLaneData } from '../components/interfaces';
 
 export function inputCount(
   this: SankeyControllerService,
   data: SankeySingleLaneData
 ) {
   // @ts-ignore
-  const layout = new CustomisedSankeySingleLaneLayoutService();
+  const layout = new CustomisedSankeyLayoutService();
   const {
     sortedNodes,
     dt,
