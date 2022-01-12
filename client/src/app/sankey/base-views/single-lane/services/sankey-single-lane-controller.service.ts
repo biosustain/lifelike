@@ -8,11 +8,12 @@ import {
   SankeyTraceNetwork,
   SankeyLink,
   SankeyTrace,
-  ViewBase
+  ViewBase, SankeyOptions
 } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { RecursivePartial } from 'app/shared/schemas/common';
 
+import { inputCount } from '../algorithms/linkValues';
 import {
   SankeySingleLaneLink,
   SankeySingleLaneState,
@@ -21,7 +22,6 @@ import {
   SankeySingleLaneOptionsExtend,
   SankeySingleLaneStateExtend
 } from '../components/interfaces';
-import * as linkValues from '../components/algorithms/linkValues';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 
@@ -37,7 +37,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
   viewBase = ViewBase.sankeySingleLane;
 
   // @ts-ignore
-  get defaultState(): SankeySingleLaneState {
+  get defaultState(): RecursivePartial<SankeyOptions & SankeySingleLaneState> {
     return merge(super.defaultState, {
       highlightCircular: true,
       colorLinkByType: false,
@@ -60,7 +60,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
       linkValueGenerators: {
         [LINK_VALUE_GENERATOR.input_count]: {
           description: LINK_VALUE_GENERATOR.input_count,
-          preprocessing: linkValues.inputCount,
+          preprocessing: inputCount,
           disabled: () => false
         } as ValueGenerator
       }
