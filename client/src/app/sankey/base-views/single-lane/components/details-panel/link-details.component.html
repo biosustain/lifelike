@@ -42,11 +42,11 @@
                         entity._traces">
                             <div class="property">
                                 <span>Source</span>
-                                <span>{{ getNodeById(trace.source).description }}</span>
+                                <span>{{ getNodeById(trace.source).description | async }}</span>
                             </div>
                             <div class="property">
                                 <span>Target</span>
-                                <span>{{ getNodeById(trace.target).description }}</span>
+                                <span>{{ getNodeById(trace.target).description | async }}</span>
                             </div>
                             <div class="property">
                                 <span>Group</span>

@@ -4,7 +4,7 @@ import { max, min, sum } from 'd3-array';
 import { first, last, range } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyData, SankeyState } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 
@@ -38,18 +38,20 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
+    this.sankeyController.state$.subscribe(state => {
+      this.state = state;
+    });
   }
+
+  state: SankeyState;
 
   get linkPath() {
     const {
       calculateLinkPathParams,
       composeLinkPath,
-      sankeyController:
+      state:
         {
-          state:
-            {
-              normalizeLinks
-            }
+          normalizeLinks
         }
     } = this;
     return link => {
@@ -60,16 +62,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get nodeLabelShort() {
     const {
-      sankeyController:
-        {
           state:
             {
               labelEllipsis: {
                 value,
                 enabled
               }
-            }
-        },
+            },
       nodeLabel,
       truncatePipe: {transform}
     } = this;
@@ -82,16 +81,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get nodeLabelShouldBeShorted() {
     const {
-      sankeyController:
-        {
           state:
             {
               labelEllipsis: {
                 value,
                 enabled
               }
-            }
-        },
+            },
       nodeLabel
     } = this;
     if (enabled) {
@@ -116,13 +112,10 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
 
   get fontSize() {
     const {
-      sankeyController:
-        {
           state:
             {
               fontSizeScale
             }
-        }
     } = this;
     // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
@@ -256,13 +249,12 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
    */
   getYScaleFactor(nodes) {
     const {
-      y1, y0, py, dx, sankeyController:
-        {
+      y1, y0, py, dx,
           state:
             {
               nodeHeight
             }
-        }, value, columnsWithLinkPlaceholders: columns
+        , value, columnsWithLinkPlaceholders: columns
     } = this;
     // normal calculation based on tallest column
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
@@ -321,13 +313,10 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   computeNodeHeights({nodes}: SankeyData) {
     const {
       ky,
-      sankeyController:
-        {
           state:
             {
               nodeHeight
-            }
-        }, value
+            }, value
     } = this;
     for (const node of nodes) {
       if (nodeHeight.min.enabled && nodeHeight.min.value) {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
@@ -38,7 +38,8 @@ export class ViewService {
     const hashUrl = new URL(url.replace(/^\/+/, '/'), window.location.href);
     const viewParams = (componentInstance || {}).viewParams;
     if (viewParams) {
-      return this.create(viewParams).pipe(
+      return from(viewParams).pipe(
+        switchMap(params => this.create(params)),
         map(viewId => {
           if (viewId) {
             hashUrl.hash = viewId;

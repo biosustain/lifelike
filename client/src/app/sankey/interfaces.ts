@@ -22,7 +22,8 @@ export interface ValueGenerator extends ValueAccessor {
 }
 
 export interface MultiValueAccessor extends ValueAccessor {
-  callback: () => void;
+  linkValueAccessorId: string;
+  nodeValueAccessorId: string;
 }
 
 export interface Prescaler {
@@ -57,7 +58,7 @@ export interface LinkValueAccessor {
 }
 
 export type PREDEFINED_VALUE_ACCESSORS = {
-  [linkValueGeneratorId in PREDEFINED_VALUE]: MultiValueAccessor
+  [linkValueGeneratorId in PREDEFINED_VALUE]?: MultiValueAccessor
 };
 
 export enum LINK_VALUE_GENERATOR {
@@ -85,15 +86,20 @@ export enum PREDEFINED_VALUE {
   input_count = 'Input count'
 }
 
-export interface SankeyOptions {
-  networkTraces: Array<SankeyTraceNetwork>;
+export interface SankeyStaticOptions {
   prescalers: PRESCALERS;
-  nodeValueAccessors: NodeValueAccessor;
-  linkValueAccessors: LinkValueAccessor;
-  predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
   nodeValueGenerators: NODE_VALUE_GENERATORS;
   linkValueGenerators: LINK_VALUE_GENERATORS;
 }
+
+export interface SankeyFileOptions {
+  networkTraces: Array<SankeyTraceNetwork>;
+  nodeValueAccessors: NodeValueAccessor;
+  linkValueAccessors: LinkValueAccessor;
+  predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
+}
+
+export type SankeyOptions = SankeyStaticOptions & SankeyFileOptions;
 
 export interface SankeyState {
   nodeAlign: 'right' | 'left';
@@ -104,7 +110,6 @@ export interface SankeyState {
   linkValueAccessorId: string;
   predefinedValueAccessorId: string;
   normalizeLinks: boolean;
-  linkPaletteId: string;
   labelEllipsis: {
     enabled: boolean,
     value: number

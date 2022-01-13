@@ -10,22 +10,22 @@
                 <ng-template disabled="true" ngbPanelHeader>
                     <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
                         <b title>Source</b>
-                        {{ getNodeById(entity.source).id }}
+                        {{ getNodeById(entity.source).id | async }}
                     </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
-                    {{ getNodeById(entity.source).description }}
+                    {{ getNodeById(entity.source).description | async }}
                 </ng-template>
             </ngb-panel>
             <ngb-panel id="target">
                 <ng-template disabled="true" ngbPanelHeader>
                     <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
                         <b title>Target</b>
-                        {{ getNodeById(entity.target).id }}
+                        {{ getNodeById(entity.target).id | async }}
                     </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
-                    {{ getNodeById(entity.target).description }}
+                    {{ getNodeById(entity.target).description | async }}
                 </ng-template>
             </ngb-panel>
             <ngb-panel [disabled]="true">

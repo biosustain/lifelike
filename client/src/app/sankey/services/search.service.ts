@@ -83,22 +83,23 @@ export class SankeySearchService implements OnDestroy {
   searchTerms = [];
 
   setUpWorker() {
-    this.worker = new Worker('./search.worker', {type: 'module'});
-    this.worker.onmessage = ({data: {action, actionLoad}}) => {
-      switch (action) {
-        case WorkerOutputActions.match:
-          this.matches.next(
-            this.matches.value.concat(actionLoad)
-          );
-          break;
-        case WorkerOutputActions.interrupted:
-          this.matches.next([]);
-          break;
-        case WorkerOutputActions.done:
-          this.done = true;
-          break;
-      }
-    };
+    // todo
+    // this.worker = new Worker('./search.worker', {type: 'module'});
+    // this.worker.onmessage = ({data: {action, actionLoad}}) => {
+    //   switch (action) {
+    //     case WorkerOutputActions.match:
+    //       this.matches.next(
+    //         this.matches.value.concat(actionLoad)
+    //       );
+    //       break;
+    //     case WorkerOutputActions.interrupted:
+    //       this.matches.next([]);
+    //       break;
+    //     case WorkerOutputActions.done:
+    //       this.done = true;
+    //       break;
+    //   }
+    // };
   }
 
   ngOnDestroy() {

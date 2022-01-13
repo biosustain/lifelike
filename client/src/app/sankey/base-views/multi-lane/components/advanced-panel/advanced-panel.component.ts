@@ -1,9 +1,8 @@
 import { Component, } from '@angular/core';
 
 import { uuidv4 } from 'app/shared/utils';
-import { SankeyOptions, SankeyState } from 'app/sankey/interfaces';
 
-import { SankeyMultiLaneControllerService, customisedMultiValueAccessorId } from '../../services/sankey-multi-lane-controller.service';
+import { SankeyMultiLaneControllerService } from '../../services/sankey-multi-lane-controller.service';
 
 
 @Component({
@@ -18,22 +17,15 @@ export class SankeyMultiLaneAdvancedPanelComponent {
     private sankeyController: SankeyMultiLaneControllerService
   ) {
     this.uuid = uuidv4();
+    this.sankeyController.state$.subscribe(state => {
+      this.state = state;
+    });
   }
 
-  get options(): SankeyOptions {
-    return this.sankeyController.options;
-  }
+  state;
 
-  get state(): SankeyState {
-    return this.sankeyController.state;
-  }
-
-  update() {
-    this.sankeyController.applyState();
-  }
-
-  customSizingUpdate() {
-    this.state.predefinedValueAccessorId = customisedMultiValueAccessorId;
-    this.update();
+  update(event?) {
+    // todo: add event listener
+    console.log(event);
   }
 }
