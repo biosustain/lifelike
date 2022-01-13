@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { partition } from 'lodash-es';
 
 import {
   GraphEntity,
