@@ -12,7 +12,7 @@
         <div *ngFor="let matchObj of m?.calculatedMatches" class="property">
             <dt>{{matchObj.path.join('→')}}</dt>
             <dd>
-                <app-term-highlight [text]="matchObj.term" [highlightTerms]="searchTerms">
+                <app-term-highlight [text]="'' + matchObj.term" [highlightTerms]="searchTerms">
                 </app-term-highlight>
             </dd>
         </div>

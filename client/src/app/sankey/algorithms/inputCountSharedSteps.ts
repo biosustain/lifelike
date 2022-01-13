@@ -1,10 +1,7 @@
-import { partition, sumBy, mean } from 'lodash-es';
-
-import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyNode, SankeyData, SankeyTrace } from 'app/sankey/interfaces';
+import { ExtendedMap} from 'app/shared/utils/types';
+import { SankeyLink, SankeyNode, SankeyData} from 'app/sankey/interfaces';
 
 import { DirectedTraversal } from '../services/directed-traversal';
-import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyControllerService } from '../services/sankey-controller.service';
 
 export function calculateInputCountSkippingCircularLinks(

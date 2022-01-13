@@ -1,27 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { flatMap, groupBy, merge, intersection } from 'lodash-es';
+import { flatMap, groupBy, intersection } from 'lodash-es';
+import { switchMap } from 'rxjs/operators';
 
-import {
-  LINK_VALUE_GENERATOR,
-  ValueGenerator,
-  SankeyTraceNetwork,
-  SankeyLink,
-  SankeyTrace,
-  ViewBase, SankeyOptions
-} from 'app/sankey/interfaces';
+import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
-import { RecursivePartial } from 'app/shared/schemas/common';
 
 import { inputCount } from '../algorithms/linkValues';
-import {
-  SankeySingleLaneLink,
-  SankeySingleLaneState,
-  SankeySingleLaneOptions,
-  SankeySingleLaneNode,
-  SankeySingleLaneOptionsExtend,
-  SankeySingleLaneStateExtend
-} from '../components/interfaces';
+import { SankeySingleLaneLink, SankeySingleLaneState, SankeySingleLaneOptions, SankeySingleLaneNode } from '../components/interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 
@@ -33,44 +19,57 @@ import { SankeyBaseViewControllerService } from '../../../services/sankey-base-v
  */
 @Injectable()
 // @ts-ignore
-export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService {
+export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
   viewBase = ViewBase.sankeySingleLane;
 
-  // @ts-ignore
-  get defaultState(): RecursivePartial<SankeyOptions & SankeySingleLaneState> {
-    return merge(super.defaultState, {
-      highlightCircular: true,
-      colorLinkByType: false,
-      nodeHeight: {
-        min: {
-          enabled: true,
-          value: 4
-        },
-        max: {
-          enabled: true,
-          ratio: 2
+  baseDefaultState = {
+          highlightCircular: true,
+          colorLinkByType: false,
+          nodeHeight: {
+            min: {
+              enabled: true,
+              value: 4
+            },
+            max: {
+              enabled: true,
+              ratio: 2
+            }
+          }
+        };
+
+  baseDefaultOptions = {
+        colorLinkTypes: EdgeColorCodes,
+        linkValueGenerators: {
+          [LINK_VALUE_GENERATOR.input_count]: {
+            description: LINK_VALUE_GENERATOR.input_count,
+            preprocessing: inputCount,
+            disabled: () => false
+          } as ValueGenerator
         }
-      }
-    } as SankeySingleLaneStateExtend & RecursivePartial<SankeySingleLaneState>);
-  }
+      };
 
-  get defaultOptions(): SankeySingleLaneOptions {
-    return merge(super.defaultOptions, {
-      colorLinkTypes: EdgeColorCodes,
-      linkValueGenerators: {
-        [LINK_VALUE_GENERATOR.input_count]: {
-          description: LINK_VALUE_GENERATOR.input_count,
-          preprocessing: inputCount,
-          disabled: () => false
-        } as ValueGenerator
-      }
-    } as SankeySingleLaneOptionsExtend & RecursivePartial<SankeySingleLaneOptions>);
-  }
-
-  // @ts-ignore
-  options: SankeySingleLaneOptions;
-  // @ts-ignore
-  state: SankeySingleLaneState;
+  computedData$ = this.data$.pipe(
+    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
+      switchMap(({networkTraces}) => this.state$.pipe(
+        switchMap(({networkTraceIdx, colorLinkByType}) => {
+          const selectedNetworkTrace = networkTraces[networkTraceIdx];
+          const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
+          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+          if (colorLinkByType) {
+            this.colorLinkByType(networkTraceLinks);
+          }
+          const _inNodes = node_sets[selectedNetworkTrace.sources];
+          const _outNodes = node_sets[selectedNetworkTrace.targets];
+          this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
+          return this.linkGraph({
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            _inNodes, _outNodes
+          });
+        })
+      ))
+    ))
+  );
 
   // Trace logic
   /**
@@ -88,20 +87,6 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
     }));
   }
 
-  /**
-   * Given nodes and links find all traces which they are relating to.
-   */
-  getRelatedTraces({nodes, links}) {
-    // check nodes links for traces which are coming in and out
-    const nodesLinks = [...nodes].reduce(
-      (linksAccumulator, {_sourceLinks, _targetLinks}) =>
-        linksAccumulator.concat(_sourceLinks, _targetLinks)
-      , []
-    );
-    // add links traces and reduce to unique values
-    return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<SankeyTrace>;
-  }
-
   colorLinkByType(links) {
     links.forEach(link => {
       const {label} = link;
@@ -114,18 +99,6 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
         }
       }
     });
-  }
-
-  get sourcesIds() {
-    return this.allData.value.graph.node_sets[
-      this.selectedNetworkTrace.sources
-      ];
-  }
-
-  get targetsIds() {
-    return this.allData.value.graph.node_sets[
-      this.selectedNetworkTrace.targets
-      ];
   }
 
   /**
@@ -151,24 +124,5 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
       this.warningController.warn(`Nodes set to be both in and out ${reusedIds}`);
       mapNodePositionToColor(reusedIds, NodePosition.multi);
     }
-  }
-
-  computeData() {
-    const {selectedNetworkTrace, state: {colorLinkByType}} = this;
-    const {links, nodes, graph: {node_sets}} = this.allData.value;
-    const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
-    const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-    if (colorLinkByType) {
-      this.colorLinkByType(networkTraceLinks);
-    }
-    const _inNodes = node_sets[selectedNetworkTrace.sources];
-    const _outNodes = node_sets[selectedNetworkTrace.targets];
-    this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
-    this.state.nodeAlign = _inNodes.length > _outNodes.length ? 'right' : 'left';
-    return this.linkGraph({
-      nodes: networkTraceNodes,
-      links: networkTraceLinks,
-      _inNodes, _outNodes
-    });
   }
 }

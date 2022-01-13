@@ -40,11 +40,11 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Source</b>
-                            {{ getNodeById(entity._trace.source).description }}
+                            {{ getNodeById(entity._trace.source).description | async }}
                         </li>
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Target</b>
-                            {{ getNodeById(entity._trace.target).description }}
+                            {{ getNodeById(entity._trace.target).description | async }}
                         </li>
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Group</b>

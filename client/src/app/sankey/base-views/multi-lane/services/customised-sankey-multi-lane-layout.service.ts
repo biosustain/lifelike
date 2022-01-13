@@ -9,7 +9,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 
 import { DirectedTraversal } from '../../../services/directed-traversal';
 import { SankeyLayoutService } from '../../../components/sankey/sankey-layout.service';
-import { normalizeGenerator, symmetricDifference } from '../../../components/sankey/utils';
+import { symmetricDifference } from '../../../components/sankey/utils';
 import {
   CustomisedSankeyLayoutService,
   DEFAULT_FONT_SIZE,
@@ -28,67 +28,6 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
     super(truncatePipe, sankeyController, warningController);
   }
 
-  get linkPath() {
-    const {
-      calculateLinkPathParams,
-      composeLinkPath,
-      sankeyController:
-        {
-          state:
-            {
-              normalizeLinks
-            }
-        }
-    } = this;
-    return link => {
-      link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
-      return composeLinkPath(link._calculated_params);
-    };
-  }
-
-  get nodeLabelShort() {
-    const {
-      sankeyController:
-        {
-          state:
-            {
-              labelEllipsis: {
-                value,
-                enabled
-              }
-            }
-        },
-      nodeLabel,
-      truncatePipe: {transform}
-    } = this;
-    if (enabled) {
-      return (d, i?, n?) => transform(nodeLabel(d, i, n), value);
-    } else {
-      return (d, i?, n?) => nodeLabel(d, i, n);
-    }
-  }
-
-  get nodeLabelShouldBeShorted() {
-    const {
-      sankeyController:
-        {
-          state:
-            {
-              labelEllipsis: {
-                value,
-                enabled
-              }
-            }
-        },
-      nodeLabel
-    } = this;
-    if (enabled) {
-      return (d, i?, n?) => nodeLabel(d, i, n).length > value;
-    } else {
-      return () => false;
-    }
-  }
-
   get nodeColor() {
     return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
       // check if any trace is finishing or starting here
@@ -104,21 +43,16 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
 
   get fontSize() {
     const {
-      sankeyController:
+      state:
         {
-          state:
-            {
-              fontSizeScale
-            }
+          fontSizeScale
         }
     } = this;
     // noinspection JSUnusedLocalSymbols
     return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
   }
 
-
   normalizeLinks = false;
-
   columns: SankeyNode[][] = [];
   columnsWithLinkPlaceholders: SankeyNode[][] = [];
 
@@ -151,12 +85,10 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    */
   getYScaleFactor(nodes) {
     const {
-      y1, y0, py, dx, sankeyController:
+      y1, y0, py, dx,
+      state:
         {
-          state:
-            {
-              nodeHeight
-            }
+          nodeHeight
         }, value, columnsWithLinkPlaceholders: columns
     } = this;
     // normal calculation based on tallest column
@@ -216,13 +148,11 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
   computeNodeHeights({nodes}: SankeyData) {
     const {
       ky,
-      sankeyController:
+      state:
         {
-          state:
-            {
-              nodeHeight
-            }
-        }, value
+          nodeHeight
+        }
+      , value
     } = this;
     for (const node of nodes) {
       if (nodeHeight.min.enabled && nodeHeight.min.value) {
