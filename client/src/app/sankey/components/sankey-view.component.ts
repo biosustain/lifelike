@@ -12,9 +12,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact, assign } from 'lodash-es';
+import { isNil, pick, compact } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -24,14 +24,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SelectionSingleLaneEntity } from 'app/sankey/base-views/single-lane/components/interfaces';
-import {
-  SankeyState,
-  SelectionType,
-  SelectionEntity,
-  SankeyURLLoadParam,
-  ViewBase,
-  SankeyOptions
-} from 'app/sankey/interfaces';
+import { SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam, ViewBase, SankeyOptions } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -46,6 +39,7 @@ import { PathReportComponent } from './path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.directive';
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
+import { SankeyBaseViewControllerService } from '../services/sankey-base-view-controller.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -57,19 +51,6 @@ import { SankeyDirective } from '../directives/sankey.directive';
   ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit, AfterViewInit {
-
-  get activeViewName() {
-    return this.sankeyController.state.viewName;
-  }
-
-  set activeViewName(viewName) {
-    this.sankeyController.state.viewName = viewName;
-  }
-
-  get preselectedViewBase() {
-    return this.sankeyController.state.baseViewName;
-  }
-
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -82,6 +63,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly sankeySearch: SankeySearchService,
     readonly viewService: ViewService,
     private componentFactoryResolver: ComponentFactoryResolver,
+    private sankeyController: SankeyControllerService,
     private injector: Injector
   ) {
     const createSankeyInjector = providers => Injector.create({
@@ -97,7 +79,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
     this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
 
-    const stateHelper = new ReplaySubject(1);
     this.route.fragment.pipe(
       tap(x => console.log('route.fragment', x)),
       switchMap(fragment =>
@@ -123,17 +104,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     ).pipe(
       tap(x => console.log('route.fragment', x)),
     ).subscribe(state => {
-      const currentState = this.sankeyController?.state ?? {};
-      this.baseViewName.next(state.baseViewName);
-      stateHelper.next(assign(currentState, state));
-    });
-
-    combineLatest([
-      stateHelper,
-      this.baseViewName,
-      this.content
-    ]).subscribe(([state, baseViewName, content]) => {
-      this.sankeyController.computeGraph(state);
     });
 
     this.loadTask = new BackgroundTask(hashId =>
@@ -151,7 +121,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.returnUrl = params.return;
     });
 
-    combineLatest([this.content, this.baseViewName]).subscribe(([content, baseView]) => {
+    combineLatest([this.sankeyController.data$, this.baseViewName$]).subscribe(([content, baseView]) => {
       this.sankeyController.load(content);
     });
 
@@ -178,7 +148,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
 
     this.route.fragment.subscribe(x => console.log('fragment', x));
-    this.baseViewName.subscribe(x => console.log('baseViewName', x));
+    this.baseViewName$.subscribe(x => console.log('baseViewName', x));
     this.content.subscribe(x => console.log('content', x));
   }
 
@@ -187,27 +157,23 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   get options() {
-    return this.sankeyController.options as SankeyOptions;
+    return this.sankeyController.options$ as Observable<SankeyOptions>;
   }
 
   get state() {
-    return this.sankeyController?.state as SankeyState;
+    return this.sankeyController?.state$ as Observable<SankeyState>;
   }
 
   get nodeAlign() {
-    return this.sankeyController.state.nodeAlign;
-  }
-
-  get networkTraces() {
-    return this.sankeyController.options.networkTraces;
+    return this.sankeyController.state$.pipe(map(({nodeAlign}) => nodeAlign));
   }
 
   get selectedNetworkTrace() {
-    return this.sankeyController.selectedNetworkTrace;
+    return this.sankeyController.networkTrace$;
   }
 
   get predefinedValueAccessor() {
-    return this.sankeyController.predefinedValueAccessor;
+    return this.sankeyController.predefinedValueAccessor$;
   }
 
   get searching() {
@@ -215,32 +181,45 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   get viewParams() {
-    return pick(
-      this.sankeyController.state,
-      [
-        'networkTraceIdx',
-        'viewBase',
-        'viewName'
-      ]
-    );
+    return this.sankeyController.state$.pipe(
+      map(state =>
+        pick(
+          state,
+          [
+            'networkTraceIdx',
+            'viewBase',
+            'viewName'
+          ]
+        )
+      )
+    ).toPromise();
   }
 
   get entitySearchListIdx() {
     return this._entitySearchListIdx;
   }
 
+  sankeyBaseViewControl: SankeyBaseViewControllerService;
 
   set entitySearchListIdx(idx) {
     this._entitySearchListIdx = idx;
     const {networkTraceIdx} = this.entitySearchList.value[idx] ?? {};
-    if (!isNil(networkTraceIdx) && this.sankeyController.state.networkTraceIdx !== networkTraceIdx) {
-      this.selectNetworkTrace(networkTraceIdx);
-    } else {
-      this.setSearchFocus(idx);
-    }
+    this.sankeyController.state$.pipe(
+      first(),
+    ).subscribe(
+      state => {
+        if (!isNil(networkTraceIdx) && state.networkTraceIdx !== networkTraceIdx) {
+          this.selectNetworkTrace(networkTraceIdx);
+        } else {
+          this.setSearchFocus(idx);
+        }
+      }
+    );
   }
 
-  baseViewName = new ReplaySubject<ViewBase>(1);
+  baseViewName$ = this.sankeyController.state$.pipe(
+    map(({baseViewName}) => baseViewName)
+  );
   dynamicContainer;
   _dynamicInstances = new Map();
 
@@ -248,12 +227,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   @ViewChild(SankeyDetailsPanelDirective, {static: true}) details;
   @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advanced;
   baseViewInjectors = new WeakMap();
-  sankeyController: SankeyControllerService;
 
   content = new ReplaySubject(1);
 
-  dataToRender;
-  allData;
+  dataToRender$;
+  allData$;
 
   searchTerms = [];
 
@@ -285,6 +263,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedState: Observable<Partial<SankeyState>>;
 
+  networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
+
   static getDefaultViewBase(content, networkTraceIdx): ViewBase {
     const {graph: {node_sets, trace_networks}} = content;
     const networkTrace = trace_networks[networkTraceIdx];
@@ -295,7 +275,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
 
   ngAfterViewInit() {
-    this.baseViewName.subscribe(baseView => {
+    this.baseViewName$.subscribe(baseView => {
       console.log('baseViewName', baseView);
       const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
       const sankeyInjector = this.baseViewInjectors.get(o);
@@ -308,10 +288,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
-      this.sankeyController = sankeyInjector.get(SankeyControllerService);
-      console.log('baseViewName sankeyController', this.sankeyController);
-      this.dataToRender = this.sankeyController.dataToRender;
-      this.allData = this.sankeyController.allData;
+      this.sankeyBaseViewControl = sankeyInjector.get(SankeyBaseViewControllerService);
+      this.dataToRender$ = this.sankeyController.dataToRender$;
+      this.allData$ = this.sankeyController.data$;
     });
   }
 
@@ -359,37 +338,37 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   saveFile() {
-    const contentValue = new Blob(
-      [JSON.stringify(
-        this.sankeyController.allData.value
-      )],
-      {type: MimeTypes.Graph});
-    this.filesystemService.save(
-      [this.object.hashId],
-      {contentValue}
-    )
-      .pipe(
-        delay(1000),
-        catchError(() => {
-          this.snackBar.open('Error saving file.', null, {
-            duration: 2000,
-          });
-          return EMPTY;
-        })
-      ).subscribe(() => {
-      this.emitModuleProperties();
-      this.snackBar.open('File has been updated.', null, {
-        duration: 2000,
-      });
-    });
+    return this.sankeyController.data$.pipe(
+      switchMap(data => {
+        const contentValue = new Blob(
+          [JSON.stringify(data)],
+          {type: MimeTypes.Graph});
+        return this.filesystemService.save(
+          [this.object.hashId],
+          {contentValue}
+        )
+          .pipe(
+            delay(1000),
+            tap(() => {
+              this.emitModuleProperties();
+              this.snackBar.open('File has been updated.', null, {
+                duration: 2000,
+              });
+            }),
+            catchError(() => {
+              this.snackBar.open('Error saving file.', null, {
+                duration: 2000,
+              });
+              return EMPTY;
+            })
+          );
+      })
+    ).toPromise();
   }
 
-  selectNetworkTrace(networkTraceIdx) {
-    this.sankeyController.state.networkTraceIdx = networkTraceIdx;
-    this.sankeyController.state.viewName = undefined;
-    this.sankeyController.state.baseViewName = SankeyViewComponent.getDefaultViewBase(this.sankeyController.allData.value, networkTraceIdx);
-    this.sankeyController.setPredefinedValueAccessor();
-    this.sankeyController.applyState();
+  async selectNetworkTrace(networkTraceIdx) {
+    await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+
     this.resetSelection();
     if (this.entitySearchTerm) {
       this.search();
@@ -430,7 +409,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   openPathReport() {
     const modalRef = this.open(PathReportComponent);
-    modalRef.componentInstance.pathReport = this.sankeyController.getPathReports();
+    this.sankeyController.pathReports$.subscribe(pathReports => {
+      modalRef.componentInstance.pathReports = pathReports;
+    });
   }
 
   resetView() {
@@ -573,9 +554,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   // endregion
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
-    this.sankeyController.state.predefinedValueAccessorId = predefinedValueAccessorId;
-    this.sankeyController.predefinedValueAccessor.callback();
-    this.sankeyController.applyState();
+    this.sankeyController.selectPredefinedValueAccessor(predefinedValueAccessorId);
   }
 
   // region Search
@@ -587,13 +566,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   findMatching(terms: string[], options: FindOptions = {}) {
     this.sankeySearch.stopSearch();
     this.sankeySearch.clear();
-    this.sankeySearch.update({
-      terms,
-      options,
-      data: this.sankeyController.allData.value,
-      dataToSearch: this.sankeyController.dataToRender.value
+    combineLatest([this.sankeyController.data$, this.sankeyController.dataToRender$]).pipe(
+      first()
+    ).subscribe(([data, dataToRender]) => {
+      this.sankeySearch.update({
+        terms,
+        options,
+        data,
+        dataToSearch: dataToRender
+      });
+      this.sankeySearch.search();
     });
-    this.sankeySearch.search();
   }
 
   search() {
@@ -621,33 +604,38 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   panToEntity(entity) {
-    // @ts-ignore
-    if (entity) {
-      this.sankey.sankeySelection.transition().call(
-        this.sankey.zoom.translateTo,
-        // x
-        (entity._x0 !== undefined) ?
-          (entity._x0 + entity._x1) / 2 :
-          (entity._source._x1 + entity._target._x0) / 2,
-        // y
-        (entity._y0 + entity._y1) / 2
-      );
-    }
+    entity.subscribe(e => {
+      if (e) {
+        this.sankey.sankeySelection.transition().call(
+          this.sankey.zoom.translateTo,
+          // x
+          (e._x0 !== undefined) ?
+            (e._x0 + e._x1) / 2 :
+            (e._source._x1 + e._target._x0) / 2,
+          // y
+          (e._y0 + e._y1) / 2
+        );
+      }
+    });
   }
 
 
   resolveMatchToEntity({nodeId, linkId}) {
-    const {nodes, links} = this.sankeyController.dataToRender.value;
-    if (!isNil(nodeId)) {
-      // allow string == number match interpolation ("58" == 58 -> true)
-      // tslint:disable-next-line:triple-equals
-      return nodes.find(({_id}) => _id == nodeId);
-    }
-    if (!isNil(linkId)) {
-      // allow string == number match interpolation ("58" == 58 -> true)
-      // tslint:disable-next-line:triple-equals
-      return links.find(({_id}) => _id == linkId);
-    }
+    return this.sankeyController.dataToRender$.pipe(
+      first(),
+      map(({nodes, links}) => {
+        if (!isNil(nodeId)) {
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          return nodes.find(({_id}) => _id == nodeId);
+        }
+        if (!isNil(linkId)) {
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          return links.find(({_id}) => _id == linkId);
+        }
+      })
+    );
   }
 
   setSearchFocus(idx) {

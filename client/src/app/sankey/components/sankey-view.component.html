@@ -9,7 +9,7 @@
         </app-module-error>
     </ng-container>
     <app-module-header [object]="object"
-                       *ngIf="(allData | async) as data"
+                       *ngIf="(allData$ | async) as data"
                        (dragStarted)="dragStarted($event)">
         <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                          [object]="object" [showDelete]="false"
@@ -134,7 +134,7 @@
                 </button>
                 <!-- add class dropdown-menu to avoid relayout -->
                 <div ngbDropdownMenu class="dropdown-menu">
-                    <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces; let i = index"
+                    <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces$ | async; let i = index"
                             ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
                 </div>
             </div>

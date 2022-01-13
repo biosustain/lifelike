@@ -8,11 +8,11 @@ import {
   SelectionEntity,
   SankeyOptions
 } from 'app/sankey/interfaces';
-import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
   colorLinkByType: boolean;
+  linkPaletteId: string;
 }
 
 export type SankeySingleLaneState = SankeyState & SankeySingleLaneStateExtend;

@@ -2,6 +2,7 @@ import { Component, Input, } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
+import { map } from 'rxjs/operators';
 
 import { SankeyNode } from 'app/sankey/interfaces';
 
@@ -25,27 +26,25 @@ export class SankeyDetailsComponent {
   parseProperty = parseForRendering;
 
   openTraceView(trace) {
-    const {project_name, file_id} = this.route.snapshot.params;
-    const hash = CryptoJS.MD5(JSON.stringify({
-      ...this.sankeyController.selectedNetworkTrace,
-      traces: [],
-      source: trace.source,
-      target: trace.target
-    })).toString();
-    const url = `/projects/${project_name}/trace/${file_id}/${hash}`;
-
-    window.open(url);
-  }
-
-  get options() {
-    return this.sankeyController.options;
-  }
-
-  get state() {
-    return this.sankeyController.state;
+    return this.sankeyController.networkTrace$.pipe(
+      map(networkTrace => {
+        const {project_name, file_id} = this.route.snapshot.params;
+        const hash = CryptoJS.MD5(JSON.stringify({
+          ...networkTrace,
+          traces: [],
+          source: trace.source,
+          target: trace.target
+        })).toString();
+        const url = `/projects/${project_name}/trace/${file_id}/${hash}`;
+        window.open(url);
+        return url;
+      })
+    ).toPromise();
   }
 
   getNodeById(nodeId) {
-    return (this.sankeyController.allData.value.nodes.find(({id}) => id === nodeId) ?? {}) as SankeyNode;
+    return this.sankeyController.data$.pipe(
+      map(({nodes}) => nodes.find(({id}) => id === nodeId) ?? {} as SankeyNode)
+    );
   }
 }

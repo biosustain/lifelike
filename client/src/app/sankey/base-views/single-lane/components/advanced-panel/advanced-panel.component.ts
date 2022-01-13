@@ -3,8 +3,8 @@ import { Component, } from '@angular/core';
 import { uuidv4 } from 'app/shared/utils';
 
 import { SankeySingleLaneState, SankeySingleLaneOptions } from '../interfaces';
-import { SankeyBaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
 import { customisedMultiValueAccessorId } from '../../../../services/sankey-controller.service';
+import { SankeySingleLaneControllerService } from '../../services/sankey-single-lane-controller.service';
 
 
 @Component({
@@ -16,7 +16,7 @@ export class SankeySingleLaneAdvancedPanelComponent {
   uuid: string;
 
   constructor(
-    private sankeyController: SankeyBaseViewControllerService
+    private sankeyController: SankeySingleLaneControllerService
   ) {
     this.uuid = uuidv4();
   }

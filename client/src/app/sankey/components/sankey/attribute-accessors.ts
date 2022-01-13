@@ -1,6 +1,5 @@
 import * as d3Sankey from 'd3-sankey';
 import { ValueFn } from 'd3-selection';
-import {color} from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';

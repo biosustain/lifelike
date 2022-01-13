@@ -7,7 +7,7 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, transform, isObject, flatMap, flatMapDeep } from 'lodash-es';
+import { omit, slice, transform, isObject, flatMapDeep } from 'lodash-es';
 
 import { SankeyLink, SankeyTrace, SankeyNode } from 'app/sankey/interfaces';
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
