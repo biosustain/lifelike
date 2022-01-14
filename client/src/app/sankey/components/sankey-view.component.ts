@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first } from 'rxjs/operators';
-import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
+import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif } from 'rxjs';
 import { isNil, pick, compact } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
@@ -24,7 +24,15 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SelectionSingleLaneEntity } from 'app/sankey/base-views/single-lane/components/interfaces';
-import { SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam, ViewBase, SankeyOptions } from 'app/sankey/interfaces';
+import {
+  SankeyState,
+  SelectionType,
+  SelectionEntity,
+  SankeyURLLoadParam,
+  ViewBase,
+  SankeyOptions,
+  SankeyData
+} from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -47,7 +55,8 @@ import { SankeyBaseViewControllerService } from '../services/sankey-base-view-co
   styleUrls: ['./sankey-view.component.scss'],
   providers: [
     WarningControllerService,
-    SankeySearchService
+    SankeySearchService,
+    SankeyControllerService
   ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit, AfterViewInit {
@@ -79,33 +88,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
     this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
 
-    this.route.fragment.pipe(
-      tap(x => console.log('route.fragment', x)),
-      switchMap(fragment =>
-        // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
-        // (do not kill route observable)
-        this.parseUrlFragmentToState(fragment).pipe(
-          catchError((err, o) => {
-            this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
-            // return empty observable so does not continue with that one
-            return EMPTY;
-          })
-        )
-      ),
-      // set base view from content if not given in url
-      switchMap((state: SankeyState) => state.baseViewName ? of(state) :
-        this.content.pipe(
-          map(content => {
-            state.baseViewName = SankeyViewComponent.getDefaultViewBase(content, state.networkTraceIdx ?? 0);
-            return state;
-          })
-        )
-      ),
-    ).pipe(
-      tap(x => console.log('route.fragment', x)),
-    ).subscribe(state => {
-    });
-
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
         this.filesystemService.get(hashId),
@@ -117,28 +99,61 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       ])
     );
 
+    // Listener for file open
+    this.loadTask.results$.pipe(
+      switchMap(({result: [object, content]}) => {
+        this.object = object;
+        this.emitModuleProperties();
+        this.currentFileId = object.hashId;
+        return this.sankeyController.loadData(content as SankeyData);
+      })
+    ).subscribe(() => {
+      console.log('loaded data');
+    });
+
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
+    });
+
+    this.route.fragment.pipe(
+      tap(x => console.log('route.fragment', x)),
+      switchMap(fragment =>
+        // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
+        // (do not kill route observable)
+        this.parseUrlFragmentToState(fragment).pipe(          // set base view from content if not given in url
+          catchError((err, o) => {
+            this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
+            // return empty observable so does not continue with that one
+            return EMPTY;
+          })
+        )
+      ),
+          map(state => ({
+            networkTraceIdx: 0,
+            ...state
+          })),
+      switchMap((stateDelta: Partial<SankeyState>) =>
+        iif(
+          () => !!stateDelta.baseViewName,
+          of(stateDelta),
+          this.sankeyController.data$.pipe(
+            map(data => ({
+              baseViewName: SankeyViewComponent.getDefaultViewBase(data, stateDelta.networkTraceIdx),
+              ...stateDelta
+            }))
+          )
+        )
+      ),
+      tap(stateDelta => this.sankeyController.patchState(stateDelta)),
+      tap(x => console.log('route.fragment', x))
+    ).subscribe(state => {
+      console.log('loaded state from fragment', state);
     });
 
     combineLatest([this.sankeyController.data$, this.baseViewName$]).subscribe(([content, baseView]) => {
       this.sankeyController.load(content);
     });
 
-
-    // Listener for file open
-    this.openSankeySub = this.loadTask.results$.subscribe(({
-                                                             result: [object, content],
-                                                           }) => {
-      if (this.sanityChecks(content)) {
-        this.content.next(content);
-      }
-      this.object = object;
-      this.emitModuleProperties();
-
-      this.currentFileId = object.hashId;
-      this.ready = true;
-    });
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
       this.object = null;
@@ -387,6 +402,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   parseUrlFragmentToState(fragment: string): Observable<Partial<SankeyState>> {
     const state = {} as Partial<SankeyState>;
     const params = new URLSearchParams(fragment ?? '');
+    let viewId;
     for (const [param, value] of (params as any).entries()) {
       switch (param) {
         case SankeyURLLoadParam.NETWORK_TRACE_IDX:
@@ -399,10 +415,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           state.baseViewName = value;
           break;
         default:
-          return this.viewService.get(param).pipe(
-            tap(view => Object.assign(view, state))
-          );
+          viewId = param;
       }
+    }
+    if (!isNil(viewId)) {
+      return this.viewService.get(viewId).pipe(
+        tap(view => Object.assign(view, state))
+      );
     }
     return of(state);
   }
