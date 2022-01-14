@@ -37,6 +37,7 @@ export class ObjectListComponent {
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
+  private MAX_TOOLTIP_LENGTH = 800;
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -99,5 +100,12 @@ export class ObjectListComponent {
         ).subscribe();
       }
     }
+  }
+
+  getTooltipDescription(description: string) {
+    if (description.length > this.MAX_TOOLTIP_LENGTH) {
+      description = description.substring(0, this.MAX_TOOLTIP_LENGTH - 5) + '...';
+    }
+    return description;
   }
 }
