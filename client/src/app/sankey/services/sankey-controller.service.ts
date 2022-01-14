@@ -66,18 +66,11 @@ export class SankeyControllerService {
     );
   }
 
+  dataToRender$ = new ReplaySubject(undefined);
 
-  networkTrace$ = this.simpleAccessor('networkTraces', 'networkTraceIdx');
+  options$ = new ReplaySubject<SankeyOptions>(1);
+  stateDelta$ = new ReplaySubject<Partial<SankeyState>>(1);
 
-  oneToMany$ = this.networkTrace$.pipe(
-    switchMap(({sources, targets}) => this.data$.pipe(
-      map(({graph: {node_sets}}) => {
-        const _inNodes = node_sets[sources];
-        const _outNodes = node_sets[targets];
-        return Math.min(_inNodes.length, _outNodes.length) === 1;
-      })
-    ))
-  );
 
   networkTraceData$: Observable<{ links: SankeyLink[], nodes: SankeyNode[] }>;
 
@@ -164,12 +157,19 @@ export class SankeyControllerService {
     fontSizeScale: 1.0
   }));
 
-  dataToRender$ = new ReplaySubject(undefined);
-
-  options$ = new ReplaySubject<SankeyOptions>(1);
-  stateDelta$ = new ReplaySubject<Partial<SankeyState>>(1);
   state$: Observable<SankeyState>;
 
+  networkTrace$ = this.simpleAccessor('networkTraces', 'networkTraceIdx');
+
+  oneToMany$ = this.networkTrace$.pipe(
+    switchMap(({sources, targets}) => this.data$.pipe(
+      map(({graph: {node_sets}}) => {
+        const _inNodes = node_sets[sources];
+        const _outNodes = node_sets[targets];
+        return Math.min(_inNodes.length, _outNodes.length) === 1;
+      })
+    ))
+  );
   // noinspection JSVoidFunctionReturnValueUsed
   nodeValueAccessor$ = this.options$.pipe(
     switchMap(({nodeValueGenerators, nodeValueAccessors}) => this.state$.pipe(
@@ -526,10 +526,8 @@ export class SankeyControllerService {
     this.preprocessData(data);
     this.data$.next(data);
     const options = this.extractOptionsFromGraph(data);
-    return this.options$.pipe(
-      first(),
-      map(currentOptions => this.options$.next(assign({}, currentOptions, options)))
-    );
+    this.options$.next(options);
+    return of(true);
   }
 
   simpleAccessor(optionProperty: keyof SankeyOptions, stateProperty: keyof SankeyState) {
