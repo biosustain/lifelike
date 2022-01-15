@@ -1,11 +1,10 @@
-import binascii
 import json
 import hashlib
 import os
 import types
 import hashlib
 import pytest
-from datetime import date, datetime
+from datetime import datetime
 
 from neo4japp.models import (
     AppRole,
@@ -16,8 +15,6 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
-    AnnotationStyle,
-    FallbackOrganism
 )
 from neo4japp.services import AccountService
 from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
@@ -28,8 +25,7 @@ from neo4japp.services.elastic import ElasticService
 #################
 # Service mocks
 ################
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider, \
-    PDFTypeProvider
+from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
 
 
 @pytest.fixture(scope='function')
@@ -304,12 +300,6 @@ def test_user_with_pdf(
             creation_date=datetime.now(),
         )
 
-        fallback = FallbackOrganism(
-            organism_name='Homo sapiens',
-            organism_synonym='Homo sapiens',
-            organism_taxonomy_id='9606'
-        )
-
         fake_file = Files(
             filename='example3.pdf',
             content_id=file_content.id,
@@ -317,10 +307,11 @@ def test_user_with_pdf(
             mime_type=PDFTypeProvider.MIME_TYPE,
             creation_date=datetime.now(),
             parent_id=fix_directory.id,
-            fallback_organism_id=fallback.id
+            organism_name='Homo sapiens',
+            organism_synonym='Homo sapiens',
+            organism_taxonomy_id='9606'
         )
 
-        session.add(fallback)
         session.add(file_content)
         session.add(fake_file)
         session.flush()

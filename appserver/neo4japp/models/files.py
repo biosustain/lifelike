@@ -7,7 +7,7 @@ import sqlalchemy
 
 from dataclasses import dataclass
 from flask import current_app
-from sqlalchemy import and_, text, event, orm
+from sqlalchemy import and_, text, event, orm, CheckConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.types import TIMESTAMP
@@ -203,15 +203,13 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     enrichment_annotations = db.Column(postgresql.JSONB, nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
-    fallback_organism_id = db.Column(
-        db.Integer,
-        # CAREFUL do not allow cascade ondelete
-        # fallback organism can be deleted
-        db.ForeignKey('fallback_organism.id'),
-        index=True,
-        nullable=True,
-    )
-    fallback_organism = db.relationship('FallbackOrganism', foreign_keys=fallback_organism_id)
+
+    """
+    Fallback organism related columns
+    """
+    organism_name = db.Column(db.String(200), nullable=True)
+    organism_synonym = db.Column(db.String(200), nullable=True)
+    organism_taxonomy_id = db.Column(db.String(50), nullable=True)
 
     __table_args__ = (
         db.Index('uq_files_unique_filename', 'filename', 'parent_id',
@@ -219,6 +217,21 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                  postgresql_where=and_(deletion_date.is_(None),
                                        recycling_date.is_(None),
                                        parent_id.isnot(None))),
+        # Ensure that if one of these columns is non-null, that the others should be as well. Note
+        # that as of writing, alembic DOES NOT add CHECK constraints automatically!
+        CheckConstraint(
+            sqltext="""
+                (
+                    (organism_name IS NULL) AND
+                    (organism_synonym IS NULL) AND
+                    (organism_taxonomy_id IS NULL)
+                ) OR (
+                    (organism_name IS NOT NULL) AND
+                    (organism_synonym IS NOT NULL) AND
+                    (organism_taxonomy_id IS NOT NULL)
+                )
+            """,
+            name='ck_files_fallback_organism_null_consistent')
     )
 
     # These fields are not available when initially queried but you can set these fields
@@ -526,23 +539,6 @@ class FileAnnotationsVersion(RDBMSBase, TimestampMixin, HashIdMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='SET NULL'),
                         index=True, nullable=True)
     user = db.relationship('AppUser', foreign_keys=user_id)
-
-
-class FallbackOrganism(RDBMSBase):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    organism_name = db.Column(db.String(200), nullable=False)
-    organism_synonym = db.Column(db.String(200), nullable=False)
-    organism_taxonomy_id = db.Column(db.String(50), nullable=False)
-
-    @property
-    def tax_id(self):
-        # Required for FallbackOrganismSchema
-        return self.organism_taxonomy_id
-
-    @property
-    def synonym(self):
-        # Required for FallbackOrganismSchema
-        return self.organism_synonym
 
 
 class FileVersion(RDBMSBase, FullTimestampMixin, HashIdMixin):
