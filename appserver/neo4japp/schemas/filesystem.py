@@ -141,7 +141,6 @@ class FileSchema(CamelCaseSchema):
     # TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a root file.
     true_filename = fields.String()
-    fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
 
     def get_user_privilege_filter(self):
