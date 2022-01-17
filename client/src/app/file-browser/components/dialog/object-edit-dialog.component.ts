@@ -15,6 +15,7 @@ import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotatio
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { filenameValidator } from 'app/shared/validators';
 import {FORMATS_WITH_POSSIBLE_DESCRIPTION, MAX_DESCRIPTION_LENGTH} from 'app/shared/constants';
+import {extractDescriptionFromSankey} from 'app/shared-sankey/constants';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
@@ -226,12 +227,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (event.target.files.length) {
       const file = event.target.files[0];
       const filename = this.extractFilename(file.name);
-      if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(filename.split('.')[1])) {
-        this.extractDescription(file).then(description => {
-          this.form.get('description').setValue(description);
-          this.form.get('description').markAsDirty();
-        });
-      }
+      const format = filename.split('.')[1];
+      this.extractDescription(file, format).then(description => {
+        this.form.get('description').setValue(description);
+        this.form.get('description').markAsDirty();
+      });
       this.form.get('contentValue').setValue(file);
       this.form.get('filename').setValue(filename);
       this.form.get('filename').markAsDirty();
@@ -266,15 +266,16 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }
   }
 
-  private extractDescription(file: File): Promise<string> {
-    return file.text().then(text => {
-      try {
-        const content = JSON.parse(text);
-        return content.graph.description || '';
-      } catch (e) {
-        return '';
-      }
-    });
+  private extractDescription(file: File, format: string): Promise<string> {
+     if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
+       return file.text().then(text => {
+          if (format === 'graph') {
+            return extractDescriptionFromSankey(text);
+          }
+          // TODO: Do we want to map here?
+       });
+     }
+     return Promise.resolve('');
   }
 
   private getDocumentPossibility(file): Promise<boolean> {
