@@ -1059,16 +1059,17 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             graph.node(**name_node_params)
 
+        lower_ys = list(map(lambda x: x['data']['y'] + x['data'].get(
+            'height', DEFAULT_NODE_HEIGHT) / 2.0, nodes))
         # The y-axis is inverted, hence the max() for lowest node
-        index_min = max(range(len(y_values)), key=y_values.__getitem__, default=-1)
+        index_min = max(range(len(lower_ys)), key=lower_ys.__getitem__, default=-1)
         max_x = max(x_values, default=0)
         x_center = min_x + (max_x - min_x) / 2.0
         # for params in create_watermark(x_values[index_min], y_center, nodes[index_min])
         #     graph.node(**params)
         lowest_node = nodes[index_min] if index_min != -1 else None
-        y_position = lowest_node['data']['y'] + lowest_node['data'].get(
-            'height', DEFAULT_NODE_HEIGHT) / 2.0 if lowest_node else 0
-        graph.node(**create_watermark(x_center, y_position, lowest_node))
+
+        graph.node(**create_watermark(x_center, max(lower_ys, default=0), lowest_node))
 
         for edge in json_graph['edges']:
             edge_params = create_edge(edge, node_hash_type_dict)
