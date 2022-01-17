@@ -79,7 +79,10 @@ from neo4japp.constants import (
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
     LogEventType,
-    IMAGE_BORDER_SCALE
+    IMAGE_BORDER_SCALE,
+    WATERMARK_DISTANCE,
+    WATERMARK_WIDTH,
+    WATERMARK_ICON_SIZE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -799,8 +802,14 @@ def create_edge(edge, node_hash_type_dict):
 
 def create_watermark(x_center, y, lowest_node=None):
     """
-    Create a Lifelike watermark below the pdf.
-    We need to ensure that the lowest node is not intersecting it.
+    Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
+    We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
+    :params:
+    :param x_center: middle of the pdf
+    :param y: position of the lowest node bottom on the pdf
+    :param lowest_node: details of the lowest node (used to get BBox)
+    returns:
+    3 dictionaries - each for one of the watermark elements
     """
     if not lowest_node:
         lowest_node = {'data': {
@@ -809,9 +818,8 @@ def create_watermark(x_center, y, lowest_node=None):
             'width': 0,
             'height': 0
         }}
-    WATERMARK_DISTANCE = 20.0
+
     y += WATERMARK_DISTANCE
-    WATERMARK_WIDTH = 160.0
     watermark = {
         'data': {
             'x': x_center,
@@ -860,7 +868,7 @@ def create_watermark(x_center, y, lowest_node=None):
         'name': 'watermark_icon',
         'label': '',
         'pos': (
-            f"{(x_center - WATERMARK_WIDTH / 2.0 + 15) / SCALING_FACTOR},"
+            f"{(x_center - WATERMARK_WIDTH / 2.0 + WATERMARK_ICON_SIZE) / SCALING_FACTOR},"
             f"{-y / SCALING_FACTOR - offset_y}!"
         ),
         'penhwidth': '0.0',
@@ -868,8 +876,8 @@ def create_watermark(x_center, y, lowest_node=None):
         'imagescale': 'both',
         'shape': 'rect',
         'image': ASSETS_PATH + 'lifelike.png',
-        'width': f"{15 / SCALING_FACTOR}",
-        'height': f"{15 / SCALING_FACTOR}",
+        'width': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
+        'height': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
         'penwidth': '0.0'
     }
     return label_params, url_params, icon_params
@@ -1093,15 +1101,12 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         lower_ys = list(map(lambda x: x['data']['y'] + x['data'].get(
             'height', DEFAULT_NODE_HEIGHT) / 2.0, nodes))
-        # The y-axis is inverted, hence the max() for lowest node
         index_min = max(range(len(lower_ys)), key=lower_ys.__getitem__, default=-1)
         max_x = max(x_values, default=0)
         x_center = min_x + (max_x - min_x) / 2.0
         lowest_node = nodes[index_min] if index_min != -1 else None
         for params in create_watermark(x_center, max(lower_ys, default=0), lowest_node):
             graph.node(**params)
-
-        # graph.node(**create_watermark(x_center, max(lower_ys, default=0), lowest_node))
 
         for edge in json_graph['edges']:
             edge_params = create_edge(edge, node_hash_type_dict)
