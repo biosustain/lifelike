@@ -152,7 +152,6 @@ ANY_FILE_RE = re.compile(r'^ */files/.+$')
 PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
 ICON_DATA: dict = {}
 PDF_PAD = 1.0
-NodeBBox = namedtuple('NodeBBox', 'xmin ymin xmax ymax')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -800,7 +799,7 @@ def create_edge(edge, node_hash_type_dict):
     }
 
 
-def create_watermark(x_center, y, lowest_node=None):
+def create_watermark(x_center, y):
     """
     Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
     We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
@@ -811,33 +810,13 @@ def create_watermark(x_center, y, lowest_node=None):
     returns:
     3 dictionaries - each for one of the watermark elements
     """
-    if not lowest_node:
-        lowest_node = {'data': {
-            'x': 0,
-            'y': 0,
-            'width': 0,
-            'height': 0
-        }}
-
     y += WATERMARK_DISTANCE
-    watermark = {
-        'data': {
-            'x': x_center,
-            'y': y,
-            'height': DEFAULT_NODE_HEIGHT,
-            'width': WATERMARK_WIDTH
-        }
-    }
-
-    offset_y = get_intersection_offset(get_node_bbox(lowest_node), get_node_bbox(watermark))
-    if offset_y:
-        y += WATERMARK_DISTANCE
     label_params = {
         'name': 'watermark_node',
         'label': 'Created by Lifelike',
         'pos': (
             f"{x_center / SCALING_FACTOR},"
-            f"{-y / SCALING_FACTOR - offset_y}!"
+            f"{-y / SCALING_FACTOR}!"
         ),
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
@@ -854,7 +833,7 @@ def create_watermark(x_center, y, lowest_node=None):
         'href': 'https://lifelike.bio',
         'pos': (
             f"{x_center / SCALING_FACTOR},"
-            f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR - offset_y}!"
+            f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR}!"
         ),
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
@@ -869,7 +848,7 @@ def create_watermark(x_center, y, lowest_node=None):
         'label': '',
         'pos': (
             f"{(x_center - WATERMARK_WIDTH / 2.0 + WATERMARK_ICON_SIZE) / SCALING_FACTOR},"
-            f"{-y / SCALING_FACTOR - offset_y}!"
+            f"{-y / SCALING_FACTOR}!"
         ),
         'penhwidth': '0.0',
         'fixedsize': 'true',
@@ -881,38 +860,6 @@ def create_watermark(x_center, y, lowest_node=None):
         'penwidth': '0.0'
     }
     return label_params, url_params, icon_params
-
-
-def get_node_bbox(node):
-    """
-    Gets dimensions of the node. Helper function to calculate intersection
-    """
-    width_2 = node['data'].get('width', DEFAULT_NODE_WIDTH) / 2.0
-    height_2 = -node['data'].get('height', DEFAULT_NODE_HEIGHT) / 2.0
-    return NodeBBox(
-        (node['data']['x'] - width_2) / SCALING_FACTOR,
-        -(node['data']['y'] - height_2) / SCALING_FACTOR,
-        (node['data']['x'] + width_2) / SCALING_FACTOR,
-        -(node['data']['y'] + height_2) / SCALING_FACTOR,
-    )
-
-
-def get_intersection_offset(node1: NodeBBox, node2: NodeBBox):
-    """
-    Gets node intersection offsets, allowing to move mobile node away from
-    intersecting fixed_node
-    :params:
-    :param node1: user inputed node that we want to not cover
-    :param node2: auto-generated node (watermark, map name) that we want to move
-    returns: y offset required to stop the intersection
-    """
-    # TODO: Use this to ensure map nodes names correctness for LL-3594, once we have
-    #  formatting capabilities same as front-end (LL-3630).
-    dx = min(node1.xmax, node2.xmax) - max(node1.xmin, node2.xmin)
-    dy = node2.ymax - node1.ymin
-    if (dx >= 0) and (dy >= 0):
-        return dy
-    return 0
 
 
 class MapTypeProvider(BaseFileTypeProvider):
@@ -1101,11 +1048,9 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         lower_ys = list(map(lambda x: x['data']['y'] + x['data'].get(
             'height', DEFAULT_NODE_HEIGHT) / 2.0, nodes))
-        index_min = max(range(len(lower_ys)), key=lower_ys.__getitem__, default=-1)
         max_x = max(x_values, default=0)
         x_center = min_x + (max_x - min_x) / 2.0
-        lowest_node = nodes[index_min] if index_min != -1 else None
-        for params in create_watermark(x_center, max(lower_ys, default=0), lowest_node):
+        for params in create_watermark(x_center, max(lower_ys, default=0)):
             graph.node(**params)
 
         for edge in json_graph['edges']:
