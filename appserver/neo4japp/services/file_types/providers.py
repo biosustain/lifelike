@@ -405,7 +405,7 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     :param folder_name: uuid of a temporary folder containing the images
     :returns: a modified svg file containing embedded images
     """
-    icon_data = get_icon_strings()
+    icon_data = get_icons_data()
     text_content = map_content.read().decode(BYTE_ENCODING)
     text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
     for image in images:
@@ -415,8 +415,9 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
-def get_icon_strings():
-    """ Lazy loading of the byte icon data from the PNG files
+def get_icons_data():
+    """
+    Lazy loading of the byte icon data from the PNG files
     """
     if ICON_DATA:
         return ICON_DATA
@@ -809,7 +810,6 @@ def create_watermark(x_center, y, lowest_node=None):
             'height': 0
         }}
     WATERMARK_DISTANCE = 20.0
-
     y += WATERMARK_DISTANCE
     WATERMARK_WIDTH = 160.0
     watermark = {
@@ -820,7 +820,6 @@ def create_watermark(x_center, y, lowest_node=None):
             'width': WATERMARK_WIDTH
         }
     }
-    print(lowest_node)
 
     offset_y = get_intersection_offset(get_node_bbox(lowest_node), get_node_bbox(watermark))
     if offset_y:
@@ -829,28 +828,22 @@ def create_watermark(x_center, y, lowest_node=None):
         'name': 'watermark_node',
         'label': 'Created by Lifelike',
         'pos': (
-            # f"{(x_center) / SCALING_FACTOR},"
             f"{x_center / SCALING_FACTOR},"
             f"{-y / SCALING_FACTOR - offset_y}!"
-            # f"{-(y + NAME_NODE_OFFSET) / SCALING_FACTOR}!"
         ),
-        # Resize the node base on font size, as otherwise the margin would be smaller than
-        # in the Lifelike map editor
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
-        'shape': 'box',
-        'style': 'rounded',
         'fontcolor': 'black',
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fontsize': f"{DEFAULT_FONT_SIZE}",
         'penwidth': '0.0',
-        'href': 'https://***ARANGO_DB_NAME***.bio',
 
     }
     url_params = {
         'name': 'watermark_hyper',
         'label': '***ARANGO_DB_NAME***.bio',
+        'href': 'https://***ARANGO_DB_NAME***.bio',
         'pos': (
             f"{x_center / SCALING_FACTOR},"
             f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR - offset_y}!"
@@ -883,6 +876,9 @@ def create_watermark(x_center, y, lowest_node=None):
 
 
 def get_node_bbox(node):
+    """
+    Gets dimensions of the node. Helper function to calculate intersection
+    """
     width_2 = node['data'].get('width', DEFAULT_NODE_WIDTH) / 2.0
     height_2 = -node['data'].get('height', DEFAULT_NODE_HEIGHT) / 2.0
     return NodeBBox(
@@ -893,19 +889,19 @@ def get_node_bbox(node):
     )
 
 
-def get_intersection_offset(fixed_node: NodeBBox, mobile_node: NodeBBox):
+def get_intersection_offset(node1: NodeBBox, node2: NodeBBox):
     """
     Gets node intersection offsets, allowing to move mobile node away from
     intersecting fixed_node
     :params:
-    :param fixed_node: user inputed node that we want to not cover
-    :param mobile_node: auto-generated node (watermark, map name) that we want to move
+    :param node1: user inputed node that we want to not cover
+    :param node2: auto-generated node (watermark, map name) that we want to move
+    returns: y offset required to stop the intersection
     """
-    print(fixed_node)
-    print(mobile_node)
-    dx = min(fixed_node.xmax, mobile_node.xmax) - max(fixed_node.xmin, mobile_node.xmin)
-    dy = mobile_node.ymax - fixed_node.ymin
-    print(dx, dy)
+    # TODO: Use this to ensure map nodes names correctness for LL-3594, once we have
+    #  formatting capabilities same as front-end (LL-3630).
+    dx = min(node1.xmax, node2.xmax) - max(node1.xmin, node2.xmin)
+    dy = node2.ymax - node1.ymin
     if (dx >= 0) and (dy >= 0):
         return dy
     return 0
@@ -978,6 +974,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
+        """
+        Generates the map as a file in provided format. While working with this, remember that:
+         - Most of the node parameters is optional (including width and height).
+         - Graphviz y-axis is inverted (starts at the top)
+         - SVG requires separate image embedding mechanism (get_icons_data)
+        """
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
