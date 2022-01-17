@@ -422,7 +422,7 @@ def get_icon_strings():
         return ICON_DATA
     else:
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
-                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape']:
+                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', 'lifelike']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
                                                        + b64encode(file.read()) \
@@ -811,7 +811,7 @@ def create_watermark(x_center, y, lowest_node=None):
     WATERMARK_DISTANCE = 20.0
 
     y += WATERMARK_DISTANCE
-    WATERMARK_WIDTH = 140.0
+    WATERMARK_WIDTH = 160.0
     watermark = {
         'data': {
             'x': x_center,
@@ -844,12 +844,42 @@ def create_watermark(x_center, y, lowest_node=None):
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fontsize': f"{DEFAULT_FONT_SIZE}",
+        'penwidth': '0.0',
+        'href': 'https://lifelike.bio',
+
+    }
+    url_params = {
+        'name': 'watermark_hyper',
+        'label': 'lifelike.bio',
+        'pos': (
+            f"{x_center / SCALING_FACTOR},"
+            f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR - offset_y}!"
+        ),
+        'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
+        'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
+        'fontcolor': 'blue',
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fontsize': f"{DEFAULT_FONT_SIZE - 2}",
         'penwidth': '0.0'
     }
-    url_params = {}
-    icon_params = {}
-    return label_params
-    # return label_params, icon_params, url_params
+    icon_params = {
+        'name': 'watermark_icon',
+        'label': '',
+        'pos': (
+            f"{(x_center - WATERMARK_WIDTH / 2.0 + 15) / SCALING_FACTOR},"
+            f"{-y / SCALING_FACTOR - offset_y}!"
+        ),
+        'penhwidth': '0.0',
+        'fixedsize': 'true',
+        'imagescale': 'both',
+        'shape': 'rect',
+        'image': ASSETS_PATH + 'lifelike.png',
+        'width': f"{15 / SCALING_FACTOR}",
+        'height': f"{15 / SCALING_FACTOR}",
+        'penwidth': '0.0'
+    }
+    return label_params, url_params, icon_params
 
 
 def get_node_bbox(node):
@@ -1065,11 +1095,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         index_min = max(range(len(lower_ys)), key=lower_ys.__getitem__, default=-1)
         max_x = max(x_values, default=0)
         x_center = min_x + (max_x - min_x) / 2.0
-        # for params in create_watermark(x_values[index_min], y_center, nodes[index_min])
-        #     graph.node(**params)
         lowest_node = nodes[index_min] if index_min != -1 else None
+        for params in create_watermark(x_center, max(lower_ys, default=0), lowest_node):
+            graph.node(**params)
 
-        graph.node(**create_watermark(x_center, max(lower_ys, default=0), lowest_node))
+        # graph.node(**create_watermark(x_center, max(lower_ys, default=0), lowest_node))
 
         for edge in json_graph['edges']:
             edge_params = create_edge(edge, node_hash_type_dict)
