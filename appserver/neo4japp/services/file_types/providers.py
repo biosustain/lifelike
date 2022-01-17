@@ -5,6 +5,7 @@ import re
 import typing
 import zipfile
 import tempfile
+from collections import namedtuple
 
 from base64 import b64encode
 
@@ -148,6 +149,7 @@ ANY_FILE_RE = re.compile(r'^ */files/.+$')
 PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
 ICON_DATA: dict = {}
 PDF_PAD = 1.0
+NodeBBox = namedtuple('NodeBBox', 'xmin ymin xmax ymax')
 
 
 def _search_doi_in(content: bytes) -> Optional[str]:
@@ -794,6 +796,91 @@ def create_edge(edge, node_hash_type_dict):
     }
 
 
+def create_watermark(x_center, y, lowest_node=None):
+    """
+    Create a Lifelike watermark below the pdf.
+    We need to ensure that the lowest node is not intersecting it.
+    """
+    if not lowest_node:
+        lowest_node = {'data': {
+            'x': 0,
+            'y': 0,
+            'width': 0,
+            'height': 0
+        }}
+    WATERMARK_DISTANCE = 20.0
+
+    y += WATERMARK_DISTANCE
+    WATERMARK_WIDTH = 140.0
+    watermark = {
+        'data': {
+            'x': x_center,
+            'y': y,
+            'height': DEFAULT_NODE_HEIGHT,
+            'width': WATERMARK_WIDTH
+        }
+    }
+    print(lowest_node)
+
+    offset_y = get_intersection_offset(get_node_bbox(lowest_node), get_node_bbox(watermark))
+    if offset_y:
+        y += WATERMARK_DISTANCE
+    label_params = {
+        'name': 'watermark_node',
+        'label': 'Created by Lifelike',
+        'pos': (
+            # f"{(x_center) / SCALING_FACTOR},"
+            f"{x_center / SCALING_FACTOR},"
+            f"{-y / SCALING_FACTOR - offset_y}!"
+            # f"{-(y + NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+        ),
+        # Resize the node base on font size, as otherwise the margin would be smaller than
+        # in the Lifelike map editor
+        'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
+        'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
+        'shape': 'box',
+        'style': 'rounded',
+        'fontcolor': 'black',
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fontsize': f"{DEFAULT_FONT_SIZE}",
+        'penwidth': '0.0'
+    }
+    url_params = {}
+    icon_params = {}
+    return label_params
+    # return label_params, icon_params, url_params
+
+
+def get_node_bbox(node):
+    width_2 = node['data'].get('width', DEFAULT_NODE_WIDTH) / 2.0
+    height_2 = -node['data'].get('height', DEFAULT_NODE_HEIGHT) / 2.0
+    return NodeBBox(
+        (node['data']['x'] - width_2) / SCALING_FACTOR,
+        -(node['data']['y'] - height_2) / SCALING_FACTOR,
+        (node['data']['x'] + width_2) / SCALING_FACTOR,
+        -(node['data']['y'] + height_2) / SCALING_FACTOR,
+    )
+
+
+def get_intersection_offset(fixed_node: NodeBBox, mobile_node: NodeBBox):
+    """
+    Gets node intersection offsets, allowing to move mobile node away from
+    intersecting fixed_node
+    :params:
+    :param fixed_node: user inputed node that we want to not cover
+    :param mobile_node: auto-generated node (watermark, map name) that we want to move
+    """
+    print(fixed_node)
+    print(mobile_node)
+    dx = min(fixed_node.xmax, mobile_node.xmax) - max(fixed_node.xmin, mobile_node.xmin)
+    dy = mobile_node.ymax - fixed_node.ymin
+    print(dx, dy)
+    if (dx >= 0) and (dy >= 0):
+        return dy
+    return 0
+
+
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_MAP
     SHORTHAND = 'map'
@@ -909,10 +996,9 @@ class MapTypeProvider(BaseFileTypeProvider):
         nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
 
         for node in nodes:
-            if self_contained_export:
-                # Store the coordinates of each node as map name node is based on them
-                x_values.append(node['data']['x'])
-                y_values.append(node['data']['y'])
+            # Store the coordinates of each node as map name node and watermark are based on them
+            x_values.append(node['data']['x'])
+            y_values.append(node['data']['y'])
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
@@ -959,17 +1045,30 @@ class MapTypeProvider(BaseFileTypeProvider):
             params['href'] = set_node_href(node)
             graph.node(**params)
 
+        min_x = min(x_values, default=0)
+        min_y = min(y_values, default=0)
         if self_contained_export:
             # We add name of the map in left top corner to ease map recognition in linked export
             name_node_params = create_map_name_node()
             # Set outside of the function to avoid unnecessary copying of potentially big variables
             name_node_params['name'] = file.filename
             name_node_params['pos'] = (
-                f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
-                f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-            ) if x_values else '0,0!'  # Failsafe to prevent errors on empty maps.
+                f"{(min_x - NAME_NODE_OFFSET) / SCALING_FACTOR},"
+                f"{(-min_y - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+            )
 
             graph.node(**name_node_params)
+
+        # The y-axis is inverted, hence the max() for lowest node
+        index_min = max(range(len(y_values)), key=y_values.__getitem__, default=-1)
+        max_x = max(x_values, default=0)
+        x_center = min_x + (max_x - min_x) / 2.0
+        # for params in create_watermark(x_values[index_min], y_center, nodes[index_min])
+        #     graph.node(**params)
+        lowest_node = nodes[index_min] if index_min != -1 else None
+        y_position = lowest_node['data']['y'] + lowest_node['data'].get(
+            'height', DEFAULT_NODE_HEIGHT) / 2.0 if lowest_node else 0
+        graph.node(**create_watermark(x_center, y_position, lowest_node))
 
         for edge in json_graph['edges']:
             edge_params = create_edge(edge, node_hash_type_dict)
