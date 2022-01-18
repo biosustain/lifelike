@@ -2,7 +2,6 @@ import pytest
 
 from neo4japp.models import Files
 from neo4japp.models.auth import (
-    AccessControlPolicy,
     AppRole,
     AppUser,
 )
@@ -152,19 +151,10 @@ def test_projects_init_with_roles(session, test_user: AppUser):
     session.flush()
 
     acp_roles = session.query(
-        AccessControlPolicy.id,
         AppRole.name,
-    ).filter(
-        AccessControlPolicy.principal_type == AppRole.__tablename__,
-    ).filter(
-        AccessControlPolicy.asset_type == Projects.__tablename__,
-        AccessControlPolicy.asset_id == p.id,
-    ).join(
-        AppRole,
-        AppRole.id == AccessControlPolicy.principal_id,
     ).all()
 
-    roles = [role for _, role in acp_roles]
+    roles = [role for role, in acp_roles]
     assert 'project-admin' in roles
     assert 'project-read' in roles
     assert 'project-write' in roles
