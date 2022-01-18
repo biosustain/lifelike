@@ -17,6 +17,10 @@ export default {
       useExisting: CustomisedSankeySingleLaneLayoutService
     },
     {
+      provide: SankeySingleLaneControllerService,
+      useClass: SankeySingleLaneControllerService
+    },
+    {
       provide: SankeyBaseViewControllerService,
       useClass: SankeySingleLaneControllerService
     }

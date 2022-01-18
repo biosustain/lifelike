@@ -99,7 +99,7 @@ export interface SankeyFileOptions {
   predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
 }
 
-export type SankeyOptions = SankeyStaticOptions & SankeyFileOptions;
+export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 
 export interface SankeyState {
   nodeAlign: 'right' | 'left';
@@ -220,7 +220,8 @@ export interface SankeyData extends GraphFile {
 export enum SankeyURLLoadParam {
   NETWORK_TRACE_IDX = 'network_trace',
   VIEW_NAME = 'view',
-  BASE_VIEW_NAME = 'base_view'
+  BASE_VIEW_NAME = 'base_view',
+  SEARCH_TERMS = 'search_terms',
 }
 
 export interface SankeyURLLoadParams {

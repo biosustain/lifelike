@@ -24,18 +24,13 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
     readonly warningController: WarningControllerService
   ) {
     super(warningController);
-    this.defaultState$ = super.defaultState$.pipe(
+    this.defaultState$ = this.defaultState$.pipe(
       map(state => merge(state, this.baseDefaultState)
       )
-    );
-
-    this.defaultOptions$ = super.defaultOptions$.pipe(
-      map(options => merge(options, this.baseDefaultOptions))
     );
   }
 
   readonly baseDefaultState: Partial<State & SankeyState>;
-  readonly baseDefaultOptions: Partial<Options & SankeyOptions>;
 
   readonly viewBase: ViewBase;
 

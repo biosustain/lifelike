@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, intersection } from 'lodash-es';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -47,6 +47,29 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
           } as ValueGenerator
         }
       };
+
+  networkTraceData$ = this.data$.pipe(
+    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
+      switchMap(({networkTraces}) => this.state$.pipe(
+        map(({networkTraceIdx, colorLinkByType}) => {
+          const selectedNetworkTrace = networkTraces[networkTraceIdx];
+          const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
+          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+          if (colorLinkByType) {
+            this.colorLinkByType(networkTraceLinks);
+          }
+          const _inNodes = node_sets[selectedNetworkTrace.sources];
+          const _outNodes = node_sets[selectedNetworkTrace.targets];
+          this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
+          return {
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            _inNodes, _outNodes
+          };
+        })
+      ))
+    ))
+  );
 
   computedData$ = this.data$.pipe(
     switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
