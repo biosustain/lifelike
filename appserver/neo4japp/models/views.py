@@ -5,7 +5,7 @@ from typing import Dict
 from sqlalchemy.dialects.postgresql import insert
 
 from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase, HashIdMixin
+from neo4japp.models.common import RDBMSBase
 
 
 class View(RDBMSBase):
