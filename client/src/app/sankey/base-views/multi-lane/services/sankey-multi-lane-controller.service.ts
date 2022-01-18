@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 
-import {
-  ValueGenerator,
-  SankeyTraceNetwork,
-  SankeyLink,
-  LINK_VALUE_GENERATOR,
-  ViewBase
-} from 'app/sankey/interfaces';
+import { ValueGenerator, SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase } from 'app/sankey/interfaces';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../color-palette';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
@@ -51,6 +45,32 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
   };
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
+
+  networkTraceData$ = this.data$.pipe(
+    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
+      switchMap(({networkTraces, linkPalettes}) => this.state$.pipe(
+        map(({networkTraceIdx, linkPaletteId}) => {
+          const selectedNetworkTrace = networkTraces[networkTraceIdx];
+          const palette = linkPalettes[linkPaletteId];
+          const traceColorPaletteMap = createMapToColor(
+            selectedNetworkTrace.traces.map(({_group}) => _group),
+            {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
+            palette
+          );
+          const networkTraceLinks = this.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
+          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
+          const _inNodes = node_sets[selectedNetworkTrace.sources];
+          const _outNodes = node_sets[selectedNetworkTrace.targets];
+          this.colorNodes(networkTraceNodes);
+          return {
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            _inNodes, _outNodes
+          };
+        })
+      ))
+    ))
+  );
 
   computedData$ = this.data$.pipe(
     switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
