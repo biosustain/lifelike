@@ -32,9 +32,6 @@ with open(path.join(directory, '../upgrade_data/graph_v3.json'), 'r') as f:
     # Use this method to validate the content of an enrichment table
     validate_graph = fastjsonschema.compile(json.load(f))
 
-conn = op.get_bind()
-session = Session(conn)
-
 t_files = table(
         'files',
         column('content_id', sa.Integer),
@@ -49,6 +46,13 @@ t_files_content = table(
 
 
 def modify_files_with_views(modification_callback):
+    # Moved the assignment of conn and session from the global context to here, because they were
+    # previously causing the following error when `flask db revision` was called:
+    #   NameError: Can't invoke function 'get_bind', as the proxy object has not yet been
+    #   established for the Alembic 'Operations' class.  Try placing this code inside a callable.
+    conn = op.get_bind()
+    session = Session(conn)
+
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_files_content.c.id,
         t_files_content.c.raw_file
