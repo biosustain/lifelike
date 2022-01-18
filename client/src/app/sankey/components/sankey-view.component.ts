@@ -6,7 +6,8 @@ import {
   AfterContentInit,
   ComponentFactoryResolver,
   Injector,
-  AfterViewInit
+  AfterViewInit,
+  isDevMode
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -107,8 +108,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         this.currentFileId = object.hashId;
         return this.sankeyController.loadData(content as SankeyData);
       })
-    ).subscribe(() => {
-      console.log('loaded data');
+    ).subscribe(d => {
+      console.log('loaded data', d);
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
@@ -128,10 +129,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           })
         )
       ),
-          map(state => ({
-            networkTraceIdx: 0,
-            ...state
-          })),
+      map(state => ({
+        networkTraceIdx: 0,
+        ...state
+      })),
       switchMap((stateDelta: Partial<SankeyState>) =>
         iif(
           () => !!stateDelta.baseViewName,
@@ -144,15 +145,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           )
         )
       ),
-      tap(stateDelta => this.sankeyController.patchState(stateDelta)),
+      tap(stateDelta => this.sankeyController.stateDelta$.next(stateDelta)),
       tap(x => console.log('route.fragment', x))
     ).subscribe(state => {
       console.log('loaded state from fragment', state);
     });
 
-    combineLatest([this.sankeyController.data$, this.baseViewName$]).subscribe(([content, baseView]) => {
-      this.sankeyController.load(content);
-    });
+    // combineLatest([this.sankeyController.data$, this.baseViewName$]).subscribe(([content, baseView]) => {
+    //   this.sankeyController.load(content);
+    // });
 
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
@@ -413,6 +414,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           break;
         case SankeyURLLoadParam.BASE_VIEW_NAME:
           state.baseViewName = value;
+          break;
+        case SankeyURLLoadParam.SEARCH_TERMS:
+          // todo: parse search terms
           break;
         default:
           viewId = param;
