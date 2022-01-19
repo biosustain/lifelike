@@ -630,7 +630,8 @@ def create_icon_node(node, params):
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
     :returns: modified params dict descriping icon label and a new dict describing the icon
-              itself
+              itself. Additionally, returns computed height of icon + label to set it
+              to a proper value
     """
     style = node.get('style', {})
     label = escape(node['label'])
@@ -640,6 +641,8 @@ def create_icon_node(node, params):
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
         * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
 
+    node_height = distance_from_the_label * 2 + float(ICON_SIZE)
+    node_height *= SCALING_FACTOR
     # Move the label below to make space for the icon node
     params['pos'] = (
         f"{node['data']['x'] / SCALING_FACTOR},"
@@ -683,7 +686,7 @@ def create_icon_node(node, params):
     icon_params['imagescale'] = 'true'
     icon_params['penwidth'] = '0.0'
     params['fontcolor'] = style.get("fillColor") or default_icon_color
-    return params, icon_params
+    return params, icon_params, node_height
 
 
 def create_relation_node(node, params):
@@ -982,7 +985,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         # Sort the images to the front of the list to ensure that they do not cover other nodes
         nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
 
-        for node in nodes:
+        for i, node in enumerate(nodes):
             # Store the coordinates of each node as map name node and watermark are based on them
             x_values.append(node['data']['x'])
             y_values.append(node['data']['y'])
@@ -1022,7 +1025,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if style.get('showDetail'):
                     params = create_detail_node(node, params)
                 else:
-                    params, icon_params = create_icon_node(node, params)
+                    params, icon_params, node_height = create_icon_node(node, params)
+                    # We need to set this to ensure that watermark is not intersect some edge cases
+                    nodes[i]['data']['height'] = node_height
                     # Create separate node with the icon
                     graph.node(**icon_params)
 
