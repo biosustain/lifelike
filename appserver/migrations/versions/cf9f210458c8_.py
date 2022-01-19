@@ -17,3 +17,7 @@ depends_on = None
 def upgrade():
     op.drop_index('ix_worksheets_content_id', table_name='worksheets')
     op.drop_table('worksheets')
+
+
+def downgrade():
+    pass
