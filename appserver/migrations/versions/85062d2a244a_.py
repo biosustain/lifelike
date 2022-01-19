@@ -1,4 +1,4 @@
-"""empty message
+"""Update enum name for file_annotation_version cause column
 
 Revision ID: 85062d2a244a
 Revises: 65d827e55b5b
