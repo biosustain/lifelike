@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from migrations.utils import window_chunk
 from neo4japp.models import FileContent
 
-from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH
 
 # revision identifiers, used by Alembic.
 revision = '06e737103f71'
@@ -51,9 +50,9 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         files_to_update = []
         for id, description in chunk:
-            if len(description) > MAX_FILE_DESCRIPTION_LENGTH:
+            if len(description) > 5000:
                 files_to_update.append({'id': id,
-                                        'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
+                                        'description': description[:5000]})
         try:
             session.bulk_update_mappings(FileContent, files_to_update)
             session.commit()
