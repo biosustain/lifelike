@@ -227,7 +227,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (event.target.files.length) {
       const file = event.target.files[0];
       const filename = this.extractFilename(file.name);
-      const format = filename.split('.')[1];
+      const format = filename.split('.').pop();
       this.extractDescription(file, format).then(description => {
         this.form.get('description').setValue(description);
         this.form.get('description').markAsDirty();
