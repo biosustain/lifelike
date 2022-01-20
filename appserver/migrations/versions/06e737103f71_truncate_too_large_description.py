@@ -14,7 +14,6 @@ from sqlalchemy import table, column
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
-from neo4japp.models import FileContent
 
 
 # revision identifiers, used by Alembic.
@@ -54,7 +53,7 @@ def data_upgrades():
                 files_to_update.append({'id': id,
                                         'description': description[:5000]})
         try:
-            session.bulk_update_mappings(FileContent, files_to_update)
+            session.bulk_update_mappings(t_files, files_to_update)
             session.commit()
         except Exception:
             pass
