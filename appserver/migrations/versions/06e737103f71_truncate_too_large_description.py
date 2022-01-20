@@ -13,15 +13,14 @@ import sqlalchemy as sa
 from sqlalchemy import table, column
 from sqlalchemy.orm import Session
 
-from neo4japp.models import Files
 from migrations.utils import window_chunk
-MAX_FILE_DESCRIPTION_LENGTH = 5000
 
 # revision identifiers, used by Alembic.
 revision = '06e737103f71'
 down_revision = '65d827e55b5b'
 branch_labels = None
 depends_on = None
+MAX_FILE_DESCRIPTION_LENGTH = 5000
 
 
 def upgrade():
@@ -54,10 +53,10 @@ def data_upgrades():
                 files_to_update.append({'id': id,
                                         'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
         try:
-            session.bulk_update_mappings(Files, files_to_update)
+            session.bulk_update_mappings(t_files, files_to_update)
             session.commit()
         except Exception:
-            print(f'Data migration in revision {revision} failed to commit!')
+            pass
 
 
 def data_downgrades():
