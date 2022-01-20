@@ -45,7 +45,7 @@ def data_upgrades():
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_files.c.id,
         t_files.c.description
-    ])).where(t_files.c.mime_type == FILE_MIME_TYPE_GRAPH)
+    ]).where(t_files.c.mime_type == FILE_MIME_TYPE_GRAPH))
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
