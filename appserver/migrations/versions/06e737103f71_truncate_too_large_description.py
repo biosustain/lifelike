@@ -1,6 +1,4 @@
 """Truncate too large description.
-As there was no validation on sankey description, some of those might be longer than our
-system allows. The new files are going to be validated, but we might want to fix the old ones
 
 Revision ID: 06e737103f71
 Revises: 65d827e55b5b
@@ -49,7 +47,7 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         files_to_update = []
         for id, description in chunk:
-            if len(description) > MAX_FILE_DESCRIPTION_LENGTH:
+            if description and len(description) > MAX_FILE_DESCRIPTION_LENGTH:
                 files_to_update.append({'id': id,
                                         'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
         try:
