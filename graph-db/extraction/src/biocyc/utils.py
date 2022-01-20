@@ -100,6 +100,7 @@ def get_property_name_type(attr_name: str, attr_name_map=None):
             return name, type
     return None, None
 
+
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
     cleantext = re.sub(cleanr, '', raw_html)

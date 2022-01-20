@@ -24,15 +24,17 @@ class ClassParser(BaseDataFileParser):
     def __str__(self):
         return 'biocyc-class'
 
-    def create_synonym_rels(self) -> bool:
-        return False
-
-    def parse_and_write_data_files(self, *args):
-        """Parse source data file."""
-        nodes = super().parse_data_file()
-        mynodes = [n for n in nodes if not n.get_attribute(PROP_BIOCYC_ID).startswith(('GO:', 'TAX-', 'ORG-'))]
-        for node in mynodes:
+    def parse_and_write_data_files(self):
+        self.nodes = [n for n in self.nodes if not n.get_attribute(PROP_BIOCYC_ID).startswith(('GO:', 'TAX-', 'ORG-'))]
+        for node in self.nodes:
+            name = node.get_attribute(PROP_NAME)
+            if name:
+                if name.startswith('a '):
+                    name = name[2:]
+                elif name.startswith('an '):
+                    name = name[3:]
+                node.update_attribute(PROP_NAME, name)
             edges_with_type_of = set([e for e in node.edges if e.label == REL_TYPE])
             # Skip relationships of type FRAMES, since there is no biocyc id 'FRAMES'
             node.edges = [edge for edge in edges_with_type_of if edge.dest.get_attribute(PROP_BIOCYC_ID) != FRAMES and edge.source.get_attribute(PROP_BIOCYC_ID) != FRAMES]
-        super().parse_and_write_data_files(nodes)
+        super().parse_and_write_data_files()

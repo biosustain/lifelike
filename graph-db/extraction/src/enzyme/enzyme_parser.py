@@ -190,7 +190,7 @@ class EnzymeParser(BaseParser):
                 parent = enzyme_dict[parent_code]
                 parent.add_child(enz)
 
-    def parse_and_write_data_files(self, *args):
+    def parse_and_write_data_files(self):
         enzymes = self._parse_data_files()
         self.logger.info('load enzyme nodes')
         data = [enzyme.get_enzyme_dict() for enzyme in enzymes]

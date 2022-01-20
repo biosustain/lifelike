@@ -2,12 +2,10 @@ import json
 import logging
 import os
 
-from pathlib import Path
-
-from common import utils as common_utils
+from cloudstorage.cloud_mixin import CloudMixin
 from common.constants import *
-from common.database import get_database
 from typing import Type
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from biocyc.base_data_file_parser import BaseDataFileParser
 from biocyc import (
@@ -23,7 +21,7 @@ from biocyc import (
     regulation_parser,
     rna_parser,
     terminator_parser,
-    transcripitionunit_parser
+    transcriptionunit_parser
 )
 
 
@@ -47,11 +45,11 @@ PARSERS = {
     NODE_REGULATION: regulation_parser.RegulationParser,
     NODE_RNA: rna_parser.RnaParser,
     NODE_TERMINATOR: terminator_parser.TerminatorParser,
-    NODE_TRANS_UNIT: transcripitionunit_parser.TranscriptionUnitParser,
+    NODE_TRANS_UNIT: transcriptionunit_parser.TranscriptionUnitParser,
 }
 
 
-class BiocycParser:
+class BiocycParser(CloudMixin):
     def __init__(self, prefix: str, base_dir: str=None):
         self.base_dir = base_dir
         self.prefix = prefix
@@ -136,7 +134,7 @@ class BiocycParser:
         need to run scripts to set displayname and description.  See docs/biocyc/set_displayname_description.md
         :param database: the neo4j database to load data
         """
-        # TODO: NEEDED, biocyc constraints
+        # TODO: NEEDED, biocyc constraints, go in liquibase
         #
         # Create constraints and indices if they don't exist
         # database.create_constraint(
@@ -148,23 +146,28 @@ class BiocycParser:
 
         # loop data sources configured in data_sources.json
         for db, file in self.data_sources_to_load.items():
-            DB_NODE = 'db_' + db
+            # TODO: NEEDED, biocyc constraints, go in liquibase
+            #
+            # DB_NODE = 'db_' + db
             # database.create_index(DB_NODE, PROP_BIOCYC_ID, f'index_{db}_{PROP_BIOCYC_ID}')
             # database.create_constraint(DB_NODE, PROP_ID, f'index_{db}_id')
             # database.create_index(DB_NODE, PROP_NAME, f'index_{db}_name')
             version = ''
             for entity in ENTITIES:
-                self.logger.info(f"Load {db}: {entity}")
+                self.logger.info(f'Load {db}: {entity}')
                 parser = self.get_parser(entity, db, file)
                 parser.version = version
                 if parser:
+                    parser.parse_data_file()
                     parser.parse_and_write_data_files()
+        self.zip_files(parser.output_dir)
 
-    def write_entity_datafile(self, db_name, data_file, entities: []):
-        for entity in entities:
-            parser = self.get_parser(entity, db_name, data_file)
-            if parser:
-                parser.write_entity_data_files(parser.parse_data_file())
+    def zip_files(self, dir):
+        with ZipFile(os.path.join(dir, f'jira-{self.prefix}.zip'), 'w', ZIP_DEFLATED) as zipped:
+            for parent, subfolders, filenames in os.walk(os.path.join(dir)):
+                for fn in filenames:
+                    if fn.lower().endswith('.tsv'):
+                        zipped.write(f'{parent}/{fn}', fn)
 
 
 def main(args):
@@ -184,15 +187,15 @@ def main(args):
     else:
         logger.info('No data sources specified. Loading all data sources...')
 
-    # database = get_database()
-
     # After loading data, we (perhaps?) need to run scripts to set displayname and description. See docs/biocyc/set_displayname_description.md
     parser.load_data_into_neo4j()
+    # TODO: Remove these later when done cleaning code
     # parser.link_genes(database)
     # parser.set_gene_property_for_enrichment(database)
     # parser.add_protein_synonyms(database)
 
-    # database.close()
+    for filename in ['LL-3164-ecocyc.zip', 'LL-3164-humancyc.zip', 'LL-3164-metacyc.zip', 'LL-3164-pseudomonascyc.zip', 'LL-3164-yeastcyc.zip']:
+        parser.upload_to_azure(f'jira-{filename}', os.path.join(directory, '../../data/processed/biocyc', f'jira-{filename}'), True)
 
 
 if __name__ == "__main__":

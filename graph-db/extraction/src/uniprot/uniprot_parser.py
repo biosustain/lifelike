@@ -142,7 +142,7 @@ class UniprotParser(BaseParser):
             item = item[:item.find('{')]
         return item.strip()
 
-    def parse_and_write_data_files(self, *args):
+    def parse_and_write_data_files(self):
         entries = self.parse_uniprot_file()
         self.write_protein_file(entries)
         self.write_protein2synonym_file(entries)

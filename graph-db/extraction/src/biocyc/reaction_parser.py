@@ -1,5 +1,6 @@
-from biocyc.base_data_file_parser import *
-from common.graph_models import *
+from biocyc.base_data_file_parser import BaseDataFileParser
+from common.constants import *
+from common.graph_models import RelationshipType
 
 
 ATTR_NAMES = {
@@ -31,22 +32,23 @@ SMALL_MOL_REACTIONS = 'Small-Molecule-Reactions'
 
 
 class ReactionParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'reactions.dat',
-                                    NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_DIRECTION, PROP_LOCATION]
+    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
+        super().__init__(prefix, base_dir, db_name, tarfile, 'reactions.dat', NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER]
+
+    def __str__(self):
+        return 'biocyc-reaction'
 
     def create_synonym_rels(self) -> bool:
         return True
 
-    def parse_data_file(self):
+    def parse_and_write_data_files(self):
         """
         After parsing the file, remove the 'TYPE_OF' relationships for the general reaction type (chemical reaction, small molecule reaction)
         because we don't need those information, and the additional relationshps made the node expanding more complicated.
         Reation property EC_number need to be treated as relationships to Enzyme nodes.
         """
-        nodes = BaseDataFileParser.parse_data_file(self)
-        for node in nodes:
+        for node in self.nodes:
             edges = set(node.edges)
             for edge in edges:
                 if edge.label == REL_TYPE:
@@ -57,7 +59,4 @@ class ReactionParser(BaseDataFileParser):
                 ec_numbers = ec_number_str.split('|')
                 for ec in ec_numbers:
                     self.add_dblink(node, DB_ENZYME, ec)
-        return nodes
-
-
-
+        super().parse_and_write_data_files()
