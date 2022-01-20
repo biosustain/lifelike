@@ -13,6 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy import table, column
 from sqlalchemy.orm import Session
 
+from neo4japp.models import Files
 from migrations.utils import window_chunk
 MAX_FILE_DESCRIPTION_LENGTH = 5000
 
@@ -53,7 +54,7 @@ def data_upgrades():
                 files_to_update.append({'id': id,
                                         'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
         try:
-            session.bulk_update_mappings(t_files, files_to_update)
+            session.bulk_update_mappings(Files, files_to_update)
             session.commit()
         except Exception:
             print(f'Data migration in revision {revision} failed to commit!')
