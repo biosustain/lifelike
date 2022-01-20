@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
 from neo4japp.models import Files
+from neo4japp.constants import FILE_MIME_TYPE_GRAPH
 
 # revision identifiers, used by Alembic.
 revision = '06e737103f71'
@@ -38,12 +39,13 @@ def data_upgrades():
     t_files = table(
         'files',
         column('id', sa.Integer),
-        column('description', sa.String))
+        column('description', sa.String),
+        column('mime_type', sa.String))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_files.c.id,
         t_files.c.description
-    ]))
+    ])).where(t_files.c.mime_type == FILE_MIME_TYPE_GRAPH)
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
