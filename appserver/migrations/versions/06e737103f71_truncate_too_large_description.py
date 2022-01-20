@@ -14,7 +14,7 @@ from sqlalchemy import table, column
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
-
+MAX_FILE_DESCRIPTION_LENGTH = 5000
 
 # revision identifiers, used by Alembic.
 revision = '06e737103f71'
@@ -49,9 +49,9 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         files_to_update = []
         for id, description in chunk:
-            if len(description) > 5000:
+            if len(description) > MAX_FILE_DESCRIPTION_LENGTH:
                 files_to_update.append({'id': id,
-                                        'description': description[:5000]})
+                                        'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
         try:
             session.bulk_update_mappings(t_files, files_to_update)
             session.commit()
