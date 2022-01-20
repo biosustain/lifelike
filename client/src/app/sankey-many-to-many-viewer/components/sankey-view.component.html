@@ -172,6 +172,7 @@
                                              (linkClicked)="selectLink($event)"
                                              (nodeClicked)="selectNode($event)"
                                              (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                             (resized)="sankeyResized($event)"
                                              [highlightCircular]="state.highlightCircular"
                                              [nodeAlign]="nodeAlign"
                                              [normalizeLinks]="state.normalizeLinks"
