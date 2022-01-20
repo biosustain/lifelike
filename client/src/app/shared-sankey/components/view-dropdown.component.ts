@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 
 import { transform, pick, omitBy, isNil, mapValues, defer, omit } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { first, map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
@@ -14,8 +15,6 @@ import { SankeySearchService } from 'app/sankey-viewer/services/search.service';
 
 import {
   SankeyView,
-  SankeyNode,
-  SankeyLink,
   SankeyNodesOverwrites,
   SankeyLinksOverwrites,
   SankeyURLLoadParams,
@@ -26,6 +25,7 @@ import {
 import { SankeyViewConfirmComponent } from './view-confirm.component';
 import { SankeyViewCreateComponent } from './view-create.component';
 import { viewBaseToNameMapping } from '../constants';
+import { SankeyLink, SankeyNode } from '../pure_interfaces';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -134,16 +134,22 @@ export class SankeyViewDropdownComponent implements OnChanges {
     }
   }
 
-  createView(viewName): void {
-    const renderedData = this.sankeyController.dataToRender.value;
-    this.sankeyController.allData.value._views[viewName] = {
-      state: omit(this.sankeyController.state, this.statusOmitProperties),
-      base: this.activeViewBase,
-      nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
-      links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
-    } as SankeyView;
-    this.sankeyController.state.viewName = viewName;
-    this.viewDataChanged.emit();
+  createView(viewName): Promise<any> {
+    return this.sankeyController.sankeySize$.pipe(
+      first(),
+      map(size => {
+        const renderedData = this.sankeyController.dataToRender.value;
+        this.sankeyController.allData.value._views[viewName] = {
+          state: omit(this.sankeyController.state, this.statusOmitProperties),
+          base: this.activeViewBase,
+          size,
+          nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
+          links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
+        } as SankeyView;
+        this.sankeyController.state.viewName = viewName;
+        this.viewDataChanged.emit();
+      })
+    ).toPromise();
   }
 
   changeViewBaseIfNeeded(base, params?): Promise<boolean> | void {
@@ -159,7 +165,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
         viewName, baseViewName: base
       });
       const graph = this.sankeyController.computeData();
-      graph._precomputedLayout = true;
+      graph._precomputedLayout = view.size;
       this.applyPropertyObject(nodes, graph.nodes);
       this.applyPropertyObject(links, graph.links);
       // @ts-ignore

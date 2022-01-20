@@ -10,7 +10,7 @@ import {
 
 import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, finalize, mergeMap, switchMap } from 'rxjs/operators';
+import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
@@ -172,7 +172,9 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation',
       new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
-    this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
+    // Disabling this for now, since this is redundant with the canvasChild event listeners setup above. Those callbacks seem to be the
+    // preferred ones for drag-and-drop.
+    // this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
   }
 
   save() {

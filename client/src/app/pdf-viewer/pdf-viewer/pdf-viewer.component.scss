@@ -74,7 +74,11 @@
       }
     }
 
-    ::selection, ::-moz-selection {
+    ::-moz-selection {
+      background: rgba(255, 255, 51, 0.3);
+    }
+
+    ::selection {
       background: rgba(255, 255, 51, 0.3);
     }
 

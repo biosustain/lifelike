@@ -9,11 +9,17 @@
  */
 import { omit, slice, transform, isObject, flatMapDeep } from 'lodash-es';
 
-import { SankeyLink, SankeyTrace, SankeyNode } from 'app/shared-sankey/interfaces';
+/* NOTE:
+    Be very carefull with those imports as they cannot have any DOM references
+    since they are executed in a web worker enviroment.
+    Faulty import will prevent the worker from compiling, returning the error of type:
+     "document is undefined"
+     "window is undefined"
+     "alert is undefined"
+*/
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
-
-import { SearchEntity } from '../components/search-panel/interfaces';
+import { SankeyTrace, SankeyLink, SankeyNode } from 'app/shared-sankey/pure_interfaces';
 
 
 export interface Match {
@@ -27,6 +33,14 @@ enum LAYERS {
   link = 'link',
   node = 'node',
   trace = 'trace'
+}
+
+export interface SearchEntity {
+  networkTraceIdx?: number;
+  nodeId?: string | number;
+  linkId?: string | number;
+  calculatedMatches: Match[];
+  term: string;
 }
 
 export class SankeySearch {
