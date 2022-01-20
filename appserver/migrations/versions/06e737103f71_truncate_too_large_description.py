@@ -56,7 +56,7 @@ def data_upgrades():
             session.bulk_update_mappings(t_files, files_to_update)
             session.commit()
         except Exception:
-            pass
+            print(f'Data migration in revision {revision} failed to commit!')
 
 
 def data_downgrades():
