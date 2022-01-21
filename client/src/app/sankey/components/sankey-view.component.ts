@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first } from 'rxjs/operators';
-import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif } from 'rxjs';
+import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
 import { isNil, pick, compact } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
@@ -140,9 +140,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.currentFileId = null;
       this.openSankey(file_id);
     });
-
-    this.baseViewName$.subscribe(x => console.log('baseViewName', x));
     this.content.subscribe(x => console.log('content', x));
+
+    this.dataToRender$.subscribe(data => {
+      this._dynamicInstances.get('sankey').data = data;
+    });
   }
 
   get warnings() {
@@ -161,11 +163,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return this.sankeyController.state$.pipe(map(({nodeAlign}) => nodeAlign));
   }
 
+  sankeyBaseViewControl$ = new ReplaySubject<SankeyBaseViewControllerService>(1);
+
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
-  get predefinedValueAccessor() {
-    return this.sankeyController.predefinedValueAccessor$;
-  }
+  predefinedValueAccessor$ = this.sankeyBaseViewControl$.pipe(
+    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
+  );
 
   get searching() {
     return !this.sankeySearch.done;
@@ -173,6 +177,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
+      first(),
       map(state =>
         pick(
           state,
@@ -190,7 +195,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return this._entitySearchListIdx;
   }
 
-  sankeyBaseViewControl: SankeyBaseViewControllerService;
 
   set entitySearchListIdx(idx) {
     this._entitySearchListIdx = idx;
@@ -208,9 +212,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     );
   }
 
-  baseViewName$ = this.sankeyController.state$.pipe(
-    map(({baseViewName}) => baseViewName)
-  );
   dynamicContainer;
   _dynamicInstances = new Map();
 
@@ -221,15 +222,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   content = new ReplaySubject(1);
 
-  dataToRender$;
-  allData$;
-
   searchTerms = [];
 
   paramsSubscription: Subscription;
   returnUrl: string;
-  selection: BehaviorSubject<Array<SelectionSingleLaneEntity>>;
-  selectionWithTraces;
   loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
   ready = false;
@@ -238,12 +234,28 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   detailsPanel = false;
   searchPanel = false;
   advancedPanel = false;
-  selectedNodes;
-  selectedLinks;
   selectedTraces;
   object: FilesystemObject;
   currentFileId;
 
+  selection = new BehaviorSubject<Array<SelectionSingleLaneEntity>>([]);
+  selectionWithTraces = this.selection.pipe(
+    tap(x => console.log('selection', x)),
+    map((currentSelection) => {
+      const nodes = compact(currentSelection.map(e => e[SelectionType.node]));
+      const links = compact(currentSelection.map(e => e[SelectionType.link]));
+      const traces = [
+        ...this.sankeyController.getRelatedTraces({nodes, links})
+      ].map(trace => ({[SelectionType.trace]: trace} as SelectionEntity));
+      return [...currentSelection].reverse().concat(traces);
+    })
+  );
+  selectedNodes = this.selection.pipe(map(currentSelection => {
+    return new Set(compact(currentSelection.map(e => e[SelectionType.node])));
+  }));
+  selectedLinks = this.selection.pipe(map(currentSelection => {
+    return new Set(compact(currentSelection.map(e => e[SelectionType.link])));
+  }));
   isArray = Array.isArray;
 
   entitySearchTerm = '';
@@ -256,19 +268,17 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
 
-  static getDefaultViewBase(content, networkTraceIdx): ViewBase {
-    const {graph: {node_sets, trace_networks}} = content;
-    const networkTrace = trace_networks[networkTraceIdx];
-    const _inNodes = node_sets[networkTrace.sources];
-    const _outNodes = node_sets[networkTrace.targets];
-    return (_inNodes.length > 1 && _outNodes.length > 1) ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane;
-  }
+  dataToRender$ = this.sankeyBaseViewControl$.pipe(
+    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.dataToRender$)
+  );
 
-
-
+  allData$ = this.sankeyController.data$;
 
   ngAfterViewInit() {
-    this.baseViewName$.subscribe(baseView => {
+    /**
+     * Load different base view components upom base view change
+     */
+    this.sankeyController.baseViewName$.subscribe(baseView => {
       console.log('baseViewName', baseView);
       const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
       const sankeyInjector = this.baseViewInjectors.get(o);
@@ -289,12 +299,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       const sankey = createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
-      this.sankeyBaseViewControl = sankeyInjector.get(SankeyBaseViewControllerService);
-      this.dataToRender$ = this.sankeyBaseViewControl.dataToRender$;
-      this.allData$ = this.sankeyBaseViewControl.c.data$;
-      this.dataToRender$.subscribe(data => sankey.data = data);
+      this.sankeyBaseViewControl$.next(sankeyInjector.get(SankeyBaseViewControllerService));
     });
   }
+
 
   sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
     let pass = true;
@@ -318,24 +326,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
 
   initSelection() {
-    this.selection = new BehaviorSubject([]);
-    this.selectionWithTraces = this.selection.pipe(
-      tap(x => console.log('selection', x)),
-      map((currentSelection) => {
-        const nodes = compact(currentSelection.map(e => e[SelectionType.node]));
-        const links = compact(currentSelection.map(e => e[SelectionType.link]));
-        const traces = [
-          ...this.sankeyController.getRelatedTraces({nodes, links})
-        ].map(trace => ({[SelectionType.trace]: trace} as SelectionEntity));
-        return [...currentSelection].reverse().concat(traces);
-      })
-    );
-    this.selectedNodes = this.selection.pipe(map(currentSelection => {
-      return new Set(compact(currentSelection.map(e => e[SelectionType.node])));
-    }));
-    this.selectedLinks = this.selection.pipe(map(currentSelection => {
-      return new Set(compact(currentSelection.map(e => e[SelectionType.link])));
-    }));
     this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
   }
 
@@ -575,7 +565,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   findMatching(terms: string[], options: FindOptions = {}) {
     this.sankeySearch.stopSearch();
     this.sankeySearch.clear();
-    combineLatest([this.sankeyController.data$, this.sankeyBaseViewControl.dataToRender$]).pipe(
+    combineLatest([this.allData$, this.dataToRender$]).pipe(
       first()
     ).subscribe(([data, dataToRender]) => {
       this.sankeySearch.update({
@@ -630,7 +620,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
 
   resolveMatchToEntity({nodeId, linkId}) {
-    return this.sankeyController.dataToRender$.pipe(
+    return this.dataToRender$.pipe(
       first(),
       map(({nodes, links}) => {
         if (!isNil(nodeId)) {
