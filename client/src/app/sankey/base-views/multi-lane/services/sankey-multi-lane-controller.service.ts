@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { switchMap, map } from 'rxjs/operators';
 
-import { ValueGenerator, SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase } from 'app/sankey/interfaces';
+import { ValueGenerator, SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../color-palette';
+import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes } from '../color-palette';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
@@ -26,19 +26,21 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
     readonly warningController: WarningControllerService
   ) {
     super(c, warningController);
-    console.log('SankeyMultiLaneControllerService.constructor()');
-    this.networkTraceData$.subscribe(d => {
-      console.log('networkTraceData$', d);
-      this.c.dataToRender$.next(d);
-    });
+    this.initCommonObservables();
+    this.state$.subscribe(s => console.log('SankeySingleLaneControllerService state$', s));
     this.dataToRender$.subscribe(d => console.log('data to render', d));
-    this.palette$.subscribe(d => console.log('palette', d));
-
+    this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
+    this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
+    this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
+    this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
+    this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
+    this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
+    this.state$.subscribe(d => console.log('state$ construct subscription', d));
+    this.options$.subscribe(d => console.log('options$ construct subscription', d));
   }
 
-  viewBase = ViewBase.sankeyMultiLane;
-
-  baseDefaultState = {
+  baseDefaultState = Object.freeze({
+    predefinedValueAccessorId: PREDEFINED_VALUE.input_count,
     nodeHeight: {
       min: {
         enabled: true,
@@ -50,9 +52,10 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
       }
     },
     linkPaletteId: 'default'
-  };
+  });
 
-  baseDefaultOptions = {
+  baseDefaultOptions = Object.freeze({
+    linkPalettes,
     linkValueGenerators: {
       [LINK_VALUE_GENERATOR.input_count]: {
         description: LINK_VALUE_GENERATOR.input_count,
@@ -60,7 +63,10 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
         disabled: () => false
       } as ValueGenerator
     }
-  };
+  });
+
+  viewBase = ViewBase.sankeyMultiLane;
+
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
 
@@ -90,10 +96,6 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
         };
       })
     ))
-  );
-
-  dataToRender$ = this.networkTraceData$.pipe(
-    switchMap(networkTraceData => this.c.linkGraph(networkTraceData))
   );
 
   // Trace logic
