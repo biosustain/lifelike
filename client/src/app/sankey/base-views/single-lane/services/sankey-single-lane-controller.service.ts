@@ -2,14 +2,18 @@ import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, intersection } from 'lodash-es';
 import { switchMap, map } from 'rxjs/operators';
+// @ts-ignore
+import { tag } from 'rxjs-spy/operators/tag';
 
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneState, SankeySingleLaneOptions, SankeySingleLaneNode } from '../components/interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { SankeyControllerService } from '../../../services/sankey-controller.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -20,78 +24,71 @@ import { SankeyBaseViewControllerService } from '../../../services/sankey-base-v
 @Injectable()
 // @ts-ignore
 export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
+  constructor(
+    readonly c: SankeyControllerService,
+    readonly warningController: WarningControllerService
+  ) {
+    super(c, warningController);
+    console.log('SankeySingleLaneControllerService');
+    this.dataToRender$ = this.networkTraceData$.pipe(
+      tag('single-lane-data-to-render'),
+      switchMap(networkTraceData => this.c.linkGraph(networkTraceData))
+    );
+    this.state$.subscribe(s => console.log('SankeySingleLaneControllerService state$', s));
+    this.dataToRender$.subscribe(d => console.log('data to render', d));
+    this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
+  }
+
   viewBase = ViewBase.sankeySingleLane;
 
   baseDefaultState = {
-          highlightCircular: true,
-          colorLinkByType: false,
-          nodeHeight: {
-            min: {
-              enabled: true,
-              value: 4
-            },
-            max: {
-              enabled: true,
-              ratio: 2
-            }
-          }
-        };
+    highlightCircular: true,
+    colorLinkByType: false,
+    nodeHeight: {
+      min: {
+        enabled: true,
+        value: 4
+      },
+      max: {
+        enabled: true,
+        ratio: 2
+      }
+    }
+  };
 
   baseDefaultOptions = {
-        colorLinkTypes: EdgeColorCodes,
-        linkValueGenerators: {
-          [LINK_VALUE_GENERATOR.input_count]: {
-            description: LINK_VALUE_GENERATOR.input_count,
-            preprocessing: inputCount,
-            disabled: () => false
-          } as ValueGenerator
-        }
-      };
+    colorLinkTypes: EdgeColorCodes,
+    linkValueGenerators: {
+      [LINK_VALUE_GENERATOR.input_count]: {
+        description: LINK_VALUE_GENERATOR.input_count,
+        preprocessing: inputCount,
+        disabled: () => false
+      } as ValueGenerator
+    }
+  };
 
-  networkTraceData$ = this.data$.pipe(
-    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
-      switchMap(({networkTraces}) => this.state$.pipe(
-        map(({networkTraceIdx, colorLinkByType}) => {
-          const selectedNetworkTrace = networkTraces[networkTraceIdx];
-          const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
-          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-          if (colorLinkByType) {
-            this.colorLinkByType(networkTraceLinks);
-          }
-          const _inNodes = node_sets[selectedNetworkTrace.sources];
-          const _outNodes = node_sets[selectedNetworkTrace.targets];
-          this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
-          return {
-            nodes: networkTraceNodes,
-            links: networkTraceLinks,
-            _inNodes, _outNodes
-          };
-        })
-      ))
+
+  networkTraceData$ = this.c.partialNetworkTraceData$.pipe(
+    switchMap(({links, nodes, sources, targets, traces}) => this.state$.pipe(
+      map(({colorLinkByType}) => {
+        const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
+        const networkTraceNodes = this.c.getNetworkTraceNodes(networkTraceLinks, nodes);
+        if (colorLinkByType) {
+          this.colorLinkByType(networkTraceLinks);
+        }
+        this.colorNodes(networkTraceNodes, sources, targets);
+        return {
+          nodes: networkTraceNodes,
+          links: networkTraceLinks,
+          sources,
+          targets
+        };
+      })
     ))
   );
 
-  computedData$ = this.data$.pipe(
-    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
-      switchMap(({networkTraces}) => this.state$.pipe(
-        switchMap(({networkTraceIdx, colorLinkByType}) => {
-          const selectedNetworkTrace = networkTraces[networkTraceIdx];
-          const networkTraceLinks = this.getNetworkTraceLinks(selectedNetworkTrace, links);
-          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-          if (colorLinkByType) {
-            this.colorLinkByType(networkTraceLinks);
-          }
-          const _inNodes = node_sets[selectedNetworkTrace.sources];
-          const _outNodes = node_sets[selectedNetworkTrace.targets];
-          this.colorNodes(networkTraceNodes, _inNodes, _outNodes);
-          return this.linkGraph({
-            nodes: networkTraceNodes,
-            links: networkTraceLinks,
-            _inNodes, _outNodes
-          });
-        })
-      ))
-    ))
+  dataToRender$ = this.networkTraceData$.pipe(
+    switchMap(networkTraceData => this.c.linkGraph(networkTraceData))
   );
 
   // Trace logic
@@ -99,10 +96,10 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
    * Extract links which relates to certain trace network.
    */
   getNetworkTraceLinks(
-    networkTrace: SankeyTraceNetwork,
+    traces: SankeyTraceNetwork['traces'],
     links: Array<SankeyLink>
   ): SankeySingleLaneLink[] {
-    const traceLink = flatMap(networkTrace.traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
+    const traceLink = flatMap(traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
     const linkIdxToTraceLink = groupBy(traceLink, 'linkIdx');
     return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => ({
       ...links[linkIdx],

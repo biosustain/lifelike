@@ -1,6 +1,9 @@
 import { Component, } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { combineLatest } from 'rxjs';
+import { pairwise, map } from 'rxjs/operators';
+import { difference } from 'lodash-es';
 
 import { uuidv4 } from 'app/shared/utils';
 
@@ -11,9 +14,11 @@ import { SankeyBaseViewControllerService } from '../../services/sankey-base-view
 })
 export class SankeyAdvancedPanelComponent {
   uuid: string;
+  form: FormGroup;
 
   constructor(
-    private sankeyController: SankeyBaseViewControllerService
+    protected sankeyController: SankeyBaseViewControllerService,
+    protected formBuilder: FormBuilder
   ) {
     this.uuid = uuidv4();
 
@@ -28,14 +33,4 @@ export class SankeyAdvancedPanelComponent {
 
   state: any;
   options: any;
-
-  update() {
-    this.sankeyController.applyState();
-  }
-
-  customSizingUpdate() {
-    // todo
-    // this.state.predefinedValueAccessorId = customisedMultiValueAccessorId;
-    this.update();
-  }
 }

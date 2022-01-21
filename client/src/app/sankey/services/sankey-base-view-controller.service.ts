@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { ReplaySubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { ReplaySubject, Observable, combineLatest } from 'rxjs';
+import { map, tap, share, switchMap, shareReplay } from 'rxjs/operators';
 import { merge } from 'lodash-es';
 
 import { SankeyOptions, SankeyState, ViewBase } from 'app/sankey/interfaces';
@@ -17,27 +17,35 @@ import { SankeyControllerService } from './sankey-controller.service';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SankeyBaseViewControllerService<Options extends object = object, State extends object = object>
-  extends SankeyControllerService {
+export class SankeyBaseViewControllerService<Options extends object = object, State extends object = object> {
   constructor(
-    readonly controller: SankeyControllerService,
+    readonly c: SankeyControllerService,
     readonly warningController: WarningControllerService
   ) {
-    super(warningController);
-    this.defaultState$ = this.defaultState$.pipe(
-      map(state => merge(state, this.baseDefaultState)
+    this.defaultState$ = this.c.defaultState$.pipe(
+      map(state => merge({}, state, this.baseDefaultState)
       )
     );
+    this.state$ = combineLatest([this.c.stateDelta$, this.defaultState$]).pipe(
+      map(([delta, defaultState]) => merge({}, defaultState, delta)),
+      tap(s => console.log('state update', s)),
+      shareReplay()
+    );
+    this.options$ = this.c.options$ as ReplaySubject<SankeyOptions & Options>;
   }
 
-  readonly baseDefaultState: Partial<State & SankeyState>;
+  networkTraceData$;
+  dataToRender$;
+  defaultState$: Observable<SankeyState & State>;
+
+  readonly baseDefaultState: State & Partial<SankeyState>;
 
   readonly viewBase: ViewBase;
 
   // @ts-ignore
   options$: ReplaySubject<SankeyOptions & Options>;
   // @ts-ignore
-  state$: ReplaySubject<SankeyState & State>;
+  state$: Observable<SankeyState & State>;
 
   /**
    * Color nodes in gray scale based on group they are relating to.

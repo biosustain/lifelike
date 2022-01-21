@@ -1,12 +1,13 @@
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import {catchError} from 'rxjs/operators';
-import {from, Observable, pipe, throwError} from 'rxjs';
-import {UnaryFunction} from 'rxjs/internal/types';
+import { catchError } from 'rxjs/operators';
+import { from, Observable, pipe, throwError } from 'rxjs';
+import { UnaryFunction } from 'rxjs/internal/types';
 
-import {OperatingSystems} from 'app/interfaces/shared.interface';
+import { OperatingSystems } from 'app/interfaces/shared.interface';
 
-import {FAClass, CustomIconColors, Unicodes} from './constants';
+import { FAClass, CustomIconColors, Unicodes } from './constants';
+import { transform, isEqual, isObject } from 'lodash-es';
 
 /**
  * Takes an input string and returns the title-cased version of that string. E.g., 'lazy dog' becomes 'Lazy Dog'.
@@ -261,3 +262,15 @@ export interface SupportedExtensionInfo {
   FAClass: FAClass;
   color: CustomIconColors;
 }
+
+/**
+ * Return deep diff of two objects
+ * if properties are not equal returns b value
+ */
+export const deepDiff = ([a, b]) =>
+  transform(a, (result, value, key) => {
+      if (!isEqual(value, b[key])) {
+        result[key] = isObject(value) && isObject(b[key]) ? deepDiff([value, b[key]]) : b[key];
+      }
+    }
+  );
