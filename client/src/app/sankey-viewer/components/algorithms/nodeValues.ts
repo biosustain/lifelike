@@ -37,7 +37,7 @@ export function noneNodeValue(this: SankeyControllerService, {nodes}) {
 
 export const byProperty: (property: string) => ValueProcessingStep = (property) =>
   // tslint:disable-next-line:only-arrow-functions -- allowing non-arrow function so we can maintain execution context
-  function (this: SankeyControllerService, { nodes }) {
+  function(this: SankeyControllerService, { nodes }) {
     nodes
       .filter((n) => n.hasOwnProperty(property))
       .forEach((n) => {
