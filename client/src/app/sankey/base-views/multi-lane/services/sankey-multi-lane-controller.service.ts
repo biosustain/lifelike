@@ -3,11 +3,13 @@ import { Injectable } from '@angular/core';
 import { switchMap, map } from 'rxjs/operators';
 
 import { ValueGenerator, SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase } from 'app/sankey/interfaces';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors } from '../color-palette';
 import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
+import { SankeyControllerService } from '../../../services/sankey-controller.service';
 
 
 /**
@@ -19,6 +21,21 @@ import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
 @Injectable()
 // @ts-ignore
 export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
+  constructor(
+    readonly c: SankeyControllerService,
+    readonly warningController: WarningControllerService
+  ) {
+    super(c, warningController);
+    console.log('SankeyMultiLaneControllerService.constructor()');
+    this.networkTraceData$.subscribe(d => {
+      console.log('networkTraceData$', d);
+      this.c.dataToRender$.next(d);
+    });
+    this.dataToRender$.subscribe(d => console.log('data to render', d));
+    this.palette$.subscribe(d => console.log('palette', d));
+
+  }
+
   viewBase = ViewBase.sankeyMultiLane;
 
   baseDefaultState = {
@@ -31,7 +48,8 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
         enabled: false,
         ratio: 10
       }
-    }
+    },
+    linkPaletteId: 'default'
   };
 
   baseDefaultOptions = {
@@ -46,56 +64,36 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
 
-  networkTraceData$ = this.data$.pipe(
-    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
-      switchMap(({networkTraces, linkPalettes}) => this.state$.pipe(
-        map(({networkTraceIdx, linkPaletteId}) => {
-          const selectedNetworkTrace = networkTraces[networkTraceIdx];
-          const palette = linkPalettes[linkPaletteId];
-          const traceColorPaletteMap = createMapToColor(
-            selectedNetworkTrace.traces.map(({_group}) => _group),
-            {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
-            palette
-          );
-          const networkTraceLinks = this.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
-          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-          const _inNodes = node_sets[selectedNetworkTrace.sources];
-          const _outNodes = node_sets[selectedNetworkTrace.targets];
-          this.colorNodes(networkTraceNodes);
-          return {
-            nodes: networkTraceNodes,
-            links: networkTraceLinks,
-            _inNodes, _outNodes
-          };
-        })
-      ))
+  palette$ = this.options$.pipe(
+    switchMap(({linkPalettes}) =>
+      this.state$.pipe(
+        map(({linkPaletteId}) => linkPalettes[linkPaletteId])
+      )
+    )
+  );
+
+  networkTraceData$ = this.c.partialNetworkTraceData$.pipe(
+    switchMap(({links, nodes, traces, ...rest}) => this.palette$.pipe(
+      map(palette => {
+        const traceColorPaletteMap = createMapToColor(
+          traces.map(({_group}) => _group),
+          {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
+          palette
+        );
+        const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links, traceColorPaletteMap);
+        const networkTraceNodes = this.c.getNetworkTraceNodes(networkTraceLinks, nodes);
+        this.colorNodes(networkTraceNodes);
+        return {
+          nodes: networkTraceNodes,
+          links: networkTraceLinks,
+          ...rest
+        };
+      })
     ))
   );
 
-  computedData$ = this.data$.pipe(
-    switchMap(({links, nodes, graph: {node_sets}}) => this.options$.pipe(
-      switchMap(({networkTraces, linkPalettes}) => this.state$.pipe(
-        switchMap(({networkTraceIdx, linkPaletteId}) => {
-          const selectedNetworkTrace = networkTraces[networkTraceIdx];
-          const palette = linkPalettes[linkPaletteId];
-          const traceColorPaletteMap = createMapToColor(
-            selectedNetworkTrace.traces.map(({_group}) => _group),
-            {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
-            palette
-          );
-          const networkTraceLinks = this.getAndColorNetworkTraceLinks(selectedNetworkTrace, links, traceColorPaletteMap);
-          const networkTraceNodes = this.getNetworkTraceNodes(networkTraceLinks, nodes);
-          const _inNodes = node_sets[selectedNetworkTrace.sources];
-          const _outNodes = node_sets[selectedNetworkTrace.targets];
-          this.colorNodes(networkTraceNodes);
-          return this.linkGraph({
-            nodes: networkTraceNodes,
-            links: networkTraceLinks,
-            _inNodes, _outNodes
-          });
-        })
-      ))
-    ))
+  dataToRender$ = this.networkTraceData$.pipe(
+    switchMap(networkTraceData => this.c.linkGraph(networkTraceData))
   );
 
   // Trace logic
@@ -106,15 +104,15 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
    * Should return copy of link Objects (do not mutate links!)
    */
   getAndColorNetworkTraceLinks(
-    networkTrace: SankeyTraceNetwork,
+    traces: SankeyTraceNetwork['traces'],
     links: ReadonlyArray<Readonly<SankeyLink>>,
     colorMap?
   ) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ?? new Map(
-      networkTrace.traces.map(({_group}) => [_group, christianColors[_group]])
+      traces.map(({_group}) => [_group, christianColors[_group]])
     );
-    const networkTraceLinks = networkTrace.traces.reduce((o, trace, traceIdx) => {
+    const networkTraceLinks = traces.reduce((o, trace, traceIdx) => {
       const color = traceGroupColorMap.get(trace._group);
       trace._color = color;
       return o.concat(

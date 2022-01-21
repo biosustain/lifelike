@@ -1,14 +1,13 @@
 import { Component, } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 
-import { combineLatest } from 'rxjs';
+import { pairwise, map, filter } from 'rxjs/operators';
+import { size, isEmpty } from 'lodash-es';
 
-import { uuidv4 } from 'app/shared/utils';
+import { uuidv4, deepDiff } from 'app/shared/utils';
 
-import { SankeySingleLaneState, SankeySingleLaneOptions } from '../interfaces';
-import { customisedMultiValueAccessorId } from '../../../../services/sankey-controller.service';
-import { SankeySingleLaneControllerService } from '../../services/sankey-single-lane-controller.service';
 import { SankeyAdvancedPanelComponent } from '../../../../components/advanced-panel/advanced-panel.component';
-
+import { SankeyBaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
 
 @Component({
   selector: 'app-sankey-advanced-panel',
@@ -16,4 +15,44 @@ import { SankeyAdvancedPanelComponent } from '../../../../components/advanced-pa
   styleUrls: ['./advanced-panel.component.scss'],
 })
 export class SankeySingleLaneAdvancedPanelComponent extends SankeyAdvancedPanelComponent {
+  form = this.formBuilder.group({
+    colorLinkByType: [false, []],
+    highlightCircular: ['', []],
+    normalizeLinks: ['', []],
+    fontSizeScale: [1, []],
+    nodeHeight: this.formBuilder.group({
+      min: this.formBuilder.group({
+        enabled: [false, []],
+        value: [0, []],
+      }),
+      max: this.formBuilder.group({
+        enabled: [false, []],
+        ratio: [0, []],
+      }),
+    }),
+    labelEllipsis: this.formBuilder.group({
+      enabled: [false, []],
+      value: [0, []],
+    }),
+    linkValueAccessorId: [undefined, []],
+    nodeValueAccessorId: [undefined, []],
+    prescalerId: [undefined, []],
+  });
+
+  constructor(
+    protected sankeyController: SankeyBaseViewControllerService,
+    protected formBuilder: FormBuilder
+  ) {
+    super(sankeyController, formBuilder);
+    this.sankeyController.state$.subscribe(state => {
+      this.form.patchValue(state);
+    });
+    this.form.valueChanges.pipe(
+      pairwise(),
+      map(deepDiff),
+      filter(changes => !isEmpty(changes))
+    ).subscribe(changes => {
+      this.sankeyController.c.patchState(changes as any).toPromise();
+    });
+  }
 }

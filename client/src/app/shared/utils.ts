@@ -8,6 +8,7 @@ import { transform, isEqual, isObject, isEmpty } from 'lodash-es';
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 import { FAClass, CustomIconColors, Unicodes } from './constants';
+import { transform, isEqual, isObject } from 'lodash-es';
 
 /**
  * Splits a pascal-case (e.g. "TheQuickRedFox") string, separating the words by a " " character. E.g. "The Quick Red Fox".

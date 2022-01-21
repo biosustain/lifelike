@@ -95,6 +95,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
   @Input() set data(data) {
+    console.log(data);
     this._data = {...data} as SankeyData;
   }
 
