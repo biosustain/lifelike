@@ -1,21 +1,6 @@
 ARG NODE_IMAGE_TAG=node:14
 
 # ========================================
-# Landing page
-# ========================================
-FROM $NODE_IMAGE_TAG as landing-build
-WORKDIR /app
-
-# Install dependencies
-COPY landing/package.json landing/yarn.lock ./
-RUN yarn install
-
-# Build landing page
-COPY landing ./
-RUN yarn build
-
-
-# ========================================
 # Angular app dependencies
 # ========================================
 FROM $NODE_IMAGE_TAG as angular-deps
@@ -57,7 +42,6 @@ LABEL app=kg-prototypes
 WORKDIR /usr/share/nginx/html
 
 # Copy built assets
-COPY --from=landing-build /app/dist ./
 COPY --from=angular-build /app/dist ./
 
 # Copy nginx configuraiton template
@@ -73,7 +57,3 @@ ENV GZIP_EXTRA_TYPES text/tsv vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARAN
 # Listen port
 ENV PORT 80
 EXPOSE $PORT
-
-# Healtcheck
-HEALTHCHECK --interval=1m \
-  CMD curl -f localhost:${PORT} || exit 1
