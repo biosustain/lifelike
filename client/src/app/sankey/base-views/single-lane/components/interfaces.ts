@@ -12,7 +12,6 @@ import {
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
   colorLinkByType: boolean;
-  linkPaletteId: string;
 }
 
 export type SankeySingleLaneState = SankeyState & SankeySingleLaneStateExtend;

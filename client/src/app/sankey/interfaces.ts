@@ -102,19 +102,19 @@ export interface SankeyFileOptions {
 export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 
 export interface SankeyState {
-  nodeAlign: 'right' | 'left';
-  networkTraceIdx: number;
+  nodeAlign?: 'right' | 'left';
+  networkTraceIdx?: number;
   nodeHeight: SankeyNodeHeight;
-  prescalerId: string;
-  nodeValueAccessorId: string;
-  linkValueAccessorId: string;
-  predefinedValueAccessorId: string;
-  normalizeLinks: boolean;
-  labelEllipsis: {
+  prescalerId?: string;
+  nodeValueAccessorId?: string;
+  linkValueAccessorId?: string;
+  predefinedValueAccessorId?: string;
+  normalizeLinks?: boolean;
+  labelEllipsis?: {
     enabled: boolean,
     value: number
   } | undefined;
-  fontSizeScale: number;
+  fontSizeScale?: number;
   viewName?: string;
   baseViewName?: ViewBase;
 }

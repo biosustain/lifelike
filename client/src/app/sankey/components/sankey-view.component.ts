@@ -6,8 +6,7 @@ import {
   AfterContentInit,
   ComponentFactoryResolver,
   Injector,
-  AfterViewInit,
-  isDevMode
+  AfterViewInit
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -116,6 +115,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.returnUrl = params.return;
     });
 
+    this.sankeyController.stateDelta$.subscribe(d => console.log('stateDelta sankey controller subs', d));
+
     this.route.fragment.pipe(
       tap(x => console.log('route.fragment', x)),
       switchMap(fragment =>
@@ -129,32 +130,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           })
         )
       ),
-      map(state => ({
-        networkTraceIdx: 0,
-        ...state
-      })),
-      switchMap((stateDelta: Partial<SankeyState>) =>
-        iif(
-          () => !!stateDelta.baseViewName,
-          of(stateDelta),
-          this.sankeyController.data$.pipe(
-            map(data => ({
-              baseViewName: SankeyViewComponent.getDefaultViewBase(data, stateDelta.networkTraceIdx),
-              ...stateDelta
-            }))
-          )
-        )
-      ),
-      tap(stateDelta => this.sankeyController.stateDelta$.next(stateDelta)),
-      tap(x => console.log('route.fragment', x))
+      tap(stateDelta => this.sankeyController.stateDelta$.next(stateDelta))
     ).subscribe(state => {
       console.log('loaded state from fragment', state);
     });
-
-    // combineLatest([this.sankeyController.data$, this.baseViewName$]).subscribe(([content, baseView]) => {
-    //   this.sankeyController.load(content);
-    // });
-
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
       this.object = null;
@@ -162,8 +141,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.openSankey(file_id);
     });
 
-
-    this.route.fragment.subscribe(x => console.log('fragment', x));
     this.baseViewName$.subscribe(x => console.log('baseViewName', x));
     this.content.subscribe(x => console.log('content', x));
   }
@@ -184,9 +161,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return this.sankeyController.state$.pipe(map(({nodeAlign}) => nodeAlign));
   }
 
-  get selectedNetworkTrace() {
-    return this.sankeyController.networkTrace$;
-  }
+  selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
   get predefinedValueAccessor() {
     return this.sankeyController.predefinedValueAccessor$;
@@ -290,6 +265,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
 
+
+
   ngAfterViewInit() {
     this.baseViewName$.subscribe(baseView => {
       console.log('baseViewName', baseView);
@@ -300,13 +277,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         const componentRef = container.createComponent(factory, null, sankeyInjector);
         return componentRef.instance;
       };
-      const createComponent = name => this._dynamicInstances.set(name, injectComponent(this[name].viewContainerRef, o[name]));
-      createComponent('sankey');
+      const createComponent = (name, inputs = {}, outputs = {}) => {
+        const instance = injectComponent(this[name].viewContainerRef, o[name]);
+        Object.assign(instance, inputs);
+        Object.keys(outputs).forEach(key => {
+          instance[key].subscribe(outputs[key]);
+        });
+        this._dynamicInstances.set(name, instance);
+        return instance;
+      };
+      const sankey = createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
       this.sankeyBaseViewControl = sankeyInjector.get(SankeyBaseViewControllerService);
-      this.dataToRender$ = this.sankeyController.dataToRender$;
-      this.allData$ = this.sankeyController.data$;
+      this.dataToRender$ = this.sankeyBaseViewControl.dataToRender$;
+      this.allData$ = this.sankeyBaseViewControl.c.data$;
+      this.dataToRender$.subscribe(data => sankey.data = data);
     });
   }
 
@@ -589,7 +575,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   findMatching(terms: string[], options: FindOptions = {}) {
     this.sankeySearch.stopSearch();
     this.sankeySearch.clear();
-    combineLatest([this.sankeyController.data$, this.sankeyController.dataToRender$]).pipe(
+    combineLatest([this.sankeyController.data$, this.sankeyBaseViewControl.dataToRender$]).pipe(
       first()
     ).subscribe(([data, dataToRender]) => {
       this.sankeySearch.update({
