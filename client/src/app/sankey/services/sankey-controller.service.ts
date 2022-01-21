@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, of, Subject, iif, throwError, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { merge, omit, transform, cloneDeepWith, clone, max, isNil, flatMap, pick } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, tap, share } from 'rxjs/operators';
+import { Observable, of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject } from 'rxjs';
+import { merge, omit, transform, cloneDeepWith, clone, max, isNil, flatMap, pick, omitBy, isEqual, has } from 'lodash-es';
+import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 
@@ -26,7 +26,8 @@ import {
   SankeyNodesOverwrites,
   SankeyLinksOverwrites,
   SankeyStaticOptions,
-  ViewBase
+  ViewBase,
+  Prescaler
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
@@ -35,7 +36,7 @@ import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { SankeyViewComponent } from '../components/sankey-view.component';
+import { StateControlAbstractService } from './state-controlling-abstract.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -68,30 +69,14 @@ function patchReducer(patch, callback) {
  */
 @Injectable()
 // @ts-ignore
-export class SankeyControllerService {
+export class SankeyControllerService extends StateControlAbstractService {
   constructor(
     readonly warningController: WarningControllerService
   ) {
-    this.state$ = combineLatest([this.stateDelta$, this.defaultState$]).pipe(
-      map(([delta, defaultState]) => merge({}, defaultState, delta)),
-      switchMap(state =>
-        iif(
-          () => !isNil(state.networkTraceIdx) && isNil(state.baseViewName),
-          this.partialNetworkTraceData$.pipe(
-            tap(({sources, targets}) => this.patchState({
-                baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
-              }
-            )),        // stop propagation of this change
-            switchMap(() => EMPTY)
-          ),
-          of(state)
-        )
-      ),
-      tap(s => console.log('state update', s)),
-      share()
-    );
+    super();
     this.stateDelta$.subscribe(d => console.log('state delta construct subscription', d));
     this.defaultState$.subscribe(d => console.log('default state construct subscription', d));
+    this.partialNetworkTraceData$.subscribe(d => console.log('partialNetworkTraceData$ construct subscription', d));
     this.data$.subscribe(d => console.log('data$ construct subscription', d));
     this.options$.subscribe(d => console.log('options$ construct subscription', d));
     this.dataToRender$.subscribe(d => console.log('dataToRender$ construct subscription', d));
@@ -99,14 +84,59 @@ export class SankeyControllerService {
     this.views$.subscribe(d => console.log('views$ construct subscription', d));
     this.networkTrace$.subscribe(d => console.log('networkTrace$ construct subscription', d));
     this.oneToMany$.subscribe(d => console.log('oneToMany$ construct subscription', d));
-    this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
-    this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
-    this.partialNetworkTraceData$.subscribe(d => console.log('partialNetworkTraceData$ construct subscription', d));
-    this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
     this.prescaler$.subscribe(d => console.log('prescaler$ construct subscription', d));
     this.networkTraceDefaultSizing$.subscribe(d => console.log('networkTraceDefaultSizing$ construct subscription', d));
+    this.state$.subscribe(state => {
+      // side effect to load default state values if needed
+      if (has(state, 'networkTraceIdx')) {
+        return combineLatest([
+          iif(
+            // if there is no preset base view set it based on data
+            () => !state.baseViewName,
+            this.partialNetworkTraceData$.pipe(
+              tap(d => console.log('default baseViewName partialNetworkTraceData', d)),
+              first(),
+              map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
+              tap(d => console.log('default baseViewName calculated', d)),
+              switchMap(bvn => this.patchDefaultState({
+                baseViewName: (bvn as ViewBase)
+              }))
+            ),
+            of({})
+          )
+        ]).pipe(
+          map(defaultStatePatches => merge({}, ...defaultStatePatches)),
+          tap(defaultStatePatch => this.patchDefaultState(defaultStatePatch)),
+          tap(defaultStatePatch => console.log('defaultStatePatch', defaultStatePatch))
+        ).toPromise();
+      }
+    });
   }
 
+  /**
+   * Observable of current default state which is based inclusively on loaded data
+   */
+  defaultState$ = new BehaviorSubject<SankeyState>(Object.freeze({
+      networkTraceIdx: 0,
+      nodeHeight: {
+        min: {
+          enabled: true,
+          value: 1
+        },
+        max: {
+          enabled: false,
+          ratio: 10
+        }
+      },
+      normalizeLinks: false,
+      prescalerId: PRESCALER_ID.none,
+      labelEllipsis: {
+        enabled: true,
+        value: SankeyLayoutService.labelEllipsis
+      },
+      fontSizeScale: 1.0
+    })
+  );
 
   stateDelta$ = new ReplaySubject<Partial<SankeyState>>(1);
 
@@ -114,6 +144,21 @@ export class SankeyControllerService {
 
   data$ = new ReplaySubject<SankeyData>(1);
 
+  viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
+
+  state$: Observable<SankeyState> = combineLatest([
+    this.stateDelta$,
+    this.defaultState$
+  ]).pipe(
+    map(([delta, defaultState]) => merge({}, defaultState, delta)),
+    tap(s => console.log('state update', s)),
+    shareReplay(1)
+  );
+
+  /**
+   * Observable of current view options
+   * based on currently loaded data and choosen base view
+   */
   options$ = this.data$.pipe(
     map(data => merge(
       {},
@@ -122,7 +167,6 @@ export class SankeyControllerService {
     ))
   );
 
-  viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
   views$ = merge(
     this.data$.pipe(
       map(({_views}) => _views)
@@ -130,6 +174,9 @@ export class SankeyControllerService {
     this.viewsUpdate$
   );
 
+  /**
+   * Predefined options for Sankey visualisation which are not based on loaded data not user input
+   */
   staticOptions: SankeyStaticOptions = Object.freeze({
     predefinedValueAccessors: {
       [PREDEFINED_VALUE.fixed_height]: {
@@ -176,9 +223,7 @@ export class SankeyControllerService {
     prescalers
   });
 
-  state$: Observable<SankeyState>;
-
-  networkTrace$ = this.simpleAccessor('networkTraces', 'networkTraceIdx');
+  networkTrace$ = this.optionStateAccessor('networkTraces', 'networkTraceIdx');
 
   oneToMany$ = this.networkTrace$.pipe(
     switchMap(({sources, targets}) => this.data$.pipe(
@@ -189,32 +234,11 @@ export class SankeyControllerService {
       })
     ))
   );
-  // noinspection JSVoidFunctionReturnValueUsed
-  nodeValueAccessor$ = this.options$.pipe(
-    switchMap(({nodeValueGenerators, nodeValueAccessors}) => this.state$.pipe(
-      map(({nodeValueAccessorId}) =>
-          nodeValueGenerators[nodeValueAccessorId] ??
-          nodeValueAccessors[nodeValueAccessorId] ??
-          this.warningController.warn(`Node values accessor ${nodeValueAccessorId} could not be found`),
-        nodeValueGenerators[NODE_VALUE_GENERATOR.none]
-      )
-    ))
-  );
-
-  // noinspection JSVoidFunctionReturnValueUsed
-  linkValueAccessor$ = this.options$.pipe(
-    switchMap(({linkValueGenerators, linkValueAccessors}) => this.state$.pipe(
-      map(({linkValueAccessorId}) =>
-          linkValueGenerators[linkValueAccessorId] ??
-          linkValueAccessors[linkValueAccessorId] ??
-          this.warningController.warn(`Link values accessor ${linkValueAccessorId} could not be found`),
-        linkValueGenerators[NODE_VALUE_GENERATOR.none]
-      )
-    ))
-  );
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
+    tap(d => console.log('partialNetworkTraceData$ networkTrace:', d)),
     switchMap(({sources, targets, traces}) => this.data$.pipe(
+      tap(d => console.log('partialNetworkTraceData$ data', d)),
       map(({links, nodes, graph: {node_sets}}) => ({
         links,
         nodes,
@@ -222,22 +246,13 @@ export class SankeyControllerService {
         sources: node_sets[sources],
         targets: node_sets[targets]
       }))
-    ))
-  );
-
-  predefinedValueAccessor$ = this.options$.pipe(
-    switchMap(({predefinedValueAccessors}) => this.state$.pipe(
-      map(({predefinedValueAccessorId}) =>
-        predefinedValueAccessorId === customisedMultiValueAccessorId ?
-          customisedMultiValueAccessor :
-          predefinedValueAccessors[predefinedValueAccessorId]
-      )
-    ))
+    )),
+    shareReplay(1)
   );
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
 
-  prescaler$ = this.simpleAccessor('prescalers', 'prescalerId');
+  prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
 
   pathReports$ = this.data$.pipe(
     map(({nodes, links, graph: {trace_networks}}) =>
@@ -340,27 +355,8 @@ export class SankeyControllerService {
     })
   );
 
-  defaultState$: Observable<SankeyState> = of(Object.freeze({
-      networkTraceIdx: 0,
-      nodeHeight: {
-        min: {
-          enabled: true,
-          value: 1
-        },
-        max: {
-          enabled: false,
-          ratio: 10
-        }
-      },
-      normalizeLinks: false,
-      prescalerId: PRESCALER_ID.none,
-      labelEllipsis: {
-        enabled: true,
-        value: SankeyLayoutService.labelEllipsis
-      },
-      fontSizeScale: 1.0
-    })
-  );
+
+  baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',
@@ -387,6 +383,14 @@ export class SankeyControllerService {
   ];
   readonly statusOmitProperties = ['viewName', 'baseViewName'];
 
+  patchDefaultState(patch: Partial<SankeyState>) {
+    console.log('patchDefaultState', patch);
+    return this.defaultState$.pipe(
+      first(),
+      map(defaultState => merge({}, defaultState, patch)),
+      tap(defaultState => this.defaultState$.next(defaultState))
+    );
+  }
 
   mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
     return transform(entities, (result, entity) => {
@@ -478,93 +482,37 @@ export class SankeyControllerService {
     // ).toPromise();
   }
 
-  linkGraph(data) {
-    return combineLatest([this.nodeValueAccessor$, this.linkValueAccessor$, this.prescaler$]).pipe(
-      filter(params => (params as []).every(param => !!param)),
-      map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
-
-        const preprocessedNodes = nodeValueAccessor.preprocessing.call(this, data) ?? {};
-        const preprocessedLinks = linkValueAccessor.preprocessing.call(this, data) ?? {};
-
-        Object.assign(
-          data,
-          preprocessedLinks,
-          preprocessedNodes,
+  patchState(statePatch: Partial<SankeyState>) {
+    return this.stateDelta$.pipe(
+      first(),
+      map(currentStateDelta =>
+        // ommit empty values so they can be overridden by defaultState
+        omitBy(
           merge(
-            omit(preprocessedLinks, ['nodes', 'links']),
-            omit(preprocessedNodes, ['nodes', 'links'])
-          )
-        );
-
-        let minValue = data.nodes.reduce((m, n) => {
-          if (n._fixedValue !== undefined) {
-            n._fixedValue = prescaler(n._fixedValue);
-            return Math.min(m, n._fixedValue);
-          }
-          return m;
-        }, 0);
-        minValue = data.links.reduce((m, l) => {
-          l._value = prescaler(l._value);
-          if (l._multiple_values) {
-            l._multiple_values = l._multiple_values.map(prescaler) as [number, number];
-            return Math.min(m, ...l._multiple_values);
-          }
-          return Math.min(m, l._value);
-        }, minValue);
-
-        if (nodeValueAccessor.postprocessing) {
-          Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) ?? {});
+            {},
+            currentStateDelta,
+            statePatch,
+          ),
+          isNil
+        )
+      ),
+      patchReducer(statePatch, (state, patch) => {
+        if (!isNil(patch.networkTraceIdx)) {
+          return this.options$.pipe(
+            first(),
+            map(options => {
+              return {
+                ...state,
+                ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
+              };
+            })
+          );
         }
-        if (linkValueAccessor.postprocessing) {
-          Object.assign(data, linkValueAccessor.postprocessing.call(this, data) ?? {});
-        }
-        if (minValue < 0) {
-          data.nodes.forEach(n => {
-            if (n._fixedValue !== undefined) {
-              n._fixedValue = n._fixedValue - minValue;
-            }
-          });
-          data.links.forEach(l => {
-            l._value = l._value - minValue;
-            if (l._multiple_values) {
-              l._multiple_values = l._multiple_values.map(v => v - minValue) as [number, number];
-            }
-          });
-        }
-
-        return data;
+      }),
+      tap(stateDelta => {
+        this.stateDelta$.next(stateDelta);
       })
     );
-  }
-
-  patchState(statePatch: Partial<SankeyState>) {
-    const {networkTraceIdx} = statePatch;
-    if (networkTraceIdx) {
-      return this.stateDelta$.pipe(
-        first(),
-        map(currentStateDelta => merge(
-          {},
-          currentStateDelta,
-          statePatch,
-        )),
-        patchReducer(statePatch, (state, patch) => {
-          if (!isNil(patch.networkTraceIdx)) {
-            return this.options$.pipe(
-              first(),
-              map(options => {
-                return {
-                  ...state,
-                  ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
-                };
-              })
-            );
-          }
-        }),
-        tap(stateDelta => {
-          this.stateDelta$.next(stateDelta);
-        })
-      );
-    }
   }
 
   selectPredefinedValueAccessor(predefinedValueAccessorId: string) {
@@ -576,39 +524,17 @@ export class SankeyControllerService {
   }
 
   selectNetworkTrace(networkTraceIdx: number) {
-    return this.data$.pipe(
-      switchMap(data =>
-        this.options$.pipe(
-          switchMap(options =>
-            this.stateDelta$.pipe(
-              first(),
-              map(({viewName, baseViewName, ...prevStateDelta}) => this.stateDelta$.next({
-                  ...prevStateDelta,
-                  ...this.defaultPredefinedValueAccessorReducer(options, {networkTraceIdx}),
-                  networkTraceIdx,
-                  baseViewName: SankeyViewComponent.getDefaultViewBase(data, networkTraceIdx),
-                })
-              )
-            )
-          )
-        )
-      )
-    );
+    return this.patchState({
+      networkTraceIdx,
+      baseViewName: null,
+      predefinedValueAccessorId: null
+    });
   }
 
   loadData(data: SankeyData) {
     this.preprocessData(data);
     this.data$.next(data);
     return of(true);
-  }
-
-  simpleAccessor(optionProperty: keyof SankeyOptions, stateProperty: keyof SankeyState) {
-    return this.options$.pipe(
-      map(options => options[optionProperty]),
-      switchMap(option => this.state$.pipe(
-        map(state => option[state[stateProperty] as string])
-      ))
-    );
   }
 
   resetState() {
