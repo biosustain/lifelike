@@ -65,6 +65,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
+  // TODO: This should be able to handle image file drop. Inspect why it is not
   drop(event: BehaviorEvent<DragEvent>): BehaviorResult {
     const dragEvent = event.event;
     const files = this.getFiles(dragEvent.dataTransfer);
