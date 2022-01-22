@@ -46,15 +46,10 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   private isSupportedFile(file: File) {
-    console.log('testing!');
-    console.log(file);
     if (file.type.match(this.mimeTypePattern)) {
-      console.log('mimetype ok!');
       if (file.size <= this.maxFileSize * this.mebibyte) {
-        console.log('Image ok!');
         return true;
       }
-      console.log('Image too big!');
       this.snackBar.open(`Image size too big (>${this.maxFileSize} MiB)`, null, {
           duration: 4000,
       });
@@ -109,8 +104,8 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     const position = this.graphView.currentHoverPosition;
     if (position) {
       const imageId = makeid();
-      this.mapImageProvider.setMemoryImage(imageId, file).subscribe(dimensions => {
-        // Scale small side to have 300 px
+      this.mapImageProvider.doInitialProcessing(imageId, file).subscribe(dimensions => {
+        // Scale smaller side up to 300 px
         const ratio = this.pasteSize / Math.min(dimensions.width, dimensions.height);
         this.graphView.execute(new NodeCreation(
         `Insert image`, {
