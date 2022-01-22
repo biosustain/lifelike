@@ -83,7 +83,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       } as Partial<UniversalGraphNode>, {
         data: {
           width: this.originalTarget.data.width,
-          height: this.originalTarget.data.height
+          height: this.originalTarget.data.height,
         },
       } as Partial<UniversalGraphNode>));
       this.originalTarget = cloneDeep(this.target);
@@ -99,7 +99,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     // const [x, y] = [placedNode.x, placedNode.y];
     // or
     const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
-    // There is no handle on top = edge creation button is there.
+    // There is no handle on top: edge creation button is there.
     const sideMaker = (posX, posY, execute) => ({
       execute,
       minX: posX - halfSize,
