@@ -78,6 +78,9 @@ export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'Uni
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 50;
 
+export const MAX_DESCRIPTION_LENGTH = 5000;
+export const FORMATS_WITH_POSSIBLE_DESCRIPTION = ['graph'];
+
 export enum MimeTypes {
   Map = 'vnd.***ARANGO_DB_NAME***.document/map',
   EnrichmentTable = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',

@@ -1232,12 +1232,6 @@ class GraphTypeProvider(BaseFileTypeProvider):
         content.write(' '.join(list(string_list)))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
-    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
-        if not file.description:
-            data = json.loads(buffer.read())
-            description = data['graph']['description']
-            file.description = description
-
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_ENRICHMENT_TABLE
