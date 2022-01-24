@@ -35,6 +35,8 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
+    session.expire_on_commit = False
+
     t_files = table(
         'files',
         column('id', sa.Integer),
