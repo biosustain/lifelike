@@ -92,7 +92,7 @@ Sometimes there are multi-words that share a common word, e.g with the sentence 
 
 Since each word in a PDF document is sequential, we can use their positional index as `intervals` and use an `Interval Tree` to find overlaps. Once overlaps are found, we choose based on entity precedence or if they're the same entities, then we choose the longer term. The entity precedence can be found in `neo4japp/services/annotations/constants.py`, look for `ENTITY_TYPE_PRECEDENCE`.
 
-There were plans to not do this, and allow the user to choose on the UI which words they want, so we might need to remove the interval tree in the future.
+There were plans to drop this, and allow the user to choose on the UI which words they want, so we might need to remove the interval tree in the future.
 
 ## Enrichment Annotation
 The enrichment table goes through the same annotation pipeline, but with some extra pre and post processing steps. We want each cell in the enrichment table to be counted as a `"separate paper"`, this is to avoid overlapping words. The overlapping words create an issue because we can potentially lose a word in one cell, because it was part of a longer one in a neighboring cell.
@@ -127,7 +127,9 @@ A local inclusion/exclusion is local to the specific PDF it was made in.
 
 A global inclusion/exclusion is **both** a local and a global.
 
-Local inclusions/exclusions are stored in Postgres, as well as global exclusions. The global inclusions are stored in Neo4j under the label `:GlobalInclusion` if they do not map to any existing nodes, otherwise use that existing node and create a new synonym relationship with it.
+Local inclusions/exclusions are stored in Postgres, as well as global exclusions. The locals are saved in the `files` table, while the globals are in `global_list`.
+
+The global inclusions are stored in Neo4j under the label `:GlobalInclusion` if they do not map to any existing nodes, otherwise use that existing node and create a new synonym relationship with it.
 
 Because we do not curate before they're added to Neo4j, a user can potentially create a bad global inclusion. To correctly delete, we need the property `original_entity_types` so we don't accidentally delete the wrong thing.
 
@@ -143,4 +145,4 @@ As with the entire application, the annotation pipeline is synchronous which is 
 
 [JIRA LL-3047: Separate Annotation Service](https://sbrgsoftware.atlassian.net/browse/LL-3047): Separating out into a separate container can help us manage resources better between the containers.
 
-[JIRA LL-2085: Task Queue](https://sbrgsoftware.atlassian.net/browse/LL-2085): A task queue will help with PDFs that are large and take time to annotate (with NLP involved, this will take much longer - it's been shown to be twice as slow versus rules based). Apply task queue to both annotating and re-annotating.
+[JIRA LL-2085: Task Queue](https://sbrgsoftware.atlassian.net/browse/LL-2085): A task queue will help with PDFs that are large and take time to annotate (with NLP involved, this will take much longer). Through QA testing, NLP has been shown to be twice as slow compared to only using the annotation pipeline. So if we combine both, there is a big performance hit. Apply task queue to both annotating and re-annotating.
