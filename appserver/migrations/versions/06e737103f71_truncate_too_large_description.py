@@ -56,13 +56,10 @@ def data_upgrades():
                                         'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
         try:
             session.bulk_update_mappings(Files, files_to_update)
-            session.flush()
+            session.commit()
         except Exception:
-            pass
-    try:
-        session.commit()
-    except Exception:
-        pass
+            session.rollback()
+            raise
 
 
 def data_downgrades():
