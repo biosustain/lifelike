@@ -116,12 +116,15 @@ for chunk in window_chunk(users, 25):
         session.rollback()
         raise
 ```
+#### Misc
 
 Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
 
 ```sh
 docker-compose exec appserver flask db upgrade -x data_migrate=True
 ```
+
+When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the *restore from history* functionality will not work.
 
 ### Merging Migration Conflicts
 
