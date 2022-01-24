@@ -17,7 +17,7 @@ from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = '06e737103f71'
-down_revision = '65d827e55b5b'
+down_revision = 'edac65841141'
 branch_labels = None
 depends_on = None
 MAX_FILE_DESCRIPTION_LENGTH = 5000
