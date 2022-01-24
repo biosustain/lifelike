@@ -48,7 +48,7 @@ def data_upgrades():
         t_files.c.description
     ]))
 
-    for chunk in window_chunk(files, 25):
+    for chunk in window_chunk(files, 1):
         files_to_update = []
         for id, description in chunk:
             if description and len(description) > MAX_FILE_DESCRIPTION_LENGTH:
