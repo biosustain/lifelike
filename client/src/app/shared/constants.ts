@@ -135,3 +135,10 @@ export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, U
 export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
 
 export const handleBlue = '#97C2FC';
+
+export enum SizeUnits {
+  KiB = 2e10,
+  MiB = 2e20,
+  GiB = 2e30,
+  TiB = 2e40
+}

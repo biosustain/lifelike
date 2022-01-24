@@ -3,6 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+import { SizeUnits } from 'app/shared/constants';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -10,7 +11,6 @@ import { CanvasGraphView } from '../canvas-graph-view';
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
-  protected readonly mebibyte = 1024 * 1024;
   protected readonly maxFileSize = 20;
   protected readonly pasteSize = 300;
 
@@ -47,7 +47,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   private isSupportedFile(file: File) {
     if (file.type.match(this.mimeTypePattern)) {
-      if (file.size <= this.maxFileSize * this.mebibyte) {
+      if (file.size <= this.maxFileSize * SizeUnits.MiB) {
         return true;
       }
       this.snackBar.open(`Image size too big (>${this.maxFileSize} MiB)`, null, {
