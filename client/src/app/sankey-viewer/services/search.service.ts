@@ -9,7 +9,7 @@ import { SankeyTraceNetwork } from 'app/shared-sankey/interfaces';
 
 import { WorkerActions, WorkerOutputActions } from './search-worker-actions';
 import { SankeyControllerService } from './sankey-controller.service';
-import { SearchEntity } from '../components/search-panel/interfaces';
+import { SearchEntity } from './search-match';
 
 @Injectable()
 // @ts-ignore
