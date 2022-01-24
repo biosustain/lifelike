@@ -64,7 +64,8 @@ You can run `make help` to see other available common operation:
 usage: make [target]
 
 docker:
-  up                              Build and run container(s) for development. [c=<names>]
+  up                              Build and run container(s). [c=<names>]
+  up-dev                          Build and run container(s) for development. [c=<names>]
   images                          Build container(s) for distribution.
   status                          Show container(s) status. [c=<names>]
   logs                            Show container(s) logs. [c=<names>]
@@ -73,6 +74,5 @@ docker:
   exec                            Execute a command inside a container. [c=<name>, cmd=<command>]
   test                            Execute test suite
   down                            Destroy all containers and volumes
-  reset                           Destroy and recreate all containers and volumes
   diagram                         Generate an architecture diagram from the Docker Compose files
 ```

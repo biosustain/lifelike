@@ -7,6 +7,7 @@ services:
   postgres:
     image: postgres:11
     restart: unless-stopped
+    container_name: postgres
     environment:
       - POSTGRES_PASSWORD=postgres
     ports:
@@ -21,6 +22,7 @@ services:
   neo4j:
     image: neo4j:4.4-community
     restart: unless-stopped
+    container_name: neo4j
     environment:
       - NEO4J_AUTH=neo4j/password
       - NEO4JLABS_PLUGINS=["apoc"]
@@ -37,6 +39,7 @@ services:
   elasticsearch:
     build: ./elasticsearch
     restart: unless-stopped
+    container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -55,6 +58,7 @@ services:
   redis:
     image: redis:alpine
     restart: unless-stopped
+    container_name: redis
     ports:
       - 6379
     healthcheck:

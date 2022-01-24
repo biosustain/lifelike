@@ -16,8 +16,6 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
-      - MIGRATE_DB=1
-      - INITIAL_ADMIN_EMAIL=admin@example.com
       # Unset to use the default LMDB data directory
       - LMDB_DATA_DIR=
     volumes:

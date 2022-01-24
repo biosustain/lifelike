@@ -3,27 +3,31 @@ DOCKER_REGISTRY:=us.gcr.io/able-goods-221820
 
 # Base Docker Compose command --------------------------------------------------
 #  docker-compose.yml           -> Base services containers
-#  docker-compose.dev.yml       -> Override base services for local development
 #  docker-compose.services.yml  -> Third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
-COMPOSE_COMMAND=\
-  docker compose -p ***ARANGO_DB_NAME*** \
+#  docker-compose.dev.yml       -> Override base services for local development
+COMPOSE_COMMAND=docker compose -p ***ARANGO_DB_NAME*** \
   -f ${DOCKER_DIR}/docker-compose.yml \
-  -f ${DOCKER_DIR}/docker-compose.dev.yml \
   -f ${DOCKER_DIR}/docker-compose.services.yml
 # ------------------------------------------------------------------------------
 
-.PHONY: up images status logs restart stop exec test down reset diagram
+.PHONY: up up-dev images status logs restart stop exec test down diagram
 
-up: ##@docker Build and run container(s) for development. [c=<names>]
-	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
-	@${COMPOSE_COMMAND} ${args} up -d --build --quiet-pull --wait ${c}
+up: images ##@docker Build and run container(s). [c=<names>]
+	@${COMPOSE_COMMAND} ${args} up -d --wait ${c}
 	@echo "\nTo access Lifelike, point your browser at: http://localhost:8080\n"
 
+up-dev: ##@docker Build and run container(s) for development. [c=<names>]
+	@echo "\nBuilding and running containers...\nThis may take a while if running for the first time. \n"
+	@${COMPOSE_COMMAND} -f ${DOCKER_DIR}/docker-compose.dev.yml ${args} up -d --build --wait ${c}
+	@echo "\nTo access Lifelike, point your browser at: http://localhost:8080\n"
+
+tag ?= latest
 images: ##@docker Build container(s) for distribution.
-	cd ${DOCKER_DIR}/../appserver && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-appserver .
-	cd ${DOCKER_DIR}/../client && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-webserver .
-	cd ${DOCKER_DIR}/../statistical-enrichment && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-statistical-enrichment .
-	cd ${DOCKER_DIR}/../cache-invalidator && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-cache-invalidator .
+	@echo "\nBuilding Docker images...\n"
+	@cd ${DOCKER_DIR}/../appserver && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-appserver:${tag} .
+	@cd ${DOCKER_DIR}/../client && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-webserver:${tag} .
+	@cd ${DOCKER_DIR}/../statistical-enrichment && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-statistical-enrichment:${tag} .
+	@cd ${DOCKER_DIR}/../cache-invalidator && docker build -t ${DOCKER_REGISTRY}/***ARANGO_DB_NAME***-cache-invalidator:${tag} .
 
 status: ##@docker Show container(s) status. [c=<names>]
 	@${COMPOSE_COMMAND} ${args} ps ${c}
@@ -40,13 +44,11 @@ stop: ##@docker Stop containers(s). [c=<names>]
 exec: ##@docker Execute a command inside a container. [c=<name>, cmd=<command>]
 	@${COMPOSE_COMMAND} ${args} exec ${c} ${cmd}
 
-test: ##@docker Execute test suite
+test: up-dev ##@docker Execute test suite
 	@${COMPOSE_COMMAND} ${args} exec appserver pytest --cov=neo4japp ${pytest_args}
 
 down: ##@docker Destroy all containers and volumes
 	@${COMPOSE_COMMAND} ${args} down --volumes --remove-orphans
-
-reset: down up ##@docker Destroy and recreate all containers and volumes
 
 diagram: ##@docker Generate an architecture diagram from the Docker Compose files
 	@echo "Writing diagram to ${DOCKER_DIR}/diagram.svg"
