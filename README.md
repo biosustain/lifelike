@@ -126,6 +126,6 @@ Lifelike is a distributed system comprised of the following components:
 
 ## License
 
-Lifelike is distributed under the [MIT license](LICENSE).
+Lifelike is distributed under a [modified MIT license](LICENSE).
 
 ![Lifelike](client/landing/assets/img/graph_embed/hero.jpg)
