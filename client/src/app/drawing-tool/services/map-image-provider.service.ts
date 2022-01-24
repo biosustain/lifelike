@@ -3,13 +3,14 @@ import { Injectable } from '@angular/core';
 import { Observable, of, Subject, from } from 'rxjs';
 
 import { ResourceProvider } from 'app/graph-viewer/utils/resource/resource-manager';
+import { SizeUnits } from 'app/shared/constants';
 
 @Injectable()
 export class MapImageProviderService implements ResourceProvider<string, CanvasImageSource> {
 
   private readonly preloadedUrls = new Map<string, string>();
   private readonly downsizingFactor = 0.5;
-  private readonly maxImageSize = 1024 * 1024 * 0.5;
+  private readonly downsizeIfLargerThanImageSize = SizeUnits.KiB * 500;
   private readonly imageQuality: 0.8;
 
   constructor() {
@@ -33,7 +34,7 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
       img.src = url;
       img.onload = () => {
         let {height, width} = img;
-        if (file.size > this.maxImageSize) {
+        if (file.size > this.downsizeIfLargerThanImageSize) {
           height *= this.downsizingFactor;
           width *= this.downsizingFactor;
           const elem = document.createElement('canvas');
