@@ -35,8 +35,8 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
         let height = img.height;
         let width = img.width;
         if (file.size > this.maxImageSize) {
-          height = height * this.downsizingFactor;
-          width = width * this.downsizingFactor;
+          height *= this.downsizingFactor;
+          width *= this.downsizingFactor;
           const elem = document.createElement('canvas');
           elem.width = width;
           elem.height = height;
