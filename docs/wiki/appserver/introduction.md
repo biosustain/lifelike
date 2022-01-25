@@ -21,7 +21,7 @@ If two people add dependencies on different branches, you will run into a merge 
 To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
 
 ```sh
-docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3 lock
+docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
 ```
 
 ## PostgreSQL Migrations
@@ -32,12 +32,20 @@ Alembic migrations are of a tree structure, so each migration has a "prior" migr
 
 ### Applying Existing Migrations
 
-By default, the database is empty so you will have to run all the existing migrations to bring your database up to date using the following command:
+By default, the database is empty, so you will have to run all the existing migrations to bring your database up to date using the following command:
 
 ```sh
 docker-compose exec appserver flask db upgrade
 ```
 
+or
+
+```sh
+docker-compose run appserver flask db upgrade
+```
+
+to run the migration without starting the flask application. Remember that this will create a single-use container that should be removed with `docker volume prune` or `make docker-stop`.
+Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` to be up as well.
 ### Importing Seed Data
 
 While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data, run:
@@ -50,13 +58,14 @@ docker-compose exec appserver flask seed
 
 When you make changes to the schema, by perhaps changing one of the models or creating a new model, you will have to create a new migration script so your local database and the production database has the changes.
 
-First, make sure that you are up to date on migrations by first applying them using the `upgrade` command described above. Otherwise, you will see this error:
+First, please remember to update your code with the current version of the `master` branch.
+Secondly, make sure that you are up-to-date on migrations by first applying them using the `upgrade` command described above. Otherwise, you will see this error:
 
 ```
 ERROR [root] Error: Target database is not up to date.
 ```
 
-Once you are up to date, you can have Alembic generate a migration script for you by automatically inspecting the current schema structure as described in the code and comparing it to the one in the database. Run the following command to create a new migration script in `appserver/migrations`:
+Once you are up-to-date, you can have Alembic generate a migration script for you by automatically inspecting the current schema structure as described in the code and comparing it to the one in the database. Run the following command to create a new migration script in `appserver/migrations`:
 
 ```sh
 docker-compose exec appserver flask db migrate -m "Describe the change here"
@@ -78,26 +87,44 @@ To perform data migrations, edit the created migration script and add the necess
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.orm import Session
+from migrations.utils import window_chunk
 
+# You only need to declare columns which you will use
 t_app_user = sa.Table(
     'appuser',
-    sa.MetaData(),
-    sa.Column('id', sa.Integer(), primary_key=True),
-    sa.Column('hash_id'),
-    sa.Column('username'),
-    sa.Column('email'),
-    sa.Column('first_name'),
-    sa.Column('last_name'),
+    sa.Column('id', sa.Integer),
+    sa.Column('username', sa.String),
 )
 
-session = Session(op.get_bind())
+conn = op.get_bind()
+session = Session(conn)
 
-for user in iter_query(session.query(t_app_user), batch_size=DEFAULT_QUERY_BATCH_SIZE):
-    user = user._asdict()
-    session.execute(t_app_user.update().values(
-        hash_id=create_hash_id()
-    ).where(t_app_user.c.id == user['id']))
+users = conn.execution_options(stream_results=True).execute(sa.select([
+        t_app_user.c.id,
+        t_app_user.c.username,
+    ]).where( ... ))
+
+for chunk in window_chunk(users, 25):
+    to_update = []
+    for uid, username in chunk:
+        if ... :
+            to_update.append({'id': uid, 'username': 'xXx' + username + 'xXx'})
+    try:
+        session.bulk_update_mappings(t_app_user, to_update)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
 ```
+#### Misc
+
+Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
+
+```sh
+docker-compose exec appserver flask db upgrade -x data_migrate=True
+```
+
+When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the *restore from history* functionality will not work.
 
 ### Merging Migration Conflicts
 
@@ -123,7 +150,7 @@ docker-compose exec appserver flask db merge -m "Describe the merge here"
 
 #### Option 2: 'Rebasing' Heads
 
-Sometimes, you do not want to create a merge migration -- in such cases, you can also modify one of the conflicting migration files and change its `down_revision` variable (in the file) to the revision ID of the other conflicted migration, therefore moving one of the migrations to the end of the tree.
+Sometimes, you do not want to create a merge migration - in such cases, you can also modify one of the conflicting migration files and change its `down_revision` variable (in the file) to the revision ID of the other conflicted migration, therefore moving one of the migrations to the end of the tree.
 
 ## Debugging
 
@@ -164,16 +191,25 @@ To run the unit tests for Flask, use the following commands when Flask is runnin
 docker-compose exec appserver pytest
 ```
 
-To run a specific test file:
+To run a specific test file you can:
 
+ - Provide path to the file
 ```sh
-docker-compose exec appserver pytest -k tests/api/filesystem/object_test.py
+docker-compose exec appserver pytest tests/api/filesystem/object_test.py
 ```
-
+ - Use `-k` flag with filename:
+```sh
+docker-compose exec appserver pytest  -k 'object_test.py'
+```
 To run a specific test:
 
 ```sh
-docker-compose exec appserver pytest -k tests/api/filesystem/object_test.py::test_patch_file
+docker-compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
+```
+or
+
+```sh
+docker-compose exec appserver pytest -k 'test_patch_file'
 ```
 
 Some additional flags that may make tests easier to read include:
