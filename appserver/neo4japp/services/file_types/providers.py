@@ -565,10 +565,32 @@ def create_detail_node(node, params):
     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                      {'bgcolor': 'black'}
                                                      ).get('bgcolor')
+
+    doi_src = look_for_doi_link(node)
+    if doi_src:
+        node['link'] = doi_src
+
     if not node.get('style', {}).get('strokeColor'):
         # No border by default
         params['penwidth'] = '0.0'
     return params
+
+
+def look_for_doi_link(node):
+    """
+    Get DOI from links if available, and tests whether it is valid.
+    :params:
+    :param node: node data which links are tested
+    return: doi if present and valid, None if not
+    """
+    doi_src = next(
+        (src for src in node['data'].get('sources') if src.get(
+            'domain') == "DOI"), None)
+    # NOTE: As is_valid_doi sends a request, this increases export time for each doi that we have
+    # If this is too costly, we can remove this
+    if doi_src and is_valid_doi(doi_src['url']):
+        return doi_src['url']
+    return None
 
 
 def get_link_icon_type(node):
@@ -588,12 +610,9 @@ def get_link_icon_type(node):
         elif SANKEY_RE.match(link['url']):
             return 'sankey', link['url']
         elif DOCUMENT_RE.match(link['url']):
-            doi_src = next(
-                (src for src in node['data'].get('sources') if src.get(
-                    'domain') == "DOI"), None)
-            # If there is a valid doi, link to DOI
-            if doi_src and is_valid_doi(doi_src['url']):
-                return 'document', doi_src['url']
+            doi_src = look_for_doi_link(node)
+            if doi_src:
+                return 'document', doi_src
             # If the links point to internal document, remove it from the node data so it would
             # not became exported as node url - as that might violate copyrights
             if link in node['data'].get('sources', []):
