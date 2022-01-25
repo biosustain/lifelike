@@ -45,7 +45,6 @@ export class ObjectCreationService {
   executePutWithProgressDialog(request: ObjectCreateRequest,
                                annotationOptions: PDFAnnotationGenerationRequest = {}):
     Observable<FilesystemObject> {
-    console.log('Puting: ' + request.filename);
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
     }));
@@ -73,7 +72,6 @@ export class ObjectCreationService {
               }));
             }
           }
-          console.log('Progress with: ' + request.filename);
         }),
         filter(event => event.bodyValue != null),
         map((event): FilesystemObject => event.bodyValue),
@@ -145,24 +143,11 @@ export class ObjectCreationService {
           }).pipe(
             // Catch error but do not break the upload loop - see https://github.com/SBRG/kg-prototypes/pull/1442/files
             catchError((err, o) => {
-              // TODO: what if multiple files fail?
               this.snackBar.open('Could not create file: ' + request.filename, null, {duration: 2000});
               return EMPTY;
             }));
         })
       ).toPromise();
-      //   return this.executePutWithProgressDialog({
-      //     ...value.request,
-      //     ...(options.request || {}),
-      //     // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
-      //     // via the type checker, that we will be forming a 100% legitimate request,
-      //     // because it's possible to provide multiple sources of content due to this cast, which
-      //     // the server will reject because it does not make sense
-      //   } as ObjectCreateRequest, {
-      //     annotationConfigs: value.annotationConfigs,
-      //     organism: value.organism,
-      //   }).toPromise();
-      // });
     });
     return dialogRef.result;
   }
