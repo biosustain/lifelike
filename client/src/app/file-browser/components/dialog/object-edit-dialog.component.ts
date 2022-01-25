@@ -8,7 +8,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { filenameValidator, validFilenameRegex } from 'app/shared/validators';
+import { filenameValidator } from 'app/shared/validators';
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION, MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
 import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
@@ -112,8 +112,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     return this._object;
   }
 
-  // TODO: This sets an empty filesystem file when clicking the upload button. Maybe get rid of that
-  // or find a way to check if input is meaningful
   @Input()
   set object(value: FilesystemObject) {
     this._object = value;
@@ -174,6 +172,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   applyValue(value: ObjectEditDialogValue) {
+    console.log('applying value');
+    console.log(value.objectChanges);
     Object.assign(this.object, value.objectChanges);
   }
 
@@ -216,7 +216,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         mimeType: formState.mimeType,
         fallbackOrganism: formState.organism,
         annotationConfigs: formState.annotationConfigs,
-        // No URL upload fir multiple files yet
+        // No URL upload for multiple files
         contentValue: formState.contentValue
       });
     }
@@ -239,16 +239,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
       if (!confirm('Are you sure? Your progress will be lost!')) {
        return;
-       // this.filePossiblyAnnotatable = newId === 'contentUrl' && this.form.get('contentUrl').value.length;
       }
     }
     this.fileList = [];
     this.selectedFile = null;
     this.selectedFileIndex = -1;
-    this.form.get('contantUrl').setValue(null);
+    this.form.get('contentUrl').setValue(null);
     this.form.get('contentSource').setValue(newId);
     this.form.get('contentValue').setValue(null);
+    this.form.get('filename').setValue(null);
     this.filePossiblyAnnotatable = false;
+    this.invalidInputs = false;
   }
 
   urlChanged(event) {
@@ -257,7 +258,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   fileChanged(event) {
-    // TODO: Check if we need this, it seems like this unsets stuff on cancel when selecting files
     if (!event.target.files.length) {
       return;
     }
@@ -282,7 +282,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           }
         },
         filename: targetFile.name,
-        // hasValidFilename: !validFilenameRegex.test(filename) && filename !== '',
         hasValidFilename: !this.form.get('filename').hasError('filenameError'),
         filePossiblyAnnotatable: targetFile.type === 'application/pdf',
         annotationsInspected: false
