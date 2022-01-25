@@ -1,7 +1,7 @@
 """Truncate too large description.
 
 Revision ID: 06e737103f71
-Revises: 65d827e55b5b
+Revises: edac65841141
 Create Date: 2022-01-17 17:32:43.819103
 
 """
