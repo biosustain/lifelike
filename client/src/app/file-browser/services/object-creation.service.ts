@@ -132,10 +132,8 @@ export class ObjectCreationService {
       const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
       return from(requests).pipe(
         mergeMap(request => {
-          console.log(request);
           return this.executePutWithProgressDialog({
             ...request,
-            // NOTE: Check if this should still go there
             ...(options.request || {}),
           } as ObjectCreateRequest, {
             annotationConfigs: request.annotationConfigs,
