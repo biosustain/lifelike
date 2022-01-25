@@ -41,16 +41,6 @@
                   <td>
                     <i class="fa fa-lg fa-exclamation-circle alert-danger"
                     ngbTooltip="Invalid filename!" *ngIf="!file.hasValidFilename"></i>
-<!--                    <div *ngIf="file.filePossiblyAnnotatable">-->
-<!--                      <div *ngIf="file.annotationsInspected else annotationsNotInspected">-->
-<!--                        <i class="fa fa-lg fa-info-circle alert-success"-->
-<!--                        ngbTooltip="Annotation configurations set" ></i>-->
-<!--                      </div>-->
-<!--                      <ng-template #annotationsNotInspected>-->
-<!--                        <i class="fa fa-lg fa-info-circle alert-warning"-->
-<!--                        ngbTooltip="Uninspected annotation configurations"></i>-->
-<!--                      </ng-template>-->
-<!--                    </div>-->
                   </td>
                   <td class="text-right">
                       <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>

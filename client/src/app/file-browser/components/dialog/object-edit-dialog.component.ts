@@ -282,7 +282,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         filename: targetFile.name,
         hasValidFilename: !this.form.get('filename').hasError('filenameError'),
         filePossiblyAnnotatable: targetFile.type === 'application/pdf',
-        annotationsInspected: false
       };
       this.fileList.push(fileEntry);
 
@@ -309,7 +308,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         formState: this.form.value,
         hasValidFilename: !this.form.get('filename').hasError('filenameError'),
         filePossiblyAnnotatable: this.filePossiblyAnnotatable,
-        annotationsInspected: true
       };
     }
     // TODO: Possibly change the form format, due to annotations
@@ -403,7 +401,6 @@ export interface FileInput {
   formState: any;
   hasValidFilename: boolean;
   filePossiblyAnnotatable: boolean;
-  annotationsInspected: boolean;
 }
 
 export interface ObjectEditDialogValue {
