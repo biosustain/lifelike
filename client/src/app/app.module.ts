@@ -24,7 +24,6 @@ import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.gu
 import { DashboardComponent } from 'app/dashboard.component';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { FileNavigatorModule } from 'app/file-navigator/file-navigator.module';
-import { ShortestPathModule } from 'app/shortest-path/shortest-path.module';
 import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { EnrichmentTablesModule } from 'app/enrichment/enrichment-tables.module';
@@ -70,7 +69,6 @@ import { FileTypesModule } from 'app/file-types/file-types.module';
     FileNavigatorModule,
     BiocViewerLibModule,
     EnrichmentVisualisationsModule,
-    ShortestPathModule,
     EnrichmentTablesModule,
   ],
   providers: [
