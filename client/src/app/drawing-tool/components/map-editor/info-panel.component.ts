@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { EdgeDeletion, NodeDeletion } from 'app/graph-viewer/actions/nodes';
+import { EdgeDeletion } from 'app/graph-viewer/actions/edges';
+import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';

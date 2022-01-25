@@ -1,34 +1,16 @@
-<div class="input-group w-100 d-flex">
-  <input [value]="value" (blur)="this.blurred()"
-         type="text" class="form-control input-border"
-         [ngStyle]="{minWidth:searchInputWidth,flexGrow:20}"
-         placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
-         [disabled]="disabled" (keyup)="inputKeyUp($event)"
-         #searchInput>
-  <div class="input-group-append">
-    <button class="form-control input-border border-left-0" (click)="clear()">
-      <i [style.visibility]="value?.length === 0 ? 'hidden': 'visible'" class="fa fa-times"></i>
-    </button>
-  </div>
-  <div *ngIf="resultCount" class="input-group-append" style="flex-grow:1;">
-              <span class="input-group-text" id="increment-btn" style="width:100%;">
-                {{resultIndex + 1}} of {{resultCount}}
-                <span *ngIf="searching" style="display:block; text-align: center;" class="ml-1">
-                  <i
-                    style="display:block; text-align: center;"
-                    class="fa fa-spinner fa-spin text-dark"
-                  ></i>
-                </span>
-              </span>
-  </div>
-  <div class="input-group-append" id="decrement-btn">
-    <button class="btn btn-secondary" type="button" (click)="previous.emit(this.resultIndex - 1)"
-            [disabled]="disabled || resultCount == 0" ngbTooltip="Previous result" container="body">
-      <i class="fa fa-fw fa-chevron-down"></i>
-    </button>
-    <button class="btn btn-secondary" type="button" (click)="next.emit(this.resultIndex + 1)"
-            [disabled]="disabled || resultCount == 0" ngbTooltip="Next result" container="body">
-      <i class="fa fa-fw fa-chevron-up"></i>
-    </button>
-  </div>
-</div>
+<app-base-control
+        [disabled]="disabled"
+        [resultCount]="resultCount"
+        [resultIndex]="resultIndex"
+        [searching]="searching"
+        (previous)="previous.emit(this.resultIndex - 1)"
+        (next)="next.emit(this.resultIndex + 1)"
+        (clear)="clear()"
+>
+    <input [value]="value" (blur)="this.blurred()"
+           type="text" class="form-control input-border"
+           [ngStyle]="{minWidth:searchInputWidth,flexGrow:9999}"
+           placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
+           [disabled]="disabled" (keyup)="inputKeyUp($event)"
+           #searchInput>
+</app-base-control>

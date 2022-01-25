@@ -6,7 +6,6 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { uuidv4 } from 'app/shared/utils/identifiers';
-import { extractGraphEntityActions } from 'app/drawing-tool/utils/data';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
@@ -33,10 +32,10 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   }
 
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const content = event.event.clipboardData.getData('text/plain');
-    if (content) {
-      const position = this.graphView.currentHoverPosition;
-      if (position) {
+    const position = this.graphView.currentHoverPosition;
+    if (position) {
+      const content = event.event.clipboardData.getData('text/plain');
+      if (content) {
         this.graphView.execute(this.createActionFromPasteContent(content, position));
         event.event.preventDefault();
         return BehaviorResult.Stop;

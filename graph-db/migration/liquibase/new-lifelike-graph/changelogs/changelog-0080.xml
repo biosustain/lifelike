@@ -25,7 +25,7 @@ CREATE INDEX index_ecnumber_name IF NOT EXISTS FOR (n:EC_Number) ON (n.name);
       query="
       UNWIND $rows as row
 MERGE (n:db_Enzyme {eid: row.eid})
-SET n:EC_Number,n.name=row.name,n.code=row.code,n.activities=row.activities,n.cofactors=row.cofactors
+SET n:EC_Number,n.name=row.name,n.code=row.code,n.activities=row.activities,n.cofactors=row.cofactors,n.data_source='Enzyme'
       "
       fileName="jira-LL-3217-enzyme.zip"
       startAt="1"
@@ -75,7 +75,6 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
       UNWIND $rows AS row
 MATCH (a:db_Enzyme {eid: row.eid}), (b:db_Enzyme {eid: row.parent_id})
 MERGE (a)-[r:HAS_PARENT]->(b)
-RETURN COUNT(*)
       "
       fileName="jira-LL-3217-enzyme_rels.zip"
       startAt="1"
