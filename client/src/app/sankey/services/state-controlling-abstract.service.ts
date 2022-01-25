@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
-import { pick, isEqual, has } from 'lodash-es';
-import { switchMap, map, filter, shareReplay, distinctUntilChanged } from 'rxjs/operators';
+import { pick, isEqual, has, isArray } from 'lodash-es';
+import { switchMap, map, filter, shareReplay, distinctUntilChanged, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
 
@@ -17,10 +17,13 @@ export class StateControlAbstractService<Options extends object = object, State 
    * @param prop property name (can be also list of properties)
    */
   unifiedAccessor<R>(observable, prop) {
+    const hasOwnProp = isArray(prop) ?
+      obj => prop.every(p => has(obj, p)) :
+      obj => has(obj, prop);
     return observable.pipe(
-      filter(obj => has(obj, prop)),
+      filter(hasOwnProp),
       map(obj => pick(obj, prop)),
-      distinctUntilChanged(isEqual)
+      distinctUntilChanged(isEqual),
     ) as Observable<R>;
   }
 

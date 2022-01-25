@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, pick } from 'lodash-es';
-import { switchMap, map, tap, combineLatest } from 'rxjs/operators';
+import { flatMap, groupBy, intersection, merge, pick, isEqual } from 'lodash-es';
+import { switchMap, map, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
+import { combineLatest } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -31,17 +32,18 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
     super(c, warningController);
     console.log('SankeySingleLaneControllerService');
     this.initCommonObservables();
-    this.state$.subscribe(s => console.log('SankeySingleLaneControllerService state$', s));
+    this.graphInputState$ = this.state$.pipe(
+      map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
+      distinctUntilChanged(isEqual)
+    );
+    this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
     this.dataToRender$.subscribe(d => console.log('data to render', d));
     this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
     this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
     this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
     this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
     this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
-    this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
     this.options$.subscribe(d => console.log('options$ construct subscription', d));
-    this.state$.subscribe(state => {
-    });
   }
 
   viewBase = ViewBase.sankeySingleLane;
@@ -108,10 +110,12 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
   );
 
   dataToRender$ = this.networkTraceData$.pipe(
-    tap(d => console.log('dataToRender$ networkTraceData', d)),
+    // tap(d => console.log('dataToRender$ networkTraceData', d)),
     switchMap(networkTraceData => this.linkGraph(networkTraceData)),
-    tap(d => console.log('dataToRender$', d)),
+    // tap(d => console.log('dataToRender$', d)),
   );
+
+  graphInputState$;
 
   // Trace logic
   /**
