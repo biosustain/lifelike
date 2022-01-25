@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { merge, omit, transform, cloneDeepWith, clone, isNil, max } from 'lodash-es';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
@@ -18,7 +18,7 @@ import {
   LINK_VALUE_GENERATOR,
   NODE_VALUE_GENERATOR,
   PREDEFINED_VALUE,
-  ViewBase
+  ViewBase, ViewSize
 } from 'app/shared-sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
@@ -212,6 +212,13 @@ export class SankeyControllerService {
     const _inNodes = node_sets[selectedNetworkTrace.sources];
     const _outNodes = node_sets[selectedNetworkTrace.targets];
     return Math.min(_inNodes.length, _outNodes.length) === 1;
+  }
+
+
+  sankeySize$ = new ReplaySubject<ViewSize>();
+
+  sankeyResized(size) {
+    this.sankeySize$.next(size);
   }
 
   resetOptions() {

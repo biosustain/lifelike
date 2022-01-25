@@ -1,11 +1,19 @@
 /// <reference lib="webworker" />
 
+/* NOTE:
+    Be very carefull with those imports as they cannot have any DOM references
+    since they are executed in a web worker enviroment.
+    Faulty import will prevent the worker from compiling, returning the error of type:
+     "document is undefined"
+     "window is undefined"
+     "alert is undefined"
+*/
 import { defer } from 'lodash-es';
 
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
 import { SearchWorkerMessage, WorkerActions, WorkerOutputActions } from './search-worker-actions';
-import { SankeySearch } from './search-match';
+import { SankeySearch, SearchEntity } from './search-match';
 
 const search = new SankeySearch();
 let searchId;
@@ -29,7 +37,7 @@ addEventListener('message', async ({data: messageData}) => {
         if (thisSearchId === searchId) {
           postMessage({
             action: WorkerOutputActions.match,
-            actionLoad: rest
+            actionLoad: rest as SearchEntity
           });
           defer(step);
         } else {

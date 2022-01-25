@@ -10,19 +10,23 @@ import {
   Output,
   ViewChild,
   ViewEncapsulation,
+  ComponentFactoryResolver,
+  ApplicationRef,
+  Injector,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, isNil, uniqueId, transform, flatMap } from 'lodash-es';
+import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { toValidLink } from 'app/shared/utils/browser';
-import { getBoundingClientRectRelativeToContainer } from 'app/shared/utils/dom';
 import { openModal } from 'app/shared/utils/modals';
+import { IS_MAC } from 'app/shared/utils/platform';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -31,24 +35,10 @@ import { AnnotationEditDialogComponent } from './components/annotation-edit-dial
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
-import { PDFSource, PDFProgressData } from './pdf-viewer/interfaces';
+import { PDFSource, PDFProgressData, PDFPageRenderEvent, PDFPageView, TextLayerBuilder, ScrollDestination } from './pdf-viewer/interfaces';
+import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
 
 declare var jQuery: any;
-
-// Based on https://github.com/mozilla/pdf.js/search?q=scrollPageIntoView and
-// https://github.com/mozilla/pdf.js/blob/f07d50f8eeced1cd9cc967e938485893d584fc32/web/base_viewer.js#L900:L909
-interface ScrollDestination {
-  pageNumber: number;
-  destArray: [
-      string | null, // redundant page number - leave empty when calling scrollPageIntoView with 'pageNumber' param
-    { name: string }, // destination definition type
-      number | null, // x position on the page [null for default/unchanged]
-      number | null, // y position on the page [null for default/unchanged]
-      number | null // z position on the page (zoom) [null for default/unchanged]
-  ];
-  allowNegativeOffset: boolean;
-  ignoreDestinationZoom: boolean;
-}
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -60,7 +50,6 @@ interface ScrollDestination {
 export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @ViewChild('container', {static: true}) containerRef: ElementRef;
-  @ViewChild('frictionlessAnnotationToolbar', {static: true}) frictionlessAnnotationToolbarRef: ElementRef;
 
   @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
   private searchChangedSub: Subscription;
@@ -71,7 +60,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  legacySelectionMode = true;
   renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
   foundHighlightAnnotations: Annotation[] = [];
@@ -168,7 +156,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   showNextFindFeedback = false;
   goToPositionVisitAfterFind: Location | undefined = null;
 
-  pageRef = {};
+  pageRef: { [idx: number]: PDFPageView } = {};
   index: any;
 
   allText: string;
@@ -193,7 +181,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   searchCommand: string;
 
-  private firstFrictionlessAnnotationRange: Range | undefined;
+  private firstAnnotationRange: Range | undefined;
   private requestAnimationFrameId: number | undefined;
 
   @ViewChild(PdfViewerComponent, {static: false})
@@ -201,14 +189,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   constructor(protected readonly elementRef: ElementRef,
               protected readonly modalService: NgbModal,
+              private cfr: ComponentFactoryResolver,
+              private appRef: ApplicationRef,
+              private injector: Injector,
               protected readonly zone: NgZone,
               protected readonly snackBar: MatSnackBar,
               protected readonly errorHandler: ErrorHandler) {
   }
 
   ngOnInit() {
-    this.legacySelectionMode = window.localStorage['lifelike_new_pdf_selection'] !== 'true';
-
     this.pdfViewerRef[this.pdfViewerId] = {
       openAnnotationPanel: () => this.zone.run(() => this.openAnnotationPanel()),
       copySelectedText: () => this.zone.run(() => this.copySelectedText()),
@@ -266,9 +255,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.searchChangedSub = this.searchChanged.subscribe((sb) => {
       this.searchQueryChanged(sb);
     });
-
-    // Register task for moving the annotation toolbar around if needed
-    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this));
   }
 
   ngOnDestroy(): void {
@@ -282,6 +268,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.searchChangedSub.unsubscribe();
     }
 
+    this.textLayerPortalOutlets.forEach(p => p.dispose());
 
     delete this.pdfViewerRef[this.pdfViewerId];
   }
@@ -290,12 +277,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return 'pdfViewerRef' in (window as any) ?
       (window as any).pdfViewerRef :
       (window as any).pdfViewerRef = {};
-  }
-
-  private requestAnimationFrame() {
-    this.requestAnimationFrameId = requestAnimationFrame(this.requestAnimationFrame.bind(this));
-
-    this.placeFrictionlessAnnotationToolbar();
   }
 
   renderFilterSettings() {
@@ -471,8 +452,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       `;
 
       for (const link of an.meta.idHyperlinks) {
-          const {label, url} = JSON.parse(link);
-          htmlLinks += `<a target="_blank" href="${escape(toValidLink(url))}">${escape(label)}</a><br>`;
+        const {label, url} = JSON.parse(link);
+        htmlLinks += `<a target="_blank" href="${escape(toValidLink(url))}">${escape(label)}</a><br>`;
       }
 
       htmlLinks += `</div></div>`;
@@ -585,13 +566,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (textLayer) {
       textLayer.style.zIndex = 100;
       this._focusedTextLayer = textLayer;
-      this.frictionlessAnnotationToolbarRef.nativeElement.style.pointerEvents = 'none';
     } else {
       if (this._focusedTextLayer) {
         this._focusedTextLayer.style.zIndex = null;
       }
       this._focusedTextLayer = undefined;
-      this.frictionlessAnnotationToolbarRef.nativeElement.style.pointerEvents = '';
     }
   };
 
@@ -602,7 +581,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @HostListener('window:mousedown', ['$event'])
   mouseDown(event: MouseEvent) {
     let target = event.target as any;
-    let parent = target.closest('.textLayer');
+    let parent = this.getClosestTextLayer(target);
     if (parent) {
       this.focusedTextLayer = parent;
       // coming from pdf-viewer
@@ -617,313 +596,190 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('mouseup', ['$event'])
+  @HostListener('window:mouseup', ['$event'])
   mouseUp(event) {
     this.focusedTextLayer = null;
+    if (this.selecting) {
+      this.selecting = false;
+      this.selectionEnd(event);
+    }
+  }
 
-    if (this.legacySelectionMode) {
-      const targetTagName = event.target.tagName;
-      if (targetTagName === 'INPUT') {
-        return false;
-      }
+  selection;
+  selectionWrapper;
 
-      const isItToolTip = event.target.closest('.qtip-content');
-      this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
-      const spanCheck = this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !== 1;
-      if (spanCheck && !isItToolTip) {
-        this.dragAndDropOriginHoverCount = 0;
-        this.dragAndDropDestinationHoverCount = 0;
-        this.deleteFrictionless();
-        this.clearSelection();
-      }
-      const selection = window.getSelection() as any;
-      const baseNode = selection.baseNode;
-      const parent = baseNode && baseNode.parentNode as any;
-      if (!parent || !parent.closest('.textLayer')) {
-        // coming not from pdf-viewer
-        return false;
-      }
-      const range = selection.getRangeAt(0);
-      const selectionBounds = range.getBoundingClientRect();
-      const selectedRects = selection.getRangeAt(0).getClientRects();
-      if (selectedRects.length === 0) {
-        this.clearSelection();
-        return false;
-      }
-      if (selectedRects.length === 1) {
-        const firstRect = selectedRects[0];
-        const width = firstRect.width;
-        if (width < 1) {
-          this.clearSelection();
-          this.deleteFrictionless();
-          return false;
-        }
-      }
-      this.deleteFrictionless();
-      this.allText = selection.toString();
-      const documentFragment = selection.getRangeAt(0).cloneContents();
-      let children = documentFragment.childNodes;
-      this.dragAndDropDestinationCoord = {
-        clientX: event.clientX,
-        clientY: event.clientY,
-        pageX: event.pageX,
-        pageY: event.pageY,
-      };
-      this.selectedText = Array.from(children).map((node: any) => node.textContent);
-      //this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
-      this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'), 10);
-      const pdfPageView = this.pageRef[this.currentPage];
-      const viewport = pdfPageView.viewport;
-      const pageElement = pdfPageView.div;
-      const pageRect = pdfPageView.canvas.getClientRects()[0];
-      const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left,
-        this.dragAndDropOriginCoord.clientY - pageRect.top);
-      const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left,
-        this.dragAndDropDestinationCoord.clientY - pageRect.top);
-      const mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
-      const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
-      const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
+  ranges;
 
-      const fixedSelectedRects = [];
-      const newLineThreshold = .30;
+  annotationToolbarPortal = new ComponentPortal(AnnotationToolbarComponent);
+  annotationToolbarRef;
+  /**
+   * Flag used to distinguish deselection and selection end
+   * based on selectionchange and mouseup events
+   */
+  selecting = false;
+  usedTextLayerPortalOutlet;
 
-      const clonedSelection = selection.getRangeAt(0).cloneContents();
+  detachFromUsedTextLayerPortalOutlet() {
+    if (this.usedTextLayerPortalOutlet && this.usedTextLayerPortalOutlet.hasAttached()) {
+      this.usedTextLayerPortalOutlet.detach();
+    }
+  }
 
-      let rects = [];
-      const elements: any[] = Array.from(clonedSelection.querySelectorAll(':not(.markedContent)'));
-      elements.forEach((org_span: any) => {
-        const span = org_span.cloneNode(true);
-        const {transform} = span.style;
-        const transform_match = transform.match(/[\d\.]+/);
-
-        // decompose https://github.com/mozilla/pdf.js/blob/b1d3b6eb12b471af060c40a2d1fe479b1878ceb7/src/display/text_layer.js#L679:L739
-        span.style.padding = null;
-        if (transform_match) {
-          span.style.transform = `scaleX(${transform_match[0]})`;
-        }
-        span.style.display = 'block';
-        span.style.position = 'absolute';
-        span.style.lineHeight = 1;
-        span.style.transformOrigin = '0% 0%';
-
-        pageElement.appendChild(span);
-
-        rects = [...rects, ...span.getClientRects()];
-
-        span.remove();
+  @HostListener('document:selectstart', ['$event'])
+  selectstart(event: Event) {
+    this.deselect();
+    this.selection = null;
+    this.firstAnnotationRange = null;
+    // taking parent as to not start with Text node which does not have 'closest' method
+    let pageNumber = this.getClosestPageNumber(event.target as Node);
+    // not selecting outside pdf viewer
+    if (pageNumber > -1) {
+      this.selecting = true;
+      const textLayerPortalOutlet = this.textLayerPortalOutlets.get(pageNumber);
+      this.usedTextLayerPortalOutlet = textLayerPortalOutlet;
+      this.annotationToolbarRef = textLayerPortalOutlet.attach(this.annotationToolbarPortal);
+      this.annotationToolbarRef.instance.pageRef = this.pageRef;
+      this.annotationToolbarRef.instance.containerRef = this.containerRef;
+      this.annotationToolbarRef.instance.annotationCreated.subscribe(val => {
+        this.annotationCreated.next(val);
       });
+    }
+  }
 
-      rects[0] = selectedRects[0]; // first one used to be wrong
+  deselect() {
+    if (IS_MAC) {
+      this.removeSelectionDragContainer();
+    }
+    this.detachFromUsedTextLayerPortalOutlet();
+  }
 
-      function createCorrectRects(rects: Array<DOMRect>) {
-        let startLowerX = null, startLowerY = null;
-
-        let currentRect = new DOMRect(0, 0, 0, 0);
-
-        for (let i = 0; i < rects.length; i++) {
-          const rect = rects[i];
-          const prevRect = i > 0 ? rects[i - 1] : rect;
-          // point of origin in browser is top left
-          const lowerX = rect.left;
-          const lowerY = rect.bottom;
-
-          currentRect.height = rect.height > currentRect.height ? rect.height : currentRect.height;
-
-          if (startLowerX === null && startLowerY === null) {
-            startLowerX = lowerX;
-            startLowerY = lowerY;
-          } else {
-            // if the lowerY of current rect is not equal to the
-            // lowerY of the very first word selection in the highlight
-            // it means potentially the current word selection rectangle
-            // is on a new line or just have larger font size
-            if (lowerY !== startLowerY) {
-              // calculate threshold and determine if new line
-              const diff = Math.abs(lowerY - startLowerY);
-              const prevHeight = prevRect.height;
-
-              if (diff > prevHeight * newLineThreshold) {
-                const rectsOnNewLine = [];
-                for (let j = i; j < rects.length; j++) {
-                  rectsOnNewLine.push(rects[j]);
-                }
-
-                const unprocessedDOMRects = {length: rectsOnNewLine.length} as Array<DOMRect>;
-                rectsOnNewLine.forEach((r, i) => unprocessedDOMRects[i] = r);
-                createCorrectRects(unprocessedDOMRects);
-                // break because the recursion already calculated the
-                // correct currentRect.width before returning
-                break;
-              }
-            }
-          }
-
-          currentRect.x = startLowerX;
-          currentRect.y = startLowerY - currentRect.height;
-
-          if (currentRect.width === 0) {
-            currentRect.width = rect.width;
-          } else if (rect.width !== prevRect.width) {
-            currentRect.width = rect.x - currentRect.x + rect.width;
-          }
-        }
-
-        fixedSelectedRects.push(currentRect);
-      }
-
-      // We need to re-create the selection rectangles
-      // because the PDF could be in a weird format
-      // that causes the native browser API to create multiple
-      // DOM rectangles when it shouldn't have.
-      //
-      // Each section rectangle represent one selection,
-      // this means multiple words on the same line should
-      // create one selection rectangle
-      // See LL-1437 (https://github.com/SBRG/kg-prototypes/pull/474)
-      createCorrectRects(rects);
-
-      this.selectedTextCoords = [];
-      const that = this;
-      let avgHeight = 0;
-      let rectHeights = [];
-      jQuery.each(fixedSelectedRects, (idx, r) => {
-
-        const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
-          .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
-        that.selectedTextCoords.push(rect);
-        const bounds = viewport.convertToViewportRectangle(rect);
-        let left = Math.min(bounds[0], bounds[2]);
-        let top = Math.min(bounds[1], bounds[3]);
-        let width = Math.abs(bounds[0] - bounds[2]);
-        let height = Math.abs(bounds[1] - bounds[3]);
-        rectHeights.push(height);
-        avgHeight = rectHeights.reduce((a, b) => a + b) / rectHeights.length;
-        if ((avgHeight * 2) < height) {
-          // rejected by line average
-          rectHeights.pop();
-          return; //continue
-        }
-
-        const mouseRecTopBorder = mouseRectTop - Number(avgHeight * 1.2);
-        const mouseRectBottomBorder = mouseRectTop + mouseRectHeight + Number(avgHeight * 1.2);
-
-        const el = document.createElement('div');
-        const meta: Meta = {
-          allText: that.allText,
-          type: 'link',
-        };
-        const location: Location = {
-          pageNumber: that.currentPage,
-          rect: that.getMultilinedRect(),
-        };
-        el.setAttribute('draggable', 'true');
-        el.addEventListener('dragstart', event => {
-          jQuery('.frictionless-annotation').qtip('hide');
-          this.annotationDragStart.emit({
-            event,
-            meta,
-            location,
-          });
-        });
-        el.setAttribute('location', JSON.stringify(location));
-        el.setAttribute('meta', JSON.stringify(meta));
-        el.setAttribute('class', 'frictionless-annotation');
-        el.setAttribute('style', `
-        position: absolute;
-        background-color: rgba(255, 255, 51, 0.3);
-        left: ${left}px;
-        top: ${top}px;
-        width: ${width}px;
-        height: ${height}px;
-      `);
-        el.setAttribute('id', 'newElement' + idx);
-
-        if (mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
-          pageElement.appendChild(el);
-          this.selectedElements.push(el);
-        }
-
-        jQuery(el).css('cursor', 'move');
-        (jQuery(el) as any).qtip(
-          {
-
-            content: `
-              <button
-                style="background: none; border: none;"
-                onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()"
-              >Create Annotation</button> |
-              <button
-                style="background: none; border: none;"
-                onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()"
-              >Copy Text</button>`,
-            position: {
-              my: 'bottom center',
-              target: 'mouse',
-              adjust: {
-                mouse: false,
-              },
-            },
-            style: {
-              classes: 'qtip-bootstrap',
-              tip: {
-                width: 16,
-                height: 8,
-              },
-            },
-            show: {
-              delay: 10,
-            },
-            hide: {
-              fixed: true,
-              delay: 200,
-            },
-          },
-        );
-      });
-
-      this.clearSelection();
+  removeSelectionDragContainer() {
+    if (this.selectionDragContainer) {
+      this.selectionDragContainer.remove();
+      this.selectionDragContainer = undefined;
     }
   }
 
   @HostListener('document:selectionchange', ['$event'])
   selectionChange(event: Event) {
-    if (!this.legacySelectionMode) {
-      const popoverEl: HTMLElement = this.frictionlessAnnotationToolbarRef.nativeElement;
+    if(this.selecting) {
       const selection = window.getSelection();
       const ranges = this.getValidSelectionRanges(selection);
       if (ranges.length) {
-        popoverEl.classList.remove('d-none');
-        this.firstFrictionlessAnnotationRange = ranges[0];
+        this.selection = selection;
+        this.ranges = ranges;
+        this.firstAnnotationRange = ranges[0];
+        this.placeAnnotationToolbar(ranges[0]);
       } else {
-        this.firstFrictionlessAnnotationRange = null;
-        popoverEl.classList.add('d-none');
+        this.selection = null;
+        this.firstAnnotationRange = null;
+      }
+    } else {
+      this.deselect();
+    }
+  }
+
+  /**
+   * Clone elements and reposition them to match originals
+   * @param range
+   */
+  cloneRangeContents(range: Range) {
+    const {startOffset, endOffset} = range;
+    let rangeDocumentFragment = range.cloneContents();
+    // if selection is within singular span and not empty
+    if (!rangeDocumentFragment.children.length && !range.collapsed) {
+      const clonedElement = range.commonAncestorContainer.parentElement.cloneNode(true) as HTMLElement;
+      clonedElement.innerText = clonedElement.innerText.slice(startOffset, endOffset);
+      rangeDocumentFragment.appendChild(clonedElement);
+    }
+    // drop padding and reposition accordingly
+    forEach(rangeDocumentFragment.children, (node: HTMLElement) => {
+      // scrap translate transformations which balances padding misplacement
+      node.style.transform = node.style.transform.replace(/ ?translate.{0,2}\(.*?\)/gi, '');
+    });
+    // adjust first container position if contains fraction of text
+    if (startOffset) {
+      const firstClonedElement = rangeDocumentFragment.firstElementChild as HTMLElement;
+      if (firstClonedElement) {
+        // estimation based on percentage of ignored letters
+        const offsetOfStart = startOffset / firstClonedElement.innerText.length;
+        firstClonedElement.style.transform += ` translateX(${offsetOfStart * 100}%)`;
       }
     }
+    return rangeDocumentFragment;
+  }
+
+  selectionDragContainer;
+
+  /** Implement natively missing selection end event
+   *  Although it does not exist in Selection API it
+   *  can be easily added to fire on first mouseup
+   *  after selection start.
+   */
+  selectionEnd(event: Event) {
+    if(this.firstAnnotationRange) {
+      if (IS_MAC) {
+        const textLayer = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+        // if it is not multiple page selection (not-supported - still would work just without behaviour adjustment for mac)
+        if (textLayer) {
+          this.removeSelectionDragContainer();
+          // Create transparent not selectable overlay with copy of selected nodes
+          const drag = document.createElement('div');
+          drag.draggable = true;
+          drag.classList.add('selection');
+          drag.appendChild(this.cloneRangeContents(this.firstAnnotationRange));
+          textLayer.appendChild(drag);
+          this.selectionDragContainer = drag;
+        }
+      }
+    } else {
+      this.deselect();
+    }
+    // allow interaction with toolbar after selection to prevent flickering
+    this.annotationToolbarRef.instance.active = true;
+  }
+
+  /**
+   * Wrapper on event.dataTransfer.setDragImage to adjust drag image styling
+   * @param node - to use as drag image
+   * @param event - event to decorate
+   */
+  setDragImage(node, event) {
+    let draggedElementRef = IS_MAC ? this.selectionDragContainer :
+      this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+
+    draggedElementRef.classList.add('dragged');
+    // event.dataTransfer.setDragImage runs in async after dragstart but does not return the handle
+    // styling needs to be reversed after current async stack is emptied
+    defer(() => draggedElementRef.classList.remove('dragged'));
   }
 
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
-    if (!this.legacySelectionMode) {
-      const selection = window.getSelection();
-      const ranges = this.getValidSelectionRanges(selection);
-      const currentPage = this.detectPageFromRanges(ranges);
+    const {selection, ranges} = this;
+    this.setDragImage(this.selectionDragContainer, event);
+    const currentPage = this.detectPageFromRanges(ranges);
+    if (ranges.length && currentPage != null) {
+      this.annotationDragStart.emit({
+        event,
+        meta: {
+          allText: selection.toString(),
+          type: 'link',
+        },
+        location: {
+          pageNumber: currentPage,
+          rect: this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()))[0],
+        },
+      });
 
-      if (ranges.length && currentPage != null) {
-        this.annotationDragStart.emit({
-          event,
-          meta: {
-            allText: selection.toString(),
-            type: 'link',
-          },
-          location: {
-            pageNumber: currentPage,
-            rect: this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()))[0],
-          },
-        });
-
-        event.stopPropagation();
-      }
+      event.stopPropagation();
     }
+  }
+
+  @HostListener('dragend', ['$event'])
+  dragEnd(event: DragEvent) {
+    let page = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+    page.classList.remove('dragged');
   }
 
   //endregion
@@ -942,40 +798,24 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   openAnnotationPanel() {
-    if (this.legacySelectionMode) {
-      jQuery('.frictionless-annotation').qtip('hide');
+    const text = window.getSelection().toString().trim();
+    const selection = window.getSelection();
+    const ranges = this.getValidSelectionRanges(selection);
+    const currentPage = this.detectPageFromRanges(ranges);
 
+    if (ranges.length && currentPage != null) {
       const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
-      dialogRef.componentInstance.allText = this.allText;
-      dialogRef.componentInstance.keywords = this.selectedText;
-      dialogRef.componentInstance.coords = this.selectedTextCoords;
-      dialogRef.componentInstance.pageNumber = this.currentPage;
+      dialogRef.componentInstance.allText = text;
+      dialogRef.componentInstance.keywords = [text];
+      dialogRef.componentInstance.coords = this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()));
+      dialogRef.componentInstance.pageNumber = currentPage;
       dialogRef.result.then(annotation => {
         this.annotationCreated.emit(annotation);
-        this.deleteFrictionless();
-        this.resetSelection();
+        window.getSelection().empty();
       }, () => {
       });
     } else {
-      const text = window.getSelection().toString().trim();
-      const selection = window.getSelection();
-      const ranges = this.getValidSelectionRanges(selection);
-      const currentPage = this.detectPageFromRanges(ranges);
-
-      if (ranges.length && currentPage != null) {
-        const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
-        dialogRef.componentInstance.allText = text;
-        dialogRef.componentInstance.keywords = [text];
-        dialogRef.componentInstance.coords = this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()));
-        dialogRef.componentInstance.pageNumber = currentPage;
-        dialogRef.result.then(annotation => {
-          this.annotationCreated.emit(annotation);
-          window.getSelection().empty();
-        }, () => {
-        });
-      } else {
-        this.errorHandler.showError(new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer'));
-      }
+      this.errorHandler.showError(new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer'));
     }
   }
 
@@ -989,28 +829,74 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const container = this.elementRef.nativeElement;
     for (let i = 0; i < selection.rangeCount; i++) {
       const range = selection.getRangeAt(i);
-      if (range.startOffset != range.endOffset && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
+      if (!range.collapsed && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
         ranges.push(range);
       }
     }
     return ranges;
   }
 
+  /** Get the closest DOM element by selector
+   * This helper method allows for search starting on Node
+   * not only on Element (extending Element.closest() capabilities)
+   * @param node
+   * @param selector
+   */
+  getClosest(node: Node, selector: string) {
+    // fail fast - don't search outside of view
+    if (!node || node === this.elementRef.nativeElement) {
+      return null;
+    }
+    if (node instanceof Element) {
+      return node.closest(selector);
+    }
+    // if there is no parent `parentElement` will return null
+    // if we use `parentNode` here it can cause infinite loop
+    // for instance on node = document
+    return this.getClosest(node.parentElement, selector);
+  }
+
+  /**
+   * Helper to have mapping by '.page' declared only once
+   * @param node
+   */
+  getClosestPage(node: Node) {
+    return this.getClosest(node, '.page');
+  }
+
+  /**
+   * Helper to have mapping by '.page' declared only once
+   * @param node
+   */
+  getClosestPageNumber(node: Node): number {
+    const page = this.getClosestPage(node);
+    const pageView = Object.entries(this.pageRef).find(([pageNumber, p]) => p.div === page);
+    return pageView ? parseInt(pageView[0]) : -1;
+  }
+
+  /**
+   * Helper to have mapping by '.textLayer' declared only once
+   * @param node
+   */
+  getClosestTextLayer(node: Node) {
+    return this.getClosest(node, '.textLayer');
+  }
+
   /**
    * Position the annotation toolbar.
    */
-  private placeFrictionlessAnnotationToolbar() {
-    const popoverEl: HTMLElement = this.frictionlessAnnotationToolbarRef.nativeElement;
-    if (this.firstFrictionlessAnnotationRange != null && this.firstFrictionlessAnnotationRange.getClientRects().length) {
-      const position = getBoundingClientRectRelativeToContainer(
-        this.firstFrictionlessAnnotationRange.getClientRects().item(0),
-        this.containerRef.nativeElement,
-      );
-      const height = popoverEl.offsetHeight;
-
-      popoverEl.style.position = 'absolute';
-      popoverEl.style.top = (position.top - height - 5) + 'px';
-      popoverEl.style.left = position.left + 'px';
+  private placeAnnotationToolbar(range: Range) {
+    if (range != null) {
+      const rangeRects = range.getClientRects();
+      if (rangeRects.length) {
+        const page = this.getClosestPage(range.startContainer);
+        const containerRect = page.getBoundingClientRect();
+        const rect = rangeRects.item(0);
+        this.annotationToolbarRef.instance.position = {
+          left: rect.left - containerRect.left,
+          top: rect.top - containerRect.top
+        };
+      }
     }
   }
 
@@ -1274,15 +1160,26 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
+  textLayerPortalOutlets: Map<number, DomPortalOutlet> = new Map();
+
+  createTextLayerPortalOutlet({pageNumber, textLayerDiv}: TextLayerBuilder) {
+    const portalOutlet = new DomPortalOutlet(
+      textLayerDiv,
+      this.cfr,
+      this.appRef,
+      this.injector
+    );
+    this.textLayerPortalOutlets.set(pageNumber, portalOutlet);
+  }
+
   /**
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
-  pageRendered(e: CustomEvent) {
+  pageRendered({pageNumber, source}: PDFPageRenderEvent) {
     this.allPages = this.pdf.numPages;
-    this.currentRenderedPage = (e as any).pageNumber;
-    const pageNum = (e as any).pageNumber;
-    const pdfPageView = (e as any).source;
-    this.processAnnotations(pageNum, pdfPageView);
+    this.currentRenderedPage = pageNumber;
+    this.createTextLayerPortalOutlet(source.textLayer);
+    this.processAnnotations(pageNumber, source);
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
@@ -1411,8 +1308,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   private detectPageFromRanges(ranges: Range[]): number | undefined {
     for (const range of ranges) {
-      const element: Element = ranges[0].commonAncestorContainer.parentElement;
-      const pageElement = element.closest('.page');
+      const element: Node = range.commonAncestorContainer;
+      const pageElement = this.getClosestPage(element);
       if (pageElement) {
         return parseInt(pageElement.getAttribute('data-page-number'), 10);
       }

@@ -44,7 +44,7 @@ class EnzymeChangeLog(ChangeLog):
 
     def add_index_change_set(self):
         id = f'Enzyme data initial load {self.date_tag}'
-        comment = "Create constraints and indexes for enzyme nodes"
+        comment = 'Create constraints and indexes for enzyme nodes'
         queries = self.create_indexes()
         query_str = '\n'.join(queries)
         changeset = ChangeSet(id, self.author, comment, query_str)
@@ -55,7 +55,7 @@ class EnzymeChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID, [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER])
+        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID, [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER], datasource='Enzyme')
         changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{ENZYME_FILE}')
         self.change_sets.append(changeset)
 

@@ -5,6 +5,7 @@ import re
 import typing
 import zipfile
 import tempfile
+from collections import namedtuple
 
 from base64 import b64encode
 
@@ -78,7 +79,10 @@ from neo4japp.constants import (
     DEFAULT_IMAGE_NODE_WIDTH,
     DEFAULT_IMAGE_NODE_HEIGHT,
     LogEventType,
-    IMAGE_BORDER_SCALE
+    IMAGE_BORDER_SCALE,
+    WATERMARK_DISTANCE,
+    WATERMARK_WIDTH,
+    WATERMARK_ICON_SIZE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -403,7 +407,7 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     :param folder_name: uuid of a temporary folder containing the images
     :returns: a modified svg file containing embedded images
     """
-    icon_data = get_icon_strings()
+    icon_data = get_icons_data()
     text_content = map_content.read().decode(BYTE_ENCODING)
     text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
     for image in images:
@@ -413,14 +417,15 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
-def get_icon_strings():
-    """ Lazy loading of the byte icon data from the PNG files
+def get_icons_data():
+    """
+    Lazy loading of the byte icon data from the PNG files
     """
     if ICON_DATA:
         return ICON_DATA
     else:
         for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
-                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape']:
+                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', 'lifelike']:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
                 ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
                                                        + b64encode(file.read()) \
@@ -625,7 +630,8 @@ def create_icon_node(node, params):
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
     :returns: modified params dict descriping icon label and a new dict describing the icon
-              itself
+              itself. Additionally, returns computed height of icon + label to set it
+              to a proper value
     """
     style = node.get('style', {})
     label = escape(node['label'])
@@ -635,6 +641,8 @@ def create_icon_node(node, params):
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
         * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
 
+    node_height = distance_from_the_label * 2 + float(ICON_SIZE)
+    node_height *= SCALING_FACTOR
     # Move the label below to make space for the icon node
     params['pos'] = (
         f"{node['data']['x'] / SCALING_FACTOR},"
@@ -678,7 +686,7 @@ def create_icon_node(node, params):
     icon_params['imagescale'] = 'true'
     icon_params['penwidth'] = '0.0'
     params['fontcolor'] = style.get("fillColor") or default_icon_color
-    return params, icon_params
+    return params, icon_params, node_height
 
 
 def create_relation_node(node, params):
@@ -794,6 +802,69 @@ def create_edge(edge, node_hash_type_dict):
     }
 
 
+def create_watermark(x_center, y):
+    """
+    Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
+    We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
+    :params:
+    :param x_center: middle of the pdf
+    :param y: position of the lowest node bottom on the pdf
+    :param lowest_node: details of the lowest node (used to get BBox)
+    returns:
+    3 dictionaries - each for one of the watermark elements
+    """
+    y += WATERMARK_DISTANCE
+    label_params = {
+        'name': 'watermark_node',
+        'label': 'Created by Lifelike',
+        'pos': (
+            f"{x_center / SCALING_FACTOR},"
+            f"{-y / SCALING_FACTOR}!"
+        ),
+        'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
+        'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
+        'fontcolor': 'black',
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fontsize': f"{DEFAULT_FONT_SIZE}",
+        'penwidth': '0.0',
+
+    }
+    url_params = {
+        'name': 'watermark_hyper',
+        'label': 'lifelike.bio',
+        'href': 'https://lifelike.bio',
+        'pos': (
+            f"{x_center / SCALING_FACTOR},"
+            f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR}!"
+        ),
+        'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
+        'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
+        'fontcolor': 'blue',
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fontsize': f"{DEFAULT_FONT_SIZE - 2}",
+        'penwidth': '0.0'
+    }
+    icon_params = {
+        'name': 'watermark_icon',
+        'label': '',
+        'pos': (
+            f"{(x_center - WATERMARK_WIDTH / 2.0 + WATERMARK_ICON_SIZE) / SCALING_FACTOR},"
+            f"{-y / SCALING_FACTOR}!"
+        ),
+        'penhwidth': '0.0',
+        'fixedsize': 'true',
+        'imagescale': 'both',
+        'shape': 'rect',
+        'image': ASSETS_PATH + 'lifelike.png',
+        'width': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
+        'height': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
+        'penwidth': '0.0'
+    }
+    return label_params, url_params, icon_params
+
+
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_MAP
     SHORTHAND = 'map'
@@ -861,6 +932,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
+        """
+        Generates the map as a file in provided format. While working with this, remember that:
+         - Most of the node parameters is optional (including width and height).
+         - Graphviz y-axis is inverted (starts at the top)
+         - SVG requires separate image embedding mechanism (get_icons_data)
+        """
         if format not in ('png', 'svg', 'pdf'):
             raise ExportFormatError()
 
@@ -908,11 +985,10 @@ class MapTypeProvider(BaseFileTypeProvider):
         # Sort the images to the front of the list to ensure that they do not cover other nodes
         nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
 
-        for node in nodes:
-            if self_contained_export:
-                # Store the coordinates of each node as map name node is based on them
-                x_values.append(node['data']['x'])
-                y_values.append(node['data']['y'])
+        for i, node in enumerate(nodes):
+            # Store the coordinates of each node as map name node and watermark are based on them
+            x_values.append(node['data']['x'])
+            y_values.append(node['data']['y'])
             # Store node hash->label for faster edge default type evaluation
             node_hash_type_dict[node['hash']] = node['label']
             style = node.get('style', {})
@@ -949,7 +1025,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if style.get('showDetail'):
                     params = create_detail_node(node, params)
                 else:
-                    params, icon_params = create_icon_node(node, params)
+                    params, icon_params, node_height = create_icon_node(node, params)
+                    # We need to set this to ensure that watermark is not intersect some edge cases
+                    nodes[i]['data']['height'] = node_height
                     # Create separate node with the icon
                     graph.node(**icon_params)
 
@@ -959,17 +1037,26 @@ class MapTypeProvider(BaseFileTypeProvider):
             params['href'] = set_node_href(node)
             graph.node(**params)
 
+        min_x = min(x_values, default=0)
+        min_y = min(y_values, default=0)
         if self_contained_export:
             # We add name of the map in left top corner to ease map recognition in linked export
             name_node_params = create_map_name_node()
             # Set outside of the function to avoid unnecessary copying of potentially big variables
             name_node_params['name'] = file.filename
             name_node_params['pos'] = (
-                f"{(min(x_values) - NAME_NODE_OFFSET) / SCALING_FACTOR},"
-                f"{-(min(y_values) - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-            ) if x_values else '0,0!'  # Failsafe to prevent errors on empty maps.
+                f"{(min_x - NAME_NODE_OFFSET) / SCALING_FACTOR},"
+                f"{(-min_y - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
+            )
 
             graph.node(**name_node_params)
+
+        lower_ys = list(map(lambda x: x['data']['y'] + x['data'].get(
+            'height', DEFAULT_NODE_HEIGHT) / 2.0, nodes))
+        max_x = max(x_values, default=0)
+        x_center = min_x + (max_x - min_x) / 2.0
+        for params in create_watermark(x_center, max(lower_ys, default=0)):
+            graph.node(**params)
 
         for edge in json_graph['edges']:
             edge_params = create_edge(edge, node_hash_type_dict)
@@ -1144,12 +1231,6 @@ class GraphTypeProvider(BaseFileTypeProvider):
 
         content.write(' '.join(list(string_list)))
         return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
-
-    def extract_metadata_from_content(self, file: Files, buffer: BufferedIOBase):
-        if not file.description:
-            data = json.loads(buffer.read())
-            description = data['graph']['description']
-            file.description = description
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
