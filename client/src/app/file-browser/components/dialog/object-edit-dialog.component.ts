@@ -242,10 +242,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.fileList = [];
     this.selectedFile = null;
     this.selectedFileIndex = -1;
-    this.form.get('contentUrl').setValue(null);
+    this.form.get('contentUrl').setValue('');
     this.form.get('contentSource').setValue(newId);
     this.form.get('contentValue').setValue(null);
-    this.form.get('filename').setValue(null);
+    this.form.get('filename').setValue('');
     this.filePossiblyAnnotatable = false;
     this.invalidInputs = false;
   }
