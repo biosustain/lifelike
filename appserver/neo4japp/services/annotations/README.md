@@ -31,6 +31,9 @@ docker-compose exec appserver flask create-lmdb
 # {'Protein', 'Disease', 'Compound', 'Phenotype', 'Pathway', 'Phenomena', 'Chemical', 'Species', 'Anatomy', 'Gene', 'Food'}
 docker-compose exec appserver flask create-lmdb --file-type Food
 ```
+Once the files are created, the version number needs to be updated in `neo4japp/lmdb_manager/lmdb_config.json`. This file is used during the deployment to pull the latest LMDB files. The LMDB files will then need to be uploaded to Azure in the correct folder, if a new version then make a new folder for it. The path on Azure is `lifelike > File shares > lmdb`, there you will see `v#` folders which is where you will put the LMDB files.
+
+I'm not sure if every function in `neo4japp/lmdb_manager/manager.py` is used (it was written by David B. and used with Ansible), but it does look overly complicated to me. It will probably need to be refactored - there are also JIRA cards to verify it actually works, since we rarely update our LMDB files.
 
 ## Architecture
 ![](annotation-pipeline.png)
