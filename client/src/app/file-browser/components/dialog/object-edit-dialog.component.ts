@@ -172,8 +172,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   applyValue(value: ObjectEditDialogValue) {
-    console.log('applying value');
-    console.log(value.objectChanges);
     Object.assign(this.object, value.objectChanges);
   }
 
