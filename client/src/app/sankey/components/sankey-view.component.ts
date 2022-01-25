@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact } from 'lodash-es';
+import { isNil, pick, compact, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -92,7 +92,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       combineLatest([
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
-          tap(x => console.log('getContent', x)),
+          // tap(x => console.log('getContent', x)),
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
@@ -144,6 +144,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
     this.dataToRender$.subscribe(data => {
       this._dynamicInstances.get('sankey').data = data;
+    });
+
+    this.sankeyBaseViewControl$.pipe(
+      switchMap(({graphInputState$}) => graphInputState$)
+    ).subscribe(inputState => {
+      assign(this._dynamicInstances.get('sankey'), inputState);
     });
   }
 

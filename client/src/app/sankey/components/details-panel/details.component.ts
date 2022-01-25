@@ -30,7 +30,7 @@ export class SankeyDetailsComponent {
       map(networkTrace => {
         const {project_name, file_id} = this.route.snapshot.params;
         const hash = CryptoJS.MD5(JSON.stringify({
-          ...networkTrace,
+          ...(networkTrace as object),
           traces: [],
           source: trace.source,
           target: trace.target
