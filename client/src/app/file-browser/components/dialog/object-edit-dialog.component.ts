@@ -274,7 +274,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           description: '',
           public: false,
           organism: null,
-          annotationaConfigs: {
+          annotationsConfigs: {
             annotationMethods: this.defaultAnnotationMethods,
             excludeReferences: true
           }
