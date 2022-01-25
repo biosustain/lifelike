@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, combineLatest, ReplaySubject } from 'rxjs';
+import { Observable, combineLatest } from 'rxjs';
 import { map, tap, shareReplay, filter, switchMap } from 'rxjs/operators';
 import { merge, omit } from 'lodash-es';
 
@@ -28,7 +28,7 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
   }
 
   networkTraceData$;
-  baseDefaultState;
+  baseDefaultState$;
   baseDefaultOptions;
   viewBase;
   options$: Observable<SankeyOptions & Options>;
@@ -38,6 +38,7 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
   linkValueAccessor$: Observable<ValueGenerator>;
   predefinedValueAccessor$;
   dataToRender$;
+  graphInputState$: Observable<any>;
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
@@ -47,13 +48,17 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
       map(options => merge({}, options, this.baseDefaultOptions)),
     );
 
-    this.defaultState$ = this.c.defaultState$.pipe(
-      map(state => merge({}, state, this.baseDefaultState))
+    // @ts-ignore
+    this.defaultState$ = combineLatest([
+      this.c.defaultState$,
+      this.baseDefaultState$
+    ]).pipe(
+      map(states => merge({}, ...states))
     );
 
     this.state$ = combineLatest([this.c.stateDelta$, this.defaultState$]).pipe(
       map(([delta, defaultState]) => merge({}, defaultState, delta)),
-      tap(s => console.log('state update', s)),
+      tap(s => console.warn('state update', s)),
       shareReplay(1)
     );
 
@@ -110,6 +115,7 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
       this.linkValueAccessor$.pipe(tap(d => console.log('linkGraph linkValueAccessor', d))),
       this.c.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
     ]).pipe(
+      tap(console.log),
       filter(params => params.every(param => !!param)),
       map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
 
