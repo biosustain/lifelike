@@ -22,6 +22,7 @@ import { AnnotationEditDialogComponent } from './components/annotation-edit-dial
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 import { FileViewComponent } from './components/file-view.component';
+import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { FileViewComponent } from './components/file-view.component';
     AnnotationEditDialogComponent,
     AnnotationExcludeDialogComponent,
     FileViewComponent,
+    AnnotationToolbarComponent,
   ],
   imports: [
     PdfViewerModule,

@@ -1,8 +1,13 @@
 import { PRESCALERS } from 'app/sankey-viewer/components/algorithms/prescalers';
 import { LINK_PALETTES } from 'app/sankey-viewer/components/color-palette';
-import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
+
+// Re-export the interfaces which are defined separately for DOMless ussage
+import { SankeyTrace, SankeyNode, SankeyLink } from './pure_interfaces';
+
+export * from './pure_interfaces';
 
 // region UI options
 export interface ValueAccessor {
@@ -118,59 +123,6 @@ export interface SankeyState {
 
 // endregion
 
-// region Graph as Sankey
-// Add properties used internally to compute layout
-export type SankeyId = string | number;
-
-export interface SankeyNode extends GraphNode {
-  // Temp definitions to fix LL-3499
-  sourceLinks?: Array<SankeyLink>;
-  targetLinks?: Array<SankeyLink>;
-  // End temp definitions
-
-  _id: SankeyId;
-  _index?: number | string;
-  _sourceLinks?: Array<SankeyLink>;
-  _targetLinks?: Array<SankeyLink>;
-  _y0?: number;
-  _y1?: number;
-  _x0?: number;
-  _x1?: number;
-  _depth?: number;
-  _reversedDepth?: number;
-  _height?: number;
-  _value?: number;
-  _fixedValue?: number;
-  _layer?: number;
-  _color?: string;
-  _order?: number;
-}
-
-export interface SankeyLink extends GraphLink {
-  l: number[];
-  _id: SankeyId;
-  _trace?: SankeyTrace;
-  _source?: SankeyNode | string | number;
-  _target?: SankeyNode | string | number;
-  _sourceLinks?: SankeyLink[];
-  _targetLinks?: SankeyLink[];
-  _width?: number;
-  _y0?: number;
-  _y1?: number;
-  _multiple_values?: [number, number];
-  _adjacent_divider?: number;
-  _circularLinkID?: number;
-  _circular?: boolean;
-  _folded?: boolean;
-  _value: number;
-  _order?: number;
-  _color?: string;
-}
-
-export interface SankeyTrace extends GraphTrace {
-  _color: string;
-  _group: GraphTrace['group'] | string;
-}
 
 export interface SankeyTraceNetwork extends GraphTraceNetwork {
   traces: Array<SankeyTrace>;
@@ -191,6 +143,7 @@ export interface SankeyNodesOverwrites {
 export interface SankeyView {
   state: object & SankeyState;
   base: string;
+  size: { width: number, height: number };
   nodes: SankeyNodesOverwrites;
   links: SankeyLinksOverwrites;
 }
@@ -217,13 +170,15 @@ export interface SankeyData extends GraphFile {
 export enum SankeyURLLoadParam {
   NETWORK_TRACE_IDX = 'network_trace',
   VIEW_NAME = 'view',
-  BASE_VIEW_NAME = 'base_view'
+  BASE_VIEW_NAME = 'base_view',
+  SEARCH_TERMS = 'search_terms'
 }
 
 export interface SankeyURLLoadParams {
   [SankeyURLLoadParam.NETWORK_TRACE_IDX]: number;
   [SankeyURLLoadParam.VIEW_NAME]?: string;
   [SankeyURLLoadParam.BASE_VIEW_NAME]?: string;
+  [SankeyURLLoadParam.SEARCH_TERMS]?: string;
 }
 
 // region Selection
@@ -264,3 +219,7 @@ export enum ViewBase {
   sankeyManyToMany = 'sankey-many-to-many'
 }
 
+export interface ViewSize {
+  width: number;
+  height: number;
+}

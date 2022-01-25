@@ -24,12 +24,13 @@ import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanc
 import { SankeyDetailsPanelModule } from './components/details-panel/sankey-details-panel.module';
 import { PathReportComponent } from './components/path-report/path-report.component';
 import { SankeySearchPanelModule } from './components/search-panel/sankey-search-panel.module';
+import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 
 @NgModule({
   declarations: [
     SankeyViewComponent,
     SankeyAdvancedPanelComponent,
-    PathReportComponent
+    PathReportComponent,
   ],
   imports: [
     CommonModule,
@@ -51,7 +52,8 @@ import { SankeySearchPanelModule } from './components/search-panel/sankey-search
     SankeyModule,
     SankeyDetailsPanelModule,
     SankeySearchPanelModule,
-    SharedSankeyModule
+    SharedSankeyModule,
+    SankeySearchControlModule
   ],
   exports: [
     SankeyViewComponent

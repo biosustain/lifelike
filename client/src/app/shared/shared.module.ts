@@ -83,6 +83,7 @@ import { ModuleHeaderComponent } from './components/module-header/module-header.
 import { ModuleMenuComponent } from './components/module-menu/module-menu.component';
 import { WarningListComponent } from './components/warning-list/warning-list.component';
 import { WarningPillComponent } from './components/warning-pill/warning-pill.component';
+import { BaseControlComponent } from './components/base-control.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -120,6 +121,7 @@ const components = [
   AnnotationConfigurationTableComponent,
   HighlightTextComponent,
   TermHighlightComponent,
+  BaseControlComponent,
   SearchControlComponent,
   UserComponent,
   SelectInputComponent,

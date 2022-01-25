@@ -1,16 +1,8 @@
-import {
-  Component,
-  Input,
-  ViewEncapsulation,
-  Output,
-  EventEmitter,
-  ViewChildren,
-  OnChanges,
-  SimpleChanges,
-  ElementRef
-} from '@angular/core';
+import { Component, ViewEncapsulation, ViewChildren, ElementRef } from '@angular/core';
 
-import { SearchEntity } from './interfaces';
+import { combineLatest } from 'rxjs';
+
+import { SankeySearchService } from '../../services/search.service';
 
 @Component({
   selector: 'app-sankey-search-panel',
@@ -18,22 +10,33 @@ import { SearchEntity } from './interfaces';
   styleUrls: ['./search-panel.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class SankeySearchPanelComponent implements OnChanges {
-  @Input() entities: SearchEntity[];
-  @Input() searchTerms: string[];
-  @Input() focusedIdx: number;
-  @Output() focusedIdxChange = new EventEmitter<number>();
+export class SankeySearchPanelComponent {
+  constructor(
+    public search: SankeySearchService
+  ) {
+    combineLatest([
+      this.search.entitySearchList,
+      this.search.entitySearchListIdx
+    ]).subscribe(([
+                    entities,
+                    focusedIdx
+                  ]) => {
+        this.scrollIntoView(focusedIdx);
+      }
+    );
+  }
+
   @ViewChildren('item', {read: ElementRef}) listItems;
 
-  ngOnChanges({focusedIdx, entities}: SimpleChanges): void {
-    if (focusedIdx && this.listItems) {
-      const itemNode = this.listItems.toArray()[focusedIdx.currentValue];
+  scrollIntoView(focusedIdx): void {
+    if (focusedIdx >= 0 && this.listItems) {
+      const itemNode = this.listItems.toArray()[focusedIdx];
       if (itemNode) {
         const {nativeElement} = itemNode;
         if (nativeElement.scrollIntoViewIfNeeded) {
           nativeElement.scrollIntoViewIfNeeded();
         } else {
-          itemNode.nativeElement.scrollIntoView(true);
+          nativeElement.scrollIntoView(true);
         }
       }
     }

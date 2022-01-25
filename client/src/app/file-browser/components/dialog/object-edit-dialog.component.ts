@@ -3,12 +3,14 @@ import {FormControl, FormGroup, ValidationErrors, Validators} from '@angular/for
 
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
-import {MessageDialog} from 'app/shared/services/message-dialog.service';
-import {CommonFormDialogComponent} from 'app/shared/components/dialog/common-form-dialog.component';
-import {OrganismAutocomplete} from 'app/interfaces';
-import {AnnotationMethods, NLPANNOTATIONMODELS} from 'app/interfaces/annotation';
-import {ENTITY_TYPE_MAP} from 'app/shared/annotation-types';
-import {filenameValidator, validFilenameRegex} from 'app/shared/validators';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { OrganismAutocomplete } from 'app/interfaces';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { filenameValidator, validFilenameRegex } from 'app/shared/validators';
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION, MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
+import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
 import {FilesystemObject} from '../../models/filesystem-object';
 import {AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest} from '../../schema';
@@ -35,6 +37,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
 
+
   fileList: FileInput[] = [];
   selectedFile: FileInput = null;
   selectedFileIndex;
@@ -56,7 +59,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     contentUrl: new FormControl(''),
     parent: new FormControl(null),
     filename: new FormControl('', [Validators.required, filenameValidator]),
-    description: new FormControl(),
+    description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
     public: new FormControl(false),
     annotationConfigs: new FormGroup(
       {
@@ -145,17 +148,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
     }
-
-    // const file = {
-    //   filename: value.filename || '',
-    //   formState: this.form.value,
-    //   hasValidFilename: !this.form.get('filename').hasError('filenameError'),
-    //   // If there are configs, the file is most likely annotable
-    //   filePossiblyAnnotatable: annotationConfigs !== null
-    // };
-    // this.selectedFile = file;
-    // this.fileList.push(file);
-    // this.selectedFileIndex = this.fileList.length - 1;
   }
 
   get possiblyAnnotatable(): boolean {
@@ -272,6 +264,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const oldFilename = this.form.get('filename').value;
     for (const targetFile of event.target.files) {
       const filename = targetFile.name;
+      this.extractDescription(targetFile, filename.split('.').pop()).then(description => {
+        this.form.get('description').setValue(description);
+        this.form.get('description').markAsDirty();
+      });
       this.form.get('filename').setValue(filename);
       const fileEntry: FileInput = {
         formState: {
@@ -349,6 +345,34 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       const isMap = s.match(/\.json$/i);
       return 'document' + (isMap ? '' : '.pdf');
     }
+  }
+
+  private extractDescription(file: File, format: string): Promise<string> {
+     if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
+       return file.text().then(text => {
+          if (format === 'graph') {
+            return extractDescriptionFromSankey(text);
+          }
+          // TODO: Do we want to map here?
+       });
+     }
+     return Promise.resolve('');
+  }
+
+  private getDocumentPossibility(file): Promise<boolean> {
+    // Too big, assume it could be a document
+    if (file.size >= 1024 * 500) {
+      return Promise.resolve(true);
+    }
+
+    return file.text().then(text => {
+      try {
+        JSON.parse(text);
+        return false;
+      } catch (e) {
+        return true;
+      }
+    });
   }
 
   showFileDialog() {

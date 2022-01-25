@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { partition } from 'lodash-es';
 
 import {
   GraphEntity,
@@ -240,15 +239,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         .subscribe(this.canvasKeyDown.bind(this)),
     );
 
-    this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'dragover')
-        .subscribe(this.canvasDragOver.bind(this)),
-    );
+    // We already have callbacks for these events in the map-editor component, so these produce potentially redundant behavior. It's likely
+    // there were plans to consolidate these that we never implemented. Disabling these for now to avoid undefined behavior.
+    // this.trackedSubscriptions.push(
+    //   fromEvent(this.canvas, 'dragover')
+    //     .subscribe(this.canvasDragOver.bind(this)),
+    // );
 
-    this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'drop')
-        .subscribe(this.canvasDrop.bind(this)),
-    );
+    // this.trackedSubscriptions.push(
+    //   fromEvent(this.canvas, 'drop')
+    //     .subscribe(this.canvasDrop.bind(this)),
+    // );
 
     this.trackedSubscriptions.push(
       fromEvent(document, 'paste')
@@ -478,9 +479,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.getEntityAtPosition(x, y);
   }
 
+  /**
+   * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
+   * we need to evaluate the click according to the display order:
+   * Nodes > Edges > Images
+   * @param x - x position
+   * @param y - y position
+   */
   getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
     const node = this.getNodeAtPosition(this.nodes, x, y);
-    if (node) {
+    // If the node is NOT an image, we return it
+    if (node && node.label !== 'image') {
       return {
         type: GraphEntityType.Node,
         entity: node,
@@ -491,6 +500,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       return {
         type: GraphEntityType.Edge,
         entity: edge,
+      };
+    }
+    // This node could only be image - as it is rendered below the edges, we need to
+    // Check and return edge first
+    if (node) {
+      return {
+        type: GraphEntityType.Node,
+        entity: node,
       };
     }
     return undefined;
@@ -790,17 +807,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    */
   * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
-    // Divide the nodes into two arrays - images, and regular (non-image) nodes.
-    const [images, nonImages] = partition(this.nodes, node => {
-      return node.label === 'image';
-    });
+
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
-    // We want to render images first, so we could place other nodes on top and prevent them from covering edges
-    yield* this.drawNodes(ctx, images);
     yield* this.drawEdges(ctx);
-    yield* this.drawNodes(ctx, nonImages);
+    yield* this.drawNodes(ctx);
     yield* this.drawHighlightBackground(ctx);
     yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawSearchFocusBackground(ctx);
@@ -918,8 +930,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawNodes(ctx: CanvasRenderingContext2D, nodes: UniversalGraphNode[]) {
-    for (const d of nodes) {
+  private* drawNodes(ctx: CanvasRenderingContext2D) {
+    for (const d of this.nodes) {
       yield null;
       ctx.beginPath();
       this.placeNode(d).draw(this.transform);
@@ -1107,21 +1119,23 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.requestRender();
   }
 
-  canvasDragOver(event): void {
-    const behaviorEvent = {
-      // event,
-      event: d3.event,
-    };
-    this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
-  }
+  // See the comment in the constructor above regarding these callbacks. Disabling for now to avoid undefined behavior.
+  // canvasDragOver(event): void {
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
+  // }
 
-  canvasDrop(event): void {
-    const behaviorEvent = {
-      // event,
-      event: d3.event,
-    };
-    this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
-  }
+  // canvasDrop(event): void {
+  //   console.log('canvasDrop');
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
+  // }
 
   documentPaste(event): void {
     const behaviorEvent = {

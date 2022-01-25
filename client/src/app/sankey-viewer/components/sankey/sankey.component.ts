@@ -17,15 +17,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { compact } from 'lodash-es';
+import { compact, isObject } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/shared-sankey/interfaces';
+import { SankeyData, SankeyNode, SankeyLink, SankeyId, ViewSize } from 'app/shared-sankey/interfaces';
 
 import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
+
 
 @Component({
   selector: 'app-sankey',
@@ -86,6 +87,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Output() backgroundClicked = new EventEmitter();
   @Output() enter = new EventEmitter();
   @Output() adjustLayout = new EventEmitter();
+  @Output() resized = new EventEmitter<ViewSize>();
 
   @Input() normalizeLinks = true;
   @Input() selectedNodes = new Set<object>();
@@ -288,6 +290,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
     this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
     const [innerWidth, innerHeight] = this.sankey.size;
+
+    this.resized.emit({width: innerWidth, height: innerHeight});
 
     const parsedData = innerHeight / prevInnerHeight === 1 ?
       this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
@@ -748,6 +752,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
           this.sankey.calcLayout(data);
+        }
+        if (isObject(data._precomputedLayout)) {
+          const [currentWidth, currentHeight] = this.sankey.size;
+          const {width = currentWidth, height = currentHeight} = data._precomputedLayout;
+          this.zoom.scaleTo(
+            this.sankeySelection,
+            Math.min(
+              currentWidth / width,
+              currentHeight / height
+            ),
+            [0, 0]
+          );
         }
         resolve(data);
       }
