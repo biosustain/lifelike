@@ -1,6 +1,6 @@
-MIT License
+MIT License (Modified for attribution)
 
-Copyright (c) 2021 Novo Nordisk Foundation Center for Biosustainability
+Copyright (c) 2022 Novo Nordisk Foundation Center for Biosustainability
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+It must include the following content on all end-user GUI elements, such as page footers:
+
+ - Textual legend: "This project uses code provided by Lifelike.bio"
+ - Embeded Lifelike logo image taken from: <https://github.com/SBRG/***ARANGO_DB_NAME***-website/raw/main/***ARANGO_DB_NAME***.png>
+ - Link to Lifelike public GitHub repository: <https://github.com/SBRG/***ARANGO_DB_NAME***>
