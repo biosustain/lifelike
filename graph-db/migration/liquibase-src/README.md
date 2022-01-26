@@ -107,7 +107,7 @@ total 27112
 ### Custom Java Classes
 Some of our queries are advance queries or require some sort of data file parsing that liquibase does not have support for. To workaround this, we created `*Handler.java` Java classes (located in `migration/liquibase-src`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
 
-NOTE: If you do not have `mvn` command, run `brew install maven`.
+NOTE: If you do not have the `mvn` command, run `brew install maven`.
 
 ```bash
 cd migration/liquibase-src
