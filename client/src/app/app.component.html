@@ -44,6 +44,10 @@
         <i class="fa fa-comment"></i>
       </a>
 
+      <a class="dropdown-item" [routerLink]="['/policies']" placement="right" triggers="hover" ngbTooltip="Policies">
+        <i class="fas fa-file-alt"></i>
+      </a>
+
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
           <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
