@@ -134,7 +134,7 @@ Local inclusions/exclusions are stored in Postgres, as well as global exclusions
 
 The global inclusions are stored in Neo4j under the label `:GlobalInclusion` if they do not map to any existing nodes, otherwise use that existing node and create a new synonym relationship with it.
 
-Because we do not curate before they're added to Neo4j, a user can potentially create a bad global inclusion. To correctly delete, we need the property `original_entity_types` so we don't accidentally delete the wrong thing.
+Because we do not curate before they're added to Neo4j, a user can potentially create a bad global inclusion. To correctly delete, we need the property `original_entity_types` so we don't accidentally delete the wrong thing. See https://sbrgsoftware.atlassian.net/browse/LL-3625 for more information.
 
 ## NLP Service
 The NLP is deployed separately, and is an optional choice in the annotation pipeline. It currently only supports Gene, Chemical and Disease.
