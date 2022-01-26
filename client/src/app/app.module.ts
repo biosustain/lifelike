@@ -35,6 +35,7 @@ import { SankeyViewerLibModule } from 'app/sankey-viewer/sankey-viewer-lib.modul
 import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/sankey-viewer-lib.module';
 import { FileTypesModule } from 'app/file-types/file-types.module';
+import { PoliciesModule } from 'app/policies/policies.module';
 
 function initializeKeycloak(keycloak: KeycloakService) {
   return () =>
