@@ -1,12 +1,32 @@
 # Migrations
 
 ## Table of Contents
+* [Liquibase Setup](#liquibase-setup)
 * [What The Folders Mean](#what-the-folders-mean)
 * [Why Use Migrations](#why-use-migration)
 * [How Liquibase Works](#how-liquibase-works)
 * [Checking Migration Version Logs](#checking-migration-version-logs)
 * [Rolling Back](#rolling-back)
 * [Running Migrations](#running-migrations)
+
+## Liquibase Setup
+This setup step is similar to the `README.md` in the `liquibase-src` folder.
+
+### Linux
+Java needs to be installed, so depending on the operating system the install command is: `sudo apt-get update && sudo apt-get install openjdk-11-jdk`.
+
+Next, create the folder `/opt/liquibase` if it does not exist.
+
+Download these dependency files:
+- `https://github.com/liquibase/liquibase/releases/download/v<replace_with_version>/liquibase-<replace_with_version>.tar.gz`
+  - Unarchive the file, and move the contents into `opt/liquibase`.
+- `https://github.com/liquibase/liquibase-neo4j/releases/download/liquibase-neo4j-<replace_with_version>/liquibase-neo4j-<replace_with_version>.jar`
+  - Download to `opt/liquibase/lib`.
+- `https://github.com/neo4j-contrib/neo4j-jdbc/releases/download/<replace_with_version>/neo4j-jdbc-driver-<replace_with_version>.jar`
+  - Download to `opt/liquibase/lib`.
+
+### Mac OS
+See `README.md` in the `liquibase-src` folder.
 
 ## What The Folders Mean
 `***ARANGO_DB_NAME***-graph`
