@@ -216,7 +216,7 @@ SET n:TranscriptionUnit,n.regulondb_id=row.regulondb_id,n.name=row.name,n.commen
 MATCH (a:db_RegulonDB {eid: row.promoter_id}), (b:db_RegulonDB {eid: row.transcription_unit_id})
 MERGE (a)-[r:ELEMENT_OF]->(b)
       "
-      fileName="jira-LL-3218-promoter_to_transcription_unit.zip"
+      fileName="jira-LL-3218-promoter_to_transcription_unit_link.zip"
       startAt="1"
       fileType="TSV" 
       neo4jHost="${neo4jHost}"
@@ -240,7 +240,7 @@ MERGE (a)-[r:ELEMENT_OF]->(b)
 MATCH (a:db_RegulonDB {eid: row.transcription_unit_id}), (b:db_RegulonDB {eid: row.operon_id})
 MERGE (a)-[r:ELEMENT_OF]->(b)
       "
-      fileName="jira-LL-3218-transcription_unit_to_operon.zip"
+      fileName="jira-LL-3218-transcription_unit_to_operon_link.zip"
       startAt="1"
       fileType="TSV" 
       neo4jHost="${neo4jHost}"
