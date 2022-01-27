@@ -11,7 +11,7 @@ import { openModal } from '../utils/modals';
 
 export interface ProgressDialogArguments {
   title: string;
-  progressObservable: Observable<Progress>;
+  progressObservable: Observable<Progress> | Observable<Progress>[];
   onCancel?: () => void;
 }
 

@@ -37,7 +37,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
 
-  readonly maxFileCount = 10;
+  readonly maxFileCount = 7;
 
   fileList: FileInput[] = [];
   selectedFile: FileInput = null;
