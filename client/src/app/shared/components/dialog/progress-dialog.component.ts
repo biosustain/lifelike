@@ -16,30 +16,45 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 })
 export class ProgressDialogComponent implements OnInit, OnDestroy {
   @Input() title: string;
-  @Input() progressObservable: Observable<Progress>;
+  @Input()
+  set progressObservable(observables: Observable<Progress>[] | Observable<Progress>) {
+    if (observables != null) {
+      this.progressObservables = Array.isArray(observables) ? observables : [observables];
+    } else {
+      this.progressObservables = [];
+    }
+  }
+
   @Input() cancellable = false;
   @Output() readonly progressCancel = new EventEmitter<any>();
-  progressSubscription: Subscription;
+  progressSubscriptions: Subscription[] = [];
   /**
    * Periodically updated with the progress of the upload.
    */
-  lastProgress: Progress = new Progress();
+  lastProgresses: Progress[] = [];
+
+  progressObservables: Observable<Progress>[];
+
 
   constructor(public activeModal: NgbActiveModal) {
   }
 
   ngOnInit() {
-    this.progressSubscription = this.progressObservable
-      .pipe(throttleTime(250, asyncScheduler, {
-        leading: true,
-        trailing: true,
-      })) // The progress bar cannot be updated more than once every 250ms due to its CSS animation
-      .subscribe(value => this.lastProgress = value);
+    for (let i = 0; i < this.progressObservables.length; i++) {
+      const progressObservable = this.progressObservables[i];
+      this.lastProgresses.push(new Progress());
+      this.progressSubscriptions[i] = progressObservable
+        .pipe(throttleTime(250, asyncScheduler, {
+          leading: true,
+          trailing: true,
+        })) // The progress bar cannot be updated more than once every 250ms due to its CSS animation
+        .subscribe(value => this.lastProgresses[i] = value);
+    }
   }
 
   ngOnDestroy() {
-    if (this.progressSubscription != null) {
-      this.progressSubscription.unsubscribe();
+    for (const progressSubscription of this.progressSubscriptions) {
+      progressSubscription.unsubscribe();
     }
   }
 
