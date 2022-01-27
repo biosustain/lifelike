@@ -56,7 +56,7 @@ export class ObjectCreationService {
    */
   executePutWithProgressDialog(requests: ObjectCreateRequest[],
                                annotationOptions: PDFAnnotationGenerationRequest[]):
-    Observable<FilesystemObject>[] {
+    Observable<FilesystemObject> {
     const progressObservable = [];
     for (const req of requests) {
       progressObservable.push(new BehaviorSubject<Progress>(new Progress({
@@ -67,11 +67,11 @@ export class ObjectCreationService {
       title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
       progressObservable,
     });
-    const promiseList = [];
-    for (let i = 0; i < requests.length; i++) {
-      let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
-      const request = requests[i];
-      promiseList.push(this.filesystemService.create(request)
+    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
+    let i = -1;
+    return from(requests).pipe(mergeMap(request => {
+      i++;
+      return this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
@@ -118,14 +118,8 @@ export class ObjectCreationService {
           );
         }),
         this.errorHandler.create({label: 'Create object'}),
-      ));
-    }
-    this.subscription = forkJoin(promiseList).subscribe(_ => {
-      progressDialogRef.close();
-    }, ( error ) => {
-      progressDialogRef.close();
-    });
-    return promiseList;
+      );
+    }));
   }
 
   /**
@@ -151,7 +145,7 @@ export class ObjectCreationService {
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
-      return this.executePutWithProgressDialog(requests, [])[0].toPromise();
+      return this.executePutWithProgressDialog(requests, []).toPromise();
     });
     return dialogRef.result;
   }
