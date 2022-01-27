@@ -8,7 +8,7 @@
 
     <ng-container *ngIf="promptUpload">
       <ul ngbNav #nav="ngbNav" class="nav-tabs" [activeId]="form.get('contentSource').value"
-          (activeIdChange)="activeTabChanged($event)">
+          (navChange)="activeTabChanged($event)">
         <li ngbNavItem="contentValue">
           <a ngbNavLink>From Device</a>
           <ng-template ngbNavContent>
