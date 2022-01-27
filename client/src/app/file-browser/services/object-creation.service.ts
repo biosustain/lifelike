@@ -145,7 +145,11 @@ export class ObjectCreationService {
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
-      return this.executePutWithProgressDialog(requests, []).toPromise();
+      const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
+        organism: request.fallbackOrganism,
+        annotationConfigs: request.annotationConfigs
+      }));
+      return this.executePutWithProgressDialog(requests, annotationOptions).toPromise();
     });
     return dialogRef.result;
   }
