@@ -144,7 +144,15 @@ export class ObjectCreationService {
       }
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
-      const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
+
+      const requests = value.uploadRequests.length ? value.uploadRequests : [{
+        ...value.request,
+        ...(options.request || {}),
+        // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
+        // via the type checker, that we will be forming a 100% legitimate request,
+        // because it's possible to provide multiple sources of content due to this cast, which
+        // the server will reject because it does not make sense
+      } as ObjectCreateRequest];
       const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
         organism: request.fallbackOrganism,
         annotationConfigs: request.annotationConfigs
