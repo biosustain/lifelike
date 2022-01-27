@@ -3,14 +3,25 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {BehaviorSubject, Observable, iif, of, merge, pipe, from, EMPTY, forkJoin} from 'rxjs';
 import {
-  catchError,
+  BehaviorSubject,
+  Observable,
+  iif,
+  of,
+  merge,
+  pipe,
+  from,
+  EMPTY,
+  forkJoin,
+  ReplaySubject
+} from 'rxjs';
+import {
+  catchError, concatAll,
   concatMap,
   filter,
   finalize,
   map,
-  mergeMap,
+  mergeMap, share, shareReplay,
   switchMap,
   tap
 } from 'rxjs/operators';
@@ -69,7 +80,8 @@ export class ObjectCreationService {
     });
     let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
     let i = -1;
-    const obs = from(requests).pipe(mergeMap(request => {
+    const obsList = [];
+    obsList.push(from(requests).pipe(concatMap(request => {
       i++;
       return this.filesystemService.create(request)
       .pipe(
@@ -119,11 +131,11 @@ export class ObjectCreationService {
         }),
         this.errorHandler.create({label: 'Create object'}),
       );
-    }));
-    this.subscription = obs.subscribe( () => {
+    })).pipe(share()));
+    this.subscription = forkJoin(obsList).subscribe(_ => {
       progressDialogRef.close();
     });
-    return obs;
+    return obsList.pop();
   }
 
   /**
