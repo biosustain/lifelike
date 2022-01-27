@@ -79,11 +79,11 @@ export class ObjectCreationService {
       progressObservable,
     });
     let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
-    let i = -1;
     const obsList = [];
-    obsList.push(from(requests).pipe(concatMap(request => {
-      i++;
-      return this.filesystemService.create(request)
+    for (let i = 0; i < requests.length; i++) {
+      const request = requests[i];
+      const annotationOption = annotationOptions[i] || {};
+      obsList.push(this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
@@ -112,7 +112,7 @@ export class ObjectCreationService {
             status: 'Saved; Parsing and identifying annotations...',
           }));
           const annotationsService = this.annotationsService.generateAnnotations(
-            [object.hashId], annotationOptions[i] || {},
+            [object.hashId], annotationOption || {},
           ).pipe(map(res => {
             const check = Object.entries(res.mapping).map(r => r[1].success);
             if (check.some(c => c === false)) {
@@ -130,10 +130,14 @@ export class ObjectCreationService {
           );
         }),
         this.errorHandler.create({label: 'Create object'}),
-      );
-    })).pipe(share()));
+        share()
+      ));
+    }
     this.subscription = forkJoin(obsList).subscribe(_ => {
       progressDialogRef.close();
+    }, ( error ) => {
+      progressDialogRef.close();
+      console.error(error);
     });
     return obsList.pop();
   }
