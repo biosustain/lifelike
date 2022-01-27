@@ -110,7 +110,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                   organism: {
                     organism_name: document.organism,
                     synonym: document.organism,
-                    tax_id: document.taxID}}])[0]
+                    tax_id: document.taxID}}])
                 )),
               finalize(() => progressDialogRef.close()),
             ).toPromise();
