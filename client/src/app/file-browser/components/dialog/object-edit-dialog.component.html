@@ -12,7 +12,7 @@
         <li ngbNavItem="contentValue">
           <a ngbNavLink>From Device</a>
           <ng-template ngbNavContent>
-            <app-form-row for="content-value" label="File" [control]="form.get('contentValue')">
+            <app-form-row for="content-value" label="Add files" [control]="form.get('contentValue')">
               <div class="d-flex align-items-center text-truncate">
                 <button type="button" class="btn btn-secondary mr-2" (click)="showFileDialog()">
                   Browse...
@@ -22,8 +22,10 @@
                      class="d-none" multiple #fileInput>
             </app-form-row>
               <table class="table" style="table-layout: fixed" *ngIf="fileList.length">
-                <caption *ngIf="fileList.length > 1">Click on row to inspect and edit properties.</caption>
-                <caption class="alert-danger" *ngIf="fileList.length >= maxFileCount">
+                <caption class="pa2-l" *ngIf="fileList.length > 1">
+                  Click on the row to inspect and edit properties.
+                </caption>
+                <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
                    You can only upload {{maxFileCount}} files at once.
                 </caption>
                 <colgroup>
