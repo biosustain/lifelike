@@ -1,7 +1,7 @@
 import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
 
-import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbModal, NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -234,17 +234,18 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     this.form.get('organism').setValue(organism ? organism : null);
   }
 
-  activeTabChanged(newId) {
+  activeTabChanged(event: NgbNavChangeEvent) {
     if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
       if (!confirm('Are you sure? Your progress will be lost!')) {
-       return;
+        event.preventDefault();
+        return;
       }
     }
     this.fileList = [];
     this.selectedFile = null;
     this.selectedFileIndex = -1;
     this.form.get('contentUrl').setValue('');
-    this.form.get('contentSource').setValue(newId);
+    this.form.get('contentSource').setValue(event.nextId);
     this.form.get('contentValue').setValue(null);
     this.form.get('filename').setValue('');
     this.filePossiblyAnnotatable = false;
