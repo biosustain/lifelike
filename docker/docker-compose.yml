@@ -3,7 +3,7 @@ version: "3.9"
 services:
   ## Frontend web server
   webserver:
-    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-webserver:latest
+    image: ${IMAGE_REGISTRY:-us.gcr.io/able-goods-221820}/***ARANGO_DB_NAME***-webserver:${WEBSERVER_IMAGE_TAG:-latest}
     restart: unless-stopped
     container_name: webserver
     environment:
@@ -15,14 +15,13 @@ services:
 
   ## Backend application server
   appserver:
-    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-appserver:latest
+    image: ${IMAGE_REGISTRY:-us.gcr.io/able-goods-221820}/***ARANGO_DB_NAME***-appserver:${APPSERVER_IMAGE_TAG:-latest}
     restart: unless-stopped
     container_name: appserver
     ports:
       - 5000:5000
     environment:
       - APPSERVER_URL=http://appserver:5000
-      - FRONTEND_URL=http://localhost:8080
       - PDFPARSER_URL=http://pdfparser:7600
       - STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5000
       - INITIAL_ADMIN_EMAIL=admin@example.com
@@ -33,7 +32,7 @@ services:
 
   ## PDF parsing service
   pdfparser:
-    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-pdfparser:latest
+    image: ${IMAGE_REGISTRY:-us.gcr.io/able-goods-221820}/***ARANGO_DB_NAME***-pdfparser:${PDFPARSER_IMAGE_TAG:-latest}
     restart: unless-stopped
     container_name: pdfparser
     tty: true
@@ -44,15 +43,15 @@ services:
 
   ## Statistical enrichment service
   statistical-enrichment:
-    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-statistical-enrichment:latest
+    image: ${IMAGE_REGISTRY:-us.gcr.io/able-goods-221820}/***ARANGO_DB_NAME***-statistical-enrichment:${STATISTICAL_ENRICHMENT_IMAGE_TAG:-latest}
     restart: unless-stopped
     container_name: statistical-enrichment
     ports:
       - 5000
 
-  # Cache invalidation service
+  # Cache invalidator service
   cache-invalidator:
-    image: us.gcr.io/able-goods-221820/***ARANGO_DB_NAME***-cache-invalidator:latest
+    image: ${IMAGE_REGISTRY:-us.gcr.io/able-goods-221820}/***ARANGO_DB_NAME***-cache-invalidator:${CACHE_INVALIDATOR_IMAGE_TAG:-latest}
     restart: unless-stopped
     container_name: cache-invalidator
 

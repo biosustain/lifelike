@@ -16,6 +16,7 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
+      - FRONTEND_URL=http://localhost:8080
       # Unset to use the default LMDB data directory
       - LMDB_DATA_DIR=
     volumes:
