@@ -69,7 +69,7 @@ export class ObjectCreationService {
     });
     let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
     let i = -1;
-    return from(requests).pipe(mergeMap(request => {
+    const obs = from(requests).pipe(mergeMap(request => {
       i++;
       return this.filesystemService.create(request)
       .pipe(
@@ -120,6 +120,10 @@ export class ObjectCreationService {
         this.errorHandler.create({label: 'Create object'}),
       );
     }));
+    this.subscription = obs.subscribe( () => {
+      progressDialogRef.close();
+    });
+    return obs;
   }
 
   /**
