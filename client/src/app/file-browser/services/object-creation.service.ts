@@ -3,8 +3,17 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {BehaviorSubject, Observable, iif, of, merge, pipe, from, EMPTY} from 'rxjs';
-import {catchError, filter, finalize, map, mergeMap, switchMap, tap} from 'rxjs/operators';
+import {BehaviorSubject, Observable, iif, of, merge, pipe, from, EMPTY, forkJoin} from 'rxjs';
+import {
+  catchError,
+  concatMap,
+  filter,
+  finalize,
+  map,
+  mergeMap,
+  switchMap,
+  tap
+} from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -26,6 +35,8 @@ import { ObjectReannotateResultsDialogComponent } from '../components/dialog/obj
 @Injectable()
 export class ObjectCreationService {
 
+  private subscription;
+
   constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -37,35 +48,41 @@ export class ObjectCreationService {
   }
 
   /**
+   * TODO: Refactor into smaller functions
    * Handles the filesystem PUT request with a progress dialog.
-   * @param request the request data
+   * @param requests the request data
    * @param annotationOptions options for the annotation process
    * @return the created object
    */
-  executePutWithProgressDialog(request: ObjectCreateRequest,
-                               annotationOptions: PDFAnnotationGenerationRequest = {}):
-    Observable<FilesystemObject> {
-    const progressObservable = new BehaviorSubject<Progress>(new Progress({
-      status: 'Preparing...',
-    }));
+  executePutWithProgressDialog(requests: ObjectCreateRequest[],
+                               annotationOptions: PDFAnnotationGenerationRequest[]):
+    Observable<FilesystemObject>[] {
+    const progressObservable = [];
+    for (const req of requests) {
+      progressObservable.push(new BehaviorSubject<Progress>(new Progress({
+    status: `Preparing ${req.filename || 'file'}`,
+  })));
+    }
     const progressDialogRef = this.progressDialog.display({
-      title: `Creating '${request.filename}'`,
+      title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
       progressObservable,
     });
-    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
-
-    return this.filesystemService.create(request)
+    const promiseList = [];
+    for (let i = 0; i < requests.length; i++) {
+      let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
+      const request = requests[i];
+      promiseList.push(this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
           if (event.type === HttpEventType.UploadProgress) {
             if (event.loaded === event.total && event.total) {
-              progressObservable.next(new Progress({
+              progressObservable[i].next(new Progress({
                 mode: ProgressMode.Indeterminate,
                 status: 'File transmitted; saving...',
               }));
             } else {
-              progressObservable.next(new Progress({
+              progressObservable[i].next(new Progress({
                 mode: ProgressMode.Determinate,
                 status: 'Transmitting file...',
                 value: event.loaded / event.total,
@@ -78,16 +95,16 @@ export class ObjectCreationService {
         mergeMap((object: FilesystemObject) => {
           // Then we show progress for the annotation generation (although
           // we can't actually show a progress percentage)
-          progressObservable.next(new Progress({
+          progressObservable[i].next(new Progress({
             mode: ProgressMode.Indeterminate,
             status: 'Saved; Parsing and identifying annotations...',
           }));
           const annotationsService = this.annotationsService.generateAnnotations(
-            [object.hashId], annotationOptions,
-          ).pipe(map(result => {
-            const check = Object.entries(result.mapping).map(r => r[1].success);
+            [object.hashId], annotationOptions[i] || {},
+          ).pipe(map(res => {
+            const check = Object.entries(res.mapping).map(r => r[1].success);
             if (check.some(c => c === false)) {
-                results = [[object], [result]];
+                results = [[object], [res]];
                 const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
                 modalRef.componentInstance.objects = results[0];
                 modalRef.componentInstance.results = results[1];
@@ -100,11 +117,15 @@ export class ObjectCreationService {
             of(object)
           );
         }),
-        finalize(() => {
-          progressDialogRef.close();
-        }),
         this.errorHandler.create({label: 'Create object'}),
-      );
+      ));
+    }
+    this.subscription = forkJoin(promiseList).subscribe(_ => {
+      progressDialogRef.close();
+    }, ( error ) => {
+      progressDialogRef.close();
+    });
+    return promiseList;
   }
 
   /**
@@ -130,22 +151,7 @@ export class ObjectCreationService {
     }
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       const requests = value.uploadRequests.length ? value.uploadRequests : [value.request];
-      return from(requests).pipe(
-        mergeMap(request => {
-          return this.executePutWithProgressDialog({
-            ...request,
-            ...(options.request || {}),
-          } as ObjectCreateRequest, {
-            annotationConfigs: request.annotationConfigs,
-            organism: request.fallbackOrganism
-          }).pipe(
-            // Piping it here catches error and does not break the loop - so the rest of the files should upload.
-            catchError((err, o) => {
-              this.snackBar.open('Could not create file: ' + request.filename, null, {duration: 2000});
-              return EMPTY;
-            }));
-        })
-      ).toPromise();
+      return this.executePutWithProgressDialog(requests, [])[0].toPromise();
     });
     return dialogRef.result;
   }
