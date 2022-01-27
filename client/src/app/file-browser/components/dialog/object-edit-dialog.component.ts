@@ -37,6 +37,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
 
+  readonly maxFileCount = 10;
 
   fileList: FileInput[] = [];
   selectedFile: FileInput = null;
@@ -283,7 +284,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         hasValidFilename: !this.form.get('filename').hasError('filenameError'),
         filePossiblyAnnotatable: targetFile.type === 'application/pdf',
       };
-      this.fileList.push(fileEntry);
+      if (this.fileList.push(fileEntry) >= this.maxFileCount) {
+        break;
+      }
 
     }
     this.form.get('filename').setValue(oldFilename);
