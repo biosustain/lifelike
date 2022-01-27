@@ -98,7 +98,7 @@ Since each word in a PDF document is sequential, we can use their positional ind
 There were plans to drop this, and allow the user to choose on the UI which words they want, so we might need to remove the interval tree in the future.
 
 ## Enrichment Annotation
-The enrichment table goes through the same annotation pipeline, but with some extra pre and post processing steps. We want each cell in the enrichment table to be counted as a `"separate paper"`, this is to avoid overlapping words. The overlapping words create an issue because we can potentially lose a word in one cell, because it was part of a longer one in a neighboring cell.
+The enrichment table goes through the same annotation pipeline, but with some extra pre and post processing steps. We want each cell in the enrichment table to be treated as an individual document, this is to avoid overlapping words. The overlapping words create an issue because we can potentially lose a word in one cell, because it was part of a longer one in a neighboring cell.
 
 We want each cell to be counted as a separate paper, but we cannot just send an HTTP request to the PDF parser for each cell - this would take too long. So instead, the text in each cell is combined together into one large text string. With this, we only need to send one HTTP request.
 
@@ -139,9 +139,9 @@ Because we do not curate before they're added to Neo4j, a user can potentially c
 ## NLP Service
 The NLP is deployed separately, and is an optional choice in the annotation pipeline. It currently only supports Gene, Chemical and Disease.
 
-We do not use the NLP to `"identify"` entities, but more as a validating veto.
+We do not use the NLP to `"identify"` entities, but more as a suggestion that we can veto.
 
-What this means is, let's say NLP identified the word `ydhC` as a gene, we do not automatically agree and say it's a gene. We look in LMDB first and if we find it in LMDB as a gene, then we now have `"two yes"` that `yhdC` is a gene, so we are more confident and say it's a gene. But if we do not find it in LMDB as a gene, then we discard the NLP results for it.
+What this means is, let's say the NLP identified the word `ydhC` as a gene, we do not automatically agree and say it's a gene. We look in LMDB first and if we find it in LMDB as a gene, then we now have `"two yes"` that `yhdC` is a gene, so we are more confident and say it's a gene. But if we do not find it in LMDB as a gene, then we reject the NLP results for it.
 
 ## Future Plans
 As with the entire application, the annotation pipeline is synchronous which is a big limitation. We can possibly alleviate these limitations with the two JIRA cards below.
