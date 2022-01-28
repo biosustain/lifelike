@@ -134,24 +134,8 @@ class BiocycParser(CloudMixin):
         need to run scripts to set displayname and description.  See docs/biocyc/set_displayname_description.md
         :param database: the neo4j database to load data
         """
-        # TODO: NEEDED, biocyc constraints, go in liquibase
-        #
-        # Create constraints and indices if they don't exist
-        # database.create_constraint(
-        #     NODE_BIOCYC, PROP_BIOCYC_ID, "constraint_biocyc_biocycId"
-        # )
-        # database.create_constraint(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id')
-        # database.create_index(NODE_BIOCYC, PROP_NAME, "index_biocyc_name")
-        # database.create_constraint(NODE_SYNONYM, PROP_NAME, "constraint_synonym_name")
-
         # loop data sources configured in data_sources.json
         for db, file in self.data_sources_to_load.items():
-            # TODO: NEEDED, biocyc constraints, go in liquibase
-            #
-            # DB_NODE = 'db_' + db
-            # database.create_index(DB_NODE, PROP_BIOCYC_ID, f'index_{db}_{PROP_BIOCYC_ID}')
-            # database.create_constraint(DB_NODE, PROP_ID, f'index_{db}_id')
-            # database.create_index(DB_NODE, PROP_NAME, f'index_{db}_name')
             version = ''
             for entity in ENTITIES:
                 self.logger.info(f'Load {db}: {entity}')

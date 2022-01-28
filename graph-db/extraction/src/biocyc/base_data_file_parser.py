@@ -227,9 +227,3 @@ class BaseDataFileParser(BaseParser):
         link_node.update_attribute(PROP_REF_ID, reference_id)
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
-
-    # TODO: delete this once added to liquibase
-    # def create_indexes(self, database):
-    #     database.create_index(self.entity_name, PROP_ID, f"index_{self.entity_name.lower}_id")
-    #     database.create_index(self.entity_name, PROP_BIOCYC_ID, f"index_{self.entity_name.lower}_biocycid")
-    #     database.create_index(self.entity_name, PROP_NAME, f"index_{self.entity_name.lower}_name")
