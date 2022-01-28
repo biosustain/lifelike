@@ -105,7 +105,7 @@ class ZipCustomChangeSet(ChangeSet):
         ChangeSet.__init__(self, id, author, comment, cypher)
         self.handler = handler
         self.zip_filename = zip_filename
-        self.filename = filename.replace('.tsv', '.zip')
+        self.filename = filename
         self.filetype = filetype
         self.start_at = startrow
 

@@ -7,9 +7,9 @@ from common.query_builder import (
     get_create_constraint_query,
     get_create_index_query,
     get_create_relationships_query,
-    get_create_synonym_relationships_query,
     get_create_update_nodes_query
 )
+from biocyc.biocyc_parser import ECOCYC_FILE
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
@@ -24,6 +24,8 @@ class BiocycEcocycChangeLog(ChangeLog):
     def create_change_logs(self, initial_load=False):
         if initial_load:
             self.add_index_change_set()
+        self.load_biocyc_ecocyc_class_nodes()
+        self.load_biocyc_ecocyc_class_rels()
 
     def create_indexes(self):
         queries = []
@@ -38,6 +40,24 @@ class BiocycEcocycChangeLog(ChangeLog):
         queries = self.create_indexes()
         query_str = '\n'.join(queries)
         changeset = ChangeSet(id, self.author, comment, query_str)
+        self.change_sets.append(changeset)
+
+    def load_biocyc_ecocyc_class_nodes(self):
+        id = f'Create Biocyc Ecocyc nodes on date {self.date_tag}'
+        if self.id_prefix:
+            id = f'{self.id_prefix} {id}'
+        comment = f''
+        query = get_create_update_nodes_query(NODE_BIOCYC, PROP_BIOCYC_ID, [PROP_BIOCYC_ID, PROP_NAME, PROP_ID, PROP_SYNONYMS], [NODE_BIOCYC, NODE_ECOCYC, NODE_CLASS], datasource='BioCyc')
+        changeset = ZipCustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}biocyc-class-nodes.tsv', f'{self.file_prefix}{ECOCYC_FILE}')
+        self.change_sets.append(changeset)
+
+    def load_biocyc_ecocyc_class_rels(self):
+        id = f'Create Biocyc Ecocyc relationship on date {self.date_tag}'
+        if self.id_prefix:
+            id = f'{self.id_prefix} {id}'
+        comment = f''
+        query = get_create_relationships_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'from_id', NODE_BIOCYC, PROP_BIOCYC_ID, 'to_id', REL_TYPE)
+        changeset = ZipCustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}biocyc-class-node-rels.tsv', f'{self.file_prefix}{ECOCYC_FILE}')
         self.change_sets.append(changeset)
 
 

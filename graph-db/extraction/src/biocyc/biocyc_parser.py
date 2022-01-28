@@ -48,6 +48,8 @@ PARSERS = {
     NODE_TRANS_UNIT: transcriptionunit_parser.TranscriptionUnitParser,
 }
 
+ECOCYC_FILE = 'ecocyc.zip'
+
 
 class BiocycParser(CloudMixin):
     def __init__(self, prefix: str, base_dir: str=None):
