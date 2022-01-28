@@ -1,0 +1,54 @@
+- name: Create liquibase directory
+  file:
+    name: "{{ liquibase_install_folder }}"
+    state: directory
+    mode: 0755
+
+- name: Install liquibase
+  unarchive:
+    src: https://github.com/liquibase/liquibase/releases/download/v{{ liquibase_version }}/liquibase-{{ liquibase_version }}.tar.gz
+    dest: "{{ liquibase_install_folder }}"
+    remote_src: yes
+    mode: 0755
+    creates: "{{ liquibase_install_folder }}/liquibase"
+
+- name: Download liquibase-neo4j jar
+  get_url:
+    url: https://github.com/liquibase/liquibase-neo4j/releases/download/liquibase-neo4j-{{ liquibase_neo4j_version }}/liquibase-neo4j-{{ liquibase_neo4j_version }}.jar
+    dest: "{{ liquibase_install_folder }}/lib/liquibase-neo4j-{{ liquibase_neo4j_version }}.jar"
+    mode: 0755
+
+- name: Download neo4j-jdbc jar
+  get_url:
+    url: https://github.com/neo4j-contrib/neo4j-jdbc/releases/download/{{ liquibase_neo4j_jdbc_version }}/neo4j-jdbc-driver-{{ liquibase_neo4j_jdbc_version }}.jar
+    dest: "{{ liquibase_install_folder }}/lib/neo4j-jdbc-driver-{{ liquibase_neo4j_jdbc_version }}.jar"
+    mode: 0755
+
+- name: Creates liquibase data file directory
+  file:
+    path: "{{ deploy_dir }}/liquibase-data-files"
+    state: directory
+    mode: "774"
+    owner: "{{ deploy_user }}"
+
+- name: Create liquibase.properties file
+  copy:
+    content: |
+      # properties used by liquibase command line
+      changeLogFile=***ARANGO_DB_NAME***-graph/changelog-master.xml
+      url=jdbc:neo4j:bolt://{{ NEO4J_HOST }}?database={{ NEO4J_AUTH.split("/")[0] }}
+      username={{ NEO4J_AUTH.split("/")[0] }}
+      password={{ NEO4J_AUTH.split("/")[1] }}
+      # properties used as parameters by *Handler.java classes in liquibase changelog.xml
+      parameter.neo4jHost=bolt://{{ NEO4J_HOST }}
+      # separate credentials by comma; username first: <username>,<password>
+      parameter.neo4jCredentials={{ NEO4J_AUTH | replace("/", ",")}}
+      parameter.neo4jDatabase={{ NEO4J_AUTH.split("/")[0] }}
+      parameter.azureStorageName={{ AZURE_ACCOUNT_STORAGE_NAME }}
+      parameter.azureStorageKey={{ AZURE_ACCOUNT_STORAGE_KEY }}
+      parameter.localSaveFileDir={{ deploy_dir }}/liquibase-data-files
+      liquibase.hub.mode=off
+    dest: "{{ deploy_dir }}/liquibase.properties"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: u=rw,g=r,o=r

@@ -1,0 +1,4 @@
+liquibase_version: 4.4.1
+liquibase_neo4j_version: 4.4.3.1
+liquibase_neo4j_jdbc_version: 4.0.4
+liquibase_install_folder: /opt/liquibase
