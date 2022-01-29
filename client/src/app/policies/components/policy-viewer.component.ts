@@ -8,6 +8,7 @@ import { splitPascalCaseStr } from 'app/shared/utils';
 import { PolicyHostDirective } from '../directives/policy-host.directive';
 import { CookiePolicyComponent } from './cookie-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy.component';
+import { TermsAndConditionsComponent } from './terms-and-conditions.component';
 
 // Can maybe move these into their own files if they become more complex.
 class PolicyComponent {
@@ -28,7 +29,8 @@ export class PolicyViewerComponent implements OnInit, AfterViewInit {
   // Consider moving this to a constants file eventually, probably fine to leave it as-is for now.
   legalDocComponents = [
     CookiePolicyComponent,
-    PrivacyPolicyComponent
+    PrivacyPolicyComponent,
+    TermsAndConditionsComponent
   ];
 
   policyMap: Map<string, PolicyItem>;
