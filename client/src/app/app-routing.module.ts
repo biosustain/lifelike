@@ -31,6 +31,7 @@ import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.co
 import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.component';
 import { SankeyManyToManyViewComponent } from 'app/sankey-many-to-many-viewer/components/sankey-view.component';
 import { PolicyViewerComponent } from 'app/policies/components/policy-viewer.component';
+import { HelpAndInfoComponent } from 'app/help-and-info/components/help-and-info.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -326,6 +327,14 @@ const routes: Routes = [
     data: {
       title: 'Policies',
       fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'help',
+    component: HelpAndInfoComponent,
+    data: {
+      title: 'Help & Info',
+      fontAwesomeIcon: 'fas fa-question-circle',
     },
   },
   // Old links

@@ -44,8 +44,8 @@
         <i class="fa fa-comment"></i>
       </a>
 
-      <a class="dropdown-item" [routerLink]="['/policies']" placement="right" triggers="hover" ngbTooltip="Policies">
-        <i class="fas fa-file-alt"></i>
+      <a class="dropdown-item" [routerLink]="['/help']" placement="right" triggers="hover" ngbTooltip="Help & Info">
+        <i class="fas fa-question-circle"></i>
       </a>
 
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
