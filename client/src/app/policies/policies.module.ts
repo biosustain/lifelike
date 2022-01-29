@@ -7,10 +7,13 @@ import { CookiePolicyComponent } from './components/cookie-policy.component';
 import { PolicyViewerComponent } from './components/policy-viewer.component';
 import { PolicyHostDirective } from './directives/policy-host.directive';
 import { PrivacyPolicyComponent } from './components/privacy-policy.component';
+import { TermsAndConditionsComponent } from './components/terms-and-conditions.component';
 
 const components = [
   CookiePolicyComponent,
   PolicyViewerComponent,
+  PrivacyPolicyComponent,
+  TermsAndConditionsComponent,
 ];
 const directives = [
   PolicyHostDirective
@@ -20,7 +23,6 @@ const directives = [
   declarations: [
     ...components,
     ...directives,
-    PrivacyPolicyComponent
   ],
   imports: [
     CommonModule,
