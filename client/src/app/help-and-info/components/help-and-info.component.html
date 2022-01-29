@@ -1,0 +1,28 @@
+<div class="container mt-4 help-info-container">
+  <h2 class="mb-4">All Help Topics</h2>
+  <div class="row">
+    <div class="col-2">
+      <ul class="list-group">
+        <li *ngFor="let topic of topics; let i = index"
+            [ngClass]="'btn ' + (i === selectedTopic ? ' btn-primary ' : 'btn-light ') + 'mb-2 text-left'"
+            (click)="selectTopic(i)">{{ topic.name }}</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="row">
+        <ng-container *ngFor="let subTopic of topics[selectedTopic].subTopics; let i = index">
+          <div *ngIf="(i > 0) && ((i % 2) === 0)" class="w-100"></div>
+          <div class="col mb-4">
+            <div class="card border-primary help-info-card">
+              <div class="card-body">
+                <h5 class="card-title">{{ subTopic.name }}</h5>
+                <p class="card-text">{{ subTopic.description }}</p>
+                <a [href]="subTopic.link" class="stretched-link"></a>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
