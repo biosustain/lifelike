@@ -32,9 +32,6 @@ with open(path.join(directory, '../upgrade_data/graph_v3.json'), 'r') as f:
     # Use this method to validate the content of an enrichment table
     validate_graph = fastjsonschema.compile(json.load(f))
 
-conn = op.get_bind()
-session = Session(conn)
-
 t_files = table(
         'files',
         column('content_id', sa.Integer),
@@ -49,6 +46,8 @@ t_files_content = table(
 
 
 def modify_files_with_views(modification_callback):
+    conn = op.get_bind()
+    session = Session(conn)
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_files_content.c.id,
         t_files_content.c.raw_file

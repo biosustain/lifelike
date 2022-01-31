@@ -27,7 +27,7 @@ import { SankeyLayoutService } from './sankey/sankey-layout.service';
 import { SankeyControllerService } from '../services/sankey-controller.service';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeySearchService } from '../services/search.service';
-import { SearchEntity } from './search-panel/interfaces';
+import { SearchEntity } from '../services/search-match';
 
 
 @Component({
@@ -210,6 +210,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
 
   predefinedState: Observable<Partial<SankeyState>>;
+
+  sankeyResized($event) {
+    return this.sankeyController.sankeyResized($event);
+  }
 
 
   resolveMatchToEntity({nodeId, linkId}: SearchEntity) {
