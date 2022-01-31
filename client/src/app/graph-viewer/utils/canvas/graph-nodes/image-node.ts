@@ -53,6 +53,8 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   draw(transform: any): void {
     const zoomResetScale = 1 / transform.scale(1).k;
     this.ctx.save();
+    // We want to draw images behind current pixels, as they tend to cover the rest of entities
+    this.ctx.globalCompositeOperation = 'destination-over';
     let lineWidth = 0;
     if (this.image) {
       this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);

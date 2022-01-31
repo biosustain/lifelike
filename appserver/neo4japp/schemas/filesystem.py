@@ -2,6 +2,7 @@ import marshmallow.validate
 import marshmallow_dataclass
 from marshmallow import fields, validates_schema, ValidationError
 
+from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH
 from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
@@ -93,7 +94,8 @@ class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
 
 class BulkProjectUpdateRequestSchema(CamelCaseSchema):
     name = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
-    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    description = fields.String(validate=marshmallow.validate.Length(
+        max=MAX_FILE_DESCRIPTION_LENGTH))
 
 
 # Response
@@ -231,7 +233,8 @@ class FileSearchRequestSchema(CamelCaseSchema):
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
     filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    description = fields.String(validate=marshmallow.validate.Length(
+        max=MAX_FILE_DESCRIPTION_LENGTH))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)

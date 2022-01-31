@@ -1,7 +1,7 @@
-"""empty message
+"""Update enum name for file_annotation_version cause column
 
 Revision ID: 85062d2a244a
-Revises: 65d827e55b5b
+Revises: 06e737103f71
 Create Date: 2022-01-13 22:06:37.957121
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '85062d2a244a'
-down_revision = '65d827e55b5b'
+down_revision = '06e737103f71'
 branch_labels = None
 depends_on = None
 
