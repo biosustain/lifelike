@@ -2,7 +2,6 @@ import hashlib
 import io
 import itertools
 import json
-import re
 import typing
 import urllib.request
 import zipfile
@@ -12,7 +11,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_, not_
+from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
