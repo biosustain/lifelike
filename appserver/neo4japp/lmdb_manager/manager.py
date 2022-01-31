@@ -177,6 +177,9 @@ Base: DeclarativeMeta = declarative_base()
 class LMDB(Base):
     __tablename__ = 'lmdb'
     name = Column(String, primary_key=True)
+    # Note that this column expects md5 values, and it is theoretically possible for different
+    # files to produce the same vaue! This is extrememly unlikely, since we only expect to have
+    # a dozen or so rows in this table at a time, but still possible.
     checksum_md5 = Column(String, nullable=False)
     modified_date = Column(TIMESTAMP(timezone=True), nullable=False)
 

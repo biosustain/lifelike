@@ -12,6 +12,8 @@ class View(RDBMSBase):
     __tablename__ = 'views'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     params = db.Column(db.JSON, nullable=False)
+    # Note that this column expects sha256 values, and it is theoretically possible for different
+    # files to produce the same vaue!
     checksum_sha256 = db.Column(db.Binary(32), nullable=False, index=True, unique=True)
     modification_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
 

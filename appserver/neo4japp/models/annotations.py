@@ -28,5 +28,8 @@ class LMDB(RDBMSBase):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(64), nullable=False)
     modified_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    # azure file storage uses md5
+    # Azure file storage uses md5. Also, note that this column expects md5 values, and it is
+    # theoretically possible for different files to produce the same vaue! This is extrememly
+    # unlikely, since we only expect to have a dozen or so rows in this table at a time, but still
+    # possible.
     checksum_md5 = db.Column(db.String(32), nullable=False, index=True, unique=True)
