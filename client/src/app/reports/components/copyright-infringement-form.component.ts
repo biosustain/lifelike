@@ -4,20 +4,18 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 @Component({
   selector: 'app-copyright-infringement-form',
   templateUrl: './copyright-infringement-form.component.html',
-  styleUrls: ['./copyright-infringement-form.component.scss']
 })
 export class CopyrightInfringementFormComponent implements OnInit {
+  DESCRIPTION_MAX_LEN = 1000;
 
   form: FormGroup;
 
   constructor() { }
 
-  // TODO: Add validation to UI
-
   ngOnInit(): void {
     this.form = new FormGroup({
       url: new FormControl('', Validators.required),
-      description: new FormControl('', Validators.required),
+      description: new FormControl('', [Validators.required, Validators.maxLength(this.DESCRIPTION_MAX_LEN)]),
       name: new FormControl('', Validators.required),
       company: new FormControl('', Validators.required),
       address: new FormControl('', Validators.required),
@@ -36,5 +34,7 @@ export class CopyrightInfringementFormComponent implements OnInit {
   }
 
   submit() {
+    this.form.markAllAsTouched();
+    this.form.markAsDirty();
   }
 }
