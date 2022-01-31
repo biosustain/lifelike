@@ -2,7 +2,12 @@ export const NODE_EXPANSION_LIMIT = 500;
 export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
 export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
-export const PUBMEDURL = 'https://pubmed.ncbi.nlm.nih.gov/';
+
+export const PUBMED_URL = 'https://pubmed.ncbi.nlm.nih.gov/';
+export const PUBTATOR_URL = 'https://www.ncbi.nlm.nih.gov/research/pubtator/';
+export function getPubtatorSearchUrl(searchTerm: string) {
+  return `${PUBTATOR_URL}?view=docsum&query=${searchTerm}`;
+}
 
 export const VIZ_SEARCH_LIMIT = 10;
 
@@ -73,6 +78,9 @@ export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'Uni
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 50;
 
+export const MAX_DESCRIPTION_LENGTH = 5000;
+export const FORMATS_WITH_POSSIBLE_DESCRIPTION = ['graph'];
+
 export enum MimeTypes {
   Map = 'vnd.lifelike.document/map',
   EnrichmentTable = 'vnd.lifelike.document/enrichment-table',
@@ -130,3 +138,10 @@ export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, U
 export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
 
 export const handleBlue = '#97C2FC';
+
+export enum SizeUnits {
+  KiB = 2e10,
+  MiB = 2e20,
+  GiB = 2e30,
+  TiB = 2e40
+}

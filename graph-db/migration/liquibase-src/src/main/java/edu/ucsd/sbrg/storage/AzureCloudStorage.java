@@ -34,6 +34,10 @@ public class AzureCloudStorage extends CloudStorage {
         return this.storageClient;
     }
 
+    public boolean fileExists(String filename) {
+        return this.initStorageClient().getFileClient(filename).exists();
+    }
+
     /**
      * Download the entire file blob from the cloud storage.
      *

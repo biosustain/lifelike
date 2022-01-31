@@ -158,13 +158,8 @@
                     <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
                 </label>
                 <div class="btn-group btn-group-toggle">
-                    <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
-                                        [resultIndex]="entitySearchListIdx"
-                                        [resultCount]="(entitySearchList | async).length"
-                                        (previous)="previous()" (next)="next()"
-                                        [searching]="searching"
-                    >
-                    </app-search-control>
+                    <app-sankey-search-control>
+                    </app-sankey-search-control>
                 </div>
             </div>
         </app-module-header>
@@ -180,15 +175,16 @@
                                 (linkClicked)="selectLink($event)"
                                 (nodeClicked)="selectNode($event)"
                                 (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                (resized)="sankeyResized($event)"
                                 [nodeAlign]="nodeAlign"
                                 [normalizeLinks]="state.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
                                 [selectedNodes]="selectedNodes | async"
-                                [searchedEntities]="entitySearchList | async"
-                                [focusedNode]="searchFocus">
+                                [searchedEntities]="sankeySearch.entitySearchList | async"
+                                [focusedNode]="sankeySearch.searchFocus | async">
 
                     </app-sankey>
-<!--                    <app-warning-list></app-warning-list>-->
+                    <!--                    <app-warning-list></app-warning-list>-->
                 </as-split-area>
                 <as-split-area [class]="[
                                 'as-split-area',
@@ -233,11 +229,7 @@
                             </button>
                         </div>
                         <div class="flex-grow-1 pb-3">
-                            <app-sankey-search-panel
-                                    [entities]="entitySearchList | async"
-                                    [searchTerms]="searchTerms"
-                                    [(focusedIdx)]="entitySearchListIdx"
-                            >
+                            <app-sankey-search-panel>
                             </app-sankey-search-panel>
                         </div>
                     </div>

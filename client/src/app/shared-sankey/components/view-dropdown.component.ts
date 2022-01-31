@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 
 import { transform, pick, omitBy, isNil, mapValues, defer, omit } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { first, map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SankeyControllerService } from 'app/sankey-viewer/services/sankey-controller.service';
@@ -10,11 +11,10 @@ import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/custom
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { frozenEmptyObject } from 'app/shared/utils/types';
+import { SankeySearchService } from 'app/sankey-viewer/services/search.service';
 
 import {
   SankeyView,
-  SankeyNode,
-  SankeyLink,
   SankeyNodesOverwrites,
   SankeyLinksOverwrites,
   SankeyURLLoadParams,
@@ -25,6 +25,7 @@ import {
 import { SankeyViewConfirmComponent } from './view-confirm.component';
 import { SankeyViewCreateComponent } from './view-create.component';
 import { viewBaseToNameMapping } from '../constants';
+import { SankeyLink, SankeyNode } from '../pure_interfaces';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -60,7 +61,8 @@ export class SankeyViewDropdownComponent implements OnChanges {
     readonly workspaceManager: WorkspaceManager,
     readonly sankeyController: SankeyControllerService,
     private modalService: NgbModal,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    public sankeySearch: SankeySearchService
   ) {
   }
 
@@ -76,6 +78,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
   get activeViewBaseName(): string {
     return viewBaseToNameMapping[this.activeViewBase] ?? '';
   }
+
   @Input() preselectedViewBase: string;
   @Input() object: FilesystemObject;
 
@@ -131,22 +134,27 @@ export class SankeyViewDropdownComponent implements OnChanges {
     }
   }
 
-  createView(viewName): void {
-    const renderedData = this.sankeyController.dataToRender.value;
-    this.sankeyController.allData.value._views[viewName] = {
-      state: omit(this.sankeyController.state, this.statusOmitProperties),
-      base: this.activeViewBase,
-      nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
-      links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
-    } as SankeyView;
-    this.sankeyController.state.viewName = viewName;
-    this.viewDataChanged.emit();
+  createView(viewName): Promise<any> {
+    return this.sankeyController.sankeySize$.pipe(
+      first(),
+      map(size => {
+        const renderedData = this.sankeyController.dataToRender.value;
+        this.sankeyController.allData.value._views[viewName] = {
+          state: omit(this.sankeyController.state, this.statusOmitProperties),
+          base: this.activeViewBase,
+          size,
+          nodes: this.mapToPropertyObject(renderedData.nodes, this.nodeViewProperties),
+          links: this.mapToPropertyObject(renderedData.links, this.linkViewProperties)
+        } as SankeyView;
+        this.sankeyController.state.viewName = viewName;
+        this.viewDataChanged.emit();
+      })
+    ).toPromise();
   }
 
-  changeViewBaseIfNeeded(base, params?): boolean {
+  changeViewBaseIfNeeded(base, params?): Promise<boolean> | void {
     if (this.activeViewBase !== base) {
-      this.openBaseView(base, params);
-      return true;
+      return this.openBaseView(base, params);
     }
   }
 
@@ -157,7 +165,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
         viewName, baseViewName: base
       });
       const graph = this.sankeyController.computeData();
-      graph._precomputedLayout = true;
+      graph._precomputedLayout = view.size;
       this.applyPropertyObject(nodes, graph.nodes);
       this.applyPropertyObject(links, graph.links);
       // @ts-ignore
@@ -212,6 +220,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
         this.objectToFragment({
           [SankeyURLLoadParam.NETWORK_TRACE_IDX]: this.sankeyController.state.networkTraceIdx,
           [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
+          [SankeyURLLoadParam.SEARCH_TERMS]: this.sankeySearch.entitySearchTerm.value,
           ...params
         } as SankeyURLLoadParams)
       }`

@@ -3,7 +3,6 @@ import {
   ElementRef,
   Renderer2,
   Input,
-  AfterViewInit,
   Injector,
   ComponentFactoryResolver,
   ViewContainerRef,
@@ -29,7 +28,7 @@ import { createResizeObservable } from '../rxjs/resize-observable';
   selector: '.text-truncate'
 })
 // @ts-ignore
-export class TextTruncateDirective extends NgbTooltip implements AfterViewInit, OnInit, OnDestroy, AfterContentChecked {
+export class TextTruncateDirective extends NgbTooltip implements OnInit, OnDestroy, AfterContentChecked {
   constructor(
     protected _elementRef: ElementRef<HTMLElement>,
     protected _renderer: Renderer2,
@@ -53,7 +52,14 @@ export class TextTruncateDirective extends NgbTooltip implements AfterViewInit, 
       _changeDetector,
       applicationRef
     );
+    this.resizeSubscription = createResizeObservable(this._elementRef.nativeElement).subscribe(() => {
+      this.resized = true;
+      this.onResize();
+    });
+    this.onResize();
   }
+
+  private resized;
 
   resizeSubscription: Subscription;
   container = 'body';
@@ -74,11 +80,9 @@ export class TextTruncateDirective extends NgbTooltip implements AfterViewInit, 
     super.ngOnInit();
   }
 
-  ngAfterViewInit() {
-    this.resizeSubscription = createResizeObservable(this._elementRef.nativeElement).subscribe(() => {
-      const {scrollWidth, offsetWidth} = this._elementRef.nativeElement;
-      this.disableTooltip = scrollWidth <= offsetWidth;
-    });
+  onResize() {
+    const {scrollWidth, offsetWidth} = this._elementRef.nativeElement;
+    this.disableTooltip = scrollWidth <= offsetWidth;
   }
 
   ngAfterContentChecked() {
