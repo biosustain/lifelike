@@ -208,7 +208,6 @@ export interface ReferenceTableDataRequest {
 export interface AssociatedTypeSnippetCountRequest {
     source_node: number;
     associated_nodes: number[];
-    label: string;
 }
 
 // End Request Interfaces

@@ -169,19 +169,6 @@ def get_enrichment_table_service():
     return g.enrichment_table_service
 
 
-def get_user_file_import_service():
-    raise NotImplementedError()
-#     if 'user_file_import_service' not in g:
-#         from neo4japp.services import UserFileImportService
-#         # TODO Replace with neo4j driver
-#         graph = connect_to_neo4j()
-#         g.current_user_file_import_service = UserFileImportService(
-#           graph=graph,
-#           session=db.session
-#         )
-#     return g.current_user_file_import_service
-
-
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService

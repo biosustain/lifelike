@@ -29,8 +29,14 @@ $dark-blue: #3177B8;
 }
 
 // Default rules from Angular Material. Do not modify.
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 // Content placed dynamically by the Angular Router (i.e. sibling of
 // <router-outlet>) will be a flex container
@@ -63,3 +69,8 @@ router-outlet + * {
 
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
+
+// Workaround for https://github.com/FortAwesome/Font-Awesome/issues/17469
+.fa.fa-spinner.fa-spin {
+  transform-origin: 50% 0.445em;
+}
