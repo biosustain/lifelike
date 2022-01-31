@@ -6,7 +6,8 @@ import {
   AfterContentInit,
   ComponentFactoryResolver,
   Injector,
-  AfterViewInit
+  AfterViewInit,
+  ChangeDetectorRef
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -48,6 +49,7 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { SankeyBaseViewControllerService } from '../services/sankey-base-view-controller.service';
+import { ChangeDetection } from '@angular/cli/lib/config/schema';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -143,13 +145,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.content.subscribe(x => console.log('content', x));
 
     this.dataToRender$.subscribe(data => {
-      this._dynamicInstances.get('sankey').data = data;
+      this._dynamicComponentRef.get('sankey').instance.data = data;
     });
 
     this.sankeyBaseViewControl$.pipe(
       switchMap(({graphInputState$}) => graphInputState$)
     ).subscribe(inputState => {
-      assign(this._dynamicInstances.get('sankey'), inputState);
+      console.log('inputState', inputState);
+      const sankey = this._dynamicComponentRef.get('sankey');
+      assign(sankey.instance, inputState);
+      sankey.injector.get(ChangeDetectorRef).markForCheck();
     });
   }
 
@@ -219,7 +224,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   dynamicContainer;
-  _dynamicInstances = new Map();
+  _dynamicComponentRef = new Map();
 
   @ViewChild(SankeyDirective, {static: true}) sankey;
   @ViewChild(SankeyDetailsPanelDirective, {static: true}) details;
@@ -291,16 +296,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       const injectComponent = (container, component) => {
         const factory = this.componentFactoryResolver.resolveComponentFactory(component);
         const componentRef = container.createComponent(factory, null, sankeyInjector);
-        return componentRef.instance;
+        return componentRef;
       };
       const createComponent = (name, inputs = {}, outputs = {}) => {
-        const instance = injectComponent(this[name].viewContainerRef, o[name]);
-        Object.assign(instance, inputs);
+        const componentRef = injectComponent(this[name].viewContainerRef, o[name]);
+        Object.assign(componentRef.instance, inputs);
         Object.keys(outputs).forEach(key => {
-          instance[key].subscribe(outputs[key]);
+          componentRef.instance[key].subscribe(outputs[key]);
         });
-        this._dynamicInstances.set(name, instance);
-        return instance;
+        this._dynamicComponentRef.set(name, componentRef);
+        return componentRef.instance;
       };
       const sankey = createComponent('sankey');
       createComponent('advanced');
