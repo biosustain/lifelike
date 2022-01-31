@@ -175,6 +175,7 @@
                                 (linkClicked)="selectLink($event)"
                                 (nodeClicked)="selectNode($event)"
                                 (backgroundClicked)="closeDetailsPanel();resetSelection()"
+                                (resized)="sankeyResized($event)"
                                 [nodeAlign]="nodeAlign"
                                 [normalizeLinks]="state.normalizeLinks"
                                 [selectedLinks]="selectedLinks | async"
