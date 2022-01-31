@@ -45,12 +45,12 @@ export class HelpAndInfoComponent implements OnInit {
         ],
       },
       {
-        name: 'Claims',
+        name: 'Reports',
         subTopics: [
           {
             name: 'Copyright Infringement',
             description: 'Submit a copyright infringement request form.',
-            link: 'claims/copyright-infringement'
+            link: 'report/copyright-infringement'
           },
         ],
       }

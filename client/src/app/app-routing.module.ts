@@ -32,6 +32,7 @@ import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.compo
 import { SankeyManyToManyViewComponent } from 'app/sankey-many-to-many-viewer/components/sankey-view.component';
 import { PolicyViewerComponent } from 'app/policies/components/policy-viewer.component';
 import { HelpAndInfoComponent } from 'app/help-and-info/components/help-and-info.component';
+import { CopyrightInfringementFormComponent } from 'app/reports/components/copyright-infringement-form.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -335,6 +336,14 @@ const routes: Routes = [
     data: {
       title: 'Help & Info',
       fontAwesomeIcon: 'fas fa-question-circle',
+    },
+  },
+  {
+    path: 'report/copyright-infringement',
+    component: CopyrightInfringementFormComponent,
+    data: {
+      title: 'Copyright / DMCA Report Form',
+      fontAwesomeIcon: 'fas fa-copyright',
     },
   },
   // Old links

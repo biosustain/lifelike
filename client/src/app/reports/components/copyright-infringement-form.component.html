@@ -1,0 +1,80 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Copyright / DMCA</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="url" placeholder="Url of allegedly infringing work or material" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="description" placeholder="Description of the work claimed to be infringed" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="name" placeholder="Name" required>
+      </div>
+      <div class="col">
+        <input class="form-control" formControlName="company" placeholder="Company" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="address" placeholder="Address" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="city" placeholder="City" required>
+      </div>
+      <div class="col">
+        <input class="form-control" formControlName="state" placeholder="State" required>
+      </div>
+      <div class="col">
+        <input class="form-control" formControlName="zip" placeholder="Zip" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <input class="form-control" formControlName="phone" placeholder="Phone" required>
+      </div>
+      <div class="col">
+        <input class="form-control" formControlName="fax" placeholder="Fax">
+      </div>
+      <div class="col">
+        <input class="form-control" formControlName="email" placeholder="Email" required>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <p>By checking the following boxes, I state that:</p>
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="attestationCheck1" formControlName="attestationCheck1">
+          <label class="custom-control-label" for="attestationCheck1">I have a good faith belief that the use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law;</label>
+        </div>
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="attestationCheck2" formControlName="attestationCheck2">
+          <label class="custom-control-label" for="attestationCheck2">This notification is accurate; and</label>
+        </div>
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="attestationCheck3" formControlName="attestationCheck3">
+          <label class="custom-control-label" for="attestationCheck3">UNDER PENALTY OF PERJURY, I am authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</label>
+        </div>
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="attestationCheck4" formControlName="attestationCheck4">
+          <label class="custom-control-label" for="attestationCheck4">I acknowledge that under Section 512(f) of the DMCA any person who knowingly materially misrepresents that material or activity is infringing may be subject to liability for damages.</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-row mb-2">
+      <div class="col">
+        <label for="electronicSignatureInput">Typing your name below will act as your electronic signature:</label>
+        <input class="form-control" id="electronicSignatureInput" formControlName="signature" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+  </form>
+</div>

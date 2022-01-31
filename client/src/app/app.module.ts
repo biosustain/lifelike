@@ -37,6 +37,7 @@ import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/
 import { FileTypesModule } from 'app/file-types/file-types.module';
 import { PoliciesModule } from 'app/policies/policies.module';
 import { HelpAndInfoModule } from 'app/help-and-info/help-and-info.module';
+import { ReportsModule } from 'app/reports/reports.module';
 
 function initializeKeycloak(keycloak: KeycloakService) {
   return () =>
@@ -93,6 +94,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
     EnrichmentTablesModule,
     PoliciesModule,
     HelpAndInfoModule,
+    ReportsModule,
   ],
   providers: [
     {
