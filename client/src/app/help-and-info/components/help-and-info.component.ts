@@ -42,18 +42,13 @@ export class HelpAndInfoComponent implements OnInit {
             description: 'View the cookie policy for Lifelike.',
             link: '/policies/cookie-policy'
           },
-        ],
-      },
-      {
-        name: 'Reports',
-        subTopics: [
           {
-            name: 'Copyright Infringement',
-            description: 'Submit a copyright infringement request form.',
-            link: 'report/copyright-infringement'
+            name: 'Copyright Infringement Policy',
+            description: 'View the copyright policy for Lifelike, and submit a copyright infringement request form.',
+            link: 'policies/copyright-infringement-policy'
           },
         ],
-      }
+      },
     ];
     this.selectedTopic = 0;
   }

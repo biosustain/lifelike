@@ -339,10 +339,11 @@ const routes: Routes = [
     },
   },
   {
-    path: 'report/copyright-infringement',
+    path: 'report/copyright-infringement/form',
     component: CopyrightInfringementFormComponent,
+    canActivate: [AuthGuard],
     data: {
-      title: 'Copyright / DMCA Report Form',
+      title: 'Copyright Infringement Claim Request Form',
       fontAwesomeIcon: 'fas fa-copyright',
     },
   },

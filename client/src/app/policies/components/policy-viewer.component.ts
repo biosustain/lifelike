@@ -7,6 +7,7 @@ import { splitPascalCaseStr } from 'app/shared/utils';
 
 import { PolicyHostDirective } from '../directives/policy-host.directive';
 import { CookiePolicyComponent } from './cookie-policy.component';
+import { CopyrightInfringementPolicyComponent } from './copyright-infringement-policy.component';
 import { PrivacyPolicyComponent } from './privacy-policy.component';
 import { TermsAndConditionsComponent } from './terms-and-conditions.component';
 
@@ -30,7 +31,8 @@ export class PolicyViewerComponent implements OnInit, AfterViewInit {
   legalDocComponents = [
     CookiePolicyComponent,
     PrivacyPolicyComponent,
-    TermsAndConditionsComponent
+    TermsAndConditionsComponent,
+    CopyrightInfringementPolicyComponent
   ];
 
   policyMap: Map<string, PolicyItem>;
