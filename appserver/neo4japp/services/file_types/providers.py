@@ -584,7 +584,7 @@ def look_for_doi_link(node):
     return: doi if present and valid, None if not
     """
     doi_src = next(
-        (src for src in node['data'].get('sources') if src.get(
+        (src for src in node['data'].get('sources', []) if src.get(
             'domain') == "DOI"), None)
     # NOTE: As is_valid_doi sends a request, this increases export time for each doi that we have
     # If this is too costly, we can remove this
