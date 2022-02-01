@@ -32,7 +32,6 @@ from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
     UserSearchSchema,
-    UserProfileSchema,
     UserProfileListSchema,
     UserCreateSchema,
     UserUpdateSchema,
