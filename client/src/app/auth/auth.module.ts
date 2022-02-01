@@ -9,7 +9,7 @@ import { AuthenticationService } from './services/authentication.service';
 import { LoginComponent } from './components/login.component';
 import { reducer } from './store/reducer';
 import { AuthEffects } from './store/effects';
-import { AuthGuard } from './guards/auth-guard.service';
+import { LifelikeAuthGuard } from './guards/auth-guard.service';
 import { LoginGuard } from './guards/login-guard.service';
 import { ResetPasswordDialogComponent } from './components/reset-password-dialog.component';
 
@@ -26,11 +26,11 @@ const components = [
     ],
     declarations: components,
     providers: [
-        AuthGuard,
+        LifelikeAuthGuard,
         AuthenticationService,
         LoginGuard,
     ],
     exports: components,
     entryComponents: [ResetPasswordDialogComponent]
 })
-export class AuthModule {}
+export class LifelikeAuthModule {}
