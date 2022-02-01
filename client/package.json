@@ -59,6 +59,8 @@
     "jszip": "^3.7.0",
     "jszip-utils": "^0.1.0",
     "keycharm": "^0.2.0",
+    "keycloak-angular": "^9.1.0",
+    "keycloak-js": "^16.1.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "ng2-charts": "^2.3.0",

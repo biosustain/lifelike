@@ -1,12 +1,13 @@
-import { ErrorHandler, NgModule } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 
+import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import { ChartsModule } from 'ng2-charts';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { RootStoreModule } from 'app/root-store';
 import { AdminModule } from 'app/admin/admin.module';
-import { AuthModule } from 'app/auth/auth.module';
+import { LifelikeAuthModule } from 'app/auth/auth.module';
 import { UserModule } from 'app/users/users.module';
 import { AppRoutingModule } from 'app/app-routing.module';
 import { AppComponent } from 'app/app.component';
@@ -35,6 +36,22 @@ import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/sankey-viewer-lib.module';
 import { FileTypesModule } from 'app/file-types/file-types.module';
 
+function initializeKeycloak(keycloak: KeycloakService) {
+  return () =>
+    keycloak.init({
+      config: {
+        url: 'http://localhost:8080/auth',
+        realm: 'master',
+        clientId: 'lifelike-frontend'
+      },
+      initOptions: {
+        onLoad: 'check-sso',
+        silentCheckSsoRedirectUri:
+          window.location.origin + '/assets/silent-check-sso.html'
+      }
+    });
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -51,7 +68,7 @@ import { FileTypesModule } from 'app/file-types/file-types.module';
     BrowserModule,
     PdfViewerLibModule,
     AdminModule,
-    AuthModule,
+    LifelikeAuthModule,
     SharedModule,
     AppRoutingModule,
     FileTypesModule,
@@ -72,8 +89,15 @@ import { FileTypesModule } from 'app/file-types/file-types.module';
     EnrichmentVisualisationsModule,
     ShortestPathModule,
     EnrichmentTablesModule,
+    KeycloakAngularModule
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeKeycloak,
+      multi: true,
+      deps: [KeycloakService]
+    },
     httpInterceptorProviders,
     Title,
     WorkspaceManager,

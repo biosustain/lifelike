@@ -15,7 +15,7 @@ import { AuthActions, AuthSelectors } from '../store';
 export type AuthGroups = 'SELF' | 'USER' | 'ADMIN';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class LifelikeAuthGuard implements CanActivate {
 
     activatedRoute: ActivatedRouteSnapshot;
     redirectUrl: string;
