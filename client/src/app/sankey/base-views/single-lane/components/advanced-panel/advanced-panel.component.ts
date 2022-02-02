@@ -1,7 +1,7 @@
 import { Component, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
-import { pairwise, map, filter } from 'rxjs/operators';
+import { pairwise, map, filter, startWith } from 'rxjs/operators';
 import { size, isEmpty } from 'lodash-es';
 
 import { uuidv4, deepDiff } from 'app/shared/utils';
@@ -48,6 +48,7 @@ export class SankeySingleLaneAdvancedPanelComponent extends SankeyAdvancedPanelC
       this.form.patchValue(state);
     });
     this.form.valueChanges.pipe(
+      startWith({}), // initial prev value
       pairwise(),
       map(deepDiff),
       filter(changes => !isEmpty(changes))

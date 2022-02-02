@@ -24,6 +24,7 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
 
   // region Life cycle
   ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+    console.log('SankeySingleLaneComponent.ngOnChanges', selected, searchedEntities, focusedNode, data, nodeAlign);
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;

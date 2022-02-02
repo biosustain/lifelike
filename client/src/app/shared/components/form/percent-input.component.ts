@@ -1,23 +1,30 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input, ViewEncapsulation, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { AbstractControlValueAccessor } from '../../utils/forms/abstract-control-value-accessor';
 
 @Component({
   selector: 'app-percent-input',
-  templateUrl: './percent-input.component.html'
+  templateUrl: './percent-input.component.html',
+  encapsulation: ViewEncapsulation.None,
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => PercentInputComponent),
+    multi: true
+  }],
 })
-export class PercentInputComponent {
-  @Input() inputId;
-  @Input() value;
-  @Output() valueChange = new EventEmitter<number | undefined>();
-  @Input() default = '';
-  @Input() min: number | undefined;
-  @Input() max: number | undefined;
-  @Input() step: number | undefined;
+export class PercentInputComponent extends AbstractControlValueAccessor<number> {
+  @Input() id: string;
+  @Input() min: number;
+  @Input() max: number;
+  @Input() step: number;
 
-  changed(event) {
-    const newValue = parseInt(event.target.value, 10) / 100;
-    if (newValue !== this.value) {
-      this.value = newValue;
-      this.valueChange.emit(this.value);
-    }
+  getDefaultValue(): number {
+    return 1;
+  }
+
+  change(value: number) {
+    this.value = value;
+    this.valueChange();
   }
 }
