@@ -209,8 +209,8 @@ export interface SankeyData extends GraphFile {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
 
-  _inNodes?: Array<number>;
-  _outNodes?: Array<number>;
+  sources?: Array<number>;
+  targets?: Array<number>;
 
   _views: SankeyViews;
 }

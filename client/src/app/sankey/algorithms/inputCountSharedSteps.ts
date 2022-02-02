@@ -47,7 +47,7 @@ export function initInputCountCalculation(
   layout.computeNodeReversedDepths(data);
   layout.computeNodeLayers(data);
   // traverse from side with less nodes
-  const dt = new DirectedTraversal([data._inNodes, data._outNodes]);
+  const dt = new DirectedTraversal([data.sources, data.targets]);
   // traverse starting from leaves nodes
   dt.reverse();
   return {

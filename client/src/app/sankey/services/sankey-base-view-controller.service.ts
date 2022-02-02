@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 
 import { Observable, combineLatest } from 'rxjs';
 import { map, tap, shareReplay, filter, switchMap } from 'rxjs/operators';
