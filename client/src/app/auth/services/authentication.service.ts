@@ -57,7 +57,6 @@ export class AuthenticationService implements OnDestroy {
       {email, password},
     ).pipe(
       map((resp: JWTTokenResponse) => {
-        localStorage.setItem('authId', resp.user.id.toString());
         localStorage.setItem('access_jwt', resp.accessToken.token);
         localStorage.setItem('expires_at', resp.accessToken.exp);
         // TODO: Move this out of localStorage
@@ -76,8 +75,6 @@ export class AuthenticationService implements OnDestroy {
     localStorage.removeItem('refresh_jwt');
     localStorage.removeItem('access_jwt');
     localStorage.removeItem('expires_at');
-    // See ***ARANGO_USERNAME***-store module where this is set
-    localStorage.removeItem('authId');
   }
 
   /**
@@ -98,16 +95,6 @@ export class AuthenticationService implements OnDestroy {
           return resp;
         }),
       );
-  }
-
-  public whoAmI(): number {
-    const authId = JSON.parse(localStorage.getItem('authId'));
-
-    if (
-      isNil(authId)
-    ) { return; }
-
-    return authId;
   }
 
   public getAccessToken() {
