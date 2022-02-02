@@ -264,7 +264,7 @@ export interface SankeyPathReport {
 
 // Do not change! tightly coupled with url
 export enum ViewBase {
-  sankeyMultiLane = 'sankeyMultiLane',
+  sankeyMultiLane = 'sankey',
   sankeySingleLane = 'sankey-many-to-many'
 }
 

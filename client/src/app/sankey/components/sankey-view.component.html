@@ -98,15 +98,14 @@
                 type="button">
             <i class="fas fa-sync"></i>
         </button>
-        <!--        <app-sankey-view-dropdown-->
-        <!--                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"-->
-        <!--                class="d-inline-block"-->
-        <!--                [object]="object"-->
-        <!--                *ngIf="data"-->
-        <!--                [(activeViewName)]="activeViewName"-->
-        <!--                [preselectedViewBase]="preselectedViewBase"-->
-        <!--                (viewDataChanged)="saveFile()"-->
-        <!--        ></app-sankey-view-dropdown>-->
+        <app-sankey-view-dropdown
+                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+                class="d-inline-block"
+                [object]="object"
+                [(activeViewName)]="activeViewName"
+                [preselectedViewBase]="preselectedViewBase"
+                (viewDataChanged)="saveFile()"
+        ></app-sankey-view-dropdown>
         <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
             <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"
@@ -139,7 +138,8 @@
                             ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
                 </div>
             </div>
-            <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options" *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor">
+            <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options"
+                 *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor">
                 <button class="btn btn-primary" ngbDropdownToggle>
                     {{ predefinedValueAccessor?.description !== 'None' ?
                     predefinedValueAccessor.description :
@@ -148,7 +148,7 @@
                 <!-- add class dropdown-menu to avoid relayout -->
                 <div ngbDropdownMenu class="dropdown-menu">
                     <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
-                            *ngFor="let predefinedValueAccessor of options.predefinedValueAccessors | keyvalue"
+                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue"
                             ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
                 </div>
             </div>
@@ -173,6 +173,13 @@
         >
             <as-split-area [order]="0">
                 <ng-template appSankey></ng-template>
+            </as-split-area>
+            <as-split-area [order]="0.1" *ngIf="{
+                  state$: sankeyController.state$ | async,
+                  stateDelta$: sankeyController.stateDelta$ | async,
+                  options$: sankeyController.options$ | async
+                } as dataSource">
+                <app-object-explorer [dataSource]="dataSource"></app-object-explorer>
             </as-split-area>
             <as-split-area [class]="[
                                 'as-split-area',

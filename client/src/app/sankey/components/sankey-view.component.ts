@@ -7,15 +7,16 @@ import {
   ComponentFactoryResolver,
   Injector,
   AfterViewInit,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  SimpleChange
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first, pairwise, startWith } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact, assign } from 'lodash-es';
+import { isNil, pick, compact, assign, mapValues, get } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -49,7 +50,6 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { SankeyBaseViewControllerService } from '../services/sankey-base-view-controller.service';
-import { ChangeDetection } from '@angular/cli/lib/config/schema';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -74,7 +74,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly sankeySearch: SankeySearchService,
     readonly viewService: ViewService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private sankeyController: SankeyControllerService,
+    public sankeyController: SankeyControllerService,
     private injector: Injector
   ) {
     const createSankeyInjector = providers => Injector.create({
@@ -144,17 +144,33 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     });
     this.content.subscribe(x => console.log('content', x));
 
-    this.dataToRender$.subscribe(data => {
+    this.dataToRender$.pipe(
+      startWith(), // initial prev value
+      pairwise(),
+    ).subscribe(([prevData, data]) => {
       this._dynamicComponentRef.get('sankey').instance.data = data;
+      this._dynamicComponentRef.get('sankey').instance.ngOnChanges({
+        data: new SimpleChange(prevData, data, isNil(prevData))
+      });
     });
 
     this.sankeyBaseViewControl$.pipe(
-      switchMap(({graphInputState$}) => graphInputState$)
-    ).subscribe(inputState => {
+      switchMap(({graphInputState$}) => graphInputState$),
+      startWith({}), // initial prev value,
+      pairwise(),
+    ).subscribe(([prevInputState, inputState]) => {
       console.log('inputState', inputState);
       const sankey = this._dynamicComponentRef.get('sankey');
       assign(sankey.instance, inputState);
-      sankey.injector.get(ChangeDetectorRef).markForCheck();
+      const changes = mapValues(inputState, (value, key) => ({
+        currentValue: value,
+        firstChange: isNil(prevInputState),
+        previousValue: get(prevInputState, key)
+      }));
+      console.log('changes', changes);
+      sankey.instance.ngOnChanges(changes);
+      sankey.changeDetectorRef.detectChanges();
+      sankey.injector.get(ChangeDetectorRef).detectChanges();
     });
   }
 
@@ -173,14 +189,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   get nodeAlign() {
     return this.sankeyController.state$.pipe(map(({nodeAlign}) => nodeAlign));
   }
-
-  sankeyBaseViewControl$ = new ReplaySubject<SankeyBaseViewControllerService>(1);
-
-  selectedNetworkTrace$ = this.sankeyController.networkTrace$;
-
-  predefinedValueAccessor$ = this.sankeyBaseViewControl$.pipe(
-    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
-  );
 
   get searching() {
     return !this.sankeySearch.done;
@@ -222,6 +230,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       }
     );
   }
+
+  predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
+
+  sankeyBaseViewControl$ = new ReplaySubject<SankeyBaseViewControllerService>(1);
+
+  selectedNetworkTrace$ = this.sankeyController.networkTrace$;
+
+  predefinedValueAccessor$ = this.sankeyBaseViewControl$.pipe(
+    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
+  );
 
   dynamicContainer;
   _dynamicComponentRef = new Map();
@@ -284,6 +302,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   );
 
   allData$ = this.sankeyController.data$;
+
+  state$ = this.sankeyController.state$;
+  options$ = this.sankeyController.options$;
 
   ngAfterViewInit() {
     /**
@@ -496,7 +517,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   ngOnDestroy() {
     this.paramsSubscription.unsubscribe();
-    this.openSankeySub.unsubscribe();
+    // todo
+    // this.openSankeySub.unsubscribe();
   }
 
   emitModuleProperties() {

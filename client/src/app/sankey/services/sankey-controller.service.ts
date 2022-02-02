@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject } from 'rxjs';
-import { merge, omit, transform, cloneDeepWith, clone, max, isNil, flatMap, pick, omitBy, isEqual, has } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
+import { merge, omit, transform, cloneDeepWith, clone, max, isNil, flatMap, pick, omitBy, has } from 'lodash-es';
+import { switchMap, map, filter, catchError, first, tap, shareReplay } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 
 import { GraphPredefinedSizing, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 import {
-  SankeyOptions,
   ValueGenerator,
   SankeyData,
   SankeyTraceNetwork,
@@ -331,6 +330,10 @@ export class SankeyControllerService extends StateControlAbstractService {
         {}
       )
     )
+  );
+
+  predefinedValueAccessors$ = this.options$.pipe(
+    map(({predefinedValueAccessors}) => predefinedValueAccessors)
   );
 
   networkTraceDefaultSizing$ = this.networkTrace$.pipe(
