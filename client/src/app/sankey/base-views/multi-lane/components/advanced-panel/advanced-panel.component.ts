@@ -36,6 +36,7 @@ export class SankeyMultiLaneAdvancedPanelComponent extends SankeyAdvancedPanelCo
     linkValueAccessorId: [undefined, []],
     nodeValueAccessorId: [undefined, []],
     prescalerId: [undefined, []],
+    linkPaletteId: [undefined, []],
   });
 
   constructor(

@@ -174,12 +174,20 @@
             <as-split-area [order]="0">
                 <ng-template appSankey></ng-template>
             </as-split-area>
-            <as-split-area [order]="0.1" *ngIf="{
+            <as-split-area [order]="0.1">
+                <app-object-explorer *ngIf="{
                   state$: sankeyController.state$ | async,
                   stateDelta$: sankeyController.stateDelta$ | async,
-                  options$: sankeyController.options$ | async
-                } as dataSource">
-                <app-object-explorer [dataSource]="dataSource"></app-object-explorer>
+                  options$: sankeyController.options$ | async,
+                  data$: sankeyController.data$ | async
+                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
+                <ng-container *ngIf="sankeyBaseViewControl$ | async as b">
+                    <app-object-explorer *ngIf="{
+                  Bstate$: b.state$ | async,
+                  Boptions$: b.options$ | async,
+                  BdataToRender$: b.dataToRender$ | async
+                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
+                </ng-container>
             </as-split-area>
             <as-split-area [class]="[
                                 'as-split-area',

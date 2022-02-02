@@ -13,12 +13,12 @@ export default {
       useClass: CustomisedSankeySingleLaneLayoutService
     },
     {
-      provide: SankeyLayoutService,
-      useExisting: CustomisedSankeySingleLaneLayoutService
-    },
-    {
       provide: SankeySingleLaneControllerService,
       useClass: SankeySingleLaneControllerService
+    },
+    {
+      provide: SankeyLayoutService,
+      useExisting: CustomisedSankeySingleLaneLayoutService
     },
     {
       provide: SankeyBaseViewControllerService,
