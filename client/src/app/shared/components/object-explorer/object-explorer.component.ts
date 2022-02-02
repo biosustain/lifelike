@@ -2,6 +2,7 @@ import { Component, Input, isDevMode, } from '@angular/core';
 import { isDataSource } from '@angular/cdk/collections';
 
 import { Observable } from 'rxjs';
+import { isString } from 'lodash-es';
 
 interface TreeNode {
   label?: string;
@@ -52,7 +53,7 @@ export class ObjectExplorerComponent {
           } else {
             // if text is longer than 20 character show it as collapsible node
             // @ts-ignore
-            if (value.length > 20 || (typeof value === 'object')) {
+            if ((isString(value) && value.length > 20) || (typeof value === 'object')) {
               n.children = [
                 value
               ];

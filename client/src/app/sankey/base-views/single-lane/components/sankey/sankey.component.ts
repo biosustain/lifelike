@@ -10,15 +10,6 @@ import { uuidv4 } from 'app/shared/utils';
 import { SankeySingleLaneLink, SankeySingleLaneNode } from '../interfaces';
 import { SankeyComponent } from '../../../../components/sankey/sankey.component';
 
-const nodeSorter = (a, b) => {
-  // sort by order given in tree traversal
-  return (
-    a._source._order - b._source._order ||
-    a._target._order - b._target._order ||
-    a._order - b._order
-  );
-};
-
 
 @Component({
   selector: 'app-sankey-single-lane',
@@ -32,7 +23,8 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
   @Input() selected: undefined | SankeySingleLaneLink | SankeySingleLaneNode;
 
   // region Life cycle
-  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign, networkTraceIdx, activeViewName}: SimpleChanges) {
+  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+    console.log('SankeySingleLaneComponent.ngOnChanges', selected, searchedEntities, focusedNode, data, nodeAlign);
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -43,95 +35,8 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
       }
     }
 
-    // Here we abuse the fact that name of base views ("Single-Lane" and "Multi-Lane") is actually undefined. We have to hack our way
-    // around that fact that saved views trigger ngOnChanges twice, and abusing the fact that base view names are undefined is one way to
-    // do that.
-    if (!isNil(activeViewName) && !isNil(activeViewName.currentValue)) {
-      this.viewChanged = true;
-    }
-
     if (data && this.svg) {
-      if (isNil(networkTraceIdx) && !this.viewChanged) {
-        // NOTE: changing the order of the nodes/links arrays caused a bug in the following code. Be very careful sorting the array in
-        // place, because it may interfere with logic elsewhere! Consider creating a copy of the list if you absolutely need to sort it in
-        // place.
-
-        // Sort new and old links on id to get them in the same order
-        this.data.links.sort((a: any, b: any) => a._id - b._id);
-        data.previousValue.links.sort((a, b) => a._id - b._id);
-
-        let m = 0;
-        for (const link of data.previousValue.links) {
-          this.data.links[m]._y0 = link._y0;
-          this.data.links[m]._y1 = link._y1;
-          this.data.links[m]._index = link._index;
-          this.data.links[m]._order = link._order;
-          if (isNil(this.data.links[m]._order)) {
-            this.data.links[m]._order = 0;
-          }
-          m++;
-        }
-
-        // Sort the new links *again* so that they are in correct index order
-        this.data.links.sort((a: any, b: any) => a._index - b._index);
-        // Sort new and old nodes on id to get them in the same order
-        this.data.nodes.sort((a: any, b: any) => a._id - b._id);
-        data.previousValue.nodes.sort((a, b) => a._id - b._id);
-
-        for (let i = 0; i < data.previousValue.nodes.length; i++) {
-          const prevNode = data.previousValue.nodes[i];
-          const dataNode = this.data.nodes[i];
-
-          dataNode._x0 = prevNode._x0;
-          dataNode._x1 = prevNode._x1;
-          dataNode._y0 = prevNode._y0;
-          dataNode._y1 = prevNode._y1;
-          if (isNil(prevNode._order)) {
-            dataNode._order = 0;
-          } else {
-            dataNode._order = prevNode._order;
-          }
-
-          if (isNil(dataNode._sourceLinks)) {
-            dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this.data.links[link._index]);
-          } else {
-            for (let j = 0; j < prevNode._sourceLinks.length; j++) {
-              dataNode._sourceLinks[j] = this.data.links[dataNode._sourceLinks[j]._index];
-            }
-          }
-
-          if (isNil(dataNode._targetLinks)) {
-            dataNode._targetLinks = prevNode._targetLinks.map((link) => this.data.links[link._index]);
-          } else {
-            for (let k = 0; k < prevNode._targetLinks.length; k++) {
-              dataNode._targetLinks[k] = this.data.links[dataNode._targetLinks[k]._index];
-            }
-          }
-        }
-
-        /* tslint:disable:prefer-for-of */
-        for (let n = 0; n < this.data.nodes.length; n++) {
-          for (let i = 0; i < this.data.nodes[n]._sourceLinks.length; i++) {
-            this.data.nodes[n]._sourceLinks[i]._source = this.data.nodes[n];
-          }
-
-          for (let j = 0; j < this.data.nodes[n]._targetLinks.length; j++) {
-            this.data.nodes[n]._targetLinks[j]._target = this.data.nodes[n];
-          }
-        }
-
-
-        /* tslint:disable:prefer-for-of */
-        for (let n = 0; n < this.data.nodes.length; n++) {
-          if (!isNil(this.data.nodes[n]._sourceLinks)) {
-            this.data.nodes[n]._sourceLinks.sort(nodeSorter);
-          }
-          if (!isNil(this.data.nodes[n]._targetLinks)) {
-            this.data.nodes[n]._targetLinks.sort(nodeSorter);
-          }
-        }
-      }
-      this.viewChanged = false;
+      // using this.data instead of current value so we use copy made by setter
       this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
