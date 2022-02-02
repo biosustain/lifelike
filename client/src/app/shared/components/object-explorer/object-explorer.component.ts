@@ -2,12 +2,12 @@ import { Component, Input, isDevMode, } from '@angular/core';
 import { isDataSource } from '@angular/cdk/collections';
 
 import { Observable } from 'rxjs';
-import { isString } from 'lodash-es';
+import { isString, isObject, size, isArray, isFunction } from 'lodash-es';
 
 interface TreeNode {
   label?: string;
   value?: string | number | boolean | any;
-  children?: Array<any>;
+  children?: Array<any> | object;
 }
 
 @Component({
@@ -32,9 +32,9 @@ export class ObjectExplorerComponent {
   }
 
   getChildren(node) {
-    if (typeof node === 'object') {
+    if (isObject(node) as any) {
       if (node.children) {
-        return node.children;
+        return isArray(node.children) ? node.children : this.getChildren(node.children);
       }
       const filterPrivateProperties: (value: any) => boolean = isDevMode() ? () => true : ([label]) => label[0] !== '_';
       return Object.entries(node)
@@ -53,10 +53,15 @@ export class ObjectExplorerComponent {
           } else {
             // if text is longer than 20 character show it as collapsible node
             // @ts-ignore
-            if ((isString(value) && value.length > 20) || (typeof value === 'object')) {
+            if (isString(value) && value.length > 20) {
               n.children = [
                 value
               ];
+            } else if (isFunction(value)) {
+              n.children = value;
+              n.value = isDevMode() ? String(value) : 'function';
+            } else if (isObject(value)) {
+              n.children = value;
             } else {
               n.children = [];
               n.value = value;
@@ -71,9 +76,9 @@ export class ObjectExplorerComponent {
     return (
       typeof node === 'object'
     ) && (
-      (
+      size(
         node.children ? node.children : Object.keys(node)
-      ).length > 0
+      ) > 0
     );
   }
 }
