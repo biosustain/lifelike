@@ -3,14 +3,14 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { omitBy, isNil, mapValues } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { of, Observable, from, iif } from 'rxjs';
-import { map, first, switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { SankeyURLLoadParams, SankeyURLLoadParam, ViewBase } from '../../interfaces';
+import { SankeyURLLoadParams, ViewBase } from '../../interfaces';
 import { SankeyViewConfirmComponent } from '../view-confirm.component';
 import { SankeyViewCreateComponent } from '../view-create/view-create.component';
 import { viewBaseToNameMapping } from '../../constants';
@@ -102,22 +102,25 @@ export class SankeyViewDropdownComponent {
     ).toString();
   }
 
-  openBaseView(baseView: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<boolean> {
-    const {object: {project, hashId}} = this;
-    return this.sankeyController.state$.pipe(
-      first(),
-      switchMap(({networkTraceIdx}) =>
-        from(this.workspaceManager.navigateByUrl({
-          url: `/projects/${project.name}/${baseView}/${hashId}#${
-            this.objectToFragment({
-              [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
-              [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
-              ...params
-            } as SankeyURLLoadParams)
-          }`
-        }))
-      )
-    ).toPromise();
+  openBaseView(baseViewName: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<any> {
+    return this.sankeyController.patchState({
+      baseViewName
+    }).toPromise();
+    // const {object: {project, hashId}} = this;
+    // return this.sankeyController.state$.pipe(
+    //   first(),
+    //   switchMap(({networkTraceIdx}) =>
+    //     from(this.workspaceManager.navigateByUrl({
+    //       url: `/projects/${project.name}/${baseView}/${hashId}#${
+    //         this.objectToFragment({
+    //           [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
+    //           [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
+    //           ...params
+    //         } as SankeyURLLoadParams)
+    //       }`
+    //     }))
+    //   )
+    // ).toPromise();
   }
 
   saveView(): Promise<any> {

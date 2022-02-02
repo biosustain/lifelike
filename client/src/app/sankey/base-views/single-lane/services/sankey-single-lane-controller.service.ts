@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { flatMap, groupBy, intersection, merge, pick, isEqual } from 'lodash-es';
-import { switchMap, map, distinctUntilChanged } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged, tap } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 import { combineLatest } from 'rxjs';
@@ -79,7 +79,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
     map(states => merge({}, ...states))
   );
 
-  baseDefaultOptions = {
+  baseDefaultOptions = Object.freeze({
     colorLinkTypes: EdgeColorCodes,
     linkValueGenerators: {
       [LINK_VALUE_GENERATOR.input_count]: {
@@ -88,7 +88,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
         disabled: () => false
       } as ValueGenerator
     }
-  };
+  });
 
   networkTraceData$ = this.c.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, sources, targets, traces}) => this.state$.pipe(
@@ -110,16 +110,19 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
   );
 
   dataToRender$ = this.networkTraceData$.pipe(
-    // tap(d => console.log('dataToRender$ networkTraceData', d)),
+    tap(d => console.log('dataToRender$ networkTraceData', d)),
     switchMap(networkTraceData => this.linkGraph(networkTraceData)),
-    // tap(d => console.log('dataToRender$', d)),
+    tap(d => console.log('dataToRender$', d)),
   );
 
   graphInputState$;
 
   // Trace logic
   /**
-   * Extract links which relates to certain trace network.
+   * Extract links which relates to certain trace network and
+   * assign _color property based on their trace.
+   * Also creates duplicates if given link is used in multiple traces.
+   * Should return copy of link Objects (do not mutate links!)
    */
   getNetworkTraceLinks(
     traces: SankeyTraceNetwork['traces'],

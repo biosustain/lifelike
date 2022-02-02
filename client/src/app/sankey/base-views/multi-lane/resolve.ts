@@ -10,6 +10,10 @@ import { SankeyBaseViewControllerService } from '../../services/sankey-base-view
 export default {
   providers: [
     {
+      provide: CustomisedSankeyMultiLaneLayoutService,
+      useClass: CustomisedSankeyMultiLaneLayoutService
+    },
+    {
       provide: CustomisedSankeyLayoutService,
       useClass: CustomisedSankeyMultiLaneLayoutService
     },

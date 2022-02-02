@@ -145,7 +145,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.content.subscribe(x => console.log('content', x));
 
     this.dataToRender$.pipe(
-      startWith(), // initial prev value
+      startWith(undefined), // initial prev value
       pairwise(),
     ).subscribe(([prevData, data]) => {
       this._dynamicComponentRef.get('sankey').instance.data = data;
@@ -316,6 +316,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       const sankeyInjector = this.baseViewInjectors.get(o);
       const injectComponent = (container, component) => {
         const factory = this.componentFactoryResolver.resolveComponentFactory(component);
+        container.clear();
         const componentRef = container.createComponent(factory, null, sankeyInjector);
         return componentRef;
       };
