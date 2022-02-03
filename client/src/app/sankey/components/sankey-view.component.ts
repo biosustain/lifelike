@@ -117,7 +117,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.returnUrl = params.return;
     });
 
-    this.sankeyController.stateDelta$.subscribe(d => console.log('stateDelta sankey controller subs', d));
+    // this.sankeyController.stateDelta$.subscribe(d => console.log('stateDelta sankey controller subs', d));
 
     this.route.fragment.pipe(
       tap(x => console.log('route.fragment', x)),
@@ -142,7 +142,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.currentFileId = null;
       this.openSankey(file_id);
     });
-    this.content.subscribe(x => console.log('content', x));
+    // this.content.subscribe(x => console.log('content', x));
 
     this.dataToRender$.pipe(
       startWith(undefined), // initial prev value
@@ -244,10 +244,21 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   dynamicContainer;
   _dynamicComponentRef = new Map();
 
-  @ViewChild(SankeyDirective, {static: true}) sankey;
-  @ViewChild(SankeyDetailsPanelDirective, {static: true}) details;
-  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advanced;
+  @ViewChild(SankeyDirective, {static: true}) sankeySlot;
+  @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
+  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
   baseViewInjectors = new WeakMap();
+
+
+  get sankey() {
+    return this._dynamicComponentRef.get('sankey').instance;
+  }
+  get details() {
+    return this._dynamicComponentRef.get('details').instance;
+  }
+  get advanced() {
+    return this._dynamicComponentRef.get('advanced').instance;
+  }
 
   content = new ReplaySubject(1);
 
@@ -321,7 +332,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         return componentRef;
       };
       const createComponent = (name, inputs = {}, outputs = {}) => {
-        const componentRef = injectComponent(this[name].viewContainerRef, o[name]);
+        const componentRef = injectComponent(this[name + 'Slot'].viewContainerRef, o[name]);
         Object.assign(componentRef.instance, inputs);
         Object.keys(outputs).forEach(key => {
           componentRef.instance[key].subscribe(outputs[key]);
@@ -453,19 +464,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   // region Zoom
   resetZoom() {
-    if (this.sankey) {
+    if (this.sankeySlot) {
       this.sankey.resetZoom();
     }
   }
 
   zoomIn() {
-    if (this.sankey) {
+    if (this.sankeySlot) {
       this.sankey.scaleZoom(1.25);
     }
   }
 
   zoomOut() {
-    if (this.sankey) {
+    if (this.sankeySlot) {
       this.sankey.scaleZoom(.8);
     }
   }

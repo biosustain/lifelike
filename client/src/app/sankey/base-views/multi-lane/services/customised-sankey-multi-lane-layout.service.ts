@@ -21,11 +21,11 @@ import { SankeyControllerService } from '../../../services/sankey-controller.ser
 // @ts-ignore
 export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayoutService {
   constructor(
-    readonly truncatePipe: TruncatePipe,
     readonly sankeyController: SankeyControllerService,
+    readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
-    super(truncatePipe, sankeyController, warningController);
+    super(sankeyController, truncatePipe, warningController);
   }
 
   get nodeColor() {
@@ -111,7 +111,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  )
+  );
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -119,7 +119,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
