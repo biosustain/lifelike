@@ -44,16 +44,6 @@ export class SankeySingleLaneAdvancedPanelComponent extends SankeyAdvancedPanelC
     protected formBuilder: FormBuilder
   ) {
     super(sankeyController, formBuilder);
-    this.sankeyController.state$.subscribe(state => {
-      this.form.patchValue(state);
-    });
-    this.form.valueChanges.pipe(
-      startWith({}), // initial prev value
-      pairwise(),
-      map(deepDiff),
-      filter(changes => !isEmpty(changes))
-    ).subscribe(changes => {
-      this.sankeyController.c.patchState(changes as any).toPromise();
-    });
+    this.connectFormToState();
   }
 }

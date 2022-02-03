@@ -1,4 +1,4 @@
-<form *ngIf="state && options" [formGroup]="form">
+<form *ngIf="options$ | async as options" [formGroup]="form">
     <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
         <input formControlName="colorLinkByType"
                ngbButton
@@ -41,7 +41,7 @@
     <ng-container formGroupName="nodeHeight">
         <label formGroupName="min" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
-                   (change)="disableGroup( $event.target.checked, 'nodeHeight', 'min')"
+                   (change)="disableGroup( $event.target.checked, 'nodeHeight.min')"
                    ngbButton
                    type="checkbox">
             Min node height
@@ -49,7 +49,7 @@
                    max="20" min="0"
                    ngbButton
                    type="range">
-            {{state.nodeHeight.min.value}}
+            {{form.get('nodeHeight.min.value').value}}
         </label>
         <label formGroupName="max" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
@@ -61,7 +61,7 @@
                    max="60" min="1"
                    ngbButton
                    type="range">
-            {{state.nodeHeight.max.ratio}}
+            {{form.get('nodeHeight.max.ratio').value}}
         </label>
     </ng-container>
     <label formGroupName="labelEllipsis" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
@@ -74,7 +74,7 @@
                max="50" min="0"
                ngbButton
                type="range">
-        {{state.labelEllipsis.value}}
+        {{form.get('labelEllipsis.value').value}}
     </label>
     <div class="dropdown-divider"></div>
     <div class="w-100 text-left m-0"

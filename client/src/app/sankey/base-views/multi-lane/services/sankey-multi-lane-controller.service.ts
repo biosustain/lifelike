@@ -34,14 +34,14 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
       distinctUntilChanged(isEqual)
     );
-    this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
-    this.dataToRender$.subscribe(d => console.log('data to render', d));
-    this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
-    this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
-    this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
-    this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
-    this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
-    this.options$.subscribe(d => console.log('options$ construct subscription', d));
+    // this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
+    // this.dataToRender$.subscribe(d => console.log('data to render', d));
+    // this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
+    // this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
+    // this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
+    // this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
+    // this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
+    // this.options$.subscribe(d => console.log('options$ construct subscription', d));
   }
 
   viewBase = ViewBase.sankeyMultiLane;
