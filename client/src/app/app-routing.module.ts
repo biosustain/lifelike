@@ -341,7 +341,7 @@ const routes: Routes = [
   {
     path: 'report/copyright-infringement/form',
     component: CopyrightInfringementFormComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Copyright Infringement Claim Request Form',
       fontAwesomeIcon: 'fas fa-copyright',
