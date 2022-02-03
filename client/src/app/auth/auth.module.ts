@@ -7,11 +7,11 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { AuthenticationService } from './services/authentication.service';
 import { LoginComponent } from './components/login.component';
+import { ResetPasswordDialogComponent } from './components/reset-password-dialog.component';
 import { reducer } from './store/reducer';
 import { AuthEffects } from './store/effects';
 import { LifelikeAuthGuard } from './guards/auth-guard.service';
 import { LoginGuard } from './guards/login-guard.service';
-import { ResetPasswordDialogComponent } from './components/reset-password-dialog.component';
 
 const components = [
     LoginComponent,
