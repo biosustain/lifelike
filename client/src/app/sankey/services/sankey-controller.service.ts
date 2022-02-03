@@ -6,6 +6,7 @@ import { switchMap, map, filter, catchError, first, tap, shareReplay } from 'rxj
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 
+
 import { GraphPredefinedSizing, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 import {
   ValueGenerator,
@@ -36,6 +37,7 @@ import * as nodeValues from '../algorithms/nodeValues';
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
 import { StateControlAbstractService } from './state-controlling-abstract.service';
+import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -73,18 +75,18 @@ export class SankeyControllerService extends StateControlAbstractService {
     readonly warningController: WarningControllerService
   ) {
     super();
-    this.stateDelta$.subscribe(d => console.log('state delta construct subscription', d));
-    this.defaultState$.subscribe(d => console.log('default state construct subscription', d));
-    this.partialNetworkTraceData$.subscribe(d => console.log('partialNetworkTraceData$ construct subscription', d));
-    this.data$.subscribe(d => console.log('data$ construct subscription', d));
-    this.options$.subscribe(d => console.log('options$ construct subscription', d));
-    this.dataToRender$.subscribe(d => console.log('dataToRender$ construct subscription', d));
-    this.viewsUpdate$.subscribe(d => console.log('viewsUpdate$ construct subscription', d));
-    this.views$.subscribe(d => console.log('views$ construct subscription', d));
-    this.networkTrace$.subscribe(d => console.log('networkTrace$ construct subscription', d));
-    this.oneToMany$.subscribe(d => console.log('oneToMany$ construct subscription', d));
-    this.prescaler$.subscribe(d => console.log('prescaler$ construct subscription', d));
-    this.networkTraceDefaultSizing$.subscribe(d => console.log('networkTraceDefaultSizing$ construct subscription', d));
+    // this.stateDelta$.subscribe(d => console.log('state delta construct subscription', d));
+    // this.defaultState$.subscribe(d => console.log('default state construct subscription', d));
+    // this.partialNetworkTraceData$.subscribe(d => console.log('partialNetworkTraceData$ construct subscription', d));
+    // this.data$.subscribe(d => console.log('data$ construct subscription', d));
+    // this.options$.subscribe(d => console.log('options$ construct subscription', d));
+    // this.dataToRender$.subscribe(d => console.log('dataToRender$ construct subscription', d));
+    // this.viewsUpdate$.subscribe(d => console.log('viewsUpdate$ construct subscription', d));
+    // this.views$.subscribe(d => console.log('views$ construct subscription', d));
+    // this.networkTrace$.subscribe(d => console.log('networkTrace$ construct subscription', d));
+    // this.oneToMany$.subscribe(d => console.log('oneToMany$ construct subscription', d));
+    // this.prescaler$.subscribe(d => console.log('prescaler$ construct subscription', d));
+    // this.networkTraceDefaultSizing$.subscribe(d => console.log('networkTraceDefaultSizing$ construct subscription', d));
     this.state$.subscribe(state => {
       // side effect to load default state values if needed
       if (has(state, 'networkTraceIdx')) {
@@ -460,29 +462,28 @@ export class SankeyControllerService extends StateControlAbstractService {
   }
 
   selectView(viewName) {
-    // todo
-    // return this.views$.pipe(
-    //   map(views => views[viewName]),
-    //   filter(view => !!view),
-    //   switchMap(view =>
-    //     this.patchState({
-    //       viewName,
-    //       ...view.state
-    //     }).pipe(
-    //       switchMap(stateDelta => this.networkTraceData$.pipe(
-    //         map((networkTraceData: { links: SankeyLink[], nodes: SankeyNode[] }) => {
-    //           (networkTraceData as any)._precomputedLayout = true;
-    //           this.applyPropertyObject(view.nodes, networkTraceData.nodes);
-    //           this.applyPropertyObject(view.links, networkTraceData.links);
-    //           // @ts-ignore
-    //           const layout = new CustomisedSankeyLayoutService();
-    //           layout.computeNodeLinks(networkTraceData);
-    //           return networkTraceData;
-    //         })
-    //       ))
-    //     )
-    //   )
-    // ).toPromise();
+    return this.views$.pipe(
+      map(views => views[viewName]),
+      filter(view => !!view),
+      switchMap(view =>
+        this.patchState({
+          viewName,
+          ...view.state
+        }).pipe(
+          switchMap(stateDelta => this.partialNetworkTraceData$.pipe(
+            map((networkTraceData: { links: SankeyLink[], nodes: SankeyNode[] }) => {
+              (networkTraceData as any)._precomputedLayout = true;
+              this.applyPropertyObject(view.nodes, networkTraceData.nodes);
+              this.applyPropertyObject(view.links, networkTraceData.links);
+              // @ts-ignore
+              const layout = new CustomisedSankeyLayoutService(this);
+              layout.computeNodeLinks(networkTraceData);
+              return networkTraceData;
+            })
+          ))
+        )
+      )
+    ).toPromise();
   }
 
   patchState(statePatch: Partial<SankeyState>) {

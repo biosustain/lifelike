@@ -14,11 +14,11 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 // @ts-ignore
 export class CustomisedSankeySingleLaneLayoutService extends CustomisedSankeyLayoutService {
   constructor(
-    readonly truncatePipe: TruncatePipe,
     readonly sankeyController: SankeyControllerService,
+    readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
-    super(truncatePipe, sankeyController, warningController);
+    super(sankeyController, truncatePipe, warningController);
   }
 
   get linkBorder() {

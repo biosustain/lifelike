@@ -33,11 +33,12 @@ export const DEFAULT_FONT_SIZE = 12 * 1.60;
 // @ts-ignore
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   constructor(
-    readonly truncatePipe: TruncatePipe,
     readonly sankeyController: SankeyControllerService,
+    readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
+    // todo: refractor on next iteration
     this.sankeyController.state$.subscribe(state => {
       this.state = state;
     });

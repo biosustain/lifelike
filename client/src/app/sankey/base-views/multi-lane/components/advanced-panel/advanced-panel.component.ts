@@ -1,5 +1,5 @@
 import { Component, } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 
 import { isEmpty } from 'lodash-es';
 import { pairwise, map, filter, startWith } from 'rxjs/operators';
@@ -26,12 +26,15 @@ export class SankeyMultiLaneAdvancedPanelComponent extends SankeyAdvancedPanelCo
       }),
       max: this.formBuilder.group({
         enabled: [false, []],
-        ratio: [0, []],
+        ratio: [{
+          value: 0,
+          disabled: true
+        }, []],
       }),
     }),
     labelEllipsis: this.formBuilder.group({
       enabled: [false, []],
-      value: [0, []],
+      value: [0, Validators.pattern(/^\d+$/)],
     }),
     linkValueAccessorId: [undefined, []],
     nodeValueAccessorId: [undefined, []],
@@ -44,16 +47,6 @@ export class SankeyMultiLaneAdvancedPanelComponent extends SankeyAdvancedPanelCo
     protected formBuilder: FormBuilder
   ) {
     super(sankeyController, formBuilder);
-    this.sankeyController.state$.subscribe(state => {
-      this.form.patchValue(state);
-    });
-    this.form.valueChanges.pipe(
-      startWith({}), // initial prev value
-      pairwise(),
-      map(deepDiff),
-      filter(changes => !isEmpty(changes))
-    ).subscribe(changes => {
-      this.sankeyController.c.patchState(changes as any).toPromise();
-    });
+    this.connectFormToState();
   }
 }

@@ -66,7 +66,9 @@ export class SankeyViewDropdownComponent {
   @Input() preselectedViewBase: string;
   @Input() object: FilesystemObject;
 
-  @Output() activeViewNameChange = new EventEmitter<string>();
+  activeViewNameChange(viewName) {
+    return this.sankeyController.selectView(viewName);
+  }
   @Output() viewDataChanged = new EventEmitter();
 
   private _activeViewName: string;

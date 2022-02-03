@@ -19,7 +19,7 @@
         </button>
         <div class="dropdown-divider"></div>
         <button ngbDropdownItem *ngFor="let view of views$ | async | keyvalue"
-                (click)="activeViewNameChange.emit(view.key)">
+                (click)="activeViewNameChange(view.key)">
             <div>{{ view.key }}</div>
             <i [ngClass]="{
                         'fa fa-trash': true,
