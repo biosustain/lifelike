@@ -10,6 +10,7 @@ import { LifelikeAuthModule } from 'app/auth/auth.module';
 import { UserModule } from 'app/users/users.module';
 import { AppRoutingModule } from 'app/app-routing.module';
 import { AppComponent } from 'app/app.component';
+import { UserFileImportModule } from 'app/user-file-import/user-file-import.module';
 import { SearchModule } from 'app/search/search.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { KgStatisticsComponent } from 'app/kg-statistics.component';
@@ -20,8 +21,10 @@ import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from 'app/dashboard.component';
+import { KgImportModule } from 'app/kg-import/kg-import.module';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { FileNavigatorModule } from 'app/file-navigator/file-navigator.module';
+import { ShortestPathModule } from 'app/shortest-path/shortest-path.module';
 import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { GlobalErrorHandler } from 'app/global-error-handler';
 import { EnrichmentTablesModule } from 'app/enrichment/enrichment-tables.module';
@@ -50,9 +53,11 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     SharedModule,
     AppRoutingModule,
     FileTypesModule,
+    UserFileImportModule,
     FileBrowserModule,
     VisualizationModule,
     UserModule,
+    KgImportModule,
     // ngrx
     RootStoreModule,
     SearchModule,
@@ -64,6 +69,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     FileNavigatorModule,
     BiocViewerLibModule,
     EnrichmentVisualisationsModule,
+    ShortestPathModule,
     EnrichmentTablesModule,
     PoliciesModule,
     ReportsModule,
