@@ -39,7 +39,6 @@ const routes: Routes = [
   {
     path: '',
     component: DashboardComponent,
-    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -48,7 +47,6 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
