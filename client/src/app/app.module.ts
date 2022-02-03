@@ -1,7 +1,6 @@
-import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 
-import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import { ChartsModule } from 'ng2-charts';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -38,22 +37,6 @@ import { FileTypesModule } from 'app/file-types/file-types.module';
 import { PoliciesModule } from 'app/policies/policies.module';
 import { HelpAndInfoModule } from 'app/help-and-info/help-and-info.module';
 import { ReportsModule } from 'app/reports/reports.module';
-
-function initializeKeycloak(keycloak: KeycloakService) {
-  return () =>
-    keycloak.init({
-      config: {
-        url: 'http://localhost:8080/auth',
-        realm: 'master',
-        clientId: 'lifelike-frontend'
-      },
-      initOptions: {
-        onLoad: 'check-sso',
-        silentCheckSsoRedirectUri:
-          window.location.origin + '/assets/silent-check-sso.html'
-      }
-    });
-}
 
 @NgModule({
   declarations: [
@@ -97,12 +80,6 @@ function initializeKeycloak(keycloak: KeycloakService) {
     ReportsModule,
   ],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeKeycloak,
-      multi: true,
-      deps: [KeycloakService]
-    },
     httpInterceptorProviders,
     Title,
     WorkspaceManager,
