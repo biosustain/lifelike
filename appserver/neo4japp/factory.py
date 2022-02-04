@@ -217,7 +217,6 @@ def handle_error(ex):
         # hopefully these were caught at the query level
         ex = ServerException(message=str(ex))
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
@@ -227,14 +226,12 @@ def handle_error(ex):
                 error_name=f'{type(ex)}',
                 expected=True,
                 event_type=LogEventType.SENTRY_HANDLED.value,
-                transaction_id=transaction_id,
                 username=current_user,
             ).to_dict()
         }
     )
 
     ex.version = GITHUB_HASH
-    ex.transaction_id = transaction_id
     if current_app.debug:
         ex.stacktrace = ''.join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -248,7 +245,6 @@ def handle_generic_error(code: int, ex: Exception):
     # but log with the real exception message below
     newex = ServerException()
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id') or ''
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
@@ -258,14 +254,12 @@ def handle_generic_error(code: int, ex: Exception):
                 error_name=f'{type(ex)}',
                 expected=True,
                 event_type=LogEventType.SENTRY_UNHANDLED.value,
-                transaction_id=transaction_id,
                 username=current_user,
             ).to_dict()
         }
     )
 
     newex.version = GITHUB_HASH
-    newex.transaction_id = transaction_id
     if current_app.debug:
         newex.stacktrace = ''.join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -301,10 +295,8 @@ def handle_validation_error(code, error: ValidationError, messages=None):
 
     ex = ServerException(message=message, code=code, fields=fields)
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
 
     ex.version = GITHUB_HASH
-    ex.transaction_id = transaction_id
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 

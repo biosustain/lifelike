@@ -47,9 +47,6 @@ logger = logging.getLogger(__name__)
 
 @app.before_request
 def request_navigator_log():
-    with sentry_sdk.configure_scope() as scope:
-        scope.set_tag(
-            'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
