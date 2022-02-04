@@ -44,6 +44,7 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     password_hash = db.Column(db.String(256))
     failed_login_count = db.Column(db.Integer, default=0)
     forced_password_reset = db.Column(db.Boolean)
+    subject = db.Column(db.String(256))
 
     # load all roles associated with the user eagerly using subquery
     roles = db.relationship(
@@ -83,6 +84,10 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     @classmethod
     def query_by_username(cls, username: str) -> Query:
         return cls.query.filter(cls.username == username)
+
+    @classmethod
+    def query_by_subject(cls, subject: str) -> Query:
+        return cls.query.filter(cls.subject == subject)
 
     def to_dict(self, exclude=None, **kwargs):
         return super().to_dict(exclude=['password_hash'] + (exclude or []), **kwargs)
