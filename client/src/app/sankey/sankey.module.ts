@@ -28,6 +28,7 @@ import { SankeyViewConfirmComponent } from './components/view-confirm.component'
 import { SankeyViewCreateComponent } from './components/view-create/view-create.component';
 import { SankeyViewDropdownComponent } from './components/view-dropdown/view-dropdown.component';
 import { BaseViewsModule } from './base-views/base-views.module';
+import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { BaseViewsModule } from './base-views/base-views.module';
     PathReportComponent,
     SankeyViewConfirmComponent,
     SankeyViewCreateComponent,
-    SankeyViewDropdownComponent
+    SankeyViewDropdownComponent,
+    SankeyAdvancedPanelComponent
   ],
   imports: [
     CommonModule,

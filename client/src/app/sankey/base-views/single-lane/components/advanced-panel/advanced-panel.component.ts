@@ -1,25 +1,20 @@
-import { Component, } from '@angular/core';
+import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-
-import { pairwise, map, filter, startWith } from 'rxjs/operators';
-import { size, isEmpty } from 'lodash-es';
-
-import { uuidv4, deepDiff } from 'app/shared/utils';
-
-import { SankeyAdvancedPanelComponent } from '../../../../components/advanced-panel/advanced-panel.component';
+import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel/advanced-panel.component';
 import { SankeyBaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
+import { SankeySingleLaneState, SankeySingleLaneOptions } from '../interfaces';
 
 @Component({
   selector: 'app-sankey-advanced-panel',
   templateUrl: './advanced-panel.component.html',
   styleUrls: ['./advanced-panel.component.scss'],
 })
-export class SankeySingleLaneAdvancedPanelComponent extends SankeyAdvancedPanelComponent {
+export class SankeySingleLaneAdvancedPanelComponent
+  extends SankeyAbstractAdvancedPanelComponent<SankeySingleLaneOptions, SankeySingleLaneState>
+  implements OnDestroy {
   form = this.formBuilder.group({
     colorLinkByType: [false, []],
     highlightCircular: ['', []],
-    normalizeLinks: ['', []],
-    fontSizeScale: [1, []],
     nodeHeight: this.formBuilder.group({
       min: this.formBuilder.group({
         enabled: [false, []],
@@ -27,23 +22,27 @@ export class SankeySingleLaneAdvancedPanelComponent extends SankeyAdvancedPanelC
       }),
       max: this.formBuilder.group({
         enabled: [false, []],
-        ratio: [0, []],
+        ratio: [{
+          value: 0,
+          disabled: true
+        }, []],
       }),
-    }),
-    labelEllipsis: this.formBuilder.group({
-      enabled: [false, []],
-      value: [0, []],
     }),
     linkValueAccessorId: [undefined, []],
     nodeValueAccessorId: [undefined, []],
-    prescalerId: [undefined, []],
   });
 
   constructor(
-    protected sankeyController: SankeyBaseViewControllerService,
+    protected baseView: SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState>,
     protected formBuilder: FormBuilder
   ) {
-    super(sankeyController, formBuilder);
-    this.connectFormToState();
+    super(baseView, formBuilder);
+    this.onInit();
+  }
+
+  commonOptions$ = this.baseView.common.options$;
+  
+  ngOnDestroy() {
+    super.ngOnDestroy();
   }
 }

@@ -132,7 +132,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
           })
         )
       ),
-      tap(stateDelta => this.sankeyController.stateDelta$.next(stateDelta))
+      tap(stateDelta => this.sankeyController.delta$.next(stateDelta))
     ).subscribe(state => {
       console.log('loaded state from fragment', state);
     });
@@ -154,7 +154,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       });
     });
 
-    this.sankeyBaseViewControl$.pipe(
+    this.baseView.pipe(
       switchMap(({graphInputState$}) => graphInputState$),
       startWith({}), // initial prev value,
       pairwise(),
@@ -233,11 +233,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  sankeyBaseViewControl$ = new ReplaySubject<SankeyBaseViewControllerService>(1);
+  baseView = new ReplaySubject<SankeyBaseViewControllerService>(1);
 
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
-  predefinedValueAccessor$ = this.sankeyBaseViewControl$.pipe(
+  predefinedValueAccessor$ = this.baseView.pipe(
     switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
   );
 
@@ -308,7 +308,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
 
-  dataToRender$ = this.sankeyBaseViewControl$.pipe(
+  dataToRender$ = this.baseView.pipe(
     switchMap(sankeyBaseViewControl => sankeyBaseViewControl.dataToRender$)
   );
 
@@ -343,7 +343,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       const sankey = createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
-      this.sankeyBaseViewControl$.next(sankeyInjector.get(SankeyBaseViewControllerService));
+      this.baseView.next(sankeyInjector.get(SankeyBaseViewControllerService));
     });
   }
 
@@ -598,7 +598,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   // endregion
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
-    this.sankeyController.selectPredefinedValueAccessor(predefinedValueAccessorId);
+    return this.baseView.pipe(
+      first(),
+      switchMap(baseView =>
+        baseView.selectPredefinedValueAccessor(predefinedValueAccessorId)
+      ),
+    ).toPromise();
   }
 
   // region Search

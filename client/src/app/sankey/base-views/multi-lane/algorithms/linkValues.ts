@@ -2,19 +2,17 @@ import { partition, sumBy, mean } from 'lodash-es';
 
 import { ExtendedWeakMap } from 'app/shared/utils/types';
 import { SankeyLink, SankeyData, SankeyTrace } from 'app/sankey/interfaces';
-import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
 import {
   initInputCountCalculation,
   calculateInputCountSkippingCircularLinksA,
   getLinkLayers,
   calculateInputCountSkippingCircularLinksB
-} from 'app/sankey/algorithms/inputCountSharedSteps';
-
-import { SankeyLayoutService } from '../../../components/sankey/sankey-layout.service';
+} from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
+import { SankeyBaseViewControllerService } from 'app/sankey/services/sankey-base-view-controller.service';
 import { CustomisedSankeyLayoutService } from '../../../services/customised-sankey-layout.service';
 
 export function inputCount(
-  this: SankeyControllerService,
+  this: SankeyBaseViewControllerService,
   data: SankeyData
 ) {
   // @ts-ignore

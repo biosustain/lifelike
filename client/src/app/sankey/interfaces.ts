@@ -1,7 +1,7 @@
 import { PRESCALERS } from 'app/sankey/algorithms/prescalers';
 import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
-import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
+import { SankeyBaseViewControllerService } from './services/sankey-base-view-controller.service';
 
 // region UI options
 export interface ValueAccessor {
@@ -13,17 +13,19 @@ export interface IntermediateProcessedData extends Partial<SankeyData> {
   _sets: object;
 }
 
-export type ValueProcessingStep = (this: SankeyControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
+export type ValueProcessingStep = (this: SankeyBaseViewControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
 
-export interface ValueGenerator extends ValueAccessor {
-  disabled?: (this: SankeyControllerService) => boolean;
+export interface ValueGenerator {
   preprocessing: ValueProcessingStep;
   postprocessing?: ValueProcessingStep;
+  // not used yet
+  requires?: any;
 }
 
 export interface MultiValueAccessor extends ValueAccessor {
   linkValueAccessorId: string;
   nodeValueAccessorId: string;
+  type: LINK_PROPERTY_GENERATORS;
 }
 
 export interface Prescaler {
@@ -38,27 +40,17 @@ export interface Palette {
   help?: string;
 }
 
-interface SankeyNodeHeight {
-  min: {
-    enabled: boolean,
-    value: number
-  };
-  max: {
-    enabled: boolean,
-    ratio: number
-  };
-}
 
 export interface NodeValueAccessor {
-  [nodeValuePropertyName: string]: ValueGenerator;
+  [nodeValuePropertyName: string]: ValueAccessor;
 }
 
 export interface LinkValueAccessor {
-  [linkValuePropertyName: string]: ValueGenerator;
+  [linkValuePropertyName: string]: ValueAccessor;
 }
 
 export type PREDEFINED_VALUE_ACCESSORS = {
-  [linkValueGeneratorId in PREDEFINED_VALUE]?: MultiValueAccessor
+  [linkValueGeneratorId in PREDEFINED_VALUE | string]?: MultiValueAccessor
 };
 
 export enum LINK_VALUE_GENERATOR {
@@ -68,12 +60,17 @@ export enum LINK_VALUE_GENERATOR {
   fraction_of_fixed_node_value = 'Fraction of fixed node value',
 }
 
+export enum LINK_PROPERTY_GENERATORS {
+  byArrayProperty = 'By Array Property',
+  byProperty = 'By Property',
+}
+
 type LINK_VALUE_GENERATORS = {
-  [linkValueGeneratorId in LINK_VALUE_GENERATOR]?: ValueGenerator
+  [linkValueGeneratorId in LINK_VALUE_GENERATOR]?: ValueAccessor
 };
 
 type NODE_VALUE_GENERATORS = {
-  [linkValueGeneratorId in NODE_VALUE_GENERATOR]: ValueGenerator
+  [linkValueGeneratorId in NODE_VALUE_GENERATOR]: ValueAccessor
 };
 
 export enum NODE_VALUE_GENERATOR {
@@ -104,11 +101,7 @@ export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 export interface SankeyState {
   nodeAlign?: 'right' | 'left';
   networkTraceIdx?: number;
-  nodeHeight: SankeyNodeHeight;
   prescalerId?: string;
-  nodeValueAccessorId?: string;
-  linkValueAccessorId?: string;
-  predefinedValueAccessorId?: string;
   normalizeLinks?: boolean;
   labelEllipsis?: {
     enabled: boolean,
