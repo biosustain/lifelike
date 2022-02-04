@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 
 import { Observable, combineLatest, of, iif } from 'rxjs';
 import { map, tap, shareReplay, filter, switchMap, first } from 'rxjs/operators';
 import { merge, omit, isNil, omitBy, has } from 'lodash-es';
 
-import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS } from 'app/sankey/interfaces';
+import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
@@ -30,7 +30,8 @@ export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions =
   State extends SankeyBaseState = SankeyBaseState> extends StateControlAbstractService<Options, State> {
   constructor(
     readonly common: SankeyControllerService,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    readonly injector: Injector
   ) {
     super();
   }
@@ -40,14 +41,14 @@ export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions =
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
   predefinedValueAccessor$;
-  dataToRender$;
+  dataToRender$: Observable<SankeyData>;
   graphInputState$: Observable<any>;
 
   mergedState$;
 
-  linkValueAccessors: {
+  readonly linkValueAccessors: {
     [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
-  } = {
+  } = Object.freeze({
     [LINK_VALUE_GENERATOR.fixedValue0]: {
       preprocessing: linkValues.fixedValue(0)
     },
@@ -64,7 +65,7 @@ export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions =
         throw new Error('Not implemented');
       }
     }
-  };
+  });
 
   linkPropertyAcessors: {
     [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator
@@ -213,12 +214,12 @@ export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions =
           of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
           this.unifiedSingularAccessor(
             this.common.options$,
-            'predefinedValueAccessors'
+            'linkValueAccessors'
           ).pipe(
-            map(predefinedValueAccessors =>
-                this.linkValueAccessors[predefinedValueAccessors[linkValueAccessorId]?.type] ?? (
+            map(linkValueAccessors =>
+                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
                   this.warningController.warn(`Link values accessor ${linkValueAccessorId} could not be found`),
-                    this.linkValueAccessors[NODE_VALUE_GENERATOR.none]
+                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
                 )
             )
           )

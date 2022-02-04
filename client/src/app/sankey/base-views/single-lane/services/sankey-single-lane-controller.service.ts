@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 
-import { flatMap, groupBy, intersection, pick, isEqual } from 'lodash-es';
-import { switchMap, map, distinctUntilChanged, tap } from 'rxjs/operators';
+import { flatMap, groupBy, intersection, pick } from 'lodash-es';
+import { switchMap, map, tap } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 import { of, BehaviorSubject } from 'rxjs';
@@ -27,14 +27,16 @@ import { SankeyControllerService } from '../../../services/sankey-controller.ser
 export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
   constructor(
     readonly common: SankeyControllerService,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    readonly injector: Injector
   ) {
-    super(common, warningController);
+    super(common, warningController, injector);
     console.log('SankeySingleLaneControllerService');
     this.onInit();
     this.graphInputState$ = this.common.state$.pipe(
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
-      distinctUntilChanged(isEqual)
+      // disable so temp each change cause update
+      // distinctUntilChanged(isEqual)
     );
     // this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
     // this.dataToRender$.subscribe(d => console.log('data to render', d));
@@ -68,7 +70,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
   );
 
   linkValueAccessors = {
-    ...super.linkValueAccessors,
+    ...this.linkValueAccessors,
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: inputCount,
       disabled: () => false

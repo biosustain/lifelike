@@ -458,7 +458,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   resetView() {
-    this.sankeyController.resetController();
+    this.sankeyController.delta$.next({});
     this.sankey.resetZoom();
   }
 

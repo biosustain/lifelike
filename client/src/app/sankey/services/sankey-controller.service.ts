@@ -183,7 +183,10 @@ export class SankeyControllerService extends StateControlAbstractService<SakeyOp
       },
       [LINK_VALUE_GENERATOR.fraction_of_fixed_node_value]: {
         description: LINK_VALUE_GENERATOR.fraction_of_fixed_node_value
-      }
+      },
+      [LINK_VALUE_GENERATOR.input_count]: {
+        description: LINK_VALUE_GENERATOR.input_count
+      },
     },
     nodeValueGenerators: {
       [NODE_VALUE_GENERATOR.none]: {
