@@ -8,7 +8,6 @@ import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from '../../../services/directed-traversal';
-import { SankeyLayoutService } from '../../../components/sankey/sankey-layout.service';
 import { symmetricDifference } from '../../../components/sankey/utils';
 import {
   CustomisedSankeyLayoutService,
@@ -39,17 +38,6 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
         return _color;
       }
     };
-  }
-
-  get fontSize() {
-    const {
-      state:
-        {
-          fontSizeScale
-        }
-    } = this;
-    // noinspection JSUnusedLocalSymbols
-    return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
   }
 
   normalizeLinks = false;
@@ -85,11 +73,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    */
   getYScaleFactor(nodes) {
     const {
-      y1, y0, py, dx,
-      baseState:
-        {
-          nodeHeight
-        }, value, columnsWithLinkPlaceholders: columns
+      y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns
     } = this;
     // normal calculation based on tallest column
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
@@ -119,7 +103,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -147,12 +131,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    */
   computeNodeHeights({nodes}: SankeyData) {
     const {
-      ky,
-      baseState:
-        {
-          nodeHeight
-        }
-      , value
+      ky, nodeHeight, value
     } = this;
     for (const node of nodes) {
       if (nodeHeight.min.enabled && nodeHeight.min.value) {
@@ -311,34 +290,5 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
     const {dy, y1, y0} = this;
     this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
     this.ky = this.getYScaleFactor(graph.nodes);
-  }
-
-  /**
-   * Calculate layout and address possible circular links
-   */
-  calcLayout(graph) {
-    // Associate the nodes with their respective links, and vice versa
-    this.computeNodeLinks(graph);
-    // Determine which links result in a circular path in the graph
-    this.identifyCircles(graph);
-    // Calculate the nodes' values, based on the values of the incoming and outgoing links
-    this.computeNodeValues(graph);
-    // Calculate the nodes' depth based on the incoming and outgoing links
-    //     Sets the nodes':
-    //     - depth:  the depth in the graph
-    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
-    this.computeNodeDepths(graph);
-    this.computeNodeReversedDepths(graph);
-    this.computeNodeLayers(graph);
-    this.createVirtualNodes(graph);
-    this.setLayoutParams(graph);
-    this.computeNodeHeights(graph);
-    // Calculate the nodes' and links' vertical position within their respective column
-    //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-    this.computeNodeBreadths(graph);
-    SankeyLayoutService.computeLinkBreadths(graph);
-    this.cleanVirtualNodes(graph);
-    return graph;
   }
 }

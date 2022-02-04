@@ -18,14 +18,16 @@ import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { compact } from 'lodash-es';
+import { ReplaySubject, iif, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
+import { CustomisedSankeyLayoutService } from 'app/sankey/services/customised-sankey-layout.service';
 
 import { representativePositiveNumber } from '../../utils';
 import * as aligns from './aligin';
-import { SankeyLayoutService } from './sankey-layout.service';
 
 @Component({
   selector: 'app-sankey',
@@ -37,7 +39,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
-    readonly sankey: SankeyLayoutService,
+    readonly sankey: CustomisedSankeyLayoutService,
     readonly wrapper: ElementRef,
     private zone: NgZone
   ) {
@@ -58,10 +60,79 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
+
+    this._data.pipe(
+      switchMap(data =>
+        iif(
+          () => (data as any)._precomputedLayout,
+          of(data),
+          this.sankey.layout$
+        )
+      ),
+      tap(data => this.updateDOM(data)),
+      catchError(err => {
+        console.log(err);
+        return of(null);
+      })
+    ).subscribe(data => {
+      console.log('updateDOM', data);
+    });
+  }
+
+  @Input() set data(data) {
+    console.log(data);
+    this._data.next({...data} as SankeyData);
+  }
+
+  // endregion
+
+  // region D3Selection
+  get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
+    // returns empty selection if DOM struct was not initialised
+    return d3_select(this.links && this.links.nativeElement)
+      .selectAll(function() {
+        // by default there is recursive match, not desired in here
+        return this.children;
+      });
+  }
+
+  get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
+    // returns empty selection if DOM struct was not initialised
+    return d3_select(this.nodes && this.nodes.nativeElement)
+      .selectAll(function() {
+        // by default there is recursive match, not desired in here
+        return this.children;
+      });
+  }
+
+  get sankeySelection() {
+    return d3_select(this.svg && this.svg.nativeElement);
+  }
+
+  get updateNodeText() {
+    // noinspection JSUnusedLocalSymbols
+    const [width, _height] = this.sankey.size;
+    const {fontSize} = this.sankey;
+    return texts => texts
+      .attr('transform', ({_x0, _x1, _y0, _y1}) =>
+        `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
+      )
+      .attr('text-anchor', 'end')
+      .attr('font-size', fontSize)
+      .call(textGroup =>
+        textGroup.select('text')
+          .attr('dy', '0.35em')
+      )
+      .filter(({_x0}) => _x0 < width / 2)
+      .attr('text-anchor', 'start')
+      .attr('font-size', fontSize);
   }
 
   // region Properties (&Accessors)
   static MARGIN = 10;
+
+  // shallow copy of input data
+  _data = new ReplaySubject<SankeyData>(1);
   margin = {
     top: SankeyComponent.MARGIN,
     right: SankeyComponent.MARGIN,
@@ -73,8 +144,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   zoom;
   dragging = false;
 
-  // shallow copy of input data
-  private _data: SankeyData;
 
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
@@ -93,15 +162,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
-
-  @Input() set data(data) {
-    console.log(data);
-    this._data = {...data} as SankeyData;
-  }
-
-  get data() {
-    return this._data;
-  }
 
   static updateTextShadow(_) {
     // this contains ref to textGroup
@@ -135,7 +195,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     if (data && this.svg) {
       // using this.data instead of current value so we use copy made by setter
-      this.updateLayout(this.data).then(d => this.updateDOM(d));
+      // this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
@@ -245,31 +305,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // endregion
 
-  // region D3Selection
-  get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
-    // returns empty selection if DOM struct was not initialised
-    return d3_select(this.links && this.links.nativeElement)
-      .selectAll(function() {
-        // by default there is recursive match, not desired in here
-        return this.children;
-      });
-  }
-
-  get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
-    // returns empty selection if DOM struct was not initialised
-    return d3_select(this.nodes && this.nodes.nativeElement)
-      .selectAll(function() {
-        // by default there is recursive match, not desired in here
-        return this.children;
-      });
-  }
-
-  get sankeySelection() {
-    return d3_select(this.svg && this.svg.nativeElement);
-  }
-
-  // endregion
-
   // region Graph sizing
   onResize({width, height}) {
     const {zoom, margin} = this;
@@ -290,7 +325,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
     const [innerWidth, innerHeight] = this.sankey.size;
 
-    const { data } = this;
+    const {data} = this;
     if (data) {
       const parsedData = innerHeight / prevInnerHeight === 1 ?
         this.scaleLayout(data, innerWidth / prevInnerWidth) :
@@ -771,26 +806,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0)
-
-  get updateNodeText() {
-    // noinspection JSUnusedLocalSymbols
-    const [width, _height] = this.sankey.size;
-    const {fontSize} = this.sankey;
-    return texts => texts
-      .attr('transform', ({_x0, _x1, _y0, _y1}) =>
-        `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
-      )
-      .attr('text-anchor', 'end')
-      .attr('font-size', fontSize)
-      .call(textGroup =>
-        textGroup.select('text')
-          .attr('dy', '0.35em')
-      )
-      .filter(({_x0}) => _x0 < width / 2)
-      .attr('text-anchor', 'start')
-      .attr('font-size', fontSize);
-  }
+    .attr('width', ({_x1, _x0}) => _x1 - _x0);
 
   /**
    * Run d3 lifecycle code to update DOM

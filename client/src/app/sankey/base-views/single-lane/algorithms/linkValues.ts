@@ -18,7 +18,7 @@ export function inputCount(
   data: SankeySingleLaneData
 ) {
   // @ts-ignore
-  const layout = new CustomisedSankeyLayoutService();
+  const layout = this.injector.get(CustomisedSankeyLayoutService);
   const {
     sortedNodes,
     dt,

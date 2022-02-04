@@ -10,6 +10,21 @@ export interface AbstractInjectable {
   onInit: () => void;
 }
 
+/**
+ * Pick property from observable object
+ * @param observable object
+ * @param prop property name (can be also list of properties)
+ */
+export const unifiedAccessor = <R extends object, K extends Many<keyof R>>(observable: Observable<R>, prop: K) => {
+  const hasOwnProp = isArray(prop) ?
+    obj => prop.every(p => has(obj, p)) :
+    obj => has(obj, prop);
+  return observable.pipe(
+    filter(hasOwnProp),
+    map(obj => pick(obj, prop)),
+    distinctUntilChanged(isEqual),
+  );
+};
 
 @Injectable()
 export class StateControlAbstractService<Options extends object, State extends object> implements AbstractInjectable {
@@ -29,21 +44,6 @@ export class StateControlAbstractService<Options extends object, State extends o
     );
   }
 
-  /**
-   * Pick property from observable object
-   * @param observable object
-   * @param prop property name (can be also list of properties)
-   */
-  unifiedAccessor<R>(observable: Observable<object>, prop) {
-    const hasOwnProp = isArray(prop) ?
-      obj => prop.every(p => has(obj, p)) :
-      obj => has(obj, prop);
-    return observable.pipe(
-      filter(hasOwnProp),
-      map(obj => pick(obj, prop)),
-      distinctUntilChanged(isEqual),
-    ) as Observable<R>;
-  }
 
   /**
    * Pick property from observable object
@@ -62,7 +62,7 @@ export class StateControlAbstractService<Options extends object, State extends o
    * Pick property from property value from state object
    */
   stateAccessor<R>(property) {
-    return this.unifiedAccessor(this.state$, property).pipe(
+    return unifiedAccessor(this.state$, property).pipe(
       map(state => state[property]),
       shareReplay(1)
     ) as Observable<R>;
@@ -91,8 +91,8 @@ export class StateControlAbstractService<Options extends object, State extends o
    */
   optionStateMultiAccessor<R>(optionProperties: Many<keyof Options>, stateProperties, mapping?) {
     mapping = mapping ?? ((options, state) => ({options, state}));
-    return this.unifiedAccessor(this.options$, optionProperties).pipe(
-      switchMap(options => this.unifiedAccessor(this.state$, stateProperties).pipe(
+    return unifiedAccessor(this.options$, optionProperties).pipe(
+      switchMap(options => unifiedAccessor(this.state$, stateProperties).pipe(
         map(state => mapping(options, state)),
         shareReplay(1)
       ))

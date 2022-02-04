@@ -16,28 +16,6 @@
         Highlight circular
     </label>
     <div class="dropdown-divider"></div>
-    <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
-        <input formControlName="normalizeLinks"
-               ngbButton
-               type="checkbox">
-        Normalize links
-    </label>
-    <div class="dropdown-divider"></div>
-    <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-        <div class="d-flex align-items-center mx-0">
-            <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
-                Font Size
-            </label>
-            <app-percent-input formControlName="fontSizeScale"
-                               default="100"
-                               min="20"
-                               max="1000"
-                               step="20"
-                               inputId="font-size"
-            ></app-percent-input>
-            %
-        </div>
-    </label>
     <ng-container formGroupName="nodeHeight">
         <label formGroupName="min" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
@@ -64,18 +42,6 @@
             {{form.get('nodeHeight.max.ratio').value}}
         </label>
     </ng-container>
-    <label formGroupName="labelEllipsis" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-        <input formControlName="enabled"
-               (change)="disableGroup($event.target.checked, 'labelEllipsis')"
-               ngbButton
-               type="checkbox">
-        Max shown label characters
-        <input formControlName="value"
-               max="50" min="0"
-               ngbButton
-               type="range">
-        {{form.get('labelEllipsis.value').value}}
-    </label>
     <div class="dropdown-divider"></div>
     <div class="w-100 text-left m-0"
          ngbButtonLabel
@@ -112,15 +78,6 @@
         </label>
     </div>
     <div class="dropdown-divider"></div>
-    <div class="form-check" ngbRadioGroup [name]="'prescaler' + uuid"
-         formControlName="prescalerId" title="Prescaler">
-        <div class="mb-1">Prescaler:</div>
-        <label ngbButtonLabel *ngFor="let prescaler of options.prescalers | keyvalue"
-               [title]="prescaler.value.description"
-               class="mb-0">
-            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}
-        </label>
-    </div>
     <ng-container *ngIf="commonOptions$ | async as options">
         <div class="dropdown-divider"></div>
         <div class="w-100 text-left m-0"
