@@ -19,7 +19,7 @@ class CopyrightInfringementRequest(RDBMSBase, TimestampMixin):
     province = db.Column(db.String(256), nullable=False)
     zip = db.Column(db.String(256), nullable=False)
     phone = db.Column(db.String(256), nullable=False)
-    fax = db.Column(db.String(256), nullable=False)
+    fax = db.Column(db.String(256), nullable=True)
     email = db.Column(db.String(256), nullable=False)
     attestationCheck1 = db.Column(db.Boolean(), nullable=False)
     attestationCheck2 = db.Column(db.Boolean(), nullable=False)
