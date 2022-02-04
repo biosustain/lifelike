@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, pick, isEqual } from 'lodash-es';
+import { flatMap, groupBy, intersection, pick, isEqual } from 'lodash-es';
 import { switchMap, map, distinctUntilChanged, tap } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
-import { combineLatest } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -26,13 +26,13 @@ import { SankeyControllerService } from '../../../services/sankey-controller.ser
 // @ts-ignore
 export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
   constructor(
-    readonly c: SankeyControllerService,
+    readonly common: SankeyControllerService,
     readonly warningController: WarningControllerService
   ) {
-    super(c, warningController);
+    super(common, warningController);
     console.log('SankeySingleLaneControllerService');
-    this.initCommonObservables();
-    this.graphInputState$ = this.state$.pipe(
+    this.onInit();
+    this.graphInputState$ = this.common.state$.pipe(
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
       distinctUntilChanged(isEqual)
     );
@@ -48,12 +48,7 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
 
   viewBase = ViewBase.sankeySingleLane;
 
-  options$ = this.c.options$.pipe(
-    map(state => merge({}, state, this.baseDefaultOptions)
-    )
-  );
-
-  baseDefaultState$ = this.options$.pipe(
+  default$ = this.common.options$.pipe(
     map(({predefinedValueAccessors}) => ({
       predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
       ...pick(predefinedValueAccessors[PREDEFINED_VALUE.fixed_height], ['nodeValueAccessorId', 'linkValueAccessorId']),
@@ -72,29 +67,25 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
     }))
   );
 
-  defaultState$ = combineLatest([
-    this.c.defaultState$,
-    this.baseDefaultState$
-  ]).pipe(
-    map(states => merge({}, ...states))
-  );
+  linkValueAccessors = {
+    ...super.linkValueAccessors,
+    [LINK_VALUE_GENERATOR.input_count]: {
+      preprocessing: inputCount,
+      disabled: () => false
+    } as ValueGenerator
+  };
 
-  baseDefaultOptions = Object.freeze({
-    colorLinkTypes: EdgeColorCodes,
-    linkValueGenerators: {
-      [LINK_VALUE_GENERATOR.input_count]: {
-        description: LINK_VALUE_GENERATOR.input_count,
-        preprocessing: inputCount,
-        disabled: () => false
-      } as ValueGenerator
-    }
-  });
+  options$ = of(Object.freeze({
+    colorLinkTypes: EdgeColorCodes
+  }));
 
-  networkTraceData$ = this.c.partialNetworkTraceData$.pipe(
+  delta$ = new BehaviorSubject({});
+
+  networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, sources, targets, traces}) => this.state$.pipe(
       map(({colorLinkByType}) => {
         const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-        const networkTraceNodes = this.c.getNetworkTraceNodes(networkTraceLinks, nodes);
+        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodes);
         if (colorLinkByType) {
           this.colorLinkByType(networkTraceLinks);
         }

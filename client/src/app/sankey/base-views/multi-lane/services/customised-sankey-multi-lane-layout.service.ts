@@ -15,17 +15,17 @@ import {
   DEFAULT_FONT_SIZE,
   groupByTraceGroupWithAccumulation
 } from '../../../services/customised-sankey-layout.service';
-import { SankeyControllerService } from '../../../services/sankey-controller.service';
+import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 
 @Injectable()
 // @ts-ignore
 export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayoutService {
   constructor(
-    readonly sankeyController: SankeyControllerService,
+    readonly baseView: SankeyBaseViewControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
-    super(sankeyController, truncatePipe, warningController);
+    super(baseView, truncatePipe, warningController);
   }
 
   get nodeColor() {
@@ -86,7 +86,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
   getYScaleFactor(nodes) {
     const {
       y1, y0, py, dx,
-      state:
+      baseState:
         {
           nodeHeight
         }, value, columnsWithLinkPlaceholders: columns
@@ -111,7 +111,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -148,7 +148,7 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
   computeNodeHeights({nodes}: SankeyData) {
     const {
       ky,
-      state:
+      baseState:
         {
           nodeHeight
         }

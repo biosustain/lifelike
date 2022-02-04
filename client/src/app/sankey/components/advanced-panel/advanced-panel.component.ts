@@ -1,52 +1,35 @@
-import { Component, } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { omit, forEach, isEmpty } from 'lodash-es';
+import { Component, OnDestroy, } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
 
-import { uuidv4, deepDiff } from 'app/shared/utils';
-
-import { SankeyBaseViewControllerService } from '../../services/sankey-base-view-controller.service';
-import { startWith, pairwise, map, filter, switchMap, tap } from 'rxjs/operators';
+import { SankeyAbstractAdvancedPanelComponent } from '../../abstract/advanced-panel/advanced-panel.component';
+import { SankeyState, SankeyOptions } from '../../interfaces';
 
 @Component({
-  selector: 'app-advanced-panel'
+  selector: 'app-advanced-panel',
+  templateUrl: './advanced-panel.component.html',
+  styleUrls: ['./advanced-panel.component.scss'],
 })
-export class SankeyAdvancedPanelComponent {
+export class SankeyAdvancedPanelComponent extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState> implements OnDestroy {
   constructor(
-    protected sankeyController: SankeyBaseViewControllerService,
+    protected common: SankeyControllerService,
     protected formBuilder: FormBuilder
   ) {
-    this.uuid = uuidv4();
+    super(common, formBuilder);
+    this.onInit();
   }
 
-  options$ = this.sankeyController.options$;
+  form = this.formBuilder.group({
+    normalizeLinks: ['', []],
+    fontSizeScale: [1, []],
+    labelEllipsis: this.formBuilder.group({
+      enabled: [false, []],
+      value: [0, Validators.pattern(/^\d+$/)],
+    }),
+    prescalerId: [undefined, []],
+  });
 
-  uuid: string;
-  form: FormGroup;
-
-  // as function so can be called after init of inheriting class
-  connectFormToState() {
-    this.sankeyController.state$.pipe(
-      tap(state => this.form.patchValue(state, {emitEvent: false})),
-      switchMap(state => this.form.valueChanges.pipe(
-        startWith(state), // initial prev value
-        pairwise(),
-        map(deepDiff),
-        filter(changes => !isEmpty(changes)),
-        switchMap(changes => this.sankeyController.c.patchState(changes as any))
-      ))
-    )
-      // comming in hot, no other components care about valueChanges
-      .subscribe(stateDelta => console.log('stateDelta', stateDelta));
-  }
-
-  // @ts-ignore
-  disableGroup(disabled, groups, enabledKey = 'enabled') {
-    const controls = this.form.get(groups);
-    const enabled = controls.get(enabledKey).value;
-    const otherControlls = omit(
-      (controls as FormGroup).controls,
-      enabledKey
-    );
-    forEach(otherControlls, value => enabled ? value.enable() : value.disable());
+  ngOnDestroy() {
+    super.ngOnDestroy();
   }
 }

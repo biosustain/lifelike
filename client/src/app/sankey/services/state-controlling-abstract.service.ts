@@ -1,22 +1,40 @@
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
-import { pick, isEqual, has, isArray } from 'lodash-es';
-import { switchMap, map, filter, shareReplay, distinctUntilChanged, tap } from 'rxjs/operators';
+import { Observable, ReplaySubject, combineLatest, Subject } from 'rxjs';
+import { pick, isEqual, has, isArray, merge, omitBy, isNil } from 'lodash-es';
+import { switchMap, map, filter, shareReplay, distinctUntilChanged, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
 
+export interface AbstractInjectable {
+  onInit: () => void;
+}
+
+
 @Injectable()
-export class StateControlAbstractService<Options extends object = object, State extends object = object> {
+export class StateControlAbstractService<Options extends object, State extends object> implements AbstractInjectable {
+  default$: Observable<State>;
+  delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
   state$: Observable<State>;
   options$: Observable<Options>;
+
+  onInit() {
+    this.state$ = combineLatest([
+      this.default$,
+      this.delta$
+    ]).pipe(
+      distinctUntilChanged(isEqual),
+      map(states => merge({}, ...states)),
+      shareReplay(1)
+    );
+  }
 
   /**
    * Pick property from observable object
    * @param observable object
    * @param prop property name (can be also list of properties)
    */
-  unifiedAccessor<R>(observable, prop) {
+  unifiedAccessor<R>(observable: Observable<object>, prop) {
     const hasOwnProp = isArray(prop) ?
       obj => prop.every(p => has(obj, p)) :
       obj => has(obj, prop);
@@ -25,6 +43,19 @@ export class StateControlAbstractService<Options extends object = object, State 
       map(obj => pick(obj, prop)),
       distinctUntilChanged(isEqual),
     ) as Observable<R>;
+  }
+
+  /**
+   * Pick property from observable object
+   * @param observable object
+   * @param prop property name (can be also list of properties)
+   */
+  unifiedSingularAccessor<R extends object, K extends keyof R>(observable: Observable<R>, prop: K) {
+    return observable.pipe(
+      filter(obj => has(obj, prop)),
+      map(obj => obj[prop]),
+      distinctUntilChanged(),
+    ) as Observable<R[K]>;
   }
 
   /**
@@ -66,5 +97,25 @@ export class StateControlAbstractService<Options extends object = object, State 
         shareReplay(1)
       ))
     ) as Observable<R>;
+  }
+
+  patchState(statePatch: Partial<State>) {
+    return this.delta$.pipe(
+      first(),
+      map(currentStateDelta =>
+        // ommit empty values so they can be overridden by defaultState
+        omitBy(
+          merge(
+            {},
+            currentStateDelta,
+            statePatch,
+          ),
+          isNil
+        ) as Partial<State>
+      ),
+      tap(stateDelta => {
+        this.delta$.next(stateDelta);
+      })
+    );
   }
 }

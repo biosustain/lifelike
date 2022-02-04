@@ -16,7 +16,7 @@ import { SankeyControllerService } from '../../services/sankey-controller.servic
 })
 export class SankeyDetailsComponent {
   constructor(
-    private sankeyController: SankeyControllerService,
+    private common: SankeyControllerService,
     protected readonly route: ActivatedRoute
   ) {
   }
@@ -26,7 +26,7 @@ export class SankeyDetailsComponent {
   parseProperty = parseForRendering;
 
   openTraceView(trace) {
-    return this.sankeyController.networkTrace$.pipe(
+    return this.common.networkTrace$.pipe(
       map(networkTrace => {
         const {project_name, file_id} = this.route.snapshot.params;
         const hash = CryptoJS.MD5(JSON.stringify({
@@ -43,7 +43,7 @@ export class SankeyDetailsComponent {
   }
 
   getNodeById(nodeId) {
-    return this.sankeyController.data$.pipe(
+    return this.common.data$.pipe(
       map(({nodes}) => nodes.find(({id}) => id === nodeId) ?? {} as SankeyNode)
     );
   }

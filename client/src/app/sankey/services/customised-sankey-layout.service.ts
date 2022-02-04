@@ -10,7 +10,8 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
-import { SankeyControllerService } from './sankey-controller.service';
+import { SankeyBaseViewControllerService } from './sankey-base-view-controller.service';
+import { SankeyBaseState } from '../base-views/interfaces';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -32,18 +33,22 @@ export const DEFAULT_FONT_SIZE = 12 * 1.60;
 // @ts-ignore
 export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   constructor(
-    readonly sankeyController: SankeyControllerService,
+    readonly baseView: SankeyBaseViewControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
     // todo: refractor on next iteration
-    this.sankeyController.state$.subscribe(state => {
+    this.baseView.common.state$.subscribe(state => {
       this.state = state;
+    });
+    this.baseView.state$.subscribe(state => {
+      this.baseState = state;
     });
   }
 
   state: SankeyState;
+  baseState: SankeyBaseState;
 
   get linkPath() {
     const {
@@ -250,7 +255,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   getYScaleFactor(nodes) {
     const {
       y1, y0, py, dx,
-          state:
+          baseState:
             {
               nodeHeight
             }
@@ -313,7 +318,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   computeNodeHeights({nodes}: SankeyData) {
     const {
       ky,
-          state:
+          baseState:
             {
               nodeHeight
             }, value

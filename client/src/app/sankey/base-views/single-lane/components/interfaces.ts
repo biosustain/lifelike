@@ -1,26 +1,18 @@
-import {
-  SankeyLink,
-  SankeyState,
-  SankeyNode,
-  SankeyData,
-  SankeyTrace,
-  SelectionType,
-  SelectionEntity,
-  SankeyOptions
-} from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode, SankeyData, SankeyTrace, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
+import { SankeyBaseState, SankeyBaseOptions } from '../../interfaces';
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
   colorLinkByType: boolean;
 }
 
-export type SankeySingleLaneState = SankeyState & SankeySingleLaneStateExtend;
+export type SankeySingleLaneState = SankeyBaseState & SankeySingleLaneStateExtend;
 
 export interface SankeySingleLaneOptionsExtend {
   colorLinkTypes: { [type: string]: string };
 }
 
-export type SankeySingleLaneOptions = SankeyOptions & SankeySingleLaneOptionsExtend;
+export type SankeySingleLaneOptions = SankeyBaseOptions & SankeySingleLaneOptionsExtend;
 
 export interface SankeySingleLaneLink extends SankeyLink {
   _graphRelativePosition?: 'left' | 'right' | 'multiple';

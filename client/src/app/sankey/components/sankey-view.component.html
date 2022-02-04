@@ -175,17 +175,24 @@
                 <ng-template appSankey></ng-template>
             </as-split-area>
             <as-split-area [order]="0.1">
+                    <h5>Common:</h5>
                 <app-object-explorer *ngIf="{
+                  default$: sankeyController.default$ | async,
+                  delta$: sankeyController.delta$ | async,
                   state$: sankeyController.state$ | async,
-                  stateDelta$: sankeyController.stateDelta$ | async,
                   options$: sankeyController.options$ | async,
-                  data$: sankeyController.data$ | async
+                  data$: sankeyController.data$ | async,
+                  partialNetworkTraceData: sankeyController.partialNetworkTraceData$ | async
                 } as dataSource" [dataSource]="dataSource"></app-object-explorer>
-                <ng-container *ngIf="sankeyBaseViewControl$ | async as b">
+                <ng-container *ngIf="baseView | async as b">
+                    <h5>Base view:</h5>
                     <app-object-explorer *ngIf="{
-                  Bstate$: b.state$ | async,
-                  Boptions$: b.options$ | async,
-                  BdataToRender$: b.dataToRender$ | async
+                  default$: b.default$ | async,
+                  delta$: b.delta$ | async,
+                  state$: b.state$ | async,
+                  options$: b.options$ | async,
+                  networkTraceData$: b.networkTraceData$ | async,
+                  dataToRender$: b.dataToRender$ | async
                 } as dataSource" [dataSource]="dataSource"></app-object-explorer>
                 </ng-container>
             </as-split-area>
@@ -257,6 +264,8 @@
                     </div>
                     <div class="dropdown-divider"></div>
                     <div class="border-bottom border-secondary pb-3 mb-3">
+                        <app-advanced-panel></app-advanced-panel>
+                        <div class="dropdown-divider"></div>
                         <ng-template appSankeyAdvancedPanel>
                         </ng-template>
                     </div>

@@ -36,6 +36,15 @@ export class SankeyViewDropdownComponent {
     }
   }
 
+  constructor(
+    readonly workspaceManager: WorkspaceManager,
+    readonly sankeyController: SankeyControllerService,
+    private modalService: NgbModal,
+    readonly warningController: WarningControllerService
+  ) {
+    this.views$ = this.sankeyController.views$;
+  }
+
   activeViewName$ = this.sankeyController.state$.pipe(
     map(({viewName}) => viewName)
   );
@@ -45,15 +54,6 @@ export class SankeyViewDropdownComponent {
       map(({viewName}) => views[viewName])
     ))
   );
-
-  constructor(
-    readonly workspaceManager: WorkspaceManager,
-    readonly sankeyController: SankeyControllerService,
-    private modalService: NgbModal,
-    readonly warningController: WarningControllerService
-  ) {
-    this.views$ = this.sankeyController.views$;
-  }
 
   views$: Observable<{ [key: string]: object }>;
 
@@ -65,16 +65,16 @@ export class SankeyViewDropdownComponent {
 
   @Input() preselectedViewBase: string;
   @Input() object: FilesystemObject;
-
-  activeViewNameChange(viewName) {
-    return this.sankeyController.selectView(viewName);
-  }
   @Output() viewDataChanged = new EventEmitter();
 
   private _activeViewName: string;
   private _activeView;
 
   viewBase = ViewBase;
+
+  activeViewNameChange(viewName) {
+    return this.sankeyController.selectView(viewName);
+  }
 
   confirm({header, body}): Promise<any> {
     const modal = this.modalService.open(
