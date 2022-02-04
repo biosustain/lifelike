@@ -25,7 +25,6 @@ def client_logging(args):
         error_name=args['title'],
         expected=args.get('expected', False),
         event_type=args.get('label', 'Client Error'),
-        transaction_id=args['transaction_id'],
         username=current_user,
         url=args.get('url', 'not specified'),
     )
