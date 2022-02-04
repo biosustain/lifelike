@@ -1,26 +1,4 @@
-<form *ngIf="options$ | async as options" [formGroup]="form">
-    <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
-        <input formControlName="normalizeLinks"
-               ngbButton
-               type="checkbox">
-        Normalize links
-    </label>
-    <div class="dropdown-divider"></div>
-    <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-        <div class="d-flex align-items-center mx-0">
-            <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
-                Font Size
-            </label>
-            <app-percent-input formControlName="fontSizeScale"
-                               default="100"
-                               min="20"
-                               max="1000"
-                               step="20"
-                               inputId="font-size"
-            ></app-percent-input>
-            %
-        </div>
-    </label>
+<form [formGroup]="form">
     <ng-container formGroupName="nodeHeight">
         <label formGroupName="min" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
@@ -47,68 +25,11 @@
             {{ form.get('nodeHeight.max.ratio').value }}
         </label>
     </ng-container>
-    <label formGroupName="labelEllipsis" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-        <input formControlName="enabled"
-               (change)="disableGroup($event.target.checked, 'labelEllipsis')"
-               ngbButton
-               type="checkbox">
-        Max shown label characters
-        <input formControlName="value"
-               max="50" min="0"
-               ngbButton
-               type="range">
-        {{ form.get('labelEllipsis.value').value }}
-    </label>
-    <div class="dropdown-divider"></div>
-    <div class="w-100 text-left m-0"
-         ngbButtonLabel
-         ngbRadioGroup
-         [name]="'link' + uuid"
-         formControlName="linkValueAccessorId"
-         title="Link size"
-    >
-        <div class="mb-1">Link Value Accessor:</div>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
-            <input ngbButton type="radio" [value]="valueAccessor.key"
-                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-        </label>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.linkValueAccessors | keyvalue">
-            <input ngbButton type="radio"
-                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-        </label>
-    </div>
-    <div class="dropdown-divider"></div>
-    <div class="form-check" ngbRadioGroup [name]="'node' + uuid"
-         formControlName="nodeValueAccessorId" title="Node fixed size">
-        <div class="mb-1">Node Value Accessor:</div>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
-            <input ngbButton type="radio" [value]="valueAccessor.key"
-                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-        </label>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.nodeValueAccessors | keyvalue">
-            <input ngbButton type="radio"
-                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-        </label>
-    </div>
-    <div class="dropdown-divider"></div>
-    <div class="form-check" ngbRadioGroup
-         formControlName="prescalerId" title="Prescaler">
-        <div class="mb-1">Prescaler:</div>
-        <label ngbButtonLabel *ngFor="let prescaler of options.prescalers | keyvalue"
-               [title]="prescaler.value.description"
-               class="mb-0">
-            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}
-        </label>
-    </div>
-    <div class="dropdown-divider"></div>
     <div formControlName="linkPaletteId"
          class="form-check"
          ngbRadioGroup
          title="Link palette"
+         *ngIf="options$ | async as options"
     >
         <div class="mb-1">Link palette:</div>
         <label ngbButtonLabel *ngFor="let palette of options.linkPalettes | keyvalue" class="mb-0"
@@ -116,4 +37,39 @@
             <input ngbButton type="radio" [value]="palette.key"> {{palette.value.name}}
         </label>
     </div>
+    <ng-container *ngIf="commonOptions$ | async as options">
+        <div class="dropdown-divider"></div>
+        <div class="w-100 text-left m-0"
+             ngbButtonLabel
+             ngbRadioGroup
+             [name]="'link' + uuid"
+             formControlName="linkValueAccessorId"
+             title="Link size"
+        >
+            <div class="mb-1">Link Value Accessor:</div>
+            <label ngbButtonLabel class="mb-0"
+                   *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
+                <input ngbButton type="radio" [value]="valueAccessor.key">
+                {{valueAccessor.value.description}}
+            </label>
+            <label ngbButtonLabel class="mb-0"
+                   *ngFor="let valueAccessor of options.linkValueAccessors | keyvalue">
+                <input ngbButton type="radio"
+                       [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+            </label>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="form-check" ngbRadioGroup [name]="'node' + uuid"
+             formControlName="nodeValueAccessorId" title="Node fixed size">
+            <div class="mb-1">Node Value Accessor:</div>
+            <label ngbButtonLabel class="mb-0"
+                   *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
+                <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+            </label>
+            <label ngbButtonLabel class="mb-0"
+                   *ngFor="let valueAccessor of options.nodeValueAccessors | keyvalue">
+                <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+            </label>
+        </div>
+    </ng-container>
 </form>

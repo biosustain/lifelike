@@ -1,13 +1,8 @@
-import { Component, } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-
-import { isEmpty } from 'lodash-es';
-import { pairwise, map, filter, startWith } from 'rxjs/operators';
-
-import { deepDiff } from 'app/shared/utils';
-
-import { SankeyAdvancedPanelComponent } from '../../../../components/advanced-panel/advanced-panel.component';
+import { Component, OnDestroy, } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 import { SankeyBaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
+import { SankeyAbstractAdvancedPanelComponent } from '../../../../abstract/advanced-panel/advanced-panel.component';
+import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 
 
 @Component({
@@ -15,10 +10,10 @@ import { SankeyBaseViewControllerService } from '../../../../services/sankey-bas
   templateUrl: './advanced-panel.component.html',
   styleUrls: ['./advanced-panel.component.scss'],
 })
-export class SankeyMultiLaneAdvancedPanelComponent extends SankeyAdvancedPanelComponent {
+export class SankeyMultiLaneAdvancedPanelComponent
+  extends SankeyAbstractAdvancedPanelComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
+  implements OnDestroy {
   form = this.formBuilder.group({
-    normalizeLinks: ['', []],
-    fontSizeScale: [1, []],
     nodeHeight: this.formBuilder.group({
       min: this.formBuilder.group({
         enabled: [false, []],
@@ -32,21 +27,22 @@ export class SankeyMultiLaneAdvancedPanelComponent extends SankeyAdvancedPanelCo
         }, []],
       }),
     }),
-    labelEllipsis: this.formBuilder.group({
-      enabled: [false, []],
-      value: [0, Validators.pattern(/^\d+$/)],
-    }),
+    linkPaletteId: [undefined, []],
     linkValueAccessorId: [undefined, []],
     nodeValueAccessorId: [undefined, []],
-    prescalerId: [undefined, []],
-    linkPaletteId: [undefined, []],
   });
 
   constructor(
-    protected sankeyController: SankeyBaseViewControllerService,
+    protected baseView: SankeyBaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState>,
     protected formBuilder: FormBuilder
   ) {
-    super(sankeyController, formBuilder);
-    this.connectFormToState();
+    super(baseView, formBuilder);
+    this.onInit();
+  }
+
+  commonOptions$ = this.baseView.common.options$;
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
   }
 }

@@ -3,14 +3,14 @@ import { SankeySingleLaneDetailsPanelComponent } from './components/details-pane
 import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
 import { SankeySingleLaneComponent } from './components/sankey/sankey.component';
 import { SankeyBaseViewControllerService } from '../../services/sankey-base-view-controller.service';
-import { CustomisedSankeySingleLaneLayoutService } from './services/customised-sankey-single-lane-layout.service';
+import { SankeySingleLaneLayoutService } from './services/sankey-single-lane-layout.service';
 import { SankeySingleLaneControllerService } from './services/sankey-single-lane-controller.service';
 
 export default {
   providers: [
     {
-      provide: CustomisedSankeySingleLaneLayoutService,
-      useClass: CustomisedSankeySingleLaneLayoutService
+      provide: SankeySingleLaneLayoutService,
+      useClass: SankeySingleLaneLayoutService
     },
     {
       provide: SankeySingleLaneControllerService,
@@ -18,7 +18,7 @@ export default {
     },
     {
       provide: SankeyLayoutService,
-      useExisting: CustomisedSankeySingleLaneLayoutService
+      useExisting: SankeySingleLaneLayoutService
     },
     {
       provide: SankeyBaseViewControllerService,

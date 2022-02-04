@@ -1,14 +1,22 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-import { Observable, combineLatest } from 'rxjs';
-import { map, tap, shareReplay, filter, switchMap } from 'rxjs/operators';
-import { merge, omit } from 'lodash-es';
+import { Observable, combineLatest, of, iif } from 'rxjs';
+import { map, tap, shareReplay, filter, switchMap, first } from 'rxjs/operators';
+import { merge, omit, isNil, omitBy, has } from 'lodash-es';
 
-import { SankeyOptions, SankeyState, ValueGenerator, NODE_VALUE_GENERATOR } from 'app/sankey/interfaces';
+import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { SankeyControllerService, customisedMultiValueAccessorId, customisedMultiValueAccessor } from './sankey-controller.service';
+import {
+  SankeyControllerService,
+  customisedMultiValueAccessorId,
+  customisedMultiValueAccessor,
+  patchReducer
+} from './sankey-controller.service';
 import { StateControlAbstractService } from './state-controlling-abstract.service';
+import * as linkValues from '../algorithms/linkValues';
+import * as nodeValues from '../algorithms/nodeValues';
+import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 
 
 /**
@@ -18,87 +26,233 @@ import { StateControlAbstractService } from './state-controlling-abstract.servic
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SankeyBaseViewControllerService<Options extends object = object, State extends object = object>
-  extends StateControlAbstractService<Options, State> {
+export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions = SankeyBaseOptions,
+  State extends SankeyBaseState = SankeyBaseState> extends StateControlAbstractService<Options, State> {
   constructor(
-    readonly c: SankeyControllerService,
+    readonly common: SankeyControllerService,
     readonly warningController: WarningControllerService
   ) {
     super();
   }
 
   networkTraceData$;
-  baseDefaultState$;
-  baseDefaultOptions;
   viewBase;
-  options$: Observable<SankeyOptions & Options>;
-  defaultState$: Observable<SankeyState & State>;
-  state$: Observable<SankeyState & State>;
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
   predefinedValueAccessor$;
   dataToRender$;
   graphInputState$: Observable<any>;
 
+  mergedState$;
+
+  linkValueAccessors: {
+    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
+  } = {
+    [LINK_VALUE_GENERATOR.fixedValue0]: {
+      preprocessing: linkValues.fixedValue(0)
+    },
+    [LINK_VALUE_GENERATOR.fixedValue1]: {
+      preprocessing: linkValues.fixedValue(1)
+    },
+    [LINK_VALUE_GENERATOR.fraction_of_fixed_node_value]: {
+      requires: ({node}) => node.fixedValue,
+      preprocessing: linkValues.fractionOfFixedNodeValue
+    },
+    // defined per base view - different implementation
+    [LINK_VALUE_GENERATOR.input_count]: {
+      preprocessing: () => {
+        throw new Error('Not implemented');
+      }
+    }
+  };
+
+  linkPropertyAcessors: {
+    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator
+  } = {
+    [LINK_PROPERTY_GENERATORS.byProperty]: k => ({
+      preprocessing: linkValues.byProperty(k),
+      postprocessing: ({links}) => {
+        links.forEach(l => {
+          l._value /= (l._adjacent_divider || 1);
+          // take max for layer calculation
+        });
+        return {
+          _sets: {
+            link: {
+              _value: true
+            }
+          }
+        };
+      }
+    }),
+    [LINK_PROPERTY_GENERATORS.byArrayProperty]: k => ({
+      preprocessing: linkValues.byArrayProperty(k),
+      postprocessing: ({links}) => {
+        links.forEach(l => {
+          l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1)) as [number, number];
+          // take max for layer calculation
+        });
+        return {
+          _sets: {
+            link: {
+              _multiple_values: true
+            }
+          }
+        };
+      }
+    }),
+  };
+
+  nodeValueAccessors: {
+    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator
+  } = {
+    [NODE_VALUE_GENERATOR.none]: {
+      preprocessing: nodeValues.noneNodeValue
+    },
+    [NODE_VALUE_GENERATOR.fixedValue1]: {
+      preprocessing: nodeValues.fixedValue(1)
+    }
+  };
+
+  nodePropertyAcessor: (k) => ValueGenerator = k => ({
+    preprocessing: nodeValues.byProperty(k)
+  })
+
+
+  predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
+    if (!isNil(predefinedValueAccessorId)) {
+      const {
+        linkValueAccessorId,
+        nodeValueAccessorId
+      } = predefinedValueAccessors[predefinedValueAccessorId];
+      return {
+        linkValueAccessorId,
+        nodeValueAccessorId,
+        predefinedValueAccessorId,
+      };
+    } else {
+      return {};
+    }
+  }
+
+  defaultPredefinedValueAccessorReducer({networkTraces = {}, predefinedValueAccessors = {}}, {networkTraceIdx}) {
+    const predefinedValueAccessorId = networkTraces[networkTraceIdx]?.default_sizing;
+    return this.predefinedValueAccessorReducer({predefinedValueAccessors}, {predefinedValueAccessorId});
+  }
+
+  // @ts-ignore
+  patchState(statePatch) {
+    return this.delta$.pipe(
+      first(),
+      map(currentStateDelta =>
+        // ommit empty values so they can be overridden by defaultState
+        omitBy(
+          merge(
+            {},
+            currentStateDelta,
+            statePatch,
+          ),
+          isNil
+        )
+      ),
+      patchReducer(statePatch, (state, patch) => {
+        if (!isNil(patch.networkTraceIdx)) {
+          return this.options$.pipe(
+            first(),
+            map(options => {
+              return {
+                ...state,
+                // todo
+                // ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
+              };
+            })
+          );
+        }
+      }),
+      tap(stateDelta => {
+        this.delta$.next(stateDelta as Partial<State>);
+      })
+    );
+  }
+
+  selectPredefinedValueAccessor(predefinedValueAccessorId: string) {
+    return this.common.options$.pipe(
+      switchMap(options => this.patchState(
+        this.predefinedValueAccessorReducer(options, {predefinedValueAccessorId})
+      ))
+    );
+  }
+
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
    */
-  initCommonObservables() {
-    this.options$ = this.c.options$.pipe(
-      map(options => merge({}, options, this.baseDefaultOptions)),
-    );
-
-    // @ts-ignore
-    this.defaultState$ = combineLatest([
-      this.c.defaultState$,
-      this.baseDefaultState$
-    ]).pipe(
-      map(states => merge({}, ...states))
-    );
-
-    this.state$ = combineLatest([this.c.stateDelta$, this.defaultState$]).pipe(
-      map(([delta, defaultState]) => merge({}, defaultState, delta)),
-      tap(s => console.warn('state update', s)),
-      shareReplay(1)
-    );
-
-    this.nodeValueAccessor$ = this.optionStateMultiAccessor<ValueGenerator>(
-      ['nodeValueGenerators', 'nodeValueAccessors'] as any,
-      ['nodeValueAccessorId'],
-      ({nodeValueGenerators, nodeValueAccessors}, {nodeValueAccessorId}) =>
-        nodeValueGenerators[nodeValueAccessorId] ??
-        nodeValueAccessors[nodeValueAccessorId] ??
-        (
+  onInit() {
+    super.onInit();
+    this.nodeValueAccessor$ = this.unifiedSingularAccessor(
+      this.state$,
+      'nodeValueAccessorId',
+    ).pipe(
+      map((nodeValueAccessorId) =>
+        nodeValueAccessorId ? (
+          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
+          this.nodePropertyAcessor(nodeValueAccessorId)
+        ) : (
           this.warningController.warn(`Node values accessor ${nodeValueAccessorId} could not be found`),
-            nodeValueGenerators[NODE_VALUE_GENERATOR.none]
+            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
         )
+      )
     );
 
     // noinspection JSVoidFunctionReturnValueUsed
-    this.linkValueAccessor$ = this.optionStateMultiAccessor<ValueGenerator>(
-      ['linkValueGenerators', 'linkValueAccessors'] as any,
-      ['linkValueAccessorId'],
-      ({linkValueGenerators, linkValueAccessors}, {linkValueAccessorId}) =>
-        linkValueGenerators[linkValueAccessorId] ??
-        linkValueAccessors[linkValueAccessorId] ??
-        (
-          this.warningController.warn(`Link values accessor ${linkValueAccessorId} could not be found`),
-            linkValueGenerators[NODE_VALUE_GENERATOR.none]
+    this.linkValueAccessor$ = this.unifiedSingularAccessor(
+      this.state$, 'linkValueAccessorId'
+    ).pipe(
+      switchMap((linkValueAccessorId) =>
+        iif(
+          () => has(this.linkValueAccessors, linkValueAccessorId),
+          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
+          this.unifiedSingularAccessor(
+            this.common.options$,
+            'predefinedValueAccessors'
+          ).pipe(
+            map(predefinedValueAccessors =>
+                this.linkValueAccessors[predefinedValueAccessors[linkValueAccessorId]?.type] ?? (
+                  this.warningController.warn(`Link values accessor ${linkValueAccessorId} could not be found`),
+                    this.linkValueAccessors[NODE_VALUE_GENERATOR.none]
+                )
+            )
+          )
         )
-    );
+      ));
 
-    this.predefinedValueAccessor$ = this.optionStateAccessor(
-      'predefinedValueAccessors' as any,
-      'predefinedValueAccessorId' as any,
-      (predefinedValueAccessors, predefinedValueAccessorId) =>
-        predefinedValueAccessorId === customisedMultiValueAccessorId ?
-          customisedMultiValueAccessor :
-          predefinedValueAccessors[predefinedValueAccessorId]
+    this.predefinedValueAccessor$ = this.unifiedSingularAccessor(
+      this.common.options$,
+      'predefinedValueAccessors'
+    ).pipe(
+      switchMap(predefinedValueAccessors => this.unifiedSingularAccessor(
+        this.state$,
+        'predefinedValueAccessorId'
+      ).pipe(
+        map(predefinedValueAccessorId =>
+          predefinedValueAccessorId === customisedMultiValueAccessorId ?
+            customisedMultiValueAccessor :
+            predefinedValueAccessors[predefinedValueAccessorId]
+        )))
     );
-
 
     this.dataToRender$ = this.networkTraceData$.pipe(
       switchMap(networkTraceData => this.linkGraph(networkTraceData))
+    );
+
+    this.mergedState$ = combineLatest([
+      this.common.state$,
+      this.state$
+    ]).pipe(
+      map(([state, baseState]) => ({
+        ...state,
+        baseState
+      })),
+      shareReplay(1)
     );
   }
 
@@ -113,7 +267,7 @@ export class SankeyBaseViewControllerService<Options extends object = object, St
     return combineLatest([
       this.nodeValueAccessor$.pipe(tap(d => console.log('linkGraph nodeValueAccessor', d))),
       this.linkValueAccessor$.pipe(tap(d => console.log('linkGraph linkValueAccessor', d))),
-      this.c.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
+      this.common.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
     ]).pipe(
       tap(console.log),
       filter(params => params.every(param => !!param)),

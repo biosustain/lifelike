@@ -5,20 +5,20 @@ import { color } from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { CustomisedSankeyLayoutService } from 'app/sankey/services/customised-sankey-layout.service';
-import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
 import { DirectedTraversal } from 'app/sankey/services/directed-traversal';
 import { SankeyNode } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 
 @Injectable()
 // @ts-ignore
-export class CustomisedSankeySingleLaneLayoutService extends CustomisedSankeyLayoutService {
+export class SankeySingleLaneLayoutService extends CustomisedSankeyLayoutService {
   constructor(
-    readonly sankeyController: SankeyControllerService,
+    readonly baseView: SankeyBaseViewControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
-    super(sankeyController, truncatePipe, warningController);
+    super(baseView, truncatePipe, warningController);
   }
 
   get linkBorder() {
