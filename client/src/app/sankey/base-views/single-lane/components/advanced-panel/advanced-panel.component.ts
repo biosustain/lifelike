@@ -41,7 +41,7 @@ export class SankeySingleLaneAdvancedPanelComponent
   }
 
   commonOptions$ = this.baseView.common.options$;
-  
+
   ngOnDestroy() {
     super.ngOnDestroy();
   }

@@ -27,12 +27,13 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
     readonly warningController: WarningControllerService,
     readonly injector: Injector
   ) {
-    super(common, warningController);
+    super(common, warningController, injector);
     console.log('SankeyMultiLaneControllerService');
     this.onInit();
     this.graphInputState$ = this.common.state$.pipe(
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
-      distinctUntilChanged(isEqual)
+      // disable so temp each change cause update
+      // distinctUntilChanged(isEqual)
     );
     // this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
     this.dataToRender$.subscribe(d => console.log('data to render', d));
@@ -67,7 +68,7 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
   delta$ = new BehaviorSubject({});
 
   linkValueAccessors = {
-    ...super.linkValueAccessors,
+    ...this.linkValueAccessors,
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: inputCount,
       disabled: () => false
