@@ -6,14 +6,14 @@ import { of, Observable, from, iif } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
+import { ControllerService } from 'app/sankey/services/sankey-controller.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { SankeyURLLoadParams, ViewBase } from '../../interfaces';
+import { SankeyURLLoadParams, ViewBase } from '../../../interfaces';
 import { SankeyViewConfirmComponent } from '../view-confirm.component';
-import { SankeyViewCreateComponent } from '../view-create/view-create.component';
-import { viewBaseToNameMapping } from '../../constants';
+import { SankeyViewCreateComponent } from '../create/view-create.component';
+import { viewBaseToNameMapping } from '../../../constants';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -38,7 +38,7 @@ export class SankeyViewDropdownComponent {
 
   constructor(
     readonly workspaceManager: WorkspaceManager,
-    readonly sankeyController: SankeyControllerService,
+    readonly sankeyController: ControllerService,
     private modalService: NgbModal,
     readonly warningController: WarningControllerService
   ) {

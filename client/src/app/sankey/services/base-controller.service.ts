@@ -8,7 +8,7 @@ import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPER
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
-  SankeyControllerService,
+  ControllerService,
   customisedMultiValueAccessorId,
   customisedMultiValueAccessor,
   patchReducer
@@ -26,10 +26,10 @@ import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SankeyBaseViewControllerService<Options extends SankeyBaseOptions = SankeyBaseOptions,
+export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBaseOptions,
   State extends SankeyBaseState = SankeyBaseState> extends StateControlAbstractService<Options, State> {
   constructor(
-    readonly common: SankeyControllerService,
+    readonly common: ControllerService,
     readonly warningController: WarningControllerService,
     readonly injector: Injector
   ) {

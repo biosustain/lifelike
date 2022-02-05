@@ -44,12 +44,12 @@ import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
 import { SankeySearchService } from '../services/search.service';
 import Sankey from '../base-views/multi-lane/resolve';
 import SankeySingleLane from '../base-views/single-lane/resolve';
-import { SankeyControllerService } from '../services/sankey-controller.service';
+import { ControllerService } from '../services/sankey-controller.service';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.directive';
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
-import { SankeyBaseViewControllerService } from '../services/sankey-base-view-controller.service';
+import { BaseViewControllerService } from '../services/sankey-base-view-controller.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -58,7 +58,7 @@ import { SankeyBaseViewControllerService } from '../services/sankey-base-view-co
   providers: [
     WarningControllerService,
     SankeySearchService,
-    SankeyControllerService
+    ControllerService
   ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit, AfterViewInit {
@@ -74,7 +74,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly sankeySearch: SankeySearchService,
     readonly viewService: ViewService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    public sankeyController: SankeyControllerService,
+    public sankeyController: ControllerService,
     private injector: Injector
   ) {
     const createSankeyInjector = providers => Injector.create({
@@ -233,7 +233,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  baseView = new ReplaySubject<SankeyBaseViewControllerService>(1);
+  baseView = new ReplaySubject<BaseViewControllerService>(1);
 
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
@@ -343,7 +343,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       const sankey = createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
-      this.baseView.next(sankeyInjector.get(SankeyBaseViewControllerService));
+      this.baseView.next(sankeyInjector.get(BaseViewControllerService));
     });
   }
 
