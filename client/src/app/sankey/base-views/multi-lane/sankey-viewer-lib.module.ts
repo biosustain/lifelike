@@ -20,14 +20,11 @@ import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { SankeyModule } from '../../components/sankey/sankey.module';
 import { SankeyMultiLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from '../../components/details-panel/sankey-details-panel.module';
-import { SankeyMultiLaneControllerService } from './services/sankey-multi-lane-controller.service';
+import { ControllerService } from './services/controller.service';
 
 @NgModule({
   declarations: [
     SankeyMultiLaneAdvancedPanelComponent
-  ],
-  providers: [
-    SankeyMultiLaneControllerService
   ],
   imports: [
     CommonModule,

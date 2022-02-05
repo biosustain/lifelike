@@ -2,8 +2,6 @@ import { Component, Input, } from '@angular/core';
 
 import { SankeyNode } from 'app/sankey/interfaces';
 
-import { SankeyDetailsComponent } from './details.component';
-
 @Component({
   selector: 'app-sankey-node-details',
   templateUrl: './node-details.component.html'

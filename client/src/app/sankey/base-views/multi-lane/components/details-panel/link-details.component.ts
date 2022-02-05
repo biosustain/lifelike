@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 import { SankeyLink } from 'app/sankey/interfaces';
 
-import { SankeyDetailsComponent } from './details.component';
+import { SankeyDetailsComponent } from '../../../../abstract/details.component';
 
 @Component({
   selector: 'app-sankey-link-details',

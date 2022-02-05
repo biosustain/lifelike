@@ -6,17 +6,12 @@ import { map } from 'rxjs/operators';
 
 import { SankeyNode } from 'app/sankey/interfaces';
 
-import { parseForRendering } from '../../utils';
-import { SankeyControllerService } from '../../services/sankey-controller.service';
+import { parseForRendering } from '../utils';
+import { ControllerService } from '../services/controller.service';
 
-
-@Component({
-  selector: 'app-sankey-details',
-  template: ''
-})
-export class SankeyDetailsComponent {
+export class SankeyAbstractDetailsComponent {
   constructor(
-    private common: SankeyControllerService,
+    private common: ControllerService,
     protected readonly route: ActivatedRoute
   ) {
   }

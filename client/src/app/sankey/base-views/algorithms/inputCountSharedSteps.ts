@@ -1,10 +1,11 @@
 import { ExtendedMap } from 'app/shared/utils/types';
 import { SankeyLink, SankeyNode, SankeyData } from 'app/sankey/interfaces';
+import { BaseViewControllerService } from 'app/sankey/services/sankey-base-view-controller.service';
 
 import { DirectedTraversal } from '../../services/directed-traversal';
 
 export function calculateInputCountSkippingCircularLinks(
-  this: SankeyBaseViewControllerService,
+  this: BaseViewControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number,
@@ -31,7 +32,7 @@ export function calculateInputCountSkippingCircularLinks(
 }
 
 export function initInputCountCalculation(
-  this: SankeyBaseViewControllerService,
+  this: BaseViewControllerService,
   layout, data: SankeyData
 ) {
   // initially links does not carry values but we need to init it
@@ -62,7 +63,7 @@ export function initInputCountCalculation(
  * make lists of links passing each immediate space between node layers
  */
 export function getLinkLayers<Link extends SankeyLink>(
-  this: SankeyBaseViewControllerService,
+  this: BaseViewControllerService,
   links: Link[]
 ): Map<number, Link[]> {
   const linkLayers = new ExtendedMap<number, Link[]>();
@@ -80,7 +81,7 @@ export function getLinkLayers<Link extends SankeyLink>(
 }
 
 export function calculateInputCountSkippingCircularLinksA(
-  this: SankeyBaseViewControllerService,
+  this: BaseViewControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number
@@ -96,7 +97,7 @@ export function calculateInputCountSkippingCircularLinksA(
 }
 
 export function calculateInputCountSkippingCircularLinksB(
-  this: SankeyBaseViewControllerService,
+  this: BaseViewControllerService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number

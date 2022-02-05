@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
 
-import { WorkerActions, WorkerOutputActions } from './search-worker-actions';
+import { WorkerActions } from './search-worker-actions';
 
 @Injectable()
 // @ts-ignore

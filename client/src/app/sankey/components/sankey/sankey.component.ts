@@ -24,7 +24,7 @@ import { switchMap, tap, catchError } from 'rxjs/operators';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
-import { CustomisedSankeyLayoutService } from 'app/sankey/services/customised-sankey-layout.service';
+import { LayoutService } from 'app/sankey/services/customised-sankey-layout.service';
 
 import { representativePositiveNumber } from '../../utils';
 import * as aligns from './aligin';
@@ -39,7 +39,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
-    readonly sankey: CustomisedSankeyLayoutService,
+    readonly sankey: LayoutService,
     readonly wrapper: ElementRef,
     private zone: NgZone
   ) {

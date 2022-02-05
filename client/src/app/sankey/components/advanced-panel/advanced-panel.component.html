@@ -1,4 +1,4 @@
-<form *ngIf="options$ | async as options" [formGroup]="form">
+<form [formGroup]="form">
     <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
         <input formControlName="normalizeLinks"
                ngbButton
@@ -37,7 +37,7 @@
     <div class="form-check" ngbRadioGroup
          formControlName="prescalerId" title="Prescaler">
         <div class="mb-1">Prescaler:</div>
-        <label ngbButtonLabel *ngFor="let prescaler of options.prescalers | keyvalue"
+        <label ngbButtonLabel *ngFor="let prescaler of prescalers$ | async | keyvalue"
                [title]="prescaler.value.description"
                class="mb-0">
             <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}

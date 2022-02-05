@@ -13,8 +13,9 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneState, SankeySingleLaneOptions, SankeySingleLaneNode } from '../components/interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
-import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
-import { SankeyControllerService } from '../../../services/sankey-controller.service';
+import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { ControllerService } from '../../../services/sankey-controller.service';
+import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -24,9 +25,9 @@ import { SankeyControllerService } from '../../../services/sankey-controller.ser
  */
 @Injectable()
 // @ts-ignore
-export class SankeySingleLaneControllerService extends SankeyBaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
+export class ControllerService extends BaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
   constructor(
-    readonly common: SankeyControllerService,
+    readonly common: ControllerService,
     readonly warningController: WarningControllerService,
     readonly injector: Injector
   ) {
@@ -109,6 +110,8 @@ export class SankeySingleLaneControllerService extends SankeyBaseViewControllerS
   );
 
   graphInputState$;
+
+  colorLinkTypes$ = unifiedAccessor(this.options$, 'colorLinkTypes');
 
   // Trace logic
   /**
