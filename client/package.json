@@ -93,8 +93,6 @@
     "ng-bullet": "^1.0.3",
     "ng-mocks": "^9.0.0",
     "protractor": "~5.4.0",
-    "rxjs-spy": "^8.0.2",
-    "rxjs-spy-devtools-plugin": "^0.0.4",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
     "typescript": "~3.8.3"

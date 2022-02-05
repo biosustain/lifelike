@@ -1,4 +1,3 @@
-
 const filterObjects = arr =>
   arr.filter(n => typeof n !== 'object' && n != null);
 

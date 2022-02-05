@@ -3,12 +3,12 @@ import * as d3Sankey from 'd3-sankey-circular';
 import { ValueProcessingStep } from 'app/sankey/interfaces';
 
 import { representativePositiveNumber } from '../utils';
-import { SankeyBaseViewControllerService } from '../services/sankey-base-view-controller.service';
+import { BaseViewControllerService } from '../services/sankey-base-view-controller.service';
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
-    function(this: SankeyBaseViewControllerService, {links}) {
+    function(this: BaseViewControllerService, {links}) {
       links.forEach(l => {
         l._value = value;
       });
@@ -22,7 +22,7 @@ export const fixedValue: (value: number) => ValueProcessingStep =
       };
     };
 
-export function fractionOfFixedNodeValue(this: SankeyBaseViewControllerService, {links, nodes}) {
+export function fractionOfFixedNodeValue(this: BaseViewControllerService, {links, nodes}) {
   links.forEach(l => {
     l.value = 1;
     l.s = l.source;
@@ -83,7 +83,7 @@ export function fractionOfFixedNodeValue(this: SankeyBaseViewControllerService, 
 export const byProperty: (property: string) => ValueProcessingStep =
   property =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
-    function(this: SankeyBaseViewControllerService, {links}) {
+    function(this: BaseViewControllerService, {links}) {
       links.forEach(l => {
         l._value = representativePositiveNumber(l[property]);
       });
@@ -105,7 +105,7 @@ export const byProperty: (property: string) => ValueProcessingStep =
 export const byArrayProperty: (property: string) => ValueProcessingStep =
   property =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
-    function(this: SankeyBaseViewControllerService, {links}) {
+    function(this: BaseViewControllerService, {links}) {
       links.forEach(l => {
         const [v1, v2] = l[property];
         l._multiple_values = [v1, v2].map(d => representativePositiveNumber(d)) as [number, number];

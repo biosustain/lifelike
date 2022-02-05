@@ -1,29 +1,19 @@
-import { CustomisedSankeyMultiLaneLayoutService } from './services/customised-sankey-multi-lane-layout.service';
+import { LayoutService } from './services/layout.service';
 import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
-import { SankeyMultiLaneControllerService } from './services/sankey-multi-lane-controller.service';
+import { ControllerService } from './services/controller.service';
 import { SankeyComponent } from '../../components/sankey/sankey.component';
-import { SankeyDetailsComponent } from '../../components/details-panel/details.component';
 import { SankeyMultiLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { CustomisedSankeyLayoutService } from '../../services/customised-sankey-layout.service';
-import { SankeyBaseViewControllerService } from '../../services/sankey-base-view-controller.service';
+import { BaseControllerService } from '../../services/base-controller.service';
 
 export default {
   providers: [
     {
-      provide: CustomisedSankeyMultiLaneLayoutService,
-      useClass: CustomisedSankeyMultiLaneLayoutService
-    },
-    {
-      provide: CustomisedSankeyLayoutService,
-      useClass: CustomisedSankeyMultiLaneLayoutService
-    },
-    {
       provide: SankeyLayoutService,
-      useExisting: CustomisedSankeyMultiLaneLayoutService
+      useExisting: LayoutService
     },
     {
-      provide: SankeyBaseViewControllerService,
-      useClass: SankeyMultiLaneControllerService
+      provide: BaseControllerService,
+      useClass: ControllerService
     }
   ],
   sankey: SankeyComponent,

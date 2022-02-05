@@ -1,11 +1,11 @@
-<form *ngIf="options$ | async as options" [formGroup]="form">
+<form [formGroup]="form">
     <label class="w-100 text-left m-0 checkpoint" ngbButtonLabel>
         <input formControlName="colorLinkByType"
                ngbButton
                type="checkbox">
         Color link by type
         <ul class="color-link-legend">
-            <li *ngFor="let typemap of options.colorLinkTypes | keyvalue"
+            <li *ngFor="let typemap of colorLinkTypes$ | async | keyvalue"
                 [attr.data-type]="typemap.key.toLowerCase()">{{typemap.key}}</li>
         </ul>
     </label>
@@ -19,7 +19,7 @@
     <ng-container formGroupName="nodeHeight">
         <label formGroupName="min" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
-                   (change)="disableGroup( $event.target.checked, 'nodeHeight.min')"
+                   (change)="disableGroup($event.target.checked, 'nodeHeight.min')"
                    ngbButton
                    type="checkbox">
             Min node height
@@ -27,11 +27,11 @@
                    max="20" min="0"
                    ngbButton
                    type="range">
-            {{form.get('nodeHeight.min.value').value}}
+            {{ form.get('nodeHeight.min.value').value }}
         </label>
         <label formGroupName="max" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
-                   (change)="disableGroup($event.target.checked, 'nodeHeight', 'max')"
+                   (change)="disableGroup($event.target.checked, 'nodeHeight.max')"
                    ngbButton
                    type="checkbox">
             Max node ratio
@@ -39,46 +39,11 @@
                    max="60" min="1"
                    ngbButton
                    type="range">
-            {{form.get('nodeHeight.max.ratio').value}}
+            {{ form.get('nodeHeight.max.ratio').value }}
         </label>
     </ng-container>
     <div class="dropdown-divider"></div>
-    <div class="w-100 text-left m-0"
-         ngbButtonLabel
-         ngbRadioGroup
-         [name]="'link' + uuid"
-         formControlName="linkValueAccessorId"
-         title="Link size"
-    >
-        <div class="mb-1">Link Value Accessor:</div>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
-            <input ngbButton type="radio" [value]="valueAccessor.key"
-                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-        </label>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.linkValueAccessors | keyvalue">
-            <input ngbButton type="radio"
-                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-        </label>
-    </div>
-    <div class="dropdown-divider"></div>
-    <div class="form-check" ngbRadioGroup [name]="'node' + uuid"
-         formControlName="nodeValueAccessorId" title="Node fixed size">
-        <div class="mb-1">Node Value Accessor:</div>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
-            <input ngbButton type="radio" [value]="valueAccessor.key"
-                   [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
-        </label>
-        <label ngbButtonLabel class="mb-0"
-               *ngFor="let valueAccessor of options.nodeValueAccessors | keyvalue">
-            <input ngbButton type="radio"
-                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-        </label>
-    </div>
-    <div class="dropdown-divider"></div>
-    <ng-container *ngIf="commonOptions$ | async as options">
+    <ng-container>
         <div class="dropdown-divider"></div>
         <div class="w-100 text-left m-0"
              ngbButtonLabel
@@ -89,12 +54,12 @@
         >
             <div class="mb-1">Link Value Accessor:</div>
             <label ngbButtonLabel class="mb-0"
-                   *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
+                   *ngFor="let valueAccessor of linkValueGenerators$ | async | keyvalue">
                 <input ngbButton type="radio" [value]="valueAccessor.key">
                 {{valueAccessor.value.description}}
             </label>
             <label ngbButtonLabel class="mb-0"
-                   *ngFor="let valueAccessor of options.linkValueAccessors | keyvalue">
+                   *ngFor="let valueAccessor of linkValueAccessors$ | async | keyvalue">
                 <input ngbButton type="radio"
                        [value]="valueAccessor.key"> {{valueAccessor.value.description}}
             </label>
@@ -104,11 +69,11 @@
              formControlName="nodeValueAccessorId" title="Node fixed size">
             <div class="mb-1">Node Value Accessor:</div>
             <label ngbButtonLabel class="mb-0"
-                   *ngFor="let valueAccessor of options.nodeValueGenerators | keyvalue">
+                   *ngFor="let valueAccessor of nodeValueGenerators$ | async | keyvalue">
                 <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
             </label>
             <label ngbButtonLabel class="mb-0"
-                   *ngFor="let valueAccessor of options.nodeValueAccessors | keyvalue">
+                   *ngFor="let valueAccessor of nodeValueAccessors$ | async | keyvalue">
                 <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
             </label>
         </div>

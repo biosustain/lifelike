@@ -16,19 +16,13 @@ import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SankeyNodeDetailsComponent } from './node-details.component';
-import { SankeyLinkDetailsComponent } from './link-details.component';
 import { SankeyTraceDetailsComponent } from './trace-details.component';
-import { SankeyDetailsPanelComponent } from './details-panel.component';
-import { SankeyDetailsComponent } from './details.component';
 import { ButtonWithSelectableTextComponent } from './button-with-selectable-text.component';
 
 @NgModule({
   declarations: [
-    SankeyDetailsPanelComponent,
     SankeyNodeDetailsComponent,
-    SankeyLinkDetailsComponent,
     SankeyTraceDetailsComponent,
-    SankeyDetailsComponent,
     ButtonWithSelectableTextComponent
   ],
   imports: [
@@ -48,7 +42,6 @@ import { ButtonWithSelectableTextComponent } from './button-with-selectable-text
     SharedModule,
   ],
   exports: [
-    SankeyDetailsPanelComponent,
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,
     ButtonWithSelectableTextComponent

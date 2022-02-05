@@ -35,8 +35,8 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService } from './state-controlling-abstract.service';
-import { CustomisedSankeyLayoutService } from './customised-sankey-layout.service';
+import { StateControlAbstractService, unifiedAccessor } from './state-controlling-abstract.service';
+import { LayoutService } from './customised-sankey-layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -69,7 +69,7 @@ export function patchReducer(patch, callback) {
  */
 @Injectable()
 // @ts-ignore
-export class SankeyControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
+export class ControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
   constructor(
     readonly warningController: WarningControllerService
   ) {
@@ -335,6 +335,12 @@ export class SankeyControllerService extends StateControlAbstractService<SakeyOp
     })
   );
 
+  prescalers$ = unifiedAccessor(this.options$, 'prescalers');
+  linkValueGenerators$ = unifiedAccessor(this.options$, 'linkValueGenerators');
+  linkValueAccessors$ = unifiedAccessor(this.options$, 'linkValueAccessors');
+  nodeValueGenerators$ = unifiedAccessor(this.options$, 'nodeValueGenerators');
+  nodeValueAccessors$ = unifiedAccessor(this.options$, 'nodeValueAccessors');
+
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',
     '_fixedValue',
@@ -453,7 +459,7 @@ export class SankeyControllerService extends StateControlAbstractService<SakeyOp
               this.applyPropertyObject(view.nodes, networkTraceData.nodes);
               this.applyPropertyObject(view.links, networkTraceData.links);
               // @ts-ignore
-              const layout = new CustomisedSankeyLayoutService(this);
+              const layout = new LayoutService(this);
               layout.computeNodeLinks(networkTraceData);
               return networkTraceData;
             })

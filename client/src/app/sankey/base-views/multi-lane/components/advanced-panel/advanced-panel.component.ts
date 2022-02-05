@@ -1,8 +1,10 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { SankeyBaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
-import { SankeyAbstractAdvancedPanelComponent } from '../../../../abstract/advanced-panel/advanced-panel.component';
+
+import { BaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
+import { SankeyAbstractAdvancedPanelComponent } from '../../../../abstract/advanced-panel.component';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
+import { ControllerService } from '../../services/controller.service';
 
 
 @Component({
@@ -33,14 +35,18 @@ export class SankeyMultiLaneAdvancedPanelComponent
   });
 
   constructor(
-    protected baseView: SankeyBaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState>,
+    protected baseView: ControllerService,
     protected formBuilder: FormBuilder
   ) {
     super(baseView, formBuilder);
     this.onInit();
   }
 
-  commonOptions$ = this.baseView.common.options$;
+  linkPalettes$ = this.baseView.linkPalettes$;
+  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
+  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
+  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
+  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnDestroy() {
     super.ngOnDestroy();

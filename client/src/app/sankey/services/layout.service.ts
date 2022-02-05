@@ -2,29 +2,96 @@ import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { first, last } from 'lodash-es';
+import { map, tap, switchMap, shareReplay } from 'rxjs/operators';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyData, SankeyState } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { DirectedTraversal } from '../../../services/directed-traversal';
-import { symmetricDifference } from '../../../components/sankey/utils';
-import {
-  CustomisedSankeyLayoutService,
-  DEFAULT_FONT_SIZE,
-  groupByTraceGroupWithAccumulation
-} from '../../../services/customised-sankey-layout.service';
-import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { DirectedTraversal } from './directed-traversal';
+import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
+import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
+import { BaseViewControllerService } from './sankey-base-view-controller.service';
+import { SankeyBaseState } from '../base-views/interfaces';
+import { unifiedAccessor } from './state-controlling-abstract.service';
+
+export const groupByTraceGroupWithAccumulation = () => {
+  const traceGroupOrder = new Set();
+  return links => {
+    links.forEach(({_trace}) => {
+      traceGroupOrder.add(_trace._group);
+    });
+    const groups = [...traceGroupOrder];
+    return links.sort((a, b) =>
+      (groups.indexOf(a._trace._group) - groups.indexOf(b._trace._group))
+    );
+  };
+};
+
+// https://sbrgsoftware.atlassian.net/browse/LL-3732
+export const DEFAULT_FONT_SIZE = 12 * 1.60;
 
 @Injectable()
 // @ts-ignore
-export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayoutService {
+export class LayoutService extends SankeyLayoutService {
   constructor(
-    readonly baseView: SankeyBaseViewControllerService,
+    readonly baseView: BaseViewControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
-    super(baseView, truncatePipe, warningController);
+    super(truncatePipe);
+  }
+
+  get linkPath() {
+    const {
+      calculateLinkPathParams,
+      composeLinkPath,
+      state:
+        {
+          normalizeLinks
+        }
+    } = this;
+    return link => {
+      link._calculated_params = calculateLinkPathParams(link, normalizeLinks);
+      return composeLinkPath(link._calculated_params);
+    };
+  }
+
+  get nodeLabelShort() {
+    const {
+      state:
+        {
+          labelEllipsis: {
+            value,
+            enabled
+          }
+        },
+      nodeLabel,
+      truncatePipe: {transform}
+    } = this;
+    if (enabled) {
+      return (d, i?, n?) => transform(nodeLabel(d, i, n), value);
+    } else {
+      return (d, i?, n?) => nodeLabel(d, i, n);
+    }
+  }
+
+  get nodeLabelShouldBeShorted() {
+    const {
+      state:
+        {
+          labelEllipsis: {
+            value,
+            enabled
+          }
+        },
+      nodeLabel
+    } = this;
+    if (enabled) {
+      return (d, i?, n?) => nodeLabel(d, i, n).length > value;
+    } else {
+      return () => false;
+    }
   }
 
   get nodeColor() {
@@ -40,11 +107,164 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
     };
   }
 
+  get fontSize() {
+    const {
+      state:
+        {
+          fontSizeScale
+        }
+    } = this;
+    // noinspection JSUnusedLocalSymbols
+    return (d?, i?, n?) => DEFAULT_FONT_SIZE * fontSizeScale;
+  }
+
+  state: Partial<SankeyState>;
+  baseState: Partial<SankeyBaseState>;
+
+
   normalizeLinks = false;
+
   columns: SankeyNode[][] = [];
   columnsWithLinkPlaceholders: SankeyNode[][] = [];
 
   ky; // y scaling factor (_value * ky = height)
+
+  nodeHeight;
+
+  /**
+   * Calculate layout and address possible circular links
+   */
+  layout$ = this.baseView.dataToRender$.pipe(
+    // Associate the nodes with their respective links, and vice versa
+    tap(graph => this.computeNodeLinks(graph)),
+    // Determine which links result in a circular path in the graph
+    tap(graph => this.identifyCircles(graph)),
+    // Calculate the nodes' values, based on the values of the incoming and outgoing links
+    tap(graph => this.computeNodeValues(graph)),
+    // Calculate the nodes' depth based on the incoming and outgoing links
+    //     Sets the nodes':
+    //     - depth:  the depth in the graph
+    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
+    tap(graph => this.computeNodeDepths(graph)),
+    tap(graph => this.computeNodeReversedDepths(graph)),
+    tap(graph => this.computeNodeLayers(graph)),
+    tap(graph => this.createVirtualNodes(graph)),
+    switchMap(graph => this.baseView.stateAccessor('nodeHeight').pipe(
+      tap(d => console.log("sdgsfgasa", d)),
+      tap(nodeHeight => this.nodeHeight = nodeHeight),
+      map(() => graph)
+    )),
+    tap(graph => this.setLayoutParams(graph)),
+    tap(graph => this.computeNodeHeights(graph)),
+    // Calculate the nodes' and links' vertical position within their respective column
+    //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+    tap(graph => this.computeNodeBreadths(graph)),
+    tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
+    tap(graph => this.cleanVirtualNodes(graph)),
+    tap(graph => console.log("bo=efore common state")),
+    switchMap(graph =>
+      unifiedAccessor(this.baseView.common.state$, [
+        'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
+      ]).pipe(
+    tap(state => this.state = state),
+      map(() => graph)
+    )),
+    shareReplay(1)
+  );
+
+  calculateLinkPathParams(link, normalize = true) {
+    const {_source, _target, _multiple_values} = link;
+    let {_value: linkValue} = link;
+    linkValue = linkValue || 1e-4;
+    const sourceX = _source._x1;
+    const targetX = _target._x0;
+    const {_sourceLinks} = _source;
+    const {_targetLinks} = _target;
+    const sourceIndex = _sourceLinks.indexOf(link);
+    const targetIndex = _targetLinks.indexOf(link);
+    const columns = Math.abs(_target._layer - _source._layer);
+    const linkWidth = Math.abs(targetX - sourceX);
+    const bezierOffset = (link._circular ? linkWidth / columns : linkWidth) / 2;
+    const sourceBezierX = sourceX + bezierOffset;
+    const targetBezierX = targetX - bezierOffset;
+    let sourceY0;
+    let sourceY1;
+    let targetY0;
+    let targetY1;
+    let sourceY = 0;
+    let targetY = 0;
+
+    for (let i = 0; i < sourceIndex; i++) {
+      const nestedLink = _sourceLinks[i];
+      sourceY += nestedLink._multiple_values?.[0] ?? nestedLink._value;
+    }
+    for (let i = 0; i < targetIndex; i++) {
+      const nestedLink = _targetLinks[i];
+      targetY += nestedLink._multiple_values?.[1] ?? nestedLink._value;
+    }
+
+    if (normalize) {
+      let sourceValues;
+      let targetValues;
+      if (_multiple_values) {
+        sourceValues = _sourceLinks.map(l => l._multiple_values?.[0] ?? l._value);
+        targetValues = _targetLinks.map(l => l._multiple_values?.[1] ?? l._value);
+      } else {
+        sourceValues = _sourceLinks.map(({_value}) => _value);
+        targetValues = _targetLinks.map(({_value}) => _value);
+      }
+      const sourceNormalizer = _sourceLinks._normalizer ?? (_sourceLinks._normalizer = normalizeGenerator(sourceValues));
+      const targetNormalizer = _targetLinks._normalizer ?? (_targetLinks._normalizer = normalizeGenerator(targetValues));
+      const sourceHeight = _source._y1 - _source._y0;
+      const targetHeight = _target._y1 - _target._y0;
+      // tslint:disable-next-line:no-bitwise
+      sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + _source._y0;
+      // tslint:disable-next-line:no-bitwise
+      targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + _target._y0;
+      if (_multiple_values) {
+        // tslint:disable-next-line:no-bitwise
+        sourceY1 = (sourceNormalizer.normalize(_multiple_values[0]) * sourceHeight) + sourceY0;
+        // tslint:disable-next-line:no-bitwise
+        targetY1 = (targetNormalizer.normalize(_multiple_values[1]) * targetHeight) + targetY0;
+      } else {
+        // tslint:disable-next-line:no-bitwise
+        sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
+        // tslint:disable-next-line:no-bitwise
+        targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
+      }
+    } else {
+      let {_width} = link;
+      _width = _width || 1e-4;
+      const valueScaler = _width / linkValue;
+
+      // tslint:disable-next-line:no-bitwise
+      sourceY0 = sourceY * valueScaler + _source._y0;
+      // tslint:disable-next-line:no-bitwise
+      targetY0 = targetY * valueScaler + _target._y0;
+      if (_multiple_values) {
+        // tslint:disable-next-line:no-bitwise
+        sourceY1 = _multiple_values[0] * valueScaler + sourceY0;
+        // tslint:disable-next-line:no-bitwise
+        targetY1 = _multiple_values[1] * valueScaler + targetY0;
+      } else {
+        // tslint:disable-next-line:no-bitwise
+        sourceY1 = linkValue * valueScaler + sourceY0;
+        // tslint:disable-next-line:no-bitwise
+        targetY1 = linkValue * valueScaler + targetY0;
+      }
+    }
+    return {
+      sourceX,
+      sourceY0,
+      sourceY1,
+      targetX,
+      targetY0,
+      targetY1,
+      sourceBezierX,
+      targetBezierX
+    };
+  }
 
   /**
    * Compose SVG path based on set of intermediate points
@@ -284,6 +504,11 @@ export class CustomisedSankeyMultiLaneLayoutService extends CustomisedSankeyLayo
    */
   cleanVirtualNodes(graph) {
     graph.nodes = graph._nodes;
+  }
+
+  // @ts-ignore
+  computeNodeLayers(graph) {
+    this.columns = super.computeNodeLayers(graph);
   }
 
   setLayoutParams(graph) {

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { SankeyLinkDetailsComponent } from 'app/sankey/components/details-panel/link-details.component';
+import { SankeyLinkDetailsComponent } from 'app/sankey/base-views/multi-lane/components/details-panel/link-details.component';
 
 import { SankeySingleLaneLink } from '../interfaces';
 

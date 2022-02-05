@@ -1,8 +1,9 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { SankeyControllerService } from 'app/sankey/services/sankey-controller.service';
 
-import { SankeyAbstractAdvancedPanelComponent } from '../../abstract/advanced-panel/advanced-panel.component';
+import { ControllerService } from 'app/sankey/services/sankey-controller.service';
+
+import { SankeyAbstractAdvancedPanelComponent } from '../../abstract/advanced-panel.component';
 import { SankeyState, SankeyOptions } from '../../interfaces';
 
 @Component({
@@ -12,7 +13,7 @@ import { SankeyState, SankeyOptions } from '../../interfaces';
 })
 export class SankeyAdvancedPanelComponent extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState> implements OnDestroy {
   constructor(
-    protected common: SankeyControllerService,
+    protected common: ControllerService,
     protected formBuilder: FormBuilder
   ) {
     super(common, formBuilder);
@@ -28,6 +29,8 @@ export class SankeyAdvancedPanelComponent extends SankeyAbstractAdvancedPanelCom
     }),
     prescalerId: [undefined, []],
   });
+
+  prescalers$ = this.common.prescalers$;
 
   ngOnDestroy() {
     super.ngOnDestroy();

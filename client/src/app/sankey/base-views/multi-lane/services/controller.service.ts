@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged, tap } from 'rxjs/operators';
+import { switchMap, map, tap, distinctUntilChanged } from 'rxjs/operators';
 import { pick, isEqual } from 'lodash-es';
 import { of, BehaviorSubject } from 'rxjs';
 
@@ -8,10 +8,11 @@ import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFI
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
-import { SankeyBaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
-import { SankeyControllerService } from '../../../services/sankey-controller.service';
+import { ControllerService } from '../../../services/sankey-controller.service';
+import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -20,29 +21,20 @@ import { SankeyControllerService } from '../../../services/sankey-controller.ser
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-// @ts-ignore
-export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
+export class ControllerService extends BaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
   constructor(
-    readonly common: SankeyControllerService,
+    readonly common: ControllerService,
     readonly warningController: WarningControllerService,
     readonly injector: Injector
   ) {
     super(common, warningController, injector);
-    console.log('SankeyMultiLaneControllerService');
     this.onInit();
     this.graphInputState$ = this.common.state$.pipe(
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
-      // disable so temp each change cause update
-      // distinctUntilChanged(isEqual)
+      distinctUntilChanged(isEqual)
     );
-    // this.state$.subscribe(s => console.warn('SankeySingleLaneControllerService state$', s));
     this.dataToRender$.subscribe(d => console.log('data to render', d));
     this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
-    // this.defaultState$.subscribe(d => console.log('defaultState$ construct subscription', d));
-    // this.nodeValueAccessor$.subscribe(d => console.log('nodeValueAccessor$ construct subscription', d));
-    // this.linkValueAccessor$.subscribe(d => console.log('linkValueAccessor$ construct subscription', d));
-    // this.predefinedValueAccessor$.subscribe(d => console.log('predefinedValueAccessor$ construct subscription', d));
-    // this.options$.subscribe(d => console.log('options$ construct subscription', d));
   }
 
   viewBase = ViewBase.sankeyMultiLane;
@@ -114,6 +106,8 @@ export class SankeyMultiLaneControllerService extends SankeyBaseViewControllerSe
   );
 
   graphInputState$;
+
+  linkPalettes$ = unifiedAccessor(this.options$, 'linkPalettes');
 
   // Trace logic
   /**
