@@ -145,25 +145,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
 
-  protected getFileContentRequest(value: { [key: string]: any }): Partial<ObjectContentSource> {
-    if (this.promptUpload) {
-      switch (value.contentSource) {
-        case 'contentValue':
-          return {
-            contentValue: value.contentValue,
-          };
-        case 'contentUrl':
-          return {
-            contentUrl: value.contentUrl,
-          };
-        default:
-          return {};
-      }
-    } else {
-      return {};
-    }
-  }
-
   applyValue(value: ObjectEditDialogValue) {
     Object.assign(this.object, value.objectChanges);
   }
@@ -181,16 +162,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       annotationConfigs: value.annotationConfigs,
     };
 
-    const request: ObjectCreateRequest = {
-      filename: value.filename,
-      parentHashId: value.parent ? value.parent.hashId : null,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs,
-      ...this.getFileContentRequest(value),
-    };
+    const request: ObjectCreateRequest = this.createObjectRequest(value);
 
     return {
       object: this.object,
@@ -198,6 +170,18 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       request,
       annotationConfigs: value.annotationConfigs,
       organism: value.organism
+    };
+  }
+
+  createObjectRequest(value): ObjectCreateRequest {
+    return {
+      filename: value.filename,
+      parentHashId: value.parent ? value.parent.hashId : null,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs: value.annotationConfigs
     };
   }
 
