@@ -25,6 +25,7 @@ import {ObjectCreateRequest} from '../../schema';
 })
 export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
+  @Input() request = {};
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
@@ -65,7 +66,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
         uploadRequests.push({
           ...this.createObjectRequest(formState),
           parentHashId: value.parent ? value.parent.hashId : null,
-          contentValue: formState.contentValue
+          contentValue: formState.contentValue,
+          ...this.request,
         });
       }
       return uploadRequests;
@@ -74,6 +76,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     return [{
       ...this.createObjectRequest(value),
       ...(value.contentSource === 'contentUrl') && {contentUrl: value.contentUrl},
+      ...this.request,
     } as ObjectCreateRequest];
   }
 
