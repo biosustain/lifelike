@@ -1,23 +1,18 @@
-import {Component, Input} from '@angular/core';
-import {FormControl, FormGroup} from '@angular/forms';
+import { Component, Input } from '@angular/core';
 
-import {NgbActiveModal, NgbModal, NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 
-import {MessageDialog} from 'app/shared/services/message-dialog.service';
-import {SharedSearchService} from 'app/shared/services/shared-search.service';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
-import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
-import {AnnotationMethods, NLPANNOTATIONMODELS} from 'app/interfaces/annotation';
-import {ENTITY_TYPE_MAP} from 'app/shared/annotation-types';
-import {FORMATS_WITH_POSSIBLE_DESCRIPTION} from 'app/shared/constants';
-import {extractDescriptionFromSankey} from 'app/shared-sankey/constants';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { SharedSearchService } from 'app/shared/services/shared-search.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
+import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
-import {
-  FileInput,
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue
-} from './object-edit-dialog.component';
-import {ObjectCreateRequest} from '../../schema';
+import { ObjectEditDialogComponent } from './object-edit-dialog.component';
+import { ObjectCreateRequest } from '../../schema';
 
 @Component({
   selector: 'app-object-upload-dialog',
@@ -52,7 +47,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     super(modal, messageDialog, modalService);
   }
 
-  // TODO: Fix, not ignore
+  // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.
   // @ts-ignore
   getValue(): ObjectCreateRequest[] {
     const value = this.form.value;
@@ -162,7 +157,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
         filePossiblyAnnotatable: this.filePossiblyAnnotatable,
       };
     }
-    // TODO: Possibly change the form format, due to annotations
     this.selectedFile = this.fileList[newIndex];
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
@@ -190,7 +184,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
           if (format === 'graph') {
             return extractDescriptionFromSankey(text);
           }
-          // TODO: Do we want to map here?
+          return '';
        });
      }
      return Promise.resolve('');
@@ -202,4 +196,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.changeSelectedFile(this.fileList.length - 1);
   }
 
+}
+
+export interface FileInput {
+  filename: string;
+  formState: any;
+  hasValidFilename: boolean;
+  filePossiblyAnnotatable: boolean;
 }
