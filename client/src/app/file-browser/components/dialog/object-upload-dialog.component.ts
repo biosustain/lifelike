@@ -1,0 +1,221 @@
+import {Component, Input} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
+
+import {NgbActiveModal, NgbModal, NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
+
+import {MessageDialog} from 'app/shared/services/message-dialog.service';
+import {SharedSearchService} from 'app/shared/services/shared-search.service';
+import {ErrorHandler} from 'app/shared/services/error-handler.service';
+import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
+import {AnnotationMethods, NLPANNOTATIONMODELS} from 'app/interfaces/annotation';
+import {ENTITY_TYPE_MAP} from 'app/shared/annotation-types';
+import {FORMATS_WITH_POSSIBLE_DESCRIPTION} from 'app/shared/constants';
+import {extractDescriptionFromSankey} from 'app/shared-sankey/constants';
+
+import {
+  FileInput,
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue
+} from './object-edit-dialog.component';
+import {ObjectCreateRequest} from '../../schema';
+
+@Component({
+  selector: 'app-object-upload-dialog',
+  templateUrl: './object-upload-dialog.component.html'
+})
+export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
+
+
+  readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
+  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
+    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
+
+  // TODO: We can think about removing this after we add task queue for annotations
+  readonly maxFileCount = 5;
+
+  fileList: FileInput[] = [];
+  selectedFile: FileInput = null;
+  selectedFileIndex;
+
+  invalidInputs = false;
+
+  // TODO: Do we want to trim this extension? Do we want to trim more extensions (.pdf)?
+  readonly extensionsToCutRegex = /.map$/;
+
+  constructor(modal: NgbActiveModal,
+              messageDialog: MessageDialog,
+              protected readonly search: SharedSearchService,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly modalService: NgbModal) {
+    super(modal, messageDialog, modalService);
+  }
+
+  // TODO: Fix, not ignore
+  // @ts-ignore
+  getValue(): ObjectCreateRequest[] {
+    const value = this.form.value;
+
+    if (this.promptUpload && this.fileList.length) {
+      // This saves the info about current file
+      if (this.selectedFileIndex !== -1) {
+        this.changeSelectedFile(this.selectedFileIndex);
+      }
+
+      const uploadRequests = [];
+      for (const file of this.fileList) {
+        const formState = file.formState;
+        uploadRequests.push({
+          filename: formState.filename,
+          parentHashId: value.parent ? value.parent.hashId : null,
+          description: formState.description,
+          public: formState.public,
+          mimeType: formState.mimeType,
+          fallbackOrganism: formState.organism,
+          annotationConfigs: formState.annotationConfigs,
+          // No URL upload for multiple files
+          contentValue: formState.contentValue
+        });
+      }
+      return uploadRequests;
+
+    }
+
+
+
+    const request: ObjectCreateRequest = {
+      filename: value.filename,
+      parentHashId: value.parent ? value.parent.hashId : null,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs: value.annotationConfigs,
+      ...this.getFileContentRequest(value),
+    };
+    return [request];
+  }
+
+  fileChanged(event) {
+    if (!event.target.files.length) {
+      return;
+    }
+    const oldFilename = this.form.get('filename').value;
+    for (const targetFile of event.target.files) {
+      const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
+      this.extractDescription(targetFile, filename.split('.').pop()).then(description => {
+        this.form.get('description').setValue(description);
+        this.form.get('description').markAsDirty();
+      });
+      this.form.get('filename').setValue(filename);
+      const fileEntry: FileInput = {
+        formState: {
+          contentValue: targetFile,
+          filename,
+          description: '',
+          public: false,
+          organism: null,
+          annotationsConfigs: {
+            annotationMethods: this.defaultAnnotationMethods,
+            excludeReferences: true
+          }
+        },
+        filename,
+        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
+        filePossiblyAnnotatable: targetFile.type === 'application/pdf',
+      };
+      if (this.fileList.push(fileEntry) >= this.maxFileCount) {
+        break;
+      }
+
+    }
+    this.form.get('filename').setValue(oldFilename);
+    this.changeSelectedFile(this.fileList.length - 1);
+  }
+
+
+  activeTabChanged(event: NgbNavChangeEvent) {
+    if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
+      if (!confirm('Are you sure? Your progress will be lost!')) {
+        event.preventDefault();
+        return;
+      }
+    }
+    this.fileList = [];
+    this.selectedFile = null;
+    this.selectedFileIndex = -1;
+    this.form.get('contentUrl').setValue('');
+    this.form.get('contentSource').setValue(event.nextId);
+    this.form.get('contentValue').setValue(null);
+    this.form.get('filename').setValue('');
+    this.filePossiblyAnnotatable = false;
+    this.invalidInputs = false;
+  }
+
+  urlChanged(event) {
+    this.form.get('filename').setValue(this.extractFilename(event.target.value));
+    this.filePossiblyAnnotatable = this.form.get('contentUrl').value.length;
+  }
+
+
+  changeSelectedFile(newIndex: number) {
+    const fileCount = this.fileList.length;
+    if (fileCount === 0) {
+      this.selectedFileIndex = -1;
+      this.form.get('contentValue').setValue(null);
+      this.filePossiblyAnnotatable = false;
+      return;
+    }
+    if (newIndex >= fileCount ) {
+      newIndex = this.fileList.length - 1;
+    }
+    if (this.selectedFile) {
+      // Update file
+      this.fileList[this.selectedFileIndex] = {
+        filename: this.form.get('filename').value,
+        formState: this.form.value,
+        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
+        filePossiblyAnnotatable: this.filePossiblyAnnotatable,
+      };
+    }
+    // TODO: Possibly change the form format, due to annotations
+    this.selectedFile = this.fileList[newIndex];
+    this.selectedFileIndex = newIndex;
+    this.form.patchValue(this.selectedFile.formState);
+    this.form.markAsDirty();
+    this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
+    // Remove the warnings - they will come back if switched again
+    this.selectedFile.hasValidFilename = true;
+    this.invalidInputs = this.fileList.some((file) => !file.hasValidFilename);
+
+  }
+
+  private extractFilename(s: string): string {
+    s = s.replace(/^.*[/\\]/, '').trim();
+    if (s.length) {
+      return s.replace(/(?:\.llmap)?\.json$/i, '');
+    } else {
+      const isMap = s.match(/\.json$/i);
+      return 'document' + (isMap ? '' : '.pdf');
+    }
+  }
+
+  private extractDescription(file: File, format: string): Promise<string> {
+     if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
+       return file.text().then(text => {
+          if (format === 'graph') {
+            return extractDescriptionFromSankey(text);
+          }
+          // TODO: Do we want to map here?
+       });
+     }
+     return Promise.resolve('');
+  }
+
+  handleDelete(index: number) {
+    this.fileList.splice(index, 1);
+    this.selectedFile = null;
+    this.changeSelectedFile(this.fileList.length - 1);
+  }
+
+}

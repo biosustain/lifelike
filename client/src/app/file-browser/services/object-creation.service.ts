@@ -42,6 +42,7 @@ import {
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
+import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
 
 @Injectable()
 export class ObjectCreationService {
@@ -149,7 +150,7 @@ export class ObjectCreationService {
    */
   openCreateDialog(target: FilesystemObject,
                    options: CreateDialogOptions = {}): Promise<FilesystemObject> {
-    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
+    const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
     const keys: Array<keyof CreateDialogOptions> = [
@@ -163,10 +164,13 @@ export class ObjectCreationService {
         dialogRef.componentInstance[key] = options[key];
       }
     }
-    dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
-
-      const requests = value.uploadRequests.length ? value.uploadRequests : [{
-        ...value.request,
+    console.log('options');
+    console.log(options);
+    dialogRef.componentInstance.accept = ((value: ObjectCreateRequest[]) => {
+      // TODO: Maybe a nicer way of handling this
+      // TODO: Maybe refactor into yet another component
+      const requests = options.promptUpload ? value : [{
+        ...value[0],
         ...(options.request || {}),
         // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
         // via the type checker, that we will be forming a 100% legitimate request,
@@ -177,6 +181,7 @@ export class ObjectCreationService {
         organism: request.fallbackOrganism,
         annotationConfigs: request.annotationConfigs
       }));
+      console.log(requests);
       return this.executePutWithProgressDialog(requests, annotationOptions).toPromise();
     });
     return dialogRef.result;
