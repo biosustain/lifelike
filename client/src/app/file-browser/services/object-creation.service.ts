@@ -68,7 +68,7 @@ export class ObjectCreationService {
    */
   executePutWithProgressDialog(requests: ObjectCreateRequest[],
                                annotationOptions: PDFAnnotationGenerationRequest[]):
-    Observable<FilesystemObject> {
+    Promise<FilesystemObject[]> {
     const progressObservable = [];
     for (const req of requests) {
       progressObservable.push(new BehaviorSubject<Progress>(new Progress({
@@ -80,11 +80,11 @@ export class ObjectCreationService {
       progressObservable,
     });
     let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
-    const obsList = [];
+    const promiseList: Promise<FilesystemObject>[] = [];
     for (let i = 0; i < requests.length; i++) {
       const request = requests[i];
       const annotationOption = annotationOptions[i] || {};
-      obsList.push(this.filesystemService.create(request)
+      promiseList.push(this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
@@ -130,17 +130,22 @@ export class ObjectCreationService {
             of(object)
           );
         }),
-        this.errorHandler.create({label: 'Create object'}),
-        share()
-      ));
+        this.errorHandler.create({label: 'Create object'})
+      ).toPromise());
     }
-    this.subscription = forkJoin(obsList).subscribe(_ => {
+    let finalPromise;
+    if (promiseList.length === 1) {
+      finalPromise = promiseList[0];
+    } else {
+      finalPromise = Promise.all(promiseList);
+    }
+    this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();
     }, ( error ) => {
       progressDialogRef.close();
       console.error(error);
     });
-    return obsList.pop();
+    return finalPromise;
   }
 
   /**
@@ -158,28 +163,19 @@ export class ObjectCreationService {
       'forceAnnotationOptions',
       'promptParent',
       'parentLabel',
+      'request'
     ];
     for (const key of keys) {
       if (key in options) {
         dialogRef.componentInstance[key] = options[key];
       }
     }
-    dialogRef.componentInstance.accept = ((value: ObjectCreateRequest[]) => {
-      // TODO: Maybe a nicer way of handling this
-      // TODO: Maybe refactor into yet another component
-      const requests = options.promptUpload ? value : [{
-        ...value[0],
-        ...(options.request || {}),
-        // NOTE: Due to the cast to ObjectCreateRequest, we do not guarantee,
-        // via the type checker, that we will be forming a 100% legitimate request,
-        // because it's possible to provide multiple sources of content due to this cast, which
-        // the server will reject because it does not make sense
-      } as ObjectCreateRequest];
+    dialogRef.componentInstance.accept = ((requests: ObjectCreateRequest[]) => {
       const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
         organism: request.fallbackOrganism,
         annotationConfigs: request.annotationConfigs
       }));
-      return this.executePutWithProgressDialog(requests, annotationOptions).toPromise();
+      return this.executePutWithProgressDialog(requests, annotationOptions);
     });
     return dialogRef.result;
   }
