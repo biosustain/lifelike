@@ -43,6 +43,7 @@ import { FilesystemObjectDataProvider } from './providers/filesystem-object-data
 import { ObjectViewerComponent } from './components/object-viewer.component';
 import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
 import { ObjectUploadDialogComponent } from './components/dialog/object-upload-dialog.component';
+import { ObjectCreateDialogComponent } from './components/dialog/object-create-dialog.component';
 
 @NgModule({
   declarations: [
@@ -75,6 +76,7 @@ import { ObjectUploadDialogComponent } from './components/dialog/object-upload-d
     ObjectReannotateResultsDialogComponent,
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
+    ObjectCreateDialogComponent,
   ],
   imports: [
     SharedModule,

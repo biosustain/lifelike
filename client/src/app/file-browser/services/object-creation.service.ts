@@ -92,12 +92,12 @@ export class ObjectCreationService {
             if (event.loaded === event.total && event.total) {
               progressObservable[i].next(new Progress({
                 mode: ProgressMode.Indeterminate,
-                status: 'File transmitted; saving...',
+                status: `${request.filename || 'File'} transmitted; saving...`,
               }));
             } else {
               progressObservable[i].next(new Progress({
                 mode: ProgressMode.Determinate,
-                status: 'Transmitting file...',
+                status: `Transmitting ${request.filename || 'file' }...`,
                 value: event.loaded / event.total,
               }));
             }
@@ -110,7 +110,7 @@ export class ObjectCreationService {
           // we can't actually show a progress percentage)
           progressObservable[i].next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Saved; Parsing and identifying annotations...',
+            status: `${request.filename || 'file'} saved; Parsing and identifying annotations...`,
           }));
           const annotationsService = this.annotationsService.generateAnnotations(
             [object.hashId], annotationOption || {},
@@ -164,8 +164,6 @@ export class ObjectCreationService {
         dialogRef.componentInstance[key] = options[key];
       }
     }
-    console.log('options');
-    console.log(options);
     dialogRef.componentInstance.accept = ((value: ObjectCreateRequest[]) => {
       // TODO: Maybe a nicer way of handling this
       // TODO: Maybe refactor into yet another component
@@ -181,7 +179,6 @@ export class ObjectCreationService {
         organism: request.fallbackOrganism,
         annotationConfigs: request.annotationConfigs
       }));
-      console.log(requests);
       return this.executePutWithProgressDialog(requests, annotationOptions).toPromise();
     });
     return dialogRef.result;

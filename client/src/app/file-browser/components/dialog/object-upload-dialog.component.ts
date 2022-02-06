@@ -56,44 +56,25 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   getValue(): ObjectCreateRequest[] {
     const value = this.form.value;
 
-    if (this.promptUpload && this.fileList.length) {
+    if (this.fileList.length) {
       // This saves the info about current file
-      if (this.selectedFileIndex !== -1) {
-        this.changeSelectedFile(this.selectedFileIndex);
-      }
-
+      this.changeSelectedFile(this.selectedFileIndex);
       const uploadRequests = [];
       for (const file of this.fileList) {
         const formState = file.formState;
         uploadRequests.push({
-          filename: formState.filename,
+          ...this.createObjectRequest(formState),
           parentHashId: value.parent ? value.parent.hashId : null,
-          description: formState.description,
-          public: formState.public,
-          mimeType: formState.mimeType,
-          fallbackOrganism: formState.organism,
-          annotationConfigs: formState.annotationConfigs,
-          // No URL upload for multiple files
           contentValue: formState.contentValue
         });
       }
       return uploadRequests;
-
     }
 
-
-
-    const request: ObjectCreateRequest = {
-      filename: value.filename,
-      parentHashId: value.parent ? value.parent.hashId : null,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs,
-      ...this.getFileContentRequest(value),
-    };
-    return [request];
+    return [{
+      ...this.createObjectRequest(value),
+      ...(value.contentSource === 'contentUrl') && {contentUrl: value.contentUrl},
+    } as ObjectCreateRequest];
   }
 
   fileChanged(event) {
