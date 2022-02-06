@@ -114,6 +114,11 @@ export class ObjectCreationService {
             }
             return object;
           }));
+          progressObservable[i].next(new Progress({
+                mode: ProgressMode.Determinate,
+                status: `Done with ${request.filename || 'file' }...`,
+                value: 1,
+              }));
           return iif(
             () => object.isAnnotatable,
             merge(annotationsService),
@@ -128,7 +133,7 @@ export class ObjectCreationService {
     if (promiseList.length === 1) {
       finalPromise = promiseList[0];
     } else {
-      finalPromise = Promise.race(promiseList);
+      finalPromise = Promise.all(promiseList);
     }
     this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();
