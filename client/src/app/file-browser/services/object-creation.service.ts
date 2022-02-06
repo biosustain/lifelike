@@ -3,28 +3,8 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {
-  BehaviorSubject,
-  Observable,
-  iif,
-  of,
-  merge,
-  pipe,
-  from,
-  EMPTY,
-  forkJoin,
-  ReplaySubject
-} from 'rxjs';
-import {
-  catchError, concatAll,
-  concatMap,
-  filter,
-  finalize,
-  map,
-  mergeMap, share, shareReplay,
-  switchMap,
-  tap
-} from 'rxjs/operators';
+import { BehaviorSubject, iif, of, merge } from 'rxjs';
+import { filter, map, mergeMap, tap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -35,10 +15,6 @@ import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 
 import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../components/dialog/object-edit-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
@@ -60,11 +36,25 @@ export class ObjectCreationService {
   }
 
   /**
-   * TODO: Refactor into smaller functions
-   * Handles the filesystem PUT request with a progress dialog.
-   * @param requests the request data
+   * Wrapper around put - enrichment tables require the return to be a single file.
+   * Even though this would never return an array, we need this code to make TypeScript happy.
+   * @param request the request data
    * @param annotationOptions options for the annotation process
    * @return the created object
+   */
+  executeSinglePutWithProgressDialog(request: ObjectCreateRequest,
+                                     annotationOptions: PDFAnnotationGenerationRequest):
+  Promise<FilesystemObject> {
+    return this.executePutWithProgressDialog([request], [annotationOptions])
+      .then( value => {
+        return Array.isArray(value) ? value[0] : value;
+    });
+  }
+  /**
+   * Handles the filesystem PUT request(s) with a progress dialog.
+   * @param requests the request(s) data
+   * @param annotationOptions options for the annotation process(es)
+   * @return the created object(s)
    */
   executePutWithProgressDialog(requests: ObjectCreateRequest[],
                                annotationOptions: PDFAnnotationGenerationRequest[]):
@@ -133,11 +123,12 @@ export class ObjectCreationService {
         this.errorHandler.create({label: 'Create object'})
       ).toPromise());
     }
+
     let finalPromise;
     if (promiseList.length === 1) {
       finalPromise = promiseList[0];
     } else {
-      finalPromise = Promise.all(promiseList);
+      finalPromise = Promise.race(promiseList);
     }
     this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();

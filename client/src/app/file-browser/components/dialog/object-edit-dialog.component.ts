@@ -1,7 +1,7 @@
-import {Component, ElementRef, Input, ViewChild} from '@angular/core';
-import {FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 
-import {NgbActiveModal, NgbModal, NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -9,12 +9,11 @@ import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { filenameValidator } from 'app/shared/validators';
-import { FORMATS_WITH_POSSIBLE_DESCRIPTION, MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
-import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
+import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
 
-import {FilesystemObject} from '../../models/filesystem-object';
-import {AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest} from '../../schema';
-import {ObjectSelectionDialogComponent} from './object-selection-dialog.component';
+import { FilesystemObject } from '../../models/filesystem-object';
+import { AnnotationConfigurations, ObjectCreateRequest } from '../../schema';
+import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -215,15 +214,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }, () => {
     });
   }
-}
-
-
-// TODO: Need more data for sure, we might simplify some fields
-export interface FileInput {
-  filename: string;
-  formState: any;
-  hasValidFilename: boolean;
-  filePossiblyAnnotatable: boolean;
 }
 
 export interface ObjectEditDialogValue {
