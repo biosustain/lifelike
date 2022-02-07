@@ -4,17 +4,17 @@ import { first, last } from 'lodash-es';
 import { color } from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { LayoutService } from 'app/sankey/services/customised-sankey-layout.service';
 import { DirectedTraversal } from 'app/sankey/services/directed-traversal';
 import { SankeyNode } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { BaseControllerService } from 'app/sankey/services/base-controller.service';
+import { LayoutService } from 'app/sankey/services/layout.service';
 
 @Injectable()
 // @ts-ignore
-export class LayoutService extends LayoutService {
+export class SingleLaneLayoutService extends LayoutService {
   constructor(
-    readonly baseView: BaseViewControllerService,
+    readonly baseView: BaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {

@@ -18,13 +18,29 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
 import { SankeyModule } from '../../components/sankey/sankey.module';
-import { SankeyMultiLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
+import { MultiLaneBaseAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyDetailsPanelModule } from '../../components/details-panel/sankey-details-panel.module';
-import { ControllerService } from './services/controller.service';
+import { MultiLaneBaseControllerService } from './services/multi-lane-base-controller.service';
+import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
+import { MultiLaneLayoutService } from './services/multi-lane-layout.service';
+import { BaseControllerService } from '../../services/base-controller.service';
+import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
+import { SankeyMultiLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
 
 @NgModule({
-  declarations: [
-    SankeyMultiLaneAdvancedPanelComponent
+  providers: [
+    {
+      provide: SankeyLayoutService,
+      useExisting: MultiLaneLayoutService
+    },
+    {
+      provide: BaseControllerService,
+      useClass: MultiLaneBaseControllerService
+    },
+    {
+      provide: SankeyLinkDetailsComponent,
+      useClass: SankeyMultiLaneLinkDetailsComponent
+    }
   ],
   imports: [
     CommonModule,
@@ -47,5 +63,5 @@ import { ControllerService } from './services/controller.service';
     SankeyDetailsPanelModule
   ]
 })
-export class SankeyMultiLaneOverwriteModule {
+export class MultiLaneBaseModule {
 }

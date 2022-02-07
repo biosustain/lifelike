@@ -15,7 +15,6 @@ export class SankeyAbstractAdvancedPanelComponent<Options extends object, State 
     protected formBuilder: FormBuilder
   ) {
   }
-
   uuid: string = uuidv4();
   options$ = this.stateController.options$;
   form: FormGroup;

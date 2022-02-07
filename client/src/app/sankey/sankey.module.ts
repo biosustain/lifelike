@@ -59,14 +59,16 @@ import { SankeyViewConfirmComponent } from './components/view/confirm.component'
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeySearchPanelModule,
-    BaseViewsModule
+    SankeySearchPanelModule
   ],
   exports: [
     SankeyViewComponent
   ],
   providers: [
     ClipboardService
+  ],
+  entryComponents: [
+    BaseViewsModule
   ]
 })
 export class SankeyViewerLibModule {

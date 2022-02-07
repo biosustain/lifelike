@@ -1,7 +1,7 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
-import { ControllerService } from 'app/sankey/services/sankey-controller.service';
+import { ControllerService } from 'app/sankey/services/controller.service';
 
 import { SankeyAbstractAdvancedPanelComponent } from '../../abstract/advanced-panel.component';
 import { SankeyState, SankeyOptions } from '../../interfaces';

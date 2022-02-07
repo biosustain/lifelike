@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 
-import { SankeyDetailsPanelComponent } from 'app/sankey/base-views/multi-lane/components/details-panel/details-panel.component';
+import { SankeyDetailsPanelComponent } from 'app/sankey/components/details-panel/details-panel.component';
 
 import { SankeySingleLaneSelection } from '../interfaces';
 

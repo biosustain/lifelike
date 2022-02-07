@@ -44,12 +44,15 @@ import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
 import { SankeySearchService } from '../services/search.service';
 import Sankey from '../base-views/multi-lane/resolve';
 import SankeySingleLane from '../base-views/single-lane/resolve';
-import { ControllerService } from '../services/sankey-controller.service';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.directive';
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
-import { BaseViewControllerService } from '../services/sankey-base-view-controller.service';
+import { ControllerService } from '../services/controller.service';
+import { BaseControllerService } from '../services/base-controller.service';
+import { SankeyComponent } from './sankey/sankey.component';
+import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
+import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -78,13 +81,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     private injector: Injector
   ) {
     const createSankeyInjector = providers => Injector.create({
-      providers: [
-        ...providers,
-        {
-          provide: WarningControllerService,
-          useValue: warningController
-        }
-      ],
+      providers,
       parent: injector
     });
     this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
@@ -233,7 +230,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  baseView = new ReplaySubject<BaseViewControllerService>(1);
+  baseView = new ReplaySubject<BaseControllerService>(1);
 
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
@@ -324,11 +321,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.sankeyController.baseViewName$.subscribe(baseView => {
       console.log('baseViewName', baseView);
       const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
+      const module = baseView === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
       const sankeyInjector = this.baseViewInjectors.get(o);
       const injectComponent = (container, component) => {
         const factory = this.componentFactoryResolver.resolveComponentFactory(component);
         container.clear();
-        const componentRef = container.createComponent(factory, null, sankeyInjector);
+        const componentRef = container.createComponent(factory, null, sankeyInjector, null, module);
         return componentRef;
       };
       const createComponent = (name, inputs = {}, outputs = {}) => {
@@ -340,10 +338,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         this._dynamicComponentRef.set(name, componentRef);
         return componentRef.instance;
       };
-      const sankey = createComponent('sankey');
+      injectComponent(this.sankeySlot.viewContainerRef, SankeyComponent);
+      createComponent('sankey');
       createComponent('advanced');
       createComponent('details');
-      this.baseView.next(sankeyInjector.get(BaseViewControllerService));
+      this.baseView.next(sankeyInjector.get(BaseControllerService));
     });
   }
 

@@ -11,9 +11,9 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
-import { BaseViewControllerService } from './sankey-base-view-controller.service';
 import { SankeyBaseState } from '../base-views/interfaces';
 import { unifiedAccessor } from './state-controlling-abstract.service';
+import { BaseControllerService } from './base-controller.service';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -35,7 +35,7 @@ export const DEFAULT_FONT_SIZE = 12 * 1.60;
 // @ts-ignore
 export class LayoutService extends SankeyLayoutService {
   constructor(
-    readonly baseView: BaseViewControllerService,
+    readonly baseView: BaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
