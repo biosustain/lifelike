@@ -1,9 +1,10 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+
 import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
-import { BaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
+
 import { SankeySingleLaneState, SankeySingleLaneOptions } from '../interfaces';
-import { ControllerService } from '../../services/controller.service';
+import { SingleLaneBaseControllerService } from '../../services/single-lane-base-controller.service';
 
 @Component({
   selector: 'app-sankey-advanced-panel',
@@ -34,7 +35,7 @@ export class SankeySingleLaneAdvancedPanelComponent
   });
 
   constructor(
-    protected baseView: ControllerService,
+    protected baseView: SingleLaneBaseControllerService,
     protected formBuilder: FormBuilder
   ) {
     super(baseView, formBuilder);

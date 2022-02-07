@@ -6,16 +6,16 @@ import { first, last } from 'lodash-es';
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { LayoutService, groupByTraceGroupWithAccumulation } from 'app/sankey/services/layout.service';
 
 import { DirectedTraversal } from '../../../services/directed-traversal';
 import { symmetricDifference } from '../../../components/sankey/utils';
-import { LayoutService, groupByTraceGroupWithAccumulation } from '../../../services/customised-sankey-layout.service';
-import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
+import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
 
 @Injectable()
-export class LayoutService extends LayoutService {
+export class MultiLaneLayoutService extends LayoutService {
   constructor(
-    readonly baseView: BaseViewControllerService,
+    readonly baseView: MultiLaneBaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {

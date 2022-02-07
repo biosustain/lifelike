@@ -1,4 +1,5 @@
-import { Component, Input, } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { SankeyAbstractDetailsComponent } from '../../abstract/details-panel.component';
 
 
 @Component({
@@ -7,6 +8,6 @@ import { Component, Input, } from '@angular/core';
   styleUrls: ['./button-with-selectable-text.component.scss']
 })
 // @ts-ignore
-export class ButtonWithSelectableTextComponent extends SankeyDetailsComponent {
+export class ButtonWithSelectableTextComponent extends SankeyAbstractDetailsComponent {
   @Input() disabled;
 }

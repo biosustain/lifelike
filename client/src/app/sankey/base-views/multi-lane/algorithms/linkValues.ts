@@ -8,16 +8,16 @@ import {
   getLinkLayers,
   calculateInputCountSkippingCircularLinksB
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
-import { BaseViewControllerService } from 'app/sankey/services/sankey-base-view-controller.service';
 
-import { LayoutService } from '../services/layout.service';
+import { MultiLaneLayoutService } from '../services/multi-lane-layout.service';
+import { MultiLaneBaseControllerService } from '../services/multi-lane-base-controller.service';
 
 export function inputCount(
-  this: BaseViewControllerService,
+  this: MultiLaneBaseControllerService,
   data: SankeyData
 ) {
   // @ts-ignore
-  const layout = this.injector.get(LayoutService);
+  const layout = this.injector.get(MultiLaneLayoutService);
   const {
     sortedNodes,
     dt,
