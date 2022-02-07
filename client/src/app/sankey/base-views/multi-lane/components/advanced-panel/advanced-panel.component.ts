@@ -1,18 +1,18 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
-import { BaseViewControllerService } from '../../../../services/sankey-base-view-controller.service';
-import { SankeyAbstractAdvancedPanelComponent } from '../../../../abstract/advanced-panel.component';
+import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
+
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
-import { ControllerService } from '../../services/controller.service';
+import { MultiLaneBaseControllerService } from '../../services/multi-lane-base-controller.service';
 
 
 @Component({
-  selector: 'app-sankey-advanced-panel',
+  selector: 'app-sankey-base-advanced-panel',
   templateUrl: './advanced-panel.component.html',
   styleUrls: ['./advanced-panel.component.scss'],
 })
-export class SankeyMultiLaneAdvancedPanelComponent
+export class MultiLaneBaseAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
   implements OnDestroy {
   form = this.formBuilder.group({
@@ -35,7 +35,7 @@ export class SankeyMultiLaneAdvancedPanelComponent
   });
 
   constructor(
-    protected baseView: ControllerService,
+    protected baseView: MultiLaneBaseControllerService,
     protected formBuilder: FormBuilder
   ) {
     super(baseView, formBuilder);

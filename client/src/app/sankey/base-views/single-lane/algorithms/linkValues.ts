@@ -8,16 +8,16 @@ import {
   getLinkLayers
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
 import { SankeyTrace } from 'app/sankey/interfaces';
-import { BaseViewControllerService } from 'app/sankey/services/sankey-base-view-controller.service';
+import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 
 import { SankeySingleLaneLink, SankeySingleLaneData } from '../components/interfaces';
-import { LayoutService } from '../services/layout.service';
+import { SingleLaneLayoutService } from '../services/single-lane-layout.service';
 
 export function inputCount(
-  this: BaseViewControllerService,
+  this: BaseControllerService,
   data: SankeySingleLaneData
 ) {
-  const layout = this.injector.get(LayoutService);
+  const layout = this.injector.get(SingleLaneLayoutService);
   const {
     sortedNodes,
     dt,

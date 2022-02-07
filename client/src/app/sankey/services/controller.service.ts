@@ -32,11 +32,10 @@ import {
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
 import { StateControlAbstractService, unifiedAccessor } from './state-controlling-abstract.service';
-import { LayoutService } from './customised-sankey-layout.service';
+import { LayoutService } from './layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -125,7 +124,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       prescalerId: PRESCALER_ID.none,
       labelEllipsis: {
         enabled: true,
-        value: SankeyLayoutService.labelEllipsis
+        value: LayoutService.labelEllipsis
       },
       fontSizeScale: 1.0
     })
@@ -238,7 +237,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
           // @ts-ignore
-          const layout = new SankeyLayoutService();
+          const layout = new LayoutService();
           layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
           const source = traceNodes.find(n => n._id === String(trace.source));
           const target = traceNodes.find(n => n._id === String(trace.target));
@@ -561,10 +560,10 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       ...networkTraceLinks.reduce((o, link) => {
         let {_source = link.source, _target = link.target} = link;
         if (typeof _source !== 'object') {
-          _source = SankeyLayoutService.find(nodeById, _source);
+          _source = LayoutService.find(nodeById, _source);
         }
         if (typeof _target !== 'object') {
-          _target = SankeyLayoutService.find(nodeById, _target);
+          _target = LayoutService.find(nodeById, _target);
         }
         o.add(_source);
         o.add(_target);

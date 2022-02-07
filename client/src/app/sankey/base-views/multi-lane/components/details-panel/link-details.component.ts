@@ -1,14 +1,13 @@
 import { Component, Input } from '@angular/core';
 
 import { SankeyLink } from 'app/sankey/interfaces';
-
-import { SankeyDetailsComponent } from '../../../../abstract/details.component';
+import { SankeyAbstractDetailsComponent } from 'app/sankey/abstract/details-panel.component';
 
 @Component({
   selector: 'app-sankey-link-details',
   templateUrl: './link-details.component.html'
 })
-export class SankeyLinkDetailsComponent extends SankeyDetailsComponent {
+export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractDetailsComponent {
   @Input() entity: SankeyLink;
 }
 

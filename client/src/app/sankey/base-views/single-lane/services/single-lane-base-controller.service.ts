@@ -9,12 +9,12 @@ import { of, BehaviorSubject } from 'rxjs';
 import { LINK_VALUE_GENERATOR, ValueGenerator, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { ControllerService } from 'app/sankey/services/controller.service';
+import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneState, SankeySingleLaneOptions, SankeySingleLaneNode } from '../components/interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
-import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
-import { ControllerService } from '../../../services/sankey-controller.service';
 import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
@@ -25,7 +25,7 @@ import { unifiedAccessor } from '../../../services/state-controlling-abstract.se
  */
 @Injectable()
 // @ts-ignore
-export class ControllerService extends BaseViewControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
+export class SingleLaneBaseControllerService extends BaseControllerService<SankeySingleLaneOptions, SankeySingleLaneState> {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,

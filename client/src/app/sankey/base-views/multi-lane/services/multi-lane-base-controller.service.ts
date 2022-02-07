@@ -6,12 +6,12 @@ import { of, BehaviorSubject } from 'rxjs';
 
 import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { BaseControllerService } from 'app/sankey/services/base-controller.service';
+import { ControllerService } from 'app/sankey/services/controller.service';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
-import { BaseViewControllerService } from '../../../services/sankey-base-view-controller.service';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
-import { ControllerService } from '../../../services/sankey-controller.service';
 import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
@@ -21,7 +21,7 @@ import { unifiedAccessor } from '../../../services/state-controlling-abstract.se
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class ControllerService extends BaseViewControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
+export class MultiLaneBaseControllerService extends BaseControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,

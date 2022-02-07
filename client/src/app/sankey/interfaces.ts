@@ -2,7 +2,7 @@ import { PRESCALERS } from 'app/sankey/algorithms/prescalers';
 import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
 
-import { BaseViewControllerService } from './services/sankey-base-view-controller.service';
+import { BaseControllerService } from './services/base-controller.service';
 
 // region UI options
 export interface ValueAccessor {
@@ -15,7 +15,7 @@ export interface IntermediateProcessedData extends Partial<SankeyData> {
   _sets: object;
 }
 
-export type ValueProcessingStep = (this: BaseViewControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
+export type ValueProcessingStep = (this: BaseControllerService, v: SankeyData) => IntermediateProcessedData | undefined;
 
 export interface ValueGenerator {
   preprocessing: ValueProcessingStep;

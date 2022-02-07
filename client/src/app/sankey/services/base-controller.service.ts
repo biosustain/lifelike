@@ -6,18 +6,13 @@ import { merge, omit, isNil, omitBy, has } from 'lodash-es';
 
 import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { ControllerService } from 'app/sankey/services/controller.service';
 
-import {
-  ControllerService,
-  customisedMultiValueAccessorId,
-  customisedMultiValueAccessor,
-  patchReducer
-} from './sankey-controller.service';
 import { StateControlAbstractService } from './state-controlling-abstract.service';
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
-
+import { patchReducer, customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
