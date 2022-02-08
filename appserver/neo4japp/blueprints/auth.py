@@ -14,12 +14,11 @@ from neo4japp.database import db
 from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     JWTTokenException,
-    JWTAuthTokenException,
     ServerException,
 )
-from neo4japp.schemas.auth import JWTTokenResponse
-from neo4japp.models.auth import AppUser
-from neo4japp.utils.logger import EventLog, UserEventLog
+from neo4japp.schemas.auth import LifelikeJWTTokenResponse
+from neo4japp.models.auth import AppRole, AppUser
+from neo4japp.utils.logger import UserEventLog
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -31,7 +30,7 @@ JWTToken = TypedDict(
     'JWTToken', {'sub': str, 'iat': datetime, 'exp': datetime, 'token_type': str, 'token': str})
 
 JWTResp = TypedDict(
-    'JWTResp', {'sub': str, 'iat': str, 'exp': int, 'type': str})
+    'JWTResp', {'sub': str, 'iat': str, 'exp': int, 'typ': str})
 
 
 class TokenService:
@@ -46,14 +45,15 @@ class TokenService:
             sub: str,
             secret: str,
             token_type: str = 'access',
-            time_offset: int = 1,
-            time_unit: str = 'hours',
+            # TODO: Maybe we should make these environment variables?
+            time_offset: int = 30,
+            time_unit: str = 'minutes',
     ) -> JWTToken:
         """
         Generates an authentication or refresh JWT Token
 
         Args:
-            sub - the subject of the token (e.g. user email)
+            sub - the subject of the token (e.g. user email, hash id, or 3rd-party subject)
             secret - secret that should not be shared for encryption
             token_type - one of 'access' or 'refresh'
             time_offset - the difference in time before token expiration
@@ -65,7 +65,7 @@ class TokenService:
             'iat': time_now,
             'sub': sub,
             'exp': expiration,
-            'type': token_type,
+            'typ': token_type,
         }, secret, algorithm=self.algorithm).decode('utf-8')
         return {
             'sub': sub,
@@ -76,23 +76,32 @@ class TokenService:
         }
 
     def get_access_token(
-            self, subj, token_type='access', time_offset=1, time_unit='hours') -> JWTToken:
+        self,
+        subj,
+        token_type='access',
+        # TODO: Maybe we should make these environment variables?
+        time_offset=30,
+        time_unit='minutes'
+    ) -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
     def get_refresh_token(
-            self, subj, token_type='refresh', time_offset=7, time_unit='days') -> JWTToken:
+        self,
+        subj,
+        token_type='refresh',
+        # TODO: Maybe we should make these environment variables?
+        time_offset=7,
+        time_unit='days'
+    ) -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
-    def decode_token(self, token: str) -> JWTResp:
+    def decode_token(self, token: str, **options) -> JWTResp:
         try:
-            payload = jwt.decode(token, self.app_secret, algorithms=[self.algorithm])
-            jwt_resp: JWTResp = {
-                'sub': payload['sub'], 'iat': payload['iat'], 'exp': payload['exp'],
-                'type': payload['type']}
+            return jwt.decode(token, self.app_secret, algorithms=[self.algorithm], **options)
         # default to generic error message
         # NOTE: is this better than avoiding to
         # display an error message about
@@ -105,53 +114,57 @@ class TokenService:
             raise JWTTokenException(
                 title='Failed to Authenticate',
                 message='The current authentication session has expired, please try logging back in.')  # noqa
-        else:
-            return jwt_resp
 
 
 @auth.verify_token
 def verify_token(token):
     """ Verify JTW """
-    token_service = TokenService(current_app.config['SECRET_KEY'])
-    decoded = token_service.decode_token(token)
-    if decoded['type'] == 'access':
-        token = request.headers.get('Authorization')
-        if token is None:
-            current_app.logger.error(
-                f'No authorization header found <{request.headers}>.',
-                extra=EventLog(event_type=LogEventType.AUTHENTICATION.value).to_dict()
-            )
-            # default to generic error message
-            # NOTE: is this better than avoiding to
-            # display an error message about
-            # authorization header (for security purposes)?
-            raise JWTAuthTokenException(
-                title='Failed to Authenticate',
-                message='There was a problem verifying the authentication session, please try again.')  # noqa
-        else:
-            token = token.split(' ')[-1].strip()
-            try:
-                user = AppUser.query_by_email(decoded['sub']).one()
-                current_app.logger.info(
-                    f'Active user: {user.email}',
-                    extra=UserEventLog(
-                        username=user.username,
-                        event_type=LogEventType.LAST_ACTIVE.value).to_dict()
-                )
-            except NoResultFound:
-                raise ServerException(
-                    title='Failed to Authenticate',
-                    message='There was a problem authenticating, please try again.',
-                    code=404)
-            else:
-                g.current_user = user
-                with sentry_sdk.configure_scope() as scope:
-                    scope.set_tag('user_email', user.email)
-                return True
-    else:
+    try:
+        token_service = TokenService(
+            current_app.config['JWT_SECRET_KEY'],
+            current_app.config['JWT_ALGORITHM']
+        )
+        decoded = token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
+    except JWTTokenException:
         raise ServerException(
             title='Failed to Authenticate',
             message='There was a problem authenticating, please try again.')
+
+    try:
+        user = AppUser.query_by_email(decoded['email']).one()
+        current_app.logger.info(
+            f'Active user: {user.email}',
+            extra=UserEventLog(
+                username=user.username,
+                event_type=LogEventType.LAST_ACTIVE.value).to_dict()
+        )
+    except NoResultFound:
+        # Note that this except block should only trigger when a user signs in via OAuth for the
+        # first time.
+        user = AppUser(
+            username=decoded['username'],
+            email=decoded['email'],
+            first_name=decoded['first_name'],
+            last_name=decoded['last_name'],
+            subject=decoded['sub']
+        )
+
+        # Add the "user" role to the new user
+        user_role = AppRole.query.filter_by(name='user').one()
+        user.roles.append(user_role)
+
+        # Finally, add the new user to the DB
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+
+    g.current_user = user
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag('user_email', user.email)
+    return True
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -159,10 +172,13 @@ def refresh():
     """ Renew access token with refresh token """
     data = request.get_json()
     token = data.get('jwt')
-    token_service = TokenService(current_app.config['SECRET_KEY'])
+    token_service = TokenService(
+        current_app.config['JWT_SECRET_KEY'],
+        current_app.config['JWT_ALGORITHM']
+    )
 
     decoded = token_service.decode_token(token)
-    if decoded['type'] != 'refresh':
+    if decoded['typ'] != 'refresh':
         raise JWTTokenException(
             message='Your authentication session expired, but there was an error attempting to renew it.')  # noqa
 
@@ -179,7 +195,7 @@ def refresh():
             message='There was a problem authenticating, please try again.',
             code=404)
     else:
-        return jsonify(JWTTokenResponse().dump({
+        return jsonify(LifelikeJWTTokenResponse().dump({
             'access_token': access_jwt,
             'refresh_token': refresh_jwt,
             'user': {
@@ -222,11 +238,14 @@ def login():
                 UserEventLog(
                     username=user.username,
                     event_type=LogEventType.AUTHENTICATION.value).to_dict())
-            token_service = TokenService(current_app.config['SECRET_KEY'])
+            token_service = TokenService(
+                current_app.config['JWT_SECRET_KEY'],
+                current_app.config['JWT_ALGORITHM']
+            )
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
-            return jsonify(JWTTokenResponse().dump({
+            return jsonify(LifelikeJWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
                 'user': {

@@ -32,6 +32,16 @@ export const loginSuccess = createAction(
     props<{user: PrivateAppUser}>(),
 );
 
+export const oauthLogin = createAction(
+  '[Auth] OAuth Login',
+  props<{subject: string}>(),
+);
+
+export const oauthLoginSuccess = createAction(
+  '[Auth] OAuth Login Success',
+  props<{user: PrivateAppUser}>(),
+);
+
 export const loginFailure = createAction(
     '[Auth] Login Failure',
 );
@@ -44,6 +54,10 @@ export const loginRedirect = createAction(
 
 export const logout = createAction(
     '[Auth] Logout'
+);
+
+export const oauthLogout = createAction(
+  '[Auth] OAuth Logout'
 );
 
 /** Used when an update is performed on a logged in user */

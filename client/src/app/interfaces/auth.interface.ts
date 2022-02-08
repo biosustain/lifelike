@@ -56,7 +56,7 @@ export interface JWTToken {
     token: string;
 }
 
-export interface JWTTokenResponse {
+export interface LifelikeJWTTokenResponse {
     accessToken: JWTToken;
     refreshToken: JWTToken;
     user: PrivateAppUser;
