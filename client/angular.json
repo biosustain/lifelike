@@ -50,12 +50,7 @@
               "node_modules/qtip2/dist/jquery.qtip.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js"
             ],
-            "webWorkerTsConfig": "tsconfig.worker.json",
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/scss", "src/app"
-              ]
-            },
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
             "dev": {
