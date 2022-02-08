@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject } from 'rxjs';
-import { merge, omit, transform, cloneDeepWith, clone, max, isNil, flatMap, pick, omitBy, has } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, isNil, flatMap, omitBy, has } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 
 
-import { GraphPredefinedSizing, GraphNode } from 'app/shared/providers/graph-type/interfaces';
+import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import {
   SankeyData,
   SankeyTraceNetwork,
@@ -34,7 +34,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService, unifiedAccessor, unifiedSingularAccessor } from './state-controlling-abstract.service';
+import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
 import { LayoutService } from './layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
@@ -132,11 +132,8 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
 
-  dataToRender$ = new ReplaySubject<SankeyData>(1);
-
   data$ = new ReplaySubject<SankeyData>(1);
 
-  viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
 
   /**
    * Observable of current view options
@@ -150,9 +147,11 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     ))
   );
 
+  viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
+
   views$ = merge(
     this.data$.pipe(
-      map(({_views}) => _views)
+      map(({_views = {}}) => _views)
     ),
     this.viewsUpdate$
   );
@@ -237,8 +236,9 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
           // @ts-ignore
-          const layout = new LayoutService();
-          layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
+          // todo
+          // const layout = new LayoutService();
+          // layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
           const source = traceNodes.find(n => n._id === String(trace.source));
           const target = traceNodes.find(n => n._id === String(trace.target));
 
@@ -340,30 +340,8 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
 
-  readonly nodeViewProperties: Array<keyof SankeyNode> = [
-    '_layer',
-    '_fixedValue',
-    '_value',
-    '_depth',
-    '_height',
-    '_x0',
-    '_x1',
-    '_y0',
-    '_y1',
-    '_order'
-  ];
-  readonly linkViewProperties: Array<keyof SankeyLink> = [
-    '_value',
-    '_multiple_values',
-    '_y0',
-    '_y1',
-    '_circular',
-    '_width',
-    '_order',
-    '_adjacent_divider',
-    '_id'
-  ];
-  readonly statusOmitProperties = ['viewName', 'baseViewName'];
+
+  fileUpdated$ = new Subject<GraphFile>();
 
   onInit() {
     super.onInit();
@@ -378,129 +356,40 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       tap(defaultState => this.default$.next(defaultState))
     );
   }
-
-  mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
-    return transform(entities, (result, entity) => {
-      result[entity._id] = pick(entity, properties);
-    }, {});
-  }
-
-  createView(viewName) {
-    return this.delta$.pipe(
-      switchMap((stateDelta: Partial<SankeyState>) => this.dataToRender$.pipe(
-        map(({nodes, links}) => ({
-          state: omit(stateDelta, this.statusOmitProperties),
-          base: stateDelta.baseViewName,
-          nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
-          links: this.mapToPropertyObject(links, this.linkViewProperties)
-        } as SankeyView)),
-        switchMap(view => this.views$.pipe(
-          map((views: object) => this.views$.next({
-            ...views,
-            [viewName]: view
-          }))
-        )),
-        map(() => this.patchState({
-          viewName
-        }))
-      ))
-    ).toPromise();
-  }
-
-  deleteView(viewName) {
-    return this.views$.pipe(
-      map((views: object) => omit(views, viewName)),
-      switchMap(views => this.views$.pipe(
-        tap(() => this.views$.next(views))
-      )),
-      // If the deleted view is the current view, switch to the base view
-      switchMap(() => this.delta$.pipe(
-        tap((stateDelta: Partial<SankeyState>) => {
-          if (stateDelta.viewName === viewName) {
-            this.delta$.next({
-              ...stateDelta,
-              viewName: null
-            });
-          }
-        })
-      ))
-    ).toPromise();
-  }
-
-  applyPropertyObject(
-    propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
-    entities: Array<SankeyNode | SankeyLink>
-  ): void {
-    // for faster lookup
-    const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
-    Object.entries(propertyObject).map(([id, properties]) => {
-      const entity = entityById.get(id);
-      if (entity) {
-        Object.assign(entity, properties);
-      } else {
-        this.warningController.warn(`No entity found for id ${id}`);
-      }
-    });
-  }
-
-  selectView(viewName) {
-    return this.views$.pipe(
-      map(views => views[viewName]),
-      filter(view => !!view),
-      switchMap(view =>
-        this.patchState({
-          viewName,
-          ...view.state
-        }).pipe(
-          switchMap(stateDelta => this.partialNetworkTraceData$.pipe(
-            map((networkTraceData: { links: SankeyLink[], nodes: SankeyNode[] }) => {
-              (networkTraceData as any)._precomputedLayout = true;
-              this.applyPropertyObject(view.nodes, networkTraceData.nodes);
-              this.applyPropertyObject(view.links, networkTraceData.links);
-              // @ts-ignore
-              const layout = new LayoutService(this);
-              layout.computeNodeLinks(networkTraceData);
-              return networkTraceData;
-            })
-          ))
-        )
-      )
-    ).toPromise();
-  }
-
-  patchState(statePatch) {
-    return this.delta$.pipe(
-      first(),
-      map(currentStateDelta =>
-        // ommit empty values so they can be overridden by defaultState
-        omitBy(
-          merge(
-            {},
-            currentStateDelta,
-            statePatch,
-          ),
-          isNil
-        )
-      ),
-      patchReducer(statePatch, (state, patch) => {
-        if (!isNil(patch.networkTraceIdx)) {
-          return this.options$.pipe(
-            first(),
-            map(options => {
-              return {
-                ...state,
-                // todo
-                // ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
-              };
-            })
-          );
-        }
-      }),
-      tap(stateDelta => {
-        this.delta$.next(stateDelta);
-      })
-    );
-  }
+  //
+  // patchState(statePatch) {
+  //   return this.delta$.pipe(
+  //     first(),
+  //     map(currentStateDelta =>
+  //       // ommit empty values so they can be overridden by defaultState
+  //       omitBy(
+  //         merge(
+  //           {},
+  //           currentStateDelta,
+  //           statePatch,
+  //         ),
+  //         isNil
+  //       )
+  //     ),
+  //     patchReducer(statePatch, (state, patch) => {
+  //       if (!isNil(patch.networkTraceIdx)) {
+  //         return this.options$.pipe(
+  //           first(),
+  //           map(options => {
+  //             return {
+  //               ...state,
+  //               // todo
+  //               // ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
+  //             };
+  //           })
+  //         );
+  //       }
+  //     }),
+  //     tap(stateDelta => {
+  //       this.delta$.next(stateDelta);
+  //     })
+  //   );
+  // }
 
 
   selectNetworkTrace(networkTraceIdx: number) {
@@ -574,12 +463,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
   computeData(): SankeyData {
     throw new Error('Not implemented');
-  }
-
-  applyState() {
-    this.dataToRender$.next(
-      this.computeData()
-    );
   }
 
   // region Extract options
@@ -726,9 +609,45 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     this.extractOptionsFromGraph(content);
   }
 
-  computeGraph(stateUpdate?: Partial<SankeyState>) {
-    // todo
-    // Object.assign(this.state, stateUpdate);
-    this.applyState();
+  applyPropertyObject(
+    propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
+    entities: Array<SankeyNode | SankeyLink>
+  ): void {
+    // for faster lookup
+    const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
+    Object.entries(propertyObject).map(([id, properties]) => {
+      const entity = entityById.get(id);
+      if (entity) {
+        Object.assign(entity, properties);
+      } else {
+        this.warningController.warn(`No entity found for id ${id}`);
+      }
+    });
+  }
+
+  selectView(viewName) {
+    return this.views$.pipe(
+      map(views => views[viewName]),
+      filter(view => !!view),
+      switchMap(view =>
+        this.patchState({
+          viewName,
+          ...view.state
+        }).pipe(
+          switchMap(stateDelta => this.partialNetworkTraceData$.pipe(
+            map((networkTraceData: { links: SankeyLink[], nodes: SankeyNode[] }) => {
+              (networkTraceData as any)._precomputedLayout = true;
+              this.applyPropertyObject(view.nodes, networkTraceData.nodes);
+              this.applyPropertyObject(view.links, networkTraceData.links);
+              // @ts-ignore
+              // todo
+              // const layout = new LayoutService(this);
+              // layout.computeNodeLinks(networkTraceData);
+              return networkTraceData;
+            })
+          ))
+        )
+      )
+    ).toPromise();
   }
 }

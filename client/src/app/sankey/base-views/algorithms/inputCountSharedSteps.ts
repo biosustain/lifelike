@@ -1,11 +1,11 @@
 import { ExtendedMap } from 'app/shared/utils/types';
 import { SankeyLink, SankeyNode, SankeyData } from 'app/sankey/interfaces';
-import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 
 import { DirectedTraversal } from '../../services/directed-traversal';
+import { LayoutService } from '../../services/layout.service';
 
 export function calculateInputCountSkippingCircularLinks(
-  this: BaseControllerService,
+  this: LayoutService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number,
@@ -32,20 +32,20 @@ export function calculateInputCountSkippingCircularLinks(
 }
 
 export function initInputCountCalculation(
-  this: BaseControllerService,
-  layout, data: SankeyData
+  this: LayoutService,
+  data: SankeyData
 ) {
   // initially links does not carry values but we need to init it
   data.links.forEach(l => {
     l._value = 0;
   });
   // don't calculate whole layout, only things needed to get nodes depths
-  layout.computeNodeLinks(data);
-  layout.identifyCircles(data);
-  layout.computeNodeValues(data);
-  layout.computeNodeDepths(data);
-  layout.computeNodeReversedDepths(data);
-  layout.computeNodeLayers(data);
+  this.computeNodeLinks(data);
+  this.identifyCircles(data);
+  this.computeNodeValues(data);
+  this.computeNodeDepths(data);
+  this.computeNodeReversedDepths(data);
+  this.computeNodeLayers(data);
   // traverse from side with less nodes
   const dt = new DirectedTraversal([data.sources, data.targets]);
   // traverse starting from leaves nodes
@@ -63,7 +63,7 @@ export function initInputCountCalculation(
  * make lists of links passing each immediate space between node layers
  */
 export function getLinkLayers<Link extends SankeyLink>(
-  this: BaseControllerService,
+  this: LayoutService,
   links: Link[]
 ): Map<number, Link[]> {
   const linkLayers = new ExtendedMap<number, Link[]>();
@@ -81,7 +81,7 @@ export function getLinkLayers<Link extends SankeyLink>(
 }
 
 export function calculateInputCountSkippingCircularLinksA(
-  this: BaseControllerService,
+  this: LayoutService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number
@@ -97,7 +97,7 @@ export function calculateInputCountSkippingCircularLinksA(
 }
 
 export function calculateInputCountSkippingCircularLinksB(
-  this: BaseControllerService,
+  this: LayoutService,
   sortedNodes,
   dt: DirectedTraversal,
   maxExpectedValue: number

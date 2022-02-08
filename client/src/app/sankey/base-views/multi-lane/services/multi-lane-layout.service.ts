@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, forwardRef } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { first, last } from 'lodash-es';
@@ -15,7 +15,7 @@ import { MultiLaneBaseControllerService } from './multi-lane-base-controller.ser
 @Injectable()
 export class MultiLaneLayoutService extends LayoutService {
   constructor(
-    readonly baseView: MultiLaneBaseControllerService,
+    @Inject(forwardRef(() => MultiLaneBaseControllerService)) readonly baseView: MultiLaneBaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
@@ -90,7 +90,7 @@ export class MultiLaneLayoutService extends LayoutService {
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  )
+  );
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -98,7 +98,7 @@ export class MultiLaneLayoutService extends LayoutService {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();

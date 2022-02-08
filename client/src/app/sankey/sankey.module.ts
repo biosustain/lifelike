@@ -63,7 +63,7 @@ import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeySearchPanelModule,
-    BaseViewsModule
+    // BaseViewsModule
   ],
   exports: [
     SankeyViewComponent

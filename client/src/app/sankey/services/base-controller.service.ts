@@ -1,10 +1,10 @@
 import { Injectable, Injector } from '@angular/core';
 
 import { Observable, combineLatest, of, iif } from 'rxjs';
-import { map, tap, shareReplay, filter, switchMap, first } from 'rxjs/operators';
-import { merge, omit, isNil, omitBy, has } from 'lodash-es';
+import { map, tap, shareReplay, switchMap, first } from 'rxjs/operators';
+import { merge, isNil, omitBy, has } from 'lodash-es';
 
-import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS, SankeyData } from 'app/sankey/interfaces';
+import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
@@ -36,7 +36,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
   predefinedValueAccessor$;
-  dataToRender$: Observable<SankeyData>;
   graphInputState$: Observable<any>;
 
   mergedState$;
@@ -110,11 +109,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
     }
   };
 
-  nodePropertyAcessor: (k) => ValueGenerator = k => ({
-    preprocessing: nodeValues.byProperty(k)
-  })
-
-
   predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
     if (!isNil(predefinedValueAccessorId)) {
       const {
@@ -179,6 +173,10 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
     );
   }
 
+  nodePropertyAcessor: (k) => ValueGenerator = k => ({
+    preprocessing: nodeValues.byProperty(k)
+  })
+
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
    */
@@ -236,9 +234,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
         )))
     );
 
-    this.dataToRender$ = this.networkTraceData$.pipe(
-      switchMap(networkTraceData => this.linkGraph(networkTraceData))
-    );
 
     this.mergedState$ = combineLatest([
       this.common.state$,
@@ -257,69 +252,5 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
    */
   colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
     throw new Error('Method not implemented.');
-  }
-
-  linkGraph(data) {
-    return combineLatest([
-      this.nodeValueAccessor$.pipe(tap(d => console.log('linkGraph nodeValueAccessor', d))),
-      this.linkValueAccessor$.pipe(tap(d => console.log('linkGraph linkValueAccessor', d))),
-      this.common.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
-    ]).pipe(
-      tap(console.log),
-      filter(params => params.every(param => !!param)),
-      map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
-
-        const preprocessedNodes = nodeValueAccessor.preprocessing.call(this, data) ?? {};
-        const preprocessedLinks = linkValueAccessor.preprocessing.call(this, data) ?? {};
-
-        Object.assign(
-          data,
-          preprocessedLinks,
-          preprocessedNodes,
-          merge(
-            omit(preprocessedLinks, ['nodes', 'links']),
-            omit(preprocessedNodes, ['nodes', 'links'])
-          )
-        );
-
-        let minValue = data.nodes.reduce((m, n) => {
-          if (n._fixedValue !== undefined) {
-            n._fixedValue = prescaler.fn(n._fixedValue);
-            return Math.min(m, n._fixedValue);
-          }
-          return m;
-        }, 0);
-        minValue = data.links.reduce((m, l) => {
-          l._value = prescaler.fn(l._value);
-          if (l._multiple_values) {
-            l._multiple_values = l._multiple_values.map(prescaler.fn) as [number, number];
-            return Math.min(m, ...l._multiple_values);
-          }
-          return Math.min(m, l._value);
-        }, minValue);
-
-        if (nodeValueAccessor.postprocessing) {
-          Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) ?? {});
-        }
-        if (linkValueAccessor.postprocessing) {
-          Object.assign(data, linkValueAccessor.postprocessing.call(this, data) ?? {});
-        }
-        if (minValue < 0) {
-          data.nodes.forEach(n => {
-            if (n._fixedValue !== undefined) {
-              n._fixedValue = n._fixedValue - minValue;
-            }
-          });
-          data.links.forEach(l => {
-            l._value = l._value - minValue;
-            if (l._multiple_values) {
-              l._multiple_values = l._multiple_values.map(v => v - minValue) as [number, number];
-            }
-          });
-        }
-
-        return data;
-      })
-    );
   }
 }

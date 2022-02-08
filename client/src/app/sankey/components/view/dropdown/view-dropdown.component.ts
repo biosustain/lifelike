@@ -2,8 +2,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { omitBy, isNil, mapValues } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { of, Observable, from, iif } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { of, Observable, from, iif, defer } from 'rxjs';
+import { map, switchMap, first, tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -14,6 +14,7 @@ import { viewBaseToNameMapping } from 'app/sankey/constants';
 import { SankeyURLLoadParams, ViewBase } from '../../../interfaces';
 import { SankeyViewConfirmComponent } from '../confirm.component';
 import { SankeyViewCreateComponent } from '../create/view-create.component';
+import { ViewControllerService } from '../../../services/view-controller.service';
 
 @Component({
   selector: 'app-sankey-view-dropdown',
@@ -38,26 +39,26 @@ export class SankeyViewDropdownComponent {
 
   constructor(
     readonly workspaceManager: WorkspaceManager,
-    readonly sankeyController: ControllerService,
+    readonly viewController: ViewControllerService,
     private modalService: NgbModal,
     readonly warningController: WarningControllerService
   ) {
-    this.views$ = this.sankeyController.views$;
+    this.views$ = this.viewController.common.views$;
   }
 
-  activeViewName$ = this.sankeyController.state$.pipe(
+  activeViewName$ = this.viewController.common.state$.pipe(
     map(({viewName}) => viewName)
   );
 
-  activeView$ = this.sankeyController.views$.pipe(
-    switchMap(views => this.sankeyController.state$.pipe(
+  activeView$ = this.viewController.common.views$.pipe(
+    switchMap(views => this.viewController.common.state$.pipe(
       map(({viewName}) => views[viewName])
     ))
   );
 
   views$: Observable<{ [key: string]: object }>;
 
-  activeViewBase$ = this.sankeyController.state$.pipe(
+  activeViewBase$ = this.viewController.common.state$.pipe(
     map(({baseViewName}) => baseViewName)
   );
 
@@ -72,8 +73,12 @@ export class SankeyViewDropdownComponent {
 
   viewBase = ViewBase;
 
+  @Output() createView = new EventEmitter();
+
+  @Output() deleteView = new EventEmitter();
+
   activeViewNameChange(viewName) {
-    return this.sankeyController.selectView(viewName);
+    return this.viewController.common.selectView(viewName);
   }
 
   confirm({header, body}): Promise<any> {
@@ -86,11 +91,11 @@ export class SankeyViewDropdownComponent {
     return modal.result;
   }
 
-  createView(viewName): Promise<any> {
-    return this.sankeyController.createView(viewName).then(() => {
-      this.viewDataChanged.emit();
-    });
-  }
+  // createView(viewName): Promise<any> {
+  //   return this.viewController.common.createView(viewName).then(() => {
+  //     this.viewDataChanged.emit();
+  //   });
+  // }
 
   objectToFragment(obj): string {
     return new URLSearchParams(
@@ -105,11 +110,11 @@ export class SankeyViewDropdownComponent {
   }
 
   openBaseView(baseViewName: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<any> {
-    return this.sankeyController.patchState({
+    return this.viewController.common.patchState({
       baseViewName
     }).toPromise();
     // const {object: {project, hashId}} = this;
-    // return this.sankeyController.state$.pipe(
+    // return this.viewController.common.state$.pipe(
     //   first(),
     //   switchMap(({networkTraceIdx}) =>
     //     from(this.workspaceManager.navigateByUrl({
@@ -134,25 +139,22 @@ export class SankeyViewDropdownComponent {
   }
 
   confirmCreateView(viewName) {
-    return this.sankeyController.views$.pipe(
+    return this.viewController.common.views$.pipe(
+      first(),
+      tap(v => console.log(v)),
       switchMap(views =>
         iif(
           () => !!views[viewName],
-          from(this.confirm({
+          defer(() => this.confirm({
             header: 'View already exists',
             body: `View ${viewName} already exists. Do you want to overwrite it?`
           })),
           of(true)
         )
       ),
-      switchMap((overwrite) => (overwrite) ? from(this.createView(viewName)) : of(false))
+      tap(v => console.log(v)),
+      tap((overwrite) => (overwrite) ? this.createView.emit(viewName) : false)
     ).toPromise();
-  }
-
-  deleteView(viewName): Promise<any> {
-    return this.sankeyController.deleteView(viewName).then(() => {
-      this.viewDataChanged.emit();
-    });
   }
 
   confirmDeleteView(viewName): void {
@@ -160,7 +162,7 @@ export class SankeyViewDropdownComponent {
       header: 'Confirm delete',
       body: `Are you sure you want to delete the '${viewName}' view?`
     }).then(() => {
-      this.deleteView(viewName);
+      this.deleteView.next(viewName);
     });
   }
 }
