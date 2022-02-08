@@ -5,6 +5,7 @@ import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanc
 
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneBaseControllerService } from '../../services/multi-lane-base-controller.service';
+import { tap } from 'rxjs/operators';
 
 
 @Component({
@@ -45,7 +46,9 @@ export class MultiLaneBaseAdvancedPanelComponent
   linkPalettes$ = this.baseView.linkPalettes$;
   linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
   linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
-  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
+  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$.pipe(
+    tap(d => console.log(d))
+  );
   nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnDestroy() {

@@ -12,7 +12,7 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
-import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
+import { unifiedAccessor, unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -107,7 +107,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Sankey
 
   graphInputState$;
 
-  linkPalettes$ = unifiedAccessor(this.options$, 'linkPalettes');
+  linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');
 
   // Trace logic
   /**

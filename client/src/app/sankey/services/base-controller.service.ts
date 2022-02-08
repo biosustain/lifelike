@@ -8,7 +8,7 @@ import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPER
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
-import { StateControlAbstractService } from './state-controlling-abstract.service';
+import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
@@ -184,7 +184,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
    */
   onInit() {
     super.onInit();
-    this.nodeValueAccessor$ = this.unifiedSingularAccessor(
+    this.nodeValueAccessor$ = unifiedSingularAccessor(
       this.state$,
       'nodeValueAccessorId',
     ).pipe(
@@ -200,14 +200,14 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
     );
 
     // noinspection JSVoidFunctionReturnValueUsed
-    this.linkValueAccessor$ = this.unifiedSingularAccessor(
+    this.linkValueAccessor$ = unifiedSingularAccessor(
       this.state$, 'linkValueAccessorId'
     ).pipe(
       switchMap((linkValueAccessorId) =>
         iif(
           () => has(this.linkValueAccessors, linkValueAccessorId),
           of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
-          this.unifiedSingularAccessor(
+          unifiedSingularAccessor(
             this.common.options$,
             'linkValueAccessors'
           ).pipe(
@@ -221,11 +221,11 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
         )
       ));
 
-    this.predefinedValueAccessor$ = this.unifiedSingularAccessor(
+    this.predefinedValueAccessor$ = unifiedSingularAccessor(
       this.common.options$,
       'predefinedValueAccessors'
     ).pipe(
-      switchMap(predefinedValueAccessors => this.unifiedSingularAccessor(
+      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
         this.state$,
         'predefinedValueAccessorId'
       ).pipe(

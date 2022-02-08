@@ -26,9 +26,12 @@ import { PathReportComponent } from './components/path-report/path-report.compon
 import { SankeyAdvancedPanelDirective } from './directives/advanced-panel.directive';
 import { SankeyViewCreateComponent } from './components/view/create/view-create.component';
 import { SankeyViewDropdownComponent } from './components/view/dropdown/view-dropdown.component';
-import { BaseViewsModule } from './base-views/base-views.module';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
+import { BaseViewsModule } from './base-views/base-views.module';
+import { SankeyComponent } from './components/sankey/sankey.component';
+import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
+import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
 
 @NgModule({
   declarations: [
@@ -59,16 +62,17 @@ import { SankeyViewConfirmComponent } from './components/view/confirm.component'
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
-    SankeySearchPanelModule
+    SankeySearchPanelModule,
+    BaseViewsModule
   ],
   exports: [
     SankeyViewComponent
   ],
   providers: [
-    ClipboardService
-  ],
-  entryComponents: [
-    BaseViewsModule
+    ClipboardService,
+    {provide: SANKEY_GRAPH, useValue: SankeyComponent},
+    {provide: SANKEY_DETAILS, useValue: SankeyDetailsPanelComponent},
+    {provide: SANKEY_ADVANCED, useValue: SankeyAdvancedPanelComponent}
   ]
 })
 export class SankeyViewerLibModule {
