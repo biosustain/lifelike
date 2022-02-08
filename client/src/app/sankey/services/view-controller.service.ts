@@ -36,13 +36,11 @@ import { BaseControllerService } from './base-controller.service';
 @Injectable()
 export class ViewControllerService {
   constructor(
-    // readonly layout: LayoutService
+    readonly layout: LayoutService
   ) {
-    // @ts-ignore
     this.baseView = layout.baseView;
     this.common = this.baseView.common;
   }
-  layout: LayoutService;
   baseView: BaseControllerService;
   common: ControllerService;
 

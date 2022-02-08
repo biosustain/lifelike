@@ -13,7 +13,7 @@ export enum PRESCALER_ID {
 
 export type PRESCALERS = { [prescalerId in PRESCALER_ID]: Prescaler };
 
-export const prescalers: PRESCALERS = {
+export const prescalers: PRESCALERS = Object.freeze({
   [PRESCALER_ID.none]: {
     name: PRESCALER_ID.none,
     description: 'No transformation',
@@ -54,4 +54,4 @@ export const prescalers: PRESCALERS = {
     description: 'Arctangent',
     fn: Math.atan
   }
-};
+});
