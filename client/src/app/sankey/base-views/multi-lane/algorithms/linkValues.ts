@@ -16,13 +16,11 @@ export function inputCount(
   this: MultiLaneBaseControllerService,
   data: SankeyData
 ) {
-  // @ts-ignore
-  const layout = this.injector.get(MultiLaneLayoutService);
   const {
     sortedNodes,
     dt,
     maxExpectedValue
-  } = initInputCountCalculation.call(this, layout, data);
+  } = initInputCountCalculation.call(this, data);
   calculateInputCountSkippingCircularLinksA.call(this, sortedNodes, dt, maxExpectedValue);
   // estimate circular link values based on trace information (LL-3704)
   const linkLayers = getLinkLayers.call(this, data.links);

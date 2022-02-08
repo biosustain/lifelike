@@ -52,6 +52,7 @@ import { BaseControllerService } from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
+import { LayoutService } from '../services/layout.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -79,14 +80,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     public sankeyController: ControllerService,
     private injector: Injector
   ) {
-    this.scopedInjector = Injector.create({
-      providers: [
-        {provide: ControllerService, useValue: this.sankeyController},
-        {provide: SankeySearchService, useValue: this.sankeySearch},
-        {provide: WarningControllerService, useValue: this.warningController}
-      ],
-      parent: this.injector
-    });
     // const createSankeyInjector = providers => Injector.create({
     //   providers,
     //   parent: injector
@@ -176,6 +169,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       sankey.changeDetectorRef.detectChanges();
       sankey.injector.get(ChangeDetectorRef).detectChanges();
     });
+
+    this.sankeyController.viewsUpdate$.pipe(
+      switchMap(_views => this.sankeyController.data$.pipe(
+        map(data => ({...data, _views}))
+      ))
+    ).subscribe(data => this.saveFile(data));
   }
 
   get warnings() {
@@ -198,7 +197,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return !this.sankeySearch.done;
   }
 
-  scopedInjector: Injector;
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
@@ -237,9 +235,23 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     );
   }
 
+
+  get sankey() {
+    return this._dynamicComponentRef.get('sankey').instance;
+  }
+
+  get details() {
+    return this._dynamicComponentRef.get('details').instance;
+  }
+
+  get advanced() {
+    return this._dynamicComponentRef.get('advanced').instance;
+  }
+
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
   baseView$ = new ReplaySubject<BaseControllerService>(1);
+  layout$ = new ReplaySubject<LayoutService>(1);
 
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
@@ -254,19 +266,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
   @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
   baseViewInjectors = new WeakMap();
-
-
-  get sankey() {
-    return this._dynamicComponentRef.get('sankey').instance;
-  }
-
-  get details() {
-    return this._dynamicComponentRef.get('details').instance;
-  }
-
-  get advanced() {
-    return this._dynamicComponentRef.get('advanced').instance;
-  }
 
   content = new ReplaySubject(1);
 
@@ -316,14 +315,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
 
-  dataToRender$ = this.baseView$.pipe(
-    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.dataToRender$)
+  dataToRender$ = this.layout$.pipe(
+    switchMap(layout => layout.dataToRender$)
   );
 
   allData$ = this.sankeyController.data$;
 
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
+
+  createView(viewName) {
+    console.log(viewName);
+  }
+
+  deleteView(viewName) {
+    console.log(viewName);
+  }
 
   ngAfterViewInit() {
     /**
@@ -350,6 +357,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this._dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
       this.baseView$.next(moduleRef.injector.get(BaseControllerService));
+      this.layout$.next(moduleRef.injector.get(LayoutService));
     });
   }
 
@@ -379,33 +387,29 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
   }
 
-  saveFile() {
-    return this.sankeyController.data$.pipe(
-      switchMap(data => {
-        const contentValue = new Blob(
-          [JSON.stringify(data)],
-          {type: MimeTypes.Graph});
-        return this.filesystemService.save(
-          [this.object.hashId],
-          {contentValue}
-        )
-          .pipe(
-            delay(1000),
-            tap(() => {
-              this.emitModuleProperties();
-              this.snackBar.open('File has been updated.', null, {
-                duration: 2000,
-              });
-            }),
-            catchError(() => {
-              this.snackBar.open('Error saving file.', null, {
-                duration: 2000,
-              });
-              return EMPTY;
-            })
-          );
-      })
-    ).toPromise();
+  saveFile(data: GraphFile) {
+    const contentValue = new Blob(
+      [JSON.stringify(data)],
+      {type: MimeTypes.Graph});
+    return this.filesystemService.save(
+      [this.object.hashId],
+      {contentValue}
+    )
+      .pipe(
+        delay(1000),
+        tap(() => {
+          this.emitModuleProperties();
+          this.snackBar.open('File has been updated.', null, {
+            duration: 2000,
+          });
+        }),
+        catchError(() => {
+          this.snackBar.open('Error saving file.', null, {
+            duration: 2000,
+          });
+          return EMPTY;
+        })
+      ).toPromise();
   }
 
   async selectNetworkTrace(networkTraceIdx) {

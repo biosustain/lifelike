@@ -33,7 +33,6 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Sankey
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
       distinctUntilChanged(isEqual)
     );
-    this.dataToRender$.subscribe(d => console.log('data to render', d));
     this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
   }
 
@@ -97,12 +96,6 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Sankey
         };
       })
     ))
-  );
-
-  dataToRender$ = this.networkTraceData$.pipe(
-    tap(d => console.log('dataToRender$ networkTraceData', d)),
-    switchMap(networkTraceData => this.linkGraph(networkTraceData)),
-    tap(d => console.log('dataToRender$', d)),
   );
 
   graphInputState$;

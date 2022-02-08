@@ -30,6 +30,12 @@ import { LayoutService } from '../../services/layout.service';
 @NgModule({
   id: ViewBase.sankeyMultiLane,
   providers: [
+    MultiLaneBaseControllerService,
+    {
+      provide: BaseControllerService,
+      useExisting: MultiLaneBaseControllerService
+    },
+    MultiLaneLayoutService,
     {
       provide: SankeyLayoutService,
       useExisting: MultiLaneLayoutService
@@ -38,15 +44,9 @@ import { LayoutService } from '../../services/layout.service';
       provide: LayoutService,
       useExisting: MultiLaneLayoutService
     },
-    MultiLaneLayoutService,
-    {
-      provide: BaseControllerService,
-      useExisting: MultiLaneBaseControllerService
-    },
-    MultiLaneBaseControllerService,
     {
       provide: SankeyLinkDetailsComponent,
-      useClass: SankeyMultiLaneLinkDetailsComponent
+      useExisting: SankeyMultiLaneLinkDetailsComponent
     },
     // Core components substitution
     {provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent}

@@ -98,14 +98,15 @@
                 type="button">
             <i class="fas fa-sync"></i>
         </button>
-        <app-sankey-view-dropdown
-                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                class="d-inline-block"
-                [object]="object"
-                [(activeViewName)]="activeViewName"
-                [preselectedViewBase]="preselectedViewBase"
-                (viewDataChanged)="saveFile()"
-        ></app-sankey-view-dropdown>
+<!--        <app-sankey-view-dropdown-->
+<!--                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"-->
+<!--                class="d-inline-block"-->
+<!--                [object]="object"-->
+<!--                [(activeViewName)]="activeViewName"-->
+<!--                [preselectedViewBase]="preselectedViewBase"-->
+<!--                (createView)="createView($event)"-->
+<!--                (deleteView)="deleteView($event)"-->
+<!--        ></app-sankey-view-dropdown>-->
         <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
             <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"
@@ -191,7 +192,12 @@
                   delta$: b.delta$ | async,
                   state$: b.state$ | async,
                   options$: b.options$ | async,
-                  networkTraceData$: b.networkTraceData$ | async,
+                  networkTraceData$: b.networkTraceData$ | async
+                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
+                </ng-container>
+                <ng-container *ngIf="layout$ | async as b">
+                    <h5>Layout:</h5>
+                    <app-object-explorer *ngIf="{
                   dataToRender$: b.dataToRender$ | async
                 } as dataSource" [dataSource]="dataSource"></app-object-explorer>
                 </ng-container>
