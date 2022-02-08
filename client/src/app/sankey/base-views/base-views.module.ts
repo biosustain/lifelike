@@ -8,6 +8,7 @@ import { MultiLaneBaseModule } from './multi-lane/sankey-viewer-lib.module';
   imports: [
     SankeySingleLaneOverwriteModule,
     MultiLaneBaseModule,
+    CommonModule
   ]
 })
 export class BaseViewsModule {

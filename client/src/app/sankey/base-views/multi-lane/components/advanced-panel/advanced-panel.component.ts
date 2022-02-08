@@ -46,9 +46,7 @@ export class MultiLaneBaseAdvancedPanelComponent
   linkPalettes$ = this.baseView.linkPalettes$;
   linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
   linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
-  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$.pipe(
-    tap(d => console.log(d))
-  );
+  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
   nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnDestroy() {

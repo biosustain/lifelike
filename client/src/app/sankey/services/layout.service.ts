@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last } from 'lodash-es';
-import { map, tap, switchMap, shareReplay } from 'rxjs/operators';
+import { first, last, merge, omit } from 'lodash-es';
+import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
+import { combineLatest, Observable } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData, SankeyState } from 'app/sankey/interfaces';
@@ -131,10 +132,14 @@ export class LayoutService extends SankeyLayoutService {
 
   nodeHeight;
 
+  dataToRender$: Observable<SankeyData> = this.baseView.networkTraceData$.pipe(
+    switchMap(networkTraceData => this.linkGraph(networkTraceData))
+  );
+
   /**
    * Calculate layout and address possible circular links
    */
-  layout$ = this.baseView.dataToRender$.pipe(
+  layout$ = this.dataToRender$.pipe(
     // Associate the nodes with their respective links, and vice versa
     tap(graph => this.computeNodeLinks(graph)),
     // Determine which links result in a circular path in the graph
@@ -151,7 +156,7 @@ export class LayoutService extends SankeyLayoutService {
     tap(graph => this.computeNodeLayers(graph)),
     tap(graph => this.createVirtualNodes(graph)),
     switchMap(graph => this.baseView.stateAccessor('nodeHeight').pipe(
-      tap(d => console.log("sdgsfgasa", d)),
+      tap(d => console.log('sdgsfgasa', d)),
       tap(nodeHeight => this.nodeHeight = nodeHeight),
       map(() => graph)
     )),
@@ -162,16 +167,80 @@ export class LayoutService extends SankeyLayoutService {
     tap(graph => this.computeNodeBreadths(graph)),
     tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
     tap(graph => this.cleanVirtualNodes(graph)),
-    tap(graph => console.log("bo=efore common state")),
+    tap(graph => console.log('bo=efore common state')),
     switchMap(graph =>
       unifiedAccessor(this.baseView.common.state$, [
         'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
       ]).pipe(
-    tap(state => this.state = state),
-      map(() => graph)
-    )),
+        tap(state => this.state = state),
+        map(() => graph)
+      )),
     shareReplay(1)
   );
+
+  linkGraph(data) {
+    return combineLatest([
+      this.baseView.nodeValueAccessor$.pipe(tap(d => console.log('linkGraph nodeValueAccessor', d))),
+      this.baseView.linkValueAccessor$.pipe(tap(d => console.log('linkGraph linkValueAccessor', d))),
+      this.baseView.common.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
+    ]).pipe(
+      tap(console.log),
+      filter(params => params.every(param => !!param)),
+      map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
+
+        const preprocessedNodes = nodeValueAccessor.preprocessing.call(this, data) ?? {};
+        const preprocessedLinks = linkValueAccessor.preprocessing.call(this, data) ?? {};
+
+        Object.assign(
+          data,
+          preprocessedLinks,
+          preprocessedNodes,
+          merge(
+            omit(preprocessedLinks, ['nodes', 'links']),
+            omit(preprocessedNodes, ['nodes', 'links'])
+          )
+        );
+
+        let minValue = data.nodes.reduce((m, n) => {
+          if (n._fixedValue !== undefined) {
+            n._fixedValue = prescaler.fn(n._fixedValue);
+            return Math.min(m, n._fixedValue);
+          }
+          return m;
+        }, 0);
+        minValue = data.links.reduce((m, l) => {
+          l._value = prescaler.fn(l._value);
+          if (l._multiple_values) {
+            l._multiple_values = l._multiple_values.map(prescaler.fn) as [number, number];
+            return Math.min(m, ...l._multiple_values);
+          }
+          return Math.min(m, l._value);
+        }, minValue);
+
+        if (nodeValueAccessor.postprocessing) {
+          Object.assign(data, nodeValueAccessor.postprocessing.call(this, data) ?? {});
+        }
+        if (linkValueAccessor.postprocessing) {
+          Object.assign(data, linkValueAccessor.postprocessing.call(this, data) ?? {});
+        }
+        if (minValue < 0) {
+          data.nodes.forEach(n => {
+            if (n._fixedValue !== undefined) {
+              n._fixedValue = n._fixedValue - minValue;
+            }
+          });
+          data.links.forEach(l => {
+            l._value = l._value - minValue;
+            if (l._multiple_values) {
+              l._multiple_values = l._multiple_values.map(v => v - minValue) as [number, number];
+            }
+          });
+        }
+
+        return data;
+      })
+    );
+  }
 
   calculateLinkPathParams(link, normalize = true) {
     const {_source, _target, _multiple_values} = link;

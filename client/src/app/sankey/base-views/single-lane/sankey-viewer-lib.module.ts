@@ -32,27 +32,19 @@ import { SankeySingleLaneComponent } from './components/sankey/sankey.component'
 @NgModule({
   id: ViewBase.sankeySingleLane,
   providers: [
+    SingleLaneBaseControllerService,
     {
-      provide: SankeyLayoutService,
-      useExisting: SingleLaneLayoutService
+      provide: BaseControllerService,
+      useExisting: SingleLaneBaseControllerService
     },
+    SingleLaneLayoutService,
     {
       provide: LayoutService,
       useExisting: SingleLaneLayoutService
     },
-    SingleLaneLayoutService,
-    {
-      provide: BaseControllerService,
-      useClass: SingleLaneBaseControllerService
-    },
-    SingleLaneBaseControllerService,
     {
       provide: SankeyLinkDetailsComponent,
-      useClass: SingleLaneLinkDetailsComponent
-    },
-    {
-      provide: SankeyComponent,
-      useClass: SankeySingleLaneComponent
+      useExisting: SingleLaneLinkDetailsComponent
     },
     // Core components substitution
     {provide: SANKEY_ADVANCED, useValue: SankeySingleLaneAdvancedPanelComponent},

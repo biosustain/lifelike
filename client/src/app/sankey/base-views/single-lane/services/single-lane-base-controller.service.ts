@@ -103,12 +103,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Sanke
     ))
   );
 
-  dataToRender$ = this.networkTraceData$.pipe(
-    tap(d => console.log('dataToRender$ networkTraceData', d)),
-    switchMap(networkTraceData => this.linkGraph(networkTraceData)),
-    tap(d => console.log('dataToRender$', d)),
-  );
-
   graphInputState$;
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');

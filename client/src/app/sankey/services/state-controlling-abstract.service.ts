@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, ReplaySubject, combineLatest, Subject } from 'rxjs';
-import { pick, isEqual, has, isArray, merge, omitBy, isNil } from 'lodash-es';
+import { Observable, ReplaySubject, combineLatest, Subject, of, iif } from 'rxjs';
+import { pick, isEqual, has, isArray, merge, omitBy, isNil, partial } from 'lodash-es';
 import { switchMap, map, filter, shareReplay, distinctUntilChanged, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
@@ -99,20 +99,25 @@ export class StateControlAbstractService<Options extends object, State extends o
     ) as Observable<R>;
   }
 
-  patchState(statePatch: Partial<State>) {
+  patchState(
+    statePatch: Partial<State>,
+    reducer: (stateDelta: Partial<State>, patch: Partial<State>) => Partial<State> = partial(merge, {})
+  ) {
     return this.delta$.pipe(
       first(),
-      map(currentStateDelta =>
-        // ommit empty values so they can be overridden by defaultState
-        omitBy(
-          merge(
-            {},
-            currentStateDelta,
-            statePatch,
+      switchMap(currentStateDelta => {
+        const newStateDelta = reducer(currentStateDelta, statePatch);
+        return iif(
+          () => !isNil(newStateDelta),
+          of(
+            // ommit empty values so they can be overridden by defaultState
+            omitBy(
+              newStateDelta,
+              isNil
+            ) as Partial<State>
           ),
-          isNil
-        ) as Partial<State>
-      ),
+        );
+      }),
       tap(stateDelta => {
         this.delta$.next(stateDelta);
       })
