@@ -1,7 +1,17 @@
 @use 'sankey';
+
 @include sankey.advanced-panel;
 
 @import 'shared/styles/EdgeColorCode';
+
+// The little dot next to each entity type indicating the color
+.entity-type-legend {
+  border-radius: 10rem;
+  display: inline-block;
+  height: .75rem;
+  width: .75rem;
+}
+
 ul.color-link-legend {
   list-style: none;
   margin-bottom: 0;

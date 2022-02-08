@@ -8,7 +8,8 @@ import {
   Injector,
   AfterViewInit,
   ChangeDetectorRef,
-  SimpleChange
+  SimpleChange,
+  getModuleFactory
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -42,17 +43,15 @@ import { MimeTypes } from 'app/shared/constants';
 import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
 
 import { SankeySearchService } from '../services/search.service';
-import Sankey from '../base-views/multi-lane/resolve';
-import SankeySingleLane from '../base-views/single-lane/resolve';
 import { PathReportComponent } from './path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.directive';
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { ControllerService } from '../services/controller.service';
 import { BaseControllerService } from '../services/base-controller.service';
-import { SankeyComponent } from './sankey/sankey.component';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
+import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -80,12 +79,20 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     public sankeyController: ControllerService,
     private injector: Injector
   ) {
-    const createSankeyInjector = providers => Injector.create({
-      providers,
-      parent: injector
+    this.scopedInjector = Injector.create({
+      providers: [
+        {provide: ControllerService, useValue: this.sankeyController},
+        {provide: SankeySearchService, useValue: this.sankeySearch},
+        {provide: WarningControllerService, useValue: this.warningController}
+      ],
+      parent: this.injector
     });
-    this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
-    this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
+    // const createSankeyInjector = providers => Injector.create({
+    //   providers,
+    //   parent: injector
+    // });
+    // this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
+    // this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
 
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -151,7 +158,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       });
     });
 
-    this.baseView.pipe(
+    this.baseView$.pipe(
       switchMap(({graphInputState$}) => graphInputState$),
       startWith({}), // initial prev value,
       pairwise(),
@@ -190,6 +197,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   get searching() {
     return !this.sankeySearch.done;
   }
+
+  scopedInjector: Injector;
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
@@ -230,11 +239,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  baseView = new ReplaySubject<BaseControllerService>(1);
+  baseView$ = new ReplaySubject<BaseControllerService>(1);
 
   selectedNetworkTrace$ = this.sankeyController.networkTrace$;
 
-  predefinedValueAccessor$ = this.baseView.pipe(
+  predefinedValueAccessor$ = this.baseView$.pipe(
     switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
   );
 
@@ -250,9 +259,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   get sankey() {
     return this._dynamicComponentRef.get('sankey').instance;
   }
+
   get details() {
     return this._dynamicComponentRef.get('details').instance;
   }
+
   get advanced() {
     return this._dynamicComponentRef.get('advanced').instance;
   }
@@ -305,7 +316,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
 
-  dataToRender$ = this.baseView.pipe(
+  dataToRender$ = this.baseView$.pipe(
     switchMap(sankeyBaseViewControl => sankeyBaseViewControl.dataToRender$)
   );
 
@@ -320,29 +331,25 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
      */
     this.sankeyController.baseViewName$.subscribe(baseView => {
       console.log('baseViewName', baseView);
-      const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
+      // const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
       const module = baseView === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
-      const sankeyInjector = this.baseViewInjectors.get(o);
-      const injectComponent = (container, component) => {
-        const factory = this.componentFactoryResolver.resolveComponentFactory(component);
+      const moduleFactory = getModuleFactory(baseView);
+      const moduleRef = moduleFactory.create(this.injector);
+      // const moduleRef = createNgModuleRef()
+      // const sankeyInjector = this.baseViewInjectors.get(o);
+      const injectComponent = (container, token) => {
+        const comp = moduleRef.injector.get(token);
+        const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
         container.clear();
-        const componentRef = container.createComponent(factory, null, sankeyInjector, null, module);
+        const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
         return componentRef;
       };
-      const createComponent = (name, inputs = {}, outputs = {}) => {
-        const componentRef = injectComponent(this[name + 'Slot'].viewContainerRef, o[name]);
-        Object.assign(componentRef.instance, inputs);
-        Object.keys(outputs).forEach(key => {
-          componentRef.instance[key].subscribe(outputs[key]);
-        });
-        this._dynamicComponentRef.set(name, componentRef);
-        return componentRef.instance;
-      };
-      injectComponent(this.sankeySlot.viewContainerRef, SankeyComponent);
-      createComponent('sankey');
-      createComponent('advanced');
-      createComponent('details');
-      this.baseView.next(sankeyInjector.get(BaseControllerService));
+
+      this._dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
+      this._dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
+      this._dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
+
+      this.baseView$.next(moduleRef.injector.get(BaseControllerService));
     });
   }
 
@@ -597,7 +604,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   // endregion
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
-    return this.baseView.pipe(
+    return this.baseView$.pipe(
       first(),
       switchMap(baseView =>
         baseView.selectPredefinedValueAccessor(predefinedValueAccessorId)

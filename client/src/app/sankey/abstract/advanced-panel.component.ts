@@ -9,7 +9,7 @@ import { uuidv4, deepDiff } from 'app/shared/utils';
 
 import { StateControlAbstractService } from '../services/state-controlling-abstract.service';
 
-export class SankeyAbstractAdvancedPanelComponent<Options extends object, State extends object> implements OnDestroy {
+export class SankeyAbstractAdvancedPanelComponent<Options extends object = object, State extends object = object> implements OnDestroy {
   constructor(
     protected stateController: StateControlAbstractService<Options, State>,
     protected formBuilder: FormBuilder
