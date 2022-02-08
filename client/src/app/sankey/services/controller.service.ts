@@ -34,7 +34,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService, unifiedAccessor } from './state-controlling-abstract.service';
+import { StateControlAbstractService, unifiedAccessor, unifiedSingularAccessor } from './state-controlling-abstract.service';
 import { LayoutService } from './layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
@@ -334,11 +334,11 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     })
   );
 
-  prescalers$ = unifiedAccessor(this.options$, 'prescalers');
-  linkValueGenerators$ = unifiedAccessor(this.options$, 'linkValueGenerators');
-  linkValueAccessors$ = unifiedAccessor(this.options$, 'linkValueAccessors');
-  nodeValueGenerators$ = unifiedAccessor(this.options$, 'nodeValueGenerators');
-  nodeValueAccessors$ = unifiedAccessor(this.options$, 'nodeValueAccessors');
+  prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
+  linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
+  linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
+  nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
+  nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',

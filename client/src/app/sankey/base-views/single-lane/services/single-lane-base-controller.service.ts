@@ -15,7 +15,7 @@ import { BaseControllerService } from 'app/sankey/services/base-controller.servi
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneState, SankeySingleLaneOptions, SankeySingleLaneNode } from '../components/interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
-import { unifiedAccessor } from '../../../services/state-controlling-abstract.service';
+import { unifiedAccessor, unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -111,7 +111,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Sanke
 
   graphInputState$;
 
-  colorLinkTypes$ = unifiedAccessor(this.options$, 'colorLinkTypes');
+  colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
 
   // Trace logic
   /**

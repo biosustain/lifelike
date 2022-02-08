@@ -262,4 +262,3 @@ export enum ViewBase {
   sankeyMultiLane = 'sankey',
   sankeySingleLane = 'sankey-many-to-many'
 }
-

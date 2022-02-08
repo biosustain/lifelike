@@ -1,52 +1,72 @@
 @import 'variables';
+@import '~bootstrap/scss/mixins';
 
 $search-accent-color: $red;
 $selection-accent-color: #ff0;
 $node-label-shadow: #bbb;
 $active-node-label-shadow: rgb(187, 187, 187);
+$input-spacing: map-get($spacers, 2);
 
 @mixin advanced-panel {
-  // The little dot next to each entity type indicating the color
-  .entity-type-legend {
-    border-radius: 10rem;
-    display: inline-block;
-    height: .75rem;
-    width: .75rem;
-  }
+  form {
+    text-align: left;
 
-  .invalid-input {
-    border-color: $danger;
-  }
+    label {
+      margin-bottom: 0;
+    }
 
-  .invalid-input:focus {
-    box-shadow: 0 0 0 .2rem rgba($danger, .25);
-  }
+    [type=checkbox] {
+      align-self: center;
+      margin-right: $input-spacing;
+    }
 
-  .small-font {
-    font-size: $font-size-sm;
-  }
+    [ngbbuttonlabel] {
+      flex-grow: 1;
+    }
 
-  .checkpoint {
-    vertical-align: middle;
+    > *, .form-group {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
 
-    :first-child {
-      margin-right: .5em;
+      &:before {
+        width: 100%;
+        clear: both;
+        content: '';
+        display: block;
+        @include nav-divider($dropdown-divider-bg, $dropdown-divider-margin-y, true);
+      }
+
+      > * {
+        // align with button presets
+        padding: $btn-padding-y $btn-padding-x;
+        text-align: left;
+      }
+    }
+
+    > [ngbradiogroup] {
+      padding-left: $btn-padding-x;
+
+      div {
+        padding-left: 0;
+        width: 100%;
+      }
     }
   }
 
   .scrollbar-with-value {
     display: flex;
     flex-wrap: wrap;
-    vertical-align: middle;
+    align-items: center;
 
     :first-child {
-      margin-right: .5em;
+      margin-right: $input-spacing;
     }
 
     :last-child {
       flex-grow: 1;
-      margin-left: .5em;
-      margin-right: .5em;
+      margin-left: $input-spacing;
+      margin-right: $input-spacing;
     }
   }
 }
