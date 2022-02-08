@@ -34,7 +34,7 @@ import { PolicyViewerComponent } from 'app/policies/components/policy-viewer.com
 import { HelpAndInfoComponent } from 'app/help-and-info/components/help-and-info.component';
 import { CopyrightInfringementFormComponent } from 'app/reports/components/copyright-infringement-form.component';
 
-// TODO: Add an unprotected home page
+
 const routes: Routes = [
   {
     path: '',
