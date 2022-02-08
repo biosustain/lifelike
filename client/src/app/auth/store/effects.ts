@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select, Store } from '@ngrx/store';
 import { from } from 'rxjs';
@@ -22,12 +21,13 @@ import {
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { TERMS_OF_SERVICE } from 'app/users/components/terms-of-service-text.component';
 import { ChangePasswordDialogComponent } from 'app/users/components/change-password-dialog.component';
+import { AccountService } from 'app/users/services/account.service';
 
 import { AuthenticationService } from '../services/authentication.service';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
-import { successPasswordUpdate } from './actions';
+import { OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable()
 export class AuthEffects {
@@ -36,8 +36,9 @@ export class AuthEffects {
     private readonly router: Router,
     private readonly store$: Store<State>,
     private readonly authService: AuthenticationService,
+    private readonly oauthService: OAuthService,
+    private readonly accountService: AccountService,
     private readonly modalService: NgbModal,
-    private readonly snackbar: MatSnackBar,
   ) {
   }
 
@@ -171,6 +172,41 @@ export class AuthEffects {
     tap(([_, url]) => this.router.navigate([url])),
   ), {dispatch: false});
 
+  oauthLogin$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.oauthLogin),
+    exhaustMap(({subject}) => {
+      return this.accountService.getUserBySubject(subject).pipe(
+        map(user => AuthActions.oauthLoginSuccess({user})),
+        catchError((err: HttpErrorResponse) => {
+          // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the home
+          // page. Also, see the below Github issue:
+          //    https://github.com/manfredsteyer/angular-oauth2-oidc/issues/9
+          // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server). The
+          // likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so ideally
+          // we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to wait a few moments
+          // and refresh their browser to log in successfully.
+          const error = (err.error as ErrorResponse).message;
+          this.oauthService.logOut(true);
+          this.router.navigateByUrl('/dashboard');
+
+          return from([
+            SnackbarActions.displaySnackbar({
+              payload: {
+                message: error,
+                action: 'Dismiss',
+                config: {duration: 10000},
+              },
+            }),
+          ]);
+        }),
+      );
+    })),
+  );
+
+  oauthLoginSuccess$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.oauthLoginSuccess),
+  ), {dispatch: false});
+
   loginRedirect$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.loginRedirect),
     tap(_ => this.router.navigate(['/login'])),
@@ -192,4 +228,9 @@ export class AuthEffects {
       );
     }),
   ));
+
+  oauthLogout$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.oauthLogout),
+    tap(_ => this.oauthService.logOut()),
+  ), {dispatch: false});
 }

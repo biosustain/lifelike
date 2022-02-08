@@ -51,13 +51,17 @@ export class AccountService implements OnDestroy {
 
     /**
      * Return list of users
-     * @param username - optional val to query against list of users
+     * @param hashId - optional val to query against list of users
      */
     getUsers(hashId?: string): Observable<ResultList<PrivateAppUser>> {
         if (hashId) {
             return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`);
         }
         return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`);
+    }
+
+    getUserBySubject(subject: string): Observable<PrivateAppUser> {
+      return this.http.get<PrivateAppUser>(`${this.accountApi}/subject/${subject}`);
     }
 
     currentUser(): Observable<PrivateAppUser> {
