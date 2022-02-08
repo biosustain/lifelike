@@ -16,6 +16,14 @@ const authReducer = createReducer(
         })
     ),
     on(
+      AuthActions.oauthLoginSuccess,
+      (state, { user }) => ({
+          ...state,
+          loggedIn: true,
+          user,
+      })
+  ),
+    on(
         AuthActions.loginRedirect,
         (state, { url }) => ({
             ...state,
@@ -26,6 +34,10 @@ const authReducer = createReducer(
         AuthActions.logout,
         () => initialState,
     ),
+    on(
+      AuthActions.oauthLogout,
+      () => initialState,
+  ),
     on(
         AuthActions.refreshUser,
         (state, { user }) => ({

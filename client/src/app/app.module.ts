@@ -54,7 +54,7 @@ import { ReportsModule } from 'app/reports/reports.module';
     BrowserModule,
     PdfViewerLibModule,
     AdminModule,
-    LifelikeAuthModule,
+    LifelikeAuthModule.forRoot(),
     SharedModule,
     AppRoutingModule,
     FileTypesModule,

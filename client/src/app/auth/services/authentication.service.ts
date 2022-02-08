@@ -1,11 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { isNil } from 'lodash-es';
 import { Observable, of, timer, Subscription } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
-import { JWTTokenResponse } from 'app/interfaces';
+import { LifelikeJWTTokenResponse } from 'app/interfaces';
 
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
@@ -51,12 +50,12 @@ export class AuthenticationService implements OnDestroy {
   /**
    * Authenticate users to get a JWT
    */
-  public login(email: string, password: string): Observable<JWTTokenResponse> {
-    return this.http.post<JWTTokenResponse>(
+  public login(email: string, password: string): Observable<LifelikeJWTTokenResponse> {
+    return this.http.post<LifelikeJWTTokenResponse>(
       this.baseUrl + '/login',
       {email, password},
     ).pipe(
-      map((resp: JWTTokenResponse) => {
+      map((resp: LifelikeJWTTokenResponse) => {
         localStorage.setItem('access_jwt', resp.accessToken.token);
         localStorage.setItem('expires_at', resp.accessToken.exp);
         // TODO: Move this out of localStorage
@@ -82,7 +81,7 @@ export class AuthenticationService implements OnDestroy {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-    return this.http.post<JWTTokenResponse>(
+    return this.http.post<LifelikeJWTTokenResponse>(
       this.baseUrl + '/refresh',
       { jwt },
     ).pipe(
