@@ -2,16 +2,15 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { omitBy, isNil, mapValues } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { of, Observable, from, iif, defer } from 'rxjs';
+import { of, Observable, iif, defer } from 'rxjs';
 import { map, switchMap, first, tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ControllerService } from 'app/sankey/services/controller.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { viewBaseToNameMapping } from 'app/sankey/constants';
 
-import { SankeyURLLoadParams, ViewBase } from '../../../interfaces';
+import { ViewBase } from '../../../interfaces';
 import { SankeyViewConfirmComponent } from '../confirm.component';
 import { SankeyViewCreateComponent } from '../create/view-create.component';
 import { ViewControllerService } from '../../../services/view-controller.service';
@@ -22,63 +21,28 @@ import { ViewControllerService } from '../../../services/view-controller.service
   styleUrls: ['./view-dropdown.component.scss']
 })
 export class SankeyViewDropdownComponent {
-  @Input() set activeViewName(viewName) {
-    if (viewName) {
-      const view = this.views$[viewName];
-      if (view) {
-        this._activeViewName = viewName;
-        this._activeView = view;
-      } else {
-        this.warningController.warn(`View ${viewName} has not been found in file.`);
-      }
-    } else {
-      this._activeView = undefined;
-      this._activeViewName = undefined;
-    }
-  }
-
   constructor(
     readonly workspaceManager: WorkspaceManager,
     readonly viewController: ViewControllerService,
     private modalService: NgbModal,
     readonly warningController: WarningControllerService
   ) {
-    this.views$ = this.viewController.common.views$;
   }
 
-  activeViewName$ = this.viewController.common.state$.pipe(
-    map(({viewName}) => viewName)
-  );
+  activeViewName$ = this.viewController.activeViewName$;
+  views$ = this.viewController.views$;
+  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
+    map(activeViewBase => viewBaseToNameMapping[activeViewBase] ?? ''));
 
-  activeView$ = this.viewController.common.views$.pipe(
-    switchMap(views => this.viewController.common.state$.pipe(
-      map(({viewName}) => views[viewName])
-    ))
-  );
-
-  views$: Observable<{ [key: string]: object }>;
-
-  activeViewBase$ = this.viewController.common.state$.pipe(
-    map(({baseViewName}) => baseViewName)
-  );
-
-  activeViewBaseName$: Observable<string> = this.activeViewBase$.pipe(map(activeViewBase => viewBaseToNameMapping[activeViewBase] ?? ''));
-
-  @Input() preselectedViewBase: string;
   @Input() object: FilesystemObject;
   @Output() viewDataChanged = new EventEmitter();
 
-  private _activeViewName: string;
-  private _activeView;
 
   viewBase = ViewBase;
 
-  @Output() createView = new EventEmitter();
-
-  @Output() deleteView = new EventEmitter();
 
   activeViewNameChange(viewName) {
-    return this.viewController.common.selectView(viewName);
+    return this.viewController.selectView(viewName);
   }
 
   confirm({header, body}): Promise<any> {
@@ -91,11 +55,6 @@ export class SankeyViewDropdownComponent {
     return modal.result;
   }
 
-  // createView(viewName): Promise<any> {
-  //   return this.viewController.common.createView(viewName).then(() => {
-  //     this.viewDataChanged.emit();
-  //   });
-  // }
 
   objectToFragment(obj): string {
     return new URLSearchParams(
@@ -109,25 +68,8 @@ export class SankeyViewDropdownComponent {
     ).toString();
   }
 
-  openBaseView(baseViewName: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<any> {
-    return this.viewController.common.patchState({
-      baseViewName
-    }).toPromise();
-    // const {object: {project, hashId}} = this;
-    // return this.viewController.common.state$.pipe(
-    //   first(),
-    //   switchMap(({networkTraceIdx}) =>
-    //     from(this.workspaceManager.navigateByUrl({
-    //       url: `/projects/${project.name}/${baseView}/${hashId}#${
-    //         this.objectToFragment({
-    //           [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
-    //           [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
-    //           ...params
-    //         } as SankeyURLLoadParams)
-    //       }`
-    //     }))
-    //   )
-    // ).toPromise();
+  openBaseView(baseViewName: ViewBase): Promise<any> {
+    return this.viewController.openBaseView(baseViewName).toPromise();
   }
 
   saveView(): Promise<any> {
@@ -135,11 +77,11 @@ export class SankeyViewDropdownComponent {
       SankeyViewCreateComponent,
       {ariaLabelledBy: 'modal-basic-title'}
     );
-    return createDialog.result.then(({viewName}) => this.confirmCreateView(viewName));
+    return createDialog.result.then(({viewName}) => this.confirmCreateView(viewName).toPromise());
   }
 
   confirmCreateView(viewName) {
-    return this.viewController.common.views$.pipe(
+    return this.viewController.views$.pipe(
       first(),
       tap(v => console.log(v)),
       switchMap(views =>
@@ -153,8 +95,14 @@ export class SankeyViewDropdownComponent {
         )
       ),
       tap(v => console.log(v)),
-      tap((overwrite) => (overwrite) ? this.createView.emit(viewName) : false)
-    ).toPromise();
+      switchMap(overwrite =>
+        iif(
+          () => overwrite,
+          this.viewController.createView(viewName),
+          of(false)
+        )
+      )
+    );
   }
 
   confirmDeleteView(viewName): void {
@@ -162,7 +110,7 @@ export class SankeyViewDropdownComponent {
       header: 'Confirm delete',
       body: `Are you sure you want to delete the '${viewName}' view?`
     }).then(() => {
-      this.deleteView.next(viewName);
+      this.viewController.deleteView(viewName);
     });
   }
 }

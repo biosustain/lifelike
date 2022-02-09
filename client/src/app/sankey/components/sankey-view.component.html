@@ -98,15 +98,11 @@
                 type="button">
             <i class="fas fa-sync"></i>
         </button>
-<!--        <app-sankey-view-dropdown-->
-<!--                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"-->
-<!--                class="d-inline-block"-->
-<!--                [object]="object"-->
-<!--                [(activeViewName)]="activeViewName"-->
-<!--                [preselectedViewBase]="preselectedViewBase"-->
-<!--                (createView)="createView($event)"-->
-<!--                (deleteView)="deleteView($event)"-->
-<!--        ></app-sankey-view-dropdown>-->
+        <app-sankey-view-dropdown
+                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+                class="d-inline-block"
+                [object]="object"
+        ></app-sankey-view-dropdown>
         <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
             <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"

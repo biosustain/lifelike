@@ -53,6 +53,7 @@ import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.
 import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
 import { LayoutService } from '../services/layout.service';
+import { ViewControllerService } from '../services/view-controller.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -61,7 +62,8 @@ import { LayoutService } from '../services/layout.service';
   providers: [
     WarningControllerService,
     SankeySearchService,
-    ControllerService
+    ControllerService,
+    ViewControllerService
   ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit, AfterViewInit {
@@ -78,7 +80,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly viewService: ViewService,
     private componentFactoryResolver: ComponentFactoryResolver,
     public sankeyController: ControllerService,
-    private injector: Injector
+    private injector: Injector,
+    private viewController: ViewControllerService
   ) {
     // const createSankeyInjector = providers => Injector.create({
     //   providers,
@@ -141,15 +144,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     });
     // this.content.subscribe(x => console.log('content', x));
 
-    this.dataToRender$.pipe(
-      startWith(undefined), // initial prev value
-      pairwise(),
-    ).subscribe(([prevData, data]) => {
-      this._dynamicComponentRef.get('sankey').instance.data = data;
-      this._dynamicComponentRef.get('sankey').instance.ngOnChanges({
-        data: new SimpleChange(prevData, data, isNil(prevData))
-      });
-    });
+    // this.dataToRender$.pipe(
+    //   startWith(undefined), // initial prev value
+    //   pairwise(),
+    // ).subscribe(([prevData, data]) => {
+    //   this._dynamicComponentRef.get('sankey').instance.data = data;
+    //   this._dynamicComponentRef.get('sankey').instance.ngOnChanges({
+    //     data: new SimpleChange(prevData, data, isNil(prevData))
+    //   });
+    // });
 
     this.baseView$.pipe(
       switchMap(({graphInputState$}) => graphInputState$),
@@ -356,8 +359,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this._dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
       this._dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
-      this.baseView$.next(moduleRef.injector.get(BaseControllerService));
-      this.layout$.next(moduleRef.injector.get(LayoutService));
+      const baseViewController = moduleRef.injector.get(BaseControllerService);
+      const layoutController = moduleRef.injector.get(LayoutService);
+      this.baseView$.next(baseViewController);
+      this.layout$.next(layoutController);
+      this.viewController.baseView$.next(baseViewController);
+      this.viewController.layout$.next(layoutController);
     });
   }
 

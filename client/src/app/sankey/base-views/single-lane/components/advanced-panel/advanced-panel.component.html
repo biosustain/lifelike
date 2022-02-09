@@ -1,21 +1,25 @@
 <form [formGroup]="form">
-    <label ngbButtonLabel>
-        <input formControlName="colorLinkByType"
-               ngbButton
-               type="checkbox">
-        Color link by type
-        <ul class="color-link-legend">
-            <li *ngFor="let typemap of colorLinkTypes$ | async | keyvalue"
-                [attr.data-type]="typemap.key.toLowerCase()">{{typemap.key}}</li>
-        </ul>
-    </label>
-    <label ngbButtonLabel>
-        <input formControlName="highlightCircular"
-               ngbButton
-               type="checkbox">
-        Highlight circular
-    </label>
-    <ng-container formGroupName="nodeHeight">
+    <div>
+        <label ngbButtonLabel>
+            <input formControlName="colorLinkByType"
+                   ngbButton
+                   type="checkbox">
+            Color link by type
+            <ul class="color-link-legend">
+                <li *ngFor="let typemap of colorLinkTypes$ | async | keyvalue"
+                    [attr.data-type]="typemap.key.toLowerCase()">{{typemap.key}}</li>
+            </ul>
+        </label>
+    </div>
+    <div>
+        <label ngbButtonLabel>
+            <input formControlName="highlightCircular"
+                   ngbButton
+                   type="checkbox">
+            Highlight circular
+        </label>
+    </div>
+    <div formGroupName="nodeHeight">
         <label formGroupName="min" class="scrollbar-with-value" ngbButtonLabel>
             <input formControlName="enabled"
                    (change)="disableGroup($event.target.checked, 'nodeHeight.min')"
@@ -40,37 +44,35 @@
                    type="range">
             {{ form.get('nodeHeight.max.ratio').value }}
         </label>
-    </ng-container>
-    <ng-container>
-        <div
-                ngbRadioGroup
-                [name]="'link' + uuid"
-                formControlName="linkValueAccessorId"
-                title="Link size"
-        >
-            <div>Link Value Accessor:</div>
-            <label ngbButtonLabel
-                   *ngFor="let valueAccessor of linkValueGenerators$ | async | keyvalue">
-                <input ngbButton type="radio" [value]="valueAccessor.key">
-                {{valueAccessor.value.description}}
-            </label>
-            <label ngbButtonLabel
-                   *ngFor="let valueAccessor of linkValueAccessors$ | async | keyvalue">
-                <input ngbButton type="radio"
-                       [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-            </label>
-        </div>
-        <div ngbRadioGroup [name]="'node' + uuid"
-             formControlName="nodeValueAccessorId" title="Node fixed size">
-            <div>Node Value Accessor:</div>
-            <label ngbButtonLabel
-                   *ngFor="let valueAccessor of nodeValueGenerators$ | async | keyvalue">
-                <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-            </label>
-            <label ngbButtonLabel
-                   *ngFor="let valueAccessor of nodeValueAccessors$ | async | keyvalue">
-                <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
-            </label>
-        </div>
-    </ng-container>
+    </div>
+    <div
+            ngbRadioGroup
+            [name]="'link' + uuid"
+            formControlName="linkValueAccessorId"
+            title="Link size"
+    >
+        <div>Link Value Accessor:</div>
+        <label ngbButtonLabel
+               *ngFor="let valueAccessor of linkValueGenerators$ | async | keyvalue">
+            <input ngbButton type="radio" [value]="valueAccessor.key">
+            {{valueAccessor.value.description}}
+        </label>
+        <label ngbButtonLabel
+               *ngFor="let valueAccessor of linkValueAccessors$ | async | keyvalue">
+            <input ngbButton type="radio"
+                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+        </label>
+    </div>
+    <div ngbRadioGroup [name]="'node' + uuid"
+         formControlName="nodeValueAccessorId" title="Node fixed size">
+        <div>Node Value Accessor:</div>
+        <label ngbButtonLabel
+               *ngFor="let valueAccessor of nodeValueGenerators$ | async | keyvalue">
+            <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+        </label>
+        <label ngbButtonLabel
+               *ngFor="let valueAccessor of nodeValueAccessors$ | async | keyvalue">
+            <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}
+        </label>
+    </div>
 </form>
