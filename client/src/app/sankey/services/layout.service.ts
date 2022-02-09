@@ -140,7 +140,6 @@ export class LayoutService extends SankeyLayoutService {
    * Calculate layout and address possible circular links
    */
   layout$ = this.dataToRender$.pipe(
-    tap(l => console.log('layout', l)),
     // Associate the nodes with their respective links, and vice versa
     tap(graph => this.computeNodeLinks(graph)),
     // Determine which links result in a circular path in the graph
@@ -157,7 +156,6 @@ export class LayoutService extends SankeyLayoutService {
     tap(graph => this.computeNodeLayers(graph)),
     tap(graph => this.createVirtualNodes(graph)),
     switchMap(graph => this.baseView.stateAccessor('nodeHeight').pipe(
-      tap(d => console.log('sdgsfgasa', d)),
       tap(nodeHeight => this.nodeHeight = nodeHeight),
       map(() => graph)
     )),
@@ -171,7 +169,6 @@ export class LayoutService extends SankeyLayoutService {
     tap(graph => this.cleanVirtualNodes(graph)),
     this.populateSnapshot('horizontal'),
     tap(graph => this.positionNodesHorizontaly(graph)),
-    tap(graph => console.log('bo=efore common state')),
     switchMap(graph =>
       unifiedAccessor(this.baseView.common.state$, [
         'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
@@ -185,18 +182,16 @@ export class LayoutService extends SankeyLayoutService {
   populateSnapshot(key) {
     return switchMap(graph => this[`${key}$`].pipe(
       tap(snapshot => this[key] = snapshot),
-      tap(snapshot => console.log(`Snapshot ${key} populated`, snapshot)),
       map(() => graph)
     ));
   }
 
   linkGraph(data) {
     return combineLatest([
-      this.baseView.nodeValueAccessor$.pipe(tap(d => console.log('linkGraph nodeValueAccessor', d))),
-      this.baseView.linkValueAccessor$.pipe(tap(d => console.log('linkGraph linkValueAccessor', d))),
-      this.baseView.common.prescaler$.pipe(tap(d => console.log('linkGraph prescaler', d)))
+      this.baseView.nodeValueAccessor$,
+      this.baseView.linkValueAccessor$,
+      this.baseView.common.prescaler$
     ]).pipe(
-      tap(console.log),
       filter(params => params.every(param => !!param)),
       map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
 

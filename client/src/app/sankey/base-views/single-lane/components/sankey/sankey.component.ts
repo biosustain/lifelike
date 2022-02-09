@@ -24,7 +24,7 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
 
   // region Life cycle
   ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
-    console.log('SankeySingleLaneComponent.ngOnChanges', selected, searchedEntities, focusedNode, data, nodeAlign);
+    // todo react to leayout directly instead
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -33,11 +33,6 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
       } else if (align) {
         this.sankey.align = aligns[align];
       }
-    }
-
-    if (data && this.svg) {
-      // using this.data instead of current value so we use copy made by setter
-      // this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     if (selected) {

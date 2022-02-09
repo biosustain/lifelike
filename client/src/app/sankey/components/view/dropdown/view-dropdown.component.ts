@@ -83,7 +83,6 @@ export class SankeyViewDropdownComponent {
   confirmCreateView(viewName) {
     return this.viewController.views$.pipe(
       first(),
-      tap(v => console.log(v)),
       switchMap(views =>
         iif(
           () => !!views[viewName],
@@ -94,7 +93,6 @@ export class SankeyViewDropdownComponent {
           of(true)
         )
       ),
-      tap(v => console.log(v)),
       switchMap(overwrite =>
         iif(
           () => overwrite,

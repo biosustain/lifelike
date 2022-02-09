@@ -80,10 +80,8 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
             // if there is no preset base view set it based on data
             () => !state.baseViewName,
             this.partialNetworkTraceData$.pipe(
-              tap(d => console.log('default baseViewName partialNetworkTraceData', d)),
               first(),
               map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
-              tap(d => console.log('default baseViewName calculated', d)),
               switchMap(bvn => this.patchDefaultState({
                 baseViewName: (bvn as ViewBase)
               }))
@@ -93,7 +91,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         ]).pipe(
           map(defaultStatePatches => merge({}, ...defaultStatePatches)),
           tap(defaultStatePatch => this.patchDefaultState(defaultStatePatch)),
-          tap(defaultStatePatch => console.log('defaultStatePatch', defaultStatePatch))
         ).toPromise();
       }
     });
@@ -196,9 +193,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   );
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
-    tap(d => console.log('partialNetworkTraceData$ networkTrace:', d)),
     switchMap(({sources, targets, traces}) => this.data$.pipe(
-      tap(d => console.log('partialNetworkTraceData$ data', d)),
       map(({links, nodes, graph: {node_sets}}) => ({
         links,
         nodes,
@@ -335,49 +330,12 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   }
 
   patchDefaultState(patch: Partial<SankeyState>) {
-    console.log('patchDefaultState', patch);
     return this.default$.pipe(
       first(),
       map(defaultState => merge({}, defaultState, patch)),
       tap(defaultState => this.default$.next(defaultState))
     );
   }
-
-  //
-  // patchState(statePatch) {
-  //   return this.delta$.pipe(
-  //     first(),
-  //     map(currentStateDelta =>
-  //       // ommit empty values so they can be overridden by defaultState
-  //       omitBy(
-  //         merge(
-  //           {},
-  //           currentStateDelta,
-  //           statePatch,
-  //         ),
-  //         isNil
-  //       )
-  //     ),
-  //     patchReducer(statePatch, (state, patch) => {
-  //       if (!isNil(patch.networkTraceIdx)) {
-  //         return this.options$.pipe(
-  //           first(),
-  //           map(options => {
-  //             return {
-  //               ...state,
-  //               // todo
-  //               // ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
-  //             };
-  //           })
-  //         );
-  //       }
-  //     }),
-  //     tap(stateDelta => {
-  //       this.delta$.next(stateDelta);
-  //     })
-  //   );
-  // }
-
 
   selectNetworkTrace(networkTraceIdx: number) {
     return this.patchState({

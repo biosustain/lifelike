@@ -83,18 +83,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     private injector: Injector,
     private viewController: ViewControllerService
   ) {
-    // const createSankeyInjector = providers => Injector.create({
-    //   providers,
-    //   parent: injector
-    // });
-    // this.baseViewInjectors.set(Sankey, createSankeyInjector(Sankey.providers));
-    // this.baseViewInjectors.set(SankeySingleLane, createSankeyInjector(SankeySingleLane.providers));
-
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
-          // tap(x => console.log('getContent', x)),
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
@@ -109,18 +101,13 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         this.currentFileId = object.hashId;
         return this.sankeyController.loadData(content as SankeyData);
       })
-    ).subscribe(d => {
-      console.log('loaded data', d);
-    });
+    ).subscribe(() => {});
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
-    // this.sankeyController.stateDelta$.subscribe(d => console.log('stateDelta sankey controller subs', d));
-
     this.route.fragment.pipe(
-      tap(x => console.log('route.fragment', x)),
       switchMap(fragment =>
         // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
         // (do not kill route observable)
@@ -133,33 +120,19 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         )
       ),
       tap(stateDelta => this.sankeyController.delta$.next(stateDelta))
-    ).subscribe(state => {
-      console.log('loaded state from fragment', state);
-    });
+    ).subscribe(state => {});
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
       this.object = null;
       this.currentFileId = null;
       this.openSankey(file_id);
     });
-    // this.content.subscribe(x => console.log('content', x));
-
-    // this.dataToRender$.pipe(
-    //   startWith(undefined), // initial prev value
-    //   pairwise(),
-    // ).subscribe(([prevData, data]) => {
-    //   this._dynamicComponentRef.get('sankey').instance.data = data;
-    //   this._dynamicComponentRef.get('sankey').instance.ngOnChanges({
-    //     data: new SimpleChange(prevData, data, isNil(prevData))
-    //   });
-    // });
 
     this.baseView$.pipe(
       switchMap(({graphInputState$}) => graphInputState$),
       startWith({}), // initial prev value,
       pairwise(),
     ).subscribe(([prevInputState, inputState]) => {
-      console.log('inputState', inputState);
       const sankey = this._dynamicComponentRef.get('sankey');
       assign(sankey.instance, inputState);
       const changes = mapValues(inputState, (value, key) => ({
@@ -167,7 +140,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         firstChange: isNil(prevInputState),
         previousValue: get(prevInputState, key)
       }));
-      console.log('changes', changes);
       sankey.instance.ngOnChanges(changes);
       sankey.changeDetectorRef.detectChanges();
       sankey.injector.get(ChangeDetectorRef).detectChanges();
@@ -290,7 +262,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   selection = new BehaviorSubject<Array<SelectionSingleLaneEntity>>([]);
   selectionWithTraces = this.selection.pipe(
-    tap(x => console.log('selection', x)),
     map((currentSelection) => {
       const nodes = compact(currentSelection.map(e => e[SelectionType.node]));
       const links = compact(currentSelection.map(e => e[SelectionType.link]));
@@ -327,26 +298,14 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
 
-  createView(viewName) {
-    console.log(viewName);
-  }
-
-  deleteView(viewName) {
-    console.log(viewName);
-  }
-
   ngAfterViewInit() {
     /**
      * Load different base view components upom base view change
      */
     this.sankeyController.baseViewName$.subscribe(baseView => {
-      console.log('baseViewName', baseView);
-      // const o = baseView === ViewBase.sankeyMultiLane ? Sankey : SankeySingleLane;
       const module = baseView === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
       const moduleFactory = getModuleFactory(baseView);
       const moduleRef = moduleFactory.create(this.injector);
-      // const moduleRef = createNgModuleRef()
-      // const sankeyInjector = this.baseViewInjectors.get(o);
       const injectComponent = (container, token) => {
         const comp = moduleRef.injector.get(token);
         const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
