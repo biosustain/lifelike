@@ -32,7 +32,8 @@ export class SankeyAbstractAdvancedPanelComponent<Options extends object = objec
   );
 
   onInit() {
-    this.formToStateSubscribtion = this.formStateSync$.subscribe(stateDelta => console.log('formStateSync$', stateDelta));
+    // make the connection hot
+    this.formToStateSubscribtion = this.formStateSync$.subscribe();
   }
 
   ngOnDestroy() {
