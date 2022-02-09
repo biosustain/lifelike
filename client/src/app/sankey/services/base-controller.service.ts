@@ -145,20 +145,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
           isNil
         )
       ),
-      patchReducer(statePatch, (state, patch) => {
-        if (!isNil(patch.networkTraceIdx)) {
-          return this.options$.pipe(
-            first(),
-            map(options => {
-              return {
-                ...state,
-                // todo
-                // ...this.defaultPredefinedValueAccessorReducer(options, patch.networkTraceIdx)
-              };
-            })
-          );
-        }
-      }),
       tap(stateDelta => {
         this.delta$.next(stateDelta as Partial<State>);
       })

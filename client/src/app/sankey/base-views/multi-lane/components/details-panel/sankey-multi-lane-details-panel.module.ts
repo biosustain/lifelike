@@ -14,41 +14,23 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { SankeyDetailsPanelModule } from 'app/sankey/components/details-panel/sankey-details-panel.module';
 
-import { SankeyNodeDetailsComponent } from './node-details.component';
-import { SankeyTraceDetailsComponent } from './trace-details.component';
-import { ButtonWithSelectableTextComponent } from './button-with-selectable-text.component';
-import { SankeyDetailsPanelComponent } from './details-panel.component';
+import { SankeyMutiLaneDetailsPanelComponent } from './details-panel.component';
+import { SankeyMultiLaneLinkDetailsComponent } from './link-details.component';
 
 @NgModule({
   declarations: [
-    SankeyNodeDetailsComponent,
-    SankeyTraceDetailsComponent,
-    ButtonWithSelectableTextComponent,
-    SankeyDetailsPanelComponent
+    SankeyMutiLaneDetailsPanelComponent,
+    SankeyMultiLaneLinkDetailsComponent
   ],
   imports: [
     CommonModule,
-    FormsModule,
-    // BrowserAnimationsModule,
-    MatFormFieldModule,
-    MatCheckboxModule,
-    MatSidenavModule,
-    MatDialogModule,
-    MatChipsModule,
-    MatSelectModule,
-    MatInputModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    MatRadioModule,
-    SharedModule,
+    SankeyDetailsPanelModule
   ],
   exports: [
-    SankeyNodeDetailsComponent,
-    SankeyTraceDetailsComponent,
-    ButtonWithSelectableTextComponent,
-    SankeyDetailsPanelComponent
+    SankeyMutiLaneDetailsPanelComponent
   ],
 })
-export class SankeyDetailsPanelModule {
+export class SankeyMultiLaneDetailsPanelModule {
 }

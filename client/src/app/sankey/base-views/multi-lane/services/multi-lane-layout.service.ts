@@ -68,7 +68,7 @@ export class MultiLaneLayoutService extends LayoutService {
    */
   getYScaleFactor(nodes) {
     const {
-      y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns
+      vertical: {y1, y0}, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns
     } = this;
     // normal calculation based on tallest column
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
@@ -90,7 +90,7 @@ export class MultiLaneLayoutService extends LayoutService {
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -98,7 +98,7 @@ export class MultiLaneLayoutService extends LayoutService {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -140,10 +140,7 @@ export class MultiLaneLayoutService extends LayoutService {
   layoutNodesWithinColumns(columns) {
     const {ky} = this;
 
-    // noinspection JSUnusedLocalSymbols
-    const [[_marginLeft, marginTop]] = this.extent;
-    // noinspection JSUnusedLocalSymbols
-    const [_width, height] = this.size;
+    const {y0, height} = this.vertical;
 
     columns.forEach(nodes => {
       const {length} = nodes;
@@ -152,7 +149,7 @@ export class MultiLaneLayoutService extends LayoutService {
       const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
       const freeSpace = height - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
-      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
+      let y = additionalSpacers ? spacerSize + y0 : y0;
       // nodes are placed in order from tree traversal
       nodes.sort((a, b) => a._order - b._order).forEach(node => {
         const nodeHeight = node._height;
@@ -282,7 +279,7 @@ export class MultiLaneLayoutService extends LayoutService {
   }
 
   setLayoutParams(graph) {
-    const {dy, y1, y0} = this;
+    const {dy, vertical: {y1, y0}} = this;
     this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
     this.ky = this.getYScaleFactor(graph.nodes);
   }

@@ -122,7 +122,6 @@ export class LayoutService extends SankeyLayoutService {
   state: Partial<SankeyState>;
   baseState: Partial<SankeyBaseState>;
 
-
   normalizeLinks = false;
 
   columns: SankeyNode[][] = [];
@@ -133,13 +132,15 @@ export class LayoutService extends SankeyLayoutService {
   nodeHeight;
 
   dataToRender$: Observable<SankeyData> = this.baseView.networkTraceData$.pipe(
-    switchMap(networkTraceData => this.linkGraph(networkTraceData))
+    switchMap(networkTraceData => this.linkGraph(networkTraceData)),
+    shareReplay(1)
   );
 
   /**
    * Calculate layout and address possible circular links
    */
   layout$ = this.dataToRender$.pipe(
+    tap(l => console.log('layout', l)),
     // Associate the nodes with their respective links, and vice versa
     tap(graph => this.computeNodeLinks(graph)),
     // Determine which links result in a circular path in the graph
@@ -160,6 +161,7 @@ export class LayoutService extends SankeyLayoutService {
       tap(nodeHeight => this.nodeHeight = nodeHeight),
       map(() => graph)
     )),
+    this.populateSnapshot('vertical'),
     tap(graph => this.setLayoutParams(graph)),
     tap(graph => this.computeNodeHeights(graph)),
     // Calculate the nodes' and links' vertical position within their respective column
@@ -167,6 +169,8 @@ export class LayoutService extends SankeyLayoutService {
     tap(graph => this.computeNodeBreadths(graph)),
     tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
     tap(graph => this.cleanVirtualNodes(graph)),
+    this.populateSnapshot('horizontal'),
+    tap(graph => this.positionNodesHorizontaly(graph)),
     tap(graph => console.log('bo=efore common state')),
     switchMap(graph =>
       unifiedAccessor(this.baseView.common.state$, [
@@ -177,6 +181,14 @@ export class LayoutService extends SankeyLayoutService {
       )),
     shareReplay(1)
   );
+
+  populateSnapshot(key) {
+    return switchMap(graph => this[`${key}$`].pipe(
+      tap(snapshot => this[key] = snapshot),
+      tap(snapshot => console.log(`Snapshot ${key} populated`, snapshot)),
+      map(() => graph)
+    ));
+  }
 
   linkGraph(data) {
     return combineLatest([
@@ -362,10 +374,10 @@ export class LayoutService extends SankeyLayoutService {
    */
   getYScaleFactor(nodes) {
     const {
-      y1, y0, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns
+      vertical: {y1, y0, height}, py, dx, nodeHeight, value, columnsWithLinkPlaceholders: columns
     } = this;
     // normal calculation based on tallest column
-    const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
+    const ky = min(columns, c => (height - (c.length - 1) * py) / sum(c, value));
     let scale = 1;
     if (nodeHeight.max.enabled) {
       const maxCurrentHeight = max(nodes, value) * ky;
@@ -434,10 +446,7 @@ export class LayoutService extends SankeyLayoutService {
   layoutNodesWithinColumns(columns) {
     const {ky} = this;
 
-    // noinspection JSUnusedLocalSymbols
-    const [[_marginLeft, marginTop]] = this.extent;
-    // noinspection JSUnusedLocalSymbols
-    const [_width, height] = this.size;
+    const {y0, y1, height} = this.vertical;
 
     columns.forEach(nodes => {
       const {length} = nodes;
@@ -446,7 +455,7 @@ export class LayoutService extends SankeyLayoutService {
       const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
       const freeSpace = height - nodesHeight;
       const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
-      let y = additionalSpacers ? spacerSize + marginTop : marginTop;
+      let y = additionalSpacers ? spacerSize + y0 : y0;
       // nodes are placed in order from tree traversal
       nodes.sort((a, b) => a._order - b._order).forEach(node => {
         const nodeHeight = node._height;
@@ -581,7 +590,7 @@ export class LayoutService extends SankeyLayoutService {
   }
 
   setLayoutParams(graph) {
-    const {dy, y1, y0} = this;
+    const {dy, vertical: {y1, y0}} = this;
     this.py = Math.min(dy, (y1 - y0) / (max(this.columnsWithLinkPlaceholders, c => c.length) - 1));
     this.ky = this.getYScaleFactor(graph.nodes);
   }
