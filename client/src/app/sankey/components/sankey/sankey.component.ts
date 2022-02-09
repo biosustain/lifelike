@@ -60,7 +60,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
 
-    this.sankey.layout$.subscribe(data => {
+    this.sankey.dataToRender$.subscribe(data => {
       this.updateDOM(data);
     });
   }

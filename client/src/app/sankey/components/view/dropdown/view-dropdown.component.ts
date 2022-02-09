@@ -37,12 +37,10 @@ export class SankeyViewDropdownComponent {
   @Input() object: FilesystemObject;
   @Output() viewDataChanged = new EventEmitter();
 
-
   viewBase = ViewBase;
 
-
-  activeViewNameChange(viewName) {
-    return this.viewController.selectView(viewName);
+  selectView(viewName) {
+    return this.viewController.selectView(viewName).toPromise();
   }
 
   confirm({header, body}): Promise<any> {
@@ -103,12 +101,10 @@ export class SankeyViewDropdownComponent {
     );
   }
 
-  confirmDeleteView(viewName): void {
-    this.confirm({
+  confirmDeleteView(viewName): Promise<any> {
+    return this.confirm({
       header: 'Confirm delete',
       body: `Are you sure you want to delete the '${viewName}' view?`
-    }).then(() => {
-      this.viewController.deleteView(viewName);
-    });
+    }).then(() => this.viewController.deleteView(viewName).toPromise());
   }
 }

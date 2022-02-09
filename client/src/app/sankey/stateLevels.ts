@@ -22,5 +22,5 @@ const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'baseViewName',
 ];
 
-export const getCommonState = (state) => pick(state, SANKEY_STATE_KEYS);
-export const getBaseState = (state) => pick(state, SANKEY_STATE_KEYS);
+export const getCommonState = (state: object) => pick(state, SANKEY_STATE_KEYS);
+export const getBaseState = (state: object) => pick(state, SANKEY_STATE_KEYS);
