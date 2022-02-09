@@ -33,7 +33,6 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Sankey
       map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
       distinctUntilChanged(isEqual)
     );
-    this.networkTraceData$.subscribe(d => console.log('SankeySingleLaneControllerService networkTraceData$', d));
   }
 
   viewBase = ViewBase.sankeyMultiLane;

@@ -61,25 +61,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       .scaleExtent([0.1, 8]);
 
     this.sankey.layout$.subscribe(data => {
-      console.log('updateDOM', data);
       this.updateDOM(data);
     });
-    // this._data.pipe(
-    //   switchMap(data =>
-    //     iif(
-    //       () => (data as any)._precomputedLayout,
-    //       of(data),
-    //       this.sankey.layout$
-    //     )
-    //   ),
-    //   tap(data => this.updateDOM(data)),
-    //   catchError(err => {
-    //     console.log(err);
-    //     return of(null);
-    //   })
-    // ).subscribe(data => {
-    //   console.log('updateDOM', data);
-    // });
   }
   // endregion
 
@@ -401,13 +384,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   async pathMouseOver(element, data) {
     d3_select(element)
       .raise();
-
-    // temporary disabled as of LL-3726
-    // const nodeGroup = new Set<number>(data._trace.node_paths.reduce((acc: number[], curr: number[]) => acc.concat(curr), []));
-    // const traces = new Set<any>([data._trace]);
-    //
-    // this.highlightNodeGroup(nodeGroup);
-    // this.highlightTraces(traces);
   }
 
   /**
@@ -429,12 +405,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    */
   async nodeMouseOver(element, data) {
     this.applyNodeHover(element);
-
-    // temporary disabled as of LL-3726
-    // const traces = new Set<any>([].concat(data._sourceLinks, data._targetLinks).map(link => link._trace));
-    // const nodeGroup = this.calculateNodeGroupFromTraces(traces);
-    // this.highlightNodeGroup(nodeGroup);
-    // this.highlightTraces(traces);
   }
 
   /**
@@ -484,31 +454,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.linkSelection
       .filter((...args) => relatedLinksIds.includes(id(...args)))
       .attr('d', linkPath);
-    // todo: this re-layout technique for whatever reason does not work
-    // clearTimeout(this.debounceDragRelayout);
-    // this.debounceDragRelayout = setTimeout(() => {
-    //   this.sankey.update(this._data);
-    //   Object.assign(d, newPosition);
-    //   d3_select(this.links.nativeElement)
-    //     .selectAll('path')
-    //     .transition().duration(RELAYOUT_DURATION)
-    //     .attrTween('d', link => {
-    //       const newPathParams = calculateLinkPathParams(link);
-    //       const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
-    //       return t => {
-    //         const interpolatedParams = paramsInterpolator(t);
-    //         // save last params on each iterration so we can interpolate from last position upon
-    //         // animation interrupt/cancel
-    //         link._calculated_params = interpolatedParams;
-    //         return composeLinkPath(interpolatedParams);
-    //       };
-    //     });
-    //
-    //   d3_select(this.nodes.nativeElement)
-    //     .selectAll('g')
-    //     .transition().duration(RELAYOUT_DURATION)
-    //     .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`);
-    // }, 500);
   }
 
   // endregion
@@ -769,29 +714,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
     }
   }
-
-  // /**
-  //  * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
-  //  * and adjustments from outer scope
-  //  * @param data graph declaration
-  //  */
-  // updateLayout(data) {
-  //   return new Promise(resolve => {
-  //       if (!data._precomputedLayout) {
-  //         this.sankey.calcLayout(data);
-  //       }
-  //       resolve(data);
-  //     }
-  //   );
-  // }
-
-  // scaleLayout(data, changeRatio) {
-  //   return new Promise(resolve => {
-  //       this.sankey.rescaleNodePosition(data, changeRatio);
-  //       resolve(data);
-  //     }
-  //   );
-  // }
 
   // region Render
 
