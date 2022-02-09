@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last, merge, omit } from 'lodash-es';
+import { first, last, merge, omit, isNil } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, Observable, iif, of } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyData, SankeyState } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyData, SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from './directed-traversal';
@@ -132,52 +132,96 @@ export class LayoutService extends SankeyLayoutService {
   nodeHeight;
 
   dataToRender$: Observable<SankeyData> = this.baseView.networkTraceData$.pipe(
-    switchMap(networkTraceData => this.linkGraph(networkTraceData)),
+    switchMap(networkTraceData => this.baseView.common.view$.pipe(
+        switchMap(view =>
+          iif(
+            () => isNil(view),
+            this.linkGraph(networkTraceData).pipe(
+              switchMap(data => this.calculateLayout(data))
+            ),
+            of(networkTraceData as SankeyData).pipe(
+              tap(data => {
+                this.applyPropertyObject(view.nodes, data.nodes);
+                this.applyPropertyObject(view.links, data.links);
+                this.computeNodeLinks(data);
+              }),
+              this.populateSnapshot('vertical'),
+              this.populateSnapshot('horizontal'),
+              switchMap(graph =>
+                unifiedAccessor(this.baseView.common.state$, [
+                  'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
+                ]).pipe(
+                  tap(state => this.state = state),
+                  map(() => graph)
+                )),
+              shareReplay(1)
+            ),
+          ))
+      )
+    ),
     shareReplay(1)
   );
 
   /**
    * Calculate layout and address possible circular links
    */
-  layout$ = this.dataToRender$.pipe(
-    // Associate the nodes with their respective links, and vice versa
-    tap(graph => this.computeNodeLinks(graph)),
-    // Determine which links result in a circular path in the graph
-    tap(graph => this.identifyCircles(graph)),
-    // Calculate the nodes' values, based on the values of the incoming and outgoing links
-    tap(graph => this.computeNodeValues(graph)),
-    // Calculate the nodes' depth based on the incoming and outgoing links
-    //     Sets the nodes':
-    //     - depth:  the depth in the graph
-    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
-    tap(graph => this.computeNodeDepths(graph)),
-    tap(graph => this.computeNodeReversedDepths(graph)),
-    tap(graph => this.computeNodeLayers(graph)),
-    tap(graph => this.createVirtualNodes(graph)),
-    switchMap(graph => this.baseView.stateAccessor('nodeHeight').pipe(
-      tap(nodeHeight => this.nodeHeight = nodeHeight),
-      map(() => graph)
-    )),
-    this.populateSnapshot('vertical'),
-    tap(graph => this.setLayoutParams(graph)),
-    tap(graph => this.computeNodeHeights(graph)),
-    // Calculate the nodes' and links' vertical position within their respective column
-    //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-    tap(graph => this.computeNodeBreadths(graph)),
-    tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
-    tap(graph => this.cleanVirtualNodes(graph)),
-    this.populateSnapshot('horizontal'),
-    tap(graph => this.positionNodesHorizontaly(graph)),
-    switchMap(graph =>
-      unifiedAccessor(this.baseView.common.state$, [
-        'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
-      ]).pipe(
-        tap(state => this.state = state),
+  calculateLayout(networkTraceData: SankeyData): Observable<SankeyData> {
+    return of(networkTraceData).pipe(
+      // Associate the nodes with their respective links, and vice versa
+      tap(graph => this.computeNodeLinks(graph)),
+      // Determine which links result in a circular path in the graph
+      tap(graph => this.identifyCircles(graph)),
+      // Calculate the nodes' values, based on the values of the incoming and outgoing links
+      tap(graph => this.computeNodeValues(graph)),
+      // Calculate the nodes' depth based on the incoming and outgoing links
+      //     Sets the nodes':
+      //     - depth:  the depth in the graph
+      //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+      //     - x0, x1: the x coordinates, as is relates to visual position from left to right
+      tap(graph => this.computeNodeDepths(graph)),
+      tap(graph => this.computeNodeReversedDepths(graph)),
+      tap(graph => this.computeNodeLayers(graph)),
+      tap(graph => this.createVirtualNodes(graph)),
+      switchMap(graph => this.baseView.stateAccessor('nodeHeight').pipe(
+        tap(nodeHeight => this.nodeHeight = nodeHeight),
         map(() => graph)
       )),
-    shareReplay(1)
-  );
+      this.populateSnapshot('vertical'),
+      tap(graph => this.setLayoutParams(graph)),
+      tap(graph => this.computeNodeHeights(graph)),
+      // Calculate the nodes' and links' vertical position within their respective column
+      //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+      tap(graph => this.computeNodeBreadths(graph)),
+      tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
+      tap(graph => this.cleanVirtualNodes(graph)),
+      this.populateSnapshot('horizontal'),
+      tap(graph => this.positionNodesHorizontaly(graph)),
+      switchMap(graph =>
+        unifiedAccessor(this.baseView.common.state$, [
+          'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
+        ]).pipe(
+          tap(state => this.state = state),
+          map(() => graph)
+        )),
+      shareReplay(1)
+    ) as Observable<SankeyData>;
+  }
+
+  applyPropertyObject(
+    propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
+    entities: Array<SankeyNode | SankeyLink>
+  ): void {
+    // for faster lookup
+    const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
+    Object.entries(propertyObject).map(([id, properties]) => {
+      const entity = entityById.get(id);
+      if (entity) {
+        Object.assign(entity, properties);
+      } else {
+        this.warningController.warn(`No entity found for id ${id}`);
+      }
+    });
+  }
 
   populateSnapshot(key) {
     return switchMap(graph => this[`${key}$`].pipe(
@@ -186,7 +230,7 @@ export class LayoutService extends SankeyLayoutService {
     ));
   }
 
-  linkGraph(data) {
+  linkGraph(data: SankeyData): Observable<SankeyData> {
     return combineLatest([
       this.baseView.nodeValueAccessor$,
       this.baseView.linkValueAccessor$,
@@ -391,7 +435,7 @@ export class LayoutService extends SankeyLayoutService {
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  )
+  );
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -399,7 +443,7 @@ export class LayoutService extends SankeyLayoutService {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();

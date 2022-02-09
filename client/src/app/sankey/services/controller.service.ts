@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject } from 'rxjs';
+import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
 import { merge, transform, cloneDeepWith, clone, max, flatMap, has } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, tap, shareReplay } from 'rxjs/operators';
+import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 
@@ -96,7 +96,8 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     });
   }
 
-  baseViewName$: any;
+  baseViewName$: Observable<string>;
+  viewName$: Observable<string>;
 
   /**
    * Observable of current default state which is based inclusively on loaded data
@@ -127,17 +128,26 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       {},
       this.staticOptions,
       this.extractOptionsFromGraph(data)
-    ))
+    )),
+    shareReplay(1)
   );
 
   viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
 
-  views$ = merge(
+  views$ = rx_merge(
     this.data$.pipe(
-      map(({_views = {}}) => _views)
+      map(({_views = {}}) => _views),
+      shareReplay(1)
     ),
     this.viewsUpdate$
+  ).pipe(
+    shareReplay(1)
   );
+
+  /**
+   * Returns active view or null if no view is active
+   */
+  view$: Observable<SankeyView | null>;
 
   /**
    * Predefined options for Sankey visualisation which are not based on loaded data not user input
@@ -327,6 +337,18 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   onInit() {
     super.onInit();
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
+    // do not use standart accessor for this one cause we want null if it wasnt set
+    this.viewName$ = this.state$.pipe(
+      map(({viewName = null}) => viewName),
+      distinctUntilChanged()
+    );
+    this.view$ = this.views$.pipe(
+      switchMap(views => this.viewName$.pipe(
+        map(viewName => views[viewName] ?? null),
+      )),
+        distinctUntilChanged(),
+      shareReplay(1)
+    );
   }
 
   patchDefaultState(patch: Partial<SankeyState>) {
