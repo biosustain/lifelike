@@ -179,6 +179,8 @@
                   state$: sankeyController.state$ | async,
                   options$: sankeyController.options$ | async,
                   data$: sankeyController.data$ | async,
+                  views$: sankeyController.views$ | async,
+                  view$: sankeyController.view$ | async,
                   partialNetworkTraceData: sankeyController.partialNetworkTraceData$ | async
                 } as dataSource" [dataSource]="dataSource"></app-object-explorer>
                 <ng-container *ngIf="baseView$ | async as b">

@@ -4,7 +4,7 @@ import { Observable, combineLatest, of, iif } from 'rxjs';
 import { map, tap, shareReplay, switchMap, first } from 'rxjs/operators';
 import { merge, isNil, omitBy, has } from 'lodash-es';
 
-import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS } from 'app/sankey/interfaces';
+import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
@@ -31,7 +31,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
     super();
   }
 
-  networkTraceData$;
+  networkTraceData$: Observable<any>;
   viewBase;
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
@@ -108,6 +108,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
       preprocessing: nodeValues.fixedValue(1)
     }
   };
+
 
   predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
     if (!isNil(predefinedValueAccessorId)) {
