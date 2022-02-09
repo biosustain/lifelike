@@ -56,6 +56,7 @@ import { Injectable } from '@angular/core';
 
 import findCircuits from 'elementary-circuits-directed-graph';
 import { max, min, sum } from 'd3-array';
+import { ReplaySubject, Subject, BehaviorSubject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
@@ -63,33 +64,67 @@ import { SankeyData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
 
+interface Extent {
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
+class Horizontal {
+  constructor({x0, x1}) {
+    this.x0 = x0;
+    this.x1 = x1;
+  }
+
+  x0: number;
+  x1: number;
+
+  get width() {
+    return this.x1 - this.x0;
+  }
+}
+
+class Vertical {
+  constructor({y0, y1}) {
+    this.y0 = y0;
+    this.y1 = y1;
+  }
+
+  y0: number;
+  y1: number;
+
+  get height() {
+    return this.y1 - this.y0;
+  }
+}
+
 @Injectable()
 export class SankeyLayoutService extends AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
     super(truncatePipe);
   }
 
-  get size() {
-    return [this.x1 - this.x0, this.y1 - this.y0];
+  get sourceValue(): (link: SankeyLink) => number {
+    return ({_value, _multiple_values}) => _multiple_values?.[0] ?? _value;
   }
 
-  set size(size) {
-    this.x1 = this.x0 + size[0];
-    this.y1 = this.y0 + size[1];
+  get targetValue(): (link: SankeyLink) => number {
+    return ({_value, _multiple_values}) => _multiple_values?.[1] ?? _value;
   }
 
-  get extent() {
-    return [[this.x0, this.y0], [this.x1, this.y1]];
-  }
+  horizontal$: Subject<Horizontal> = new ReplaySubject<Horizontal>();
+  vertical$ = new ReplaySubject<Vertical>();
+  horizontal: Horizontal;
+  vertical: Vertical;
 
-  set extent(extent) {
-    [[this.x0, this.y0], [this.x1, this.y1]] = extent;
-  }
+  prevExtent: Extent = {
+    x0: undefined,
+    x1: undefined,
+    y0: undefined,
+    y1: undefined
+  };
 
-  x0;
-  y0;
-  x1;
-  y1; // extent
   dy = 8;
   dx = 24; // nodeWidth
   py; // nodePadding
@@ -104,15 +139,6 @@ export class SankeyLayoutService extends AttributeAccessors {
   // Some constants for circular link calculations
   baseRadius = 10;
   scale = 0.3;
-
-  static find(nodeById, id) {
-    const node = nodeById.get(id);
-    if (!node) {
-      // todo: use our error handler when figure out how to deal with inheritance
-      throw new Error(`Node (id: ${id}) needed to render this graph has not be provided in file.`);
-    }
-    return node as SankeyNode;
-  }
 
   static ascendingSourceBreadth(a, b) {
     return SankeyLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
@@ -141,6 +167,28 @@ export class SankeyLayoutService extends AttributeAccessors {
         y1 += link._width;
       }
     }
+  }
+
+  static find(nodeById, id) {
+    const node = nodeById.get(id);
+    if (!node) {
+      // todo: use our error handler when figure out how to deal with inheritance
+      throw new Error(`Node (id: ${id}) needed to render this graph has not be provided in file.`);
+    }
+    return node as SankeyNode;
+  }
+
+  setExtent(extent: Extent) {
+    const {prevExtent} = this;
+    if (prevExtent.y0 === extent.y0 && prevExtent.y1 === extent.y1) {
+      this.horizontal$.next(new Horizontal(extent));
+    } else {
+      // if anything was waiting fot horizontal cancel it and start over from vertical
+      this.horizontal$.complete();
+      this.horizontal$ = new BehaviorSubject(new Horizontal(extent));
+      this.vertical$.next(new Vertical(extent));
+    }
+    this.prevExtent = extent;
   }
 
   align(n, node) {
@@ -258,14 +306,6 @@ export class SankeyLayoutService extends AttributeAccessors {
     });
   }
 
-  get sourceValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values?.[0] ?? _value;
-  }
-
-  get targetValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values?.[1] ?? _value;
-  }
-
   /**
    * Assign node value either based on _fixedValue property or as a max of
    * sum of all source links and sum of target links.
@@ -300,7 +340,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -320,21 +360,21 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   };
 
+  x: number;
+
   /**
    * Calculate into which layer node has to be placed and assign x coordinates of this layer
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
   computeNodeLayers({nodes}: SankeyData): SankeyNode[][] {
-    const {x1, x0, dx, align} = this;
+    const {dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
-    const kx = (x1 - x0 - dx) / (x - 1);
+    this.x = x;
     const columns = new Array(x);
     for (const node of nodes) {
       const i = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
       node._layer = i;
-      node._x0 = x0 + i * kx;
-      node._x1 = node._x0 + dx;
       if (columns[i]) {
         columns[i].push(node);
       } else {
@@ -353,7 +393,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * Calculate Y scaling factor and initialise nodes height&position.
    */
   initializeNodeBreadths(columns: SankeyNode[][]) {
-    const {y1, y0, py, value} = this;
+    const {vertical: {y1, y0}, py, value} = this;
 
     const ky = min(columns, c => (y1 - y0 - (c.length - 1) * py) / sum(c, value));
     for (const nodes of columns) {
@@ -380,7 +420,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * Initialise node position both on column and Y, then try rearranging them to untangle network.
    */
   computeNodeBreadths(graph) {
-    const {dy, y1, y0, iterations} = this;
+    const {dy, vertical: {y1, y0}, iterations} = this;
     const columns = this.computeNodeLayers(graph);
     this.py = Math.min(dy, (y1 - y0) / (max(columns, c => c.length) - 1));
     this.initializeNodeBreadths(columns);
@@ -459,7 +499,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    */
   resolveCollisions(nodes: Array<SankeyNode>, alpha) {
     const {
-      py, y1, y0
+      py, vertical: {y1, y0}
     } = this;
     // tslint:disable-next-line:no-bitwise
     const i = nodes.length >> 1;
@@ -570,34 +610,12 @@ export class SankeyLayoutService extends AttributeAccessors {
     return y;
   }
 
-  rescaleNodePosition(graph, innerWidthChangeRatio) {
-    const {dx, x0} = this;
+  positionNodesHorizontaly(graph) {
+    const {x , horizontal: {x1, x0}, dx} = this;
+    const kx = (x1 - x0 - dx) / (x - 1);
     for (const node of graph.nodes) {
-      node._x0 = (node._x0 - x0) * innerWidthChangeRatio + x0;
+      node._x0 = x0 + node._layer * kx;
       node._x1 = node._x0 + dx;
     }
-  }
-
-  calcLayout(graph) {
-    // Process the graph's nodes and links, setting their positions
-
-    // Associate the nodes with their respective links, and vice versa
-    this.computeNodeLinks(graph);
-    // Determine which links result in a circular path in the graph
-    // this.identifyCircles(graph);
-    // Calculate the nodes' values, based on the values of the incoming and outgoing links
-    this.computeNodeValues(graph);
-    // Calculate the nodes' depth based on the incoming and outgoing links
-    //     Sets the nodes':
-    //     - depth:  the depth in the graph
-    this.computeNodeDepths(graph);
-    this.computeNodeReversedDepths(graph);
-    // Calculate the nodes' and links' vertical position within their respective column
-    //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-    //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-    //     - x0, x1: the x coordinates, as is relates to visual position from left to right
-    this.computeNodeBreadths(graph);
-    SankeyLayoutService.computeLinkBreadths(graph);
-    return graph;
   }
 }

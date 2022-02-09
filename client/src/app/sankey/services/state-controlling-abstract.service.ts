@@ -102,7 +102,7 @@ export class StateControlAbstractService<Options extends object, State extends o
   patchState(
     statePatch: Partial<State>,
     reducer: (stateDelta: Partial<State>, patch: Partial<State>) => Partial<State> = partial(merge, {})
-  ) {
+  ): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
       switchMap(currentStateDelta => {
@@ -118,9 +118,7 @@ export class StateControlAbstractService<Options extends object, State extends o
           ),
         );
       }),
-      tap(stateDelta => {
-        this.delta$.next(stateDelta);
-      })
+      tap(stateDelta => this.delta$.next(stateDelta))
     );
   }
 }

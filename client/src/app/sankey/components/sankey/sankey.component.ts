@@ -18,8 +18,7 @@ import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { compact } from 'lodash-es';
-import { ReplaySubject, iif, of } from 'rxjs';
-import { switchMap, tap, catchError } from 'rxjs/operators';
+import { ReplaySubject } from 'rxjs';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -61,29 +60,27 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
 
-    this._data.pipe(
-      switchMap(data =>
-        iif(
-          () => (data as any)._precomputedLayout,
-          of(data),
-          this.sankey.layout$
-        )
-      ),
-      tap(data => this.updateDOM(data)),
-      catchError(err => {
-        console.log(err);
-        return of(null);
-      })
-    ).subscribe(data => {
+    this.sankey.layout$.subscribe(data => {
       console.log('updateDOM', data);
+      this.updateDOM(data);
     });
+    // this._data.pipe(
+    //   switchMap(data =>
+    //     iif(
+    //       () => (data as any)._precomputedLayout,
+    //       of(data),
+    //       this.sankey.layout$
+    //     )
+    //   ),
+    //   tap(data => this.updateDOM(data)),
+    //   catchError(err => {
+    //     console.log(err);
+    //     return of(null);
+    //   })
+    // ).subscribe(data => {
+    //   console.log('updateDOM', data);
+    // });
   }
-
-  @Input() set data(data) {
-    console.log(data);
-    this._data.next({...data} as SankeyData);
-  }
-
   // endregion
 
   // region D3Selection
@@ -111,7 +108,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   get updateNodeText() {
     // noinspection JSUnusedLocalSymbols
-    const [width, _height] = this.sankey.size;
+    const {width} = this.sankey.horizontal;
     const {fontSize} = this.sankey;
     return texts => texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
@@ -321,17 +318,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         // .translateExtent([[0, 0], [width, height]])
       );
 
-    const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
-    this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
-    const [innerWidth, innerHeight] = this.sankey.size;
-
-    const {data} = this;
-    if (data) {
-      const parsedData = innerHeight / prevInnerHeight === 1 ?
-        this.scaleLayout(data, innerWidth / prevInnerWidth) :
-        this.updateLayout(data);
-      return parsedData.then(d => this.updateDOM(d));
-    }
+    this.sankey.setExtent({
+      x0: margin.left,
+      x1: extentX,
+      y0: margin.top,
+      y1: extentY
+    });
   }
 
   // endregion
@@ -778,35 +770,35 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     }
   }
 
-  /**
-   * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
-   * and adjustments from outer scope
-   * @param data graph declaration
-   */
-  updateLayout(data) {
-    return new Promise(resolve => {
-        if (!data._precomputedLayout) {
-          this.sankey.calcLayout(data);
-        }
-        resolve(data);
-      }
-    );
-  }
+  // /**
+  //  * Calculates layout including pre-adjustments, d3-sankey calc, post adjustments
+  //  * and adjustments from outer scope
+  //  * @param data graph declaration
+  //  */
+  // updateLayout(data) {
+  //   return new Promise(resolve => {
+  //       if (!data._precomputedLayout) {
+  //         this.sankey.calcLayout(data);
+  //       }
+  //       resolve(data);
+  //     }
+  //   );
+  // }
 
-  scaleLayout(data, changeRatio) {
-    return new Promise(resolve => {
-        this.sankey.rescaleNodePosition(data, changeRatio);
-        resolve(data);
-      }
-    );
-  }
+  // scaleLayout(data, changeRatio) {
+  //   return new Promise(resolve => {
+  //       this.sankey.rescaleNodePosition(data, changeRatio);
+  //       resolve(data);
+  //     }
+  //   );
+  // }
 
   // region Render
 
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0);
+    .attr('width', ({_x1, _x0}) => _x1 - _x0)
 
   /**
    * Run d3 lifecycle code to update DOM

@@ -1,30 +1,22 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-import { Observable, combineLatest, of, iif } from 'rxjs';
-import { map, tap, shareReplay, filter, switchMap, first } from 'rxjs/operators';
-import { merge, omit, isNil, omitBy, has, transform, pick, assign } from 'lodash-es';
+import { combineLatest, ReplaySubject, Observable } from 'rxjs';
+import { map, tap, switchMap, filter } from 'rxjs/operators';
+import { omit, transform, pick, assign } from 'lodash-es';
 
 import {
-  ValueGenerator,
-  NODE_VALUE_GENERATOR,
-  LINK_VALUE_GENERATOR,
-  LINK_PROPERTY_GENERATORS,
-  SankeyData,
   SankeyView,
   SankeyNode,
   SankeyLink,
   SankeyNodesOverwrites,
-  SankeyLinksOverwrites
+  SankeyLinksOverwrites,
+  ViewBase,
+  SankeyURLLoadParams
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { ControllerService } from 'app/sankey/services/controller.service';
 
-import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
-import * as linkValues from '../algorithms/linkValues';
-import * as nodeValues from '../algorithms/nodeValues';
-import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
-import { patchReducer, customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 import { LayoutService } from './layout.service';
+import { ControllerService } from './controller.service';
 import { BaseControllerService } from './base-controller.service';
 
 /**
@@ -36,13 +28,29 @@ import { BaseControllerService } from './base-controller.service';
 @Injectable()
 export class ViewControllerService {
   constructor(
-    readonly layout: LayoutService
+    private common: ControllerService,
+    readonly warningController: WarningControllerService
   ) {
-    this.baseView = layout.baseView;
-    this.common = this.baseView.common;
   }
-  baseView: BaseControllerService;
-  common: ControllerService;
+
+  activeViewBase$ = this.common.state$.pipe(
+    map(({baseViewName}) => baseViewName)
+  );
+
+  activeViewName$ = this.common.state$.pipe(
+    map(({viewName}) => viewName)
+  );
+
+  activeView$ = this.common.views$.pipe(
+    switchMap(views => this.common.state$.pipe(
+      map(({viewName}) => views[viewName])
+    ))
+  );
+
+  views$ = this.common.views$;
+
+  layout$ = new ReplaySubject<LayoutService>(1);
+  baseView$ = new ReplaySubject<BaseControllerService>(1);
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',
@@ -69,24 +77,84 @@ export class ViewControllerService {
   ];
   readonly statusOmitProperties = ['viewName', 'baseViewName'];
 
+  dataToRender$ = this.layout$.pipe(
+    switchMap(layout => layout.dataToRender$)
+  );
+
+  applyPropertyObject(
+    propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
+    entities: Array<SankeyNode | SankeyLink>
+  ): void {
+    // for faster lookup
+    const entityById = new Map(entities.map((d, i) => [String(d._id), d]));
+    Object.entries(propertyObject).map(([id, properties]) => {
+      const entity = entityById.get(id);
+      if (entity) {
+        Object.assign(entity, properties);
+      } else {
+        this.warningController.warn(`No entity found for id ${id}`);
+      }
+    });
+  }
+
+  selectView(viewName) {
+    return this.views$.pipe(
+      map(views => views[viewName]),
+      filter(view => !!view),
+      switchMap(view =>
+        this.common.patchState({
+          viewName,
+          ...view.state
+        }).pipe(
+          switchMap(stateDelta => this.common.partialNetworkTraceData$.pipe(
+            map((networkTraceData: { links: SankeyLink[], nodes: SankeyNode[] }) => {
+              (networkTraceData as any)._precomputedLayout = true;
+              this.applyPropertyObject(view.nodes, networkTraceData.nodes);
+              this.applyPropertyObject(view.links, networkTraceData.links);
+              // @ts-ignore
+              // todo
+              // const layout = new LayoutService(this);
+              // layout.computeNodeLinks(networkTraceData);
+              return networkTraceData;
+            })
+          ))
+        )
+      )
+    ).toPromise();
+  }
+
+  registerLayout(layout: LayoutService) {
+    this.layout$.next(layout);
+  }
+
   mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
     return transform(entities, (result, entity) => {
       result[entity._id] = pick(entity, properties);
     }, {});
   }
 
+  openBaseView(baseViewName: ViewBase): Observable<any> {
+    return this.common.patchState({
+      baseViewName
+    });
+  }
+
   createView(viewName) {
     return combineLatest([
       this.common.delta$,
-      this.baseView.delta$
+      this.baseView$.pipe(switchMap(baseView => baseView.delta$))
     ]).pipe(
       map(states => assign({}, ...states)),
-      tap(d => console.log('delta', d)),
-      switchMap(stateDelta => this.layout.dataToRender$.pipe(
-        tap(data => console.log('data', data)),
+      map(stateDelta => omit(stateDelta, this.statusOmitProperties)),
+      switchMap(state => this.activeViewBase$.pipe(
+        map(baseViewName => ({
+          state,
+          base: baseViewName
+        })),
+      )),
+      switchMap(partialView => this.dataToRender$.pipe(
         map(({nodes, links}) => ({
-          state: omit(stateDelta, this.statusOmitProperties),
-          base: stateDelta.baseViewName,
+          ...partialView,
           nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
           links: this.mapToPropertyObject(links, this.linkViewProperties)
         } as SankeyView))
@@ -96,7 +164,7 @@ export class ViewControllerService {
         tap(({_views}) => this.common.viewsUpdate$.next(_views))
       )),
       tap(() => this.common.patchState({viewName}))
-    ).toPromise();
+    );
   }
 
   deleteView(viewName) {

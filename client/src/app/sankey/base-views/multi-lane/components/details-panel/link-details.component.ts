@@ -4,7 +4,7 @@ import { SankeyLink } from 'app/sankey/interfaces';
 import { SankeyAbstractDetailsComponent } from 'app/sankey/abstract/details-panel.component';
 
 @Component({
-  selector: 'app-sankey-link-details',
+  selector: 'app-sankey-multi-lane-link-details',
   templateUrl: './link-details.component.html'
 })
 export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractDetailsComponent {

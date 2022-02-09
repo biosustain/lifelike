@@ -16,7 +16,7 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
-import { SANKEY_ADVANCED } from 'app/sankey/DI';
+import { SANKEY_ADVANCED, SANKEY_DETAILS } from 'app/sankey/DI';
 
 import { MultiLaneBaseAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { MultiLaneBaseControllerService } from './services/multi-lane-base-controller.service';
@@ -26,6 +26,8 @@ import { BaseControllerService } from '../../services/base-controller.service';
 import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
 import { SankeyMultiLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
 import { LayoutService } from '../../services/layout.service';
+import { SankeyMultiLaneDetailsPanelModule } from './components/details-panel/sankey-multi-lane-details-panel.module';
+import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
 
 @NgModule({
   id: ViewBase.sankeyMultiLane,
@@ -44,12 +46,9 @@ import { LayoutService } from '../../services/layout.service';
       provide: LayoutService,
       useExisting: MultiLaneLayoutService
     },
-    {
-      provide: SankeyLinkDetailsComponent,
-      useExisting: SankeyMultiLaneLinkDetailsComponent
-    },
     // Core components substitution
-    {provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent}
+    {provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent},
+    {provide: SANKEY_DETAILS, useValue: SankeyMutiLaneDetailsPanelComponent}
   ],
   imports: [
     CommonModule,
@@ -66,7 +65,8 @@ import { LayoutService } from '../../services/layout.service';
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
-    RouterModule.forChild([])
+    RouterModule.forChild([]),
+    SankeyMultiLaneDetailsPanelModule
   ],
   declarations: [
     MultiLaneBaseAdvancedPanelComponent
