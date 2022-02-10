@@ -265,9 +265,9 @@ export class AuthEffects {
 
   oauthLogin$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.oauthLogin),
-    exhaustMap(({subject}) => {
-      return this.accountService.getUserBySubject(subject).pipe(
-        map(user => AuthActions.oauthLoginSuccess({user})),
+    exhaustMap(({oauthLoginData}) => {
+      return this.accountService.getUserBySubject(oauthLoginData.subject).pipe(
+        map(user => AuthActions.oauthLoginSuccess({***ARANGO_DB_NAME***User: user, oauthUser: oauthLoginData})),
         catchError((err: HttpErrorResponse) => {
           // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the home
           // page. Also, see the below Github issue:

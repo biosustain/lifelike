@@ -89,8 +89,15 @@ export class LifelikeOAuthService {
 
       .then(() => {
         if (this.oauthService.hasValidAccessToken()) {
-          const subject = JSON.parse(JSON.stringify(this.identityClaims)).sub;
-          this.store$.dispatch(AuthActions.oauthLogin({subject}));
+          const payload = JSON.parse(JSON.stringify(this.identityClaims));
+          this.store$.dispatch(AuthActions.oauthLogin({
+            oauthLoginData: {
+              subject: payload.sub,
+              firstName: payload.first_name,
+              lastName: payload.last_name,
+              username: payload.username
+            }
+          }));
           return Promise.resolve();
         }
 

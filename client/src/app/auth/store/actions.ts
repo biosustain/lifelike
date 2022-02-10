@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { AppUser, PrivateAppUser, Credential, UserUpdateData } from 'app/interfaces';
+import { AppUser, PrivateAppUser, Credential, UserUpdateData, OAuthLoginData } from 'app/interfaces';
 import { LOGOUT_SUCCESS } from 'app/shared/constants';
 import { KeycloakUserData } from 'app/users/interfaces';
 
@@ -35,12 +35,12 @@ export const loginSuccess = createAction(
 
 export const oauthLogin = createAction(
   '[Auth] OAuth Login',
-  props<{subject: string}>(),
+  props<{oauthLoginData: OAuthLoginData}>(),
 );
 
 export const oauthLoginSuccess = createAction(
   '[Auth] OAuth Login Success',
-  props<{user: PrivateAppUser}>(),
+  props<{***ARANGO_DB_NAME***User: PrivateAppUser, oauthUser: OAuthLoginData}>(),
 );
 
 export const loginFailure = createAction(

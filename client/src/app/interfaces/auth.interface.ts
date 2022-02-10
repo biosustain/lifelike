@@ -61,3 +61,11 @@ export interface LifelikeJWTTokenResponse {
     refreshToken: JWTToken;
     user: PrivateAppUser;
 }
+
+export interface OAuthLoginData {
+  subject: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  // TODO email: string;
+}

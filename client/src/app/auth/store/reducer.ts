@@ -17,10 +17,17 @@ const authReducer = createReducer(
     ),
     on(
       AuthActions.oauthLoginSuccess,
-      (state, { user }) => ({
+      (state, { ***ARANGO_DB_NAME***User, oauthUser }) => ({
           ...state,
           loggedIn: true,
-          user,
+          user: {
+            // Note: Order is important here!
+            ...state.user,
+            ...***ARANGO_DB_NAME***User,
+            firstName: oauthUser.firstName,
+            lastName: oauthUser.lastName,
+            username: oauthUser.username
+          },
       })
   ),
     on(
