@@ -4,7 +4,13 @@ import { Observable, combineLatest, of, iif } from 'rxjs';
 import { map, tap, shareReplay, switchMap, first } from 'rxjs/operators';
 import { merge, isNil, omitBy, has } from 'lodash-es';
 
-import { ValueGenerator, NODE_VALUE_GENERATOR, LINK_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS, SankeyData } from 'app/sankey/interfaces';
+import {
+  ValueGenerator,
+  NODE_VALUE_GENERATOR,
+  LINK_VALUE_GENERATOR,
+  LINK_PROPERTY_GENERATORS,
+  NetworkTraceData
+} from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
@@ -12,7 +18,7 @@ import { StateControlAbstractService, unifiedSingularAccessor } from './state-co
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
-import { patchReducer, customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
+import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -31,7 +37,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
     super();
   }
 
-  networkTraceData$: Observable<any>;
+  networkTraceData$: Observable<NetworkTraceData>;
   viewBase;
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;

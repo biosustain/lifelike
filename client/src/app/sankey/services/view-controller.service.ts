@@ -65,7 +65,7 @@ export class ViewControllerService {
     '_adjacent_divider',
     '_id'
   ];
-  readonly statusOmitProperties = ['viewName', 'baseViewName'];
+  readonly statusOmitProperties = ['viewName', 'baseViewName', 'baseViewInitialState'];
 
   dataToRender$ = this.layout$.pipe(
     switchMap(layout => layout.dataToRender$)
@@ -80,6 +80,7 @@ export class ViewControllerService {
       tap(view =>
         this.common.delta$.next({
           viewName,
+          baseViewName: view.base,
           ...getCommonState(view.state)
         })
       ),

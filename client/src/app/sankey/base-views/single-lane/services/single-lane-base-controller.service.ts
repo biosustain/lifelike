@@ -74,7 +74,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Sanke
     colorLinkTypes: EdgeColorCodes
   }));
 
-  delta$ = new BehaviorSubject({});
+  // delta$ = new BehaviorSubject({});
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, sources, targets, traces}) => this.state$.pipe(

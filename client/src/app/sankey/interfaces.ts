@@ -112,6 +112,8 @@ export interface SankeyState {
   fontSizeScale?: number;
   viewName?: string;
   baseViewName?: ViewBase;
+  // initial state for base view
+  baseViewInitState?: object;
 }
 
 // endregion
@@ -188,7 +190,7 @@ export interface SankeyNodesOverwrites {
 
 export interface SankeyView {
   state: object & SankeyState;
-  base: string;
+  base: ViewBase;
   nodes: SankeyNodesOverwrites;
   links: SankeyLinksOverwrites;
 }
@@ -261,4 +263,9 @@ export interface SankeyPathReport {
 export enum ViewBase {
   sankeyMultiLane = 'sankey',
   sankeySingleLane = 'sankey-many-to-many'
+}
+
+export interface NetworkTraceData {
+  nodes: Array<SankeyNode>;
+  links: Array<SankeyLink>;
 }

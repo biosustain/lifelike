@@ -59,7 +59,7 @@ import { max, min, sum } from 'd3-array';
 import { ReplaySubject, Subject, BehaviorSubject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
 import { AttributeAccessors } from './attribute-accessors';
 import { justify } from './aligin';
@@ -97,6 +97,11 @@ class Vertical {
   get height() {
     return this.y1 - this.y0;
   }
+}
+
+interface LayoutData {
+  nodes: SankeyNode[];
+  links: SankeyLink[];
 }
 
 @Injectable()
@@ -140,6 +145,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   baseRadius = 10;
   scale = 0.3;
 
+  x: number;
+
   static ascendingSourceBreadth(a, b) {
     return SankeyLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
   }
@@ -152,7 +159,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     return a._y0 - b._y0;
   }
 
-  static computeLinkBreadths({nodes}: SankeyData) {
+  static computeLinkBreadths({nodes}: LayoutData) {
     for (const node of nodes) {
       let y0 = node._y0;
       let y1 = y0;
@@ -242,7 +249,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * this function resets these lists and repopulates them
    * based on list of links.
    */
-  computeNodeLinks({nodes, links}: SankeyData) {
+  computeNodeLinks({nodes, links}: LayoutData) {
     for (const [i, node] of nodes.entries()) {
       node._index = i;
       node._sourceLinks = [];
@@ -256,7 +263,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * This function simply preformats data cals `elementary-circuits-directed-graph`
    * library and add results to our graph object.
    */
-  identifyCircles(graph: SankeyData) {
+  identifyCircles(graph: LayoutData) {
     let circularLinkID = 0;
 
     // Building adjacency graph
@@ -310,7 +317,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * Assign node value either based on _fixedValue property or as a max of
    * sum of all source links and sum of target links.
    */
-  computeNodeValues({nodes}: SankeyData) {
+  computeNodeValues({nodes}: LayoutData) {
     const {sourceValue, targetValue} = this;
     for (const node of nodes) {
       node._value = node._fixedValue ?? Math.max(sum(node._sourceLinks, sourceValue), sum(node._targetLinks, targetValue));
@@ -322,13 +329,13 @@ export class SankeyLayoutService extends AttributeAccessors {
    * Sets the nodes':
    * - depth:  the depth in the graph
    */
-  computeNodeDepths({nodes}: SankeyData) {
+  computeNodeDepths({nodes}: LayoutData) {
     for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_target', '_sourceLinks')) {
       node._depth = x;
     }
   }
 
-  computeNodeReversedDepths({nodes}: SankeyData) {
+  computeNodeReversedDepths({nodes}: LayoutData) {
     for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_source', '_targetLinks')) {
       node._reversedDepth = x;
     }
@@ -340,7 +347,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -360,14 +367,12 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   };
 
-  x: number;
-
   /**
    * Calculate into which layer node has to be placed and assign x coordinates of this layer
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
-  computeNodeLayers({nodes}: SankeyData): SankeyNode[][] {
+  computeNodeLayers({nodes}: LayoutData): SankeyNode[][] {
     const {dx, align} = this;
     const x = max(nodes, d => d._depth) + 1;
     this.x = x;
