@@ -8,7 +8,6 @@ import {
   Injector,
   AfterViewInit,
   ChangeDetectorRef,
-  SimpleChange,
   getModuleFactory
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, pairwise, startWith } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact, assign, mapValues, get } from 'lodash-es';
+import { isNil, pick, compact, assign, mapValues, get, transform } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -101,7 +100,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         this.currentFileId = object.hashId;
         return this.sankeyController.loadData(content as SankeyData);
       })
-    ).subscribe(() => {});
+    ).subscribe(() => {
+    });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -120,7 +120,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         )
       ),
       tap(stateDelta => this.sankeyController.delta$.next(stateDelta))
-    ).subscribe(state => {});
+    ).subscribe(state => {
+    });
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
       this.object = null;
@@ -302,9 +303,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     /**
      * Load different base view components upom base view change
      */
-    this.sankeyController.baseViewName$.subscribe(baseView => {
-      const module = baseView === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
-      const moduleFactory = getModuleFactory(baseView);
+    this.sankeyController.baseView$.subscribe(({baseViewName, baseViewInitState = {}}) => {
+      const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
+      const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
       const injectComponent = (container, token) => {
         const comp = moduleRef.injector.get(token);
@@ -324,6 +325,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.layout$.next(layoutController);
       this.viewController.baseView$.next(baseViewController);
       this.viewController.layout$.next(layoutController);
+      baseViewController.delta$.next(baseViewInitState);
     });
   }
 

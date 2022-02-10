@@ -1,6 +1,7 @@
 import { Component, Input, } from '@angular/core';
 
 import { SankeyNode } from 'app/sankey/interfaces';
+
 import { SankeyAbstractDetailsComponent } from '../../abstract/details-panel.component';
 
 @Component({

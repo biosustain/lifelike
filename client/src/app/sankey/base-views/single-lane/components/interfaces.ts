@@ -1,4 +1,5 @@
 import { SankeyLink, SankeyNode, SankeyData, SankeyTrace, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
+
 import { SankeyBaseState, SankeyBaseOptions } from '../../interfaces';
 
 export interface SankeySingleLaneStateExtend {

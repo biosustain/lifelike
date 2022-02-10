@@ -55,7 +55,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Sankey
     }))
   );
 
-  delta$ = new BehaviorSubject({});
+  // delta$ = new BehaviorSubject({});
 
   linkValueAccessors = {
     ...this.linkValueAccessors,

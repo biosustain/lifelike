@@ -6,7 +6,7 @@ import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
 import { combineLatest, Observable, iif, of } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyData, SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyLink } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from './directed-traversal';
@@ -131,22 +131,23 @@ export class LayoutService extends SankeyLayoutService {
 
   nodeHeight;
 
-  dataToRender$: Observable<SankeyData> = this.baseView.networkTraceData$.pipe(
+  dataToRender$: Observable<NetworkTraceData> = this.baseView.networkTraceData$.pipe(
     switchMap(networkTraceData => this.baseView.common.view$.pipe(
         switchMap(view =>
           iif(
             () => isNil(view),
             this.linkGraph(networkTraceData).pipe(
-              switchMap(data => this.calculateLayout(data))
+              switchMap(data => this.calculateLayout(data)),
+              tap(data => console.log('data', data)),
             ),
-            of(networkTraceData as SankeyData).pipe(
-              tap(data => {
+            of(networkTraceData).pipe(
+              tap((data: NetworkTraceData) => {
                 this.applyPropertyObject(view.nodes, data.nodes);
                 this.applyPropertyObject(view.links, data.links);
                 this.computeNodeLinks(data);
               }),
-              this.populateSnapshot('vertical'),
-              this.populateSnapshot('horizontal'),
+              this.populateVerticalSnapshot(),
+              this.populateHorizontalSnapshot(),
               switchMap(graph =>
                 unifiedAccessor(this.baseView.common.state$, [
                   'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
@@ -154,18 +155,20 @@ export class LayoutService extends SankeyLayoutService {
                   tap(state => this.state = state),
                   map(() => graph)
                 )),
-              shareReplay(1)
+              shareReplay(1),
+              tap(data => console.log('data', data)),
             ),
           ))
       )
     ),
+    tap(data => console.log('data', data)),
     shareReplay(1)
   );
 
   /**
    * Calculate layout and address possible circular links
    */
-  calculateLayout(networkTraceData: SankeyData): Observable<SankeyData> {
+  calculateLayout(networkTraceData: NetworkTraceData): Observable<NetworkTraceData> {
     return of(networkTraceData).pipe(
       // Associate the nodes with their respective links, and vice versa
       tap(graph => this.computeNodeLinks(graph)),
@@ -186,7 +189,7 @@ export class LayoutService extends SankeyLayoutService {
         tap(nodeHeight => this.nodeHeight = nodeHeight),
         map(() => graph)
       )),
-      this.populateSnapshot('vertical'),
+      this.populateVerticalSnapshot(),
       tap(graph => this.setLayoutParams(graph)),
       tap(graph => this.computeNodeHeights(graph)),
       // Calculate the nodes' and links' vertical position within their respective column
@@ -194,7 +197,7 @@ export class LayoutService extends SankeyLayoutService {
       tap(graph => this.computeNodeBreadths(graph)),
       tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
       tap(graph => this.cleanVirtualNodes(graph)),
-      this.populateSnapshot('horizontal'),
+      this.populateHorizontalSnapshot(),
       tap(graph => this.positionNodesHorizontaly(graph)),
       switchMap(graph =>
         unifiedAccessor(this.baseView.common.state$, [
@@ -204,7 +207,7 @@ export class LayoutService extends SankeyLayoutService {
           map(() => graph)
         )),
       shareReplay(1)
-    ) as Observable<SankeyData>;
+    ) as Observable<NetworkTraceData>;
   }
 
   applyPropertyObject(
@@ -223,14 +226,21 @@ export class LayoutService extends SankeyLayoutService {
     });
   }
 
-  populateSnapshot(key) {
-    return switchMap(graph => this[`${key}$`].pipe(
-      tap(snapshot => this[key] = snapshot),
+  populateVerticalSnapshot<T>() {
+    return switchMap((graph: T) => this.vertical$.pipe(
+      tap(snapshot => this.vertical = snapshot),
       map(() => graph)
     ));
   }
 
-  linkGraph(data: SankeyData): Observable<SankeyData> {
+  populateHorizontalSnapshot<T>() {
+    return switchMap((graph: T) => this.horizontal$.pipe(
+      tap(snapshot => this.horizontal = snapshot),
+      map(() => graph)
+    ));
+  }
+
+  linkGraph(data: NetworkTraceData): Observable<NetworkTraceData> {
     return combineLatest([
       this.baseView.nodeValueAccessor$,
       this.baseView.linkValueAccessor$,
@@ -435,7 +445,7 @@ export class LayoutService extends SankeyLayoutService {
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -443,7 +453,7 @@ export class LayoutService extends SankeyLayoutService {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -469,7 +479,7 @@ export class LayoutService extends SankeyLayoutService {
   /**
    * Same as parent method just ignoring circular links
    */
-  computeNodeHeights({nodes}: SankeyData) {
+  computeNodeHeights({nodes}: NetworkTraceData) {
     const {
       ky, nodeHeight, value
     } = this;
