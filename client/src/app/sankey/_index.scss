@@ -25,9 +25,9 @@ $input-spacing: map-get($spacers, 2);
     }
 
     > *, .form-group {
-      width: 100%;
       display: flex;
       flex-wrap: wrap;
+      width: 100%;
 
       &:before {
         width: 100%;

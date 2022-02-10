@@ -19,14 +19,12 @@ import { ViewBase } from 'app/sankey/interfaces';
 import { SANKEY_ADVANCED, SANKEY_GRAPH } from 'app/sankey/DI';
 
 import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
 import { SingleLaneLayoutService } from './services/single-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SingleLaneBaseControllerService } from './services/single-lane-base-controller.service';
 import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
 import { SingleLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
 import { LayoutService } from '../../services/layout.service';
-import { SankeyComponent } from '../../components/sankey/sankey.component';
 import { SankeySingleLaneComponent } from './components/sankey/sankey.component';
 
 @NgModule({

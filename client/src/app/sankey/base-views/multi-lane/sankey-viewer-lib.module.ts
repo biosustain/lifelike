@@ -23,8 +23,6 @@ import { MultiLaneBaseControllerService } from './services/multi-lane-base-contr
 import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
 import { MultiLaneLayoutService } from './services/multi-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
-import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
-import { SankeyMultiLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
 import { LayoutService } from '../../services/layout.service';
 import { SankeyMultiLaneDetailsPanelModule } from './components/details-panel/sankey-multi-lane-details-panel.module';
 import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';

@@ -1,3 +1,4 @@
+from typing import List
 import click
 import copy
 import hashlib
@@ -7,9 +8,11 @@ import json
 import logging
 import math
 import os
+import re
 import sentry_sdk
 import uuid
 import requests
+import zipfile
 
 from flask import g, request
 
@@ -23,6 +26,7 @@ from sqlalchemy.exc import IntegrityError
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
+    FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
     LogEventType
 )
@@ -30,7 +34,10 @@ from neo4japp.database import db, get_account_service, get_elastic_service, get_
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
-from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent, Files
+from neo4japp.models.files import FileContent, Files
+from neo4japp.schemas.formats.drawing_tool import validate_map
+from neo4japp.services.annotations.initializer import get_lmdb_service
+from neo4japp.services.annotations.constants import EntityType
 from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
@@ -231,6 +238,27 @@ def upload_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.upload_all(lmdb_dir_path)
+
+
+@app.cli.command('create-lmdb')
+@click.option('--file-type', type=str)
+def create_lmdb_files(file_type):
+    valid_values = set([
+        EntityType.ANATOMY.value,
+        EntityType.CHEMICAL.value,
+        EntityType.COMPOUND.value,
+        EntityType.DISEASE.value,
+        EntityType.FOOD.value,
+        EntityType.GENE.value,
+        EntityType.PHENOMENA.value,
+        EntityType.PHENOTYPE.value,
+        EntityType.PROTEIN.value,
+        EntityType.SPECIES.value
+    ])
+    if file_type is not None and file_type not in valid_values:
+        raise ValueError(f'Only these valid values are accepted: {valid_values}')
+    service = get_lmdb_service()
+    service.create_lmdb_files(file_type)
 
 
 Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organism_id'])
@@ -786,3 +814,180 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
             parent_id,
             json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8')
         )
+
+
+@app.cli.command('find-broken-map-links')
+def find_broken_map_links():
+    print('Starting find_broken_map_links')
+    all_maps = db.session.query(
+        Files.id,
+        FileContent.raw_file,
+    ).join(
+        Files,
+        and_(
+            Files.content_id == FileContent.id,
+            Files.mime_type == FILE_MIME_TYPE_MAP
+        )
+    ).yield_per(100)
+
+    print('Got all_maps results...')
+
+    new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
+    hash_id_to_file_list_pairs = dict()
+
+    def add_links(potential_links: List[str], files_id: int):
+        for link in potential_links:
+            link_search = re.search(new_link_re, link)
+            if link_search is not None:
+                hash_id = link_search.group(1)
+                if hash_id in hash_id_to_file_list_pairs:
+                    if files_id in hash_id_to_file_list_pairs[hash_id]:
+                        hash_id_to_file_list_pairs[hash_id][files_id].append(link)
+                    else:
+                        hash_id_to_file_list_pairs[hash_id][files_id] = [link]
+                else:
+                    hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
+
+    for files_id, raw_file in all_maps:
+        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        map_json = json.loads(zip_file.read('graph.json'))
+
+        for node in map_json['nodes']:
+            potential_links = [source['url'] for source in node['data'].get('sources', [])]
+            add_links(potential_links, files_id)
+
+        for edge in map_json['edges']:
+            if 'data' in edge:
+                potential_links = [source['url'] for source in edge['data'].get('sources', [])]
+                add_links(potential_links, files_id)
+
+    print('Added potential links...')
+
+    files_that_exist = db.session.query(
+        Files.hash_id,
+    ).filter(
+        Files.hash_id.in_([hash_id for hash_id in hash_id_to_file_list_pairs.keys()])
+    ).yield_per(100)
+
+    print('Got files_that_exist results...')
+
+    for hash_id, in files_that_exist:
+        hash_id_to_file_list_pairs.pop(hash_id)
+
+    print('Removed files that exist from hash_id_to_file_list_pairs...')
+
+    with open('hash_id_list.txt', 'w') as hash_id_list_outfile:
+        for hash_id in hash_id_to_file_list_pairs.keys():
+            hash_id_list_outfile.write(f'{hash_id}\n')
+
+    with open('file_ids.csv', 'w') as file_id_outfile:
+        file_id_outfile.write('link\thash_id\tfile_id')
+        for hash_id, file_to_links_map in hash_id_to_file_list_pairs.items():
+            for file_id, link_list in file_to_links_map.items():
+                for link in link_list:
+                    file_id_outfile.write(f'{link}\t{hash_id}\t{file_id}\n')
+
+    print('Done.')
+
+
+@app.cli.command('fix-broken-map-links')
+def fix_broken_map_links():
+    # NOTE: These collections will need to be changed if this issue ever happens again!
+
+    HASH_CONVERSION_MAP = {
+        'de68d1e1-3994-4c7a-af7a-3789716e79ff': '6a843f71-b695-47ac-a6f9-9b8472952949',
+        '3fff7f88-75ee-441a-819b-ba2366a1ac62': '986bf4e8-8a20-4626-b48b-b0be2b6b2e06',
+        '38c5cfca-fb32-4d57-8496-2d24ac708be7': 'b77a485a-1fd6-4c07-a971-981adea6ad49',
+        'fd606a22-22f6-48e4-ba64-f281b341f546': 'd0f409a8-2a2c-408e-9909-f9e5a68b795c',
+        '4ab69dea-0d8a-4dd2-b53d-aad4fb1bb535': '91b6203a-b6b2-4cfd-8979-d3960a12ead8',
+        'a09f3468-9e34-45b1-a2dc-f8ce827461f6': 'd3151e07-4c9c-4938-81a9-88affd12eed9',
+        'fd610276-17df-4e0e-9781-5bff764054f6': '480a8477-aab1-48ca-84f7-149d77707ac8',
+        '6d34ad38-487d-4fca-b8a0-9e1ecefb226c': '94f2f4bc-25d3-477a-a6d0-daa00422da21',
+        '4fcf4be9-2d23-40ce-ae94-7d183a31fc98': '09123f7e-04d3-451f-833b-551c32e21494',
+        '5ed1e56c-2c90-4135-a0ad-5c4c2c4474ea': '5b504203-8dda-4e1b-a678-6e4086cc57f5',
+        '365afbea-26f6-46cc-9c66-b5abeb2a9d7a': '4b2a7d5d-34e3-4028-afa5-b4ee3a492ec9',
+        'cb380810-8c11-47d4-9092-4f91870c2f5e': '92367577-ec4c-43cd-9d19-94bf6f0592ec',
+        'a6c9ba6b-4e5b-4747-9646-960e8482612c': '0a526733-3f74-44c9-9b0f-3df989459a50',
+    }
+    FILE_IDS = [
+        1117,
+        1222,
+        1350,
+        1367,
+        2010,
+        1128,
+        1228,
+        2007,
+        1353,
+        1366,
+        1634,
+        1555
+    ]
+
+    raw_maps_to_fix = db.session.query(
+        FileContent.id,
+        FileContent.raw_file,
+    ).join(
+        Files,
+        and_(
+            Files.id.in_(FILE_IDS),
+            Files.mime_type == FILE_MIME_TYPE_MAP,
+            Files.content_id == FileContent.id,
+        )
+    ).yield_per(100)
+
+    new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
+    need_to_update = []
+    for fcid, raw_file in raw_maps_to_fix:
+        print(f'Replacing links in file #{fcid}')
+        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        map_json = json.loads(zip_file.read('graph.json'))
+
+        for node in map_json['nodes']:
+            for source in node['data'].get('sources', []):
+                link_search = re.search(new_link_re, source['url'])
+                if link_search is not None:
+                    hash_id = link_search.group(1)
+                    if hash_id in HASH_CONVERSION_MAP:
+                        print(
+                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
+                            f'{HASH_CONVERSION_MAP[hash_id]}'
+                        )
+                        source['url'] = source['url'].replace(
+                            hash_id,
+                            HASH_CONVERSION_MAP[hash_id]
+                        )
+
+        for edge in map_json['edges']:
+            if 'data' in edge:
+                for source in edge['data'].get('sources', []):
+                    link_search = re.search(new_link_re, source['url'])
+                    if link_search is not None:
+                        hash_id = link_search.group(1)
+                        if hash_id in HASH_CONVERSION_MAP:
+                            print(
+                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
+                                f'{HASH_CONVERSION_MAP[hash_id]}'
+                            )
+                            source['url'] = source['url'].replace(
+                                hash_id,
+                                HASH_CONVERSION_MAP[hash_id]
+                            )
+
+        byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
+        validate_map(json.loads(byte_graph))
+
+        # Zip the file back up before saving to the DB
+        zip_bytes2 = io.BytesIO()
+        with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
+            zip_file.writestr('graph.json', byte_graph)
+        new_bytes = zip_bytes2.getvalue()
+        new_hash = hashlib.sha256(new_bytes).digest()
+        need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
+
+    try:
+        db.session.bulk_update_mappings(FileContent, need_to_update)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise

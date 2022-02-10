@@ -9,7 +9,6 @@ import {
   calculateInputCountSkippingCircularLinksB
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
 
-import { MultiLaneLayoutService } from '../services/multi-lane-layout.service';
 import { MultiLaneBaseControllerService } from '../services/multi-lane-base-controller.service';
 
 export function inputCount(

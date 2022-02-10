@@ -4,9 +4,9 @@ import { isNil } from 'lodash-es';
 
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
-import { PUBMEDURL } from 'app/shared/constants';
+import { PUBMED_URL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
-import { getQueryParams } from 'app/search/utils/search';
+import { getGraphQueryParams } from 'app/search/utils/search';
 
 import { getLink } from '../utils/records';
 import { GraphSearchParameters } from '../graph-search';
@@ -18,7 +18,7 @@ import { GraphSearchParameters } from '../graph-search';
 })
 export class SearchRecordRelationshipsComponent {
 
-  PUBMEDURL: string = PUBMEDURL;
+  PUBMED_URL: string = PUBMED_URL;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
   // just disable that check for tslint.
@@ -94,7 +94,7 @@ export class SearchRecordRelationshipsComponent {
 
   getVisualizerQueryParams(params) {
     return {
-      ...getQueryParams(this.params),
+      ...getGraphQueryParams(this.params),
       ...params,
     };
   }

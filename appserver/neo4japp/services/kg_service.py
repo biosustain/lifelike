@@ -145,23 +145,6 @@ class KgService(HybridDBDao):
 
             return self._neo4j_objs_to_graph_objs(nodes, relationships)
 
-    def get_db_labels(self) -> List[str]:
-        """Get all labels from database."""
-        labels = self.graph.read_transaction(lambda tx: list(tx.run('call db.labels()')))
-        return [label['label'] for label in labels]
-
-    def get_db_relationship_types(self) -> List[str]:
-        """Get all relationship types from database."""
-        relationship_types = self.graph.read_transaction(
-            lambda tx: list(tx.run('call db.relationshipTypes()'))
-        )
-        return [rt['relationshipType'] for rt in relationship_types]
-
-    def get_node_properties(self, node_label) -> Dict[str, List[str]]:
-        """Get all properties of a label."""
-        props = self.graph.read_transaction(lambda tx: list(tx.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key')))  # noqa
-        return {node_label: [prop['key'] for prop in props]}
-
     def get_uniprot_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(

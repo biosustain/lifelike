@@ -6,7 +6,7 @@ import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
 import { combineLatest, Observable, iif, of } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
+import { SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, NetworkTraceData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DirectedTraversal } from './directed-traversal';

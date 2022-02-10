@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, tap, distinctUntilChanged } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged } from 'rxjs/operators';
 import { pick, isEqual } from 'lodash-es';
-import { of, BehaviorSubject } from 'rxjs';
+import { of } from 'rxjs';
 
 import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -12,7 +12,7 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
-import { unifiedAccessor, unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
+import { unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)

@@ -2,8 +2,8 @@ import { OnDestroy, } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { omit, forEach, isEmpty } from 'lodash-es';
-import { startWith, pairwise, map, filter, switchMap, tap, publish } from 'rxjs/operators';
-import { Subscription, ConnectableObservable } from 'rxjs';
+import { startWith, pairwise, map, filter, switchMap, tap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 import { uuidv4, deepDiff } from 'app/shared/utils';
 
