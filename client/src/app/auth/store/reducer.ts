@@ -17,10 +17,17 @@ const authReducer = createReducer(
     ),
     on(
       AuthActions.oauthLoginSuccess,
-      (state, { user }) => ({
+      (state, { lifelikeUser, oauthUser }) => ({
           ...state,
           loggedIn: true,
-          user,
+          user: {
+            // Note: Order is important here!
+            ...state.user,
+            ...lifelikeUser,
+            firstName: oauthUser.firstName,
+            lastName: oauthUser.lastName,
+            username: oauthUser.username
+          },
       })
   ),
     on(
