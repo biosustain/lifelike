@@ -22,11 +22,12 @@ import { ReplaySubject } from 'rxjs';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
+import { SankeyData, SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
 import { LayoutService } from 'app/sankey/services/layout.service';
 
 import { representativePositiveNumber } from '../../utils';
 import * as aligns from './aligin';
+
 
 @Component({
   selector: 'app-sankey',
@@ -307,6 +308,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       y0: margin.top,
       y1: extentY
     });
+    // todo
+    // const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
+    // this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
+    // const [innerWidth, innerHeight] = this.sankey.size;
+    //
+    // this.resized.emit({width: innerWidth, height: innerHeight});
+    //
+    // const parsedData = innerHeight / prevInnerHeight === 1 ?
+    //   this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
+    //   this.updateLayout(this.data);
+    // return parsedData.then(data => this.updateDOM(data));
   }
 
   // endregion
@@ -714,6 +726,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
     }
   }
+
+  // todo
+  //         if (isObject(data._precomputedLayout)) {
+  //         const [currentWidth, currentHeight] = this.sankey.size;
+  //         const {width = currentWidth, height = currentHeight} = data._precomputedLayout;
+  //         this.zoom.scaleTo(
+  //           this.sankeySelection,
+  //           Math.min(
+  //             currentWidth / width,
+  //             currentHeight / height
+  //           ),
+  //           [0, 0]
+  //         );
+  //       }
+
 
   // region Render
 

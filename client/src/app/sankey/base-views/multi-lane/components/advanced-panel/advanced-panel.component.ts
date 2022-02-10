@@ -1,8 +1,6 @@
 import { Component, OnDestroy, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
-import { tap } from 'rxjs/operators';
-
 import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
 
 import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';

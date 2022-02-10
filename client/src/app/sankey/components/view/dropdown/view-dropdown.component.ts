@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { omitBy, isNil, mapValues } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { of, Observable, iif, defer } from 'rxjs';
-import { map, switchMap, first, tap } from 'rxjs/operators';
+import { map, switchMap, first } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WorkspaceManager } from 'app/shared/workspace-manager';

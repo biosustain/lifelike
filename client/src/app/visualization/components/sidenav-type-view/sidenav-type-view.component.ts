@@ -27,10 +27,10 @@ export class SidenavTypeViewComponent {
 
   node: VisNode;
   connectedNodes: VisNode[];
-  type: string;
   associatedType = AssociatedType;
   typeEntries: AssociatedTypeEntry[];
   color: string;
+  type: AssociatedType;
 
   selectedRowSnippetTotal: number;
   selectedRowSnippetData: SidenavSnippetData[];
@@ -57,7 +57,6 @@ export class SidenavTypeViewComponent {
     const request: AssociatedTypeSnippetCountRequest = {
       source_node: this.node.id,
       associated_nodes: this.connectedNodes.map(node => node.id),
-      label: this.type,
     };
     this.color = this.legend.get(this.type)[0];
     this.visualizationService.getAssociatedTypeSnippetCount(request).subscribe(

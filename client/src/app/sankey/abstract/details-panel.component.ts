@@ -1,13 +1,12 @@
-import { Component, Input, } from '@angular/core';
+import { Input, } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 import { map } from 'rxjs/operators';
 
-import { SankeyNode } from 'app/sankey/interfaces';
-
 import { parseForRendering } from '../utils';
 import { ControllerService } from '../services/controller.service';
+import { SankeyNode } from '../interfaces';
 
 export class SankeyAbstractDetailsComponent {
   constructor(

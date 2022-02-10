@@ -8,16 +8,30 @@ Create Date: 2020-07-22 19:25:59.212662
 from alembic import context
 from alembic import op
 import bcrypt
+import enum
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 from neo4japp.models import (
     AppRole,
-    AccessActionType,
-    AccessRuleType,
     Projects,
     projects_collaborator_role,
 )
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessRuleType(enum.Enum):
+    """ Allow or Deny """
+    ALLOW = 'allow'
+    DENY = 'deny'
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessActionType(enum.Enum):
+    READ = 'read'
+    WRITE = 'write'
 
 
 # revision identifiers, used by Alembic.
@@ -154,7 +168,6 @@ def upgrade():
                     ), sa.PrimaryKeyConstraint('id', name=op.f('pk_directory'))
                     )
 
-
     op.create_table('projects_collaborator_role',
                     sa.Column('appuser_id', sa.Integer(), nullable=False),
                     sa.Column('app_role_id', sa.Integer(), nullable=False),
@@ -174,6 +187,15 @@ def upgrade():
     op.add_column('project', sa.Column('dir_id', sa.Integer(), nullable=True))
     op.create_foreign_key(op.f('fk_project_dir_id_directory'),
                           'project', 'directory', ['dir_id'], ['id'])
+
+    actions = postgresql.ENUM('READ', 'WRITE', name='accessactiontype')
+    actions.create(op.get_bind())
+
+    op.alter_column('access_control_policy', 'action',
+                    existing_type=sa.VARCHAR(length=50),
+                    type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
+                    existing_nullable=False,
+                    postgresql_using="action::accessactiontype")
 
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -204,15 +226,6 @@ def migration_fix():
     """
 
     conn = op.get_bind()
-
-    actions = postgresql.ENUM('READ', 'WRITE', name='accessactiontype')
-    actions.create(op.get_bind())
-
-    op.alter_column('access_control_policy', 'action',
-                    existing_type=sa.VARCHAR(length=50),
-                    type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
-                    existing_nullable=False,
-                    postgresql_using="action::accessactiontype")
 
     # There's only one hardcoded project right now
     row = conn.execute(sa.select([
@@ -377,10 +390,10 @@ def migration_fix():
                      .where(t_project.c.id == proj_id[0])
                      .values(dir_id=directory_id))
 
+
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     pass
-
 
 
 def data_downgrades():

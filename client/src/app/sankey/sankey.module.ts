@@ -32,6 +32,7 @@ import { BaseViewsModule } from './base-views/base-views.module';
 import { SankeyComponent } from './components/sankey/sankey.component';
 import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
+import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,7 @@ import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeySearchPanelModule,
-    // BaseViewsModule
+    SankeySearchControlModule
   ],
   exports: [
     SankeyViewComponent

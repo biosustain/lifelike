@@ -1,11 +1,5 @@
-from typing import Sequence
-
 import bcrypt
-import enum
 
-import sqlalchemy as sa
-
-from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
@@ -97,55 +91,3 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
 class AppUserSchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = AppUser
-
-
-class AccessRuleType(enum.Enum):
-    """ Allow or Deny """
-    ALLOW = 'allow'
-    DENY = 'deny'
-
-
-class AccessActionType(enum.Enum):
-    READ = 'read'
-    WRITE = 'write'
-
-
-class AccessControlPolicy(RDBMSBase):
-    """ Which user, group, etc have what access to protected resources """
-    id = db.Column(db.Integer, primary_key=True)
-    action = db.Column(db.Enum(AccessActionType), nullable=False)
-    asset_type = db.Column(db.String(200), nullable=False)
-    asset_id = db.Column(db.Integer, nullable=True)
-    principal_type = db.Column(db.String(50), nullable=False)
-    principal_id = db.Column(db.Integer, nullable=True)
-    rule_type = db.Column(db.Enum(AccessRuleType), nullable=False)
-
-    __table_args__ = (
-        sa.Index(
-            'ix_acp_asset_key',
-            'asset_type',
-            'asset_id',
-        ),
-        sa.Index(
-            'ix_acp_principal_key',
-            'principal_type',
-            'principal_id',
-        ),
-    )
-
-    @classmethod
-    def query_acp(cls, principal: RDBMSBase, asset: RDBMSBase, action: AccessActionType) -> Query:
-        return AccessControlPolicy.query.filter(
-            and_(
-                cls.asset_id == asset.id,
-                cls.asset_type == asset.__tablename__,
-                cls.principal_id == principal.id,
-                cls.principal_type == principal.__tablename__,
-                cls.action == action,
-            )
-        )
-
-
-class AccessControlPolicySchema(ma.ModelSchema):  # type: ignore
-    class Meta:
-        model = AccessControlPolicy

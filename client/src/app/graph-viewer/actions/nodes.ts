@@ -82,20 +82,3 @@ export class NodeMove implements GraphAction {
     this.node.data.y = this.previousY;
   }
 }
-
-/**
- * Represents the deletion of a edge.
- */
-export class EdgeDeletion implements GraphAction {
-  constructor(public description: string,
-              public edge: UniversalGraphEdge) {
-  }
-
-  apply(component: GraphActionReceiver) {
-    component.removeEdge(this.edge);
-  }
-
-  rollback(component: GraphActionReceiver) {
-    component.addEdge(this.edge);
-  }
-}

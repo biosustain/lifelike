@@ -1,6 +1,4 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
-
-import { SelectionEntity } from 'app/sankey/interfaces';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 import { SankeyDetailsPanelComponent } from '../../../../components/details-panel/details-panel.component';
 
