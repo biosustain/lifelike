@@ -9,12 +9,9 @@ import logging
 import math
 import os
 import re
-import sentry_sdk
 import uuid
 import requests
 import zipfile
-
-from flask import g, request
 
 from marshmallow.exceptions import ValidationError
 
@@ -52,7 +49,8 @@ def request_navigator_log():
 
 
 @app.cli.command("seed")
-def seed():
+@click.argument('filename', type=click.Path(exists=True))
+def seed(filename):
     def find_existing_row(model, value):
         if isinstance(value, dict):
             f = value
@@ -62,7 +60,8 @@ def seed():
             }
         return db.session.query(model).filter_by(**f).one()
 
-    with open("fixtures/seed.json", "r") as f:
+    seed_file = click.format_filename(filename)
+    with open(seed_file, 'r') as f:
         fixtures = json.load(f)
         truncated_tables = []
 
