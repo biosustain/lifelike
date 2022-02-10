@@ -16,9 +16,6 @@ from neo4japp.constants import LogEventType
 from neo4japp.database import db
 from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import (
-    AccessActionType,
-    AccessControlPolicy,
-    AccessRuleType,
     AppRole,
     AppUser,
 )
@@ -137,23 +134,6 @@ def init_default_access(mapper, connection, target):
             AppRole.__table__.c.name == 'project-read'
         )).fetchone()
 
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.READ,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=read_role.id,
-        rule_type=AccessRuleType.ALLOW,
-    ))
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.WRITE,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=read_role.id,
-        rule_type=AccessRuleType.DENY,
-    ))
-
     # Sets up the "WRITE" role
     write_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-write'
@@ -164,23 +144,6 @@ def init_default_access(mapper, connection, target):
             AppRole.__table__.c.name == 'project-write'
         )).fetchone()
 
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.READ,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=write_role.id,
-        rule_type=AccessRuleType.ALLOW,
-    ))
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.WRITE,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=write_role.id,
-        rule_type=AccessRuleType.ALLOW,
-    ))
-
     # Sets up the "ADMIN" role
     admin_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-admin'
@@ -190,23 +153,6 @@ def init_default_access(mapper, connection, target):
         admin_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-admin'
         )).fetchone()
-
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.READ,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=admin_role.id,
-        rule_type=AccessRuleType.ALLOW,
-    ))
-    connection.execute(AccessControlPolicy.__table__.insert().values(
-        action=AccessActionType.WRITE,
-        asset_type=target.__tablename__,
-        asset_id=target.id,
-        principal_type=AppRole.__tablename__,
-        principal_id=admin_role.id,
-        rule_type=AccessRuleType.ALLOW,
-    ))
 
 
 @event.listens_for(Projects, 'after_update')

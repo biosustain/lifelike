@@ -8,18 +8,59 @@ Create Date: 2020-07-24 21:19:46.808252
 """
 from alembic import context
 from alembic import op
+import enum
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.models import (
-    AccessActionType,
-    AccessRuleType,
-    AccessControlPolicy,
     AppRole,
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.models.common import RDBMSBase
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessRuleType(enum.Enum):
+    """ Allow or Deny """
+    ALLOW = 'allow'
+    DENY = 'deny'
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessActionType(enum.Enum):
+    READ = 'read'
+    WRITE = 'write'
+
+
+# Moved this here from the auth models file. We dropped this table in 6b7a2da00472 because it was
+# unused.
+class AccessControlPolicy(RDBMSBase):
+    """ Which user, group, etc have what access to protected resources """
+    id = sa.Column(sa.Integer, primary_key=True)
+    action = sa.Column(sa.Enum(AccessActionType), nullable=False)
+    asset_type = sa.Column(sa.String(200), nullable=False)
+    asset_id = sa.Column(sa.Integer, nullable=True)
+    principal_type = sa.Column(sa.String(50), nullable=False)
+    principal_id = sa.Column(sa.Integer, nullable=True)
+    rule_type = sa.Column(sa.Enum(AccessRuleType), nullable=False)
+
+    __table_args__ = (
+        sa.Index(
+            'ix_acp_asset_key',
+            'asset_type',
+            'asset_id',
+        ),
+        sa.Index(
+            'ix_acp_principal_key',
+            'principal_type',
+            'principal_id',
+        ),
+    )
+
 
 # revision identifiers, used by Alembic.
 revision = '34f922d141bc'
@@ -98,19 +139,6 @@ t_project = sa.Table(
     sa.Column('dir_id', sa.Integer, sa.ForeignKey(t_directory.c.id)),
     sa.Column('hash_id', sa.String(50), unique=True),
     sa.Column('search_vector', TSVectorType('label'))
-)
-
-t_access_control_policy = sa.Table(
-    'access_control_policy',
-    sa.MetaData(),
-    sa.Column('id', sa.Integer, nullable=False),
-    sa.Column('action', sa.String(length=50), nullable=False),
-    sa.Column('asset_type', sa.String(length=200), nullable=False),
-    sa.Column('asset_id', sa.Integer, nullable=True),
-    sa.Column('principal_type', sa.String(length=50), nullable=False),
-    sa.Column('principal_id', sa.Integer, nullable=True),
-    sa.Column('rule_type', sa.Enum('ALLOW', 'DENY', name='accessruletype'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
 )
 
 t_projects = sa.Table(
