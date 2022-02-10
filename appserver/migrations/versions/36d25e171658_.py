@@ -8,16 +8,30 @@ Create Date: 2020-07-22 19:25:59.212662
 from alembic import context
 from alembic import op
 import bcrypt
+import enum
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 from neo4japp.models import (
     AppRole,
-    AccessActionType,
-    AccessRuleType,
     Projects,
     projects_collaborator_role,
 )
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessRuleType(enum.Enum):
+    """ Allow or Deny """
+    ALLOW = 'allow'
+    DENY = 'deny'
+
+
+# Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
+# it was unused.
+class AccessActionType(enum.Enum):
+    READ = 'read'
+    WRITE = 'write'
 
 
 # revision identifiers, used by Alembic.

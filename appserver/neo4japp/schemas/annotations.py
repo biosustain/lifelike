@@ -1,8 +1,7 @@
 import marshmallow.validate
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
 
-from neo4japp.models import FallbackOrganism
 from neo4japp.models.files import AnnotationChangeCause
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
@@ -16,14 +15,6 @@ class FallbackOrganismSchema(Schema):  # Not camel case!
                             validate=marshmallow.validate.Length(min=1, max=200))
     tax_id = fields.String(required=True,
                            validate=marshmallow.validate.Length(min=1, max=200))
-
-    @post_load
-    def create(self, params, **kwargs):
-        return FallbackOrganism(
-            organism_name=params['organism_name'],
-            organism_synonym=params['synonym'],
-            organism_taxonomy_id=params['tax_id']
-        )
 
 
 class AnnotationMethod(CamelCaseSchema):
