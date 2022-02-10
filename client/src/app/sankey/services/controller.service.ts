@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
@@ -26,13 +26,14 @@ import {
   ViewBase,
   Prescaler,
   ValueAccessor,
-  LINK_PROPERTY_GENERATORS
+  LINK_PROPERTY_GENERATORS,
+  SankeyViews
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
+import { StateControlAbstractService, unifiedSingularAccessor, unifiedAccessor } from './state-controlling-abstract.service';
 import { LayoutService } from './layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
@@ -97,6 +98,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   }
 
   baseViewName$: Observable<string>;
+  baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
   viewName$: Observable<string>;
 
   /**
@@ -132,7 +134,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     shareReplay(1)
   );
 
-  viewsUpdate$ = new Subject<{ [viewName: string]: SankeyView }>();
+  viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
 
   views$ = rx_merge(
     this.data$.pipe(
@@ -337,6 +339,12 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   onInit() {
     super.onInit();
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
+    this.baseView$ = this.state$.pipe(
+    filter(obj => has(obj, 'baseViewName')),
+    map(obj => pick(obj, ['baseViewName', 'baseViewInitState'])),
+    distinctUntilChanged(isEqual),
+      shareReplay(1)
+    );
     // do not use standart accessor for this one cause we want null if it wasnt set
     this.viewName$ = this.state$.pipe(
       map(({viewName = null}) => viewName),
@@ -346,7 +354,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       switchMap(views => this.viewName$.pipe(
         map(viewName => views[viewName] ?? null),
       )),
-        distinctUntilChanged(),
+      distinctUntilChanged(),
       shareReplay(1)
     );
   }
