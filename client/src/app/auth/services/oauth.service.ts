@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Store } from '@ngrx/store';
@@ -8,7 +9,7 @@ import { filter, map } from 'rxjs/operators';
 import { State } from 'app/auth/store/state';
 
 import { AuthActions } from '../store';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable({ providedIn: 'root' })
 export class LifelikeOAuthService {
@@ -41,6 +42,7 @@ export class LifelikeOAuthService {
   constructor(
     private oauthService: OAuthService,
     private router: Router,
+    private location: Location,
     private readonly store$: Store<State>,
   ) {
     // // This is tricky, as it might cause race conditions (where access_token is set in another
@@ -89,7 +91,7 @@ export class LifelikeOAuthService {
 
       .then(() => {
         if (this.oauthService.hasValidAccessToken()) {
-          const payload = JSON.parse(JSON.stringify(this.identityClaims));
+          const payload = (this.oauthService.getIdentityClaims() as any);
           this.store$.dispatch(AuthActions.oauthLogin({
             oauthLoginData: {
               subject: payload.sub,
@@ -106,7 +108,7 @@ export class LifelikeOAuthService {
         // needing to redirect the user:
         return this.oauthService.silentRefresh()
           .then(() => Promise.resolve())
-          .catch(result => {
+          .catch((result: OAuthErrorEvent) => {
             // Subset of situations from https://openid.net/specs/openid-connect-core-1_0.html#AuthError
             // Only the ones where it's reasonably sure that sending the
             // user to the IdServer will help.
@@ -116,10 +118,11 @@ export class LifelikeOAuthService {
               'account_selection_required',
               'consent_required',
             ];
+            const reason: any = result.reason;
 
             if (result
-              && result.reason
-              && errorResponsesRequiringUserInteraction.indexOf(result.reason.error) >= 0) {
+              && reason
+              && errorResponsesRequiringUserInteraction.indexOf(reason.params.error) >= 0) {
 
               // 3. ASK FOR LOGIN:
               // At this point we know for sure that we have to ask the
@@ -127,7 +130,7 @@ export class LifelikeOAuthService {
               // enter credentials.
               //
               // Enable this to ALWAYS force a user to login.
-              // this.login();
+              this.login();
               //
               // Instead, we'll now do this:
               return Promise.resolve();
@@ -157,18 +160,10 @@ export class LifelikeOAuthService {
   }
 
   login(targetUrl?: string) {
-    this.oauthService.initLoginFlow(targetUrl || this.router.url);
+    this.oauthService.initLoginFlow(targetUrl || this.location.path());
   }
 
   logout(revokeAll: boolean = false, redirectUrl: string = '') { this.oauthService.logOut(revokeAll, redirectUrl); }
   refresh() { this.oauthService.silentRefresh(); }
   hasValidToken() { return this.oauthService.hasValidAccessToken(); }
-
-  // These normally won't be exposed from a service like this, but
-  // for debugging it makes sense.
-  get accessToken() { return this.oauthService.getAccessToken(); }
-  get refreshToken() { return this.oauthService.getRefreshToken(); }
-  get identityClaims() { return this.oauthService.getIdentityClaims(); }
-  get idToken() { return this.oauthService.getIdToken(); }
-  get logoutUrl() { return this.oauthService.logoutUrl; }
 }
