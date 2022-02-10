@@ -2,7 +2,6 @@ import hashlib
 import io
 import itertools
 import json
-import re
 import typing
 import urllib.request
 import zipfile
@@ -12,7 +11,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_, not_
+from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
@@ -167,8 +166,7 @@ class FilesystemBaseView(MethodView):
             Files.deletion_date.is_(None)
         ), t_project, t_file, file_attr_excl=attr_excl) \
             .options(raiseload('*'),
-                     joinedload(t_file.user),
-                     joinedload(t_file.fallback_organism)) \
+                     joinedload(t_file.user)) \
             .order_by(*[text(f'_file.{col}') for col in sort])
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
@@ -332,9 +330,6 @@ class FilesystemBaseView(MethodView):
             raise NotImplementedError(
                 "Cannot update the content of multiple files with this method")
 
-        if params.get('fallback_organism'):
-            db.session.add(params['fallback_organism'])
-
         # ========================================
         # Apply
         # ========================================
@@ -385,8 +380,12 @@ class FilesystemBaseView(MethodView):
                         changed_fields.add('public')
 
                 if 'fallback_organism' in params:
-                    file.fallback_organism = params['fallback_organism']
-                    changed_fields.add('fallback_organism')
+                    file.organism_name = params['fallback_organism']['organism_name']
+                    file.organism_synonym = params['fallback_organism']['synonym']
+                    file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+                    changed_fields.add('organism_name')
+                    changed_fields.add('organism_synonym')
+                    changed_fields.add('organism_taxonomy_id')
 
                 if 'annotation_configs' in params:
                     file.annotation_configs = params['annotation_configs']
@@ -652,6 +651,11 @@ class FileListView(FilesystemBaseView):
         file.modifier = current_user
         file.public = params.get('public', False)
 
+        if params.get('fallback_organism', None):
+            file.organism_name = params['fallback_organism']['organism_name']
+            file.organism_synonym = params['fallback_organism']['synonym']
+            file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+
         # ========================================
         # Resolve parent
         # ========================================
@@ -782,10 +786,6 @@ class FileListView(FilesystemBaseView):
         # ========================================
         # Annotation options
         # ========================================
-
-        if params.get('fallback_organism'):
-            db.session.add(params['fallback_organism'])
-            file.fallback_organism = params['fallback_organism']
 
         if params.get('annotation_configs'):
             file.annotation_configs = params['annotation_configs']
