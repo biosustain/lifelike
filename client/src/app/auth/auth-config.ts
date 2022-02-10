@@ -1,6 +1,7 @@
 import { AuthConfig } from 'angular-oauth2-oidc';
 
 export const authConfig: AuthConfig = {
+  // TODO: These should probably all be environment specific (i.e., we may not use keycloak for all environments)
   issuer: 'https://keycloak.apps.lifelike.cloud/auth/realms/master',
   clientId: 'lifelike-frontend',
   responseType: 'code',

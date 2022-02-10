@@ -50,12 +50,30 @@ const authReducer = createReducer(
         () => initialState,
     ),
     on(
-          AuthActions.userUpdated,
-          (state, { user }) => ({
-              ...state,
-              user,
-          })
-      ),
+        AuthActions.updateUserSuccess,
+        (state, { userUpdateData }) => ({
+            ...state,
+            user: {
+              // NOTE: Be *very* careful with nested updates! We need to make sure we expand *all* levels of the nested object, not just
+              // the first. In this case, `user` does not have any nested objects itself, but if it did, we ought to expand them.
+              ...state.user,
+              ...userUpdateData
+            },
+        })
+    ),
+    on(
+      AuthActions.updateOAuthUserSuccess,
+      (state, { userUpdateData }) => ({
+          ...state,
+          user: {
+            // See the above comment for updateUserSuccess!
+            ...state.user,
+            firstName: userUpdateData.firstName,
+            lastName: userUpdateData.lastName,
+            username: userUpdateData.username,
+          },
+      })
+  ),
 );
 
 export function reducer(state: State, action: Action) {
