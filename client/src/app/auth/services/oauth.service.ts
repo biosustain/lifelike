@@ -45,8 +45,8 @@ export class LifelikeOAuthService {
     private location: Location,
     private readonly store$: Store<State>,
   ) {
-    // // This is tricky, as it might cause race conditions (where access_token is set in another
-    // // tab before everything is said and done there.
+    // // This is tricky, as it might cause race conditions (where access_token is set in another tab before everything is said and done
+    // there.
     // // TODO: Improve this setup. See: https://github.com/jeroenheijmans/sample-angular-oauth2-oidc-with-auth-guards/issues/2
     window.addEventListener('storage', (event) => {
       // The `key` is `null` if the event was caused by `.clear()`
@@ -80,13 +80,11 @@ export class LifelikeOAuthService {
 
   runInitialLoginSequence(): Promise<void> {
     // 0. LOAD CONFIG:
-    // First we have to check to see how the IdServer is
-    // currently configured:
+    // First we have to check to see how the IdServer is currently configured:
     return this.oauthService.loadDiscoveryDocument()
 
       // 1. HASH LOGIN:
-      // Try to log in via hash fragment after redirect back
-      // from IdServer from initImplicitFlow:
+      // Try to log in via hash fragment after redirect back from IdServer from initImplicitFlow:
       .then(() => this.oauthService.tryLogin())
 
       .then(() => {
@@ -104,14 +102,12 @@ export class LifelikeOAuthService {
         }
 
         // 2. SILENT LOGIN:
-        // Try to log in via a refresh because then we can prevent
-        // needing to redirect the user:
+        // Try to log in via a refresh because then we can prevent needing to redirect the user:
         return this.oauthService.silentRefresh()
           .then(() => Promise.resolve())
           .catch((result: OAuthErrorEvent) => {
             // Subset of situations from https://openid.net/specs/openid-connect-core-1_0.html#AuthError
-            // Only the ones where it's reasonably sure that sending the
-            // user to the IdServer will help.
+            // Only the ones where it's reasonably sure that sending the user to the IdServer will help.
             const errorResponsesRequiringUserInteraction = [
               'interaction_required',
               'login_required',
@@ -124,20 +120,20 @@ export class LifelikeOAuthService {
               && reason
               && errorResponsesRequiringUserInteraction.indexOf(reason.params.error) >= 0) {
 
-              // 3. ASK FOR LOGIN:
-              // At this point we know for sure that we have to ask the
-              // user to log in, so we redirect them to the IdServer to
-              // enter credentials.
-              //
-              // Enable this to ALWAYS force a user to login.
-              this.login();
-              //
+              // 3. USER MUST LOGIN:
+              // At this point we know for sure that we have to ask the user to log in, so we initiate the log out flow. They will need to
+              // manually log themselves in afterwards.
+
+              this.store$.dispatch(AuthActions.oauthLogout());
+
+              // To immediately redirect them to the login server, comment the above and uncomment the below:
+              // this.login()
+
               // Instead, we'll now do this:
               return Promise.resolve();
             }
 
-            // We can't handle the truth, just pass on the problem to the
-            // next handler.
+            // We can't handle the truth, just pass on the problem to the next handler.
             return Promise.reject(result);
           });
       })
@@ -145,9 +141,8 @@ export class LifelikeOAuthService {
       .then(() => {
         this.isDoneLoadingSubject$.next(true);
 
-        // Check for the strings 'undefined' and 'null' just to be sure. Our current
-        // login(...) should never have this, but in case someone ever calls
-        // initImplicitFlow(undefined | null) this could happen.
+        // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case someone
+        // ever calls initImplicitFlow(undefined | null) this could happen.
         if (this.oauthService.state && this.oauthService.state !== 'undefined' && this.oauthService.state !== 'null') {
           let stateUrl = this.oauthService.state;
           if (stateUrl.startsWith('/') === false) {
