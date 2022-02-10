@@ -7,8 +7,8 @@ import { filter, map } from 'rxjs/operators';
 
 import { State } from 'app/auth/store/state';
 
-import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthActions } from '../store';
+import { OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable({ providedIn: 'root' })
 export class LifelikeOAuthService {
@@ -56,7 +56,7 @@ export class LifelikeOAuthService {
       this.isAuthenticatedSubject$.next(this.oauthService.hasValidAccessToken());
 
       if (!this.oauthService.hasValidAccessToken()) {
-        this.navigateToLoginPage();
+        this.store$.dispatch(AuthActions.oauthLogout());
       }
     });
 
@@ -153,7 +153,7 @@ export class LifelikeOAuthService {
     this.oauthService.initLoginFlow(targetUrl || this.router.url);
   }
 
-  logout() { this.oauthService.logOut(); }
+  logout(revokeAll: boolean = false, redirectUrl: string = '') { this.oauthService.logOut(revokeAll, redirectUrl); }
   refresh() { this.oauthService.silentRefresh(); }
   hasValidToken() { return this.oauthService.hasValidAccessToken(); }
 

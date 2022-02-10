@@ -30,7 +30,7 @@ import { AuthenticationService } from '../services/authentication.service';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { LifelikeOAuthService } from '../services/oauth.service';
 
 @Injectable()
 export class AuthEffects {
@@ -39,7 +39,7 @@ export class AuthEffects {
     private readonly router: Router,
     private readonly store$: Store<State>,
     private readonly authService: AuthenticationService,
-    private readonly oauthService: OAuthService,
+    private readonly oauthService: LifelikeOAuthService,
     private readonly accountService: AccountService,
     private readonly keycloakAccountService: KeycloakAccountService,
     private readonly modalService: NgbModal,
@@ -277,7 +277,7 @@ export class AuthEffects {
           // we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to wait a few moments
           // and refresh their browser to log in successfully.
           const error = (err.error as ErrorResponse).message;
-          this.oauthService.logOut(true);
+          this.oauthService.logout(true);
           this.router.navigateByUrl('/dashboard');
 
           return from([
@@ -322,6 +322,6 @@ export class AuthEffects {
 
   oauthLogout$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.oauthLogout),
-    tap(_ => this.oauthService.logOut()),
+    tap(_ => this.oauthService.logout()),
   ), {dispatch: false});
 }
