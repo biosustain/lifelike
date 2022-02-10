@@ -1,6 +1,7 @@
 import { AuthConfig } from 'angular-oauth2-oidc';
 
 export const authConfig: AuthConfig = {
+  // TODO: These should probably all be environment specific (i.e., we may not use keycloak for all environments)
   issuer: 'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master',
   clientId: '***ARANGO_DB_NAME***-frontend',
   responseType: 'code',

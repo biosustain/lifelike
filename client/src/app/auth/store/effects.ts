@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { select, Store } from '@ngrx/store';
-import { from } from 'rxjs';
+import { BehaviorSubject, from } from 'rxjs';
 import {
   catchError,
   exhaustMap,
@@ -14,14 +14,17 @@ import {
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { Progress } from 'app/interfaces/common-dialog.interface';
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import {
   TermsOfServiceDialogComponent,
 } from 'app/users/components/terms-of-service-dialog.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { TERMS_OF_SERVICE } from 'app/users/components/terms-of-service-text.component';
 import { ChangePasswordDialogComponent } from 'app/users/components/change-password-dialog.component';
 import { AccountService } from 'app/users/services/account.service';
+import { KeycloakAccountService } from 'app/users/services/keycloak-account.service';
 
 import { AuthenticationService } from '../services/authentication.service';
 import * as AuthActions from './actions';
@@ -38,7 +41,9 @@ export class AuthEffects {
     private readonly authService: AuthenticationService,
     private readonly oauthService: OAuthService,
     private readonly accountService: AccountService,
+    private readonly keycloakAccountService: KeycloakAccountService,
     private readonly modalService: NgbModal,
+    private readonly progressDialog: ProgressDialog,
   ) {
   }
 
@@ -138,6 +143,92 @@ export class AuthEffects {
   successPasswordUpdate$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.successPasswordUpdate),
   ), {dispatch: false});
+
+  updateUser$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.updateUser),
+    exhaustMap(({userUpdateData, hashId}) => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Updating User`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Updating user...',
+        })),
+      });
+      return this.accountService.updateUser(userUpdateData, hashId).pipe(
+        map(() => {
+          progressDialogRef.close();
+          return AuthActions.updateUserSuccess({ userUpdateData });
+        }),
+        catchError((err: HttpErrorResponse) => {
+          progressDialogRef.close();
+          const error = (err.error as ErrorResponse).message;
+          return from([
+            SnackbarActions.displaySnackbar({
+              payload: {
+                message: error,
+                action: 'Dismiss',
+                config: {duration: 10000},
+              },
+            }),
+          ]);
+        })
+      );
+    })),
+  );
+
+  updateUserSuccess$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.updateUserSuccess),
+    map(_ => SnackbarActions.displaySnackbar({
+      payload: {
+        message: 'Your profile was successfully updated!',
+        action: 'Dismiss',
+        config: {duration: 5000},
+      },
+    })),
+  ));
+
+  updateOAuthUser$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.updateOAuthUser),
+    exhaustMap(({userUpdateData}) => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Updating User`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Updating user...',
+        })),
+      });
+      return this.keycloakAccountService.updateCurrentUser(userUpdateData).pipe(
+        map(() => {
+          progressDialogRef.close();
+          return AuthActions.updateOAuthUserSuccess({ userUpdateData });
+        }),
+        catchError((err: HttpErrorResponse) => {
+          progressDialogRef.close();
+          const error = (err.error as ErrorResponse).message;
+          return from([
+            SnackbarActions.displaySnackbar({
+              payload: {
+                message: error,
+                action: 'Dismiss',
+                config: {duration: 10000},
+              },
+            }),
+          ]);
+        })
+      );
+    })),
+  );
+
+  updateOAuthUserSuccess$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.updateOAuthUserSuccess),
+    map(_ => {
+      return SnackbarActions.displaySnackbar({
+        payload: {
+          message: 'Your profile was successfully updated!',
+          action: 'Dismiss',
+          config: {duration: 5000},
+        },
+      });
+    }),
+  ));
 
   login$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.login),

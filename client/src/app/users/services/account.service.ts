@@ -9,7 +9,7 @@ import {
   UserCreationRequest,
   ChangePasswordRequest,
   PrivateAppUser,
-  UserUpdateRequest,
+  UserUpdateData,
 
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
@@ -36,9 +36,9 @@ export class AccountService implements OnDestroy {
         ).pipe(map(resp => resp.result));
     }
 
-    updateUser(request: UserUpdateRequest) {
+    updateUser(updateData: UserUpdateData, hashId: string) {
         return this.http.put<{result: AppUser}>(
-            `${this.accountApi}/${request.hashId}`, request);
+            `${this.accountApi}/${hashId}`, updateData);
     }
 
     resetPassword(email: string) {
