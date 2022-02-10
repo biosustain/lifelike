@@ -15,15 +15,20 @@ COPY landing ./
 RUN yarn build
 
 
-# ========================================
-# Angular app dependencies
-# ========================================
+# ==================================================================
+# Angular app dependencies by default used for local development
+# ==================================================================
 FROM $NODE_IMAGE_TAG as angular-deps
 WORKDIR /app
 
 # Install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install
+
+# build time argument for Angular environment
+ARG ANGULAR_CONFIG=development
+# default enviroment presets
+ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
 
 
 # ========================================
@@ -55,6 +60,12 @@ ENV APPSERVER_UPSTREAM http://appserver:5000
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
 ENV GZIP_EXTRA_TYPES text/tsv vnd.lifelike.document/bioc vnd.lifelike.document/enrichment-table vnd.lifelike.document/graph vnd.lifelike.document/map
+
+# build time argument for Angular environment
+ARG ANGULAR_CONFIG=production
+
+# default enviroment presets
+ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
 
 # Copy nginx configuraiton template
 COPY nginx.conf /etc/nginx/templates/default.conf.template
