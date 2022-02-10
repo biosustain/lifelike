@@ -44,7 +44,7 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     password_hash = db.Column(db.String(256))
     failed_login_count = db.Column(db.Integer, default=0)
     forced_password_reset = db.Column(db.Boolean)
-    subject = db.Column(db.String(256))
+    subject = db.Column(db.String(256), nullable=False)
 
     # load all roles associated with the user eagerly using subquery
     roles = db.relationship(

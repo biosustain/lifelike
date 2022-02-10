@@ -131,7 +131,7 @@ def verify_token(token):
             message='There was a problem authenticating, please try again.')
 
     try:
-        user = AppUser.query_by_email(decoded['email']).one()
+        user = AppUser.query_by_subject(decoded['sub']).one()
         current_app.logger.info(
             f'Active user: {user.email}',
             extra=UserEventLog(
@@ -188,7 +188,7 @@ def refresh():
     refresh_jwt = token_service.get_refresh_token(token_subj)
 
     try:
-        user = AppUser.query.filter_by(email=decoded['sub']).one()
+        user = AppUser.query_by_subject(decoded['sub']).one()
     except NoResultFound:
         raise ServerException(
             title='Failed to Authenticate',
@@ -242,8 +242,8 @@ def login():
                 current_app.config['JWT_SECRET_KEY'],
                 current_app.config['JWT_ALGORITHM']
             )
-            access_jwt = token_service.get_access_token(user.email)
-            refresh_jwt = token_service.get_refresh_token(user.email)
+            access_jwt = token_service.get_access_token(user.hash_id)
+            refresh_jwt = token_service.get_refresh_token(user.hash_id)
             user.failed_login_count = 0
             return jsonify(LifelikeJWTTokenResponse().dump({
                 'access_token': access_jwt,
