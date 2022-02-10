@@ -15,6 +15,8 @@
           <i class="far fa-window-restore"></i>
         </a>
       </ng-template>
+      <!-- TODO: Something odd is happening when OAuth is enabled and these `appLink` links are clicked when the user is not logged in. For
+        some reason a bunch of redirects happen all at once, rather than just one single redirect. -->
       <a appLink="/projects" placement="right" ngbTooltip="File Browser" [forceWorkbench]="true" [newTab]="true" preferPane="left">
         <i class="fa fa-folder"></i>
       </a>
