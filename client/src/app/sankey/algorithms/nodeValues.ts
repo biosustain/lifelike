@@ -1,12 +1,12 @@
 import { ValueProcessingStep } from 'app/sankey/interfaces';
 
 import { representativePositiveNumber } from '../utils';
-import { LayoutService } from '../services/layout.service';
+import { DefaultLayoutService } from '../services/layout.service';
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function, so we can maintain execution context
-    function(this: LayoutService, {nodes}) {
+    function(this: DefaultLayoutService, {nodes}) {
       nodes.forEach(n => {
         n._fixedValue = value;
       });
@@ -20,7 +20,7 @@ export const fixedValue: (value: number) => ValueProcessingStep =
       };
     };
 
-export function noneNodeValue(this: LayoutService, {nodes}) {
+export function noneNodeValue(this: DefaultLayoutService, {nodes}) {
   nodes.forEach(n => {
     delete n._fixedValue;
     delete n._value;
@@ -38,7 +38,7 @@ export function noneNodeValue(this: LayoutService, {nodes}) {
 export const byProperty: (property: string) => ValueProcessingStep =
   property =>
     // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
-    function(this: LayoutService, {nodes}) {
+    function(this: DefaultLayoutService, {nodes}) {
       nodes.forEach(n => {
         n._fixedValue = representativePositiveNumber(n[property]);
       });

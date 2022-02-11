@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 
+import { tap, map } from 'rxjs/operators';
+
 import { SankeySearchService } from '../../services/search.service';
 
 @Component({
@@ -11,4 +13,19 @@ export class SankeySearchControlComponent {
     public search: SankeySearchService
   ) {
   }
+
+  term$ = this.search.term$;
+  focusIdx$ = this.search.focusIdx$;
+  preprocessedMatches$ = this.search.preprocessedMatches$
+  resultsCount$ = this.search.resultsCount$;
+  done$ = this.search.done$;
+
+  previous() {
+    this.search.previous();
+  }
+
+  next() {
+    this.search.next();
+  }
+
 }

@@ -1,8 +1,8 @@
 import { PRESCALERS } from 'app/sankey/algorithms/prescalers';
-import { GraphTrace, GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
 
-import { LayoutService } from './services/layout.service';
+import { DefaultLayoutService } from './services/layout.service';
 import { SankeyTrace, SankeyNode, SankeyLink } from './pure_interfaces';
 
 // Re-export the interfaces which are defined separately for DOMless ussage
@@ -19,7 +19,7 @@ export interface IntermediateProcessedData extends Partial<SankeyData> {
   _sets: object;
 }
 
-export type ValueProcessingStep = (this: LayoutService, v: SankeyData) => IntermediateProcessedData | undefined;
+export type ValueProcessingStep = (this: DefaultLayoutService, v: SankeyData) => IntermediateProcessedData | undefined;
 
 export interface ValueGenerator {
   preprocessing: ValueProcessingStep;
@@ -104,8 +104,13 @@ export interface SankeyFileOptions {
 
 export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 
+export enum NodeAlign {
+  left = 'left',
+  right = 'right'
+}
+
 export interface SankeyState {
-  nodeAlign?: 'right' | 'left';
+  nodeAlign?: NodeAlign;
   networkTraceIdx?: number;
   prescalerId?: string;
   normalizeLinks?: boolean;
