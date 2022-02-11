@@ -136,6 +136,17 @@
       tags:
         - deploy
 
+    - name: Create webserver.env file
+      copy:
+        content: |
+          ENVIRONMENT_CONFIG={{ webserver_environment_config }}
+        dest: "{{ deploy_dir }}/webserver.env"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: u=rw,g=r,o=r
+      tags:
+        - deploy
+
     - name: Creates liquibase data file directory
       file:
         path: "{{ deploy_dir }}/liquibase-data-files"

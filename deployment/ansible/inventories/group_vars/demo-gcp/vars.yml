@@ -21,3 +21,5 @@ dh_param_dir: /home/ansible/dh-param
 elastic_file_content_index_id: file_demo
 
 container_registry: "gcr.io/able-goods-221820"
+
+webserver_environment_config: demo
